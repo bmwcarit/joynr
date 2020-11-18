@@ -39,22 +39,25 @@ class JoynrMessagingGenerator {
 	){
 
 		for(serviceInterface: model.interfaces){
-			val sourcePath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator
-			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
+			val generateVersioning = !commentContainsNoVersionGeneration(serviceInterface)
+			val sourcePath = sourceContainerPath + getPackageSourceDirectory(serviceInterface, generateVersioning) + File::separator
+			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersioning) + File::separator
 			val serviceName = serviceInterface.joynrName
 
 			var interfaceJoynrMessagingConnectorHTemplate = templateFactory.createInterfaceJoynrMessagingConnectorHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "JoynrMessagingConnector.h",
-				interfaceJoynrMessagingConnectorHTemplate
+				interfaceJoynrMessagingConnectorHTemplate,
+				generateVersioning
 			);
 
 			var interfaceJoynrMessagingConnectorCppTemplate = templateFactory.createInterfaceJoynrMessagingConnectorCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "JoynrMessagingConnector.cpp",
-				interfaceJoynrMessagingConnectorCppTemplate
+				interfaceJoynrMessagingConnectorCppTemplate,
+				generateVersioning
 			);
 		}
 	}

@@ -41,20 +41,20 @@ class MapCppTemplate extends MapTemplate {
 		super(type)
 	}
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val typeName = type.joynrName»
 «warning()»
 «getDllExportIncludeStatement()»
 
-#include «type.includeOf»
+#include «type.getIncludeOf(generateVersion)»
 
-«getNamespaceStarter(type, true)»
+«getNamespaceStarter(type, true, generateVersion)»
 
 const std::int32_t «typeName»::MAJOR_VERSION = «majorVersion»;
 const std::int32_t «typeName»::MINOR_VERSION = «minorVersion»;
 
-«getNamespaceEnder(type, true)»
+«getNamespaceEnder(type, true, generateVersion)»
 
 '''
 

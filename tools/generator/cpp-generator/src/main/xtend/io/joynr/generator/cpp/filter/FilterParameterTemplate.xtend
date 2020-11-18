@@ -32,11 +32,11 @@ class FilterParameterTemplate implements BroadcastTemplate {
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 
-	override generate(FInterface serviceInterface, FBroadcast broadcast)
+	override generate(FInterface serviceInterface, FBroadcast broadcast, boolean generateVersion)
 '''
 «val broadcastName =  broadcast.joynrName»
 «val className = serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilterParameters"»
-«val headerGuard = ("GENERATED_FILTER_PARAMETERS_"+getPackagePathWithJoynrPrefix(broadcast, "_")+"_"+broadcastName+"_H").toUpperCase»
+«val headerGuard = ("GENERATED_FILTER_PARAMETERS_"+getPackagePathWithJoynrPrefix(broadcast, "_", generateVersion)+"_"+broadcastName+"_H").toUpperCase»
 «warning()»
 
 #ifndef «headerGuard»
@@ -46,7 +46,7 @@ class FilterParameterTemplate implements BroadcastTemplate {
 #include <string>
 «getDllExportIncludeStatement()»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(serviceInterface, generateVersion)»
 /**
  * @brief BroadcastFilterParameter class for interface «serviceInterface.joynrName.toFirstUpper»
  * broadcast «broadcastName»
@@ -95,7 +95,7 @@ public:
 	«ENDIF»
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(serviceInterface, generateVersion)»
 
 #endif // «headerGuard»
 '''

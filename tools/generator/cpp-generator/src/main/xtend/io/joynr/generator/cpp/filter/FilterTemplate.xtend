@@ -34,11 +34,11 @@ class FilterTemplate implements BroadcastTemplate {
 	@Inject extension NamingUtil
 	@Inject extension BroadcastUtil
 
-	override generate(FInterface serviceInterface, FBroadcast broadcast)
+	override generate(FInterface serviceInterface, FBroadcast broadcast, boolean generateVersion)
 '''
 «val broadcastName =  broadcast.joynrName»
 «val className = serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper + "BroadcastFilter"»
-«val headerGuard = ("GENERATED_BROADCAST_FILTER_"+getPackagePathWithJoynrPrefix(broadcast, "_")+
+«val headerGuard = ("GENERATED_BROADCAST_FILTER_"+getPackagePathWithJoynrPrefix(broadcast, "_", generateVersion)+
 	"_"+broadcastName+"_H").toUpperCase»
 «warning()»
 
@@ -46,15 +46,15 @@ class FilterTemplate implements BroadcastTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getDataTypeIncludesFor(serviceInterface)»
+«FOR parameterType: getDataTypeIncludesFor(serviceInterface, generateVersion)»
 #include «parameterType»
 «ENDFOR»
 
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/I«serviceInterface.name».h"
-#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/")»/«className»Parameters.h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/", generateVersion)»/I«serviceInterface.name».h"
+#include "«getPackagePathWithJoynrPrefix(serviceInterface, "/", generateVersion)»/«className»Parameters.h"
 «getDllExportIncludeStatement()»
 
-«getNamespaceStarter(serviceInterface)»
+«getNamespaceStarter(serviceInterface, generateVersion)»
 /**
  * @brief Broadcast filter class for interface «serviceInterface.joynrName.toFirstUpper»,
  * broadcast «broadcastName»
@@ -83,14 +83,14 @@ public:
 	 */
 	virtual bool filter(
 			«IF !broadcast.outputParameters.empty»
-				«broadcast.commaSeperatedTypedConstOutputParameterList»,
+				«broadcast.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»,
 			«ENDIF»
 			const «serviceInterface.joynrName.toFirstUpper + broadcastName.toFirstUpper»BroadcastFilterParameters& filterParameters
 	) = 0;
 
 	bool filterForward(
 			«IF !broadcast.outputParameters.empty»
-				«broadcast.commaSeperatedTypedConstOutputParameterList»,
+				«broadcast.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»,
 			«ENDIF»
 			const BroadcastFilterParameters& filterParameters
 	)
@@ -106,7 +106,7 @@ private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
 
-«getNamespaceEnder(serviceInterface)»
+«getNamespaceEnder(serviceInterface, generateVersion)»
 
 #endif // «headerGuard»
 '''

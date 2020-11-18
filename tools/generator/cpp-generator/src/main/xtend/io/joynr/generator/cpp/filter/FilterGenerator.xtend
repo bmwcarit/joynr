@@ -46,8 +46,9 @@ class FilterGenerator {
 		String headerContainerPath
 	) {
 		for(fInterface: model.interfaces){
+			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
 			val headerPath = headerContainerPath + 
-				getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
+				getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersioning) + File::separator
 			var serviceName = fInterface.joynrName
 
 			for (broadcast : fInterface.broadcasts) {
@@ -59,7 +60,8 @@ class FilterGenerator {
 						filterParameterLocation,
 						filterParameterTemplate,
 						fInterface,
-						broadcast);
+						broadcast,
+						generateVersioning);
 
 					val filterLocation = getFilterLocation(headerPath, serviceName, broadcast)
 					generateFile(
@@ -67,7 +69,8 @@ class FilterGenerator {
 						filterLocation,
 						filterTemplate,
 						fInterface,
-						broadcast);
+						broadcast,
+						generateVersioning);
 				}
 			}
 		}

@@ -54,7 +54,11 @@ class CppStdTypeUtil extends CppTypeUtil {
 	}
 
 	override getTypeNameForList(FType datatype) {
-		"std::vector<" + datatype.typeName + "> ";
+		throw new IllegalArgumentException("Unsupported method called for C++!")
+	}
+
+	override getTypeNameForList(FType datatype, boolean generateVersion) {
+		"std::vector<" + datatype.getTypeName(generateVersion) + "> ";
 	}
 
 	override getTypeNameForList(FBasicTypeId datatype) {
@@ -65,12 +69,16 @@ class CppStdTypeUtil extends CppTypeUtil {
 		datatype.joynrName
 	}
 
-	override getTypeName(FType datatype) {
-		var typeName = buildPackagePath(datatype, "::", true) + "::" + datatype.joynrName;
+	override getTypeName(FType datatype, boolean generateVersion) {
+		var typeName = buildPackagePath(datatype, "::", true, generateVersion) + "::" + datatype.joynrName;
 		if (isEnum(datatype)){
 			typeName += "::" + getNestedEnumName();
 		}
 		return typeName
+	}
+
+	override getTypeName(FType datatype) {
+		throw new IllegalArgumentException("Unsupported method called for C++!")
 	}
 
 	override getIncludeForArray() {
@@ -111,24 +119,24 @@ class CppStdTypeUtil extends CppTypeUtil {
 		return includes;
 	}
 
-	override String getIncludeOf(FType dataType) {
-		getIncludeOf(dataType, "")
+	override String getIncludeOf(FType dataType, boolean generateVersioning) {
+		getIncludeOf(dataType, "", generateVersioning)
 	}
 
-	private def String getIncludeOf(FType dataType, String nameSuffix) {
-		var path = getPackagePathWithJoynrPrefix(dataType, "/")
+	private def String getIncludeOf(FType dataType, String nameSuffix, boolean generateVersioning) {
+		var path = getPackagePathWithJoynrPrefix(dataType, "/", generateVersioning)
 		if (dataType.isPartOfNamedTypeCollection) {
 			path += "/" + dataType.typeCollectionName
 		}
 		return "\"" + path + "/" + dataType.joynrName + nameSuffix + ".h\"";
 	}
 
-	override getDefaultValue(FTypedElement element) {
+	override getDefaultValue(FTypedElement element, boolean generateVersioning) {
 		if (element.type.predefined == FBasicTypeId.BYTE_BUFFER) {
 			return "";
 		}
 		else {
-			super.getDefaultValue(element)
+			super.getDefaultValue(element, generateVersioning)
 		}
 	}
 
@@ -160,10 +168,10 @@ class CppStdTypeUtil extends CppTypeUtil {
 		);
 	}
 
-	def getForwardDeclaration(FType datatype)'''
-«getNamespaceStarter(datatype, true)»
+	def getForwardDeclaration(FType datatype, boolean generateVersion)'''
+«getNamespaceStarter(datatype, true, generateVersion)»
 class «(datatype).joynrName»;
-«getNamespaceEnder(datatype, true)»
+«getNamespaceEnder(datatype, true, generateVersion)»
 '''
 
 }

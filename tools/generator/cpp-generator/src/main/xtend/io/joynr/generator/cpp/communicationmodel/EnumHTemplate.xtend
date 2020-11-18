@@ -41,10 +41,10 @@ class EnumHTemplate extends EnumTemplate {
 		super(type)
 	}
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val typeName = type.joynrName»
-«val headerGuard = (getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_h").toUpperCase»
+«val headerGuard = (getPackagePathWithJoynrPrefix(type, "_", true, generateVersion)+"_"+typeName+"_h").toUpperCase»
 «warning»
 #ifndef «headerGuard»
 #define «headerGuard»
@@ -59,10 +59,10 @@ class EnumHTemplate extends EnumTemplate {
 #include "joynr/serializer/Serializer.h"
 
 «IF type.hasExtendsDeclaration»
-	#include «type.extendedType.includeOf»
+	#include «type.extendedType.getIncludeOf(generateVersion)»
 
 «ENDIF»
-«getNamespaceStarter(type, true)»
+«getNamespaceStarter(type, true, generateVersion)»
 
 /**
  * @brief Enumeration wrapper class «typeName»
@@ -71,7 +71,7 @@ class EnumHTemplate extends EnumTemplate {
  */
 struct «getDllExportMacro()»«typeName» : public joynr::exceptions::ApplicationExceptionError {
 	«IF type.hasExtendsDeclaration»
-		// This enum inherits enumeration values from «type.extendedType.typeName».
+		// This enum inherits enumeration values from «type.extendedType.getTypeName(generateVersion)».
 	«ENDIF»
 
 	using ApplicationExceptionError::ApplicationExceptionError;
@@ -150,40 +150,40 @@ struct «getDllExportMacro()»«typeName» : public joynr::exceptions::Applicati
  * @param messagingQos The current object instance
  * @param os The output stream to send the output to
  */
-void PrintTo(const «type.typeName»& «typeName.toFirstLower»Value, ::std::ostream* os);
+void PrintTo(const «type.getTypeName(generateVersion)»& «typeName.toFirstLower»Value, ::std::ostream* os);
 
-«getNamespaceEnder(type, true)»
+«getNamespaceEnder(type, true, generateVersion)»
 
 namespace std {
 
 /**
- * @brief Function object that implements a hash function for «type.buildPackagePath("::", true)»::«typeName».
+ * @brief Function object that implements a hash function for «type.buildPackagePath("::", true, generateVersion)»::«typeName».
  *
  * Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
  * std::unordered_map, std::unordered_multimap as default hash function.
  */
 template<>
-struct hash<«type.buildPackagePath("::", true)»::«typeName»::«getNestedEnumName()»> {
+struct hash<«type.buildPackagePath("::", true, generateVersion)»::«typeName»::«getNestedEnumName()»> {
 
 	/**
 	 * @brief method overriding default implementation of operator ()
 	 * @param «typeName.toFirstLower»Value the operators argument
 	 * @return the ordinal number representing the enum value
 	 */
-	std::size_t operator()(const «type.buildPackagePath("::", true)»::«typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) const {
-		return «type.buildPackagePath("::", true)»::«typeName»::getOrdinal(«typeName.toFirstLower»Value);
+	std::size_t operator()(const «type.buildPackagePath("::", true, generateVersion)»::«typeName»::«getNestedEnumName()»& «typeName.toFirstLower»Value) const {
+		return «type.buildPackagePath("::", true, generateVersion)»::«typeName»::getOrdinal(«typeName.toFirstLower»Value);
 	}
 };
 } // namespace std
 
-MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeNameOfContainingClass», joynr::exceptions::ApplicationExceptionError, "«type.typeNameOfContainingClass.replace("::", ".")»")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.getTypeNameOfContainingClass(generateVersion)», joynr::exceptions::ApplicationExceptionError, "«type.getTypeNameOfContainingClass(generateVersion).replace("::", ".")»")
 
 namespace muesli
 {
 template <>
-struct EnumTraits<«type.typeName»>
+struct EnumTraits<«type.getTypeName(generateVersion)»>
 {
-	using Wrapper = «type.typeNameOfContainingClass»;
+	using Wrapper = «type.getTypeNameOfContainingClass(generateVersion)»;
 };
 } // namespace muesli
 

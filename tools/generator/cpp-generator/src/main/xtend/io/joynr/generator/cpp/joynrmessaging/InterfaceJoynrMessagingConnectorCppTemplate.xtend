@@ -41,7 +41,7 @@ class InterfaceJoynrMessagingConnectorCppTemplate extends InterfaceTemplate{
 	@Inject extension CppInterfaceUtil
 	@Inject extension InterfaceSubscriptionUtil
 
-	def produceParameterSetters(FMethod method)
+	def produceParameterSetters(FMethod method, boolean generateVersion)
 '''
 «IF !method.fireAndForget»
 joynr::Request request;
@@ -52,7 +52,7 @@ joynr::OneWayRequest request;
 request.setMethodName("«method.joynrName»");
 request.setParamDatatypes({
 	«FOR param : getInputParameters(method) SEPARATOR ','»
-	"«param.joynrTypeName»"
+	"«param.getJoynrTypeName(generateVersion)»"
 	«ENDFOR»
 	});
 request.setParams(
@@ -88,13 +88,13 @@ request.setParams(
 				);
 	'''
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
 «val methodToErrorEnumName = francaIntf.methodToErrorEnumName()»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»JoynrMessagingConnector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»JoynrMessagingConnector.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/IMessageSender.h"
@@ -128,21 +128,21 @@ request.setParams(
 		«ELSE»
 			«{enumType = method.errorEnum; ""}»
 		«ENDIF»
-		#include "«enumType.getPackagePathWithJoynrPrefix(File::separator, true) + File::separator + enumType.joynrName».h"
+		#include "«enumType.getPackagePathWithJoynrPrefix(File::separator, true, generateVersion) + File::separator + enumType.joynrName».h"
 	«ENDIF»
 «ENDFOR»
 
 «FOR datatype: getAllComplexTypes(francaIntf)»
 	«IF isCompound(datatype) || isMap(datatype)»
-		#include «getIncludeOf(datatype)»
+		#include «getIncludeOf(datatype, generateVersion)»
 	«ENDIF»
 «ENDFOR»
 
-«FOR broadcastFilterParameters: getBroadcastFilterParametersIncludes(francaIntf)»
+«FOR broadcastFilterParameters: getBroadcastFilterParametersIncludes(francaIntf, generateVersion)»
 	#include «broadcastFilterParameters»
 «ENDFOR»
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(
 		std::weak_ptr<joynr::IMessageSender> messageSender,
@@ -156,16 +156,16 @@ request.setParams(
 }
 
 «FOR attribute: getAttributes(francaIntf)»
-	«val returnType = getTypeName(attribute)»
+	«val returnType = getTypeName(attribute, generateVersion)»
 	«val attributeName = attribute.joynrName»
 	«IF attribute.readable»
-		«produceSyncGetterSignature(attribute, className)»
+		«produceSyncGetterSignature(attribute, className, generateVersion)»
 		{
 			auto future = get«attributeName.toFirstUpper»Async(nullptr, nullptr, std::move(qos));
 			future->get(«attributeName»);
 		}
 
-		«produceAsyncGetterSignature(attribute, className)»
+		«produceAsyncGetterSignature(attribute, className, generateVersion)»
 		{
 			joynr::Request request;
 			// explicitly set to no parameters
@@ -244,11 +244,11 @@ request.setParams(
 
 	«ENDIF»
 	«IF attribute.writable»
-		«produceAsyncSetterSignature(attribute, className)»
+		«produceAsyncSetterSignature(attribute, className, generateVersion)»
 		{
 			joynr::Request request;
 			request.setMethodName("set«attributeName.toFirstUpper»");
-			request.setParamDatatypes({"«attribute.joynrTypeName»"});
+			request.setParamDatatypes({"«attribute.getJoynrTypeName(generateVersion)»"});
 			request.setParams(«attributeName»);
 
 			auto future = std::make_shared<joynr::Future<void>>();
@@ -322,7 +322,7 @@ request.setParams(
 			return future;
 		}
 
-		«produceSyncSetterSignature(attribute, className)»
+		«produceSyncSetterSignature(attribute, className, generateVersion)»
 		{
 			auto future = set«attributeName.toFirstUpper»Async(«attributeName», nullptr, nullptr, std::move(qos));
 			future->get();
@@ -330,12 +330,12 @@ request.setParams(
 
 	«ENDIF»
 	«IF attribute.notifiable»
-		«produceSubscribeToAttributeSignature(attribute, className)» {
+		«produceSubscribeToAttributeSignature(attribute, className, generateVersion)» {
 			joynr::SubscriptionRequest subscriptionRequest;
 			return subscribeTo«attributeName.toFirstUpper»(subscriptionListener, subscriptionQos, subscriptionRequest);
 		}
 
-		«produceUpdateAttributeSubscriptionSignature(attribute, className)» {
+		«produceUpdateAttributeSubscriptionSignature(attribute, className, generateVersion)» {
 
 			joynr::SubscriptionRequest subscriptionRequest;
 			subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -402,20 +402,20 @@ request.setParams(
 «ENDFOR»
 
 «FOR method: getMethods(francaIntf)»
-	«var outputTypedConstParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
-	«val outputParameters = getCommaSeparatedOutputParameterTypes(method)»
+	«var outputTypedConstParamList = getCommaSeperatedTypedConstOutputParameterList(method, generateVersion)»
+	«val outputParameters = getCommaSeparatedOutputParameterTypes(method, generateVersion)»
 	«var outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
 
 	«IF !method.fireAndForget»
-		«produceSyncMethodSignature(method, className)»
+		«produceSyncMethodSignature(method, className, generateVersion)»
 		{
 			auto future = «method.joynrName»Async(«method.commaSeperatedUntypedInputParameterList»«IF !method.inputParameters.empty», «ENDIF»«IF method.hasErrorEnum»nullptr,«ENDIF»nullptr, nullptr, std::move(qos));
 			future->get(«method.commaSeperatedUntypedOutputParameterList»);
 		}
 
-		«produceAsyncMethodSignature(francaIntf, method, className)»
+		«produceAsyncMethodSignature(francaIntf, method, className, generateVersion)»
 		{
-			«produceParameterSetters(method)»
+			«produceParameterSetters(method, generateVersion)»
 
 			auto future = std::make_shared<joynr::Future<«outputParameters»>>();
 
@@ -464,7 +464,7 @@ request.setParams(
 					error->what()
 				);
 				future->onError(error);
-				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method)»
+				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method, generateVersion)»
 			};
 
 			try {
@@ -489,9 +489,9 @@ request.setParams(
 			return future;
 		}
 	«ELSE»
-		«produceFireAndForgetMethodSignature(method, className)»
+		«produceFireAndForgetMethodSignature(method, className, generateVersion)»
 			{
-				«produceParameterSetters(method)»
+				«produceParameterSetters(method, generateVersion)»
 
 				«logMethodCall(method)»
 				operationOneWayRequest(std::move(request), std::move(qos));
@@ -500,9 +500,9 @@ request.setParams(
 «ENDFOR»
 
 «FOR broadcast: francaIntf.broadcasts»
-	«val returnTypes = getCommaSeparatedOutputParameterTypes(broadcast)»
+	«val returnTypes = getCommaSeparatedOutputParameterTypes(broadcast, generateVersion)»
 	«val broadcastName = broadcast.joynrName»
-	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
+	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className, generateVersion)» {
 		«IF broadcast.selective»
 			joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			subscriptionRequest.setFilterParameters(filterParameters);
@@ -520,7 +520,7 @@ request.setParams(
 					»);
 	}
 
-	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
+	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className, generateVersion)» {
 		«IF broadcast.selective»
 			joynr::BroadcastSubscriptionRequest subscriptionRequest;
 			subscriptionRequest.setFilterParameters(filterParameters);
@@ -655,6 +655,6 @@ request.setParams(
 	}
 
 «ENDFOR»
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }

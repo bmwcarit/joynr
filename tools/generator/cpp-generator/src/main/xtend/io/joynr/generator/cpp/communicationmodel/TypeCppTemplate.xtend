@@ -41,7 +41,7 @@ class TypeCppTemplate extends CompoundTypeTemplate {
 		super(type)
 	}
 
-	override generate() '''
+	override generate(boolean generateVersion) '''
 «val typeName = type.joynrName»
 «warning»
 
@@ -52,19 +52,19 @@ class TypeCppTemplate extends CompoundTypeTemplate {
 #include <boost/functional/hash.hpp>
 «ENDIF»
 #include "joynr/HashUtil.h"
-#include «type.includeOf»
+#include «type.getIncludeOf(generateVersion)»
 
-«getNamespaceStarter(type, true)»
+«getNamespaceStarter(type, true, generateVersion)»
 
 const std::int32_t «typeName»::MAJOR_VERSION = «majorVersion»;
 const std::int32_t «typeName»::MINOR_VERSION = «minorVersion»;
 
 «typeName»::«typeName»()«IF !getMembersRecursive(type).empty»:«ENDIF»
 	«IF hasExtendsDeclaration(type)»
-		«getExtendedType(type).typeName»()«IF !getMembers(type).empty»,«ENDIF»
+		«getExtendedType(type).getTypeName(generateVersion)»()«IF !getMembers(type).empty»,«ENDIF»
 	«ENDIF»
 	«FOR member: getMembers(type) SEPARATOR ','»
-		«member.joynrName»(«member.defaultValue»)
+		«member.joynrName»(«member.getDefaultValue(generateVersion)»)
 	«ENDFOR»
 {
 }
@@ -72,12 +72,12 @@ const std::int32_t «typeName»::MINOR_VERSION = «minorVersion»;
 «IF !getMembersRecursive(type).empty»
 «typeName»::«typeName»(
 		«FOR member: getMembersRecursive(type) SEPARATOR ','»
-			const «member.typeName»& _«member.joynrName»
+			const «member.getTypeName(generateVersion)»& _«member.joynrName»
 		«ENDFOR»
 	):
 		«IF hasExtendsDeclaration(type)»
 			«val extendedType = getExtendedType(type)»
-			«extendedType.typeName»(
+			«extendedType.getTypeName(generateVersion)»(
 			«FOR member: getMembersRecursive(extendedType) SEPARATOR ','»
 				_«member.joynrName»
 			«ENDFOR»
@@ -112,7 +112,7 @@ std::size_t «typeName»::hashCode() const {
 	«val joynrName = member.joynrName»
 	«IF isEnum(member.type) && ! isArray(member)»
 		std::string «typeName»::get«joynrName.toFirstUpper»Internal() const {
-			return «member.typeName.substring(0, member.typeName.length-6)»::getLiteral(this->«joynrName»);
+			return «member.getTypeName(generateVersion).substring(0, member.getTypeName(generateVersion).length-6)»::getLiteral(this->«joynrName»);
 		}
 
 	«ENDIF»
@@ -121,7 +121,7 @@ std::string «typeName»::toString() const {
 	std::ostringstream typeAsString;
 	typeAsString << "«typeName»{";
 	«IF hasExtendsDeclaration(type)»
-		typeAsString << «getExtendedType(type).typeName»::toString();
+		typeAsString << «getExtendedType(type).getTypeName(generateVersion)»::toString();
 		«IF !getMembers(type).empty»
 		typeAsString << ", ";
 		«ENDIF»
@@ -160,11 +160,11 @@ std::size_t hash_value(const «typeName»& «typeName.toFirstLower»Value)
 }
 
 «IF isPolymorphic(type)»
-std::unique_ptr<«getRootType(type).typeName»> «typeName»::clone() const {
+std::unique_ptr<«getRootType(type).getTypeName(generateVersion)»> «typeName»::clone() const {
 	return std::make_unique<«typeName»>(const_cast<«typeName»&>(*this));
 }
 «ENDIF»
 
-«getNamespaceEnder(type, true)»
+«getNamespaceEnder(type, true, generateVersion)»
 '''
 }

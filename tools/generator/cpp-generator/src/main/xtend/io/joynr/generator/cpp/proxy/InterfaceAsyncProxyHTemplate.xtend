@@ -33,12 +33,12 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 	@Inject extension CppInterfaceUtil
 	@Inject extension NamingUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"AsyncProxy_h").toUpperCase»
 «warning()»
 
@@ -47,9 +47,9 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«className»Base.h"
 «IF hasFireAndForgetMethods(francaIntf)»
-	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»FireAndForgetProxy.h"
+	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»FireAndForgetProxy.h"
 «ENDIF»
 
 namespace joynr
@@ -63,13 +63,13 @@ namespace exceptions
 } // namespace exceptions
 } // namespace joynr
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 /** @brief proxy class for asynchronous calls of interface «interfaceName»
  *
  * @version «majorVersion».«minorVersion»
@@ -94,16 +94,16 @@ public:
 			const joynr::MessagingQos& qosSettings
 	);
 
-	«produceAsyncGetterDeclarations(francaIntf, false)»
-	«produceAsyncSetterDeclarations(francaIntf, false)»
-	«produceAsyncMethodDeclarations(francaIntf, false, true)»
+	«produceAsyncGetterDeclarations(francaIntf, false, generateVersion)»
+	«produceAsyncSetterDeclarations(francaIntf, false, generateVersion)»
+	«produceAsyncMethodDeclarations(francaIntf, false, true, generateVersion)»
 
 	friend class «className»;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«asyncClassName»);
 };
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 #endif // «headerGuard»
 
 '''

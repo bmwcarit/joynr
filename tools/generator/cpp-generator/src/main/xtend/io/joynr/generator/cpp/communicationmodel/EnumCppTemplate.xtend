@@ -41,16 +41,16 @@ class EnumCppTemplate extends EnumTemplate {
 		super(type)
 	}
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val typeName = type.joynrName»
 «warning»
 «getDllExportIncludeStatement()»
 
-#include «type.includeOf»
+#include «type.getIncludeOf(generateVersion)»
 #include <sstream>
 
-«getNamespaceStarter(type, true)»
+«getNamespaceStarter(type, true, generateVersion)»
 
 const std::int32_t «typeName»::MAJOR_VERSION = «majorVersion»;
 const std::int32_t «typeName»::MINOR_VERSION = «minorVersion»;
@@ -82,7 +82,7 @@ std::string «typeName»::getLiteral(const «typeName»::«getNestedEnumName()»
 }
 
 std::string «typeName»::getTypeName() {
-	return "«type.buildPackagePath(".", true) + "." + type.joynrName»";
+	return "«type.buildPackagePath(".", true, generateVersion) + "." + type.joynrName»";
 }
 
 std::uint32_t «typeName»::getOrdinal(«typeName»::«getNestedEnumName()» «typeName.toFirstLower»Value) {
@@ -95,6 +95,6 @@ void PrintTo(const «typeName»::«getNestedEnumName()»& «typeName.toFirstLowe
 			<< " (" << «typeName»::getOrdinal(«typeName.toFirstLower»Value) << ")";
 }
 
-«getNamespaceEnder(type, true)»
+«getNamespaceEnder(type, true, generateVersion)»
 '''
 }

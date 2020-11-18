@@ -41,71 +41,81 @@ class ProxyGenerator {
 	) {
 
 		for(fInterface: model.interfaces){
-			val sourcePath = sourceContainerPath + getPackageSourceDirectory(fInterface) + File::separator
-			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
+			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			val sourcePath = sourceContainerPath + getPackageSourceDirectory(fInterface, generateVersioning) + File::separator
+			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersioning) + File::separator
 			var serviceName = fInterface.joynrName
 
 			var iInterfaceConnectorHTemplate = templateFactory.createIInterfaceConnectorHTemplate(fInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + "I" + serviceName + "Connector.h",
-				iInterfaceConnectorHTemplate
+				iInterfaceConnectorHTemplate,
+				generateVersioning
 			);
 
 			var interfaceProxyBaseHTemplate = templateFactory.createInterfaceProxyBaseHTemplate(fInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "ProxyBase.h",
-				interfaceProxyBaseHTemplate
+				interfaceProxyBaseHTemplate,
+				generateVersioning
 			);
 
 			var interfaceProxyBaseCppTemplate = templateFactory.createInterfaceProxyBaseCppTemplate(fInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "ProxyBase.cpp",
-				interfaceProxyBaseCppTemplate
+				interfaceProxyBaseCppTemplate,
+				generateVersioning
 			);
 
 			var interfaceProxyHTemplate = templateFactory.createInterfaceProxyHTemplate(fInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "Proxy.h",
-				interfaceProxyHTemplate
+				interfaceProxyHTemplate,
+				generateVersioning
 			);
 
 			var interfaceProxyCppTemplate = templateFactory.createInterfaceProxyCppTemplate(fInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "Proxy.cpp",
-				interfaceProxyCppTemplate
+				interfaceProxyCppTemplate,
+				generateVersioning
 			);
 
 			var interfaceSyncProxyHTemplate = templateFactory.createInterfaceSyncProxyHTemplate(fInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "SyncProxy.h",
-				interfaceSyncProxyHTemplate
+				interfaceSyncProxyHTemplate,
+				generateVersioning
 			);
 
 			var interfaceSyncProxyCppTemplate = templateFactory.createInterfaceSyncProxyCppTemplate(fInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "SyncProxy.cpp",
-				interfaceSyncProxyCppTemplate
+				interfaceSyncProxyCppTemplate,
+				generateVersioning
 			);
 
 			var interfaceAsyncProxyHTemplate = templateFactory.createInterfaceAsyncProxyHTemplate(fInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "AsyncProxy.h",
-				interfaceAsyncProxyHTemplate
+				interfaceAsyncProxyHTemplate,
+				generateVersioning
 			);
 
 			var interfaceAsyncProxyCppTemplate = templateFactory.createInterfaceAsyncProxyCppTemplate(fInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "AsyncProxy.cpp",
-				interfaceAsyncProxyCppTemplate
+				interfaceAsyncProxyCppTemplate,
+				generateVersioning
 			);
 
 			if (hasFireAndForgetMethods(fInterface)) {
@@ -113,14 +123,16 @@ class ProxyGenerator {
 				generateFile(
 					headerFileSystem,
 					headerPath + serviceName + "FireAndForgetProxy.h",
-					interfaceFireAndForgetProxyHTemplate
+					interfaceFireAndForgetProxyHTemplate,
+					generateVersioning
 				);
 
 				var interfaceFireAndForgetProxyCppTemplate = templateFactory.createInterfaceFireAndForgetProxyCppTemplate(fInterface)
 				generateFile(
 					sourceFileSystem,
 					sourcePath + serviceName + "FireAndForgetProxy.cpp",
-					interfaceFireAndForgetProxyCppTemplate
+					interfaceFireAndForgetProxyCppTemplate,
+					generateVersioning
 				);
 			}
 		}

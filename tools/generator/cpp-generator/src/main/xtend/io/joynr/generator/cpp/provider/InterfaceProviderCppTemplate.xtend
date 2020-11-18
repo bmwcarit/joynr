@@ -32,21 +32,21 @@ class InterfaceProviderCppTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension NamingUtil
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		var selector = TypeSelector::defaultTypeSelector
 		selector.transitiveTypes(true)
 '''
 «warning()»
 «val interfaceName = francaIntf.joynrName»
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»Provider.h"
 #include "joynr/InterfaceRegistrar.h"
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
-«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»RequestInterpreter.h"
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 «interfaceName»Provider::«interfaceName»Provider()
 {
 	// Register a request interpreter to interpret requests to this interface
@@ -70,7 +70,7 @@ const std::string& «interfaceName»Provider::INTERFACE_NAME()
 const std::int32_t «interfaceName»Provider::MAJOR_VERSION = «majorVersion»;
 const std::int32_t «interfaceName»Provider::MINOR_VERSION = «minorVersion»;
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }
 }

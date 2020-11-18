@@ -101,17 +101,17 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		return returnString.substring(0, returnString.length() - 2); //remove the last ,
 	}
 
-	def String getCommaSeparatedOutputParameterTypes(FMethod method) {
-		getCommaSeparatedParameterTypes(method.outputParameters)
+	def String getCommaSeparatedOutputParameterTypes(FMethod method, boolean generateVersion) {
+		getCommaSeparatedParameterTypes(method.outputParameters, generateVersion)
 	}
 
-	def String getCommaSeparatedOutputParameterTypes(FBroadcast broadcast) {
-		getCommaSeparatedParameterTypes(broadcast.outputParameters)
+	def String getCommaSeparatedOutputParameterTypes(FBroadcast broadcast, boolean generateVersion) {
+		getCommaSeparatedParameterTypes(broadcast.outputParameters, generateVersion)
 	}
 
-	private def String getCommaSeparatedParameterTypes(Iterable<FArgument> arguments) {
+	private def String getCommaSeparatedParameterTypes(Iterable<FArgument> arguments, boolean generateVersion) {
 		val commaSeparatedParams = new StringBuilder();
-		for (parameter : arguments.mapParametersToTypeName) {
+		for (parameter : arguments.mapParametersToTypeName(generateVersion)) {
 			commaSeparatedParams.append(parameter);
 			commaSeparatedParams.append(", ");
 		}
@@ -126,7 +126,8 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 	private def getCommaSeperatedTypedParameterList(
 		Iterable<FArgument> arguments,
 		boolean constParameters,
-		boolean parameterAsReference
+		boolean parameterAsReference,
+		boolean generateVersion
 	) {
 		val returnStringBuilder = new StringBuilder();
 		var firstElement = true;
@@ -141,7 +142,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 				returnStringBuilder.append("const ");
 			}
 
-			returnStringBuilder.append(argument.typeName);
+			returnStringBuilder.append(argument.getTypeName(generateVersion));
 
 			if (parameterAsReference) {
 				returnStringBuilder.append("&");
@@ -159,27 +160,27 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		}
 	}
 
-	def getCommaSeperatedTypedOutputParameterList(FMethod method) {
-		getCommaSeperatedTypedParameterList(method.outputParameters, false, true)
+	def getCommaSeperatedTypedOutputParameterList(FMethod method, boolean generateVersion) {
+		getCommaSeperatedTypedParameterList(method.outputParameters, false, true, generateVersion)
 	}
 
-	def getCommaSeperatedTypedConstOutputParameterList(FMethod method) {
-		getCommaSeperatedTypedParameterList(method.outputParameters, true, true)
+	def getCommaSeperatedTypedConstOutputParameterList(FMethod method, boolean generateVersion) {
+		getCommaSeperatedTypedParameterList(method.outputParameters, true, true, generateVersion)
 	}
 
-	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast) {
-		getCommaSeperatedTypedParameterList(broadcast.outputParameters, false, true)
+	def getCommaSeperatedTypedOutputParameterList(FBroadcast broadcast, boolean generateVersion) {
+		getCommaSeperatedTypedParameterList(broadcast.outputParameters, false, true, generateVersion)
 	}
 
-	def getCommaSeperatedTypedConstOutputParameterList(FBroadcast broadcast) {
-		getCommaSeperatedTypedParameterList(broadcast.outputParameters, true, true)
+	def getCommaSeperatedTypedConstOutputParameterList(FBroadcast broadcast, boolean generateVersion) {
+		getCommaSeperatedTypedParameterList(broadcast.outputParameters, true, true, generateVersion)
 	}
 
-	def getCommaSeperatedTypedConstInputParameterList(FMethod method) {
-		getCommaSeperatedTypedParameterList(method.inputParameters, true, true)
+	def getCommaSeperatedTypedConstInputParameterList(FMethod method, boolean generateVersion) {
+		getCommaSeperatedTypedParameterList(method.inputParameters, true, true, generateVersion)
 	}
 
-	def getDefaultValue(FTypedElement element) {
+	def getDefaultValue(FTypedElement element, boolean generateVersion) {
 		//default values are not supported (currently) by the Franca IDL 
 		/*if (member.getDEFAULTVALUE()!==null && !member.getDEFAULTVALUE().isEmpty()){
 			if (isEnum(member)){
@@ -206,7 +207,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		} else if (isArray(element)){
 			return "";
 		} else if (isEnum(element.type)){
-			val path = element.type.enumType.buildPackagePath("::", true) + "::" + element.type.enumType.joynrName;
+			val path = element.type.enumType.buildPackagePath("::", true, generateVersion) + "::" + element.type.enumType.joynrName;
 			return path + "::" + element.type.enumType.enumerators.get(0).joynrName;
 		} else if (!primitiveDataTypeDefaultMap.containsKey(element.type.predefined)) {
  			return "NaN";
@@ -263,7 +264,7 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	abstract def String getIncludeForArray()
 
-	abstract def String getIncludeOf(FType type)
+	abstract def String getIncludeOf(FType type, boolean generateVersioning)
 
 	abstract def String getIncludeForString()
 
@@ -274,13 +275,13 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		return super.getDatatype(type)
 	}
 
-	def Set<String> getDataTypeIncludesFor(FInterface serviceInterface){
+	def Set<String> getDataTypeIncludesFor(FInterface serviceInterface, boolean generateVersioning){
 		val includeSet = new HashSet<String>();
 		val selector = TypeSelector::defaultTypeSelector
 		selector.errorTypes(true)
 		selector.typeDefs(true)
 		for(datatype: getAllComplexTypes(serviceInterface,selector)){
-			includeSet.add(datatype.includeOf);
+			includeSet.add(datatype.getIncludeOf(generateVersioning));
 		}
 
 		includeSet.addAll(serviceInterface.allPrimitiveTypes.includesFor)
@@ -307,11 +308,11 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 		return classNameSet
 	}
 
-	def Set<String> getBroadcastFilterParametersIncludes(FInterface serviceInterface){
+	def Set<String> getBroadcastFilterParametersIncludes(FInterface serviceInterface, boolean generateVersion){
 		val includeSet = new HashSet<String>();
 		for (broadcast: serviceInterface.broadcasts) {
 			if (broadcast.selective) {
-				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast));
+				includeSet.add(getIncludeOfFilterParametersContainer(serviceInterface, broadcast, generateVersion));
 			}
 		}
 		return includeSet
@@ -320,8 +321,8 @@ abstract class CppTypeUtil extends AbstractTypeUtil {
 
 	abstract def String getGenerationTypeName (FType datatype);
 
-	def getTypeNameOfContainingClass (FType datatype) {
-		val packagepath = buildPackagePath(datatype, "::", true);
+	def getTypeNameOfContainingClass (FType datatype, boolean generateVersion) {
+		val packagepath = buildPackagePath(datatype, "::", true, generateVersion);
 		return  packagepath + "::" + datatype.generationTypeName
 	}
 }

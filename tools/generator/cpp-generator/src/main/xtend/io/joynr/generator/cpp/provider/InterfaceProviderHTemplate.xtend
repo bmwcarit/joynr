@@ -38,10 +38,10 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 	@Inject extension InterfaceUtil
 	@Inject extension MethodUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"Provider_h").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -55,18 +55,18 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 #include "joynr/PrivateCopyAssign.h"
 
 #include "joynr/IJoynrProvider.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName».h"
 #include "joynr/RequestCallerFactory.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»RequestCaller.h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 «getDllExportIncludeStatement()»
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 /**
  * @brief Provider class for interface «interfaceName»
@@ -113,7 +113,7 @@ public:
 			 */
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
-							const «attribute.typeName»&
+							const «attribute.getTypeName(generateVersion)»&
 					)> onSuccess,
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			) = 0;
@@ -128,7 +128,7 @@ public:
 			 «printCallbackDocumentation("")»
 			 */
 			virtual void set«attributeName.toFirstUpper»(
-					const «attribute.typeName»& «attributeName»,
+					const «attribute.getTypeName(generateVersion)»& «attributeName»,
 					std::function<void()> onSuccess,
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			) = 0;
@@ -141,7 +141,7 @@ public:
 			 * @param «attributeName» the new attribute value
 			 */
 			virtual void «attributeName»Changed(
-					const «attribute.typeName»& «attributeName»
+					const «attribute.getTypeName(generateVersion)»& «attributeName»
 			) = 0;
 		«ENDIF»
 
@@ -151,8 +151,8 @@ public:
 	«ENDIF»
 	«val methodToErrorEnumName = francaIntf.methodToErrorEnumName»
 	«FOR method : francaIntf.methods»
-		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
-		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
+		«val outputTypedParamList = method.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»
+		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method, generateVersion)»
 		/**
 		 * @brief Implementation of the Franca method «method.joynrName»
 		 *
@@ -178,10 +178,10 @@ public:
 					«ENDIF»
 					«IF method.hasErrorEnum»
 						«IF method.errors !== null»
-							«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+							«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::", generateVersion)»
 							std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
 						«ELSE»
-							std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+							std::function<void (const «method.errorEnum.getTypeName(generateVersion)»& errorEnum)> onError
 						«ENDIF»
 					«ELSE»
 						std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
@@ -209,7 +209,7 @@ public:
 		 */
 		virtual void fire«broadcastName.toFirstUpper»(
 				«IF !broadcast.outputParameters.empty»
-					«broadcast.commaSeperatedTypedConstOutputParameterList»«IF !broadcast.selective»,«ENDIF»
+					«broadcast.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»«IF !broadcast.selective»,«ENDIF»
 				«ENDIF»
 				«IF !broadcast.selective»
 					const std::vector<std::string>& partitions = std::vector<std::string>()
@@ -220,9 +220,9 @@ public:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»Provider);
 };
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 
-«var packagePrefix = getPackagePathWithJoynrPrefix(francaIntf, "::")»
+«var packagePrefix = getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»
 
 namespace joynr {
 

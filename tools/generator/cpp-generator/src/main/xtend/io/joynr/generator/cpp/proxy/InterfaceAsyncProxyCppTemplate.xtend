@@ -36,23 +36,23 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 	@Inject extension MethodUtil
 	@Inject extension CppInterfaceUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«asyncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«asyncClassName».h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include "joynr/Future.h"
 #include "joynr/exceptions/JoynrException.h"
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 «asyncClassName»::«asyncClassName»(
 		std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
 		std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
@@ -67,14 +67,14 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 
 «FOR attribute: getAttributes(francaIntf)»
 	«var attributeName = attribute.joynrName»
-	«var attributeType = attribute.typeName»
+	«var attributeType = attribute.getTypeName(generateVersion)»
 	«IF attribute.readable»
 		«var getAttribute = "get" + attributeName.toFirstUpper»
 		/*
 		 * «getAttribute»
 		 */
 
-		«produceAsyncGetterSignature(attribute, asyncClassName)»
+		«produceAsyncGetterSignature(attribute, asyncClassName, generateVersion)»
 		{
 			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
@@ -107,7 +107,7 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 		/*
 		 * «setAttribute»
 		 */
-		«produceAsyncSetterSignature(attribute, asyncClassName)»
+		«produceAsyncSetterSignature(attribute, asyncClassName, generateVersion)»
 		{
 			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
@@ -139,12 +139,12 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 «FOR method: getMethods(francaIntf)»
 	«IF !method.fireAndForget»
 		«var methodName = method.joynrName»
-		«var outputParameters = method.commaSeparatedOutputParameterTypes»
+		«var outputParameters = method.getCommaSeparatedOutputParameterTypes(generateVersion)»
 		«var inputParamList = getCommaSeperatedUntypedInputParameterList(method)»
 		/*
 		 * «methodName»
 		 */
-		«produceAsyncMethodSignature(francaIntf, method, asyncClassName)»
+		«produceAsyncMethodSignature(francaIntf, method, asyncClassName, generateVersion)»
 		{
 			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
@@ -172,6 +172,6 @@ class InterfaceAsyncProxyCppTemplate extends InterfaceTemplate {
 		}
 	«ENDIF»
 «ENDFOR»
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }

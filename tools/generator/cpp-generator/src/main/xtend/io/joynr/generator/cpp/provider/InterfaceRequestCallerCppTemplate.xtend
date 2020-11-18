@@ -39,20 +39,20 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	@Inject extension InterfaceUtil
 	@Inject extension MethodUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «var interfaceName = francaIntf.joynrName»
 «warning()»
 #include <functional>
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
-«FOR datatype: getDataTypeIncludesFor(francaIntf)»
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»RequestCaller.h"
+«FOR datatype: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «datatype»
 «ENDFOR»
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»Provider.h"
 
-«getNamespaceStarter(francaIntf)»
-«interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> _provider)
+«getNamespaceStarter(francaIntf, generateVersion)»
+«interfaceName»RequestCaller::«interfaceName»RequestCaller(std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::«interfaceName»Provider> _provider)
 	: joynr::RequestCaller(«interfaceName»Provider::INTERFACE_NAME(), joynr::types::Version(_provider ? _provider->MAJOR_VERSION : 0, _provider ? _provider->MINOR_VERSION : 0)),
 	  provider(std::move(_provider))
 {
@@ -63,7 +63,7 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 «ENDIF»
 «FOR attribute : francaIntf.attributes»
 	«var attributeName = attribute.joynrName»
-	«val returnType = attribute.typeName»
+	«val returnType = attribute.getTypeName(generateVersion)»
 	«IF attribute.readable»
 		void «interfaceName»RequestCaller::get«attributeName.toFirstUpper»(
 				std::function<void(
@@ -120,8 +120,8 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	// methods
 «ENDIF»
 «FOR method : francaIntf.methods»
-	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
-	«val inputTypedParamList = method.commaSeperatedTypedConstInputParameterList»
+	«val outputTypedParamList = method.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»
+	«val inputTypedParamList = method.getCommaSeperatedTypedConstInputParameterList(generateVersion)»
 	«val inputUntypedParamList = getCommaSeperatedUntypedInputParameterList(method)»
 	«val methodName = method.joynrName»
 	void «interfaceName»RequestCaller::«methodName»(
@@ -143,7 +143,7 @@ class InterfaceRequestCallerCppTemplate extends InterfaceTemplate {
 	) {
 		«IF !method.fireAndForget»
 			«IF method.hasErrorEnum»
-				«val errorTypeName = getErrorTypeName(method, methodToErrorEnumName)»
+				«val errorTypeName = getErrorTypeName(method, methodToErrorEnumName, generateVersion)»
 				std::function<void (const «errorTypeName»::«nestedEnumName»&)> onErrorWrapper =
 						[onError] (const «errorTypeName»::«nestedEnumName»& errorEnum) {
 							std::string typeName = «errorTypeName»::getTypeName();
@@ -195,15 +195,15 @@ std::shared_ptr<IJoynrProvider> «interfaceName»RequestCaller::getProvider()
 	return provider;
 }
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 
-def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName) {
+def getErrorTypeName(FMethod method, Map<FMethod, String> methodToErrorEnumName, boolean generateVersion) {
 	if (method.errors !== null) {
-		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")
+		val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::", generateVersion)
 		packagePath + "::" + methodToErrorEnumName.get(method)
 	} else{
-		buildPackagePath(method.errorEnum, "::", true) + "::" + method.errorEnum.joynrName
+		buildPackagePath(method.errorEnum, "::", true, generateVersion) + "::" + method.errorEnum.joynrName
 	}
 }
 }

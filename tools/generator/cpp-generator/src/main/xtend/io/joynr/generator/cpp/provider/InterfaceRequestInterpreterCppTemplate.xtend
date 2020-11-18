@@ -37,15 +37,15 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 	@Inject extension MethodUtil
 	@Inject extension InterfaceUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
 «warning()»
 #include <functional>
 #include <tuple>
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestCaller.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»RequestInterpreter.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»RequestCaller.h"
 #include "joynr/Util.h"
 #include "joynr/Request.h"
 #include "joynr/OneWayRequest.h"
@@ -53,11 +53,11 @@ class InterfaceRequestInterpreterCppTemplate extends InterfaceTemplate {
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 «val requestCallerName = interfaceName.toFirstLower+"RequestCallerVar"»
 «val attributes = getAttributes(francaIntf)»
@@ -99,7 +99,7 @@ void «interfaceName»RequestInterpreter::execute(
 				if (methodName == "get«attributeName.toFirstUpper»" && paramTypes.size() == 0){
 					try {
 						auto requestCallerOnSuccess =
-								[onSuccess = std::move(onSuccess)](«attribute.typeName» «attributeName»){
+								[onSuccess = std::move(onSuccess)](«attribute.getTypeName(generateVersion)» «attributeName»){
 									BaseReply reply;
 									reply.setResponse(std::move(«attributeName»));
 									onSuccess(std::move(reply));
@@ -121,7 +121,7 @@ void «interfaceName»RequestInterpreter::execute(
 			«IF attribute.writable»
 				if (methodName == "set«attributeName.toFirstUpper»" && paramTypes.size() == 1){
 					try {
-						«attribute.typeName» typedInput«attributeName.toFirstUpper»;
+						«attribute.getTypeName(generateVersion)» typedInput«attributeName.toFirstUpper»;
 						request.getParams(typedInput«attributeName.toFirstUpper»);
 						auto requestCallerOnSuccess =
 								[onSuccess = std::move(onSuccess)] () {
@@ -134,7 +134,7 @@ void «interfaceName»RequestInterpreter::execute(
 																			std::move(requestCallerOnSuccess),
 																			onError);
 					} catch (const std::exception& exception) {
-						const std::string errorMessage = "Unexpected exception occurred in attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute)»): " + std::string(exception.what());
+						const std::string errorMessage = "Unexpected exception occurred in attribute setter set«attributeName.toFirstUpper» («getJoynrTypeName(attribute, generateVersion)»): " + std::string(exception.what());
 						JOYNR_LOG_ERROR(logger(), errorMessage);
 						onError(
 							std::make_shared<exceptions::MethodInvocationException>(
@@ -153,10 +153,10 @@ void «interfaceName»RequestInterpreter::execute(
 			«var iterator = -1»
 			if (methodName == "«methodName»" && paramTypes.size() == «inputParams.size»
 				«FOR input : inputParams»
-					&& paramTypes.at(«iterator=iterator+1») == "«input.joynrTypeName»"
+					&& paramTypes.at(«iterator=iterator+1») == "«input.getJoynrTypeName(generateVersion)»"
 				«ENDFOR»
 			) {
-				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method)»
+				«val outputTypedParamList = getCommaSeperatedTypedConstOutputParameterList(method, generateVersion)»
 				auto requestCallerOnSuccess =
 						[onSuccess = std::move(onSuccess)](«outputTypedParamList»){
 							BaseReply reply;
@@ -172,9 +172,9 @@ void «interfaceName»RequestInterpreter::execute(
 				«val inputName = input.joynrName»
 				«val inputType = input.type.resolveTypeDef»
 				«IF input.isArray»
-				std::vector<«inputType.typeName»> «inputName»;
+				std::vector<«inputType.getTypeName(generateVersion)»> «inputName»;
 				«ELSE»
-				«inputType.typeName» «inputName»;
+				«inputType.getTypeName(generateVersion)» «inputName»;
 				«ENDIF»
 				«ENDFOR»
 				try {
@@ -228,16 +228,16 @@ void «interfaceName»RequestInterpreter::execute(
 			«var iterator = -1»
 			if (methodName == "«methodName»" && paramTypes.size() == «inputParams.size»
 				«FOR input : inputParams»
-					&& paramTypes.at(«iterator=iterator+1») == "«input.joynrTypeName»"
+					&& paramTypes.at(«iterator=iterator+1») == "«input.getJoynrTypeName(generateVersion)»"
 				«ENDFOR»
 			){
 				«FOR input : inputParams»
 				«val inputName = input.joynrName»
 				«val inputType = input.type.resolveTypeDef»
 				«IF input.isArray»
-				std::vector<«inputType.typeName»> «inputName»;
+				std::vector<«inputType.getTypeName(generateVersion)»> «inputName»;
 				«ELSE»
-				«inputType.typeName» «inputName»;
+				«inputType.getTypeName(generateVersion)» «inputName»;
 				«ENDIF»
 				«ENDFOR»
 				try {
@@ -256,6 +256,6 @@ void «interfaceName»RequestInterpreter::execute(
 
 	JOYNR_LOG_WARN(logger(), "unknown method name for interface «interfaceName»: {}", request.getMethodName());
 }
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }

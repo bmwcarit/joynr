@@ -34,36 +34,36 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	@Inject @Named("generationId")
 	String dllExportName;
 
-	def String getNamespaceStarter(FInterface interfaceType) {
-		getNamespaceStarter(getPackageNames(interfaceType));
+	def String getNamespaceStarter(FInterface interfaceType, boolean generateVersion) {
+		getNamespaceStarter(getPackageNames(interfaceType, generateVersion));
 	}
 
-	def String getNamespaceStarter(FType datatype) {
-		return getNamespaceStarter(datatype, true);
+	def String getNamespaceStarter(FType datatype, boolean generateVersion) {
+		return getNamespaceStarter(datatype, true, generateVersion);
 	}
 
-	def String[] getNamespaces(FType datatype, boolean includeTypeCollection) {
-				var String packagePath = datatype.getPackagePathWithoutJoynrPrefix(".");
+	def String[] getNamespaces(FType datatype, boolean includeTypeCollection, boolean generateVersion) {
+				var String packagePath = datatype.getPackagePathWithoutJoynrPrefix(".", generateVersion);
 		if (includeTypeCollection && datatype.isPartOfNamedTypeCollection) {
 			packagePath += "." + datatype.typeCollectionName;
 		}
 		return packagePath.split("\\.");
 	}
 
-	def String getNamespaceStarter(FType datatype, boolean includeTypeCollection) {
-		return getNamespaceStarter(Iterators::forArray(getNamespaces(datatype, includeTypeCollection)));
+	def String getNamespaceStarter(FType datatype, boolean includeTypeCollection, boolean generateVersion) {
+		return getNamespaceStarter(Iterators::forArray(getNamespaces(datatype, includeTypeCollection, generateVersion)));
 	}
 
-	def String getNamespaceEnder(FInterface interfaceType) {
-		getNameSpaceEnderFromPackageList(getPackageNames(interfaceType));
+	def String getNamespaceEnder(FInterface interfaceType, boolean generateVersion) {
+		getNameSpaceEnderFromPackageList(getPackageNames(interfaceType, generateVersion));
 	}
 
-	def String getNamespaceEnder(FType datatype, boolean includeTypeCollection) {
-		return getNameSpaceEnderFromPackageList(Iterators::forArray(getNamespaces(datatype, includeTypeCollection)));
+	def String getNamespaceEnder(FType datatype, boolean includeTypeCollection, boolean generateVersion) {
+		return getNameSpaceEnderFromPackageList(Iterators::forArray(getNamespaces(datatype, includeTypeCollection, generateVersion)));
 	}
 
-	def String getNamespaceEnder(FType datatype) {
-		getNamespaceEnder(datatype, true);
+	def String getNamespaceEnder(FType datatype, boolean generateVersion) {
+		getNamespaceEnder(datatype, true, generateVersion);
 	}
 
 	def private String getNamespaceStarter(Iterator<String> packageList){
@@ -153,14 +153,14 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 		return "";
 	}
 
-	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast) {
-		return "\"" + getPackagePathWithJoynrPrefix(serviceInterface, "/")
+	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast, boolean generateVersion) {
+		return "\"" + getPackagePathWithJoynrPrefix(serviceInterface, "/", generateVersion)
 			+ "/" + serviceInterface.name.toFirstUpper
 			+ broadcast.joynrName.toFirstUpper
 			+ "BroadcastFilterParameters.h\""
 	}
 
-	def getPackageSourceDirectory(FModelElement fModelElement) {
-		return super.getPackageName(fModelElement).replace('.', File::separator)
+	def getPackageSourceDirectory(FModelElement fModelElement, boolean generateVersion) {
+		return super.getPackageName(fModelElement, generateVersion).replace('.', File::separator)
 	}
 }

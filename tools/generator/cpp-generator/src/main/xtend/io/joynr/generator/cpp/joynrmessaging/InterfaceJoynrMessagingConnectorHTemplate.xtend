@@ -37,10 +37,10 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension InterfaceSubscriptionUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"JoynrMessagingConnector_h").toUpperCase»
 «warning()»
 
@@ -48,13 +48,13 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 #include <functional>
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName»Connector.h"
 #include "joynr/AbstractJoynrMessagingConnector.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/SubscriptionQos.h"
@@ -89,14 +89,14 @@ namespace exceptions
 } // namespace exceptions
 }
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 
 /** @brief JoynrMessagingConnector for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
 private:
 	«FOR attribute: getAttributes(francaIntf)»
-		«val returnType = attribute.typeName»
+		«val returnType = attribute.getTypeName(generateVersion)»
 		«val attributeName = attribute.joynrName»
 		«IF attribute.notifiable»
 			/**
@@ -116,7 +116,7 @@ private:
 		«ENDIF»
 	«ENDFOR»
 	«FOR broadcast: francaIntf.broadcasts»
-		«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
+		«val returnTypes = broadcast.getCommaSeparatedOutputParameterTypes(generateVersion)»
 		«val broadcastName = broadcast.joynrName»
 		/**
 		 * @brief subscribes to broadcast «broadcastName.toFirstUpper»
@@ -159,20 +159,20 @@ public:
 	/** @brief Destructor */
 	~«interfaceName»JoynrMessagingConnector() override = default;
 
-	«produceSyncGetterDeclarations(francaIntf, false)»
-	«produceAsyncGetterDeclarations(francaIntf, false)»
-	«produceSyncSetterDeclarations(francaIntf, false)»
-	«produceAsyncSetterDeclarations(francaIntf, false)»
+	«produceSyncGetterDeclarations(francaIntf, false, generateVersion)»
+	«produceAsyncGetterDeclarations(francaIntf, false, generateVersion)»
+	«produceSyncSetterDeclarations(francaIntf, false, generateVersion)»
+	«produceAsyncSetterDeclarations(francaIntf, false, generateVersion)»
 
-	«produceSyncMethodDeclarations(francaIntf, false)»
-	«produceAsyncMethodDeclarations(francaIntf, false, true)»
-	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
+	«produceSyncMethodDeclarations(francaIntf, false, generateVersion)»
+	«produceAsyncMethodDeclarations(francaIntf, false, true, generateVersion)»
+	«produceFireAndForgetMethodDeclarations(francaIntf, false, generateVersion)»
 
-	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false, true)»
+	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false, true, generateVersion)»
 };
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 
-«var packagePrefix = getPackagePathWithJoynrPrefix(francaIntf, "::")»
+«var packagePrefix = getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»
 
 namespace joynr {
 

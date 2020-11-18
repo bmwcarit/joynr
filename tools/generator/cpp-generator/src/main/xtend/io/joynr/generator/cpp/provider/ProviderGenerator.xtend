@@ -40,64 +40,73 @@ class ProviderGenerator {
 	){
 
 		for(serviceInterface: model.interfaces){
-			val sourcePath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator;
-			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator;
+			val generateVersioning = !commentContainsNoVersionGeneration(serviceInterface)
+			val sourcePath = sourceContainerPath + getPackageSourceDirectory(serviceInterface, generateVersioning) + File::separator;
+			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersioning) + File::separator;
 			var serviceName = serviceInterface.joynrName
 
 			var interfaceRequestInterpreterHTemplate = templateFactory.createInterfaceRequestInterpreterHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "RequestInterpreter.h",
-				interfaceRequestInterpreterHTemplate
+				interfaceRequestInterpreterHTemplate,
+				generateVersioning
 			);
 
 			var interfaceRequestInterpreterCppTemplate = templateFactory.createInterfaceRequestInterpreterCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "RequestInterpreter.cpp",
-				interfaceRequestInterpreterCppTemplate
+				interfaceRequestInterpreterCppTemplate,
+				generateVersioning
 			);
 
 			var interfaceRequestCallerHTemplate = templateFactory.createInterfaceRequestCallerHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "RequestCaller.h",
-				interfaceRequestCallerHTemplate
+				interfaceRequestCallerHTemplate,
+				generateVersioning
 			);
 
 			var interfaceRequestCallerCppTemplate = templateFactory.createInterfaceRequestCallerCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "RequestCaller.cpp",
-				interfaceRequestCallerCppTemplate
+				interfaceRequestCallerCppTemplate,
+				generateVersioning
 			);
 
 			var interfaceProviderCppTemplate = templateFactory.createInterfaceProviderCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "Provider.cpp",
-				interfaceProviderCppTemplate
+				interfaceProviderCppTemplate,
+				generateVersioning
 			);
 
 			var interfaceProviderHTemplate = templateFactory.createInterfaceProviderHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "Provider.h",
-				interfaceProviderHTemplate
+				interfaceProviderHTemplate,
+				generateVersioning
 			);
 
 			var interfaceAbstractProviderCppTemplate = templateFactory.createInterfaceAbstractProviderCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcePath + serviceName + "AbstractProvider.cpp",
-				interfaceAbstractProviderCppTemplate
+				interfaceAbstractProviderCppTemplate,
+				generateVersioning
 			);
 
 			var interfaceAbstractProviderHTemplate = templateFactory.createInterfaceAbstractProviderHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerPath + serviceName + "AbstractProvider.h",
-				interfaceAbstractProviderHTemplate
+				interfaceAbstractProviderHTemplate,
+				generateVersioning
 			);
 		}
 	}

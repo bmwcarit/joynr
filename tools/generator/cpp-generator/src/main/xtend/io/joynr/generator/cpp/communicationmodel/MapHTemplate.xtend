@@ -43,10 +43,10 @@ class MapHTemplate extends MapTemplate {
 		super(type)
 	}
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val typeName = type.joynrName»
-«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_H").toUpperCase»
+«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true, generateVersion)+"_"+typeName+"_H").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
 #define «headerGuard»
@@ -62,25 +62,25 @@ class MapHTemplate extends MapTemplate {
 	#include «member»
 «ENDFOR»
 «FOR member: typeDependencies.filter(typeof(FType))»
-	#include «member.includeOf»
+	#include «member.getIncludeOf(generateVersion)»
 «ENDFOR»
 
 #include "joynr/serializer/Serializer.h"
 
-«getNamespaceStarter(type, true)»
+«getNamespaceStarter(type, true, generateVersion)»
 
-«type.typeDefinition»
+«type.getTypeDefinition(generateVersion)»
 
-«getNamespaceEnder(type, true)»
+«getNamespaceEnder(type, true, generateVersion)»
 
-MUESLI_REGISTER_TYPE(«type.typeName», "«type.typeName.replace("::", ".")»")
+MUESLI_REGISTER_TYPE(«type.getTypeName(generateVersion)», "«type.getTypeName(generateVersion).replace("::", ".")»")
 
 #endif // «headerGuard»
 '''
 
-private def getTypeDefinition(FMapType type)
+private def getTypeDefinition(FMapType type, boolean generateVersion)
 '''
-«val mapType = "std::map<"  + type.keyType.typeName + ", " + type.valueType.typeName + ">"»
+«val mapType = "std::map<"  + type.keyType.getTypeName(generateVersion) + ", " + type.valueType.getTypeName(generateVersion) + ">"»
 /**
  * @brief Map class «type.joynrName»
  *

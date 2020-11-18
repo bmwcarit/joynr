@@ -30,7 +30,7 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension InterfaceUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
@@ -39,9 +39,9 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 «val fireAndForgetClassName = interfaceName + "FireAndForgetProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«className».h"
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 «className»::«className»(
 		std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
 		std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
@@ -56,6 +56,6 @@ class InterfaceProxyCppTemplate extends InterfaceTemplate {
 {
 }
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }

@@ -43,10 +43,10 @@ class DefaultInterfaceProviderHTemplate extends InterfaceTemplate{
 
 	@Inject extension JoynrCppGeneratorExtensions
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_Default"+interfaceName+"Provider_h").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -55,18 +55,18 @@ class DefaultInterfaceProviderHTemplate extends InterfaceTemplate{
 #include <functional>
 
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName».h"
 #include "joynr/Logger.h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»AbstractProvider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»AbstractProvider.h"
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
-class «getDllExportMacro()» Default«interfaceName»Provider : public «getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»AbstractProvider {
+class «getDllExportMacro()» Default«interfaceName»Provider : public «getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::«interfaceName»AbstractProvider {
 
 public:
 	Default«interfaceName»Provider();
@@ -81,14 +81,14 @@ public:
 		«IF attribute.readable»
 			void get«attributeName.toFirstUpper»(
 					std::function<void(
-							const «attribute.typeName»&
+							const «attribute.getTypeName(generateVersion)»&
 					)> onSuccess,
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			) override;
 		«ENDIF»
 		«IF attribute.writable»
 			void set«attributeName.toFirstUpper»(
-					const «attribute.typeName»& _«attributeName»,
+					const «attribute.getTypeName(generateVersion)»& _«attributeName»,
 					std::function<void()> onSuccess,
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 			) override;
@@ -100,8 +100,8 @@ public:
 		// methods
 	«ENDIF»
 	«FOR method : francaIntf.methods»
-		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
-		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
+		«val outputTypedParamList = method.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»
+		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method, generateVersion)»
 		void «method.joynrName»(
 				«IF !method.inputParameters.empty»
 					«inputTypedParamList»«IF !method.fireAndForget»,«ENDIF»
@@ -116,10 +116,10 @@ public:
 					«ENDIF»
 					«IF method.hasErrorEnum»
 						«IF method.errors !== null»
-							«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+							«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::", generateVersion)»
 							std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
 						«ELSE»
-							std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+							std::function<void (const «method.errorEnum.getTypeName(generateVersion)»& errorEnum)> onError
 						«ENDIF»
 					«ELSE»
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
@@ -130,7 +130,7 @@ public:
 	«ENDFOR»
 protected:
 	«FOR attribute : getAttributes(francaIntf)»
-		«attribute.typeName» «attribute.joynrName»;
+		«attribute.getTypeName(generateVersion)» «attribute.joynrName»;
 	«ENDFOR»
 
 private:
@@ -138,7 +138,7 @@ private:
 
 };
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 
 #endif // «headerGuard»
 '''

@@ -33,23 +33,23 @@ class InterfaceAbstractProviderCppTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension AttributeUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «warning()»
 «val interfaceName = francaIntf.joynrName»
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»AbstractProvider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»AbstractProvider.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»RequestInterpreter.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»RequestInterpreter.h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
 
 «FOR broadcast: francaIntf.broadcasts.filter[selective]»
-	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«getBroadcastFilterClassName(broadcast)».h"
+	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«getBroadcastFilterClassName(broadcast)».h"
 «ENDFOR»
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 «interfaceName»AbstractProvider::«interfaceName»AbstractProvider()
 «IF hasSelectiveBroadcast»
 	:
@@ -73,7 +73,7 @@ const std::string& «interfaceName»AbstractProvider::getInterfaceName() const {
 	«IF attribute.notifiable»
 		«var attributeName = attribute.joynrName»
 		void «interfaceName»AbstractProvider::«attributeName»Changed(
-				const «attribute.typeName»& «attributeName»
+				const «attribute.getTypeName(generateVersion)»& «attributeName»
 		) {
 			onAttributeValueChanged("«attributeName»",«attributeName»);
 		}
@@ -84,7 +84,7 @@ const std::string& «interfaceName»AbstractProvider::getInterfaceName() const {
 	«val broadcastName = broadcast.joynrName»
 	void «interfaceName»AbstractProvider::fire«broadcastName.toFirstUpper»(
 			«IF !broadcast.outputParameters.empty»
-				«broadcast.commaSeperatedTypedConstOutputParameterList»«IF !broadcast.selective»,«ENDIF»
+				«broadcast.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»«IF !broadcast.selective»,«ENDIF»
 			«ENDIF»
 			«IF !broadcast.selective»
 				const std::vector<std::string>& partitions
@@ -118,6 +118,6 @@ const std::string& «interfaceName»AbstractProvider::getInterfaceName() const {
 		}
 	«ENDIF»
 «ENDFOR»
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }

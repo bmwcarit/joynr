@@ -99,29 +99,29 @@ class InterfaceSubscriptionUtil {
  */
 '''
 
-	def produceSubscribeToAttributeSignature(FAttribute attribute, boolean updateSubscription, String className)
+	def produceSubscribeToAttributeSignature(FAttribute attribute, boolean updateSubscription, String className, boolean generateVersion)
 '''
-«val returnType = attribute.typeName»
+«val returnType = attribute.getTypeName(generateVersion)»
 std::shared_ptr<joynr::Future<std::string>> «IF className !== null»«className»::«ENDIF»subscribeTo«attribute.joynrName.toFirstUpper»(
 			std::shared_ptr<joynr::ISubscriptionListener<«returnType»> > subscriptionListener,
 			std::shared_ptr<joynr::SubscriptionQos> subscriptionQos«IF updateSubscription»,
 			const std::string& subscriptionId«ENDIF»)
 '''
 
-	def produceSubscribeToAttributeSignature(FAttribute attribute) {
-		return produceSubscribeToAttributeSignature(attribute, false, null)
+	def produceSubscribeToAttributeSignature(FAttribute attribute, boolean generateVersion) {
+		return produceSubscribeToAttributeSignature(attribute, false, null, generateVersion)
 	}
 
-	def produceSubscribeToAttributeSignature(FAttribute attribute, String className) {
-		return produceSubscribeToAttributeSignature(attribute, false, className)
+	def produceSubscribeToAttributeSignature(FAttribute attribute, String className, boolean generateVersion) {
+		return produceSubscribeToAttributeSignature(attribute, false, className, generateVersion)
 	}
 
-	def produceUpdateAttributeSubscriptionSignature(FAttribute attribute) {
-		return produceSubscribeToAttributeSignature(attribute, true, null)
+	def produceUpdateAttributeSubscriptionSignature(FAttribute attribute, boolean generateVersion) {
+		return produceSubscribeToAttributeSignature(attribute, true, null, generateVersion)
 	}
 
-	def produceUpdateAttributeSubscriptionSignature(FAttribute attribute, String className) {
-		return produceSubscribeToAttributeSignature(attribute, true, className)
+	def produceUpdateAttributeSubscriptionSignature(FAttribute attribute, String className, boolean generateVersion) {
+		return produceSubscribeToAttributeSignature(attribute, true, className, generateVersion)
 	}
 
 	def produceUnsubscribeFromAttributeSignature(FAttribute attribute, String className)
@@ -133,9 +133,9 @@ void «IF className !== null»«className»::«ENDIF»unsubscribeFrom«attribute
 		return produceUnsubscribeFromAttributeSignature(attribute, null)
 	}
 
-	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean updateSubscription, String className, boolean hTemplate)
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean updateSubscription, String className, boolean hTemplate, boolean generateVersion)
 '''
-«val returnTypes = broadcast.commaSeparatedOutputParameterTypes»
+«val returnTypes = broadcast.getCommaSeparatedOutputParameterTypes(generateVersion)»
 std::shared_ptr<joynr::Future<std::string>> «IF className !== null»«className»::«ENDIF»subscribeTo«broadcast.joynrName.toFirstUpper»Broadcast(
 			«IF updateSubscription»
 			const std::string& subscriptionId,
@@ -152,29 +152,29 @@ std::shared_ptr<joynr::Future<std::string>> «IF className !== null»«className
 )
 '''
 
-	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, null, false)
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean generateVersion) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, null, false, generateVersion)
 	}
 
-	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean hTemplate) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, null, hTemplate)
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, boolean hTemplate, boolean generateVersion) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, null, hTemplate, generateVersion)
 	}
 
 
-	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, String className) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, className, false)
+	def produceSubscribeToBroadcastSignature(FBroadcast broadcast, FInterface serviceInterface, String className, boolean generateVersion) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, false, className, false, generateVersion)
 	}
 
-	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, null, false)
+	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface, boolean generateVersion) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, null, false, generateVersion)
 	}
 
-	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface, boolean hTemplate) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, null, hTemplate)
+	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface, boolean hTemplate, boolean generateVersion) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, null, hTemplate, generateVersion)
 	}
 
-	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface, String className) {
-		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, className, false)
+	def produceUpdateBroadcastSubscriptionSignature(FBroadcast broadcast, FInterface serviceInterface, String className, boolean generateVersion) {
+		return produceSubscribeToBroadcastSignature(broadcast, serviceInterface, true, className, false, generateVersion)
 	}
 
 	def produceUnsubscribeFromBroadcastSignature(FBroadcast broadcast, String className)
@@ -186,18 +186,18 @@ void «IF className !== null»«className»::«ENDIF»unsubscribeFrom«broadcast
 		produceUnsubscribeFromBroadcastSignature(broadcast, null)
 	}
 
-	def produceSubscribeUnsubscribeMethodDeclarations(FInterface serviceInterface, boolean pure) {
-		produceSubscribeUnsubscribeMethodDeclarations(serviceInterface, pure, false)
+	def produceSubscribeUnsubscribeMethodDeclarations(FInterface serviceInterface, boolean pure, boolean generateVersion) {
+		produceSubscribeUnsubscribeMethodDeclarations(serviceInterface, pure, false, generateVersion)
 	}
 
-	def produceSubscribeUnsubscribeMethodDeclarations(FInterface serviceInterface, boolean pure, boolean hTemplate)
+	def produceSubscribeUnsubscribeMethodDeclarations(FInterface serviceInterface, boolean pure, boolean hTemplate, boolean generateVersion)
 '''
 	«FOR attribute: getAttributes(serviceInterface).filter[attribute | attribute.notifiable]»
 		«produceSubscribeToAttributeComments(attribute)»
-		«IF pure»virtual «ENDIF»«produceSubscribeToAttributeSignature(attribute)» «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»«produceSubscribeToAttributeSignature(attribute, generateVersion)» «IF pure»= 0«ELSE»override«ENDIF»;
 
 		«produceUpdateAttributeSubscriptionComments(attribute)»
-		«IF pure»virtual «ENDIF»«produceUpdateAttributeSubscriptionSignature(attribute)» «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»«produceUpdateAttributeSubscriptionSignature(attribute, generateVersion)» «IF pure»= 0«ELSE»override«ENDIF»;
 
 		«produceUnsubscribeFromAttributeComments(attribute)»
 		«IF pure»virtual «ENDIF»«produceUnsubscribeFromAttributeSignature(attribute)» «IF pure»= 0«ELSE»override«ENDIF»;
@@ -205,10 +205,10 @@ void «IF className !== null»«className»::«ENDIF»unsubscribeFrom«broadcast
 	«ENDFOR»
 	«FOR broadcast: serviceInterface.broadcasts»
 		«produceSubscribeToBroadcastComments(broadcast)»
-		«IF pure»virtual «ENDIF»«produceSubscribeToBroadcastSignature(broadcast, serviceInterface, hTemplate)» «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»«produceSubscribeToBroadcastSignature(broadcast, serviceInterface, hTemplate, generateVersion)» «IF pure»= 0«ELSE»override«ENDIF»;
 
 		«produceUpdateBroadcastSubscriptionComments(broadcast)»
-		«IF pure»virtual «ENDIF»«produceUpdateBroadcastSubscriptionSignature(broadcast, serviceInterface, hTemplate)» «IF pure»= 0«ELSE»override«ENDIF»;
+		«IF pure»virtual «ENDIF»«produceUpdateBroadcastSubscriptionSignature(broadcast, serviceInterface, hTemplate, generateVersion)» «IF pure»= 0«ELSE»override«ENDIF»;
 
 		«produceUnsubscribeFromBroadcastComments(broadcast)»
 		«IF pure»virtual «ENDIF»«produceUnsubscribeFromBroadcastSignature(broadcast)» «IF pure»= 0«ELSE»override«ENDIF»;

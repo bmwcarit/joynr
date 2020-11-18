@@ -37,10 +37,10 @@ class TypeDefHTemplate implements TypeDefTemplate{
 
 	@Inject extension TemplateBase
 
-	override generate(FTypeDef type)
+	override generate(FTypeDef type, boolean generateVersion)
 '''
 «val typeName = type.joynrName»
-«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_H").toUpperCase»
+«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true, generateVersion)+"_"+typeName+"_H").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
 #define «headerGuard»
@@ -53,23 +53,23 @@ class TypeDefHTemplate implements TypeDefTemplate{
 	#include «member»
 «ENDFOR»
 «FOR member: typeDependencies.filter(typeof(FType))»
-	#include «member.includeOf»
+	#include «member.getIncludeOf(generateVersion)»
 «ENDFOR»
 
-«getNamespaceStarter(type, true)»
+«getNamespaceStarter(type, true, generateVersion)»
 
-«type.typeDefinition»
+«type.getTypeDefinition(generateVersion)»
 
-«getNamespaceEnder(type, true)»
+«getNamespaceEnder(type, true, generateVersion)»
 
 #endif // «headerGuard»
 '''
 
-private def getTypeDefinition(FTypeDef type)'''
+private def getTypeDefinition(FTypeDef type, boolean generateVersion)'''
 «IF isEnum(type)»
-	typedef «type.actualType.typeName.substring(0, type.actualType.typeName.length-6)» «type.joynrName»;
+	typedef «type.actualType.getTypeName(generateVersion).substring(0, type.actualType.getTypeName(generateVersion).length-6)» «type.joynrName»;
 «ELSE»
-	typedef «type.actualType.typeName» «type.joynrName»;
+	typedef «type.actualType.getTypeName(generateVersion)» «type.joynrName»;
 «ENDIF»
 '''
 

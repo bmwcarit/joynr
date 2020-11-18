@@ -35,21 +35,21 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 	@Inject extension MethodUtil
 	@Inject extension CppInterfaceUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val fireAndForgetClassName = interfaceName + "FireAndForgetProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«fireAndForgetClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«fireAndForgetClassName».h"
 
-«FOR datatype: getDataTypeIncludesFor(francaIntf)»
+«FOR datatype: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «datatype»
 «ENDFOR»
 
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 «fireAndForgetClassName»::«fireAndForgetClassName»(
 		std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
 		std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
@@ -67,7 +67,7 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 	/*
 	 * «methodName»
 	 */
-	«produceFireAndForgetMethodSignature(method, fireAndForgetClassName)»
+	«produceFireAndForgetMethodSignature(method, fireAndForgetClassName, generateVersion)»
 	{
 		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || (connector==nullptr)) {
@@ -89,6 +89,6 @@ class InterfaceFireAndForgetProxyCppTemplate extends InterfaceTemplate {
 		}
 	}
 «ENDFOR»
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }

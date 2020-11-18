@@ -41,22 +41,25 @@ class DefaultInterfaceProviderGenerator {
 	){
 
 		for(serviceInterface: fModel.interfaces){
-			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface) + File::separator
-			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
+			val generateVersioning = !commentContainsNoVersionGeneration(serviceInterface)
+			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface, generateVersioning) + File::separator
+			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersioning) + File::separator
 			val serviceName = serviceInterface.joynrName;
 
 			var defaultInterfaceProviderHTemplate = templateFactory.createDefaultInterfaceProviderHTemplate(serviceInterface)
 			generateFile(
 				headerFileSystem,
 				headerpath + "Default" + serviceName + "Provider.h",
-				defaultInterfaceProviderHTemplate
+				defaultInterfaceProviderHTemplate,
+				generateVersioning
 			);
 
 			var defaultInterfaceProviderCppTemplate = templateFactory.createDefaultInterfaceProviderCppTemplate(serviceInterface)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + "Default" + serviceName + "Provider.cpp",
-				defaultInterfaceProviderCppTemplate
+				defaultInterfaceProviderCppTemplate,
+				generateVersioning
 			);
 		}
 	}

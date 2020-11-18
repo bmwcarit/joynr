@@ -41,10 +41,10 @@ class TypeHTemplate extends CompoundTypeTemplate {
 		super(type)
 	}
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val typeName = type.joynrName»
-«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true)+"_"+typeName+"_H").toUpperCase»
+«val headerGuard = ("GENERATED_TYPE_"+getPackagePathWithJoynrPrefix(type, "_", true, generateVersion)+"_"+typeName+"_H").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
 #define «headerGuard»
@@ -62,18 +62,18 @@ class TypeHTemplate extends CompoundTypeTemplate {
 
 // include complex Datatype headers.
 «FOR member: type.typeDependencies»
-	#include «member.includeOf»
+	#include «member.getIncludeOf(generateVersion)»
 «ENDFOR»
 
 #include "joynr/serializer/Serializer.h"
 
-«getNamespaceStarter(type, true)»
+«getNamespaceStarter(type, true, generateVersion)»
 
 /**
 «appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).typeName»«ENDIF»{
+class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).getTypeName(generateVersion)»«ENDIF»{
 
 public:
 	/**
@@ -103,7 +103,7 @@ public:
 	 */
 	explicit «typeName»(
 			«FOR member: getMembersRecursive(type) SEPARATOR","»
-				const «member.typeName»& _«member.joynrName»
+				const «member.getTypeName(generateVersion)»& _«member.joynrName»
 			«ENDFOR»
 	);
 	«ENDIF»
@@ -192,9 +192,9 @@ public:
 	 * @return a copy of this object
 	 */
 	 «IF !hasExtendsDeclaration(type)»
-	 std::unique_ptr<«getRootType(type).typeName»> virtual clone() const;
+	 std::unique_ptr<«getRootType(type).getTypeName(generateVersion)»> virtual clone() const;
 	 «ELSE»
-	 std::unique_ptr<«getRootType(type).typeName»> clone() const override;
+	 std::unique_ptr<«getRootType(type).getTypeName(generateVersion)»> clone() const override;
 	 «ENDIF»
 	«ENDIF»
 
@@ -205,7 +205,7 @@ public:
 		 * @brief Gets «joynrName.toFirstUpper»
 		 * @return «appendDoxygenComment(member, "* ")»
 		 */
-		inline const «member.typeName»& get«joynrName.toFirstUpper»() const { return «joynrName»; }
+		inline const «member.getTypeName(generateVersion)»& get«joynrName.toFirstUpper»() const { return «joynrName»; }
 	«ENDFOR»
 
 	// setters
@@ -215,7 +215,7 @@ public:
 		 * @brief Sets «joynrName.toFirstUpper»
 		 «appendDoxygenParameter(member, "*")»
 		 */
-		inline void set«joynrName.toFirstUpper»(const «member.typeName»& _«joynrName») { this->«joynrName» = _«joynrName»; }
+		inline void set«joynrName.toFirstUpper»(const «member.getTypeName(generateVersion)»& _«joynrName») { this->«joynrName» = _«joynrName»; }
 	«ENDFOR»
 
 	/**
@@ -224,7 +224,7 @@ public:
 	 * @param maxUlps maximum number of ULPs (Units in the Last Place) that are tolerated when comparing to floating point values
 	 * @return true if objects are equal, false otherwise
 	 */
-	«IF isPolymorphic(type) && !hasExtendsDeclaration(type)»virtual «ENDIF»bool equals(const «IF isPolymorphic(type)»«getRootType(type).typeName»«ELSE»«typeName»«ENDIF»& other, std::size_t maxUlps) const«IF isPolymorphic(type) && hasExtendsDeclaration(type)» override«ENDIF»
+	«IF isPolymorphic(type) && !hasExtendsDeclaration(type)»virtual «ENDIF»bool equals(const «IF isPolymorphic(type)»«getRootType(type).getTypeName(generateVersion)»«ELSE»«typeName»«ENDIF»& other, std::size_t maxUlps) const«IF isPolymorphic(type) && hasExtendsDeclaration(type)» override«ENDIF»
 	{
 	«IF isPolymorphic(type)»
 		if (typeid(*this) != typeid(other)) {
@@ -248,7 +248,7 @@ protected:
 	 * @return true if objects are equal, false otherwise
 	 */
 	«IF hasExtendsDeclaration(type)»
-		bool equalsInternal(const «IF isPolymorphic(type)»«getRootType(type).typeName»& otherBase«ELSE»«typeName»& other«ENDIF», std::size_t maxUlps) const«IF isPolymorphic(type)» override«ENDIF»
+		bool equalsInternal(const «IF isPolymorphic(type)»«getRootType(type).getTypeName(generateVersion)»& otherBase«ELSE»«typeName»& other«ENDIF», std::size_t maxUlps) const«IF isPolymorphic(type)» override«ENDIF»
 		{
 			«IF getMembers(type).size > 0»
 				«IF isPolymorphic(type)»
@@ -289,7 +289,7 @@ private:
 
 	// members
 	«FOR member: getMembers(type)»
-		«member.typeName» «member.joynrName»;
+		«member.getTypeName(generateVersion)» «member.joynrName»;
 		«IF isEnum(member.type)»
 			std::string get«member.joynrName.toFirstUpper»Internal() const;
 		«ENDIF»
@@ -305,7 +305,7 @@ void serialize(Archive& archive, «typeName»& «serializeObjName»)
 «IF getMembers(type).size > 0 || hasExtendsDeclaration(type)»
 	archive(
 			«IF hasExtendsDeclaration(type)»
-			muesli::BaseClass<«getExtendedType(type).typeName»>(&«serializeObjName»)«IF type.members.size >0 »,«ENDIF»
+			muesli::BaseClass<«getExtendedType(type).getTypeName(generateVersion)»>(&«serializeObjName»)«IF type.members.size >0 »,«ENDIF»
 			«ENDIF»
 			«FOR member: type.members SEPARATOR ','»
 			muesli::make_nvp("«member.joynrName»", «serializeObjName».«member.joynrName»)
@@ -317,35 +317,35 @@ void serialize(Archive& archive, «typeName»& «serializeObjName»)
 «ENDIF»
 }
 
-«getNamespaceEnder(type, true)»
+«getNamespaceEnder(type, true, generateVersion)»
 
 namespace std {
 
 /**
- * @brief Function object that implements a hash function for «type.typeName».
+ * @brief Function object that implements a hash function for «type.getTypeName(generateVersion)».
  *
  * Used by the unordered associative containers std::unordered_set, std::unordered_multiset,
  * std::unordered_map, std::unordered_multimap as default hash function.
  */
 template<>
-struct hash<«type.typeName»> {
+struct hash<«type.getTypeName(generateVersion)»> {
 
 	/**
 	 * @brief method overriding default implementation of operator ()
 	 * @param «typeName.toFirstLower»Value the operators argument
 	 * @return the ordinal number representing the enum value
 	 */
-	std::size_t operator()(const «type.typeName»& «typeName.toFirstLower»Value) const {
-		return «type.buildPackagePath("::", true)»::hash_value(«typeName.toFirstLower»Value);
+	std::size_t operator()(const «type.getTypeName(generateVersion)»& «typeName.toFirstLower»Value) const {
+		return «type.buildPackagePath("::", true, generateVersion)»::hash_value(«typeName.toFirstLower»Value);
 	}
 };
 } // namespace std
 
-«val typeNameString = type.typeName.replace("::", ".")»
+«val typeNameString = type.getTypeName(generateVersion).replace("::", ".")»
 «IF type.hasExtendsDeclaration && isPolymorphic(type)»
-MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.typeName», «getExtendedType(type).typeName», "«typeNameString»")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(«type.getTypeName(generateVersion)», «getExtendedType(type).getTypeName(generateVersion)», "«typeNameString»")
 «ELSE»
-MUESLI_REGISTER_TYPE(«type.typeName», "«typeNameString»")
+MUESLI_REGISTER_TYPE(«type.getTypeName(generateVersion)», "«typeNameString»")
 «ENDIF»
 
 #endif // «headerGuard»

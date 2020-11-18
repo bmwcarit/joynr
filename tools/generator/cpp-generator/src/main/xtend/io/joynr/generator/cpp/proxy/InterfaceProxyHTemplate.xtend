@@ -36,13 +36,13 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension InterfaceUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val asyncClassName = interfaceName + "AsyncProxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"Proxy_h").toUpperCase»
 «warning()»
 
@@ -50,15 +50,15 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include <memory>
 
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«syncClassName».h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«asyncClassName».h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«syncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«asyncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName».h"
 
 #ifdef _MSC_VER
 	// Visual C++ gives a warning which is caused by diamond inheritance, but this is
@@ -67,7 +67,7 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 	#pragma warning( disable : 4250 )
 #endif
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 /**
  * @brief Proxy class for interface «interfaceName»
  *
@@ -99,14 +99,14 @@ public:
 		}
 
 		«produceSubscribeToAttributeComments(attribute)»
-		«produceSubscribeToAttributeSignature(attribute)» override {
+		«produceSubscribeToAttributeSignature(attribute, generateVersion)» override {
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos);
 		}
 
 		«produceUpdateAttributeSubscriptionComments(attribute)»
-		«produceUpdateAttributeSubscriptionSignature(attribute)» override{
+		«produceUpdateAttributeSubscriptionSignature(attribute, generateVersion)» override{
 			return «className»Base::subscribeTo«attributeName.toFirstUpper»(
 						subscriptionListener,
 						subscriptionQos,
@@ -126,7 +126,7 @@ public:
 		}
 
 		«produceSubscribeToBroadcastComments(broadcast)»
-		«produceSubscribeToBroadcastSignature(broadcast, francaIntf ,true)» override {
+		«produceSubscribeToBroadcastSignature(broadcast, francaIntf ,true, generateVersion)» override {
 			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(«IF broadcast.selective»
 						filterParameters,«ENDIF»
 						subscriptionListener,
@@ -139,7 +139,7 @@ public:
 		}
 
 		«produceUpdateBroadcastSubscriptionComments(broadcast)»
-		«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, true)» override {
+		«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, true, generateVersion)» override {
 			return «className»Base::subscribeTo«broadcastName.toFirstUpper»Broadcast(
 						subscriptionId,
 						«IF broadcast.selective»
@@ -181,7 +181,7 @@ public:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 
 #endif // «headerGuard»
 '''

@@ -32,11 +32,11 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 	@Inject extension InterfaceSubscriptionUtil
 	@Inject extension NamingUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "ProxyBase"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"ProxyBase_h").toUpperCase»
 «warning()»
 
@@ -44,14 +44,14 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include <memory>
 
 «getDllExportIncludeStatement()»
 #include "joynr/ProxyBase.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName»Connector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName»Connector.h"
 
 namespace joynr
 {
@@ -61,13 +61,13 @@ namespace types
 } // namespace types
 } // namespace joynr
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 /**
  * @brief Proxy base class for interface «interfaceName»
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«interfaceName»Subscription {
+class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::I«interfaceName»Subscription {
 public:
 	/**
 	 * @brief Parameterized constructor
@@ -91,7 +91,7 @@ public:
 			const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry
 	) override;
 
-	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false)»
+	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, false, generateVersion)»
 
 protected:
 	/** @brief The kind of connector */
@@ -100,7 +100,7 @@ protected:
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
 };
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 #endif // «headerGuard»
 '''
 }

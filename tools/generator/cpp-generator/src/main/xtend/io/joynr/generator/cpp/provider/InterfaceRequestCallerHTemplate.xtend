@@ -35,10 +35,10 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension MethodUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"RequestCaller_h").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -52,9 +52,9 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 #include "joynr/RequestCaller.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/Version.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName».h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 #include "joynr/Logger.h"
@@ -65,7 +65,7 @@ class UnicastBroadcastListener;
 class SubscriptionAttributeListener;
 } // namespace joynr
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 class «interfaceName»Provider;
 
@@ -95,7 +95,7 @@ public:
 			 */
 			virtual void get«attributeName.toFirstUpper»(
 					std::function<void(
-							const «attribute.typeName»&
+							const «attribute.getTypeName(generateVersion)»&
 					)>&& onSuccess,
 					std::function<void(
 							const std::shared_ptr<exceptions::ProviderRuntimeException>&
@@ -111,7 +111,7 @@ public:
 			 * @param onError A callback function to be called once the asynchronous computation fails. It must expect the exception.
 			 */
 			virtual void set«attributeName.toFirstUpper»(
-					const «attribute.typeName»& «attributeName»,
+					const «attribute.getTypeName(generateVersion)»& «attributeName»,
 					std::function<void()>&& onSuccess,
 					std::function<void(
 							const std::shared_ptr<exceptions::ProviderRuntimeException>&
@@ -124,8 +124,8 @@ public:
 		// methods
 	«ENDIF»
 	«FOR method : francaIntf.methods»
-		«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
-		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
+		«val outputTypedParamList = method.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»
+		«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method, generateVersion)»
 		/**
 		 * @brief Implementation of Franca method «method.joynrName»
 		 «IF !method.inputParameters.empty»
@@ -164,11 +164,11 @@ protected:
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«interfaceName»RequestCaller);
-	std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider> provider;
+	std::shared_ptr<«getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::«interfaceName»Provider> provider;
 	ADD_LOGGER(«interfaceName»RequestCaller)
 };
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 #endif // «headerGuard»
 '''
 }

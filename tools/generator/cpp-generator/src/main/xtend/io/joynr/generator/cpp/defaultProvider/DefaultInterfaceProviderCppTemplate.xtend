@@ -39,18 +39,18 @@ class DefaultInterfaceProviderCppTemplate extends InterfaceTemplate{
 
 	@Inject extension JoynrCppGeneratorExtensions
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
 «warning()»
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/Default«interfaceName»Provider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/Default«interfaceName»Provider.h"
 
 #include <chrono>
 #include <cstdint>
 #include <tuple>
 
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 Default«interfaceName»Provider::Default«interfaceName»Provider() :
 		«interfaceName»AbstractProvider()
@@ -71,7 +71,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 	«IF attribute.readable»
 		void Default«interfaceName»Provider::get«attributeName.toFirstUpper»(
 				std::function<void(
-						const «attribute.typeName»&
+						const «attribute.getTypeName(generateVersion)»&
 				)> onSuccess,
 				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
@@ -82,7 +82,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 	«ENDIF»
 	«IF attribute.writable»
 		void Default«interfaceName»Provider::set«attributeName.toFirstUpper»(
-				const «attribute.typeName»& _«attributeName»,
+				const «attribute.getTypeName(generateVersion)»& _«attributeName»,
 				std::function<void()> onSuccess,
 				std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
 		) {
@@ -101,9 +101,9 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 	// methods
 «ENDIF»
 «FOR method : francaIntf.methods»
-	«val outputTypedParamList = method.commaSeperatedTypedConstOutputParameterList»
+	«val outputTypedParamList = method.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»
 	«val outputUntypedParamList = getCommaSeperatedUntypedOutputParameterList(method)»
-	«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method)»
+	«val inputTypedParamList = getCommaSeperatedTypedConstInputParameterList(method, generateVersion)»
 	«val methodName = method.joynrName»
 	void Default«interfaceName»Provider::«method.joynrName»(
 			«IF !method.inputParameters.empty»
@@ -119,10 +119,10 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 				«ENDIF»
 				«IF method.hasErrorEnum»
 					«IF method.errors !== null»
-						«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::")»
+						«val packagePath = getPackagePathWithJoynrPrefix(method.errors, "::", generateVersion)»
 						std::function<void (const «packagePath»::«methodToErrorEnumName.get(method)»::«nestedEnumName»& errorEnum)> onError
 					«ELSE»
-						std::function<void (const «method.errorEnum.typeName»& errorEnum)> onError
+						std::function<void (const «method.errorEnum.getTypeName(generateVersion)»& errorEnum)> onError
 					«ENDIF»
 				«ELSE»
 					std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
@@ -136,7 +136,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 			std::ignore = «inputParameter.joynrName»;
 		«ENDFOR»
 		«FOR argument : method.outputParameters»
-			«val outputParamType = argument.typeName»
+			«val outputParamType = argument.getTypeName(generateVersion)»
 			«val argumentType = argument.type.resolveTypeDef»
 			«IF !argument.isArray && argumentType.isPrimitive»
 				«val type = argumentType.getPrimitive»
@@ -174,7 +174,7 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 	}
 
 «ENDFOR»
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 
 	/**

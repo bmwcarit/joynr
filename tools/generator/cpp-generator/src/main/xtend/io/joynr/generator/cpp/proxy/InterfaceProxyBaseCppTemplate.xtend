@@ -34,19 +34,19 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension InterfaceUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val serviceName =  francaIntf.joynrName»
 «val className = serviceName + "ProxyBase"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«className».h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 #include "joynr/JoynrMessagingConnectorFactory.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«serviceName»JoynrMessagingConnector.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«serviceName»JoynrMessagingConnector.h"
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 «className»::«className»(
 		std::weak_ptr<joynr::JoynrRuntimeImpl> runtime,
 		std::shared_ptr<joynr::JoynrMessagingConnectorFactory> connectorFactory,
@@ -61,7 +61,7 @@ class InterfaceProxyBaseCppTemplate extends InterfaceTemplate {
 void «className»::handleArbitrationFinished(
 		const joynr::types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry
 ) {
-	connector = _connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::")»::I«serviceName»Connector>(
+	connector = _connectorFactory->create<«getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::I«serviceName»Connector>(
 				_domain,
 				_proxyParticipantId,
 				_qosSettings,
@@ -90,7 +90,7 @@ void «className»::handleArbitrationFinished(
 		connector->unsubscribeFrom«attributeName.toFirstUpper»(subscriptionId);
 	}
 
-	«produceUpdateAttributeSubscriptionSignature(attribute, className)» {
+	«produceUpdateAttributeSubscriptionSignature(attribute, className, generateVersion)» {
 		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || !connector) {
 			std::string errorMsg;
@@ -114,7 +114,7 @@ void «className»::handleArbitrationFinished(
 					subscriptionId);
 	}
 
-	«produceSubscribeToAttributeSignature(attribute, className)» {
+	«produceSubscribeToAttributeSignature(attribute, className, generateVersion)» {
 		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || !connector) {
 			std::string errorMsg;
@@ -157,7 +157,7 @@ void «className»::handleArbitrationFinished(
 		connector->unsubscribeFrom«broadcastName.toFirstUpper»Broadcast(subscriptionId);
 	}
 
-	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className)» {
+	«produceSubscribeToBroadcastSignature(broadcast, francaIntf, className, generateVersion)» {
 		std::string errorMsg;
 		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr) {
@@ -205,7 +205,7 @@ void «className»::handleArbitrationFinished(
 		«ENDIF»
 	}
 
-	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className)» {
+	«produceUpdateBroadcastSubscriptionSignature(broadcast, francaIntf, className, generateVersion)» {
 		std::string errorMsg;
 		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr) {
@@ -255,6 +255,6 @@ void «className»::handleArbitrationFinished(
 	}
 «ENDFOR»
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }

@@ -36,20 +36,20 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	@Inject extension MethodUtil
 	@Inject extension CppInterfaceUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val syncClassName = interfaceName + "SyncProxy"»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«syncClassName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«syncClassName».h"
 
-«FOR datatype: getDataTypeIncludesFor(francaIntf)»
+«FOR datatype: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «datatype»
 «ENDFOR»
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 // The proxies will contain all arbitration checks
 // the connectors will contain the JSON related code
 
@@ -70,7 +70,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	«var getAttribute = "get" + attributeName.toFirstUpper»
 	«var setAttribute = "set" + attributeName.toFirstUpper»
 	«IF attribute.readable»
-		«produceSyncGetterSignature(attribute, syncClassName)»
+		«produceSyncGetterSignature(attribute, syncClassName, generateVersion)»
 		{
 			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
@@ -93,7 +93,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 		}
 	«ENDIF»
 	«IF attribute.writable»
-		«produceSyncSetterSignature(attribute, syncClassName)»
+		«produceSyncSetterSignature(attribute, syncClassName, generateVersion)»
 		{
 			auto runtimeSharedPtr = _runtime.lock();
 			if (!runtimeSharedPtr || (connector==nullptr)) {
@@ -124,7 +124,7 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 	/*
 	 * «methodName»
 	 */
-	«produceSyncMethodSignature(method, syncClassName)»
+	«produceSyncMethodSignature(method, syncClassName, generateVersion)»
 	{
 		auto runtimeSharedPtr = _runtime.lock();
 		if (!runtimeSharedPtr || (connector==nullptr)) {
@@ -146,6 +146,6 @@ class InterfaceSyncProxyCppTemplate extends InterfaceTemplate {
 		}
 	}
 «ENDFOR»
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }

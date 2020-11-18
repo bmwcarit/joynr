@@ -32,10 +32,10 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension AttributeUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"AbstractProvider_h").toUpperCase»
 «warning()»
 #ifndef «headerGuard»
@@ -47,15 +47,15 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/AbstractJoynrProvider.h"
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«interfaceName»Provider.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»Provider.h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
 
 «getDllExportIncludeStatement()»
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 «IF !francaIntf.broadcasts.filter[selective].isNullOrEmpty»
 // forward declare broadcast filter classes
@@ -66,7 +66,7 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 
 /** @brief Abstract provider class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»AbstractProvider :
-		public «getPackagePathWithJoynrPrefix(francaIntf, "::")»::«interfaceName»Provider,
+		public «getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::«interfaceName»Provider,
 		public joynr::AbstractJoynrProvider
 {
 
@@ -111,7 +111,7 @@ public:
 			 * @param «attributeName» the new attribute value
 			 */
 			void «attributeName»Changed(
-					const «attribute.typeName»& «attributeName»
+					const «attribute.getTypeName(generateVersion)»& «attributeName»
 			) override;
 		«ENDIF»
 	«ENDFOR»
@@ -134,7 +134,7 @@ public:
 		 */
 		void fire«broadcastName.toFirstUpper»(
 				«IF !broadcast.outputParameters.empty»
-					«broadcast.commaSeperatedTypedConstOutputParameterList»«IF !broadcast.selective»,«ENDIF»
+					«broadcast.getCommaSeperatedTypedConstOutputParameterList(generateVersion)»«IF !broadcast.selective»,«ENDIF»
 				«ENDIF»
 				«IF !broadcast.selective»
 					const std::vector<std::string>& partitions = std::vector<std::string>()
@@ -150,7 +150,7 @@ private:
 		std::vector<std::shared_ptr<«getBroadcastFilterClassName(broadcast)»>> «broadcastName»Filters;
 	«ENDFOR»
 };
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 
 #endif // «headerGuard»
 '''

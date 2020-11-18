@@ -78,6 +78,9 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	public static final String OUTPUT_HEADER_PATH = "outputHeaderPath";
 	Map<String, String> parameters;
 
+	boolean generateVersionedCommunicationModel = false;
+	boolean generateUnversionedCommunicationModel = false;
+
 	override doGenerate(Resource input, IFileSystemAccess fsa) {
 		doGenerate(input, fsa, getHeaderFileSystemAccess(fsa));
 	}
@@ -95,16 +98,28 @@ class JoynrCppGenerator implements IJoynrGenerator{
 		}
 	}
 
+	override updateCommunicationModelGeneration(Resource input) {
+		val fModel = getModel(input);
+		if(fModel.interfaces.size == 0) {
+			generateVersionedCommunicationModel = true;
+		}
+		for (fInterface : fModel.interfaces) {
+			checkVersioningOption(fInterface, packageWithVersion)
+			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			if (generateVersioning) {
+				generateVersionedCommunicationModel = true
+			} else {
+				generateUnversionedCommunicationModel = true
+			}
+		}
+	}
+
 	/*
 	 * Triggers the generation. In case the parameter "generate" is set to false, the generator is cleaning the generation folder
 	 */
 	def doGenerate(Resource input, IFileSystemAccess sourceFileSystem, IFileSystemAccess headerFileSystem) {
 		val fModel = getModel(input);
 		checkForNamedArrays(fModel, input.URI.path);
-
-		for (fInterface : fModel.interfaces) {
-			checkVersioningOption(fInterface, packageWithVersion)
-		}
 
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
@@ -159,15 +174,36 @@ class JoynrCppGenerator implements IJoynrGenerator{
 				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "provider")
 			);
 		}
+	}
 
-		communicationModelGenerator.doGenerate(
+	override generateCommunicationModel(Resource input, IFileSystemAccess sourceFileSystem) {
+		val headerFileSystem = getHeaderFileSystemAccess(sourceFileSystem)
+		val fModel = getModel(input);
+		if (generateVersionedCommunicationModel) {
+			communicationModelGenerator.doGenerate(
 				fModel,
 				sourceFileSystem,
 				headerFileSystem,
 				getSourceContainerPath(sourceFileSystem, "communication-model"),
-				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "communication-model")
+				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "communication-model"),
+				true
 				);
+		}
+		if (generateUnversionedCommunicationModel) {
+			communicationModelGenerator.doGenerate(
+				fModel,
+				sourceFileSystem,
+				headerFileSystem,
+				getSourceContainerPath(sourceFileSystem, "communication-model"),
+				getHeaderContainerPath(sourceFileSystem, headerFileSystem, "communication-model"),
+				false
+				);
+		}
+	}
 
+	override clearCommunicationModelGenerationSettings() {
+		generateVersionedCommunicationModel = false;
+		generateUnversionedCommunicationModel = false;
 	}
 
 	def getSourceContainerPath(IFileSystemAccess sourceFileSystem, String directory) {

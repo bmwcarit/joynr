@@ -32,10 +32,10 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 
 	@Inject extension InterfaceSubscriptionUtil
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_I"+interfaceName+"Connector_h").toUpperCase»
 «warning()»
 
@@ -43,11 +43,11 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 «getDllExportIncludeStatement()»
-«FOR parameterType: cppStdTypeUtil.getDataTypeIncludesFor(francaIntf)»
+«FOR parameterType: cppStdTypeUtil.getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName».h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/SubscriptionCallback.h"
 #include <memory>
@@ -60,7 +60,7 @@ namespace joynr {
 	class MulticastSubscriptionQos;
 } // namespace joynr
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 «FOR forwardDecl: cppStdTypeUtil.getBroadcastFilterParametersClassNames(francaIntf)»
 	class «forwardDecl»;
@@ -75,7 +75,7 @@ class «getDllExportMacro()» I«interfaceName»Subscription{
 public:
 	virtual ~I«interfaceName»Subscription() = default;
 
-	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, true)»
+	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, true, generateVersion)»
 };
 
 class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», virtual public I«interfaceName»Subscription{
@@ -84,7 +84,7 @@ public:
 	~I«interfaceName»Connector() override = default;
 };
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 #endif // «headerGuard»
 '''
 }

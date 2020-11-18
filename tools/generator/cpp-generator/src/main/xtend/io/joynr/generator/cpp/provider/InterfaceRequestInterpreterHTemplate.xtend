@@ -29,10 +29,10 @@ class InterfaceRequestInterpreterHTemplate extends InterfaceTemplate {
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension NamingUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName = francaIntf.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"RequestInterpreter_h").toUpperCase»
 «warning()»
 
@@ -61,7 +61,7 @@ class JoynrException;
 
 } // namespace joynr
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 /** @brief RequestInterpreter class for interface «interfaceName» */
 class «getDllExportMacro()» «interfaceName»RequestInterpreter: public joynr::IRequestInterpreter {
@@ -100,7 +100,7 @@ private:
 	ADD_LOGGER(«interfaceName»RequestInterpreter)
 };
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 #endif // «headerGuard»
 '''
 }

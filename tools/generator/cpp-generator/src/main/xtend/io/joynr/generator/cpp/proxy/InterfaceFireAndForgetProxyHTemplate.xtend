@@ -33,12 +33,12 @@ class InterfaceFireAndForgetProxyHTemplate extends InterfaceTemplate {
 	@Inject extension CppInterfaceUtil
 	@Inject extension NamingUtil
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
 «val interfaceName =  francaIntf.joynrName»
 «val className = interfaceName + "Proxy"»
 «val fireAndForgetClassName = interfaceName + "FireAndForgetProxy"»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+
 	"_"+interfaceName+"FireAndForgetProxy_h").toUpperCase»
 «warning()»
 
@@ -47,15 +47,15 @@ class InterfaceFireAndForgetProxyHTemplate extends InterfaceTemplate {
 
 #include "joynr/PrivateCopyAssign.h"
 «getDllExportIncludeStatement()»
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/«className»Base.h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«className»Base.h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf).addElements(includeForString)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
 
 #include <memory>
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 /**
  * @brief FireAndForget proxy for interface «interfaceName»
  *
@@ -77,14 +77,14 @@ public:
 	);
 
 
-	«produceFireAndForgetMethodDeclarations(francaIntf, false)»
+	«produceFireAndForgetMethodDeclarations(francaIntf, false, generateVersion)»
 
 	friend class «className»;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«fireAndForgetClassName»);
 };
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 #endif // «headerGuard»
 '''
 }

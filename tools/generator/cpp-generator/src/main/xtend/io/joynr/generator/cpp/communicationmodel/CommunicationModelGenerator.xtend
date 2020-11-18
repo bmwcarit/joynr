@@ -39,7 +39,8 @@ class CommunicationModelGenerator {
 		IFileSystemAccess sourceFileSystem,
 		IFileSystemAccess headerFileSystem,
 		String sourceContainerPath,
-		String headerContainerPath
+		String headerContainerPath,
+		boolean generateVersioning
 	){
 		val dataTypePath = sourceContainerPath + "datatypes" + File::separator
 		val headerDataTypePath =
@@ -49,8 +50,8 @@ class CommunicationModelGenerator {
 				headerContainerPath
 
 		for( type: getCompoundDataTypes(fModel)){
-			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
-			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type, generateVersioning) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator, generateVersioning) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
@@ -60,20 +61,22 @@ class CommunicationModelGenerator {
 			generateFile(
 				headerFileSystem,
 				headerpath + getGenerationTypeName(type) + ".h",
-				typeHTemplate
+				typeHTemplate,
+				generateVersioning
 			)
 
 			var typeCppTemplate = templateFactory.createTypeCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourcepath + getGenerationTypeName(type) + ".cpp",
-				typeCppTemplate
+				typeCppTemplate,
+				generateVersioning
 			)
 		}
 
 		for (type : getEnumDataTypes(fModel)) {
-			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
-			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type, generateVersioning) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator, generateVersioning) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
@@ -84,14 +87,15 @@ class CommunicationModelGenerator {
 				sourceFileSystem,
 				type,
 				headerpath + getGenerationTypeName(type),
-				sourcepath + getGenerationTypeName(type)
+				sourcepath + getGenerationTypeName(type),
+				generateVersioning
 			);
 
 		}
 
 		for (type : getMapDataTypes(fModel)) {
-			var sourcepath = dataTypePath + getPackageSourceDirectory(type) + File::separator
-			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var sourcepath = dataTypePath + getPackageSourceDirectory(type, generateVersioning) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator, generateVersioning) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 				sourcepath += type.typeCollectionName + File::separator
@@ -103,20 +107,22 @@ class CommunicationModelGenerator {
 			generateFile(
 				headerFileSystem,
 				headerFilename + ".h",
-				mapHTemplate
+				mapHTemplate,
+				generateVersioning
 			)
 
 			var mapCppTemplate = templateFactory.createMapCppTemplate(type)
 			generateFile(
 				sourceFileSystem,
 				sourceFilename + ".cpp",
-				mapCppTemplate
+				mapCppTemplate,
+				generateVersioning
 			)
 		}
 
 
 		for (type : getTypeDefDataTypes(fModel)) {
-			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var headerpath = headerDataTypePath + getPackagePathWithJoynrPrefix(type, File::separator, generateVersioning) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				headerpath += type.typeCollectionName + File::separator
 			}
@@ -126,7 +132,8 @@ class CommunicationModelGenerator {
 				headerFileSystem,
 				headerFilename + ".h",
 				typeDefH,
-				type
+				type,
+				generateVersioning
 			)
 		}
 	}
@@ -136,20 +143,23 @@ class CommunicationModelGenerator {
 		IFileSystemAccess sourceFileSystem,
 		FEnumerationType enumType,
 		String headerFilename,
-		String sourceFilename
+		String sourceFilename,
+		boolean generateVersioning
 	) {
 		var enumHTemplate = templateFactory.createEnumHTemplate(enumType)
 		generateFile(
 			headerFileSystem,
 			headerFilename + ".h",
-			enumHTemplate
+			enumHTemplate,
+			generateVersioning
 		)
 
 		var enumCppTemplate = templateFactory.createEnumCppTemplate(enumType)
 		generateFile(
 			sourceFileSystem,
 			sourceFilename + ".cpp",
-			enumCppTemplate
+			enumCppTemplate,
+			generateVersioning
 		)
 	}
 }
