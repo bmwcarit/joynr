@@ -34,10 +34,10 @@ class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val interfaceName =  francaIntf.joynrName
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 
 		'''
 		«warning()»
@@ -52,7 +52,7 @@ class InterfaceSubscriptionTemplate extends InterfaceTemplate {
 		import io.joynr.pubsub.SubscriptionQos;
 		«ENDIF»
 
-		«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, true, false, false)»
+		«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, true, false, false, generateVersion)»
 			import «datatype»;
 		«ENDFOR»
 

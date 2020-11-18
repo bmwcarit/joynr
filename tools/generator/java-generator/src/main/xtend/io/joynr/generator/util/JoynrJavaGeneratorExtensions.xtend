@@ -42,20 +42,20 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	var ignoreInvalidNullClassMembersExtension = false
 
-	def String getNamespaceStarter(FInterface interfaceType) {
-		getNamespaceStarter(getPackageNames(interfaceType));
+	def String getNamespaceStarter(FInterface interfaceType, boolean generateVersion) {
+		getNamespaceStarter(getPackageNames(interfaceType, generateVersion));
 	}
 
-	def String getNamespaceStarter(FType datatype) {
-		getNamespaceStarter(getPackageNames(datatype));
+	def String getNamespaceStarter(FType datatype, boolean generateVersion) {
+		getNamespaceStarter(getPackageNames(datatype, generateVersion));
 	}
 
-	def String getNamespaceEnder(FInterface interfaceType) {
-		getNamespaceEnder(getPackageNames(interfaceType));
+	def String getNamespaceEnder(FInterface interfaceType, boolean generateVersion) {
+		getNamespaceEnder(getPackageNames(interfaceType, generateVersion));
 	}
 
-	def String getNamespaceEnder(FType datatype) {
-		getNamespaceEnder(getPackageNames(datatype));
+	def String getNamespaceEnder(FType datatype, boolean generateVersion) {
+		getNamespaceEnder(getPackageNames(datatype, generateVersion));
 	}
 
 	def private String getNamespaceStarter(Iterator<String> packageList){
@@ -82,33 +82,33 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return sb.toString();
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype){
-		getRequiredIncludesFor(datatype, true);
+	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype, boolean generateVersion){
+		getRequiredIncludesFor(datatype, true, generateVersion);
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype, boolean includingExendedType){
+	def Iterable<String> getRequiredIncludesFor(FCompoundType datatype, boolean includingExendedType, boolean generateVersion){
 		val members = getComplexMembers(datatype);
 
 		val typeList = new TreeSet<String>();
 		if (hasExtendsDeclaration(datatype)){
 			if (includingExendedType){
-				typeList.add(getIncludeOf(getExtendedType(datatype)))
+				typeList.add(getIncludeOf(getExtendedType(datatype), generateVersion))
 			}
 
-			typeList.addAll(getRequiredIncludesFor(getExtendedType(datatype), false))
+			typeList.addAll(getRequiredIncludesFor(getExtendedType(datatype), false, generateVersion))
 		}
 
 		for (member : members) {
 			val type = getDatatype(member.type);
 			if (type instanceof FType){
-				typeList.add(getIncludeOf(type));
+				typeList.add(getIncludeOf(type, generateVersion));
 			}
 		}
 		return typeList;
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface) {
-		getRequiredIncludesFor(serviceInterface, true, true, true, true, true, true);
+	def Iterable<String> getRequiredIncludesFor(FInterface serviceInterface, boolean generateVersion) {
+		getRequiredIncludesFor(serviceInterface, true, true, true, true, true, true, generateVersion);
 	}
 
 	def Iterable<String> getRequiredIncludesFor(
@@ -118,7 +118,8 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 			boolean writeAttributes,
 			boolean notifyAttributes,
 			boolean broadcasts,
-			boolean fireAndForget
+			boolean fireAndForget,
+			boolean generateVersion
 	) {
 		val includeSet = new TreeSet<String>();
 		val selector = TypeSelector::defaultTypeSelector
@@ -130,7 +131,7 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		selector.broadcasts(broadcasts);
 
 		for(datatype : getAllComplexTypes(serviceInterface, selector)) {
-			val include = getIncludeOf(datatype);
+			val include = getIncludeOf(datatype, generateVersion);
 			if (include !== null) {
 				includeSet.add(include);
 			}
@@ -138,18 +139,18 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return includeSet;
 	}
 
-	def Iterable<String> getRequiredIncludesFor(FBroadcast broadcast) {
+	def Iterable<String> getRequiredIncludesFor(FBroadcast broadcast, boolean generateVersion) {
 		val includeSet = new TreeSet<String>();
 		for(datatype: getAllComplexTypes(broadcast)) {
-			includeSet.add(getIncludeOf(datatype));
+			includeSet.add(getIncludeOf(datatype, generateVersion));
 		}
 		return includeSet;
 	}
 
-	def Iterable<String> getRequiredStatelessAsyncIncludesFor(FInterface serviceInterface) {
+	def Iterable<String> getRequiredStatelessAsyncIncludesFor(FInterface serviceInterface, boolean generateVersion) {
 		val includeSet = new TreeSet<String>()
 		for (datatype : getAllComplexStatelessAsyncTypes(serviceInterface, true, false)) {
-			val include = getIncludeOf(datatype)
+			val include = getIncludeOf(datatype, generateVersion)
 			if (include !== null) {
 				includeSet.add(include)
 			}
@@ -157,10 +158,10 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		includeSet
 	}
 
-	def Iterable<String> getRequiredStatelessAsyncCallbackIncludesFor(FInterface serviceInterface) {
+	def Iterable<String> getRequiredStatelessAsyncCallbackIncludesFor(FInterface serviceInterface, boolean generateVersion) {
 		val includeSet = new TreeSet<String>()
 		for (datatype : getAllComplexStatelessAsyncTypes(serviceInterface, false, true)) {
-			val include = getIncludeOf(datatype)
+			val include = getIncludeOf(datatype, generateVersion)
 			if (include !== null) {
 				includeSet.add(include)
 			}
@@ -226,8 +227,8 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 		return description;
 	}
 
-	def String getIncludeOf(FType dataType) {
-		return dataType.buildPackagePath(".", true) + "." + dataType.joynrName;
+	def String getIncludeOf(FType dataType, boolean generateVersion) {
+		return dataType.buildPackagePath(".", true, generateVersion) + "." + dataType.joynrName;
 	}
 
 	// Returns true if a class has to create lists in its constructor

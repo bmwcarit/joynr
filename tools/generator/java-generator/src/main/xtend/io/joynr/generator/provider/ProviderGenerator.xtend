@@ -34,8 +34,8 @@ class ProviderGenerator {
 	extension NamingUtil
 	@Inject JavaTemplateFactory templateFactory
 
-	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
-		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
+	def doGenerate(FInterface fInterface, IFileSystemAccess fsa, boolean generateVersion){
+		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersion) + File::separator
 
 		var serviceName =  fInterface.joynrName
 
@@ -43,35 +43,40 @@ class ProviderGenerator {
 		generateFile(
 			fsa,
 			path + serviceName + "Provider.java",
-			interfaceProviderTemplate
+			interfaceProviderTemplate,
+			generateVersion
 		);
 
 		var defaultInterfaceProviderTemplate = templateFactory.createDefaultInterfaceProviderTemplate(fInterface)
 		generateFile(
 			fsa,
 			path + "Default" + serviceName + "Provider.java",
-			defaultInterfaceProviderTemplate
+			defaultInterfaceProviderTemplate,
+			generateVersion
 		);
 
 		var interfaceAbstractProviderTemplate = templateFactory.createInterfaceAbstractProviderTemplate(fInterface)
 		generateFile(
 			fsa,
 			path + serviceName + "AbstractProvider.java",
-			interfaceAbstractProviderTemplate
+			interfaceAbstractProviderTemplate,
+			generateVersion
 		);
 
 		var subscriptionPublisherTemplate = templateFactory.createSubscriptionPublisherTemplate(fInterface)
 		generateFile(
 			fsa,
 			path + serviceName + "SubscriptionPublisher.java",
-			subscriptionPublisherTemplate
+			subscriptionPublisherTemplate,
+			generateVersion
 		);
 
 		var subscriptionPublisherImplTemplate = templateFactory.createSubscriptionPublisherImplTemplate(fInterface)
 		generateFile(
 			fsa,
 			path + serviceName + "SubscriptionPublisherImpl.java",
-			subscriptionPublisherImplTemplate
+			subscriptionPublisherImplTemplate,
+			generateVersion
 		);
 	}
 }

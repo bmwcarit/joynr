@@ -40,7 +40,7 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToReturnTypeName, ArrayList<FMethod> uniqueMultioutMethods) {
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToReturnTypeName, ArrayList<FMethod> uniqueMultioutMethods, boolean generateVersion) {
 		var uniqueMultioutMethodSignatureToContainerNames = new HashMap<String, String>();
 		var methodCounts = overloadedMethodCounts(getMethods(serviceInterface));
 		var indexForMethod = new HashMap<String, Integer>();
@@ -80,13 +80,13 @@ class InterfaceSyncTemplate extends InterfaceTemplate {
 		}
 	}
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		var methodToReturnTypeName = new HashMap<FMethod, String>();
 		var uniqueMultioutMethods = new ArrayList<FMethod>();
-		init(francaIntf, methodToReturnTypeName, uniqueMultioutMethods);
+		init(francaIntf, methodToReturnTypeName, uniqueMultioutMethods, generateVersion);
 		val interfaceName =  francaIntf.joynrName
 		val syncClassName = interfaceName + "Sync"
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 		'''
 «warning()»
 
@@ -100,7 +100,7 @@ import io.joynr.UsedBy;
 	import joynr.exceptions.ApplicationException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 

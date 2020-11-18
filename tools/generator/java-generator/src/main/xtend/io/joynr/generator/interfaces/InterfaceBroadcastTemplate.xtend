@@ -31,10 +31,10 @@ class InterfaceBroadcastTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val interfaceName = francaIntf.joynrName
 		val broadcastClassName = interfaceName + "BroadcastInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 
 		'''
 «warning()»
@@ -58,7 +58,7 @@ import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 	import joynr.MulticastSubscriptionQos;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, true, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, true, false, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 

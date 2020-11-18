@@ -36,8 +36,8 @@ class InterfaceFireAndForgetTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	override generate() {
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+	override generate(boolean generateVersion) {
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 		'''
 «warning()»
 
@@ -45,7 +45,7 @@ package «packagePath»;
 
 import io.joynr.messaging.MessagingQos;
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, false, true)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, false, false, false, false, false, true, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 

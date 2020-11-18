@@ -36,10 +36,10 @@ class InterfaceStatelessAsyncTemplate extends InterfaceTemplate {
 	@Inject extension TemplateBase
 	@Inject extension AttributeUtil
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val interfaceName =  francaIntf.joynrName
 		val statelessAsyncClassName = interfaceName + "StatelessAsync"
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 		'''
 «warning()»
 
@@ -50,7 +50,7 @@ import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.proxy.MessageIdCallback;
 import io.joynr.UsedBy;
 
-«FOR datatype: getRequiredStatelessAsyncIncludesFor(francaIntf)»
+«FOR datatype: getRequiredStatelessAsyncIncludesFor(francaIntf, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 

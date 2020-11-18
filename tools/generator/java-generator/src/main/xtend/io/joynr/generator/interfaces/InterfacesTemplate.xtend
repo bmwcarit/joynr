@@ -32,10 +32,10 @@ class InterfacesTemplate extends InterfaceTemplate {
 	@Inject extension TemplateBase
 	@Inject JavaTemplateFactory templateFactory
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val interfaceName =  francaIntf.joynrName
 		val className = interfaceName
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 		val hasMethodWithImplicitErrorEnum = hasMethodWithImplicitErrorEnum(francaIntf)
 		val methodToErrorEnumName = francaIntf.methodToErrorEnumName()
 		'''
@@ -53,7 +53,7 @@ import java.util.HashSet;
 «ENDIF»
 import io.joynr.subtypes.JoynrType;
 import io.joynr.JoynrVersion;
-«FOR datatype: getRequiredIncludesFor(francaIntf)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 
@@ -70,7 +70,7 @@ public interface «className» {
 
 	public static Set<Class<?>> getDataTypes() {
 		Set<Class<?>> set = new HashSet<>();
-		«FOR datatype: getRequiredIncludesFor(francaIntf)»
+		«FOR datatype: getRequiredIncludesFor(francaIntf, generateVersion)»
 			if (JoynrType.class.isAssignableFrom(«datatype».class)) {
 				set.add(«datatype».class);
 			}

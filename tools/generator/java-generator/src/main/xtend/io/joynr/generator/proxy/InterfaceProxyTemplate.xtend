@@ -28,7 +28,7 @@ class InterfaceProxyTemplate extends InterfaceTemplate {
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val interfaceName =  francaIntf.joynrName
 		val className = francaIntf.proxyClassName
 		val asyncClassName = interfaceName + "Async"
@@ -36,7 +36,7 @@ class InterfaceProxyTemplate extends InterfaceTemplate {
 		val syncClassName = interfaceName + "Sync"
 		val subscriptionClassName = interfaceName + "SubscriptionInterface"
 		val broadcastClassName = interfaceName + "BroadcastInterface"
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 		'''
 
 		«warning()»

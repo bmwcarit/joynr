@@ -74,6 +74,9 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 	@Named("generateProviderCode")
 	public boolean generateProviderCode;
 
+	boolean generateVersionedCommunicationModel = false;
+	boolean generateUnversionedCommunicationModel = false;
+
 	override getLanguageId() {
 		"java"
 	}
@@ -83,6 +86,22 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 			override protected configure() {
 				install(new FactoryModuleBuilder().build(JavaTemplateFactory))
 				bind(JoynrJavaGeneratorExtensions).in(Singleton)
+			}
+		}
+	}
+
+	override updateCommunicationModelGeneration(Resource input) {
+		val fModel = input.contents.get(0) as FModel
+		if(fModel.interfaces.size == 0) {
+			generateVersionedCommunicationModel = true;
+		}
+		for (fInterface : fModel.interfaces) {
+			checkVersioningOption(fInterface, packageWithVersion)
+			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			if (generateVersioning) {
+				generateVersionedCommunicationModel = true
+			} else {
+				generateUnversionedCommunicationModel = true
 			}
 		}
 	}
@@ -100,18 +119,33 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
 		for (fInterface : fModel.interfaces) {
+			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
 			checkVersioningOption(fInterface, packageWithVersion)
-			interfacesGenerator.doGenerate(fInterface, fsa)
+			interfacesGenerator.doGenerate(fInterface, fsa, generateVersioning)
 			if (generateProxyCode) {
-				proxyGenerator.doGenerate(fInterface, fsa)
+				proxyGenerator.doGenerate(fInterface, fsa, generateVersioning)
 			}
 			if (generateProviderCode) {
-				providerGenerator.doGenerate(fInterface, fsa)
-				filterGenerator.doGenerate(fInterface, fsa)
+				providerGenerator.doGenerate(fInterface, fsa, generateVersioning)
+				filterGenerator.doGenerate(fInterface, fsa, generateVersioning)
 			}
 		}
 		// cleanDirectory(containerpath)
-		communicationModelGenerator.doGenerate(fModel, fsa)
+	}
+
+	override generateCommunicationModel(Resource input, IFileSystemAccess fsa) {
+		val fModel = input.contents.get(0) as FModel
+		if (generateVersionedCommunicationModel) {
+			communicationModelGenerator.doGenerate(fModel, fsa, true)
+		}
+		if (generateUnversionedCommunicationModel) {
+			communicationModelGenerator.doGenerate(fModel, fsa, false)
+		}
+	}
+
+	override clearCommunicationModelGenerationSettings() {
+		generateVersionedCommunicationModel = false;
+		generateUnversionedCommunicationModel = false;
 	}
 
 	def Iterable<FInterface> findAllFInterfaces(Resource resource) {

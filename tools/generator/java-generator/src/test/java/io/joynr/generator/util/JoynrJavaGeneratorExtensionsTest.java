@@ -96,7 +96,7 @@ public class JoynrJavaGeneratorExtensionsTest {
             if (type.getName().equals(FIXTURE_TYPE_NAME)) {
                 if (type instanceof FCompoundType) {
                     typeFound = true;
-                    Iterable<String> result = fixture.getRequiredIncludesFor((FCompoundType) type);
+                    Iterable<String> result = fixture.getRequiredIncludesFor((FCompoundType) type, true);
 
                     boolean topLevelStructAsInclude = false;
                     boolean secondLevelStructAsInclude = false;

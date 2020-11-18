@@ -38,16 +38,17 @@ class InterfaceGenerator {
 	@Named("generateProxyCode")
 	public boolean generateProxyCode;
 
-	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa){
+	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa, boolean generateVersion){
 
-		val path = getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator
+		val path = getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersion) + File::separator
 
 		var serviceName =  serviceInterface.joynrName
 
 		var interfacesTemplate = templateFactory.createInterfacesTemplate(serviceInterface)
 		generateFile(
 			fsa,
-			path + serviceName + ".java", interfacesTemplate
+			path + serviceName + ".java", interfacesTemplate,
+			generateVersion
 		);
 
 		if (generateProxyCode) {
@@ -55,35 +56,40 @@ class InterfaceGenerator {
 			generateFile(
 				fsa,
 				path + serviceName + "Sync.java",
-				interfaceSyncTemplate
+				interfaceSyncTemplate,
+				generateVersion
 			);
 
 			var interfaceAsyncTemplate = templateFactory.createInterfaceAsyncTemplate(serviceInterface)
 			generateFile(
 				fsa,
 				path + serviceName + "Async.java",
-				interfaceAsyncTemplate
+				interfaceAsyncTemplate,
+				generateVersion
 			);
 
 			var interfaceFireAndForgetTemplate = templateFactory.createInterfaceFireAndForgetTemplate(serviceInterface)
 			generateFile(
 				fsa,
 				path + serviceName + "FireAndForget.java",
-				interfaceFireAndForgetTemplate
+				interfaceFireAndForgetTemplate,
+				generateVersion
 			);
 
 			var interfaceStatelessAsyncTemplate = templateFactory.createInterfaceStatelessAsyncTemplate(serviceInterface)
 			generateFile(
 				fsa,
 				path + serviceName + "StatelessAsync.java",
-				interfaceStatelessAsyncTemplate
+				interfaceStatelessAsyncTemplate,
+				generateVersion
 			)
 
 			var interfaceStatelessAsyncCallbackTemplate = templateFactory.createInterfaceStatelessAsyncCallbackTemplate(serviceInterface)
 			generateFile(
 				fsa,
 				path + serviceName + "StatelessAsyncCallback.java",
-				interfaceStatelessAsyncCallbackTemplate
+				interfaceStatelessAsyncCallbackTemplate,
+				generateVersion
 			)
 
 			if (serviceInterface.attributes.size>0){
@@ -91,7 +97,8 @@ class InterfaceGenerator {
 				generateFile(
 					fsa,
 					path + serviceName + "SubscriptionInterface.java",
-					interfaceSubscriptionTemplate
+					interfaceSubscriptionTemplate,
+					generateVersion
 				);
 			}
 		}
@@ -101,7 +108,8 @@ class InterfaceGenerator {
 			generateFile(
 				fsa,
 				path + serviceName + "BroadcastInterface.java",
-				interfaceBroadcastTemplate
+				interfaceBroadcastTemplate,
+				generateVersion
 			);
 		}
 	}

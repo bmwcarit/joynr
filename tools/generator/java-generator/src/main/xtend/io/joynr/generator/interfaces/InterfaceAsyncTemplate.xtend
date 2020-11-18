@@ -40,15 +40,15 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
 
-	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName,  HashMap<FMethod, String> methodToErrorEnumName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods) {
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+	def init(FInterface serviceInterface, HashMap<FMethod, String> methodToCallbackName, HashMap<FMethod, String> methodToFutureName,  HashMap<FMethod, String> methodToErrorEnumName, HashMap<FMethod, String> methodToSyncReturnedName, ArrayList<FMethod> uniqueMultioutMethods, boolean generateVersion) {
+		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".", generateVersion)
 		var uniqueMultioutMethodSignatureToOutputContainerName = new HashMap<String, String>();
 		var methodCounts = overloadedMethodCounts(getMethods(serviceInterface));
 		var indexForMethod = new HashMap<String, Integer>();
 
 		for (FMethod method : getMethods(serviceInterface)) {
 			if (method.outputParameters.size < 2) {
-				val outputParamterType = method.getTypeNamesForOutputParameter.iterator.next;
+				val outputParamterType = method.typeNamesForOutputParameter.iterator.next;
 				var outputType = if (outputParamterType == "void") "Void" else getObjectDataTypeForPlainType(outputParamterType)
 
 				if (method.hasErrorEnum) {
@@ -57,7 +57,7 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 						errorEnumType = packagePath + "." + serviceInterface.joynrName + "." +
 							methodToErrorEnumName.get(method)
 					} else {
-						errorEnumType = method.errorEnum.buildPackagePath(".", true) + "." + method.errorEnum.joynrName
+						errorEnumType = method.errorEnum.buildPackagePath(".", true, generateVersion) + "." + method.errorEnum.joynrName
 					}
 					methodToCallbackName.put(method, "CallbackWithModeledError<" + outputType + "," + errorEnumType + ">");
 				} else {
@@ -101,17 +101,17 @@ class InterfaceAsyncTemplate extends InterfaceTemplate {
 		}
 	}
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		var methodToCallbackName = new HashMap<FMethod, String>();
 		var methodToFutureName = new HashMap<FMethod, String>();
 		var methodToErrorEnumName = francaIntf.methodToErrorEnumName
 		var methodToSyncReturnedName = new HashMap<FMethod, String>();
 		var uniqueMultioutMethods = new ArrayList<FMethod>();
-		init(francaIntf, methodToCallbackName, methodToFutureName, methodToErrorEnumName, methodToSyncReturnedName, uniqueMultioutMethods);
+		init(francaIntf, methodToCallbackName, methodToFutureName, methodToErrorEnumName, methodToSyncReturnedName, uniqueMultioutMethods, generateVersion);
 		val interfaceName =  francaIntf.joynrName
 		val asyncClassName = interfaceName + "Async"
 
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 		val hasReadAttribute = hasReadAttribute(francaIntf);
 		val hasWriteAttribute = hasWriteAttribute(francaIntf);
 		'''
@@ -138,7 +138,7 @@ import io.joynr.UsedBy;
 import io.joynr.exceptions.DiscoveryException;
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, false, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 
@@ -197,7 +197,7 @@ public interface «asyncClassName» extends «interfaceName»«IF hasFireAndForg
 				«val errorEnumType = packagePath + "." + interfaceName + "." + methodToErrorEnumName.get(method)»
 				public abstract class «callbackName» implements ICallback, ICallbackWithModeledError<«errorEnumType»> {
 			«ELSE»
-				«val errorEnumType = method.errorEnum.buildPackagePath(".", true) + "." + method.errorEnum.joynrName»
+				«val errorEnumType = method.errorEnum.buildPackagePath(".", true, generateVersion) + "." + method.errorEnum.joynrName»
 				public abstract class «callbackName» implements ICallback, ICallbackWithModeledError<«errorEnumType»> {
 			«ENDIF»
 		«ELSE»

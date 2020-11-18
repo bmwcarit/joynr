@@ -37,10 +37,10 @@ class InterfaceStatelessAsyncCallbackTemplate extends InterfaceTemplate {
 	@Inject extension TemplateBase
 	@Inject extension AttributeUtil
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val interfaceName =  francaIntf.joynrName
 		val statelessAsyncClassName = interfaceName + "StatelessAsyncCallback"
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 		var methodToErrorEnumName = francaIntf.methodToErrorEnumName
 		'''
 «warning()»
@@ -53,7 +53,7 @@ import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.UsedBy;
 
-«FOR datatype: getRequiredStatelessAsyncCallbackIncludesFor(francaIntf)»
+«FOR datatype: getRequiredStatelessAsyncCallbackIncludesFor(francaIntf, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 
@@ -117,7 +117,7 @@ public interface «statelessAsyncClassName» extends StatelessAsyncCallback {
 				«val errorEnumType = packagePath + "." + interfaceName + "." + methodToErrorEnumName.get(method)»
 					«errorEnumType» error,
 			«ELSE»
-				«val errorEnumType = method.errorEnum.buildPackagePath(".", true) + "." + method.errorEnum.joynrName»
+				«val errorEnumType = method.errorEnum.buildPackagePath(".", true, generateVersion) + "." + method.errorEnum.joynrName»
 					«errorEnumType» error,
 			«ENDIF»
 				ReplyContext replyContext

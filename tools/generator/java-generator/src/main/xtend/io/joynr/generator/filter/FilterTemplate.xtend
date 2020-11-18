@@ -32,17 +32,17 @@ class FilterTemplate implements BroadcastTemplate{
 	@Inject extension NamingUtil
 	@Inject extension TemplateBase
 
-	override generate(FInterface serviceInterface, FBroadcast broadcast) {
+	override generate(FInterface serviceInterface, FBroadcast broadcast, boolean generateVersion) {
 		val broadcastName =  broadcast.joynrName
 		val className = serviceInterface.joynrName + broadcastName.toFirstUpper + "BroadcastFilter"
-		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(serviceInterface, ".", generateVersion)
 
 		'''
 		«warning()»
 		package «packagePath»;
 
 		import io.joynr.pubsub.publication.BroadcastFilterImpl;
-		«FOR datatype: getRequiredIncludesFor(broadcast)»
+		«FOR datatype: getRequiredIncludesFor(broadcast, generateVersion)»
 		import «datatype»;
 		«ENDFOR»
 

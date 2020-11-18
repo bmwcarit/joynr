@@ -37,9 +37,9 @@ class CommunicationModelGenerator {
 
 	@Inject JavaTemplateFactory templateFactory
 
-	def doGenerate(FModel fModel, IFileSystemAccess fsa){
+	def doGenerate(FModel fModel, IFileSystemAccess fsa, boolean generateVersion){
 		for( type: getCompoundDataTypes(fModel)){
-			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var path = getPackagePathWithJoynrPrefix(type, File::separator, generateVersion) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
@@ -47,12 +47,13 @@ class CommunicationModelGenerator {
 			generateFile(
 				fsa,
 				path + type.joynrName + ".java",
-				complexTypeTemplate
+				complexTypeTemplate,
+				generateVersion
 			)
 		}
 
 		for( type: getEnumDataTypes(fModel)){
-			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var path = getPackagePathWithJoynrPrefix(type, File::separator, generateVersion) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
@@ -60,12 +61,13 @@ class CommunicationModelGenerator {
 			generateFile(
 				fsa,
 				path + type.joynrName + ".java",
-				enumTypeTemplate
+				enumTypeTemplate,
+				generateVersion
 			)
 		}
 
 		for( type: getMapDataTypes(fModel)){
-			var path = getPackagePathWithJoynrPrefix(type, File::separator) + File::separator
+			var path = getPackagePathWithJoynrPrefix(type, File::separator, generateVersion) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator
 			}
@@ -73,7 +75,8 @@ class CommunicationModelGenerator {
 			generateFile(
 				fsa,
 				path + type.joynrName + ".java",
-				mapTypeTemplate
+				mapTypeTemplate,
+				generateVersion
 			)
 		}
 	}

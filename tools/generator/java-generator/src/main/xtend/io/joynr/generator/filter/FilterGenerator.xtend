@@ -34,8 +34,8 @@ class FilterGenerator {
 	@Inject
 	FilterTemplate filterTemplate;
 
-	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
-		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
+	def doGenerate(FInterface fInterface, IFileSystemAccess fsa, boolean generateVersion){
+		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersion) + File::separator
 		for (broadcast : fInterface.broadcasts) {
 			if (broadcast.selective) {
 				val fileName = path + fInterface.joynrName + broadcast.joynrName.toFirstUpper + "BroadcastFilter.java"
@@ -44,7 +44,8 @@ class FilterGenerator {
 					fileName,
 					filterTemplate,
 					fInterface,
-					broadcast);
+					broadcast,
+					generateVersion);
 			}
 		}
 	}

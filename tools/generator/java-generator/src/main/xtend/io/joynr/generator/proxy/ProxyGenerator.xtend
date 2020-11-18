@@ -32,8 +32,8 @@ class ProxyGenerator {
 	@Inject extension NamingUtil
 	@Inject JavaTemplateFactory templateFactory
 
-	def doGenerate(FInterface fInterface, IFileSystemAccess fsa){
-		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator) + File::separator
+	def doGenerate(FInterface fInterface, IFileSystemAccess fsa, boolean generateVersion){
+		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersion) + File::separator
 
 		var serviceName =  fInterface.joynrName
 
@@ -41,7 +41,8 @@ class ProxyGenerator {
 		generateFile(
 			fsa,
 			path + serviceName + "Proxy.java",
-			interfaceProxyTemplate
+			interfaceProxyTemplate,
+			generateVersion
 		);
 	}
 }

@@ -38,9 +38,9 @@ class ComplexTypeTemplate extends CompoundTypeTemplate {
 		super(type)
 	}
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val typeName = type.joynrName
-		val complexTypePackageName = type.buildPackagePath(".", true)
+		val complexTypePackageName = type.buildPackagePath(".", true, generateVersion)
 		'''
 		«warning()»
 
@@ -49,7 +49,7 @@ import java.io.Serializable;
 
 import io.joynr.subtypes.JoynrType;
 
-«FOR member : getRequiredIncludesFor(type)»
+«FOR member : getRequiredIncludesFor(type, generateVersion)»
 import «member»;
 «ENDFOR»
 import com.fasterxml.jackson.annotation.JsonProperty;

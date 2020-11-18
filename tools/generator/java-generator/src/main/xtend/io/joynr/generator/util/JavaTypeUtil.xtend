@@ -202,6 +202,14 @@ class JavaTypeUtil extends AbstractTypeUtil {
 			datatype.joynrName + " could not be mapped to an implementation datatype")
 	}
 
+	override getTypeName(FType datatype, boolean generateVersion) {
+		throw new IllegalStateException("Unsupported method called for Java!")
+	}
+
+	override getTypeNameForList(FType datatype, boolean generateVersion) {
+		throw new IllegalStateException("Unsupported method called for Java!")
+	}
+
 	override getTypeNameForList(FBasicTypeId datatype) {
 		getObjectDataTypeForPlainType(datatype.typeName) + "[]";
 	}

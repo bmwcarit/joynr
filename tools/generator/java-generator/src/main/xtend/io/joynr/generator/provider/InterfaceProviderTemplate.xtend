@@ -75,7 +75,7 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 		}
 	}
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		var methodToDeferredName = new HashMap<FMethod, String>();
 		var methodToErrorEnumName = francaIntf.methodToErrorEnumName
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
@@ -83,7 +83,7 @@ class InterfaceProviderTemplate extends InterfaceTemplate {
 
 		val interfaceName = francaIntf.joynrName
 		val className = francaIntf.providerClassName
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 
 		'''
 «warning()»
@@ -110,7 +110,7 @@ package «packagePath»;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.JoynrVersion;
 
-«FOR datatype: getRequiredIncludesFor(francaIntf)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 «IF francaIntf.hasNotifiableAttribute || !francaIntf.broadcasts.empty»
@@ -180,7 +180,7 @@ public interface «className» {
 				«IF method.errors !== null»
 					public synchronized boolean reject(«packagePath».«interfaceName».«methodToErrorEnumName.get(method)» error) {
 				«ELSE»
-					public synchronized boolean reject(«method.errorEnum.buildPackagePath(".", true)».«method.errorEnum.joynrName»«» error) {
+					public synchronized boolean reject(«method.errorEnum.buildPackagePath(".", true, generateVersion)».«method.errorEnum.joynrName»«» error) {
 				«ENDIF»
 					return super.reject(new ApplicationException(error));
 				}

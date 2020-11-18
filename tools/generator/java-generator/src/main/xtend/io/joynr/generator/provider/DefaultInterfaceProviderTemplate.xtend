@@ -38,7 +38,7 @@ class DefaultInterfaceProviderTemplate extends InterfaceProviderTemplate {
 	@Inject extension JavaTypeUtil
 	@Inject extension TemplateBase
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		var methodToDeferredName = new HashMap<FMethod, String>();
 		var uniqueMethodsToCreateDeferreds = new ArrayList<FMethod>();
 		init(francaIntf, methodToDeferredName, uniqueMethodsToCreateDeferreds);
@@ -46,7 +46,7 @@ class DefaultInterfaceProviderTemplate extends InterfaceProviderTemplate {
 		val interfaceName =  francaIntf.joynrName
 		val className = "Default" + interfaceName + "Provider"
 		val abstractProviderName = interfaceName + "AbstractProvider"
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 
 		'''
 «warning()»
@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
 	«ENDIF»
 «ENDIF»
 
-«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, true)»
+«FOR datatype: getRequiredIncludesFor(francaIntf, true, true, true, false, false, true, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 

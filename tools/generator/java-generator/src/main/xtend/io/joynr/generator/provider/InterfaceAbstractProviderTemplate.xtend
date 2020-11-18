@@ -34,11 +34,11 @@ class InterfaceAbstractProviderTemplate extends InterfaceTemplate {
 	@Inject extension AttributeUtil
 	@Inject extension TemplateBase
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val interfaceName =  francaIntf.joynrName
 		val className = interfaceName + "AbstractProvider"
 		val providerInterfaceName = interfaceName + "Provider"
-		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".")
+		val packagePath = getPackagePathWithJoynrPrefix(francaIntf, ".", generateVersion)
 
 		'''
 «warning()»
@@ -51,7 +51,7 @@ import java.util.HashSet;
 import io.joynr.pubsub.publication.BroadcastFilterImpl;
 «ENDIF»
 
-«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true, false)»
+«FOR datatype : getRequiredIncludesFor(francaIntf, false, false, false, true, true, false, generateVersion)»
 	import «datatype»;
 «ENDFOR»
 

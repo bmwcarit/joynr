@@ -39,9 +39,9 @@ class MapTypeTemplate extends MapTemplate {
 		super(type)
 	}
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		val typeName = type.joynrName
-		val mapTypePackageName = type.buildPackagePath(".", true)
+		val mapTypePackageName = type.buildPackagePath(".", true, generateVersion)
 
 '''
 «warning()»
@@ -54,10 +54,10 @@ import io.joynr.subtypes.JoynrType;
 «val keyType = getDatatype(type.keyType)»
 «val valueType = getDatatype(type.valueType)»
 «IF keyType instanceof FType»
-import «getIncludeOf(keyType)»;
+import «getIncludeOf(keyType, generateVersion)»;
 «ENDIF»
 «IF valueType instanceof FType»
-import «getIncludeOf(valueType)»;
+import «getIncludeOf(valueType, generateVersion)»;
 «ENDIF»
 
 // NOTE: serialVersionUID is not defined since we don't support Franca versions right now.

@@ -38,9 +38,9 @@ class EnumTypeTemplate extends EnumTemplate {
 		super(type)
 	}
 
-	override generate()
+	override generate(boolean generateVersion)
 '''
-«val packagePath = type.buildPackagePath(".", true)»
+«val packagePath = type.buildPackagePath(".", true, generateVersion)»
 «warning()»
 
 package «packagePath»;
