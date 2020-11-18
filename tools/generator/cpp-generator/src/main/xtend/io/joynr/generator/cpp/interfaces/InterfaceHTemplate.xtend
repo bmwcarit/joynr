@@ -1,4 +1,4 @@
-package io.joynr.generator.cpp.communicationmodel
+package io.joynr.generator.cpp.interfaces
 /*
  * !!!
  *
@@ -39,13 +39,13 @@ class InterfaceHTemplate extends InterfaceTemplate{
 
 	@Inject extension JoynrCppGeneratorExtensions
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		var selector = TypeSelector::defaultTypeSelector
 		selector.errorTypes(true)
 		selector.typeDefs(true)
 '''
 «val interfaceName = francaIntf.joynrName»
-«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_")+"_I"+interfaceName+"_h").toUpperCase»
+«val headerGuard = ("GENERATED_INTERFACE_"+getPackagePathWithJoynrPrefix(francaIntf, "_", generateVersion)+"_I"+interfaceName+"_h").toUpperCase»
 «warning()»
 
 #ifndef «headerGuard»
@@ -53,9 +53,9 @@ class InterfaceHTemplate extends InterfaceTemplate{
 
 «FOR datatype: IterableExtensions.sortWith(getAllComplexTypes(francaIntf, selector),new FMapTypeAsLastComparator())»
 	«IF isCompound(datatype) || (isMap(datatype) && !isTypeDef(datatype))»
-		«datatype.forwardDeclaration»
+		«datatype.getForwardDeclaration(generateVersion)»
 	«ELSE »
-		#include «datatype.includeOf»
+		#include «datatype.getIncludeOf(generateVersion)»
 	«ENDIF»
 «ENDFOR»
 
@@ -85,7 +85,7 @@ namespace exceptions
 
 } // namespace joynr
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 /**
  * @brief Base interface.
@@ -119,7 +119,7 @@ public:
 class «getDllExportMacro()» I«interfaceName»FireAndForget : virtual public I«interfaceName»Base {
 public:
 	~I«interfaceName»FireAndForget() override = default;
-	«produceFireAndForgetMethodDeclarations(francaIntf,true)»
+	«produceFireAndForgetMethodDeclarations(francaIntf,true, generateVersion)»
 };
 «ENDIF»
 
@@ -134,9 +134,9 @@ class «getDllExportMacro()» I«interfaceName»Sync :
 {
 public:
 	~I«interfaceName»Sync() override = default;
-	«produceSyncGetterDeclarations(francaIntf,true)»
-	«produceSyncSetterDeclarations(francaIntf,true)»
-	«produceSyncMethodDeclarations(francaIntf,true)»
+	«produceSyncGetterDeclarations(francaIntf,true, generateVersion)»
+	«produceSyncSetterDeclarations(francaIntf,true, generateVersion)»
+	«produceSyncMethodDeclarations(francaIntf,true, generateVersion)»
 };
 
 /**
@@ -150,9 +150,9 @@ class «getDllExportMacro()» I«interfaceName»Async :
 {
 public:
 	~I«interfaceName»Async() override = default;
-	«produceAsyncGetterDeclarations(francaIntf,true)»
-	«produceAsyncSetterDeclarations(francaIntf,true)»
-	«produceAsyncMethodDeclarations(francaIntf,true, true)»
+	«produceAsyncGetterDeclarations(francaIntf,true, generateVersion)»
+	«produceAsyncSetterDeclarations(francaIntf,true, generateVersion)»
+	«produceAsyncMethodDeclarations(francaIntf,true, true, generateVersion)»
 };
 
 /**
@@ -183,7 +183,7 @@ public:
 	«ENDFOR»
 };
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 #endif // «headerGuard»
 '''
 }

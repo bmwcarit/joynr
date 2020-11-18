@@ -21,20 +21,15 @@ import com.google.inject.Inject
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.CppTemplateFactory
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
-import io.joynr.generator.templates.util.InterfaceUtil
-import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FEnumerationType
-import org.franca.core.franca.FInterface
 import org.franca.core.franca.FModel
 
 class CommunicationModelGenerator {
 
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension CppStdTypeUtil
-	@Inject extension NamingUtil
-	@Inject extension InterfaceUtil
 
 	@Inject TypeDefHTemplate typeDefH;
 
@@ -133,62 +128,6 @@ class CommunicationModelGenerator {
 				typeDefH,
 				type
 			)
-		}
-
-		val interfacePath = sourceContainerPath + "interfaces" + File::separator
-		val headerInterfacePath =
-			if (sourceFileSystem == headerFileSystem)
-				headerContainerPath + "interfaces" + File::separator
-			else
-				headerContainerPath
-
-		for(serviceInterface: fModel.interfaces){
-			val sourcepath = interfacePath + getPackageSourceDirectory(serviceInterface) + File::separator 
-			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator) + File::separator 
-
-			var interfaceHTemplate = templateFactory.createInterfaceHTemplate(serviceInterface)
-			generateFile(
-				headerFileSystem,
-				headerpath + "I" + serviceInterface.joynrName + ".h",
-				interfaceHTemplate
-			);
-
-			var interfaceCppTemplate = templateFactory.createInterfaceCppTemplate(serviceInterface)
-			generateFile(
-				sourceFileSystem,
-				sourcepath + "I" + serviceInterface.joynrName + ".cpp",
-				interfaceCppTemplate
-			);
-
-			generateErrorEnumTypes(
-				headerFileSystem,
-				sourceFileSystem,
-				dataTypePath,
-				serviceInterface
-				);
-		}
-	}
-
-	def generateErrorEnumTypes(IFileSystemAccess headerFileSystem, IFileSystemAccess sourceFileSystem, String dataTypePath, FInterface fInterface)
-	{
-		var methodToErrorEnumName = fInterface.methodToErrorEnumName;
-		for (method: getMethods(fInterface)) {
-			var enumType = method.errors;
-			if (enumType !== null) {
-				enumType.name = methodToErrorEnumName.get(method);
-				val path = getPackagePathWithJoynrPrefix(enumType, File::separator)
-				val headerFilename = path + File::separator + getGenerationTypeName(enumType)
-				val sourceFilepath = dataTypePath + getPackageSourceDirectory(fInterface) + File::separator + fInterface.joynrName;
-				val sourceFilename = sourceFilepath + File::separator + getGenerationTypeName(enumType)
-
-				generateEnum(
-					headerFileSystem,
-					sourceFileSystem,
-					enumType,
-					headerFilename,
-					sourceFilename
-				)
-			}
 		}
 	}
 

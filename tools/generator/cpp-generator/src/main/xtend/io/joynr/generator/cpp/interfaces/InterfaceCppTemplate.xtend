@@ -1,4 +1,4 @@
-package io.joynr.generator.cpp.communicationmodel
+package io.joynr.generator.cpp.interfaces
 /*
  * !!!
  *
@@ -46,20 +46,20 @@ class InterfaceCppTemplate extends InterfaceTemplate {
 
 	@Inject extension TemplateBase
 
-	override generate() {
+	override generate(boolean generateVersion) {
 		var selector = TypeSelector::defaultTypeSelector
 		selector.transitiveTypes(true)
 '''
 «val interfaceName = francaIntf.joynrName»
 «warning()»
 
-#include "«getPackagePathWithJoynrPrefix(francaIntf, "/")»/I«interfaceName».h"
+#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName».h"
 
-«FOR parameterType: getDataTypeIncludesFor(francaIntf)»
+«FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
 
-«getNamespaceStarter(francaIntf)»
+«getNamespaceStarter(francaIntf, generateVersion)»
 
 const std::string& I«interfaceName»Base::INTERFACE_NAME()
 {
@@ -70,28 +70,28 @@ const std::string& I«interfaceName»Base::INTERFACE_NAME()
 const std::int32_t I«interfaceName»Base::MAJOR_VERSION = «majorVersion»;
 const std::int32_t I«interfaceName»Base::MINOR_VERSION = «minorVersion»;
 
-«getNamespaceEnder(francaIntf)»
+«getNamespaceEnder(francaIntf, generateVersion)»
 '''
 }
-def getReplyMetatypes(FInterface serviceInterface) {
+def getReplyMetatypes(FInterface serviceInterface, boolean generateVersion) {
 	var replyMetatypes = new HashSet();
 	for (method: serviceInterface.methods) {
 		if (!method.outputParameters.empty) {
-			replyMetatypes.add(method.commaSeparatedOutputParameterTypes)
+			replyMetatypes.add(method.getCommaSeparatedOutputParameterTypes(generateVersion))
 		}
 	}
 	for (attribute: serviceInterface.attributes) {
 		if (attribute.readable) {
-			replyMetatypes.add(attribute.typeName);
+			replyMetatypes.add(attribute.getTypeName(generateVersion));
 		}
 	}
 	return replyMetatypes;
 }
-def getBroadcastMetatypes(FInterface serviceInterface) {
+def getBroadcastMetatypes(FInterface serviceInterface, boolean generateVersion) {
 	var broadcastMetatypes = new HashSet();
 	for (broadcast: serviceInterface.broadcasts) {
 		if (!broadcast.outputParameters.empty) {
-			broadcastMetatypes.add(broadcast.commaSeparatedOutputParameterTypes)
+			broadcastMetatypes.add(broadcast.getCommaSeparatedOutputParameterTypes(generateVersion))
 		}
 	}
 	return broadcastMetatypes;

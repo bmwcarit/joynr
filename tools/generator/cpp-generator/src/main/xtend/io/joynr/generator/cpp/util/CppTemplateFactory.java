@@ -25,14 +25,14 @@ import org.franca.core.franca.FMapType;
 
 import io.joynr.generator.cpp.communicationmodel.EnumCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.EnumHTemplate;
-import io.joynr.generator.cpp.communicationmodel.InterfaceCppTemplate;
-import io.joynr.generator.cpp.communicationmodel.InterfaceHTemplate;
 import io.joynr.generator.cpp.communicationmodel.MapCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.MapHTemplate;
 import io.joynr.generator.cpp.communicationmodel.TypeCppTemplate;
 import io.joynr.generator.cpp.communicationmodel.TypeHTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderCppTemplate;
 import io.joynr.generator.cpp.defaultProvider.DefaultInterfaceProviderHTemplate;
+import io.joynr.generator.cpp.interfaces.InterfaceCppTemplate;
+import io.joynr.generator.cpp.interfaces.InterfaceHTemplate;
 import io.joynr.generator.cpp.joynrmessaging.InterfaceJoynrMessagingConnectorCppTemplate;
 import io.joynr.generator.cpp.joynrmessaging.InterfaceJoynrMessagingConnectorHTemplate;
 import io.joynr.generator.cpp.provider.InterfaceAbstractProviderCppTemplate;
