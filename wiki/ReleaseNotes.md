@@ -2,6 +2,21 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.6
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[C++]** Introduced `JOYNR_SUPPORT_WEBSOCKET` and `JOYNR_SUPPORT_UDS` CMake options to
+  suppress unused build artifacts on demand.
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.15.5
 
 ## API-relevant Changes

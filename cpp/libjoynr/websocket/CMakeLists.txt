@@ -30,9 +30,9 @@ add_library(Joynr::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME}
     PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     PUBLIC "$<INSTALL_INTERFACE:${JOYNR_INSTALL_INCLUDEDIR}>"
+    PRIVATE "$<TARGET_PROPERTY:websocketpp::websocketpp,INTERFACE_INCLUDE_DIRECTORIES>"
 )
 objlibrary_target_link_libraries(${PROJECT_NAME}
-    PRIVATE websocketpp::websocketpp
     PRIVATE MoCOCrW::mococrw
 )
 target_link_objlibraries(${PROJECT_NAME}

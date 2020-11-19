@@ -1,4 +1,6 @@
 set(JOYNR_ENABLE_DLT_LOGGING @JOYNR_ENABLE_DLT_LOGGING@)
+set(JOYNR_SUPPORT_WEBSOCKET @JOYNR_SUPPORT_WEBSOCKET@)
+set(JOYNR_SUPPORT_UDS @JOYNR_SUPPORT_UDS@)
 
 include(CMakeFindDependencyMacro)
 include(FindPkgConfig)
@@ -10,9 +12,11 @@ find_dependency(spdlog @JOYNR_SPDLOG_REQUIRED_VERSION@ REQUIRED)
 if(${JOYNR_ENABLE_DLT_LOGGING})
     pkg_check_modules(DLT REQUIRED IMPORTED_TARGET automotive-dlt)
 endif()
-# websocketpp-config.cmake iw not guarding target addition; workaround: check it here.
-if(NOT TARGET websocketpp::websocketpp)
-    find_dependency(websocketpp @JOYNR_WEBSOCKETPP_REQUIRED_VERSION@ REQUIRED)
+if(${JOYNR_SUPPORT_WEBSOCKET})
+    # websocketpp-config.cmake is not guarding target addition; workaround: check it here.
+    if(NOT TARGET websocketpp::websocketpp)
+        find_dependency(websocketpp @JOYNR_WEBSOCKETPP_REQUIRED_VERSION@ REQUIRED)
+    endif()
 endif()
 find_dependency(MoCOCrW @JOYNR_MOCOCRW_REQUIRED_VERSION@ REQUIRED)
 find_dependency(muesli @JOYNR_MUESLI_REQUIRED_VERSION@ REQUIRED)
@@ -39,25 +43,26 @@ if(NOT TARGET Joynr::JoynrLib)
         Joynr::JoynrLib
         INTERFACE_LINK_LIBRARIES
     )
-    get_target_property(
-        Joynr_LIB_WS_INCLUDE_DIRS
-        Joynr::JoynrWsRuntime
-        INTERFACE_INCLUDE_DIRECTORIES
-    )
-    get_target_property(
-        Joynr_LIB_WS_LIBRARIES
-        Joynr::JoynrWsRuntime
-        INTERFACE_LINK_LIBRARIES
-    )
     if(NOT TARGET Joynr)
         add_library(Joynr INTERFACE)
         target_link_libraries(Joynr INTERFACE Joynr::JoynrLib)
     endif()
-    if(NOT TARGET JoynrWsRuntime)
-        add_library(JoynrWsRuntime INTERFACE)
-        target_link_libraries(JoynrWsRuntime INTERFACE Joynr::JoynrWsRuntime)
+    if(${JOYNR_SUPPORT_WEBSOCKET})
+        get_target_property(
+            Joynr_LIB_WS_INCLUDE_DIRS
+            Joynr::JoynrWsRuntime
+            INTERFACE_INCLUDE_DIRECTORIES
+        )
+        get_target_property(
+            Joynr_LIB_WS_LIBRARIES
+            Joynr::JoynrWsRuntime
+            INTERFACE_LINK_LIBRARIES
+        )
+        if(NOT TARGET JoynrWsRuntime)
+            add_library(JoynrWsRuntime INTERFACE)
+            target_link_libraries(JoynrWsRuntime INTERFACE Joynr::JoynrWsRuntime)
+        endif()
     endif()
-
 endif()
 
 set(Joynr_BIN_DIR "@PACKAGE_JOYNR_INSTALL_BINDIR@")

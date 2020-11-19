@@ -61,6 +61,8 @@ message(STATUS "JOYNR_INSTALL_FULL_SYSCONFDIR = ${JOYNR_INSTALL_FULL_SYSCONFDIR}
 message(STATUS "-----------------------------------------------------")
 
 option(JOYNR_ENABLE_DLT_LOGGING "Use DLT logger?" OFF)
+option(JOYNR_SUPPORT_WEBSOCKET "Support WebSocket interface" ON)
+option(JOYNR_SUPPORT_UDS "Support Unix Domain Socket (UDS) interface" ON)
 
 option(GENERATE_SOURCES "Generate source files from Franca model?" OFF)
 if(${GENERATE_SOURCES})

@@ -87,5 +87,9 @@ function(create_joynr_runtime TYPE SUBDIR)
 
 endfunction()
 
-create_joynr_runtime(Ws websocket)
-create_joynr_runtime(Uds uds)
+if(JOYNR_SUPPORT_WEBSOCKET)
+    create_joynr_runtime(Ws websocket)
+endif()
+if(JOYNR_SUPPORT_UDS)
+    create_joynr_runtime(Uds uds)
+endif()

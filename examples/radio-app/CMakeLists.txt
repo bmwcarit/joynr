@@ -165,11 +165,21 @@ file(
     DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
 )
 
-get_target_property(
-    LibJoynrRuntime_INCLUDE_DIRS
-    Joynr::JoynrWsRuntime
-    INTERFACE_INCLUDE_DIRECTORIES
-)
+# Include directories for WebSocket and UDS runtime are the same
+if(TARGET Joynr::JoynrWsRuntime)
+    get_target_property(
+        LibJoynrRuntime_INCLUDE_DIRS
+        Joynr::JoynrWsRuntime
+        INTERFACE_INCLUDE_DIRECTORIES
+    )
+endif()
+if(TARGET Joynr::JoynrUdsRuntime)
+    get_target_property(
+        LibJoynrRuntime_INCLUDE_DIRS
+        Joynr::JoynrUdsRuntime
+        INTERFACE_INCLUDE_DIRECTORIES
+    )
+endif()
 
 # Provider objects are independent of cluster controller communication
 add_library(radio-app-provider-common OBJECT
@@ -197,32 +207,41 @@ target_link_libraries(radio-app-consumer-common
     radio-app
 )
 
-
 function(create_apps TYPE RUNTIME)
     add_executable(radio-app-provider-${TYPE}
         $<TARGET_OBJECTS:radio-app-provider-common>)
     target_link_libraries(radio-app-provider-${TYPE}
         radio-app
-        Joynr::${RUNTIME})
+        ${RUNTIME})
 
     add_executable(radio-app-consumer-${TYPE}
         $<TARGET_OBJECTS:radio-app-consumer-common>)
     target_link_libraries(radio-app-consumer-${TYPE}
         radio-app
-        Joynr::${RUNTIME})
+        ${RUNTIME})
 endfunction()
 
 # Communicates via WebSockets with cluster controller
-create_apps(ws JoynrWsRuntime)
+if(TARGET Joynr::JoynrWsRuntim)
+    create_apps(ws Joynr::JoynrWsRuntime)
+    install(TARGETS
+                radio-app-provider-ws
+                radio-app-consumer-ws
+            RUNTIME DESTINATION bin COMPONENT bin
+    )
+endif()
 
 # Communicates via UNIX Domain Sockets with cluster controller
-create_apps(uds JoynrUdsRuntime)
+if(TARGET Joynr::JoynrUdsRuntime)
+    create_apps(uds Joynr::JoynrUdsRuntime)
+    install(TARGETS
+                radio-app-provider-uds
+                radio-app-consumer-uds
+            RUNTIME DESTINATION bin COMPONENT bin
+    )
+endif()
 
 install(TARGETS
-            radio-app-provider-ws
-            radio-app-consumer-ws
-            radio-app-provider-uds
-            radio-app-consumer-uds
             radio-app-provider-cc
             radio-app-consumer-cc
         RUNTIME DESTINATION bin COMPONENT bin

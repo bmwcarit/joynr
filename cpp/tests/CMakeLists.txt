@@ -293,31 +293,34 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
 
 endif(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATION_TESTS})
 
+function(GetSourceFiles OUTPUT_VAR)
+    set(oneValueArgs INPUT_DIR)
+    set(multiValueArgs EXCLUDES)
+    cmake_parse_arguments(LTS "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+    file(
+        GLOB_RECURSE sources
+        "${LTS_INPUT_DIR}/*.cpp"
+        "${LTS_INPUT_DIR}/*.h"
+    )
+    if(LTS_EXCLUDES)
+        foreach(exclude ${LTS_EXCLUDES})
+            list(FILTER sources EXCLUDE REGEX ${exclude})
+        endforeach()
+    endif()
+    set(${OUTPUT_VAR} ${sources} PARENT_SCOPE)
+endfunction()
+
 ###############
 # g_UnitTests #
 ###############
 
 if(${BUILD_UNIT_TESTS})
-    file(
-        GLOB g_UnitTests_SOURCES
-        "unit-tests/*.cpp"
-        "unit-tests/mqtt/*.cpp"
-        "unit-tests/uds/*.cpp"
-        "unit-tests/websocket/*.cpp"
-        "unit-tests/jsonserializer/*.cpp"
-        "unit-tests/serializer/*.cpp"
-    )
-
-    file(
-        GLOB g_UnitTests_HEADERS
-        "unit-tests/*.h"
-    )
+    GetSourceFiles(g_UnitTests_SOURCES INPUT_DIR unit-tests)
 
     AddTest(
         g_UnitTests
         ${test_HEADERS}
         ${test_SOURCES}
-        ${g_UnitTests_HEADERS}
         ${g_UnitTests_SOURCES}
     )
 
@@ -344,10 +347,13 @@ endif(${BUILD_UNIT_TESTS})
 ######################
 
 if(${BUILD_INTEGRATION_TESTS})
-    file(
-       GLOB g_IntegrationTests_SOURCES
-       "integration-tests/*.cpp"
-    )
+    if(NOT ${JOYNR_SUPPORT_WEBSOCKET})
+        list(APPEND excludedTests ".*/websocket/.*")
+    endif()
+    if(NOT ${JOYNR_SUPPORT_UDS})
+        list(APPEND excludedTests ".*/uds/.*")
+    endif()
+    GetSourceFiles(g_IntegrationTests_SOURCES INPUT_DIR integration-tests EXCLUDES ${excludedTests})
 
     AddTest(
        g_IntegrationTests
@@ -365,10 +371,20 @@ if(${BUILD_INTEGRATION_TESTS})
     # JoynrRuntime::createRuntime must be found from JoynrClusterControllerRuntime,
     # not from JoynrWsRuntime. Therefore, do not link Joynr::JoynrWsRuntime.
     target_link_objlibraries(g_IntegrationTests
-        PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
-        PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
         PUBLIC Joynr::JoynrLibJoynrRuntime
     )
+
+    if(${JOYNR_SUPPORT_WEBSOCKET})
+        target_link_objlibraries(g_IntegrationTests
+            PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
+        )
+    endif()
+
+    if(${JOYNR_SUPPORT_UDS})
+        target_link_objlibraries(g_IntegrationTests
+            PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
+        )
+    endif()
 
     target_include_directories(
         g_IntegrationTests
@@ -386,10 +402,13 @@ endif(${BUILD_INTEGRATION_TESTS})
 ############################
 
 if(${BUILD_SYSTEM_INTEGRATION_TESTS})
-    file(
-       GLOB g_SystemIntegrationTests_SOURCES
-       "systemintegration-tests/*.cpp"
-    )
+    if(NOT ${JOYNR_SUPPORT_WEBSOCKET})
+        list(APPEND excludedTests ".*/websocket/.*")
+    endif()
+    if(NOT ${JOYNR_SUPPORT_UDS})
+        list(APPEND excludedTests ".*/uds/.*")
+    endif()
+    GetSourceFiles(g_SystemIntegrationTests_SOURCES INPUT_DIR systemintegration-tests EXCLUDES ${excludedTests})
 
     AddTest(
        g_SystemIntegrationTests
@@ -408,10 +427,20 @@ if(${BUILD_SYSTEM_INTEGRATION_TESTS})
     # JoynrRuntime::createRuntime must be found from JoynrClusterControllerRuntime,
     # not from JoynrWsRuntime. Therefore, do not link Joynr::JoynrWsRuntime.
     target_link_objlibraries(g_SystemIntegrationTests
-        PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
-        PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
         PUBLIC Joynr::JoynrLibJoynrRuntime
     )
+
+    if(${JOYNR_SUPPORT_WEBSOCKET})
+        target_link_objlibraries(g_SystemIntegrationTests
+            PUBLIC Joynr::JoynrWsRuntimeWithoutJoynrRuntime
+        )
+    endif()
+
+    if(${JOYNR_SUPPORT_UDS})
+        target_link_objlibraries(g_SystemIntegrationTests
+            PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
+        )
+    endif()
 
     target_include_directories(
         g_SystemIntegrationTests
