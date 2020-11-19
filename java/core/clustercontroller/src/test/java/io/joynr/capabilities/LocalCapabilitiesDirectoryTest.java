@@ -120,6 +120,8 @@ public class LocalCapabilitiesDirectoryTest {
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
     private static final long freshnessUpdateIntervalMs = 300;
     private static final long DEFAULT_EXPIRY_TIME_MS = 3628800000l;
+    private static final long READD_INTERVAL_DAYS = 7l;
+    private static final long defaultTtlAddAndRemove = MessagingQos.DEFAULT_TTL;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
 
@@ -3508,4 +3510,82 @@ public class LocalCapabilitiesDirectoryTest {
                              any(String[].class));
     }
 
+    @Test(timeout = TEST_TIMEOUT)
+    public void testReAddAllGlobalDiscoveryEntriesPeriodically() throws InterruptedException {
+        final String participantId1 = "participantId1";
+        final String participantId2 = "participantId2";
+
+        DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(discoveryEntry);
+        discoveryEntry1.getQos().setScope(ProviderScope.GLOBAL);
+        discoveryEntry1.setParticipantId(participantId1);
+
+        DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(discoveryEntry1);
+        discoveryEntry2.setParticipantId(participantId2);
+
+        GlobalDiscoveryEntry globalDiscoveryEntry1 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry1,
+                                                                                                         globalAddress1);
+        GlobalDiscoveryEntry globalDiscoveryEntry2 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry2,
+                                                                                                         globalAddress1);
+
+        final boolean awaitGlobalRegistration = true;
+        String[] gbids1 = new String[]{ knownGbids[0] };
+        String[] expectedGbids1 = gbids1.clone();
+        String[] gbids2 = new String[]{ knownGbids[1] };
+        String[] expectedGbids2 = gbids2.clone();
+        Promise<Add1Deferred> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry1,
+                                                                           awaitGlobalRegistration,
+                                                                           gbids1);
+        Promise<Add1Deferred> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry2,
+                                                                           awaitGlobalRegistration,
+                                                                           gbids2);
+
+        checkPromiseSuccess(promiseAdd1, "add failed");
+        checkPromiseSuccess(promiseAdd2, "add failed");
+
+        reset(globalCapabilitiesDirectoryClient);
+
+        CountDownLatch cdlReAdd = new CountDownLatch(2);
+        doAnswer(createAnswerWithSuccess(cdlReAdd)).when(globalCapabilitiesDirectoryClient)
+                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                        argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry1)),
+                                                        anyLong(),
+                                                        eq(gbids1));
+
+        doAnswer(createAnswerWithSuccess(cdlReAdd)).when(globalCapabilitiesDirectoryClient)
+                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                        argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry2)),
+                                                        anyLong(),
+                                                        eq(gbids2));
+
+        Set<DiscoveryEntry> globalEntries = new HashSet<>();
+        globalEntries.add(discoveryEntry1);
+        globalEntries.add(discoveryEntry2);
+        when(localDiscoveryEntryStoreMock.getAllGlobalEntries()).thenReturn(globalEntries);
+
+        verify(globalCapabilitiesDirectoryClient, times(0)).add(any(), any(), anyLong(), any());
+
+        verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
+                                                                        eq(READD_INTERVAL_DAYS),
+                                                                        eq(READD_INTERVAL_DAYS),
+                                                                        eq(TimeUnit.DAYS));
+
+        // capture the runnable and execute it to schedule the re-add task
+        Runnable runnable = runnableCaptor.getValue();
+        runnable.run();
+
+        assertTrue(cdlReAdd.await(defaultTtlAddAndRemove, TimeUnit.MILLISECONDS));
+
+        // check whether add method has been called for 2 non expired entries
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry1)),
+                             eq(defaultTtlAddAndRemove),
+                             eq(expectedGbids1));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry2)),
+                             eq(defaultTtlAddAndRemove),
+                             eq(expectedGbids2));
+    }
 }
