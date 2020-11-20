@@ -68,7 +68,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl.GlobalAddRemoveQueueWorker;
+import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl.GcdTaskSequencer;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -169,7 +169,7 @@ public class LocalCapabilitiesDirectoryTest {
     private ArgumentCaptor<Runnable> runnableCaptor;
 
     @Captor
-    private ArgumentCaptor<GlobalAddRemoveQueueWorker> addRemoveQueueRunnableCaptor;
+    private ArgumentCaptor<GcdTaskSequencer> addRemoveQueueRunnableCaptor;
 
     private Thread addRemoveWorker;
 
@@ -341,7 +341,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @After
     public void tearDown() throws Exception {
-        GlobalAddRemoveQueueWorker runnable = (GlobalAddRemoveQueueWorker) addRemoveQueueRunnableCaptor.getValue();
+        GcdTaskSequencer runnable = (GcdTaskSequencer) addRemoveQueueRunnableCaptor.getValue();
         runnable.stop();
         addRemoveWorker.join();
     }

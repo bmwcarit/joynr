@@ -103,7 +103,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache;
     private final Map<String, List<String>> globalProviderParticipantIdToGbidListMap;
-    private GlobalAddRemoveQueueWorker globalAddRemoveQueueWorker;
+    private GcdTaskSequencer gcdTaskSequencer;
 
     private MessageRouter messageRouter;
 
@@ -171,7 +171,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         // set up current date as the start time of the cluster controller
         this.ccStartUpDateInMs = System.currentTimeMillis();
         globalProviderParticipantIdToGbidListMap = new HashMap<>();
-        globalAddRemoveQueueWorker = new GlobalAddRemoveQueueWorker();
+        gcdTaskSequencer = new GcdTaskSequencer();
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.messageRouter = messageRouter;
@@ -201,7 +201,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
         this.scheduler = freshnessUpdateScheduler;
-        this.scheduler.schedule(globalAddRemoveQueueWorker, 0, TimeUnit.MILLISECONDS);
+        this.scheduler.schedule(gcdTaskSequencer, 0, TimeUnit.MILLISECONDS);
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
         shutdownNotifier.registerForShutdown(this);
     }
@@ -505,7 +505,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
                         globalDiscoveryEntryCache.add(globalDiscoveryEntry);
                     }
-                    globalAddRemoveQueueWorker.taskFinished();
+                    gcdTaskSequencer.taskFinished();
                     deferred.resolve();
                 }
 
@@ -520,7 +520,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     if (awaitGlobalRegistration == true) {
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
-                    globalAddRemoveQueueWorker.taskFinished();
+                    gcdTaskSequencer.taskFinished();
                     deferred.reject(new ProviderRuntimeException(exception.toString()));
                 }
 
@@ -534,12 +534,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     if (awaitGlobalRegistration == true) {
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
-                    globalAddRemoveQueueWorker.taskFinished();
+                    gcdTaskSequencer.taskFinished();
                     deferred.reject(errorEnum);
                 }
             };
             GcdTask addTask = GcdTask.createAddTask(callback, globalDiscoveryEntry, expiryDateMs, gbids);
-            globalAddRemoveQueueWorker.addTask(addTask);
+            gcdTaskSequencer.addTask(addTask);
         }
     }
 
@@ -577,7 +577,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         globalDiscoveryEntryCache.remove(participantId);
                         globalProviderParticipantIdToGbidListMap.remove(participantId);
                     }
-                    globalAddRemoveQueueWorker.taskFinished();
+                    gcdTaskSequencer.taskFinished();
                 }
 
                 @Override
@@ -587,10 +587,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         logger.warn("Failed to remove participantId {} due to timeout, retrying: {}",
                                     participantId,
                                     error);
-                        globalAddRemoveQueueWorker.retryTask();
+                        gcdTaskSequencer.retryTask();
                     } else {
                         logger.warn("Failed to remove participantId {}: {}", participantId, error);
-                        globalAddRemoveQueueWorker.taskFinished();
+                        gcdTaskSequencer.taskFinished();
                     }
                 }
 
@@ -615,11 +615,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         // do nothing
                         logger.warn("Failed to remove participantId {}: {}", participantId, errorEnum);
                     }
-                    globalAddRemoveQueueWorker.taskFinished();
+                    gcdTaskSequencer.taskFinished();
                 }
             };
             GcdTask removeTask = GcdTask.createRemoveTask(callback, participantId);
-            globalAddRemoveQueueWorker.addTask(removeTask);
+            gcdTaskSequencer.addTask(removeTask);
         }
 
         // Remove endpoint addresses
@@ -1169,7 +1169,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     public void shutdown(boolean unregisterAllRegisteredCapabilities) {
         logger.debug("shutdown invoked");
 
-        globalAddRemoveQueueWorker.stop();
+        gcdTaskSequencer.stop();
         if (freshnessUpdateScheduledFuture != null) {
             freshnessUpdateScheduledFuture.cancel(false);
         }
@@ -1268,16 +1268,16 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         globalCapabilitiesDirectoryClient.removeStale(callback, ccStartUpDateInMs, gbid);
     }
 
-    public class GlobalAddRemoveQueueWorker implements Runnable {
+    public class GcdTaskSequencer implements Runnable {
 
-        private Logger logger = LoggerFactory.getLogger(GlobalAddRemoveQueueWorker.class);
+        private Logger logger = LoggerFactory.getLogger(GcdTaskSequencer.class);
         private volatile boolean isStopped = false;
         private volatile GcdTask task;
         private final ConcurrentLinkedQueue<GcdTask> taskQueue;
         private Semaphore queueSemaphore;
         private Semaphore workerSemaphore;
 
-        public GlobalAddRemoveQueueWorker() {
+        public GcdTaskSequencer() {
             workerSemaphore = new Semaphore(1);
             queueSemaphore = new Semaphore(0);
             taskQueue = new ConcurrentLinkedQueue<>();
