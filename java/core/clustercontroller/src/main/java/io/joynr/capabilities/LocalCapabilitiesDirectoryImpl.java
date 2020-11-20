@@ -1327,46 +1327,52 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         task.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
                         continue;
                     }
+                    performAdd(remainingTtl);
+                    break;
+                case REMOVE:
+                    performRemove();
+                    break;
+                default:
+                    logger.error("Unknown operation in GlobalAddRemoveQueue.");
+                    workerSemaphore.release();
+                }
+            }
+        }
+
+        private void performAdd(long remainingTtl) {
+            try {
+                globalCapabilitiesDirectoryClient.add(task.callback,
+                                                      task.globalDiscoveryEntry,
+                                                      remainingTtl,
+                                                      task.gbids);
+            } catch (Exception exception) {
+                if (exception instanceof JoynrRuntimeException) {
+                    task.callback.onFailure((JoynrRuntimeException) exception);
+                } else {
+                    task.callback.onFailure(new JoynrRuntimeException("Global registration failed: "
+                            + exception.toString()));
+                }
+            }
+        }
+
+        private void performRemove() {
+            synchronized (globalDiscoveryEntryCache) {
+                if (globalProviderParticipantIdToGbidListMap.containsKey(task.participantId)) {
+                    List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(task.participantId);
                     try {
-                        globalCapabilitiesDirectoryClient.add(task.callback,
-                                                              task.globalDiscoveryEntry,
-                                                              remainingTtl,
-                                                              task.gbids);
+                        globalCapabilitiesDirectoryClient.remove(task.callback,
+                                                                 task.participantId,
+                                                                 gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
                     } catch (Exception exception) {
                         if (exception instanceof JoynrRuntimeException) {
                             task.callback.onFailure((JoynrRuntimeException) exception);
                         } else {
-                            task.callback.onFailure(new JoynrRuntimeException("Global registration failed: "
+                            task.callback.onFailure(new JoynrRuntimeException("Global remove failed: "
                                     + exception.toString()));
                         }
                     }
-                    break;
-                case REMOVE:
-                    synchronized (globalDiscoveryEntryCache) {
-                        if (globalProviderParticipantIdToGbidListMap.containsKey(task.participantId)) {
-                            logger.debug("Calling GCDClient remove.");
-                            List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(task.participantId);
-                            try {
-                                globalCapabilitiesDirectoryClient.remove(task.callback,
-                                                                         task.participantId,
-                                                                         gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
-                            } catch (Exception exception) {
-                                if (exception instanceof JoynrRuntimeException) {
-                                    task.callback.onFailure((JoynrRuntimeException) exception);
-                                } else {
-                                    task.callback.onFailure(new JoynrRuntimeException("Global remove failed: "
-                                            + exception.toString()));
-                                }
-                            }
-                        } else {
-                            logger.warn("Participant {} is not registered globally and cannot be removed!",
-                                        task.participantId);
-                            workerSemaphore.release();
-                        }
-                    }
-                    break;
-                default:
-                    logger.error("Unknown operation in GlobalAddRemoveQueue.");
+                } else {
+                    logger.warn("Participant {} is not registered globally and cannot be removed!", task.participantId);
                     workerSemaphore.release();
                 }
             }
