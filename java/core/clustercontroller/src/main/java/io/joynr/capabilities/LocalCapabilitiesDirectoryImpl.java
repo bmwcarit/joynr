@@ -1304,20 +1304,71 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             workerSemaphore.release();
         }
 
+        private long removeExpiredAndGetNextWaitTime() {
+            long timeTillNextExpiration = defaultTtlAddAndRemove;
+            while (true) {
+                GcdTask expiredTask = null;
+                boolean foundExpiredEntry = false;
+                for (GcdTask task : taskQueue) {
+                    if (task.mode == GcdTask.MODE.ADD) {
+                        timeTillNextExpiration = task.expiryDateMs - System.currentTimeMillis();
+                        if ((task.expiryDateMs) <= System.currentTimeMillis()) {
+                            expiredTask = task;
+                            foundExpiredEntry = true;
+                            break;
+                        }
+                        if (timeTillNextExpiration > defaultExpiryTimeMs) {
+                            timeTillNextExpiration = defaultExpiryTimeMs;
+                        }
+                        break;
+                    }
+                }
+                if (foundExpiredEntry) {
+                    queueSemaphore.acquireUninterruptibly();
+                    expiredTask.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                    taskQueue.remove(expiredTask);
+                    continue;
+                }
+                break;
+            }
+            return timeTillNextExpiration;
+        }
+
         @Override
         public void run() {
             while (!isStopped) {
-                if (!acquireSemaphores()) {
+                long timeTillNextExpiration = removeExpiredAndGetNextWaitTime();
+
+                try {
+                    queueSemaphore.acquire();
+                } catch (InterruptedException e) {
+                    logger.error("queueSemaphore.acquire() interrupted", e);
+                    continue;
+                }
+
+                try {
+                    if (taskQueue.isEmpty()) {
+                        workerSemaphore.acquire();
+                    } else if (!workerSemaphore.tryAcquire(timeTillNextExpiration, TimeUnit.MILLISECONDS)) {
+                        queueSemaphore.release();
+                        continue;
+                    }
+                } catch (InterruptedException e) {
+                    logger.error("workerSemaphore.acquire() interrupted", e);
+                    queueSemaphore.release();
                     continue;
                 }
                 if (isStopped) {
                     break;
                 }
-                task = taskQueue.poll();
+
                 if (task == null) {
-                    logger.error("Retrieved addRemoveQueueEntry is null. Skipping and continuing.");
-                    workerSemaphore.release();
-                    continue;
+                    task = taskQueue.poll();
+                    if (task == null) {
+                        logger.debug("Retrieved addRemoveQueueEntry is null. Skipping and continuing.");
+                        workerSemaphore.release();
+                        continue;
+                    }
                 }
 
                 switch (task.mode) {
@@ -1374,57 +1425,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 } else {
                     logger.warn("Participant {} is not registered globally and cannot be removed!", task.participantId);
                     workerSemaphore.release();
-                }
-            }
-        }
-
-        private boolean acquireSemaphores() {
-            while (true) {
-                if (isStopped) {
-                    return false;
-                }
-                try {
-                    queueSemaphore.acquire();
-                } catch (InterruptedException e) {
-                    logger.error("globalAddRemoveQueueSemaphore.acquire() interrupted", e);
-                    return false;
-                }
-
-                long remainingTtl = defaultTtlAddAndRemove;
-                GcdTask nextAddEntry = null;
-                boolean foundExpiredAdd = false;
-                for (GcdTask nextEntry : taskQueue) {
-                    if (nextEntry.mode == GcdTask.MODE.ADD) {
-                        nextAddEntry = nextEntry;
-                        remainingTtl = nextEntry.expiryDateMs - System.currentTimeMillis();
-                        if ((nextEntry.expiryDateMs) < System.currentTimeMillis()) {
-                            foundExpiredAdd = true;
-                        }
-                        break;
-                    }
-                }
-
-                if (foundExpiredAdd) {
-                    nextAddEntry.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
-                    taskQueue.remove(nextAddEntry);
-                    continue;
-                }
-
-                try {
-                    if (nextAddEntry == null) {
-                        workerSemaphore.acquire();
-                        return true;
-                    }
-                    if (workerSemaphore.tryAcquire(remainingTtl, TimeUnit.MILLISECONDS)) {
-                        return true;
-                    }
-                    nextAddEntry.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
-                    taskQueue.remove(nextAddEntry);
-                    continue;
-                } catch (InterruptedException e) {
-                    logger.error("globalAddRemoveWorkerSemaphore.acquire() interrupted", e);
-                    queueSemaphore.release();
-                    return false;
                 }
             }
         }
