@@ -34,8 +34,7 @@ public class DiscoveryQos {
     private static final DiscoveryScope DEFAULT_DISCOVERYSCOPE = DiscoveryScope.LOCAL_THEN_GLOBAL;
     private static final boolean DEFAULT_PROVIDERMUSTSUPPORTONCHANGE = false;
 
-    long cacheMaxAgeMs;
-
+    private long cacheMaxAgeMs;
     private ArbitrationStrategy arbitrationStrategy;
     private ArbitrationStrategyFunction arbitrationStrategyFunction;
     private HashMap<String, String> customParameters = new HashMap<>();
@@ -58,6 +57,18 @@ public class DiscoveryQos {
         this.providerMustSupportOnChange = DEFAULT_PROVIDERMUSTSUPPORTONCHANGE;
         setRetryIntervalMs(NO_VALUE);
         this.discoveryScope = DEFAULT_DISCOVERYSCOPE;
+    }
+
+    @SuppressWarnings("unchecked")
+    public DiscoveryQos(DiscoveryQos other) {
+        this.cacheMaxAgeMs = other.cacheMaxAgeMs;
+        this.arbitrationStrategy = other.arbitrationStrategy;
+        this.arbitrationStrategyFunction = other.arbitrationStrategyFunction; // cannot be cloned
+        this.customParameters = (HashMap<String, String>) other.customParameters.clone();
+        this.discoveryScope = other.discoveryScope;
+        setDiscoveryTimeoutMs(other.discoveryTimeoutMs);
+        this.providerMustSupportOnChange = other.providerMustSupportOnChange;
+        setRetryIntervalMs(other.retryIntervalMs);
     }
 
     /**
