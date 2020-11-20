@@ -103,8 +103,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
     private DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache;
     private final Map<String, List<String>> globalProviderParticipantIdToGbidListMap;
-    private final ConcurrentLinkedQueue<GlobalAddRemoveQueueEntry> globalAddRemoveQueue;
-    private Semaphore globalAddRemoveQueueSemaphore;
     private GlobalAddRemoveQueueWorker globalAddRemoveQueueWorker;
 
     private MessageRouter messageRouter;
@@ -173,8 +171,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         // set up current date as the start time of the cluster controller
         this.ccStartUpDateInMs = System.currentTimeMillis();
         globalProviderParticipantIdToGbidListMap = new HashMap<>();
-        globalAddRemoveQueue = new ConcurrentLinkedQueue<>();
-        globalAddRemoveQueueSemaphore = new Semaphore(0);
         globalAddRemoveQueueWorker = new GlobalAddRemoveQueueWorker();
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
@@ -496,7 +492,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                          globalDiscoveryEntry.getProviderVersion());
 
             long expiryDateMs = System.currentTimeMillis() + defaultTtlAddAndRemove;
-            globalAddRemoveQueue.add(new GlobalAddRemoveQueueEntry(new CallbackWithModeledError<Void, DiscoveryError>() {
+            GlobalAddRemoveQueueEntry addTask = new GlobalAddRemoveQueueEntry(new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
                 public void onSuccess(Void nothing) {
@@ -541,8 +537,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     globalAddRemoveQueueWorker.taskFinished();
                     deferred.reject(errorEnum);
                 }
-            }, globalDiscoveryEntry, expiryDateMs, gbids));
-            globalAddRemoveQueueSemaphore.release();
+            }, globalDiscoveryEntry, expiryDateMs, gbids);
+            globalAddRemoveQueueWorker.addTask(addTask);
         }
     }
 
@@ -621,8 +617,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     globalAddRemoveQueueWorker.taskFinished();
                 }
             };
-            globalAddRemoveQueue.add(new GlobalAddRemoveQueueEntry(callback, participantId));
-            globalAddRemoveQueueSemaphore.release();
+            GlobalAddRemoveQueueEntry removeTask = new GlobalAddRemoveQueueEntry(callback, participantId);
+            globalAddRemoveQueueWorker.addTask(removeTask);
         }
 
         // Remove endpoint addresses
@@ -1276,17 +1272,26 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         private Logger logger = LoggerFactory.getLogger(GlobalAddRemoveQueueWorker.class);
         private volatile boolean isStopped = false;
         private volatile GlobalAddRemoveQueueEntry task;
+        private final ConcurrentLinkedQueue<GlobalAddRemoveQueueEntry> taskQueue;
+        private Semaphore queueSemaphore;
         private Semaphore workerSemaphore;
 
         public GlobalAddRemoveQueueWorker() {
             workerSemaphore = new Semaphore(1);
+            queueSemaphore = new Semaphore(0);
+            taskQueue = new ConcurrentLinkedQueue<>();
         }
 
         public void stop() {
             isStopped = true;
-            globalAddRemoveQueue.clear();
-            globalAddRemoveQueueSemaphore.release();
+            taskQueue.clear();
+            queueSemaphore.release();
             workerSemaphore.release();
+        }
+
+        public void addTask(GlobalAddRemoveQueueEntry task) {
+            taskQueue.add(task);
+            queueSemaphore.release();
         }
 
         public void retryTask() {
@@ -1307,7 +1312,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 if (isStopped) {
                     break;
                 }
-                task = globalAddRemoveQueue.poll();
+                task = taskQueue.poll();
                 if (task == null) {
                     logger.error("Retrieved addRemoveQueueEntry is null. Skipping and continuing.");
                     workerSemaphore.release();
@@ -1372,7 +1377,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     return false;
                 }
                 try {
-                    globalAddRemoveQueueSemaphore.acquire();
+                    queueSemaphore.acquire();
                 } catch (InterruptedException e) {
                     logger.error("globalAddRemoveQueueSemaphore.acquire() interrupted", e);
                     return false;
@@ -1381,7 +1386,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 long remainingTtl = defaultTtlAddAndRemove;
                 GlobalAddRemoveQueueEntry nextAddEntry = null;
                 boolean foundExpiredAdd = false;
-                for (GlobalAddRemoveQueueEntry nextEntry : globalAddRemoveQueue) {
+                for (GlobalAddRemoveQueueEntry nextEntry : taskQueue) {
                     if (nextEntry.mode == GlobalAddRemoveQueueEntry.MODE.ADD) {
                         nextAddEntry = nextEntry;
                         remainingTtl = nextEntry.expiryDateMs - System.currentTimeMillis();
@@ -1394,7 +1399,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 if (foundExpiredAdd) {
                     nextAddEntry.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
-                    globalAddRemoveQueue.remove(nextAddEntry);
+                    taskQueue.remove(nextAddEntry);
                     continue;
                 }
 
@@ -1407,11 +1412,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         return true;
                     }
                     nextAddEntry.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
-                    globalAddRemoveQueue.remove(nextAddEntry);
+                    taskQueue.remove(nextAddEntry);
                     continue;
                 } catch (InterruptedException e) {
                     logger.error("globalAddRemoveWorkerSemaphore.acquire() interrupted", e);
-                    globalAddRemoveQueueSemaphore.release();
+                    queueSemaphore.release();
                     return false;
                 }
             }
