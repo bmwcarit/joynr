@@ -492,7 +492,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                          globalDiscoveryEntry.getProviderVersion());
 
             long expiryDateMs = System.currentTimeMillis() + defaultTtlAddAndRemove;
-            GlobalAddRemoveQueueEntry addTask = new GlobalAddRemoveQueueEntry(new CallbackWithModeledError<Void, DiscoveryError>() {
+            CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
                 public void onSuccess(Void nothing) {
@@ -537,7 +537,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     globalAddRemoveQueueWorker.taskFinished();
                     deferred.reject(errorEnum);
                 }
-            }, globalDiscoveryEntry, expiryDateMs, gbids);
+            };
+            GcdTask addTask = GcdTask.createAddTask(callback, globalDiscoveryEntry, expiryDateMs, gbids);
             globalAddRemoveQueueWorker.addTask(addTask);
         }
     }
@@ -617,7 +618,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     globalAddRemoveQueueWorker.taskFinished();
                 }
             };
-            GlobalAddRemoveQueueEntry removeTask = new GlobalAddRemoveQueueEntry(callback, participantId);
+            GcdTask removeTask = GcdTask.createRemoveTask(callback, participantId);
             globalAddRemoveQueueWorker.addTask(removeTask);
         }
 
@@ -1271,8 +1272,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         private Logger logger = LoggerFactory.getLogger(GlobalAddRemoveQueueWorker.class);
         private volatile boolean isStopped = false;
-        private volatile GlobalAddRemoveQueueEntry task;
-        private final ConcurrentLinkedQueue<GlobalAddRemoveQueueEntry> taskQueue;
+        private volatile GcdTask task;
+        private final ConcurrentLinkedQueue<GcdTask> taskQueue;
         private Semaphore queueSemaphore;
         private Semaphore workerSemaphore;
 
@@ -1289,7 +1290,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             workerSemaphore.release();
         }
 
-        public void addTask(GlobalAddRemoveQueueEntry task) {
+        public void addTask(GcdTask task) {
             taskQueue.add(task);
             queueSemaphore.release();
         }
@@ -1384,10 +1385,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
 
                 long remainingTtl = defaultTtlAddAndRemove;
-                GlobalAddRemoveQueueEntry nextAddEntry = null;
+                GcdTask nextAddEntry = null;
                 boolean foundExpiredAdd = false;
-                for (GlobalAddRemoveQueueEntry nextEntry : taskQueue) {
-                    if (nextEntry.mode == GlobalAddRemoveQueueEntry.MODE.ADD) {
+                for (GcdTask nextEntry : taskQueue) {
+                    if (nextEntry.mode == GcdTask.MODE.ADD) {
                         nextAddEntry = nextEntry;
                         remainingTtl = nextEntry.expiryDateMs - System.currentTimeMillis();
                         if ((nextEntry.expiryDateMs) < System.currentTimeMillis()) {
