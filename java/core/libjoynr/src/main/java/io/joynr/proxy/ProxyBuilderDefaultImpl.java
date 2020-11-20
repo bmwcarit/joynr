@@ -131,13 +131,13 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
      */
     @Override
     public ProxyBuilder<T> setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
-        applyDefaultValues(discoveryQos);
-        if (discoveryQos.getRetryIntervalMs() < minimumArbitrationRetryDelay) {
+        this.discoveryQos = new DiscoveryQos(discoveryQos);
+        applyDefaultValues(this.discoveryQos);
+        if (this.discoveryQos.getRetryIntervalMs() < minimumArbitrationRetryDelay) {
             logger.warn("Provided retryIntervalMs is less than minimum arbitration retry delay, using minimum: {}",
                         minimumArbitrationRetryDelay);
-            discoveryQos.setRetryIntervalMs(minimumArbitrationRetryDelay);
+            this.discoveryQos.setRetryIntervalMs(minimumArbitrationRetryDelay);
         }
-        this.discoveryQos = discoveryQos;
         return this;
     }
 
