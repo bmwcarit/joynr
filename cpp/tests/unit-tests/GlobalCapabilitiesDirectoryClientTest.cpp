@@ -73,7 +73,6 @@ public:
                                    capExpiryDateMs,
                                    capPublicKeyId,
                                    capSerializedChannelAddress),
-              messagingQos(10000),
               mockFuture(std::make_shared<joynr::Future<void>>()),
               onSuccess([]() {}),
               onError([](const types::DiscoveryError::Enum& /*error*/) {}),
@@ -94,7 +93,7 @@ public:
     void SetUp() override
     {
         globalCapabilitiesDirectoryClient->setProxy(
-                mockGlobalCapabilitiesDirectoryProxy, messagingQos);
+                mockGlobalCapabilitiesDirectoryProxy);
     }
 
     void TearDown() override
@@ -121,7 +120,6 @@ protected:
     types::ProviderQos capProviderQos;
     joynr::types::Version providerVersion;
     types::GlobalDiscoveryEntry globalDiscoveryEntry;
-    MessagingQos messagingQos;
     std::shared_ptr<joynr::Future<void>> mockFuture;
     std::function<void()> onSuccess;
     std::function<void(const types::DiscoveryError::Enum& error)> onError;

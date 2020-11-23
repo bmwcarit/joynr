@@ -128,8 +128,7 @@ public:
                        nullptr) override;
 
     void setProxy(
-            std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy,
-            MessagingQos messagingQos);
+            std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy);
 
     void removeStale(const std::string& clusterControllerId,
                      std::int64_t maxLastSeenDateMs,

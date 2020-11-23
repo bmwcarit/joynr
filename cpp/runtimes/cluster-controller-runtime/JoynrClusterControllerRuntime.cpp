@@ -695,7 +695,7 @@ void JoynrClusterControllerRuntime::init()
 
     capabilitiesProxyBuilder->setMessagingQos(messagingQos);
 
-    _globalCapabilitiesDirectoryClient->setProxy(capabilitiesProxyBuilder->build(), messagingQos);
+    _globalCapabilitiesDirectoryClient->setProxy(capabilitiesProxyBuilder->build());
 
     // Do this after local capabilities directory and message router have been initialized.
     enableAccessController(provisionedDiscoveryEntries);

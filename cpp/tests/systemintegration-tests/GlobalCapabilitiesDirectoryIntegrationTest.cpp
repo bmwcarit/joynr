@@ -126,7 +126,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
 
     std::unique_ptr<GlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient(
             std::make_unique<GlobalCapabilitiesDirectoryClient>(clusterControllerSettings));
-    globalCapabilitiesDirectoryClient->setProxy(cabilitiesProxy, messagingQos);
+    globalCapabilitiesDirectoryClient->setProxy(cabilitiesProxy);
 
     std::string capDomain("testDomain");
     std::string capInterface("testInterface");

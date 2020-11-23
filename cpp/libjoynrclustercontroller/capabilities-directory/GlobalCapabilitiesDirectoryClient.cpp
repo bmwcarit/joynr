@@ -224,11 +224,9 @@ void GlobalCapabilitiesDirectoryClient::touch(
 }
 
 void GlobalCapabilitiesDirectoryClient::setProxy(
-        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy,
-        MessagingQos messagingQos)
+        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy)
 {
     this->_capabilitiesProxy = std::move(capabilitiesProxy);
-    this->_messagingQos = std::move(messagingQos);
 }
 
 void GlobalCapabilitiesDirectoryClient::removeStale(
