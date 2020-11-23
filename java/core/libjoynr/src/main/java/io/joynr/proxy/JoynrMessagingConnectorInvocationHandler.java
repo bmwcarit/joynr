@@ -233,11 +233,11 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                       request);
         ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(strippedArguments.messagingQos.getRoundTripTtl_ms());
         replyCallerDirectory.addReplyCaller(requestReplyId, synchronizedReplyCaller, expiryDate);
-        reply = (Reply) requestReplyManager.sendSyncRequest(fromParticipantId,
-                                                            toDiscoveryEntries.iterator().next(),
-                                                            request,
-                                                            synchronizedReplyCaller,
-                                                            strippedArguments.messagingQos);
+        reply = requestReplyManager.sendSyncRequest(fromParticipantId,
+                                                    toDiscoveryEntries.iterator().next(),
+                                                    request,
+                                                    synchronizedReplyCaller,
+                                                    strippedArguments.messagingQos);
         if (reply.getError() == null) {
             if (method.getReturnType().equals(void.class)) {
                 logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: [void]",

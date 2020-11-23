@@ -65,11 +65,11 @@ public interface RequestReplyManager {
      * @return response object
      */
 
-    public Object sendSyncRequest(final String fromParticipantId,
-                                  final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                                  Request request,
-                                  SynchronizedReplyCaller synchronizedReplyCaller,
-                                  MessagingQos qosSettings);
+    public Reply sendSyncRequest(final String fromParticipantId,
+                                 final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                                 Request request,
+                                 SynchronizedReplyCaller synchronizedReplyCaller,
+                                 MessagingQos qosSettings);
 
     /**
      * Send a one way message.

@@ -25,12 +25,16 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +71,7 @@ public class RequestReplyManagerImpl
     private final StatelessAsyncRequestReplyIdManager statelessAsyncRequestReplyIdManager;
     private boolean shuttingDown = false;
 
-    private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
+    private List<CompletableFuture<Reply>> outstandingRequestFutures = Collections.synchronizedList(new ArrayList<CompletableFuture<Reply>>());
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>>> oneWayRequestQueue = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
@@ -152,55 +156,45 @@ public class RequestReplyManagerImpl
     }
 
     @Override
-    public Object sendSyncRequest(String fromParticipantId,
-                                  DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                                  Request request,
-                                  SynchronizedReplyCaller synchronizedReplyCaller,
-                                  MessagingQos messagingQos) {
+    public Reply sendSyncRequest(String fromParticipantId,
+                                 DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                                 Request request,
+                                 SynchronizedReplyCaller synchronizedReplyCaller,
+                                 MessagingQos messagingQos) {
 
         if (shuttingDown) {
             throw new IllegalStateException("Request: " + request.getRequestReplyId() + " failed. SenderImpl ID: "
                     + System.identityHashCode(this) + ": joynr is shutting down");
         }
 
-        final ArrayList<Object> responsePayloadContainer = new ArrayList<Object>(1);
-        // the synchronizedReplyCaller will call notify on the responsePayloadContainer when a message arrives
-        synchronizedReplyCaller.setResponseContainer(responsePayloadContainer);
+        CompletableFuture<Reply> responseFuture = new CompletableFuture<>();
+        // the synchronizedReplyCaller will complete the future when a message arrives
+        synchronizedReplyCaller.setResponseFuture(responseFuture);
 
         sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos);
 
-        long entryTime = System.currentTimeMillis();
-
-        // saving all calling threads so that they can be interrupted at shutdown
-        outstandingRequestThreads.add(Thread.currentThread());
-        synchronized (responsePayloadContainer) {
-            while (!shuttingDown && responsePayloadContainer.isEmpty()
-                    && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
-                try {
-                    responsePayloadContainer.wait();
-                } catch (InterruptedException e) {
-                    if (!shuttingDown) {
-                        throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
-                                + " interrupted.");
-                    }
-                    throw new JoynrShutdownException("Request: " + request.getRequestReplyId()
-                            + " interrupted by shutdown");
-                }
+        // saving all pending futures so that they can be cancelled at shutdown
+        Reply response = null;
+        outstandingRequestFutures.add(responseFuture);
+        if (!shuttingDown) {
+            try {
+                response = responseFuture.get(messagingQos.getRoundTripTtl_ms(), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
+                        + " interrupted unexpectedly.");
+            } catch (ExecutionException e) {
+                throw new JoynrCommunicationException("Request: " + request.getRequestReplyId() + " failed: "
+                        + e.getMessage(), e);
+            } catch (TimeoutException e) {
+                throw new JoynrIllegalStateException("Request: " + request.getRequestReplyId()
+                        + " failed unexpectedly without response.");
+            } catch (CancellationException e) {
+                throw new JoynrShutdownException("Request: " + request.getRequestReplyId()
+                        + " interrupted by shutdown");
             }
         }
-        outstandingRequestThreads.remove(Thread.currentThread());
-
-        if (responsePayloadContainer.isEmpty()) {
-            throw new JoynrIllegalStateException("Request: " + request.getRequestReplyId()
-                    + " failed unexpectedly without response.");
-        }
-
-        Object response = responsePayloadContainer.get(0);
-        if (response instanceof Throwable) {
-            Throwable error = (Throwable) response;
-            throw new JoynrCommunicationException("Request: " + request.getRequestReplyId() + " failed: "
-                    + error.getMessage(), error);
-        }
+        outstandingRequestFutures.remove(responseFuture);
 
         return response;
     }
@@ -437,10 +431,10 @@ public class RequestReplyManagerImpl
             }
         }
         shuttingDown = true;
-        synchronized (outstandingRequestThreads) {
-            for (Thread thread : outstandingRequestThreads) {
-                logger.debug("Shutting down. Interrupting thread: {}", thread.getName());
-                thread.interrupt();
+        synchronized (outstandingRequestFutures) {
+            for (CompletableFuture<Reply> future : outstandingRequestFutures) {
+                logger.debug("Shutting down. Interrupting task: {}", future.toString());
+                future.cancel(true);
             }
         }
         providerDirectory.removeListener(this);

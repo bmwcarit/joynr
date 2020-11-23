@@ -18,13 +18,17 @@
  */
 package io.joynr.dispatching.rpc;
 
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import joynr.Reply;
 import joynr.Request;
 
 public class SynchronizedReplyCaller implements ReplyCaller {
-    private List<Object> responsePayloadContainer;
+    private static final Logger logger = LoggerFactory.getLogger(SynchronizedReplyCaller.class);
+    private CompletableFuture<Reply> responseFuture;
     final private String fromParticipantId;
     final private String requestReplyId;
     final private Request request;
@@ -37,27 +41,25 @@ public class SynchronizedReplyCaller implements ReplyCaller {
 
     @Override
     public void messageCallBack(Reply payload) {
-        if (responsePayloadContainer == null) {
-            throw new IllegalStateException("SynchronizedReplyCaller: ResponseContainer not set!");
+        if (responseFuture == null) {
+            throw new IllegalStateException("SynchronizedReplyCaller: ResponseFuture not set!");
         }
-        synchronized (responsePayloadContainer) {
-            responsePayloadContainer.add(payload);
-            responsePayloadContainer.notify();
-        }
-
+        responseFuture.complete(payload);
     }
 
     @Override
     public void error(Throwable error) {
-        synchronized (responsePayloadContainer) {
-            responsePayloadContainer.add(error);
-            responsePayloadContainer.notify();
+        if (responseFuture == null) {
+            throw new IllegalStateException("SynchronizedReplyCaller: ResponseFuture not set!");
         }
-
+        responseFuture.completeExceptionally(error);
     }
 
-    public void setResponseContainer(List<Object> responsePayloadContainer) {
-        this.responsePayloadContainer = responsePayloadContainer;
+    public void setResponseFuture(CompletableFuture<Reply> responseFuture) {
+        if (responseFuture == null) {
+            logger.warn("Future passed to SynchronizedReplyCaller is null.");
+        }
+        this.responseFuture = responseFuture;
 
     }
 
