@@ -149,11 +149,6 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
         }
     }
 
-    @Override
-    public String getRequestReplyId() {
-        return requestReplyId;
-    }
-
     public Object getProxy() {
         return proxy;
     }

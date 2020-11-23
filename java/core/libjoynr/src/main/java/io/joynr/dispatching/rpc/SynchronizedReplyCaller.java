@@ -77,10 +77,4 @@ public class SynchronizedReplyCaller implements ReplyCaller {
         stringBuilder.append("\r\n");
         return stringBuilder.toString();
     }
-
-    @Override
-    public String getRequestReplyId() {
-        return requestReplyId;
-    }
-
 }

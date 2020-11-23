@@ -26,6 +26,4 @@ public interface ReplyCaller {
 
     public void error(Throwable error);
 
-    public String getRequestReplyId();
-
 }

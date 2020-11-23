@@ -122,9 +122,4 @@ public class StatelessAsyncReplyCaller implements ReplyCaller {
     public void error(Throwable error) {
         logger.error("Error occurred while handling stateless async reply.", error);
     }
-
-    @Override
-    public String getRequestReplyId() {
-        return statelessAsyncCallbackId;
-    }
 }
