@@ -150,6 +150,42 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd)
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
 }
 
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtl)
+{
+    std::uint64_t defaultTtl = MessagingQos().getTtl();
+    std::function<void()> onSuccessCallback;
+    std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
+    Semaphore semaphore;
+
+    types::GlobalDiscoveryEntry globalDiscoveryEntry2(globalDiscoveryEntry);
+    globalDiscoveryEntry2.setParticipantId("ParticipantId2");
+
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<2>(&onSuccessCallback),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                addAsyncMock(Eq(globalDiscoveryEntry2), Eq(gbids), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
+    globalCapabilitiesDirectoryClient->add(
+            globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->add(
+            globalDiscoveryEntry2, gbids, onSuccess, onError, onRuntimeError);
+    std::int64_t firstNow = TimePoint::now().toMilliseconds();
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    std::int64_t secondNow = TimePoint::now().toMilliseconds();
+    std::uint64_t delta = static_cast<std::uint64_t>(secondNow - firstNow);
+    onSuccessCallback();
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
+    auto capturedTtl = messagingQosCapture->getTtl();
+    EXPECT_TRUE(capturedTtl <= (defaultTtl - delta));
+    EXPECT_TRUE(capturedTtl > (defaultTtl - delta - 1000));
+}
+
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupDomainInterface)
 {
     std::function<void(const std::vector<types::GlobalDiscoveryEntry>& result)> onSuccessForLookup =
@@ -204,6 +240,23 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
             capParticipantId, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveUsesCorrectTtl)
+{
+    std::uint64_t defaultTtl = MessagingQos().getTtl();
+    std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
+    Semaphore semaphore;
+
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
+    globalCapabilitiesDirectoryClient->remove(
+            capParticipantId, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
+    EXPECT_EQ(defaultTtl, messagingQosCapture->getTtl());
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterSuccess)
