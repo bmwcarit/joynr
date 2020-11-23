@@ -24,7 +24,7 @@ import joynr.types.GlobalDiscoveryEntry;
 
 public class GcdTask {
     public enum MODE {
-        ADD, REMOVE
+        ADD, REMOVE, READD
     }
 
     private GcdTask(MODE mode,
@@ -48,6 +48,15 @@ public class GcdTask {
 
         String participantId = "";
         return new GcdTask(MODE.ADD, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs);
+    }
+
+    public static GcdTask createReaddTask() {
+        CallbackWithModeledError<Void, DiscoveryError> callback = null;
+        String participantId = "";
+        GlobalDiscoveryEntry globalDiscoveryEntry = null;
+        String[] gbids = null;
+        long expiryDateMs = 0L;
+        return new GcdTask(MODE.READD, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs);
     }
 
     public static GcdTask createRemoveTask(CallbackWithModeledError<Void, DiscoveryError> callback,
