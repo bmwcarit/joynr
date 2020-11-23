@@ -33,10 +33,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -96,8 +98,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
     }
 
+    private static final long READD_INTERVAL_DAYS = 7L;
+
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> freshnessUpdateScheduledFuture;
+    private ScheduledFuture<?> reAddAllGlobalEntriesScheduledFuture;
 
     private DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStore;
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient;
@@ -203,6 +208,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         this.scheduler = freshnessUpdateScheduler;
         this.scheduler.schedule(gcdTaskSequencer, 0, TimeUnit.MILLISECONDS);
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
+        reAddAllGlobalDiscoveryEntriesPeriodically();
         shutdownNotifier.registerForShutdown(this);
     }
 
@@ -1173,6 +1179,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (freshnessUpdateScheduledFuture != null) {
             freshnessUpdateScheduledFuture.cancel(false);
         }
+
+        if (reAddAllGlobalEntriesScheduledFuture != null) {
+            reAddAllGlobalEntriesScheduledFuture.cancel(false);
+        }
+
         if (unregisterAllRegisteredCapabilities) {
             Set<DiscoveryEntry> allDiscoveryEntries = localDiscoveryEntryStore.getAllDiscoveryEntries();
 
@@ -1266,6 +1277,20 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         };
         globalCapabilitiesDirectoryClient.removeStale(callback, ccStartUpDateInMs, gbid);
+    }
+
+    private void reAddAllGlobalDiscoveryEntriesPeriodically() {
+        GcdTask reAddTask = GcdTask.createReaddTask();
+        Runnable command = new Runnable() {
+            @Override
+            public void run() {
+                gcdTaskSequencer.addTask(reAddTask);
+            }
+        };
+        reAddAllGlobalEntriesScheduledFuture = scheduler.scheduleAtFixedRate(command,
+                                                                             READD_INTERVAL_DAYS,
+                                                                             READD_INTERVAL_DAYS,
+                                                                             TimeUnit.DAYS);
     }
 
     public class GcdTaskSequencer implements Runnable {
@@ -1380,12 +1405,15 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     }
                     performAdd(remainingTtl);
                     break;
+                case READD:
+                    performReAdd();
+                    break;
                 case REMOVE:
                     performRemove();
                     break;
                 default:
                     logger.error("Unknown operation in GlobalAddRemoveQueue.");
-                    workerSemaphore.release();
+                    taskFinished();
                 }
             }
         }
@@ -1406,6 +1434,89 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         }
 
+        private void performReAdd() {
+            Set<DiscoveryEntry> discoveryEntries;
+            synchronized (globalDiscoveryEntryCache) {
+                discoveryEntries = localDiscoveryEntryStore.getAllGlobalEntries();
+            }
+
+            if (discoveryEntries == null || discoveryEntries.isEmpty()) {
+                logger.debug("Re-Add: no globally registered providers found.");
+                taskFinished();
+                return;
+            }
+
+            CountDownLatch cdlReAdd = new CountDownLatch(discoveryEntries.size());
+            for (DiscoveryEntry discoveryEntry : discoveryEntries) {
+                final GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
+                                                                                                                      globalAddress);
+
+                String[] gbids;
+                synchronized (globalDiscoveryEntryCache) {
+                    if (globalProviderParticipantIdToGbidListMap.containsKey(discoveryEntry.getParticipantId())) {
+                        List<String> gbidsList = globalProviderParticipantIdToGbidListMap.get(discoveryEntry.getParticipantId());
+                        gbids = gbidsList.toArray(new String[gbidsList.size()]);
+                    } else {
+                        logger.warn("Re-Add: no GBIDs found for {}", globalDiscoveryEntry.getParticipantId());
+                        continue;
+                    }
+                }
+
+                AtomicBoolean callbackCalled = new AtomicBoolean(false);
+                CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
+
+                    @Override
+                    public void onSuccess(Void nothing) {
+                        logger.info("Re-Add succeeded for {}.", globalDiscoveryEntry.getParticipantId());
+                        if (callbackCalled.compareAndSet(false, true)) {
+                            cdlReAdd.countDown();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(JoynrRuntimeException exception) {
+                        logger.error("Re-Add failed for {} with exception.",
+                                     globalDiscoveryEntry.getParticipantId(),
+                                     exception);
+                        if (callbackCalled.compareAndSet(false, true)) {
+                            cdlReAdd.countDown();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(DiscoveryError errorEnum) {
+                        logger.error("Re-Add failed for {} with error {}.",
+                                     globalDiscoveryEntry.getParticipantId(),
+                                     errorEnum);
+                        if (callbackCalled.compareAndSet(false, true)) {
+                            cdlReAdd.countDown();
+                        }
+                    }
+                };
+                try {
+                    globalCapabilitiesDirectoryClient.add(callback,
+                                                          globalDiscoveryEntry,
+                                                          defaultTtlAddAndRemove,
+                                                          gbids);
+                } catch (Exception exception) {
+                    callback.onFailure(new JoynrRuntimeException("Re-Add failed for "
+                            + globalDiscoveryEntry.getParticipantId() + ": " + exception.toString()));
+                }
+            }
+
+            try {
+                logger.trace("Re-Add: waiting for completion.");
+                if (cdlReAdd.await(defaultTtlAddAndRemove, TimeUnit.MILLISECONDS)) {
+                    logger.info("Re-Add: completed.");
+                } else {
+                    logger.error("Re-Add: timed out waiting for completion.");
+                }
+            } catch (InterruptedException e) {
+                logger.error("Re-Add: interrupted while waiting for completion.", e);
+            }
+            taskFinished();
+        }
+
         private void performRemove() {
             synchronized (globalDiscoveryEntryCache) {
                 if (globalProviderParticipantIdToGbidListMap.containsKey(task.participantId)) {
@@ -1424,7 +1535,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     }
                 } else {
                     logger.warn("Participant {} is not registered globally and cannot be removed!", task.participantId);
-                    workerSemaphore.release();
+                    taskFinished();
                 }
             }
         }
