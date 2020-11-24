@@ -26,9 +26,9 @@
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/Message.h"
 #include "joynr/Semaphore.h"
+#include "joynr/TimePoint.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
-#include "joynr/TimePoint.h"
 
 namespace joynr
 {
@@ -40,7 +40,7 @@ GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
           _touchTtl(static_cast<std::uint64_t>(
                   clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())),
           _removeStaleTtl(3600000),
-          _sequentialTasks(_messagingQos.getTtl())
+          _sequentialTasks(std::chrono::milliseconds(_messagingQos.getTtl()))
 {
 }
 
@@ -66,9 +66,8 @@ void GlobalCapabilitiesDirectoryClient::add(
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
     using std::move;
     TaskSequencer<void>::TaskWithExpiryDate taskWithExpiryDate;
-    taskWithExpiryDate.expiryDateMs =
-            static_cast<std::uint64_t>(TimePoint::now().toMilliseconds()) +
-            addMessagingQos.getTtl();
+    taskWithExpiryDate.expiryDate =
+            TimePoint::fromRelativeMs(static_cast<std::int64_t>(addMessagingQos.getTtl()));
     taskWithExpiryDate.timeout = [onRuntimeError]() {
         onRuntimeError(exceptions::JoynrRuntimeException(
                 "Failed to process global registration in time, please try again"));
@@ -81,14 +80,13 @@ void GlobalCapabilitiesDirectoryClient::add(
         onError{move(onError)},
         onRuntimeError{move(onRuntimeError)},
         addMessagingQos{move(addMessagingQos)},
-        timeoutTaskExpiryDate = taskWithExpiryDate.expiryDateMs
+        timeoutTaskExpiryDate = taskWithExpiryDate.expiryDate
     ]() mutable
     {
         auto future = std::make_shared<Future<void>>();
-        std::int64_t remainingAddTtl = static_cast<std::int64_t>(timeoutTaskExpiryDate) -
-                                       TimePoint::now().toMilliseconds();
+        std::int64_t remainingAddTtl = timeoutTaskExpiryDate.relativeFromNow().count();
 
-        if (static_cast<std::int64_t>(timeoutTaskExpiryDate) <= TimePoint::now().toMilliseconds()) {
+        if (timeoutTaskExpiryDate.toMilliseconds() <= TimePoint::now().toMilliseconds()) {
             onRuntimeError(exceptions::JoynrRuntimeException(
                     "Failed to process global registration in time, please try again"));
             future->onSuccess();
@@ -150,12 +148,12 @@ void GlobalCapabilitiesDirectoryClient::remove(
                                                    std::move(onRuntimeError),
                                                    std::move(removeMessagingQos));
     TaskSequencer<void>::TaskWithExpiryDate timeoutTask;
+    timeoutTask.expiryDate = TimePoint::max();
+    timeoutTask.timeout = []() {};
     timeoutTask.task = [retryRemoveOperation]() {
         retryRemoveOperation->execute();
         return retryRemoveOperation;
     };
-    timeoutTask.expiryDateMs = std::numeric_limits<std::uint64_t>::max();
-    timeoutTask.timeout = []() {};
 
     _sequentialTasks.add(timeoutTask);
 }

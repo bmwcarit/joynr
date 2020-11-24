@@ -65,11 +65,11 @@ protected:
         }
     };
 
-    TestTaskSequencer::TaskWithExpiryDate createTestTaskWithExpiryDate(std::int64_t expiryDateMs, bool fulfillPromise = true,
+    TestTaskSequencer::TaskWithExpiryDate createTestTaskWithExpiryDate(const TimePoint& expiryDate, bool fulfillPromise = true,
                                                                        bool fulfillDelayed = false) {
         TestTaskSequencer::TaskWithExpiryDate timeoutTask;
         timeoutTask.task = createTestTask(fulfillPromise, fulfillDelayed);
-        timeoutTask.expiryDateMs = static_cast<std::uint64_t>(expiryDateMs);
+        timeoutTask.expiryDate = expiryDate;
         timeoutTask.timeout = [&](){
             _actualTimeoutDateMs.push_back(TimePoint::now().toMilliseconds());
         };
@@ -149,7 +149,7 @@ TEST_F(TaskSequencerTest, addSequence)
     static constexpr std::uint64_t numberOfTasks = 1000;
     std::vector<TaskState> expectedSequence;
     for (std::uint64_t i = 0; i < numberOfTasks; i++) {
-        test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000).toMilliseconds()));
+        test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000)));
         expectedSequence.push_back({i, i});
     }
     const auto sequence = waitForTestFutureCreation(expectedSequence.size());
@@ -163,7 +163,7 @@ TEST_F(TaskSequencerTest, addConcurrency)
     std::vector<TestTaskSequencer::TaskWithExpiryDate> tasks;
     std::set<std::uint64_t> expectedExecutions;
     for (std::uint64_t i = 0; i < numberOfTasks; i++) {
-        tasks.push_back(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000).toMilliseconds()));
+        tasks.push_back(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000)));
         expectedExecutions.insert(i);
     }
     std::vector<std::future<void>> addAsync;
@@ -192,9 +192,9 @@ TEST_F(TaskSequencerTest, cancelBeforeDtor)
 TEST_F(TaskSequencerTest, cancelOngoingTask)
 {
     TestTaskSequencer test;
-    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000).toMilliseconds()));
-    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(6000).toMilliseconds(), false));
-    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(8000).toMilliseconds()));
+    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000)));
+    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(6000), false));
+    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(8000)));
     auto sequence = waitForTestFutureCreation(2);
     EXPECT_EQ(2, sequence.size());
     test.cancel();
@@ -207,9 +207,9 @@ TEST_F(TaskSequencerTest, cancelReleasesTaskMemory)
     TestTaskSequencer test;
     auto sharedPromise = std::make_shared<std::uint64_t>(42);
     std::weak_ptr<std::uint64_t> refPromise(sharedPromise);
-    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000).toMilliseconds(), false)); // Block execution, so next task remains in task queue
+    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000), false)); // Block execution, so next task remains in task queue
     test.add({[this, sharedPromise]() { return createTestFuture(*sharedPromise); },
-              static_cast<std::uint64_t>(TimePoint::fromRelativeMs(10000).toMilliseconds()), [](){}});
+              TimePoint::fromRelativeMs(10000), [](){}});
     sharedPromise.reset();
     std::this_thread::yield();
     EXPECT_FALSE(refPromise.expired()) << "Test setup does not capture memory in task queue.";
@@ -226,7 +226,7 @@ TEST_F(TaskSequencerTest, cancelReleasesFutureMemory)
         auto newFuture = std::make_shared<TestFuture>();
         newFuture->_memorySharedByPromise = sharedPromise;
         return newFuture;
-    }, static_cast<std::uint64_t>(TimePoint::fromRelativeMs(5000).toMilliseconds()), [](){}});
+    }, TimePoint::fromRelativeMs(5000), [](){}});
     sharedPromise.reset();
     std::this_thread::yield();
     EXPECT_FALSE(refPromise.expired()) << "Test setup does not capture memory in future";
@@ -238,12 +238,12 @@ TEST_F(TaskSequencerTest, runRobustness)
 {
     TestTaskSequencer test;
     test.add({[]() { return std::shared_ptr<TestFuture>(); },
-              static_cast<std::uint64_t>(TimePoint::fromRelativeMs(5000).toMilliseconds()), [](){}});
+              TimePoint::fromRelativeMs(5000), [](){}});
     test.add({[]() -> std::shared_ptr<TestFuture> { throw 42; },
-              static_cast<std::uint64_t>(TimePoint::fromRelativeMs(5000).toMilliseconds()), [](){}});
+              TimePoint::fromRelativeMs(5000), [](){}});
     test.add({nullptr,
-              static_cast<std::uint64_t>(TimePoint::fromRelativeMs(5000).toMilliseconds()), [](){}});
-    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000).toMilliseconds()));
+              TimePoint::fromRelativeMs(5000), [](){}});
+    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000)));
     auto sequence = waitForTestFutureCreation(1);
     EXPECT_EQ(1, sequence.size());
 }
@@ -251,12 +251,10 @@ TEST_F(TaskSequencerTest, runRobustness)
 TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksWhenOtherTaskIsRunning)
 {
     TestTaskSequencer test;
-
-    std::int64_t expectedTimeoutDateMs = TimePoint::fromRelativeMs(1500).toMilliseconds();
-
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000).toMilliseconds(), true, true);
+    TimePoint expectedTimeoutDateMs = TimePoint::fromRelativeMs(1500);
+    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000), true, true);
     // add a task that won't be finished and blocks the following tasks
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000).toMilliseconds(), false);
+    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000), false);
     TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
     TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
     test.add(task1);
@@ -274,20 +272,20 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksWhenOtherTaskIsRunn
     EXPECT_EQ(2, sequence.size());
     // task3 and task4 are expired after waiting for more than their ttl
     EXPECT_EQ(2, _actualTimeoutDateMs.size());
-    EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs < 500);
-    EXPECT_TRUE(_actualTimeoutDateMs[1] - expectedTimeoutDateMs < 500);
-    EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs);
-    EXPECT_TRUE(_actualTimeoutDateMs[1] >= expectedTimeoutDateMs);
+    EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs.toMilliseconds() < 500);
+    EXPECT_TRUE(_actualTimeoutDateMs[1] - expectedTimeoutDateMs.toMilliseconds() < 500);
+    EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
+    EXPECT_TRUE(_actualTimeoutDateMs[1] >= expectedTimeoutDateMs.toMilliseconds());
 }
 
 TEST_F(TaskSequencerTest, testTaskTimeoutNotCalledWithoutExpiredTasks)
 {
     TestTaskSequencer test;
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(500).toMilliseconds());
+    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(500));
     // add a task that won't be finished and blocks the following tasks
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000).toMilliseconds(), false);
-    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000).toMilliseconds());
-    TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000).toMilliseconds());
+    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000), false);
+    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000));
+    TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000));
     test.add(task1);
     test.add(task2);
     test.add(task3);
@@ -311,12 +309,12 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForTaskToBeExecutedNext)
 {
     TestTaskSequencer test;
     // add already expired task to the queue
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(-10000).toMilliseconds());
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000).toMilliseconds());
-    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000).toMilliseconds());
+    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(-10000));
+    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000));
+    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000));
     // wait some time before TaskSequncer starts to run
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    std::int64_t expectedTimeoutDateMs = TimePoint::now().toMilliseconds();
+    TimePoint expectedTimeoutDateMs = TimePoint::now();
     test.add(task1);
     test.add(task2);
     test.add(task3);
@@ -324,17 +322,17 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForTaskToBeExecutedNext)
     EXPECT_EQ(2, sequence.size());
     // task1 is timeout before the timeToWait calculation
     EXPECT_EQ(1, _actualTimeoutDateMs.size());
-    EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs < 500);
-    EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs);
+    EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs.toMilliseconds() < 500);
+    EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
 }
 
 TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksBeforeOtherTaskIsStarted) {
     TestTaskSequencer test;
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000).toMilliseconds(), true, true);
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000).toMilliseconds());
+    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000), true, true);
+    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000));
     // add task that will be removed after the future of task1 is ready, during calculation of timeToWait for task2
-    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::now().toMilliseconds());
-    TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(10000).toMilliseconds());
+    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::now());
+    TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(10000));
     test.add(task1);
     auto sequence = waitForTestFutureCreation(1, std::chrono::seconds{10});
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -342,11 +340,11 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksBeforeOtherTaskIsSt
     test.add(task2);
     test.add(task3);
     test.add(task4);
-    std::int64_t expectedTimeoutDateMs = TimePoint::now().toMilliseconds();
+    TimePoint expectedTimeoutDateMs = TimePoint::now();
     _fulfillDelayedFuture = true;
     sequence = waitForTestFutureCreation(3, std::chrono::seconds{10});
     EXPECT_EQ(3, sequence.size());
     EXPECT_EQ(1, _actualTimeoutDateMs.size());
-    EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs < 500);
-    EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs);
+    EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs.toMilliseconds() < 500);
+    EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
 }

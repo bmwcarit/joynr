@@ -21,6 +21,7 @@
 #define TASK_SEQUENCER
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <functional>
 #include <memory>
@@ -52,8 +53,8 @@ namespace joynr
  * The TaskSequencer cancels queued tasks as soon as they are expired: It calls the timeout()
  * function provided in TaskWithExpiryDate and removes the expired tasks from the queue.
  * TaskSequencer assumes that the tasks which do not have an unlimited expiry
- * (= std::numeric_limits<std::uint64_t>::max() ) date are ordered, i.e. a new task that
- * is added should have an expiryDate that is not less than the expiryDate of any previously
+ * (= TimePoint::max() ) date are ordered, i.e. a new task that is added should
+ * have an expiryDate that is not less than the expiryDate of any previously
  * added task with not unlimited expiry date.
  *
  * @tparam Ts Future return types
@@ -74,7 +75,7 @@ public:
     struct TaskWithExpiryDate
     {
         Task task;
-        std::uint64_t expiryDateMs;
+        TimePoint expiryDate;
         std::function<void()> timeout;
     };
 
@@ -86,7 +87,7 @@ public:
      *        the current task has not completed yet. If the queue is not empty,
      *        the wait time is calculated from the task with the minimum expiry date.
      */
-    TaskSequencer(std::uint64_t defaultTimeToWait = std::numeric_limits<std::uint64_t>::max())
+    TaskSequencer(std::chrono::milliseconds defaultTimeToWait = std::chrono::milliseconds::max())
             : _isRunning{true}, _future{nothingToDo()}, _defaultTimeToWait{defaultTimeToWait}
     {
         _worker = std::thread(&TaskSequencer::run, this);
@@ -146,12 +147,12 @@ private:
     std::condition_variable _tasksChanged;
     std::vector<TaskWithExpiryDate> _tasks;
     std::thread _worker;
-    const std::uint64_t _defaultTimeToWait;
+    const std::chrono::milliseconds _defaultTimeToWait;
 
     void run()
     {
         while (_isRunning.load()) {
-            std::uint64_t timeToWait = _defaultTimeToWait;
+            std::chrono::milliseconds timeToWaitMs = _defaultTimeToWait;
             {
                 std::unique_lock<std::mutex> lock(_tasksMutex);
                 if (!_tasks.empty()) {
@@ -159,31 +160,28 @@ private:
                             _tasks.begin(),
                             _tasks.end(),
                             [](const TaskWithExpiryDate& first, const TaskWithExpiryDate& second) {
-                                return first.expiryDateMs < second.expiryDateMs;
+                                return first.expiryDate < second.expiryDate;
                             });
 
-                    timeToWait = taskWithMinExpiryDate->expiryDateMs -
-                                 static_cast<std::uint64_t>(TimePoint::now().toMilliseconds());
+                    timeToWaitMs = taskWithMinExpiryDate->expiryDate.relativeFromNow();
 
-                    if (taskWithMinExpiryDate->expiryDateMs <=
-                        static_cast<std::uint64_t>(TimePoint::now().toMilliseconds())) {
+                    if (taskWithMinExpiryDate->expiryDate.toMilliseconds() <=
+                        TimePoint::now().toMilliseconds()) {
                         taskWithMinExpiryDate->timeout();
                         _tasks.erase(taskWithMinExpiryDate);
                         continue;
                     }
                 }
             }
-            auto futureStatus =
-                    _future->_resultFuture.wait_for(std::chrono::milliseconds(timeToWait));
+            auto futureStatus = _future->_resultFuture.wait_for(timeToWaitMs);
 
             if (futureStatus != std::future_status::ready) {
                 std::unique_lock<std::mutex> lock(_tasksMutex);
                 for (auto it = _tasks.begin(); it != _tasks.end();) {
-                    if (it->expiryDateMs <=
-                        static_cast<std::uint64_t>(TimePoint::now().toMilliseconds())) {
+                    if (it->expiryDate.toMilliseconds() <= TimePoint::now().toMilliseconds()) {
                         it->timeout();
                         it = _tasks.erase(it);
-                    } else if (it->expiryDateMs != std::numeric_limits<std::uint64_t>::max()) {
+                    } else if (it->expiryDate != TimePoint::max()) {
                         break;
                     } else {
                         ++it;
@@ -199,8 +197,8 @@ private:
                         }
                         if (!_tasks.empty()) {
                             TaskWithExpiryDate nextTask = std::move(_tasks.front());
-                            if (nextTask.expiryDateMs <=
-                                static_cast<std::uint64_t>(TimePoint::now().toMilliseconds())) {
+                            if (nextTask.expiryDate.toMilliseconds() <=
+                                TimePoint::now().toMilliseconds()) {
                                 nextTask.timeout();
                                 _tasks.erase(_tasks.begin());
                                 continue;
