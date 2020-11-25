@@ -1,6 +1,6 @@
 {
   "name": "robustness-test",
-  "version": "1.15.5",
+  "version": "1.15.6-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "Robustness Tests",
   "main": "src/main/js/consumer.js",
