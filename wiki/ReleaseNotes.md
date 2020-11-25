@@ -9,6 +9,17 @@ None.
 
 ## Other Changes
 * **[Java]** Updated jackson to version 2.11.3
+* **[C++]** MosquittoConnection now adds the GBID to each log message to distinguish multiple
+  connections.
+* **[Java]** Queued global add (register provider) and remove (unregister provider) requests
+  are now aborted when they are expired and the application is informed about the abort.
+  This can happen for example when there are too many queued requests or the processing of requests
+  takes too much time and, of course, if there currently is no global (MQTT) connection.
+* **[Java]** DiscoveryQos parameter for ProxyBuilder.setDiscoveryQos is now copied to avoid
+  accidental manipulation, e.g. when the same DiscoveryQos is used for subsequent ProxyBuilder calls
+  with different setting.
+* **[Java]** Globally registered providers are now re-added periodically (every 7 days) to the
+  GlobalCapabilitiesDirectory to synchronize the local and global capabilities directory.
 
 ## Configuration Property Changes
 None.
