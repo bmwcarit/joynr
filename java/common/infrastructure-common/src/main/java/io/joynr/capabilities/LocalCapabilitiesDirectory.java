@@ -51,13 +51,6 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownL
     Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration);
 
     /**
-     * Removes capabilities from the list of local capabilities and at the capabilities directory.
-     *
-     * @param discoveryEntry entry to remove
-     */
-    void remove(DiscoveryEntry discoveryEntry);
-
-    /**
      * Adds a listener for capability changes to the directory.
      * @param listener the listener to add.
      */

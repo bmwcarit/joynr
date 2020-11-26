@@ -139,12 +139,6 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
         return new Promise<DeferredVoid>(deferred);
     }
 
-    @Override
-    public void remove(DiscoveryEntry interfaces) {
-        logger.info("!!!!!!!!!!!!!!!removeCapabilities");
-
-    }
-
     public void lookup(String[] domains,
                        String interfaceName,
                        DiscoveryQos discoveryQos,

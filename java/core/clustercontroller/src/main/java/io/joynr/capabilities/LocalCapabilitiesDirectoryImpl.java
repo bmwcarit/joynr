@@ -201,7 +201,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             @Override
             public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
                 for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
-                    remove(discoveryEntry);
+                    removeInternal(discoveryEntry);
                 }
             }
         }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
@@ -556,7 +556,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(participantId,
                                                                                           Long.MAX_VALUE);
         if (optionalDiscoveryEntry.isPresent()) {
-            remove(optionalDiscoveryEntry.get());
+            removeInternal(optionalDiscoveryEntry.get());
             deferred.resolve();
         } else {
             logger.debug("Failed to remove participantId: {}. ParticipantId is not registered in cluster controller.",
@@ -567,8 +567,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return new Promise<>(deferred);
     }
 
-    @Override
-    public void remove(final DiscoveryEntry discoveryEntry) {
+    private void removeInternal(final DiscoveryEntry discoveryEntry) {
         final String participantId = discoveryEntry.getParticipantId();
         localDiscoveryEntryStore.remove(participantId);
         notifyCapabilityRemoved(discoveryEntry);

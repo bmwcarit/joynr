@@ -1104,7 +1104,9 @@ public class LocalCapabilitiesDirectoryTest {
                                              0);
 
         // even deleting local cap entries shall have no effect, the global cap dir shall be invoked
-        localCapabilitiesDirectory.remove(discoveryEntry);
+        when(localDiscoveryEntryStoreMock.lookup(discoveryEntry.getParticipantId(),
+                                                 Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry));
+        localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
         Promise<Lookup1Deferred> promise3 = localCapabilitiesDirectory.lookup(domains, interfaceName1, discoveryQos);
         verifyGcdLookupAndPromiseFulfillment(3,
                                              domains,
@@ -2959,7 +2961,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                       eq(globalDiscoveryEntry.getParticipantId()),
                                                       any(String[].class));
 
-        localCapabilitiesDirectory.remove(discoveryEntry);
+        when(localDiscoveryEntryStoreMock.lookup(discoveryEntry.getParticipantId(),
+                                                 Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry));
+        localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
 
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(globalCapabilitiesDirectoryClient).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -3009,7 +3013,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                       any(String.class),
                                                       any(String[].class));
 
-        localCapabilitiesDirectory.remove(globalDiscoveryEntry);
+        when(localDiscoveryEntryStoreMock.lookup(globalDiscoveryEntry.getParticipantId(),
+                                                 Long.MAX_VALUE)).thenReturn(Optional.of(globalDiscoveryEntry));
+        localCapabilitiesDirectory.remove(globalDiscoveryEntry.getParticipantId());
 
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
@@ -3393,8 +3399,12 @@ public class LocalCapabilitiesDirectoryTest {
                                               .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                       anyString(),
                                                       any(String[].class));
-        localCapabilitiesDirectory.remove(discoveryEntry2);
-        localCapabilitiesDirectory.remove(discoveryEntry1);
+        when(localDiscoveryEntryStoreMock.lookup(discoveryEntry2.getParticipantId(),
+                                                 Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry2));
+        when(localDiscoveryEntryStoreMock.lookup(discoveryEntry1.getParticipantId(),
+                                                 Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry1));
+        localCapabilitiesDirectory.remove(discoveryEntry2.getParticipantId());
+        localCapabilitiesDirectory.remove(discoveryEntry1.getParticipantId());
 
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
@@ -3487,7 +3497,9 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseSuccess(promiseAdd1, "add failed");
         assertTrue(cdlAddDelayDone.await(0, TimeUnit.MILLISECONDS));
 
-        localCapabilitiesDirectory.remove(discoveryEntry1); // TODO move this line up when LCD.remove is changed
+        when(localDiscoveryEntryStoreMock.lookup(discoveryEntry1.getParticipantId(),
+                                                 Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry1));
+        localCapabilitiesDirectory.remove(discoveryEntry1.getParticipantId()); // TODO move this line up when LCD.remove is changed
         assertTrue(cdlRemove.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         InOrder inOrder = inOrder(globalCapabilitiesDirectoryClient);
