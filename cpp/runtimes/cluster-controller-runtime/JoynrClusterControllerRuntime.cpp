@@ -69,6 +69,7 @@
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
 #include "joynr/SystemServicesSettings.h"
+#include "joynr/TaskSequencer.h"
 #include "joynr/Url.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -625,8 +626,10 @@ void JoynrClusterControllerRuntime::init()
     auto provisionedDiscoveryEntries = getProvisionedEntries();
     _discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(provisionedDiscoveryEntries);
 
-    _globalCapabilitiesDirectoryClient =
-            std::make_shared<GlobalCapabilitiesDirectoryClient>(_clusterControllerSettings);
+    std::unique_ptr<TaskSequencer<void>> taskSequencer = std::make_unique<TaskSequencer<void>>(
+            std::chrono::milliseconds(MessagingQos().getTtl()));
+    _globalCapabilitiesDirectoryClient = std::make_shared<GlobalCapabilitiesDirectoryClient>(
+            _clusterControllerSettings, std::move(taskSequencer));
     _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
             _clusterControllerSettings,
             _globalCapabilitiesDirectoryClient,

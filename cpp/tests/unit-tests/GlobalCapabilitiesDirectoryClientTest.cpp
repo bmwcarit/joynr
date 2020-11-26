@@ -32,6 +32,7 @@
 #include "tests/mock/MockGlobalCapabilitiesDirectoryProxy.h"
 #include "tests/mock/MockJoynrRuntime.h"
 #include "tests/mock/MockMessageSender.h"
+#include "tests/mock/MockTaskSequencer.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -43,6 +44,9 @@ public:
             : settings(std::make_unique<Settings>()),
               messagingSettings(*settings),
               clusterControllerSettings(*settings),
+              taskSequencer(
+                      std::make_unique<TaskSequencer<void>>(
+                              std::chrono::milliseconds(MessagingQos().getTtl()))),
               mockJoynrRuntime(std::make_shared<MockJoynrRuntime>(*settings)),
               mockMessageSender(std::make_shared<MockMessageSender>()),
               joynrMessagingConnectorFactory(
@@ -52,7 +56,7 @@ public:
                               mockJoynrRuntime,
                               joynrMessagingConnectorFactory)),
               globalCapabilitiesDirectoryClient(std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                      clusterControllerSettings)),
+                      clusterControllerSettings, std::move(taskSequencer))),
               capDomain("testDomain"),
               capInterface("testInterface"),
               capParticipantId("testParticipantId"),
@@ -84,6 +88,7 @@ public:
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
     ClusterControllerSettings clusterControllerSettings;
+    std::unique_ptr<TaskSequencer<void>> taskSequencer;
     std::shared_ptr<MockJoynrRuntime> mockJoynrRuntime;
     std::shared_ptr<MockMessageSender> mockMessageSender;
     std::shared_ptr<JoynrMessagingConnectorFactory> joynrMessagingConnectorFactory;

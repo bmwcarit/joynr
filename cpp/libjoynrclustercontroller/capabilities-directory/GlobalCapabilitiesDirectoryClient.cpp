@@ -34,13 +34,14 @@ namespace joynr
 {
 
 GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
-        const ClusterControllerSettings& clusterControllerSettings)
+        const ClusterControllerSettings& clusterControllerSettings,
+        std::unique_ptr<TaskSequencer<void>> taskSequencer)
         : _capabilitiesProxy(nullptr),
           _messagingQos(),
           _touchTtl(static_cast<std::uint64_t>(
                   clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())),
           _removeStaleTtl(3600000),
-          _sequentialTasks(std::chrono::milliseconds(_messagingQos.getTtl()))
+          _sequentialTasks(std::move(taskSequencer))
 {
 }
 
@@ -52,7 +53,7 @@ GlobalCapabilitiesDirectoryClient::~GlobalCapabilitiesDirectoryClient()
 void GlobalCapabilitiesDirectoryClient::shutdown()
 {
     // Assure that all captures to class members are released.
-    _sequentialTasks.cancel();
+    _sequentialTasks->cancel();
 }
 
 void GlobalCapabilitiesDirectoryClient::add(
@@ -127,7 +128,7 @@ void GlobalCapabilitiesDirectoryClient::add(
         return future;
     };
 
-    _sequentialTasks.add(taskWithExpiryDate);
+    _sequentialTasks->add(taskWithExpiryDate);
 }
 
 void GlobalCapabilitiesDirectoryClient::remove(
@@ -155,7 +156,7 @@ void GlobalCapabilitiesDirectoryClient::remove(
         return retryRemoveOperation;
     };
 
-    _sequentialTasks.add(timeoutTask);
+    _sequentialTasks->add(timeoutTask);
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(

@@ -71,7 +71,8 @@ public:
        To upgrade to a complete GlobalCapabilitiesDirectoryClient the setProxy method must be
        called, and a Proxy must be provided.
      */
-    GlobalCapabilitiesDirectoryClient(const ClusterControllerSettings& clusterControllerSettings);
+    GlobalCapabilitiesDirectoryClient(const ClusterControllerSettings& clusterControllerSettings,
+                                      std::unique_ptr<TaskSequencer<void>> taskSequencer);
 
     ~GlobalCapabilitiesDirectoryClient() override;
 
@@ -173,7 +174,7 @@ private:
     MessagingQos _messagingQos;
     const std::uint64_t _touchTtl;
     const std::uint64_t _removeStaleTtl;
-    TaskSequencer<void> _sequentialTasks;
+    std::unique_ptr<TaskSequencer<void>> _sequentialTasks;
     ADD_LOGGER(GlobalCapabilitiesDirectoryClient)
 };
 
