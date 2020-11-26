@@ -42,12 +42,15 @@ protected:
 
     void SetUp() override
     {
-        runtime1 = JoynrRuntime::createRuntime(
-                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings"),
-                failOnFatalRuntimeError);
-        runtime2 = JoynrRuntime::createRuntime(
-                std::make_unique<Settings>("test-resources/libjoynrSystemIntegration2.settings"),
-                failOnFatalRuntimeError);
+        const Settings libjoynrSettings1("test-resources/libjoynrSystemIntegration1.settings");
+        const Settings libjoynrSettings2("test-resources/libjoynrSystemIntegration2.settings");
+        auto settings1 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
+        auto settings2 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest2.settings");
+        Settings::merge(libjoynrSettings1, *settings1, false);
+        Settings::merge(libjoynrSettings2, *settings2, false);
+
+        runtime1 = JoynrRuntime::createRuntime(std::move(settings1), failOnFatalRuntimeError);
+        runtime2 = JoynrRuntime::createRuntime(std::move(settings2), failOnFatalRuntimeError);
         discoveryQos.setDiscoveryTimeoutMs(100);
         discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
         providerQos.setScope(types::ProviderScope::LOCAL);
