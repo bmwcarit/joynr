@@ -4308,7 +4308,7 @@ public:
         auto localDomainAccessStore = std::make_shared<LocalDomainAccessStore>(
                 "test-resources/LDAS_checkPermissionToAdd.json");
         auto localDomainAccessController =
-                std::make_shared<LocalDomainAccessController>(localDomainAccessStore, true);
+                std::make_shared<LocalDomainAccessController>(localDomainAccessStore);
         _accessController = std::make_shared<AccessController>(
                 _localCapabilitiesDirectory, localDomainAccessController);
         _localCapabilitiesDirectory->setAccessController(util::as_weak_ptr(_accessController));

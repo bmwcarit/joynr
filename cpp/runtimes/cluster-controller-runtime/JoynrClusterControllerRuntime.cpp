@@ -75,9 +75,7 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/AccessControlListEditorProvider.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/infrastructure/GlobalDomainAccessControllerProxy.h"
 #include "joynr/infrastructure/IGlobalCapabilitiesDirectory.h"
-#include "joynr/infrastructure/IGlobalDomainAccessController.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/DiscoveryJoynrMessagingConnector.h"
 #include "joynr/system/DiscoveryProvider.h"
@@ -738,23 +736,6 @@ std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> JoynrClusterCont
                                    expiryDateMs,
                                    defaultPublicKeyId,
                                    false)));
-
-    types::Version gDACProviderVersion(
-            infrastructure::IGlobalDomainAccessController::MAJOR_VERSION,
-            infrastructure::IGlobalDomainAccessController::MINOR_VERSION);
-    provisionedDiscoveryEntries.insert(std::make_pair(
-            _clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
-            types::DiscoveryEntryWithMetaInfo(
-                    gDACProviderVersion,
-                    _messagingSettings.getDiscoveryDirectoriesDomain(),
-                    infrastructure::IGlobalDomainAccessController::INTERFACE_NAME(),
-                    _clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
-                    capabilityProviderQos,
-                    lastSeenDateMs,
-                    expiryDateMs,
-                    defaultPublicKeyId,
-                    false)));
-
     return provisionedDiscoveryEntries;
 }
 
@@ -789,14 +770,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
                 logger(), "Access control directory: {} does not exist.", aclEntriesPath.string());
     }
 
-    _localDomainAccessController = std::make_shared<joynr::LocalDomainAccessController>(
-            localDomainAccessStore, _clusterControllerSettings.getUseOnlyLDAS());
-
-    if (!_clusterControllerSettings.getUseOnlyLDAS()) {
-        auto proxyGlobalDomainAccessController = createGlobalDomainAccessControllerProxy();
-        _localDomainAccessController->setGlobalDomainAccessControllerProxy(
-                std::move(proxyGlobalDomainAccessController));
-    }
+    _localDomainAccessController =
+            std::make_shared<joynr::LocalDomainAccessController>(localDomainAccessStore);
 
     _accessController = std::make_shared<joynr::AccessController>(
             _localCapabilitiesDirectory, _localDomainAccessController);
@@ -817,43 +792,6 @@ void JoynrClusterControllerRuntime::enableAccessController(
 
     // Log entries
     localDomainAccessStore->logContent();
-}
-
-std::shared_ptr<infrastructure::GlobalDomainAccessControllerProxy> JoynrClusterControllerRuntime::
-        createGlobalDomainAccessControllerProxy()
-{
-    // Provision global domain access controller in MessageRouter
-    auto globalDomainAccessControlAddress =
-            std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
-    try {
-        joynr::serializer::deserializeFromJson(
-                *globalDomainAccessControlAddress,
-                _clusterControllerSettings.getGlobalDomainAccessControlAddress());
-    } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger(),
-                        "Cannot deserialize global domain access controller address. Reason: {}.",
-                        ex.what());
-    }
-
-    bool isGloballyVisible = true;
-    _ccMessageRouter->addProvisionedNextHop(
-            _clusterControllerSettings.getGlobalDomainAccessControlParticipantId(),
-            std::move(globalDomainAccessControlAddress),
-            isGloballyVisible);
-
-    // create GlobalDomainAccessController proxy
-    std::shared_ptr<ProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>>
-            globalDomainAccessControllerProxyBuilder =
-                    createProxyBuilder<infrastructure::GlobalDomainAccessControllerProxy>(
-                            _messagingSettings.getDiscoveryDirectoriesDomain());
-
-    DiscoveryQos discoveryQos(10000);
-    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-    discoveryQos.addCustomParameter(
-            "fixedParticipantId",
-            _clusterControllerSettings.getGlobalDomainAccessControlParticipantId());
-
-    return globalDomainAccessControllerProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 }
 
 void JoynrClusterControllerRuntime::registerInternalSystemServiceProviders()

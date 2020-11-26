@@ -1,7 +1,5 @@
 [access-control]
 enable=true
-global-domain-access-controller-address={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"@JOYNR_DEFAULT_GBID@","topic":"domainaccesscontroller_channelid"}
-global-domain-access-controller-participantid=domainaccesscontroller_participantid
 
 [messaging]
 persistence-file=joynr-access-control-end2end-test-1.persist

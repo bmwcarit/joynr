@@ -88,3 +88,14 @@ uds connections.
 * **Key**: `uds-enabled`
 * **Default value**: `true`
 
+### `acl-entries-directory`
+
+This setting defines where the cluster controller searches for ACL entry files.
+All regular files within the directory are treated as ACL entry files.
+Files which cannot be parsed are ignored.
+
+* **OPTIONAL**
+* **Section name**: `cluster-controller`
+* **Type**: String
+* **Key**: `acl-entries-directory`
+* **Default value**: Empty (current working directory)

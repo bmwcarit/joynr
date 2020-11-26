@@ -96,8 +96,7 @@ public:
     AccessControlListEditorTest()
             : mockLocalDomainAccessStore(std::make_shared<MockLocalDomainAccessStore>()),
               mockLocalDomainAccessController(
-                      std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore,
-                                                                        false)),
+                      std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore)),
               aclEditor(mockLocalDomainAccessStore, mockLocalDomainAccessController, false),
               semaphore(0)
     {

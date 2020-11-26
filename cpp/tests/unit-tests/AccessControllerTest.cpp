@@ -119,8 +119,7 @@ public:
               _clusterControllerSettings(_emptySettings),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _localDomainAccessControllerMock(std::make_shared<MockLocalDomainAccessController>(
-                      std::make_unique<LocalDomainAccessStore>(),
-                      false)),
+                      std::make_unique<LocalDomainAccessStore>())),
               _accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
               _messageRouter(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),

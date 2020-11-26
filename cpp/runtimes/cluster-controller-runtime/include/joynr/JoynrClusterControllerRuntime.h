@@ -84,11 +84,6 @@ class CachingStorage;
 class Storage;
 }
 
-namespace infrastructure
-{
-class GlobalDomainAccessControllerProxy;
-} // namespace infrastructure
-
 namespace types
 {
 class DiscoveryEntryWithMetaInfo;
@@ -230,8 +225,6 @@ private:
     void unregisterInternalSystemServiceProviders();
     void unregisterInternalSystemServiceProvider(const std::string& participantId);
     void startLocalCommunication();
-    std::shared_ptr<joynr::infrastructure::GlobalDomainAccessControllerProxy>
-    createGlobalDomainAccessControllerProxy();
     std::string getSerializedGlobalClusterControllerAddress() const;
     const system::RoutingTypes::Address& getGlobalClusterControllerAddress() const;
 

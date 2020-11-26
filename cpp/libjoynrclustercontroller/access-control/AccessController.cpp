@@ -211,16 +211,12 @@ public:
             : _localDomainAccessController(localDomainAccessController)
     {
     }
-    void onProviderAdd(const types::DiscoveryEntry& discoveryEntry) override
+    void onProviderAdd(const types::DiscoveryEntry&) override
     {
-        std::ignore = discoveryEntry;
-        // Ignored
     }
 
-    void onProviderRemove(const types::DiscoveryEntry& discoveryEntry) override
+    void onProviderRemove(const types::DiscoveryEntry&) override
     {
-        _localDomainAccessController->unregisterProvider(
-                discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
     }
 
 private:

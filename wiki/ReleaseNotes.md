@@ -10,9 +10,12 @@ None.
 ## Other Changes
 * **[C++]** Introduced `JOYNR_SUPPORT_WEBSOCKET` and `JOYNR_SUPPORT_UDS` CMake options to
   suppress unused build artifacts on demand.
+* **[C++]** Removed global domain access controller (GDAC) support from cluster controller.
 
 ## Configuration Property Changes
-None.
+* **[C++]** The cluster controller `access-control` settings `global-domain-access-controller-participantid`,
+  `global-domain-access-controller-address` and `use-ldas-only` are ignored. The cluster controller behavior
+  corresponds to the former default behavior (`use-ldas-only=true`).
 
 ## Bug Fixes
 None.

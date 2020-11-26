@@ -230,8 +230,6 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockSubscriptionManager.h
         mock/MockSubscriptionCallback.h
         mock/MockParticipantIdStorage.h
-        mock/MockGlobalDomainAccessControllerProxy.h
-        mock/MockGlobalDomainRoleControllerProxy.h
         mock/MockLocalDomainAccessController.h
         mock/MockLocationUpdatedSelectiveFilter.h
         mock/MockMqttMessagingSkeleton.h
