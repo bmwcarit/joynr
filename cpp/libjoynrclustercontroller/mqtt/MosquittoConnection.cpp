@@ -97,6 +97,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
         throw joynr::exceptions::JoynrRuntimeException(message);
     }
     mosquitto_int_option(_mosq, MOSQ_OPT_PROTOCOL_VERSION, MQTT_PROTOCOL_V5);
+    mosquitto_int_option(_mosq, MOSQ_OPT_RECONNECT_SESSION_EXPIRY_INTERVAL, sessionExpiryInterval);
     mosquitto_connect_v5_callback_set(_mosq, on_connect_v5);
     mosquitto_disconnect_v5_callback_set(_mosq, on_disconnect_v5);
     mosquitto_publish_v5_callback_set(_mosq, on_publish_v5);
@@ -607,8 +608,7 @@ void MosquittoConnection::startInternal()
                    _port);
 
     mosquitto_property* props = nullptr;
-    mosquitto_property_add_int32(
-            &props, MQTT_PROP_SESSION_EXPIRY_INTERVAL, std::numeric_limits<std::int32_t>::max());
+    mosquitto_property_add_int32(&props, MQTT_PROP_SESSION_EXPIRY_INTERVAL, sessionExpiryInterval);
     mosquitto_connect_bind_async_v5(
             _mosq, _host.c_str(), _port, _mqttKeepAliveTimeSeconds.count(), nullptr, props);
     mosquitto_property_free_all(&props);

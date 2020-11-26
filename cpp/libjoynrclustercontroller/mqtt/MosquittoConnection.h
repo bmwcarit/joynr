@@ -192,6 +192,8 @@ private:
     uint32_t _mqttMaximumPacketSize;
     std::string _gbid;
 
+    static constexpr std::int32_t sessionExpiryInterval = std::numeric_limits<std::int32_t>::max();
+
     ADD_LOGGER(MosquittoConnection)
 };
 
