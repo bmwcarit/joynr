@@ -84,7 +84,6 @@ public:
     {
     }
 
-    ADD_LOGGER(GlobalCapabilitiesDirectoryClientTest)
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
     ClusterControllerSettings clusterControllerSettings;
@@ -137,6 +136,61 @@ void testMessagingQosForCustomHeaderGbidKey(std::string gbid,
     ASSERT_NE(messagingQos, nullptr);
     auto customMessageHeaders = messagingQos->getCustomMessageHeaders();
     ASSERT_EQ(gbid, customMessageHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY())->second);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskTimeoutFunctionCallsOnRuntimeErrorCorrectly)
+{
+    std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer = std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
+    auto mockTaskSequencerRef = mockTaskSequencer.get();
+
+    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient = std::make_shared<GlobalCapabilitiesDirectoryClient>(
+                                                  clusterControllerSettings, std::move(mockTaskSequencer));
+    Semaphore semaphore;
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+
+    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+
+    bool onRuntimeErrorCalled = false;
+    bool exceptionMessageFound = false;
+    auto onRuntimeError = [&onRuntimeErrorCalled, &exceptionMessageFound](
+            const exceptions::JoynrRuntimeException& exception) {
+        std::string exceptionMessage = exception.getMessage();
+        std::string expectedMessage = "Failed to process global registration in time, please try again";
+        onRuntimeErrorCalled = true;
+        if (exceptionMessage.find(expectedMessage) != std::string::npos) {
+            exceptionMessageFound = true;
+        }
+    };
+    gcdClient->add(
+            globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
+    capturedTask.timeout();
+    ASSERT_TRUE(onRuntimeErrorCalled);
+    ASSERT_TRUE(exceptionMessageFound);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskExpiryDateHasCorrectValue)
+{
+    std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer = std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
+    auto mockTaskSequencerRef = mockTaskSequencer.get();
+    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient = std::make_shared<GlobalCapabilitiesDirectoryClient>(
+                                                  clusterControllerSettings, std::move(mockTaskSequencer));
+    Semaphore semaphore;
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    TimePoint expectedTaskExpiryDate = TimePoint::fromRelativeMs(
+                static_cast<std::int64_t>(MessagingQos().getTtl()));
+
+    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+    gcdClient->add(
+            globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
+    auto actualTaskExpiryDate = capturedTask.expiryDate;
+    ASSERT_TRUE(actualTaskExpiryDate - expectedTaskExpiryDate < std::chrono::milliseconds(1000));
+    ASSERT_TRUE(actualTaskExpiryDate.toMilliseconds() >= expectedTaskExpiryDate.toMilliseconds());
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd)
@@ -245,6 +299,26 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
             capParticipantId, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveTaskExpiryDateHasCorrectValue)
+{
+    std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer = std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
+    auto mockTaskSequencerRef = mockTaskSequencer.get();
+    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient = std::make_shared<GlobalCapabilitiesDirectoryClient>(
+                                                  clusterControllerSettings, std::move(mockTaskSequencer));
+    Semaphore semaphore;
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    TimePoint expectedTaskExpiryDate = TimePoint::max();
+
+    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+    gcdClient->remove(
+            capParticipantId, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
+    auto actualTaskExpiryDate = capturedTask.expiryDate;
+    ASSERT_EQ(expectedTaskExpiryDate, actualTaskExpiryDate);
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveUsesCorrectTtl)
