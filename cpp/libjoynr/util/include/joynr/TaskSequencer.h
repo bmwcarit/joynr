@@ -94,7 +94,7 @@ public:
     }
 
     /** Cancel processing of tasks. Drop all enqueued tasks silently. */
-    ~TaskSequencer()
+    virtual ~TaskSequencer()
     {
         cancel();
     }
@@ -106,7 +106,7 @@ public:
      * @brief add tasks to processor FIFO queue.
      * @param taskWithExpiryDate New task with expiry date
      */
-    void add(const TaskWithExpiryDate& taskWithExpiryDate)
+    virtual void add(const TaskWithExpiryDate& taskWithExpiryDate)
     {
         std::unique_lock<std::mutex> lock(_tasksMutex);
         _tasks.push_back(taskWithExpiryDate);
@@ -116,7 +116,7 @@ public:
     /**
      * @brief Cancel all task processing
      */
-    void cancel()
+    virtual void cancel()
     {
         if (!_isRunning.exchange(false)) {
             return;

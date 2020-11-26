@@ -268,6 +268,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockDelayedScheduler.h
         mock/MockTestProvider.h
         mock/MockUdsMessagingStubFactory.h
+        mock/MockTaskSequencer.h
     )
 
     add_library(JoynrMocks STATIC ${MOCK_SOURCES})
