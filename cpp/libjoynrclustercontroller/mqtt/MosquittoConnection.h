@@ -190,6 +190,8 @@ private:
     struct mosquitto* _mosq;
     uint32_t _mqttMaximumPacketSize;
 
+    static constexpr std::int32_t sessionExpiryInterval = std::numeric_limits<std::int32_t>::max();
+
     ADD_LOGGER(MosquittoConnection)
 };
 
