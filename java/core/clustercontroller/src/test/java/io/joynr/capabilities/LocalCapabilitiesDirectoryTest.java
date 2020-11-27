@@ -20,6 +20,7 @@ package io.joynr.capabilities;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -28,6 +29,7 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
@@ -70,9 +72,11 @@ import org.mockito.stubbing.Answer;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl.GcdTaskSequencer;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.TransportReadyListener;
@@ -139,6 +143,7 @@ public class LocalCapabilitiesDirectoryTest {
     private DiscoveryEntry expectedDiscoveryEntry;
     private GlobalDiscoveryEntry globalDiscoveryEntry;
     private GlobalDiscoveryEntry expectedGlobalDiscoveryEntry;
+    private GlobalDiscoveryEntry provisionedGlobalDiscoveryEntry;
 
     @Mock
     JoynrRuntime runtime;
@@ -295,8 +300,20 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                             new ChannelAddress(TEST_URL,
                                                                                                                                domainAccessControllerChannelId));
 
+        provisionedGlobalDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
+                                                                                  "provisioneddomain",
+                                                                                  "provisionedInterface",
+                                                                                  "provisionedParticipantId",
+                                                                                  new ProviderQos(),
+                                                                                  System.currentTimeMillis(),
+                                                                                  expiryDateMs,
+                                                                                  "provisionedPublicKey",
+                                                                                  new MqttAddress("provisionedbrokeruri",
+                                                                                                  "provisionedtopic"));
+
         when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(new HashSet<GlobalDiscoveryEntry>(Arrays.asList(globalCapabilitiesDirectoryDiscoveryEntry,
-                                                                                                                        domainAccessControllerDiscoveryEntry)));
+                                                                                                                        domainAccessControllerDiscoveryEntry,
+                                                                                                                        provisionedGlobalDiscoveryEntry)));
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
                                                                         globalAddressProvider,
                                                                         localDiscoveryEntryStoreMock,
@@ -520,11 +537,11 @@ public class LocalCapabilitiesDirectoryTest {
                                                         globalAddress1Serialized);
 
         ProviderRuntimeException exception = new ProviderRuntimeException("add failed");
-        doAnswer(createAddAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
-                                                         .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
-                                                              anyLong(),
-                                                              Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
+                                                          .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                               argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                               anyLong(),
+                                                               Matchers.<String[]> any());
 
         final boolean awaitGlobalRegistration = true;
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
@@ -562,11 +579,11 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     private void testAddWithGbidsIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
-        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
-                                                                  .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                                       argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
-                                                                       anyLong(),
-                                                                       Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                        argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                                        anyLong(),
+                                                                        Matchers.<String[]> any());
 
         final boolean awaitGlobalRegistration = true;
         String[] gbids = new String[]{ knownGbids[0] };
@@ -575,11 +592,11 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     private void testAddIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
-        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
-                                                                  .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                                       argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
-                                                                       anyLong(),
-                                                                       Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                        argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                                        anyLong(),
+                                                                        Matchers.<String[]> any());
 
         final boolean awaitGlobalRegistration = true;
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
@@ -895,11 +912,11 @@ public class LocalCapabilitiesDirectoryTest {
         JoynrRuntimeException exception = new JoynrRuntimeException("add failed");
         ProviderRuntimeException expectedException = new ProviderRuntimeException(exception.toString());
 
-        doAnswer(createAddAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
-                                                         .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
-                                                              anyLong(),
-                                                              Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
+                                                          .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                               argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                               anyLong(),
+                                                               Matchers.<String[]> any());
 
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
 
@@ -908,11 +925,11 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     private void testAddToAllIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
-        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
-                                                                  .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                                       argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
-                                                                       anyLong(),
-                                                                       Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                        argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                                        anyLong(),
+                                                                        Matchers.<String[]> any());
 
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
 
@@ -1011,11 +1028,11 @@ public class LocalCapabilitiesDirectoryTest {
                         cdlStart.countDown();
                         try {
                             Thread.sleep(delay);
-                            cdlDone.countDown();
                         } catch (Exception e) {
                             fail("SLEEP INTERRUPTED");
                         }
                         callback.onSuccess(null);
+                        cdlDone.countDown();
                     }
                 }).start();
                 return null;
@@ -1023,33 +1040,41 @@ public class LocalCapabilitiesDirectoryTest {
         };
     }
 
-    private static Answer<Future<Void>> createAddAnswerWithException(JoynrRuntimeException exception) {
-        return new Answer<Future<Void>>() {
+    private static Answer<Void> createVoidAnswerWithException(JoynrRuntimeException exception) {
+        CountDownLatch cdl = new CountDownLatch(0);
+        return createVoidAnswerWithException(cdl, exception);
+    }
+
+    private static Answer<Void> createVoidAnswerWithDiscoveryError(DiscoveryError error) {
+        CountDownLatch cdl = new CountDownLatch(0);
+        return createVoidAnswerWithDiscoveryError(cdl, error);
+    }
+
+    private static Answer<Void> createVoidAnswerWithException(CountDownLatch cdl, JoynrRuntimeException exception) {
+        return new Answer<Void>() {
 
             @Override
-            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
-                Future<Void> result = new Future<Void>();
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 @SuppressWarnings("unchecked")
                 Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
                 callback.onFailure(exception);
-                result.onSuccess(null);
-                return result;
+                cdl.countDown();
+                return null;
             }
         };
     }
 
-    private static Answer<Future<Void>> createAddAnswerWithDiscoveryError(DiscoveryError error) {
-        return new Answer<Future<Void>>() {
+    private static Answer<Void> createVoidAnswerWithDiscoveryError(CountDownLatch cdl, DiscoveryError error) {
+        return new Answer<Void>() {
 
             @Override
-            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
-                Future<Void> result = new Future<Void>();
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
                 @SuppressWarnings("unchecked")
                 CallbackWithModeledError<Void, DiscoveryError> callback = ((CallbackWithModeledError<Void, DiscoveryError>) args[0]);
                 callback.onFailure(error);
-                result.onSuccess(null);
-                return result;
+                cdl.countDown();
+                return null;
             }
         };
     }
@@ -1107,6 +1132,7 @@ public class LocalCapabilitiesDirectoryTest {
         when(localDiscoveryEntryStoreMock.lookup(discoveryEntry.getParticipantId(),
                                                  Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry));
         localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
+        verify(localDiscoveryEntryStoreMock).remove(discoveryEntry.getParticipantId());
         Promise<Lookup1Deferred> promise3 = localCapabilitiesDirectory.lookup(domains, interfaceName1, discoveryQos);
         verifyGcdLookupAndPromiseFulfillment(3,
                                              domains,
@@ -2530,12 +2556,12 @@ public class LocalCapabilitiesDirectoryTest {
 
         JoynrRuntimeException exception = new JoynrRuntimeException("lookup failed");
         ProviderRuntimeException expectedException = new ProviderRuntimeException(exception.toString());
-        doAnswer(createAddAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
-                                                         .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                                 eq(domains),
-                                                                 eq(interfaceName),
-                                                                 anyLong(),
-                                                                 Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
+                                                          .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                  eq(domains),
+                                                                  eq(interfaceName),
+                                                                  anyLong(),
+                                                                  Matchers.<String[]> any());
 
         Promise<Lookup2Deferred> promise = localCapabilitiesDirectory.lookup(domains,
                                                                              interfaceName,
@@ -2558,12 +2584,12 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
 
-        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
-                                                                  .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                                          eq(domains),
-                                                                          eq(interfaceName),
-                                                                          anyLong(),
-                                                                          Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                   .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                           eq(domains),
+                                                                           eq(interfaceName),
+                                                                           anyLong(),
+                                                                           Matchers.<String[]> any());
 
         Promise<Lookup2Deferred> promise = localCapabilitiesDirectory.lookup(domains,
                                                                              interfaceName,
@@ -2586,12 +2612,12 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
 
-        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
-                                                                  .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                                          eq(domains),
-                                                                          eq(interfaceName),
-                                                                          anyLong(),
-                                                                          Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                   .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                           eq(domains),
+                                                                           eq(interfaceName),
+                                                                           anyLong(),
+                                                                           Matchers.<String[]> any());
 
         Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
 
@@ -2652,11 +2678,11 @@ public class LocalCapabilitiesDirectoryTest {
 
         JoynrRuntimeException exception = new JoynrRuntimeException("lookup failed");
         ProviderRuntimeException expectedException = new ProviderRuntimeException(exception.toString());
-        doAnswer(createAddAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
-                                                         .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
-                                                                 eq(participantId),
-                                                                 anyLong(),
-                                                                 Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithException(exception)).when(globalCapabilitiesDirectoryClient)
+                                                          .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                                                                  eq(participantId),
+                                                                  anyLong(),
+                                                                  Matchers.<String[]> any());
 
         Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids);
 
@@ -2666,11 +2692,11 @@ public class LocalCapabilitiesDirectoryTest {
     private void testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
         String participantId = "participantId";
 
-        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
-                                                                  .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
-                                                                          eq(participantId),
-                                                                          anyLong(),
-                                                                          Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                   .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                                                                           eq(participantId),
+                                                                           anyLong(),
+                                                                           Matchers.<String[]> any());
 
         DiscoveryQos discoveryQos = new DiscoveryQos(10000L, 500L, DiscoveryScope.LOCAL_AND_GLOBAL, false);
         Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids);
@@ -2681,11 +2707,11 @@ public class LocalCapabilitiesDirectoryTest {
     private void testLookupByParticipantIdIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
         String participantId = "participantId";
 
-        doAnswer(createAddAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
-                                                                  .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
-                                                                          eq(participantId),
-                                                                          anyLong(),
-                                                                          Matchers.<String[]> any());
+        doAnswer(createVoidAnswerWithDiscoveryError(expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                   .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                                                                           eq(participantId),
+                                                                           anyLong(),
+                                                                           Matchers.<String[]> any());
 
         Promise<Lookup3Deferred> promise = localCapabilitiesDirectory.lookup(participantId);
 
@@ -2949,38 +2975,183 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void removeCapabilities_invokesGcdClient() throws InterruptedException {
+    public void remove_globallyRegistered_GcdCalled() throws InterruptedException {
         when(globalAddressProvider.get()).thenReturn(new MqttAddress("testgbid", "testtopic"));
         Boolean awaitGlobalRegistration = true;
         Promise<DeferredVoid> addPromise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
         checkPromiseSuccess(addPromise, "add failed");
 
-        CountDownLatch cdl = new CountDownLatch(1);
-        doAnswer(createAnswerWithSuccess(cdl)).when(globalCapabilitiesDirectoryClient)
-                                              .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                      eq(globalDiscoveryEntry.getParticipantId()),
-                                                      any(String[].class));
+        CountDownLatch cdlStart = new CountDownLatch(1);
+        CountDownLatch cdlDone = new CountDownLatch(1);
+        doAnswer(createAnswerWithDelayedSuccess(cdlStart,
+                                                cdlDone,
+                                                1500)).when(globalCapabilitiesDirectoryClient)
+                                                      .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                              eq(globalDiscoveryEntry.getParticipantId()),
+                                                              any(String[].class));
+
+        when(localDiscoveryEntryStoreMock.lookup(discoveryEntry.getParticipantId(),
+                                                 Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry));
+        localCapabilitiesDirectory.remove(globalDiscoveryEntry.getParticipantId());
+
+        assertTrue(cdlStart.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                         eq(discoveryEntry.getParticipantId()),
+                                                         any(String[].class));
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(any(String.class));
+        verify(globalDiscoveryEntryCacheMock, times(0)).remove(any(String.class));
+        assertTrue(cdlDone.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(discoveryEntry.getParticipantId()));
+        verify(globalDiscoveryEntryCacheMock, times(1)).remove(eq(discoveryEntry.getParticipantId()));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void remove_localProvider_GcdNotCalled() throws InterruptedException {
+        when(globalAddressProvider.get()).thenReturn(new MqttAddress("testgbid", "testtopic"));
+        discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        Boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> addPromise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+        checkPromiseSuccess(addPromise, "add failed");
 
         when(localDiscoveryEntryStoreMock.lookup(discoveryEntry.getParticipantId(),
                                                  Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry));
         localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
 
-        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
-        verify(globalCapabilitiesDirectoryClient).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                         eq(globalDiscoveryEntry.getParticipantId()),
-                                                         any(String[].class));
+        Thread.sleep(500);
+        verify(globalCapabilitiesDirectoryClient,
+               times(0)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                anyString(),
+                                any(String[].class));
+        verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(discoveryEntry.getParticipantId()));
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void testRemove_GcdNotCalledIfParticipantIsNotRegistered() throws InterruptedException {
-        Promise<DeferredVoid> promise = localCapabilitiesDirectory.remove("participantId");
-        checkPromiseException(promise,
-                              new ProviderRuntimeException("Failed to remove participantId: participantId. "
-                                      + "ParticipantId is not registered in cluster controller."));
+    public void remove_participantNotRegisteredNoGbids_GcdNotCalled() throws InterruptedException {
+        String participantId = "unknownparticipantId";
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(createAnswerWithSuccess(cdl)).when(globalCapabilitiesDirectoryClient)
+                                              .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                      eq(participantId),
+                                                      any(String[].class));
+
+        doReturn(Optional.empty()).when(localDiscoveryEntryStoreMock).lookup(eq(participantId), anyLong());
+
+        localCapabilitiesDirectory.remove(participantId);
+
+        assertFalse(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(globalCapabilitiesDirectoryClient,
                never()).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                any(String.class),
                                any(String[].class));
+        verify(localDiscoveryEntryStoreMock, never()).remove(any(String.class));
+        verify(globalDiscoveryEntryCacheMock, never()).remove(any(String.class));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void remove_participantNotRegisteredGbidsMapped_GcdCalled() throws InterruptedException {
+        // this test assumes that the participant gets registered by a queued add task after enqueuing the remove task
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(createAnswerWithSuccess(cdl)).when(globalCapabilitiesDirectoryClient)
+                                              .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                      eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                                      any(String[].class));
+
+        doReturn(Optional.empty()).when(localDiscoveryEntryStoreMock)
+                                  .lookup(eq(provisionedGlobalDiscoveryEntry.getParticipantId()), anyLong());
+        localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
+
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                any(String[].class));
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(provisionedGlobalDiscoveryEntry.getParticipantId()));
+        verify(globalDiscoveryEntryCacheMock, times(1)).remove(eq(provisionedGlobalDiscoveryEntry.getParticipantId()));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void remove_FailureStates_TimeoutException() throws InterruptedException {
+        CountDownLatch cdl = new CountDownLatch(2);
+        doAnswer(createVoidAnswerWithException(cdl,
+                                               new JoynrTimeoutException(0))).when(globalCapabilitiesDirectoryClient)
+                                                                             .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                                     eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                                                                     any(String[].class));
+
+        localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
+
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient,
+               atLeast(2)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                  eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                  any(String[].class));
+        verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void remove_FailureStates_NonTimeoutException() throws InterruptedException {
+        CountDownLatch cdl = new CountDownLatch(1);
+        localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
+        doAnswer(createVoidAnswerWithException(cdl,
+                                               new JoynrCommunicationException())).when(globalCapabilitiesDirectoryClient)
+                                                                                  .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                                          eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                                                                          any(String[].class));
+        localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                any(String[].class));
+        verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void remove_FailureStates_DiscoveryError_NoEntry() throws InterruptedException {
+        // covers NO_ENTRY_FOR_PARTICIPANT as well as NO_ENTRY_FOR_SELECTED_BACKENDS
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(createVoidAnswerWithDiscoveryError(cdl,
+                                                    DiscoveryError.NO_ENTRY_FOR_PARTICIPANT)).when(globalCapabilitiesDirectoryClient)
+                                                                                             .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                                                     eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                                                                                     any(String[].class));
+
+        localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
+
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                any(String[].class));
+        verify(globalDiscoveryEntryCacheMock, times(1)).remove(eq(provisionedGlobalDiscoveryEntry.getParticipantId()));
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(provisionedGlobalDiscoveryEntry.getParticipantId()));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void remove_FailureStates_DiscoveryError_InvalidGbid() throws InterruptedException {
+        // Also covers UNKNOWN_GBID and INTERNAL_ERROR
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(createVoidAnswerWithDiscoveryError(cdl,
+                                                    DiscoveryError.INVALID_GBID)).when(globalCapabilitiesDirectoryClient)
+                                                                                 .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                                         eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                                                                         any(String[].class));
+
+        localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
+
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
+                                any(String[].class));
+        verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
     }
 
     private void testRemoveUsesSameGbidOrderAsAdd(String[] selectedGbids) throws InterruptedException {
@@ -3465,41 +3636,38 @@ public class LocalCapabilitiesDirectoryTest {
 
         final long delay = 1500;
         CountDownLatch cdlAddDelayStarted = new CountDownLatch(1);
-        CountDownLatch cdlAddDelayDone = new CountDownLatch(1);
+        CountDownLatch cdlAddDone = new CountDownLatch(1);
         doAnswer(createAnswerWithDelayedSuccess(cdlAddDelayStarted,
-                                                cdlAddDelayDone,
+                                                cdlAddDone,
                                                 delay)).when(globalCapabilitiesDirectoryClient)
                                                        .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                             argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry1)),
                                                             anyLong(),
                                                             any(String[].class));
 
-        // 3 actions. 2 lcd.add and 1 lcd.remove
-        final Boolean awaitGlobalRegistration = true;
-        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry1, awaitGlobalRegistration);
-        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry2, awaitGlobalRegistration);
-        assertTrue(cdlAddDelayStarted.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
-
         CountDownLatch cdlRemove = new CountDownLatch(1);
         doAnswer(createAnswerWithSuccess(cdlRemove)).when(globalCapabilitiesDirectoryClient)
                                                     .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                             eq(participantId1),
                                                             any(String[].class));
-        //localCapabilitiesDirectory.remove(discoveryEntry1); // TODO uncomment this line when LCD.remove is changed
+
+        // 3 actions. 2 lcd.add and 1 lcd.remove
+        final Boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry1, awaitGlobalRegistration);
+        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry2, awaitGlobalRegistration);
+        localCapabilitiesDirectory.remove(discoveryEntry1.getParticipantId());
+        assertTrue(cdlAddDelayStarted.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         JoynrRuntimeException expectedException = new JoynrRuntimeException("Failed to process global registration in time, please try again");
         checkPromiseException(promiseAdd2, new ProviderRuntimeException(expectedException.toString()));
 
         // second add failed before first add has finished, remove not yet executed
-        assertEquals(1, cdlAddDelayDone.getCount());
+        assertEquals(1, cdlAddDone.getCount());
         assertEquals(1, cdlRemove.getCount());
 
         checkPromiseSuccess(promiseAdd1, "add failed");
-        assertTrue(cdlAddDelayDone.await(0, TimeUnit.MILLISECONDS));
+        assertTrue(cdlAddDone.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
-        when(localDiscoveryEntryStoreMock.lookup(discoveryEntry1.getParticipantId(),
-                                                 Long.MAX_VALUE)).thenReturn(Optional.of(discoveryEntry1));
-        localCapabilitiesDirectory.remove(discoveryEntry1.getParticipantId()); // TODO move this line up when LCD.remove is changed
         assertTrue(cdlRemove.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         InOrder inOrder = inOrder(globalCapabilitiesDirectoryClient);

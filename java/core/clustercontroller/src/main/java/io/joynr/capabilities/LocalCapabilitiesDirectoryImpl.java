@@ -201,7 +201,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             @Override
             public void cleanup(Set<DiscoveryEntry> expiredDiscoveryEntries) {
                 for (DiscoveryEntry discoveryEntry : expiredDiscoveryEntries) {
-                    removeInternal(discoveryEntry);
+                    removeInternal(discoveryEntry.getParticipantId(), discoveryEntry.getQos().getScope());
                 }
             }
         }, globalDiscoveryEntryCache, localDiscoveryEntryStore);
@@ -551,29 +551,24 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
     @Override
     public io.joynr.provider.Promise<io.joynr.provider.DeferredVoid> remove(String participantId) {
-        // TODO see TODO comments in LocalCapabilitiesDirectoryTest.testProcessingExpiredQueuedGcdActions when modifying the implementation
         DeferredVoid deferred = new DeferredVoid();
         Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(participantId,
                                                                                           Long.MAX_VALUE);
         if (optionalDiscoveryEntry.isPresent()) {
-            removeInternal(optionalDiscoveryEntry.get());
-            deferred.resolve();
+            removeInternal(optionalDiscoveryEntry.get().getParticipantId(),
+                           optionalDiscoveryEntry.get().getQos().getScope());
         } else {
-            logger.debug("Failed to remove participantId: {}. ParticipantId is not registered in cluster controller.",
-                         participantId);
-            deferred.reject(new ProviderRuntimeException("Failed to remove participantId: " + participantId
-                    + ". ParticipantId is not registered in cluster controller."));
+            removeInternal(participantId, ProviderScope.GLOBAL);
         }
+        deferred.resolve();
         return new Promise<>(deferred);
     }
 
-    private void removeInternal(final DiscoveryEntry discoveryEntry) {
-        final String participantId = discoveryEntry.getParticipantId();
-        localDiscoveryEntryStore.remove(participantId);
-        notifyCapabilityRemoved(discoveryEntry);
-        // Remove from the global capabilities directory if needed
-        if (discoveryEntry.getQos().getScope() != ProviderScope.LOCAL) {
-
+    private void removeInternal(final String participantId, ProviderScope providerScope) {
+        if (providerScope == ProviderScope.LOCAL) {
+            localDiscoveryEntryStore.remove(participantId);
+            logger.info("Removed locally registered participantId {}", participantId);
+        } else {
             CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
@@ -581,7 +576,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     synchronized (globalDiscoveryEntryCache) {
                         globalDiscoveryEntryCache.remove(participantId);
                         globalProviderParticipantIdToGbidListMap.remove(participantId);
+                        localDiscoveryEntryStore.remove(participantId);
+                        // Remove endpoint addresses
+                        messageRouter.removeNextHop(participantId);
                     }
+                    logger.info("Removed globally registered participantId {}", participantId);
                     gcdTaskSequencer.taskFinished();
                 }
 
@@ -611,6 +610,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         synchronized (globalDiscoveryEntryCache) {
                             globalDiscoveryEntryCache.remove(participantId);
                             globalProviderParticipantIdToGbidListMap.remove(participantId);
+                            localDiscoveryEntryStore.remove(participantId);
+                            // Remove endpoint addresses
+                            messageRouter.removeNextHop(participantId);
                         }
                         break;
                     case INVALID_GBID:
@@ -626,9 +628,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             GcdTask removeTask = GcdTask.createRemoveTask(callback, participantId);
             gcdTaskSequencer.addTask(removeTask);
         }
-
-        // Remove endpoint addresses
-        messageRouter.removeNextHop(participantId);
     }
 
     @Override
@@ -1320,6 +1319,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         public void retryTask() {
+            queueSemaphore.release();
             workerSemaphore.release();
         }
 
@@ -1350,6 +1350,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 if (foundExpiredEntry) {
                     queueSemaphore.acquireUninterruptibly();
                     expiredTask.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                    workerSemaphore.acquireUninterruptibly();
                     taskQueue.remove(expiredTask);
                     continue;
                 }
@@ -1520,6 +1521,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             synchronized (globalDiscoveryEntryCache) {
                 if (globalProviderParticipantIdToGbidListMap.containsKey(task.participantId)) {
                     List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(task.participantId);
+                    logger.info("Removing globally registered participantId {} for GBIDs {}",
+                                task.participantId,
+                                gbidsToRemove);
                     try {
                         globalCapabilitiesDirectoryClient.remove(task.callback,
                                                                  task.participantId,
