@@ -1,0 +1,52 @@
+From 3bf8695a006b9ed3ae6832d792ee71f908aec1bf Mon Sep 17 00:00:00 2001
+From: Guido Ostkamp <Guido.Ostkamp@partner.bmw.de>
+Date: Thu, 26 Nov 2020 15:10:15 +0100
+Subject: mosquitto_reconnect(...) supports MQTTv5 session expiry interval
+
+mosquitto_reconnect(...) used from mosquitto_loop_forever() in the
+background thread supports session expiry interval for MQTT v5.
+
+The value to be used can be configured using
+mosquitto_int_option(mosq, MOSQ_OPT_RECONNECT_SESSION_EXPIRY_INTERVAL, value).
+Default value is 0, if this API has not been called previously.
+---
+ lib/connect.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
+
+diff --git a/lib/connect.c b/lib/connect.c
+index 01278704..5fc9304b 100644
+--- a/lib/connect.c
++++ b/lib/connect.c
+@@ -151,7 +151,28 @@ int mosquitto_reconnect_async(struct mosquitto *mosq)
+ 
+ int mosquitto_reconnect(struct mosquitto *mosq)
+ {
+-	return mosquitto__reconnect(mosq, true, NULL);
++	int rc;
++
++	if(mosq->protocol == mosq_p_mqtt5){
++		int savedErrno;
++
++		mosquitto_property* properties = NULL;
++		mosquitto_property_add_int32(
++				&properties, MQTT_PROP_SESSION_EXPIRY_INTERVAL, mosq->reconnect_session_expiry_interval);
++
++		if(properties){
++			rc = mosquitto_property_check_all(CMD_CONNECT, properties);
++			if(rc) return rc;
++		}
++
++		rc = mosquitto__reconnect(mosq, true, properties);
++		savedErrno = errno;
++		mosquitto_property_free_all(&properties);
++		errno = savedErrno;
++		return rc;
++	} else {
++		return mosquitto__reconnect(mosq, true, NULL);
++	}
+ }
+ 
+ 
+-- 
+2.25.1
+

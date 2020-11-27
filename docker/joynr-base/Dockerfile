@@ -147,12 +147,18 @@ RUN chmod -R 777 /opt/payara41
 # 0bdf630c (tag: v1.6.12) Merge branch 'fixes'
 ###################################################################################
 COPY 0001-Introduce-mosquitto_connect_bind_async_v5-API.patch /tmp/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch
+COPY 0002-Added-reconnect_session_expiry_interval-to-struct-mo.patch /tmp/0002-Added-reconnect_session_expiry_interval-to-struct-mo.patch
+COPY 0003-Introduced-option-MOSQ_OPT_RECONNECT_SESSION_EXPIRY_.patch /tmp/0003-Introduced-option-MOSQ_OPT_RECONNECT_SESSION_EXPIRY_.patch
+COPY 0004-mosquitto_reconnect-supports-MQTTv5-session-expiry.patch /tmp/0004-mosquitto_reconnect-supports-MQTTv5-session-expiry.patch
 RUN . /etc/profile \
     && cd /opt \
     && git clone https://github.com/eclipse/mosquitto \
     && cd mosquitto \
     && git checkout 298d8494 \
     && git am -k /tmp/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch \
+    && git am -k /tmp/0002-Added-reconnect_session_expiry_interval-to-struct-mo.patch \
+    && git am -k /tmp/0003-Introduced-option-MOSQ_OPT_RECONNECT_SESSION_EXPIRY_.patch \
+    && git am -k /tmp/0004-mosquitto_reconnect-supports-MQTTv5-session-expiry.patch \
     && make WITH_WEBSOCKETS=yes DOCDIRS= prefix=/usr install -j4
 
 ###################################################
