@@ -2,6 +2,22 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.14.5
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed a bug where the CONNACK sent on MQTT reconnect did not
+  include the session expiry interval property causing the session to end
+  when the network connection is closed.
+
 # joynr 1.14.4
 
 ## API-relevant Changes
