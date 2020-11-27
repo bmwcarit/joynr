@@ -65,7 +65,7 @@ public class RequestReplyManagerImpl
         implements RequestReplyManager, DirectoryListener<ProviderContainer>, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(RequestReplyManagerImpl.class);
     private final StatelessAsyncRequestReplyIdManager statelessAsyncRequestReplyIdManager;
-    private boolean running = true;
+    private boolean shuttingDown = false;
 
     private List<Thread> outstandingRequestThreads = Collections.synchronizedList(new ArrayList<Thread>());
     private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<>();
@@ -158,7 +158,7 @@ public class RequestReplyManagerImpl
                                   SynchronizedReplyCaller synchronizedReplyCaller,
                                   MessagingQos messagingQos) {
 
-        if (!running) {
+        if (shuttingDown) {
             throw new IllegalStateException("Request: " + request.getRequestReplyId() + " failed. SenderImpl ID: "
                     + System.identityHashCode(this) + ": joynr is shutting down");
         }
@@ -174,12 +174,12 @@ public class RequestReplyManagerImpl
         // saving all calling threads so that they can be interrupted at shutdown
         outstandingRequestThreads.add(Thread.currentThread());
         synchronized (responsePayloadContainer) {
-            while (running && responsePayloadContainer.isEmpty()
+            while (!shuttingDown && responsePayloadContainer.isEmpty()
                     && entryTime + messagingQos.getRoundTripTtl_ms() > System.currentTimeMillis()) {
                 try {
                     responsePayloadContainer.wait();
                 } catch (InterruptedException e) {
-                    if (running) {
+                    if (!shuttingDown) {
                         throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
                                 + " interrupted.");
                     }
@@ -436,7 +436,7 @@ public class RequestReplyManagerImpl
                 }
             }
         }
-        running = false;
+        shuttingDown = true;
         synchronized (outstandingRequestThreads) {
             for (Thread thread : outstandingRequestThreads) {
                 logger.debug("Shutting down. Interrupting thread: {}", thread.getName());
