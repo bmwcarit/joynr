@@ -64,6 +64,8 @@ public:
     std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(
             const std::vector<InterfaceAddress>& interfaceAddress);
 
+    virtual std::vector<types::DiscoveryEntry> getAllGlobalCapabilities() const;
+
     std::vector<types::DiscoveryEntry> getCachedGlobalDiscoveryEntries() const;
 
     std::size_t countGlobalCapabilities() const;
@@ -87,12 +89,12 @@ public:
     virtual void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
                                            const std::vector<std::string>& gbids);
 
+    virtual std::vector<std::string> getGbidsForParticipantId(const std::string& participantId);
     std::vector<types::DiscoveryEntry> searchLocalCache(
             const std::vector<InterfaceAddress>& interfaceAddress);
 
     std::recursive_mutex& getCacheLock();
     void eraseParticipantIdToGbidMapping(const std::string& participantId);
-    std::vector<std::string> getGbidsForParticipantId(const std::string& participantId);
     std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache();
     std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities();
 

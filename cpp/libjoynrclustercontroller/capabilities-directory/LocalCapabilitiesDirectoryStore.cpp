@@ -69,6 +69,18 @@ std::size_t LocalCapabilitiesDirectoryStore::countGlobalCapabilities() const
     return counter;
 }
 
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getAllGlobalCapabilities() const
+{
+    std::vector<types::DiscoveryEntry> allGlobalEntries;
+    std::lock_guard<std::recursive_mutex> storeLock(_cacheLock);
+    for (const auto& capability : *_locallyRegisteredCapabilities) {
+        if (LCDUtil::isGlobal(capability)) {
+            allGlobalEntries.push_back(capability);
+        }
+    }
+    return allGlobalEntries;
+}
+
 bool LocalCapabilitiesDirectoryStore::getLocalAndCachedCapabilities(
         const std::vector<InterfaceAddress>& interfaceAddresses,
         const joynr::types::DiscoveryQos& discoveryQos,

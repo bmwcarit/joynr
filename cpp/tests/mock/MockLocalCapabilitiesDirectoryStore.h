@@ -34,6 +34,8 @@ public:
                                                       const joynr::types::DiscoveryQos& discoveryQos,
                                                       const std::vector<std::string>& gbids,
                                                       std::shared_ptr<ILocalCapabilitiesCallback> callback));
+    MOCK_METHOD1(getGbidsForParticipantId, std::vector<std::string> (const std::string& participantId));
+    MOCK_CONST_METHOD0(getAllGlobalCapabilities, std::vector<types::DiscoveryEntry> ());
 };
 
 } //namespace joynr
