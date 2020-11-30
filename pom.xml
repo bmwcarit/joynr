@@ -430,6 +430,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<slf4j.version>1.7.25</slf4j.version>
 		<smrf.version>0.3.3</smrf.version>
+		<jayway.restassured.version>1.8.1</jayway.restassured.version>
 		<jacoco.version>0.8.4</jacoco.version>
 		<surefire.version>3.0.0-M3</surefire.version>
 	</properties>
@@ -722,7 +723,7 @@
 			<dependency>
 				<groupId>com.jayway.restassured</groupId>
 				<artifactId>rest-assured</artifactId>
-				<version>1.8.1</version>
+				<version>${jayway.restassured.version}</version>
 				<exclusions>
 					<!-- Exclude Groovy because of classpath issue -->
 					<exclusion>
@@ -731,6 +732,12 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+			<dependency>
+				<groupId>com.jayway.restassured</groupId>
+				<artifactId>json-path</artifactId>
+				<version>${jayway.restassured.version}</version>
+			</dependency>
+
 			<!-- included to prevent classpath issue with rest-asured -->
 			<dependency>
 				<groupId>org.codehaus.groovy</groupId>
