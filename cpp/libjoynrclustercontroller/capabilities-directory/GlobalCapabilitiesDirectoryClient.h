@@ -22,10 +22,12 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
 #include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/Logger.h"
 #include "joynr/Future.h"
 #include "joynr/TaskSequencer.h"
@@ -137,6 +139,9 @@ public:
                      std::function<void()> onSuccess,
                      std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
                              onRuntimeError) override;
+
+    void reAdd(std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
+               const std::string& localAddress) override;
 
 private:
     class RetryRemoveOperation : public Future<void>,

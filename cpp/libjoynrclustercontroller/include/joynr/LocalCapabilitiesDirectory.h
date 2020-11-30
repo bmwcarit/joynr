@@ -99,7 +99,10 @@ public:
             boost::asio::io_service& ioService,
             const std::string clusterControllerId,
             std::vector<std::string> knownGbids,
-            std::int64_t defaultExpiryIntervalMs);
+            std::int64_t defaultExpiryIntervalMs,
+            const std::chrono::milliseconds reAddInterval = std::chrono::milliseconds(7 * 24 * 60 *
+                                                                                      60 *
+                                                                                      1000));
 
     ~LocalCapabilitiesDirectory() override;
 
@@ -270,12 +273,18 @@ private:
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);
     void remove(const types::DiscoveryEntry& discoveryEntry);
     boost::asio::steady_timer _freshnessUpdateTimer;
+    boost::asio::steady_timer _reAddAllGlobalEntriesTimer;
     std::string _clusterControllerId;
     const std::vector<std::string> _knownGbids;
     std::unordered_set<std::string> _knownGbidsSet;
     const std::int64_t _defaultExpiryIntervalMs;
+    const std::chrono::milliseconds _reAddInterval;
+
     void scheduleFreshnessUpdate();
+    void scheduleReAddAllGlobalDiscoveryEntries();
+
     void sendAndRescheduleFreshnessUpdate(const boost::system::error_code& timerError);
+    void triggerAndRescheduleReAdd(const boost::system::error_code& timerError);
     void informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry);
     void informObserversOnRemove(const types::DiscoveryEntry& discoveryEntry);
 

@@ -87,6 +87,10 @@ public:
             const std::string& gbid,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError) = 0;
+
+    virtual void reAdd(
+            std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
+            const std::string& localAddress) = 0;
 };
 
 } // namespace joynr

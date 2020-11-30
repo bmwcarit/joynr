@@ -21,6 +21,8 @@
  * Client for the global capabilities directory.
  */
 
+#include <atomic>
+
 #include "GlobalCapabilitiesDirectoryClient.h"
 
 #include "joynr/ClusterControllerSettings.h"
@@ -28,6 +30,7 @@
 #include "joynr/Semaphore.h"
 #include "joynr/TimePoint.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
+#include "joynr/LCDUtil.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
 namespace joynr
@@ -129,6 +132,94 @@ void GlobalCapabilitiesDirectoryClient::add(
     };
 
     _sequentialTasks->add(taskWithExpiryDate);
+}
+
+void GlobalCapabilitiesDirectoryClient::reAdd(
+        std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
+        const std::string& localAddress)
+{
+    MessagingQos addMessagingQos = _messagingQos;
+
+    TaskSequencer<void>::TaskWithExpiryDate reAddTask;
+    reAddTask._expiryDate = TimePoint::max();
+    reAddTask._timeout = []() {};
+    reAddTask._task = [
+        this,
+        localCapabilitiesDirectoryStore,
+        localAddress,
+        addMessagingQos = std::move(addMessagingQos)
+    ]() mutable
+    {
+        std::shared_ptr<Future<void>> reAddResultFuture = std::make_shared<Future<void>>();
+        std::vector<types::DiscoveryEntry> discoveryEntries;
+        discoveryEntries = localCapabilitiesDirectoryStore->getAllGlobalCapabilities();
+        if (discoveryEntries.empty()) {
+            JOYNR_LOG_DEBUG(logger(), "Re-Add: no globally registered providers found.");
+            reAddResultFuture->onSuccess();
+            return reAddResultFuture;
+        }
+
+        std::shared_ptr<std::atomic_size_t> reAddCounter =
+                std::make_shared<std::atomic_size_t>(discoveryEntries.size());
+
+        auto onAddCompleted = [reAddCounter, reAddResultFuture]() {
+            if (reAddCounter->fetch_sub(1) == 1) {
+                JOYNR_LOG_INFO(logger(), "Re-Add: completed.");
+                reAddResultFuture->onSuccess();
+            }
+        };
+
+        for (const auto& discoveryEntry : discoveryEntries) {
+            const std::string participantId = discoveryEntry.getParticipantId();
+            std::vector<std::string> gbids =
+                    localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantId);
+            if (gbids.empty()) {
+                JOYNR_LOG_WARN(logger(), "Re-Add: no GBIDs found for {}", participantId);
+                onAddCompleted();
+                continue;
+            }
+
+            types::GlobalDiscoveryEntry globalDiscoveryEntry =
+                    LCDUtil::toGlobalDiscoveryEntry(discoveryEntry, localAddress);
+
+            std::shared_ptr<std::once_flag> onceFlag = std::make_shared<std::once_flag>();
+            auto onSuccess = [onceFlag, onAddCompleted, participantId]() {
+                JOYNR_LOG_INFO(logger(), "Re-Add succeeded for {}.", participantId);
+                std::call_once(*onceFlag, onAddCompleted);
+            };
+
+            auto onError = [onceFlag, onAddCompleted, participantId](
+                    const types::DiscoveryError::Enum& error) {
+                JOYNR_LOG_ERROR(logger(),
+                                "Re-Add failed for {} with error. Error: {}",
+                                participantId,
+                                types::DiscoveryError::getLiteral(error));
+                std::call_once(*onceFlag, onAddCompleted);
+            };
+
+            auto onRuntimeError = [onceFlag, onAddCompleted, participantId](
+                    const exceptions::JoynrRuntimeException& error) {
+                JOYNR_LOG_ERROR(logger(),
+                                "Re-Add failed for {} with exception: {} ({})",
+                                participantId,
+                                error.getMessage(),
+                                error.getTypeName());
+                std::call_once(*onceFlag, onAddCompleted);
+            };
+
+            addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
+
+            _capabilitiesProxy->addAsync(globalDiscoveryEntry,
+                                         std::move(gbids),
+                                         std::move(onSuccess),
+                                         std::move(onError),
+                                         std::move(onRuntimeError),
+                                         addMessagingQos);
+        }
+        return reAddResultFuture;
+    };
+
+    _sequentialTasks->add(reAddTask);
 }
 
 void GlobalCapabilitiesDirectoryClient::remove(

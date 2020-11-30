@@ -76,7 +76,8 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
         boost::asio::io_service& ioService,
         const std::string clusterControllerId,
         std::vector<std::string> knownGbids,
-        std::int64_t defaultExpiryIntervalMs)
+        std::int64_t defaultExpiryIntervalMs,
+        const std::chrono::milliseconds reAddInterval)
         : joynr::system::DiscoveryAbstractProvider(),
           joynr::system::ProviderReregistrationControllerProvider(),
           std::enable_shared_from_this<LocalCapabilitiesDirectory>(),
@@ -92,10 +93,12 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           _isLocalCapabilitiesDirectoryPersistencyEnabled(
                   clusterControllerSettings.isLocalCapabilitiesDirectoryPersistencyEnabled()),
           _freshnessUpdateTimer(ioService),
+          _reAddAllGlobalEntriesTimer(ioService),
           _clusterControllerId(clusterControllerId),
           _knownGbids(knownGbids),
           _knownGbidsSet(knownGbids.cbegin(), knownGbids.cend()),
-          _defaultExpiryIntervalMs(defaultExpiryIntervalMs)
+          _defaultExpiryIntervalMs(defaultExpiryIntervalMs),
+          _reAddInterval(reAddInterval)
 {
 }
 
@@ -103,12 +106,14 @@ void LocalCapabilitiesDirectory::init()
 {
     scheduleCleanupTimer();
     scheduleFreshnessUpdate();
+    scheduleReAddAllGlobalDiscoveryEntries();
 }
 
 void LocalCapabilitiesDirectory::shutdown()
 {
     _checkExpiredDiscoveryEntriesTimer.cancel();
     _freshnessUpdateTimer.cancel();
+    _reAddAllGlobalEntriesTimer.cancel();
 }
 
 void LocalCapabilitiesDirectory::scheduleFreshnessUpdate()
@@ -238,6 +243,44 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
     }
 
     scheduleFreshnessUpdate();
+}
+
+void LocalCapabilitiesDirectory::scheduleReAddAllGlobalDiscoveryEntries()
+{
+    boost::system::error_code timerError = boost::system::error_code();
+    _reAddAllGlobalEntriesTimer.expires_from_now(_reAddInterval, timerError);
+    if (timerError) {
+        JOYNR_LOG_ERROR(logger(),
+                        "Error from reAdd all GDEs timer: {}: {}",
+                        timerError.value(),
+                        timerError.message());
+    }
+    _reAddAllGlobalEntriesTimer
+            .async_wait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+                    const boost::system::error_code& localTimerError) {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    thisSharedPtr->triggerAndRescheduleReAdd(localTimerError);
+                }
+            });
+}
+
+void LocalCapabilitiesDirectory::triggerAndRescheduleReAdd(
+        const boost::system::error_code& timerError)
+{
+    if (timerError == boost::asio::error::operation_aborted) {
+        // Assume Destructor has been called
+        JOYNR_LOG_DEBUG(logger(),
+                        "Re-Add aborted after shutdown, error code from timer: {}",
+                        timerError.message());
+        return;
+    }
+    if (timerError) {
+        JOYNR_LOG_ERROR(
+                logger(), "Re-Add called with error code from timer: {}", timerError.message());
+    }
+    _globalCapabilitiesDirectoryClient->reAdd(_localCapabilitiesDirectoryStore, _localAddress);
+
+    scheduleReAddAllGlobalDiscoveryEntries();
 }
 
 LocalCapabilitiesDirectory::~LocalCapabilitiesDirectory()

@@ -19,11 +19,17 @@
 #ifndef TESTS_MOCK_MOCKGLOBALCAPABILITIESDIRECTORYCLIENT_H
 #define TESTS_MOCK_MOCKGLOBALCAPABILITIESDIRECTORYCLIENT_H
 
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include <gmock/gmock.h>
 
 #include "libjoynrclustercontroller/capabilities-directory/IGlobalCapabilitiesDirectoryClient.h"
-
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/types/DiscoveryError.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 
 class MockGlobalCapabilitiesDirectoryClient : public joynr::IGlobalCapabilitiesDirectoryClient {
 public:
@@ -68,6 +74,9 @@ public:
                              const std::string& gbid,
                              std::function<void()> onSuccess,
                              std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onError));
+
+    MOCK_METHOD2(reAdd, void(std::shared_ptr<joynr::LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
+                             const std::string& localAddress));
 };
 
 #endif // TESTS_MOCK_MOCKGLOBALCAPABILITIESDIRECTORYCLIENT_H
