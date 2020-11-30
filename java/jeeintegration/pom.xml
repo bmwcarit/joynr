@@ -147,35 +147,43 @@
 	<dependencies>
 
 		<dependency>
-			<groupId>javax</groupId>
-			<artifactId>javaee-api</artifactId>
-			<scope>provided</scope>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>access-control-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>infrastructure-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>status-metrics</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>clustercontroller</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>clustercontroller-inprocess-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.smrf.java</groupId>
-			<artifactId>smrf</artifactId>
-			<version>${smrf.version}</version>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>servlet-common</artifactId>
-			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>jersey-guice</artifactId>
-					<groupId>com.sun.jersey.contribs</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.mqtt</groupId>
-			<artifactId>hivemq-mqtt-client</artifactId>
+			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -186,26 +194,95 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.common</groupId>
-			<artifactId>status-metrics</artifactId>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>servlet-common</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.jersey.contribs</groupId>
+					<artifactId>jersey-guice</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jersey</groupId>
+					<artifactId>jersey-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jersey</groupId>
+					<artifactId>jersey-server</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.ws.rs</groupId>
+					<artifactId>jsr311-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>joynr-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>hivemq-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.smrf.java</groupId>
+			<artifactId>smrf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.smrf.java</groupId>
+			<artifactId>smrf-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-multibindings</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>jsr311-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
 		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.1.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -215,9 +292,37 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.jboss.arquillian.junit</groupId>
+			<artifactId>arquillian-junit-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.test</groupId>
+			<artifactId>arquillian-test-api</artifactId>
+			<version>1.1.15.Final</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.test</groupId>
+			<artifactId>arquillian-test-spi</artifactId>
+			<version>1.1.15.Final</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap</groupId>
+			<artifactId>shrinkwrap-api</artifactId>
+			<version>1.2.6</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-server</artifactId>
 			<version>2.26-b02</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
