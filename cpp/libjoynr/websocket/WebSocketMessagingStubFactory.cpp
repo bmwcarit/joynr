@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,13 +97,6 @@ void WebSocketMessagingStubFactory::addClient(
                         "Client with address {} already exists in the clientStubMap",
                         clientAddress.toString());
     }
-}
-
-void WebSocketMessagingStubFactory::removeClient(
-        const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress)
-{
-    std::lock_guard<std::mutex> lock(_clientStubMapMutex);
-    _clientStubMap.erase(clientAddress);
 }
 
 void WebSocketMessagingStubFactory::addServer(

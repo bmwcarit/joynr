@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@ public:
     bool canCreate(const joynr::system::RoutingTypes::Address& destAddress) override;
     void addClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress,
                    std::shared_ptr<IWebSocketSendInterface> webSocket);
-    void removeClient(const joynr::system::RoutingTypes::WebSocketClientAddress& clientAddress);
     void addServer(const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
                    std::shared_ptr<IWebSocketSendInterface> webSocket);
     void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);

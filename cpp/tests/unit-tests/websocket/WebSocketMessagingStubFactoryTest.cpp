@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2020 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,21 +154,6 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
     EXPECT_FALSE(messagingStubFactory->contains(addressCopy));
     EXPECT_TRUE(messagingStubFactory->create(address).get() == nullptr);
     messagingStubFactory->shutdown();
-}
-
-TEST_F(WebSocketMessagingStubFactoryTest, removeClientRemovesMessagingStub)
-{
-    WebSocketMessagingStubFactory factory;
-    auto websocket = std::make_shared<MockWebSocketClient>();
-
-    websocket->registerDisconnectCallback([]() {});
-
-    factory.addClient(joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress),
-                      websocket->getSender());
-    EXPECT_TRUE(factory.create(webSocketClientAddress).get() != nullptr);
-    EXPECT_CALL(*std::dynamic_pointer_cast<MockWebSocketClient>(websocket), dtorCalled());
-    factory.removeClient(webSocketClientAddress);
-    EXPECT_TRUE((factory.create(webSocketClientAddress)).get() == nullptr);
 }
 
 } // namespace joynr
