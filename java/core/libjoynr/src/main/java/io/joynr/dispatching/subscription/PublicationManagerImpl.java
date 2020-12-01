@@ -103,7 +103,11 @@ public class PublicationManagerImpl
     private Dispatcher dispatcher;
     private ProviderDirectory providerDirectory;
 
-    private Object requestQueueLock;
+    // protect the maps (see members above) and providerDirectory during add and remove of subscriptions or providers
+    // to avoid race conditions, e.g. race conditions between providerDirectory and queuedSubscriptionRequests
+    // protected members: subscriptionId2PublicationInformation, queuedSubscriptionRequests, publicationTimers,
+    // subscriptionEndFutures, unregisterAttributeListeners, unregisterBroadcastListeners
+    private Object addRemoveLock;
 
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
@@ -196,7 +200,7 @@ public class PublicationManagerImpl
         super();
         this.dispatcher = dispatcher;
         this.providerDirectory = providerDirectory;
-        this.requestQueueLock = new Object();
+        this.addRemoveLock = new Object();
         this.cleanupScheduler = cleanupScheduler;
         this.subscriptionRequestStorage = subscriptionRequestStorage;
         this.queuedSubscriptionRequests = new MultiMap<>();
@@ -236,6 +240,7 @@ public class PublicationManagerImpl
         }
     }
 
+    // requires addRemoveLock: publicationTimers, handleOnChangeSubscription
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
                                            SubscriptionRequest subscriptionRequest,
                                            ProviderContainer providerContainer) {
@@ -290,6 +295,7 @@ public class PublicationManagerImpl
         return messagingQos;
     }
 
+    // requires addRemoveLock: unregisterAttributeListeners
     private void handleOnChangeSubscription(SubscriptionRequest subscriptionRequest,
                                             ProviderContainer providerContainer,
                                             String subscriptionId) {
@@ -303,6 +309,7 @@ public class PublicationManagerImpl
                                                                          attributeListener));
     }
 
+    // requires addRemoveLock: unregisterBroadcastListeners
     private void handleBroadcastSubscriptionRequest(String proxyParticipantId,
                                                     String providerParticipantId,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
@@ -341,6 +348,8 @@ public class PublicationManagerImpl
                                          createMessagingQos(subscriptionRequest.getQos()));
     }
 
+    // requires addRemoveLock: handleSubscriptionRequest, handleBroadcastSubscriptionRequest,
+    // subscriptionId2PublicationInformation, addSubscriptionCleanupIfNecessary
     private void addSubscriptionRequest(String proxyParticipantId,
                                         String providerParticipantId,
                                         SubscriptionRequest subscriptionRequest,
@@ -352,9 +361,6 @@ public class PublicationManagerImpl
         try {
             long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
             removePublicationIfItExists(subscriptionRequest);
-
-            final String subscriptionId = subscriptionRequest.getSubscriptionId();
-            subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
 
             if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
                 handleBroadcastSubscriptionRequest(proxyParticipantId,
@@ -369,6 +375,9 @@ public class PublicationManagerImpl
             } else {
                 handleSubscriptionRequest(publicationInformation, subscriptionRequest, providerContainer);
             }
+
+            final String subscriptionId = subscriptionRequest.getSubscriptionId();
+            subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
 
             addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
             logger.trace("Publication added: {}", subscriptionRequest.toString());
@@ -390,6 +399,7 @@ public class PublicationManagerImpl
                                          messagingQos);
     }
 
+    // requires addRemoveLock: subscriptionEndFutures
     private void addSubscriptionCleanupIfNecessary(SubscriptionRequest subscriptionRequest, long subscriptionEndDelay) {
         if (subscriptionRequest.getQos().getExpiryDateMs() != SubscriptionQos.NO_EXPIRY_DATE) {
             final String subscriptionId = subscriptionRequest.getSubscriptionId();
@@ -398,7 +408,9 @@ public class PublicationManagerImpl
                 @Override
                 public void run() {
                     logger.trace("Publication with Id {} expired...", subscriptionId);
-                    removePublication(subscriptionId);
+                    synchronized (addRemoveLock) {
+                        removePublication(subscriptionId);
+                    }
                 }
 
             }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
@@ -406,6 +418,11 @@ public class PublicationManagerImpl
         }
     }
 
+    private boolean publicationExists(String subscriptionId) {
+        return subscriptionId2PublicationInformation.containsKey(subscriptionId);
+    }
+
+    // requires addRemoveLock: publicationExists, removePublication
     private void removePublicationIfItExists(SubscriptionRequest subscriptionRequest) {
         String subscriptionId = subscriptionRequest.getSubscriptionId();
         if (publicationExists(subscriptionId)) {
@@ -439,10 +456,6 @@ public class PublicationManagerImpl
         return subscriptionEndDelay;
     }
 
-    private boolean publicationExists(String subscriptionId) {
-        return subscriptionId2PublicationInformation.containsKey(subscriptionId);
-    }
-
     @Override
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
@@ -455,7 +468,7 @@ public class PublicationManagerImpl
                                                                   subscriptionRequest);
         }
 
-        synchronized (requestQueueLock) {
+        synchronized (addRemoveLock) {
             ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
             if (providerContainer != null) {
                 addSubscriptionRequest(proxyParticipantId,
@@ -474,6 +487,8 @@ public class PublicationManagerImpl
         }
     }
 
+    // requires requestQueueLock: subscriptionId2PublicationInformation, queuedSubscriptionRequests, publicationTimers,
+    // subscriptionEndFutures, unregisterAttributeListeners, unregisterBroadcastListeners
     private void removePublication(String subscriptionId) {
         PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
         if (publicationInformation == null) {
@@ -552,7 +567,9 @@ public class PublicationManagerImpl
             return;
         }
         try {
-            removePublication(subscriptionId);
+            synchronized (addRemoveLock) {
+                removePublication(subscriptionId);
+            }
         } catch (Exception e) {
             JoynrRuntimeException error = new JoynrRuntimeException("Error stopping subscription " + subscriptionId
                     + ": " + e);
@@ -560,6 +577,7 @@ public class PublicationManagerImpl
         }
     }
 
+    // requires addRemoveLock: subscriptionId2PublicationInformation, removePublication, queuedSubscriptionRequests
     /**
      * Stops all publications for a provider
      *
@@ -592,7 +610,7 @@ public class PublicationManagerImpl
      * @param providerContainer provider container
      */
     private void restoreQueuedSubscription(String providerId, ProviderContainer providerContainer) {
-        synchronized (requestQueueLock) {
+        synchronized (addRemoveLock) {
             Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
             Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
             while (queuedRequestsIterator.hasNext()) {
@@ -610,13 +628,15 @@ public class PublicationManagerImpl
 
     @Override
     public void attributeValueChanged(String subscriptionId, Object value) {
-
-        if (subscriptionId2PublicationInformation.containsKey(subscriptionId)) {
-            PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
-
+        // no lock for subscriptionId2PublicationInformation
+        PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
+        if (publicationInformation != null) {
             if (isExpired(publicationInformation)) {
-                removePublication(subscriptionId);
+                synchronized (addRemoveLock) {
+                    removePublication(subscriptionId);
+                }
             } else {
+                // no lock for publicationTimers
                 PublicationTimer publicationTimer = publicationTimers.get(subscriptionId);
                 SubscriptionPublication publication = prepareAttributePublication(value, subscriptionId);
                 if (publicationTimer != null) {
@@ -633,13 +653,13 @@ public class PublicationManagerImpl
         } else {
             logger.trace("Subscription {} has expired but attributeValueChanged has been called", subscriptionId);
         }
-
     }
 
     @Override
     public void broadcastOccurred(String subscriptionId, List<BroadcastFilter> filters, Object... values) {
-        if (subscriptionId2PublicationInformation.containsKey(subscriptionId)) {
-            PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
+        // no lock for subscriptionId2PublicationInformation
+        PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
+        if (publicationInformation != null) {
 
             if (processFilterChain(publicationInformation, filters, values)) {
                 long minInterval = ((OnChangeSubscriptionQos) publicationInformation.getQos()).getMinIntervalMs();
@@ -658,7 +678,6 @@ public class PublicationManagerImpl
         } else {
             logger.trace("Subscription {} has expired but eventOccurred has been called", subscriptionId);
         }
-
     }
 
     private boolean processFilterChain(PublicationInformation publicationInformation,
@@ -822,8 +841,8 @@ public class PublicationManagerImpl
 
     @Override
     public void entryRemoved(String providerParticipantId) {
-        stopPublicationByProviderId(providerParticipantId);
-        synchronized (requestQueueLock) {
+        synchronized (addRemoveLock) {
+            stopPublicationByProviderId(providerParticipantId);
             ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
             if (providerContainer != null) {
                 providerContainer.getSubscriptionPublisher()
@@ -834,9 +853,11 @@ public class PublicationManagerImpl
 
     @Override
     public void shutdown() {
-        for (ScheduledFuture<?> future : subscriptionEndFutures.values()) {
-            if (future != null) {
-                future.cancel(false);
+        synchronized (subscriptionEndFutures.values()) {
+            for (ScheduledFuture<?> future : subscriptionEndFutures.values()) {
+                if (future != null) {
+                    future.cancel(false);
+                }
             }
         }
         providerDirectory.removeListener(this);
