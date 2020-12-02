@@ -166,7 +166,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskTimeoutFunctionCallsOnR
     gcdClient->add(
             globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
-    capturedTask.timeout();
+    capturedTask._timeout();
     ASSERT_TRUE(onRuntimeErrorCalled);
     ASSERT_TRUE(exceptionMessageFound);
 }
@@ -188,7 +188,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskExpiryDateHasCorrectVal
     gcdClient->add(
             globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
-    auto actualTaskExpiryDate = capturedTask.expiryDate;
+    auto actualTaskExpiryDate = capturedTask._expiryDate;
     ASSERT_TRUE(actualTaskExpiryDate - expectedTaskExpiryDate < std::chrono::milliseconds(1000));
     ASSERT_TRUE(actualTaskExpiryDate.toMilliseconds() >= expectedTaskExpiryDate.toMilliseconds());
 }
@@ -317,7 +317,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveTaskExpiryDateHasCorrect
     gcdClient->remove(
             capParticipantId, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
-    auto actualTaskExpiryDate = capturedTask.expiryDate;
+    auto actualTaskExpiryDate = capturedTask._expiryDate;
     ASSERT_EQ(expectedTaskExpiryDate, actualTaskExpiryDate);
 }
 

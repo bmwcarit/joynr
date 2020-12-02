@@ -68,9 +68,9 @@ protected:
     TestTaskSequencer::TaskWithExpiryDate createTestTaskWithExpiryDate(const TimePoint& expiryDate, bool fulfillPromise = true,
                                                                        bool fulfillDelayed = false) {
         TestTaskSequencer::TaskWithExpiryDate timeoutTask;
-        timeoutTask.task = createTestTask(fulfillPromise, fulfillDelayed);
-        timeoutTask.expiryDate = expiryDate;
-        timeoutTask.timeout = [&](){
+        timeoutTask._task = createTestTask(fulfillPromise, fulfillDelayed);
+        timeoutTask._expiryDate = expiryDate;
+        timeoutTask._timeout = [&](){
             _actualTimeoutDateMs.push_back(TimePoint::now().toMilliseconds());
         };
         return timeoutTask;

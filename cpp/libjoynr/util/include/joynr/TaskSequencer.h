@@ -74,9 +74,9 @@ public:
 
     struct TaskWithExpiryDate
     {
-        Task task;
-        TimePoint expiryDate;
-        std::function<void()> timeout;
+        Task _task;
+        TimePoint _expiryDate;
+        std::function<void()> _timeout;
     };
 
     /**
@@ -160,14 +160,14 @@ private:
                             _tasks.begin(),
                             _tasks.end(),
                             [](const TaskWithExpiryDate& first, const TaskWithExpiryDate& second) {
-                                return first.expiryDate < second.expiryDate;
+                                return first._expiryDate < second._expiryDate;
                             });
 
-                    timeToWaitMs = taskWithMinExpiryDate->expiryDate.relativeFromNow();
+                    timeToWaitMs = taskWithMinExpiryDate->_expiryDate.relativeFromNow();
 
-                    if (taskWithMinExpiryDate->expiryDate.toMilliseconds() <=
+                    if (taskWithMinExpiryDate->_expiryDate.toMilliseconds() <=
                         TimePoint::now().toMilliseconds()) {
-                        taskWithMinExpiryDate->timeout();
+                        taskWithMinExpiryDate->_timeout();
                         _tasks.erase(taskWithMinExpiryDate);
                         continue;
                     }
@@ -178,10 +178,10 @@ private:
             if (futureStatus != std::future_status::ready) {
                 std::unique_lock<std::mutex> lock(_tasksMutex);
                 for (auto it = _tasks.begin(); it != _tasks.end();) {
-                    if (it->expiryDate.toMilliseconds() <= TimePoint::now().toMilliseconds()) {
-                        it->timeout();
+                    if (it->_expiryDate.toMilliseconds() <= TimePoint::now().toMilliseconds()) {
+                        it->_timeout();
                         it = _tasks.erase(it);
-                    } else if (it->expiryDate != TimePoint::max()) {
+                    } else if (it->_expiryDate != TimePoint::max()) {
                         break;
                     } else {
                         ++it;
@@ -197,17 +197,17 @@ private:
                         }
                         if (!_tasks.empty()) {
                             TaskWithExpiryDate nextTask = std::move(_tasks.front());
-                            if (nextTask.expiryDate.toMilliseconds() <=
+                            if (nextTask._expiryDate.toMilliseconds() <=
                                 TimePoint::now().toMilliseconds()) {
-                                nextTask.timeout();
+                                nextTask._timeout();
                                 _tasks.erase(_tasks.begin());
                                 continue;
                             } else {
                                 _tasks.erase(_tasks.begin());
-                                if (!nextTask.task) {
+                                if (!nextTask._task) {
                                     throw std::runtime_error("Dropping null-task.");
                                 }
-                                _future = nextTask.task();
+                                _future = nextTask._task();
                             }
                         }
                     }

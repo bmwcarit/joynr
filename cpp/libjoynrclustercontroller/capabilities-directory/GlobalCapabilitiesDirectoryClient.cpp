@@ -67,13 +67,13 @@ void GlobalCapabilitiesDirectoryClient::add(
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
     using std::move;
     TaskSequencer<void>::TaskWithExpiryDate taskWithExpiryDate;
-    taskWithExpiryDate.expiryDate =
+    taskWithExpiryDate._expiryDate =
             TimePoint::fromRelativeMs(static_cast<std::int64_t>(addMessagingQos.getTtl()));
-    taskWithExpiryDate.timeout = [onRuntimeError]() {
+    taskWithExpiryDate._timeout = [onRuntimeError]() {
         onRuntimeError(exceptions::JoynrRuntimeException(
                 "Failed to process global registration in time, please try again"));
     };
-    taskWithExpiryDate.task = [
+    taskWithExpiryDate._task = [
         this,
         entry,
         gbids,
@@ -81,7 +81,7 @@ void GlobalCapabilitiesDirectoryClient::add(
         onError{move(onError)},
         onRuntimeError{move(onRuntimeError)},
         addMessagingQos{move(addMessagingQos)},
-        timeoutTaskExpiryDate = taskWithExpiryDate.expiryDate
+        timeoutTaskExpiryDate = taskWithExpiryDate._expiryDate
     ]() mutable
     {
         auto future = std::make_shared<Future<void>>();
@@ -149,9 +149,9 @@ void GlobalCapabilitiesDirectoryClient::remove(
                                                    std::move(onRuntimeError),
                                                    std::move(removeMessagingQos));
     TaskSequencer<void>::TaskWithExpiryDate timeoutTask;
-    timeoutTask.expiryDate = TimePoint::max();
-    timeoutTask.timeout = []() {};
-    timeoutTask.task = [retryRemoveOperation]() {
+    timeoutTask._expiryDate = TimePoint::max();
+    timeoutTask._timeout = []() {};
+    timeoutTask._task = [retryRemoveOperation]() {
         retryRemoveOperation->execute();
         return retryRemoveOperation;
     };
