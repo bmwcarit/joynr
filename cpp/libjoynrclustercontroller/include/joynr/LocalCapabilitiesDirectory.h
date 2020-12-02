@@ -226,8 +226,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectory);
     ClusterControllerSettings& _clusterControllerSettings; // to retrieve info about persistency
 
-    types::GlobalDiscoveryEntry toGlobalDiscoveryEntry(
-            const types::DiscoveryEntry& discoveryEntry) const;
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<types::DiscoveryEntry>&& localEntries,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,

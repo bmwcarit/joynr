@@ -278,7 +278,8 @@ void LocalCapabilitiesDirectory::addInternal(
 
     // register globally
     if (isGloballyVisible) {
-        types::GlobalDiscoveryEntry globalDiscoveryEntry = toGlobalDiscoveryEntry(discoveryEntry);
+        types::GlobalDiscoveryEntry globalDiscoveryEntry =
+                LCDUtil::toGlobalDiscoveryEntry(discoveryEntry, _localAddress);
 
         auto onRuntimeError = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
@@ -385,20 +386,6 @@ void LocalCapabilitiesDirectory::addInternal(
     }
 }
 
-types::GlobalDiscoveryEntry LocalCapabilitiesDirectory::toGlobalDiscoveryEntry(
-        const types::DiscoveryEntry& discoveryEntry) const
-{
-    return types::GlobalDiscoveryEntry(discoveryEntry.getProviderVersion(),
-                                       discoveryEntry.getDomain(),
-                                       discoveryEntry.getInterfaceName(),
-                                       discoveryEntry.getParticipantId(),
-                                       discoveryEntry.getQos(),
-                                       discoveryEntry.getLastSeenDateMs(),
-                                       discoveryEntry.getExpiryDateMs(),
-                                       discoveryEntry.getPublicKeyId(),
-                                       _localAddress);
-}
-
 void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
@@ -459,11 +446,12 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                                        exception.getMessage(),
                                        exception.getTypeName());
                     };
-                    _globalCapabilitiesDirectoryClient->add(toGlobalDiscoveryEntry(capability),
-                                                            foundGbids,
-                                                            nullptr,
-                                                            std::move(onApplicationError),
-                                                            std::move(onRuntimeError));
+                    _globalCapabilitiesDirectoryClient->add(
+                            LCDUtil::toGlobalDiscoveryEntry(capability, _localAddress),
+                            foundGbids,
+                            nullptr,
+                            std::move(onApplicationError),
+                            std::move(onRuntimeError));
                 } else {
                     JOYNR_LOG_FATAL(logger(),
                                     "Global provider reregistration failed because participantId "

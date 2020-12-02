@@ -172,4 +172,19 @@ bool LCDUtil::isEntryForGbid(
     }
     return false;
 }
+
+types::GlobalDiscoveryEntry LCDUtil::toGlobalDiscoveryEntry(
+        const types::DiscoveryEntry& discoveryEntry,
+        const std::string& localAddress)
+{
+    return types::GlobalDiscoveryEntry(discoveryEntry.getProviderVersion(),
+                                       discoveryEntry.getDomain(),
+                                       discoveryEntry.getInterfaceName(),
+                                       discoveryEntry.getParticipantId(),
+                                       discoveryEntry.getQos(),
+                                       discoveryEntry.getLastSeenDateMs(),
+                                       discoveryEntry.getExpiryDateMs(),
+                                       discoveryEntry.getPublicKeyId(),
+                                       localAddress);
+}
 }

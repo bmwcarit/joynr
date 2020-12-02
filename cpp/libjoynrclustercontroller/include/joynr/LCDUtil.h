@@ -98,6 +98,9 @@ public:
                                const std::unordered_set<std::string> gbids,
                                std::unordered_map<std::string, std::vector<std::string>>
                                        globalParticipantIdsToGbidsMap);
+    static types::GlobalDiscoveryEntry toGlobalDiscoveryEntry(
+            const types::DiscoveryEntry& discoveryEntry,
+            const std::string& localAddress);
 
 private:
     ADD_LOGGER(LCDUtil)
