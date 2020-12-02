@@ -5,7 +5,17 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.15.6
 
 ## API-relevant Changes
-None.
+* **[Generator]** The option `name` for the `--addVersionTo` setting is no longer supported.
+* **[Generator]** The `--addVersionTo` setting is being replaced by the `#noVersionGeneration`
+  comment in fidl files. Package versioning is now enabled by default and can be disabled with
+  the `#noVersionGeneration` comment. `addVersionTo` is no longer required and should be
+  omitted because it will be removed in a future version. If it is still set,
+  then it has to match the `#noVersionGeneration` comment:
+  If the comment exists, then the `--addVersionTo` setting has to be `none`.
+  If the comment does not exist, then the `--addVersionTo` setting has to be `package`.
+  In case of an invalid configuration, the code generation will be aborted with an exception.  
+  See [Generator documentation](generator.md) for more information
+  about the generator versioning settings.
 
 ## Other Changes
 * **[C++]** Introduced `JOYNR_SUPPORT_WEBSOCKET` and `JOYNR_SUPPORT_UDS` CMake options to
@@ -141,17 +151,6 @@ None.
 # joynr 1.15.0
 
 ## API relevant changes
-* **[Generator]** The option `name` for the `--addVersionTo` setting is no longer supported.
-* **[Generator]** The `--addVersionTo` setting is being replaced by the `#noVersionGeneration`
-  comment in fidl files. Package versioning is now enabled by default and can be disabled with
-  the `#noVersionGeneration` comment. `addVersionTo` is no longer required and should be
-  omitted because it will be removed in a future version. If it is still set,
-  then it has to match the `#noVersionGeneration` comment:
-  If the comment exists, then the `--addVersionTo` setting has to be `none`.
-  If the comment does not exist, then the `--addVersionTo` setting has to be `package`.
-  In case of an invalid configuration, the code generation will be aborted with an exception.  
-  See [Generator documentation](generator.md) for more information
-  about the generator versioning settings.
 * **[Java, TS]** The API `registerInAllKnownBackends()` is deprecated, since registration in all
   backends is now the default behavior.
 * **[C++]** The APIs `registerProviderInAllBackends` and
