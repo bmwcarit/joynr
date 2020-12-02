@@ -68,8 +68,6 @@ import joynr.types.GlobalDiscoveryEntry;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GlobalCapabilitiesDirectoryClientTest {
-    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 60L * 1000L;
-    private static final long CUSTOM_TTL = 3L * 1000L;
     private static final long FRESHNESS_UPDATE_INTERVAL_MS = 42;
     private static final String GBID_DEFAULT_BACKEND = "joynrbackend1";
     private static final String GBID_OTHER_BACKEND = "joynrbackend2";
@@ -123,8 +121,6 @@ public class GlobalCapabilitiesDirectoryClientTest {
         when(capabilitiesProxyBuilderMock.setMessagingQos(any(MessagingQos.class))).thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.build()).thenReturn(globalCapabilitiesDirectoryProxyMock);
 
-        // expect default ttl if not changed in the test case
-        expectedGcdCallMessagingQos.setTtl_ms(DEFAULT_TTL_ADD_AND_REMOVE);
         // expect the default backend in the custom header if not changed in the test case
         expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, GBID_DEFAULT_BACKEND);
     }
@@ -149,28 +145,13 @@ public class GlobalCapabilitiesDirectoryClientTest {
         String[] gbids = new String[]{ GBID_DEFAULT_BACKEND, GBID_OTHER_BACKEND };
         // given some discovery entry
         GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
+        int customTTL = 120000;
+        expectedGcdCallMessagingQos.setTtl_ms(customTTL);
 
         // when we call the add method with it
-        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, DEFAULT_TTL_ADD_AND_REMOVE, gbids);
+        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, customTTL, gbids);
 
         // then the GCD proxy is called with the expected parameters and QoS
-        verify(globalCapabilitiesDirectoryProxyMock).add(eq(addCallbackWithModeledErrorMock),
-                                                         eq(capabilitiesDirectoryEntryMock),
-                                                         argThat(new StringArrayMatcher(gbids)),
-                                                         eq(expectedGcdCallMessagingQos));
-    }
-
-    @Test
-    public void testAddWithCustomTTL() {
-        // given some discovery entry
-        GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
-        final String[] gbids = new String[]{ GBID_DEFAULT_BACKEND };
-
-        // when we call the add method on the GCD client with custom ttl
-        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, CUSTOM_TTL, gbids);
-
-        // then the GCD proxy is called with the expected parameters and QoS
-        expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
         verify(globalCapabilitiesDirectoryProxyMock).add(eq(addCallbackWithModeledErrorMock),
                                                          eq(capabilitiesDirectoryEntryMock),
                                                          argThat(new StringArrayMatcher(gbids)),
@@ -183,10 +164,12 @@ public class GlobalCapabilitiesDirectoryClientTest {
         final String targetGbid = "myjoynrbackend";
         final String[] gbids = new String[]{ targetGbid };
         final GlobalDiscoveryEntry capabilitiesDirectoryEntryMock = mock(GlobalDiscoveryEntry.class);
+        int customTTL = 120000;
         expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbid);
+        expectedGcdCallMessagingQos.setTtl_ms(customTTL);
 
         // when we call the add method with them
-        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, DEFAULT_TTL_ADD_AND_REMOVE, gbids);
+        subject.add(addCallbackWithModeledErrorMock, capabilitiesDirectoryEntryMock, customTTL, gbids);
 
         // then the custom header in the GCD proxy call contains the desired gbid
         // and the call as well gets the desired callback and global discovery entry
@@ -244,14 +227,15 @@ public class GlobalCapabilitiesDirectoryClientTest {
         final String testParticipantId = "testParticipantId";
         final String[] targetGbids = new String[]{ "myjoynrbackendForGCDcomm", "myjoynrbackend2" };
         final String[] expectedGbids = targetGbids.clone();
+        final int customTTL = 120000;
 
         // when we call the lookup method with them as well as with a custom ttl
-        subject.lookup(lookupParticipantCallbackWithModeledErrorMock, testParticipantId, CUSTOM_TTL, targetGbids);
+        subject.lookup(lookupParticipantCallbackWithModeledErrorMock, testParticipantId, customTTL, targetGbids);
 
         // then the custom header in the GCD proxy call contains the desired gbid
         // and the call as well gets the desired callback and participantId
-        expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
         expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, expectedGbids[0]);
+        expectedGcdCallMessagingQos.setTtl_ms(customTTL);
         verify(globalCapabilitiesDirectoryProxyMock).lookup(eq(lookupParticipantCallbackWithModeledErrorMock),
                                                             eq(testParticipantId),
                                                             eq(expectedGbids),
@@ -265,17 +249,18 @@ public class GlobalCapabilitiesDirectoryClientTest {
         final String[] expectedGbids = targetGbids.clone();
         String[] domainsStrArrayDummy = new String[]{ "dummyDomain1", "dummyDomain2", "dummyDomain3" };
         String interfaceNameDummy = "interfaceNameDummy";
+        final int customTTL = 120000;
 
         // when we call this GCD client with them as well as with custom ttl
         subject.lookup(lookupDomainCallbackWithModeledErrorMock,
                        domainsStrArrayDummy,
                        interfaceNameDummy,
-                       CUSTOM_TTL,
+                       customTTL,
                        targetGbids);
 
         // then the GCD proxy is called with the expected parameters
-        expectedGcdCallMessagingQos.setTtl_ms(CUSTOM_TTL);
         expectedGcdCallMessagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, expectedGbids[0]);
+        expectedGcdCallMessagingQos.setTtl_ms(customTTL);
         verify(globalCapabilitiesDirectoryProxyMock).lookup(Mockito.<CallbackWithModeledError<GlobalDiscoveryEntry[], DiscoveryError>> any(),
                                                             eq(domainsStrArrayDummy),
                                                             eq(interfaceNameDummy),

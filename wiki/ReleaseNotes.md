@@ -26,6 +26,8 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[C++]** The cluster controller `access-control` settings `global-domain-access-controller-participantid`,
   `global-domain-access-controller-address` and `use-ldas-only` are ignored. The cluster controller behavior
   corresponds to the former default behavior (`use-ldas-only=true`).
+* **[Java]** Removed property `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`.
+  Now, the default TTL of 60 seconds is always used.
 
 ## Bug Fixes
 None.

@@ -34,7 +34,6 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.Callback;
@@ -56,7 +55,6 @@ import joynr.types.GlobalDiscoveryEntry;
  * address of the GCD for sending the message.
  */
 public class GlobalCapabilitiesDirectoryClient {
-    private static final long DEFAULT_TTL_ADD_AND_REMOVE = 60L * 1000L;
     private static final Logger logger = LoggerFactory.getLogger(GlobalCapabilitiesDirectoryClient.class);
     private final String domain;
     private final DiscoveryQos discoveryQos;
@@ -70,10 +68,6 @@ public class GlobalCapabilitiesDirectoryClient {
     @Inject
     @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS)
     private long freshnessUpdateIntervalMs;
-
-    @Inject(optional = true)
-    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS)
-    private long ttlAddAndRemoveMs = DEFAULT_TTL_ADD_AND_REMOVE;
 
     @Inject
     public GlobalCapabilitiesDirectoryClient(ProxyBuilderFactory proxyBuilderFactory,
@@ -113,7 +107,7 @@ public class GlobalCapabilitiesDirectoryClient {
             logger.warn("Remove called without any target GBIDs! Gbids: {}", (Object[]) targetGbids);
             throw new IllegalStateException("GCDClient.remove called without any target GBIDs!");
         }
-        MessagingQos qosWithGbidCustomHeader = new MessagingQos(ttlAddAndRemoveMs);
+        MessagingQos qosWithGbidCustomHeader = new MessagingQos();
         qosWithGbidCustomHeader.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, targetGbids[0]);
         getGcdProxy().remove(callback, participantId, targetGbids, qosWithGbidCustomHeader);
     }

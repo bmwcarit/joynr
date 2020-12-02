@@ -37,7 +37,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS = "joynr.discovery.defaultretryintervalms";
     public static final String PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS = "joynr.discovery.minimumretryintervalms";
     public static final String PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS = "joynr.discovery.provider.defaultexpirytimems";
-    public static final String PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS = "joynr.discovery.globaladdandremovettlms";
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollerparticipantid";
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID = "joynr.messaging.domainaccesscontrollerchannelid";
     public static final String PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID = "joynr.messaging.domainaccesscontrollisteditorparticipantid";

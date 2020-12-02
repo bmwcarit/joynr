@@ -122,14 +122,6 @@ the value of this property.
 * **Unit**: milliseconds
 * **Default value**: `3628800000 (6 weeks)`
 
-### `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`
-TTL used for adding and removing global discovery entries.
-
-* **OPTIONAL**
-* **Type**: long
-* **User property**: `joynr.discovery.globaladdandremovettlms`
-* **Default value**: `2592000000` (30 days)
-
 ### `PROPERTY_HOSTS_FILENAME`
 File used by the HTTP messaging stub to map URLs. It uses the Java properties file format. The key
 of an entry identifies a hostname that must be replaced in a URL. The value of an entry consists of

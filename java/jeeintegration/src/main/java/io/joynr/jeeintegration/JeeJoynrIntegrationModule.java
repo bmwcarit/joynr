@@ -33,7 +33,6 @@ import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClientModule
 import io.joynr.jeeintegration.messaging.JeeHttpMessagingModule;
 import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
@@ -52,7 +51,6 @@ import joynr.system.RoutingTypes.Address;
 public class JeeJoynrIntegrationModule extends AbstractModule {
 
     private ScheduledExecutorService scheduledExecutorService;
-    private Long jeeGlobalAddAndRemoveTtlMs = 30L * 24L * 60L * 60L * 1000L;
 
     /**
      * Constructor which is passed in the JEE resources which are to be exposed to the Guice injector in which this
@@ -68,8 +66,6 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(JoynrRuntime.class).to(ClusterControllerRuntime.class).in(Singleton.class);
-        bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS))
-                        .toInstance(jeeGlobalAddAndRemoveTtlMs);
 
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                             .toInstance(scheduledExecutorService);
