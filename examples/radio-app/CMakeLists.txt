@@ -222,7 +222,7 @@ function(create_apps TYPE RUNTIME)
 endfunction()
 
 # Communicates via WebSockets with cluster controller
-if(TARGET Joynr::JoynrWsRuntim)
+if(TARGET Joynr::JoynrWsRuntime)
     create_apps(ws Joynr::JoynrWsRuntime)
     install(TARGETS
                 radio-app-provider-ws
