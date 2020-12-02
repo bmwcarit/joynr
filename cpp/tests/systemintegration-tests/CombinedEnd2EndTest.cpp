@@ -18,15 +18,13 @@
  */
 #include <cstdint>
 #include <chrono>
-#include <future>
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "tests/systemintegration-tests/CombinedEnd2EndTest.h"
-#include "tests/systemintegration-tests/TestConfiguration.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
@@ -37,84 +35,69 @@
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/CapabilitiesRegistrar.h"
-#include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 
-#include "tests/PrettyPrint.h"
 #include "tests/JoynrTest.h"
+#include "tests/PrettyPrint.h"
 #include "tests/mock/MockTestProvider.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
 
-static const std::string messagingPropertiesPersistenceFileName1(
-        "CombinedEnd2EndTest-runtime1-joynr.settings");
-static const std::string messagingPropertiesPersistenceFileName2(
-        "CombinedEnd2EndTest-runtime2-joynr.settings");
-
-CombinedEnd2EndTest::CombinedEnd2EndTest()
-        : _runtime1(),
-          _runtime2(),
-          _messagingSettingsFile1(std::get<0>(GetParam())),
-          _messagingSettingsFile2(std::get<1>(GetParam())),
-          _settings1(_messagingSettingsFile1),
-          _settings2(_messagingSettingsFile2),
-          _messagingSettings1(_settings1),
-          _messagingSettings2(_settings2),
-          _baseUuid(util::createUuid()),
-          _uuid("_" + _baseUuid.substr(1, _baseUuid.length() - 2)),
-          _domainName("cppCombinedEnd2EndTest_Domain" + _uuid),
-          _semaphore(0),
-          _discoveryQos()
+/*
+ * This test creates two Runtimes and will test communication
+ * between the two Runtimes via HttpReceiver
+ *
+ */
+class CombinedEnd2EndTest : public testing::TestWithParam<std::tuple<std::string, std::string>>
 {
-    _messagingSettings1.setMessagingPropertiesPersistenceFilename(
-            messagingPropertiesPersistenceFileName1);
-    _messagingSettings2.setMessagingPropertiesPersistenceFilename(
-            messagingPropertiesPersistenceFileName2);
-
-    _discoveryQos.setDiscoveryTimeoutMs(30000);
-    _discoveryQos.setRetryIntervalMs(500);
-    _discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-}
-
-void CombinedEnd2EndTest::SetUp()
-{
-    JOYNR_LOG_DEBUG(logger(), std::string("SetUp() CombinedEnd2End"));
-
-    // See if the test environment has overridden the configuration files
-    tests::Configuration& configuration = tests::Configuration::getInstance();
-    std::string systemSettingsFile = configuration.getDefaultSystemSettingsFile();
-    std::string websocketSettingsFile = configuration.getDefaultWebsocketSettingsFile();
-
-    JOYNR_LOG_DEBUG(logger(), "Default system settings file: {}", systemSettingsFile.c_str());
-    JOYNR_LOG_DEBUG(logger(), "Default websocket settings file: {}", websocketSettingsFile.c_str());
-
-    if (systemSettingsFile.empty() && websocketSettingsFile.empty()) {
-        _runtime1 = JoynrRuntime::createRuntime(
-                "test-resources/libjoynrSystemIntegration1.settings", failOnFatalRuntimeError, _messagingSettingsFile1);
-        _runtime2 = JoynrRuntime::createRuntime(
-                "test-resources/libjoynrSystemIntegration2.settings", failOnFatalRuntimeError, _messagingSettingsFile2);
-    } else {
-        _runtime1 = JoynrRuntime::createRuntime(systemSettingsFile, failOnFatalRuntimeError, websocketSettingsFile);
-        _runtime2 = JoynrRuntime::createRuntime(systemSettingsFile, failOnFatalRuntimeError, websocketSettingsFile);
+public:
+    CombinedEnd2EndTest() : _semaphore(0)
+    {
+        auto baseUuid = util::createUuid();
+        _uuid = "_" + baseUuid.substr(1, baseUuid.length() - 2);
+        _domainName = "cppCombinedEnd2EndTest_Domain" + _uuid;
+        _discoveryQos.setDiscoveryTimeoutMs(30000);
+        _discoveryQos.setRetryIntervalMs(500);
+        _discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     }
-}
 
-void CombinedEnd2EndTest::TearDown()
-{
-    test::util::resetAndWaitUntilDestroyed(_runtime1);
+    ~CombinedEnd2EndTest() override = default;
 
-    if (_runtime2) {
+    void SetUp() override
+    {
+        const auto messagingSettingsFile1 = std::get<0>(GetParam());
+        _runtime1 =
+                JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration1.settings",
+                                            failOnFatalRuntimeError,
+                                            messagingSettingsFile1);
+        const auto messagingSettingsFile2 = std::get<1>(GetParam());
+        _runtime2 =
+                JoynrRuntime::createRuntime("test-resources/libjoynrSystemIntegration2.settings",
+                                            failOnFatalRuntimeError,
+                                            messagingSettingsFile2);
+    }
+
+    void TearDown() override
+    {
+        test::util::resetAndWaitUntilDestroyed(_runtime1);
         test::util::resetAndWaitUntilDestroyed(_runtime2);
+
+        // Delete the persisted participant ids so that each test uses different participant ids
+        test::util::removeAllCreatedSettingsAndPersistencyFiles();
     }
 
-    // Delete the persisted participant ids so that each test uses different participant ids
-    test::util::removeAllCreatedSettingsAndPersistencyFiles();
-}
+protected:
+    std::shared_ptr<JoynrRuntime> _runtime1;
+    std::shared_ptr<JoynrRuntime> _runtime2;
+    std::string _uuid;
+    std::string _domainName;
+    Semaphore _semaphore;
+    DiscoveryQos _discoveryQos;
+};
 
 TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
 {
@@ -148,8 +131,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    std::string participantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+    std::string participantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     // consumer for testinterface
     // Testing Lists
@@ -292,7 +275,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
                 testProxy->optimizeLocationListAsync(inputGpsLocationList));
         listLocationFuture->wait();
         ASSERT_EQ(StatusCodeEnum::SUCCESS, tripFuture->getStatus());
-        std::vector<joynr::types::Localisation::GpsLocation> actualLocation;
+        std::vector<types::Localisation::GpsLocation> actualLocation;
         listLocationFuture->get(actualLocation);
         EXPECT_EQ(inputGpsLocationList, actualLocation);
 
@@ -305,8 +288,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
 
         std::function<void()> onSuccess = []() {};
 
-        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
-                [](const joynr::exceptions::ProviderRuntimeException&) {};
+        std::function<void(const exceptions::ProviderRuntimeException&)> onError =
+                [](const exceptions::ProviderRuntimeException&) {};
 
         /*
          * because of the implementation of the MockTestProvider,
@@ -315,11 +298,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         testProvider->setFirstPrime(testPrimeValue, onSuccess, onError);
 
         int primeResult(0);
-        try {
-            testProxy->getFirstPrime(primeResult);
-        } catch (const exceptions::JoynrException& e) {
-            FAIL() << "getFirstPrime was not successful";
-        }
+        JOYNR_ASSERT_NO_THROW({ testProxy->getFirstPrime(primeResult); });
         EXPECT_EQ(primeResult, 15);
 
         // List of strings,
@@ -331,28 +310,15 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         localStrList.push_back("four {");
         testProvider->setListOfStrings(localStrList, onSuccess, onError);
 
-        try {
-            testProxy->getListOfStrings(remoteStrList);
-        } catch (const exceptions::JoynrException& e) {
-            FAIL() << "getListOfStrings was not successful";
-        }
+        JOYNR_ASSERT_NO_THROW({ testProxy->getListOfStrings(remoteStrList); });
         EXPECT_EQ(localStrList, remoteStrList);
 
         /*
          * Testing GetAttribute with Remote SetAttribute
          *
          */
-
-        try {
-            testProxy->setFirstPrime(19);
-        } catch (const exceptions::JoynrException& e) {
-            FAIL() << "setFirstPrime was not successful";
-        }
-        try {
-            testProxy->getFirstPrime(primeResult);
-        } catch (const exceptions::JoynrException& e) {
-            FAIL() << "getFirstPrime was not successful";
-        }
+        JOYNR_ASSERT_NO_THROW({ testProxy->setFirstPrime(19); });
+        JOYNR_ASSERT_NO_THROW({ testProxy->getFirstPrime(primeResult); });
         EXPECT_EQ(primeResult, 19);
 
         /*
@@ -378,16 +344,8 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         inputIntList.push_back(7);
         inputIntList.push_back(11);
         inputIntList.push_back(13);
-        try {
-            testProxy->setListOfInts(inputIntList);
-        } catch (const exceptions::JoynrException& e) {
-            FAIL() << "setListOfInts was not successful";
-        }
-        try {
-            testProxy->getListOfInts(outputIntLIst);
-        } catch (const exceptions::JoynrException& e) {
-            FAIL() << "getListOfInts was not successful";
-        }
+        JOYNR_ASSERT_NO_THROW({ testProxy->setListOfInts(inputIntList); });
+        JOYNR_ASSERT_NO_THROW({ testProxy->getListOfInts(outputIntLIst); });
         EXPECT_EQ(outputIntLIst, inputIntList);
         EXPECT_EQ(outputIntLIst.at(1), 11);
 
@@ -396,27 +354,18 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
         tests::testTypes::TestEnum::Enum actualEnumAttribute;
         testProxy->getEnumAttribute(actualEnumAttribute);
         EXPECT_EQ(actualEnumAttribute, tests::testTypes::TestEnum::TWO);
-        try {
-            testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999));
-            ASSERT_FALSE(true) << "This line of code should never be reached";
-        } catch (joynr::exceptions::MethodInvocationException& e) {
-            JOYNR_LOG_DEBUG(logger(),
-                            "Expected joynr::exceptions::MethodInvocationException has been "
-                            "thrown. Message: {}",
-                            e.getMessage());
-        } catch (std::exception& e) {
-            ASSERT_FALSE(true) << "joynr::exceptions::MethodInvocationException is expected, "
-                                  "however exception with message " << e.what() << "is thrown";
-        }
+        EXPECT_THROW(
+                testProxy->setEnumAttribute(static_cast<tests::testTypes::TestEnum::Enum>(999)),
+                exceptions::MethodInvocationException);
 
         // Testing byte buffer
-        joynr::ByteBuffer byteBufferValue{1, 2, 3};
+        ByteBuffer byteBufferValue{1, 2, 3};
         testProxy->setByteBufferAttribute(byteBufferValue);
-        joynr::ByteBuffer actualByteBufferValue;
+        ByteBuffer actualByteBufferValue;
         testProxy->getByteBufferAttribute(actualByteBufferValue);
         EXPECT_EQ(actualByteBufferValue, byteBufferValue);
 
-        joynr::ByteBuffer returnByteBufferValue;
+        ByteBuffer returnByteBufferValue;
         testProxy->methodWithByteBuffer(returnByteBufferValue, byteBufferValue);
         EXPECT_EQ(returnByteBufferValue, byteBufferValue);
     }
@@ -449,16 +398,14 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
                 testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                         ->setDiscoveryQos(_discoveryQos)
                         ->build());
-        std::vector<joynr::tests::testTypes::HavingComplexArrayMemberStruct> setValue;
-        std::vector<joynr::tests::testTypes::NeverUsedAsAttributeTypeOrMethodParameterStruct>
-                arrayMember;
+        std::vector<tests::testTypes::HavingComplexArrayMemberStruct> setValue;
+        std::vector<tests::testTypes::NeverUsedAsAttributeTypeOrMethodParameterStruct> arrayMember;
         arrayMember.push_back(
-                joynr::tests::testTypes::NeverUsedAsAttributeTypeOrMethodParameterStruct(
-                        "neverUsed"));
-        setValue.push_back(joynr::tests::testTypes::HavingComplexArrayMemberStruct(arrayMember));
+                tests::testTypes::NeverUsedAsAttributeTypeOrMethodParameterStruct("neverUsed"));
+        setValue.push_back(tests::testTypes::HavingComplexArrayMemberStruct(arrayMember));
         testProxy->setAttributeArrayOfNestedStructs(setValue);
 
-        std::vector<joynr::tests::testTypes::HavingComplexArrayMemberStruct> result;
+        std::vector<tests::testTypes::HavingComplexArrayMemberStruct> result;
         testProxy->getAttributeArrayOfNestedStructs(result);
         ASSERT_EQ(result, setValue);
     }
@@ -466,7 +413,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     // TESTING getter/setter and operation calls with different kinds of parameters (maps, complex
     // structs, ...)
     {
-        using namespace joynr::types::TestTypes;
+        using namespace types::TestTypes;
         std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
 
@@ -602,10 +549,10 @@ TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setScope(types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+    std::string participantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -656,10 +603,10 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setScope(types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+    std::string participantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -695,17 +642,13 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setScope(types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
 
     const bool persist = true;
     const bool awaitGlobalRegistration = true;
-    std::string participantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName,
-                                                             testProvider,
-                                                             providerQos,
-                                                             persist,
-                                                             awaitGlobalRegistration);
+    std::string participantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos, persist, awaitGlobalRegistration);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -728,7 +671,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     std::int64_t minInterval_ms = 0;
     auto subscriptionQos =
             std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
-                                                      10000,            // publication ttl
+                                                      10000,           // publication ttl
                                                       minInterval_ms); // minInterval_ms
     auto future = testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
 
@@ -779,9 +722,9 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
     providerQos.setPriority(2);
     auto testProvider = std::make_shared<MockTestProvider>();
     testProvider->setListOfInts(
-            expectedValues, []() {}, [](const joynr::exceptions::JoynrRuntimeException&) {});
-    std::string providerParticipantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+            expectedValues, []() {}, [](const exceptions::JoynrRuntimeException&) {});
+    std::string providerParticipantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -845,31 +788,30 @@ TEST_P(CombinedEnd2EndTest, buildProxyForNonExistentDomain_throwsDiscoveryExcept
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start);
         elapsed = duration.count();
         ASSERT_LT(elapsed, discoveryTimeoutMs) << "Expected joynr::exceptions::DiscoveryException "
-                                                  "has been thrown too late. Message: " + e.getMessage();
+                                                  "has been thrown too late. Message: " +
+                                                          e.getMessage();
     }
 }
 
 TEST_P(CombinedEnd2EndTest, registerAndLookupWithGbids_callMethod)
 {
-    const std::vector<std::string> gbids {"joynrdefaultgbid"};
+    const std::vector<std::string> gbids{"joynrdefaultgbid"};
     // Provider: _runtime1
     types::ProviderQos providerQos;
     auto testProvider = std::make_shared<MockTestProvider>();
     std::string providerParticipantId = _runtime1->registerProvider<tests::testProvider>(
-                _domainName, testProvider, providerQos, true, true, gbids);
+            _domainName, testProvider, providerQos, true, true, gbids);
 
     // Proxy: _runtime2
     std::shared_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
     std::uint64_t qosRoundTripTTL = 40000;
     std::shared_ptr<tests::testProxy> testProxy(
-            proxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                    ->setGbids(gbids)
-                    ->build());
+            proxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))->setGbids(gbids)->build());
 
     // Send a message and expect to get a result
     std::int32_t result;
-    const std::vector<std::int32_t> numbers {1, 2};
+    const std::vector<std::int32_t> numbers{1, 2};
     testProxy->sumInts(result, numbers);
     EXPECT_EQ(3, result);
 
@@ -897,10 +839,10 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setScope(types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+    std::string participantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -950,10 +892,10 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setScope(types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string participantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+    std::string participantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -979,7 +921,7 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
 
 std::shared_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
                                                   const std::string& _domainName,
-                                                  const joynr::DiscoveryQos& _discoveryQos)
+                                                  const DiscoveryQos& _discoveryQos)
 {
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime.createProxyBuilder<tests::testProxy>(_domainName);
@@ -994,11 +936,13 @@ std::shared_ptr<tests::testProxy> createTestProxy(JoynrRuntime& runtime,
     return testProxy;
 }
 
+// Needs to be static since not bound to test case runtime (not mandatory to pass the test)
+static std::string subscribeInBackgroundThreadId;
+
 // A function that subscribes to a GpsPosition - to be run in a background thread
 void subscribeToLocation(
         std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> listener,
-        std::shared_ptr<tests::testProxy> testProxy,
-        CombinedEnd2EndTest* testSuite)
+        std::shared_ptr<tests::testProxy> testProxy)
 {
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500000, // validity_ms
@@ -1007,14 +951,13 @@ void subscribeToLocation(
                                                                    2000,   //  maxInterval_ms
                                                                    3000);  // alertInterval_ms
     auto future = testProxy->subscribeToLocation(listener, subscriptionQos);
-    JOYNR_ASSERT_NO_THROW({ future->get(5000, testSuite->_registeredSubscriptionId); });
+    JOYNR_ASSERT_NO_THROW({ future->get(5000, subscribeInBackgroundThreadId); });
 }
 
 // A function that subscribes to a GpsPosition - to be run in a background thread
-static void unsubscribeFromLocation(std::shared_ptr<tests::testProxy> testProxy,
-                                    std::string subscriptionId)
+static void unsubscribeFromLocation(std::shared_ptr<tests::testProxy> testProxy)
 {
-    testProxy->unsubscribeFromLocation(subscriptionId);
+    testProxy->unsubscribeFromLocation(subscribeInBackgroundThreadId);
 }
 
 TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread)
@@ -1035,22 +978,22 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread)
             std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch());
     providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setScope(types::ProviderScope::GLOBAL);
     providerQos.setSupportsOnChangeSubscriptions(true);
-    std::string providerParticipantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+    std::string providerParticipantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     std::shared_ptr<tests::testProxy> testProxy =
             createTestProxy(*_runtime2, _domainName, _discoveryQos);
     // Subscribe in a background thread
     // subscribeToLocation(subscriptionListener, testProxy, this);
-    std::async(std::launch::async, subscribeToLocation, subscriptionListener, testProxy, this);
+    std::async(std::launch::async, subscribeToLocation, subscriptionListener, testProxy);
 
     // Wait for 2 subscription messages to arrive
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
 
-    unsubscribeFromLocation(testProxy, _registeredSubscriptionId);
+    unsubscribeFromLocation(testProxy);
 
     _runtime1->unregisterProvider(providerParticipantId);
 }
@@ -1063,8 +1006,8 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    std::string participantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+    std::string participantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -1099,8 +1042,8 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
 
     std::this_thread::sleep_for(std::chrono::milliseconds(2550));
 
-    std::string testProviderParticipantId =
-            _runtime1->registerProvider<tests::testProvider>(_domainName, testProvider, providerQos);
+    std::string testProviderParticipantId = _runtime1->registerProvider<tests::testProvider>(
+            _domainName, testProvider, providerQos);
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
@@ -1136,7 +1079,8 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
     } catch (const exceptions::JoynrTimeOutException& e) {
     }
 
-    EXPECT_THROW(_runtime1->unregisterProvider(testProviderParticipantId), exceptions::ProviderRuntimeException);
+    EXPECT_THROW(_runtime1->unregisterProvider(testProviderParticipantId),
+                 exceptions::ProviderRuntimeException);
 }
 
 using namespace std::string_literals;
