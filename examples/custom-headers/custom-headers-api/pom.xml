@@ -110,6 +110,10 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

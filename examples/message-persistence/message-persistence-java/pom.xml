@@ -65,12 +65,35 @@
 
 		<!-- Libraries -->
 		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>clustercontroller-inprocess-runtime</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
 			<artifactId>hivemq-mqtt-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

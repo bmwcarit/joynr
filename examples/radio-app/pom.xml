@@ -53,8 +53,23 @@
 	<dependencies>
 		<!-- Core joynr framework -->
 		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>access-control-common</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>status-metrics</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>clustercontroller-websocket-runtime</artifactId>
+			<artifactId>clustercontroller</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
 		<dependency>
@@ -64,7 +79,22 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
+			<artifactId>clustercontroller-websocket-runtime</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr-websocket-runtime</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
 		<dependency>
@@ -72,7 +102,37 @@
 			<artifactId>hivemq-mqtt-client</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.websocket</groupId>
+			<artifactId>joynr-websocket-common</artifactId>
+			<version>${joynr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>2.11.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.11.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.11.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+			<version>3.0</version>
+		</dependency>
 		<!-- Logging used in the demo app -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.6</version>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
