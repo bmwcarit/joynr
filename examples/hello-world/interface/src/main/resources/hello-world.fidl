@@ -1,5 +1,8 @@
 package io.joynr
 
+<**
+	@description: #noVersionGeneration
+**>
 interface HelloWorldService {
 
 	version { major 1 minor 0 }
