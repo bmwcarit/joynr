@@ -109,7 +109,17 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<dependencies>
 		<dependency>
 			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java</groupId>
 			<artifactId>jeeintegration</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 	</dependencies>
 
