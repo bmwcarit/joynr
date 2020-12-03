@@ -47,7 +47,7 @@ public:
     AccessController(std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
                      std::shared_ptr<LocalDomainAccessController> localDomainAccessController);
 
-    ~AccessController() override;
+    ~AccessController() override = default;
 
     //---IAccessController interface -------------------------------------------
 
@@ -63,7 +63,6 @@ public:
 
 private:
     class LdacConsumerPermissionCallback;
-    class ProviderRegistrationObserver;
 
     DISALLOW_COPY_AND_ASSIGN(AccessController);
     bool needsHasConsumerPermissionCheck(const ImmutableMessage& message) const;
@@ -71,7 +70,6 @@ private:
 
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectory;
     std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
-    std::shared_ptr<ProviderRegistrationObserver> _providerRegistrationObserver;
     std::vector<std::string> _whitelistParticipantIds;
     types::DiscoveryQos _discoveryQos;
 

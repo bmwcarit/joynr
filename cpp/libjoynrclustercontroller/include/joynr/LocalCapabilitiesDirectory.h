@@ -179,22 +179,6 @@ public:
             override;
 
     /*
-     * Objects that wish to receive provider register/unregister events can attach
-     * themselves as observers
-     */
-    class IProviderRegistrationObserver
-    {
-    public:
-        virtual ~IProviderRegistrationObserver() = default;
-        virtual void onProviderAdd(const types::DiscoveryEntry& discoveryEntry) = 0;
-        virtual void onProviderRemove(const types::DiscoveryEntry& discoveryEntry) = 0;
-    };
-
-    void addProviderRegistrationObserver(std::shared_ptr<IProviderRegistrationObserver> observer);
-    void removeProviderRegistrationObserver(
-            std::shared_ptr<IProviderRegistrationObserver> observer);
-
-    /*
      * Persist the content of the local capabilities directory to a file.
      */
     void updatePersistedFile();
@@ -276,7 +260,6 @@ private:
     std::mutex _pendingLookupsLock;
 
     std::weak_ptr<IMessageRouter> _messageRouter;
-    std::vector<std::shared_ptr<IProviderRegistrationObserver>> _observers;
 
     LcdPendingLookupsHandler _lcdPendingLookupsHandler;
 

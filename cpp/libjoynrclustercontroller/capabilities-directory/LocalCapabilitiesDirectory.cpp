@@ -86,7 +86,6 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           _localAddress(localAddress),
           _pendingLookupsLock(),
           _messageRouter(messageRouter),
-          _observers(),
           _lcdPendingLookupsHandler(),
           _accessController(),
           _checkExpiredDiscoveryEntriesTimer(ioService),
@@ -265,8 +264,6 @@ void LocalCapabilitiesDirectory::addInternal(
         }
         // register locally
         _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(discoveryEntry);
-        // Inform observers
-        informObserversOnAdd(discoveryEntry);
 
         updatePersistedFile();
         {
@@ -361,9 +358,6 @@ void LocalCapabilitiesDirectory::addInternal(
                     if (onSuccess) {
                         onSuccess();
                     }
-
-                    // Inform observers
-                    thisSharedPtr->informObserversOnAdd(globalDiscoveryEntry);
 
                     thisSharedPtr->updatePersistedFile();
                     {
@@ -1134,7 +1128,6 @@ void LocalCapabilitiesDirectory::remove(
                        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->size(),
                        _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
                        _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
-        informObserversOnRemove(entry);
 
         if (auto messageRouterSharedPtr = _messageRouter.lock()) {
             messageRouterSharedPtr->removeNextHop(participantId);
@@ -1148,18 +1141,6 @@ void LocalCapabilitiesDirectory::remove(
         onSuccess();
     }
     updatePersistedFile();
-}
-
-void LocalCapabilitiesDirectory::addProviderRegistrationObserver(
-        std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
-{
-    _observers.push_back(std::move(observer));
-}
-
-void LocalCapabilitiesDirectory::removeProviderRegistrationObserver(
-        std::shared_ptr<LocalCapabilitiesDirectory::IProviderRegistrationObserver> observer)
-{
-    util::removeAll(_observers, observer);
 }
 
 void LocalCapabilitiesDirectory::updatePersistedFile()
@@ -1276,21 +1257,6 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
 
     // insert found capabilities in messageRouter
     registerReceivedCapabilities(std::move(capabilitiesMap));
-}
-
-void LocalCapabilitiesDirectory::informObserversOnAdd(const types::DiscoveryEntry& discoveryEntry)
-{
-    for (const std::shared_ptr<IProviderRegistrationObserver>& observer : _observers) {
-        observer->onProviderAdd(discoveryEntry);
-    }
-}
-
-void LocalCapabilitiesDirectory::informObserversOnRemove(
-        const types::DiscoveryEntry& discoveryEntry)
-{
-    for (const std::shared_ptr<IProviderRegistrationObserver>& observer : _observers) {
-        observer->onProviderRemove(discoveryEntry);
-    }
 }
 
 void LocalCapabilitiesDirectory::scheduleCleanupTimer()

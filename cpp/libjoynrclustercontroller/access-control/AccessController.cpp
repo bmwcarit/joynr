@@ -202,44 +202,15 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
 //--------- AccessController ---------------------------------------------------
 
-class AccessController::ProviderRegistrationObserver
-        : public LocalCapabilitiesDirectory::IProviderRegistrationObserver
-{
-public:
-    explicit ProviderRegistrationObserver(
-            std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
-            : _localDomainAccessController(localDomainAccessController)
-    {
-    }
-    void onProviderAdd(const types::DiscoveryEntry&) override
-    {
-    }
-
-    void onProviderRemove(const types::DiscoveryEntry&) override
-    {
-    }
-
-private:
-    std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
-};
-
 AccessController::AccessController(
         std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
         std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
         : _localCapabilitiesDirectory(localCapabilitiesDirectory),
           _localDomainAccessController(localDomainAccessController),
-          _providerRegistrationObserver(
-                  std::make_shared<ProviderRegistrationObserver>(localDomainAccessController)),
           _whitelistParticipantIds(),
           _discoveryQos()
 {
     _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
-    localCapabilitiesDirectory->addProviderRegistrationObserver(_providerRegistrationObserver);
-}
-
-AccessController::~AccessController()
-{
-    _localCapabilitiesDirectory->removeProviderRegistrationObserver(_providerRegistrationObserver);
 }
 
 void AccessController::addParticipantToWhitelist(const std::string& participantId)
