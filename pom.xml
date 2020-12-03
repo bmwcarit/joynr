@@ -585,12 +585,17 @@
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
+				<artifactId>org.eclipse.xtend.core</artifactId>
+				<version>${xtend.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>org.eclipse.xtend.lib</artifactId>
 				<version>${xtend.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>org.eclipse.xtend.core</artifactId>
+				<artifactId>org.eclipse.xtend.lib.macro</artifactId>
 				<version>${xtend.version}</version>
 			</dependency>
 			<dependency>
@@ -598,6 +603,27 @@
 				<artifactId>org.eclipse.xtext</artifactId>
 				<version>${xtext.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>org.eclipse.xtext.xbase</artifactId>
+				<version>${xtext.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>org.eclipse.xtext.xbase.lib</artifactId>
+				<version>${xtext.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>org.eclipse.xtext.common.types</artifactId>
+				<version>${xtext.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.xtext</groupId>
+				<artifactId>org.eclipse.xtext.util</artifactId>
+				<version>${xtext.version}</version>
+			</dependency>
+
 			<!--
 				This dependency is needed to avoid conflicts with Java 5 code (generics)
 				when pulling in transitive dependency org.apache.felix:org.osgi.foundation:1.2.0
