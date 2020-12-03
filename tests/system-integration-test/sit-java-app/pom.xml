@@ -30,8 +30,18 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>access-control-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -39,11 +49,34 @@
 			<artifactId>libjoynr-websocket-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging</groupId>
+			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.websocket</groupId>
+			<artifactId>joynr-websocket-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- Logging used in the app -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
 		<!-- Command line parsing used in the demo app -->
