@@ -142,6 +142,40 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_insertInGlobalLookupCache)
     ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId));
 }
 
+TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getAllGlobalCapabilities)
+{
+    const std::string participantId1 = "participantId1";
+    const std::string participantId2 = "participantId2";
+    types::DiscoveryEntry globalDiscoveryEntry1 = _globalEntry;
+
+    globalDiscoveryEntry1.setParticipantId(participantId1);
+
+    types::DiscoveryEntry globalDiscoveryEntry2 = globalDiscoveryEntry1;
+    globalDiscoveryEntry2.setParticipantId(participantId2);
+
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(globalDiscoveryEntry1);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(globalDiscoveryEntry2);
+
+    std::vector<types::DiscoveryEntry> globalDiscoveryEntries =
+            _localCapabilitiesDirectoryStore.getAllGlobalCapabilities();
+
+    ASSERT_EQ(2, globalDiscoveryEntries.size());
+
+    bool foundEntry1;
+    bool foundEntry2;
+    for(types::DiscoveryEntry entry : globalDiscoveryEntries) {
+        if(entry.getParticipantId() == participantId1) {
+            foundEntry1 = true;
+        }
+        if (entry.getParticipantId() == participantId2 ) {
+            foundEntry2 = true;
+        }
+    }
+    EXPECT_TRUE(foundEntry1);
+    EXPECT_TRUE(foundEntry2);
+}
+
 TEST_F(LocalCapabilitiesDirectoryStoreTest, test_clear)
 {
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
