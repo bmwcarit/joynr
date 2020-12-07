@@ -51,9 +51,11 @@
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/LCDUtil.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/types/Version.h"
+
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockAccessController.h"
@@ -184,6 +186,7 @@ public:
               _localCapabilitiesDirectoryWithMockCapStorage(),
               _lastSeenDateMs(TimePoint::now().toMilliseconds()),
               _defaultExpiryDateMs(60 * 60 * 1000),
+              _reAddInterval(500),
               _dummyParticipantIdsVector{util::createUuid(), util::createUuid(), util::createUuid()},
               _defaultOnSuccess([]() {}),
               _defaultProviderRuntimeExceptionError([](const exceptions::ProviderRuntimeException&) {}),
@@ -216,7 +219,8 @@ public:
                 _singleThreadedIOService->getIOService(),
                 _clusterControllerId,
                 _KNOWN_GBIDS,
-                _defaultExpiryDateMs);
+                _defaultExpiryDateMs,
+                _reAddInterval);
         _localCapabilitiesDirectory->init();
         _localCapabilitiesDirectoryWithMockCapStorage = std::make_shared<LocalCapabilitiesDirectory>(
                 _clusterControllerSettings,
@@ -765,6 +769,7 @@ protected:
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectoryWithMockCapStorage;
     std::int64_t _lastSeenDateMs;
     std::int64_t _defaultExpiryDateMs;
+    const std::chrono::milliseconds _reAddInterval;
     std::vector<std::string> _dummyParticipantIdsVector;
     types::DiscoveryQos _discoveryQos;
     std::unordered_multimap<std::string, types::DiscoveryEntry> _globalCapEntryMap;
@@ -930,6 +935,20 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
             _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testReAddAllGlobalDiscoveryEntriesPeriodically)
+{
+    Semaphore gcdSemaphore(0);
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                reAdd(Eq(_localCapabilitiesDirectoryStore),
+                      Eq(_LOCAL_ADDRESS)))
+                .Times(AtLeast(2))
+                .WillRepeatedly(ReleaseSemaphore(&gcdSemaphore));
+
+    EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_FALSE(gcdSemaphore.waitFor(std::chrono::milliseconds(400)));
+    EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(400)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addLocalEntry_callsMockStorage)
