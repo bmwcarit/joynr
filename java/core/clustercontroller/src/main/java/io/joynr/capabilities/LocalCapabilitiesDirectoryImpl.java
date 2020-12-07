@@ -1319,7 +1319,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         public void retryTask() {
-            queueSemaphore.release();
             workerSemaphore.release();
         }
 
@@ -1365,22 +1364,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 long timeTillNextExpiration = removeExpiredAndGetNextWaitTime();
 
                 try {
-                    queueSemaphore.acquire();
-                } catch (InterruptedException e) {
-                    logger.error("queueSemaphore.acquire() interrupted", e);
-                    continue;
-                }
-
-                try {
-                    if (taskQueue.isEmpty()) {
-                        workerSemaphore.acquire();
-                    } else if (!workerSemaphore.tryAcquire(timeTillNextExpiration, TimeUnit.MILLISECONDS)) {
-                        queueSemaphore.release();
+                    if (!workerSemaphore.tryAcquire(timeTillNextExpiration, TimeUnit.MILLISECONDS)) {
                         continue;
                     }
                 } catch (InterruptedException e) {
                     logger.error("workerSemaphore.acquire() interrupted", e);
-                    queueSemaphore.release();
                     continue;
                 }
                 if (isStopped) {
@@ -1388,6 +1376,17 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
 
                 if (task == null) {
+                    // get new task, else: retry previous task
+                    try {
+                        queueSemaphore.acquire();
+                    } catch (InterruptedException e) {
+                        logger.error("queueSemaphore.acquire() interrupted", e);
+                        workerSemaphore.release();
+                        continue;
+                    }
+                    if (isStopped) {
+                        break;
+                    }
                     task = taskQueue.poll();
                     if (task == null) {
                         logger.debug("Retrieved addRemoveQueueEntry is null. Skipping and continuing.");
