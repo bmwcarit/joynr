@@ -1950,16 +1950,14 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilities_invokesGcdClient)
             _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, testRemove_GcdNotCalledIfParticipantIsNotRegistered)
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_participantNotRegisteredNoGbids_GcdNotCalled)
 {
-    // There is no discoveryEntry registered. Gcd won't be invoked. Lcd will call onRuntimeError
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 remove(_, _, _, _, _)).Times(0);
 
     exceptions::ProviderRuntimeException expectedException(
-                    fmt::format("Failed to remove participantId: {}. ParticipantId is not "
-                                "registered in cluster controller.",
-                                _dummyParticipantIdsVector[0]));
+                        fmt::format("Global remove failed because participantId to GBIDs mapping is "
+                                    "missing for participantId {}", _dummyParticipantIdsVector[0]));
     _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0],
             _defaultOnSuccess, createExpectedProviderRuntimeExceptionFunction(expectedException));
 

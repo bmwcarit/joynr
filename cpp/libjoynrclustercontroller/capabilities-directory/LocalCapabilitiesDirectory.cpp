@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -1091,21 +1091,13 @@ void LocalCapabilitiesDirectory::remove(
         boost::optional<types::DiscoveryEntry> optionalEntry =
                 _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
                         ->lookupByParticipantId(participantId);
-        if (!optionalEntry) {
-            JOYNR_LOG_INFO(
-                    logger(), "participantId '{}' not found, cannot be removed", participantId);
-            exceptions::ProviderRuntimeException exception(
-                    fmt::format("Failed to remove participantId: {}. ParticipantId is not "
-                                "registered in cluster controller.",
-                                participantId));
-            if (onError) {
-                onError(exception);
-            }
-            return;
-        }
-        const types::DiscoveryEntry& entry = *optionalEntry;
 
-        if (LCDUtil::isGlobal(entry)) {
+        if (optionalEntry.has_value() && !LCDUtil::isGlobal(optionalEntry.get())) {
+            JOYNR_LOG_INFO(
+                    logger(), "Removing locally registered participantId: {}", participantId);
+            _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
+                    ->removeByParticipantId(participantId);
+        } else {
             auto foundGbids =
                     _localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantId);
             if (foundGbids.empty()) {
@@ -1113,6 +1105,14 @@ void LocalCapabilitiesDirectory::remove(
                                 "Global remove failed because participantId to GBIDs mapping is "
                                 "missing for participantId {}",
                                 participantId);
+                exceptions::ProviderRuntimeException exception(fmt::format(
+                        "Global remove failed because participantId to GBIDs mapping is "
+                        "missing for participantId {}",
+                        participantId));
+                if (onError) {
+                    onError(exception);
+                }
+                return;
             } else {
                 const std::string gbidString = boost::algorithm::join(foundGbids, ", ");
                 JOYNR_LOG_INFO(logger(),
@@ -1123,6 +1123,15 @@ void LocalCapabilitiesDirectory::remove(
                 _localCapabilitiesDirectoryStore->eraseParticipantIdToGbidMapping(participantId);
                 _localCapabilitiesDirectoryStore->getGlobalLookupCache()->removeByParticipantId(
                         participantId);
+
+                if (optionalEntry.has_value()) {
+                    JOYNR_LOG_INFO(logger(),
+                                   "Removing locally registered participantId: {}",
+                                   participantId);
+                    _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
+                            ->removeByParticipantId(participantId);
+                }
+
                 auto onApplicationError =
                         [participantId, foundGbids](const types::DiscoveryError::Enum& error) {
                     JOYNR_LOG_WARN(logger(),
@@ -1149,9 +1158,7 @@ void LocalCapabilitiesDirectory::remove(
                                                            std::move(onRuntimeError));
             }
         }
-        JOYNR_LOG_INFO(logger(), "Removing locally registered participantId: {}", participantId);
-        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->removeByParticipantId(
-                participantId);
+
         JOYNR_LOG_INFO(logger(),
                        "After removal of participantId {}: #localCapabilities {}, "
                        "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
@@ -1159,7 +1166,6 @@ void LocalCapabilitiesDirectory::remove(
                        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->size(),
                        _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
                        _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
-
         if (auto messageRouterSharedPtr = _messageRouter.lock()) {
             messageRouterSharedPtr->removeNextHop(participantId);
         } else {
