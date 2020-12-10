@@ -245,7 +245,7 @@ void LocalCapabilitiesDirectoryStore::insertInGlobalLookupCache(
             }
         }
     }
-    _globalParticipantIdsToGbidsMap.insert(std::make_pair(participantId, allGbids));
+    _globalParticipantIdsToGbidsMap[participantId] = allGbids;
 
     JOYNR_LOG_INFO(
             logger(),

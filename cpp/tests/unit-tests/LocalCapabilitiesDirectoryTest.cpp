@@ -392,6 +392,7 @@ public:
         _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0], _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
         Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
+        _localCapabilitiesDirectoryStore->clear();
     }
 
     std::vector<types::GlobalDiscoveryEntry> getGlobalDiscoveryEntries(const std::uint8_t numEntries)
@@ -2556,7 +2557,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
 {
-    types::ProviderQos qos;
+    types::ProviderQos providerQos = types::ProviderQos();
+    providerQos.setScope(types::ProviderScope::LOCAL);
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient,
             lookup(_,
@@ -2572,11 +2574,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
                                        _DOMAIN_1_NAME,
                                        _INTERFACE_1_NAME,
                                        _dummyParticipantIdsVector[0],
-                                       qos,
+                                       providerQos,
                                        _lastSeenDateMs,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
-    _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
     types::DiscoveryQos localDiscoveryQos;
     localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
@@ -3493,7 +3495,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
                                        _lastSeenDateMs,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
-    _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     _localCapabilitiesDirectory->registerReceivedCapabilities(std::move(_globalCapEntryMap));
 
     // get the local entry
@@ -3506,7 +3508,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
                                        _unexpectedOnDiscoveryErrorFunction);
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _)).Times(1);
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
+            .WillOnce(InvokeArgument<2>());
     _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0], nullptr, nullptr);
 
     // get the global entry
@@ -3521,8 +3524,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
 
     // wait for cleanup timer to run
     std::this_thread::sleep_for(
-            std::chrono::milliseconds(_purgeExpiredDiscoveryEntriesIntervalMs * 2));
-
+                std::chrono::milliseconds(_purgeExpiredDiscoveryEntriesIntervalMs * 2));
     // get the global, but timeout occured
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(1).WillOnce(
             InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
