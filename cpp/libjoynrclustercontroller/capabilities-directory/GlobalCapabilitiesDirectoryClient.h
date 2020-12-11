@@ -95,7 +95,7 @@ public:
       Remove previously created capability directroy entry
      */
     void remove(const std::string& participantId,
-                const std::vector<std::string>& gbids,
+                std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
                 std::function<void()> onSuccess,
                 std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
                 std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
@@ -153,11 +153,11 @@ private:
                 const std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>&
                         capabilitiesProxy,
                 const std::string& participantId,
-                const std::vector<std::string>& gbids,
+                std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
                 std::function<void()>&& onSuccessFunc,
                 std::function<void(const types::DiscoveryError::Enum&)>&& onApplicationErrorFunc,
                 std::function<void(const exceptions::JoynrRuntimeException&)>&& onRuntimeErrorFunc,
-                boost::optional<MessagingQos> qos);
+                MessagingQos qos);
         ~RetryRemoveOperation() override = default;
         void execute();
 
@@ -167,11 +167,11 @@ private:
         void retryOrForwardRuntimeError(const exceptions::JoynrRuntimeException& e);
         std::weak_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> _capabilitiesProxy;
         std::string _participantId;
-        const std::vector<std::string> _gbids;
+        std::weak_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
         std::function<void()> _onSuccess;
         std::function<void(const types::DiscoveryError::Enum&)> _onApplicationError;
         std::function<void(const exceptions::JoynrRuntimeException&)> _onRuntimeError;
-        boost::optional<MessagingQos> _qos;
+        MessagingQos _qos;
     };
 
     DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClient);

@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
@@ -50,7 +51,7 @@ public:
 
     virtual void remove(
             const std::string& participantId,
-            const std::vector<std::string>& gbids,
+            std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
             std::function<void()> onSuccess,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError) = 0;

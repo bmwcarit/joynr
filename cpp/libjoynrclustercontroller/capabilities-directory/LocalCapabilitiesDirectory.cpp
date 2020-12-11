@@ -1099,72 +1099,68 @@ void LocalCapabilitiesDirectory::remove(
             _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
                     ->removeByParticipantId(participantId);
         } else {
-            auto foundGbids =
-                    _localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantId);
-            if (foundGbids.empty()) {
-                JOYNR_LOG_FATAL(logger(),
-                                "Global remove failed because participantId to GBIDs mapping is "
-                                "missing for participantId {}",
-                                participantId);
-                exceptions::ProviderRuntimeException exception(fmt::format(
-                        "Global remove failed because participantId to GBIDs mapping is "
-                        "missing for participantId {}",
-                        participantId));
-                if (onError) {
-                    onError(exception);
+            auto onGlobalRemoveSuccess = [
+                participantId,
+                lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
+            ]()
+            {
+                if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                    const std::string gbidString = boost::algorithm::join(
+                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
+                    JOYNR_LOG_INFO(
+                            logger(),
+                            "Removing globally registered participantId: {} from GBIDs: >{}<",
+                            participantId,
+                            gbidString);
+                    lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId);
+                    lCDStoreSharedPtr->getGlobalLookupCache()->removeByParticipantId(participantId);
+                    JOYNR_LOG_INFO(logger(),
+                                   "Removing locally registered participantId: {}",
+                                   participantId);
+                    lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->removeByParticipantId(
+                            participantId);
                 }
-                return;
-            } else {
-                auto onGlobalRemoveSuccess = [
-                    foundGbids,
-                    optionalEntry,
-                    participantId,
-                    lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
-                ](/*add gbis here to log later*/)
-                {
-                    if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
-                        const std::string gbidString = boost::algorithm::join(foundGbids, ", ");
-                        JOYNR_LOG_INFO(
-                                logger(),
-                                "Removing globally registered participantId: {} from GBIDs: >{}<",
-                                participantId,
-                                gbidString);
-                        lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId);
-                        lCDStoreSharedPtr->getGlobalLookupCache()->removeByParticipantId(
-                                participantId);
-                        JOYNR_LOG_INFO(logger(),
-                                       "Removing locally registered participantId: {}",
-                                       participantId);
-                        lCDStoreSharedPtr->getLocallyRegisteredCapabilities()
-                                ->removeByParticipantId(participantId);
-                    }
-                };
+            };
 
-                auto onApplicationError =
-                        [participantId, foundGbids](const types::DiscoveryError::Enum& error) {
+            // TODO: implement as in Java
+            auto onApplicationError = [
+                participantId,
+                lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
+            ](const types::DiscoveryError::Enum& error)
+            {
+                if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                    const std::string gbidString = boost::algorithm::join(
+                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
                     JOYNR_LOG_WARN(logger(),
                                    "Error removing participantId {} globally for GBIDs >{}<: {}",
                                    participantId,
-                                   boost::algorithm::join(foundGbids, ", "),
+                                   gbidString,
                                    types::DiscoveryError::getLiteral(error));
-                };
-                auto onRuntimeError = [participantId, foundGbids](
-                        const exceptions::JoynrRuntimeException& exception) {
+                }
+            };
+            auto onRuntimeError = [
+                participantId,
+                lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
+            ](const exceptions::JoynrRuntimeException& exception)
+            {
+                if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                    const std::string gbidString = boost::algorithm::join(
+                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
                     JOYNR_LOG_WARN(
                             logger(),
                             "Failed to remove participantId {} globally for GBIDs >{}<: {} ({})",
                             participantId,
-                            boost::algorithm::join(foundGbids, ", "),
+                            gbidString,
                             exception.getMessage(),
                             exception.getTypeName());
-                };
+                }
+            };
 
-                _globalCapabilitiesDirectoryClient->remove(participantId,
-                                                           foundGbids,
-                                                           std::move(onGlobalRemoveSuccess),
-                                                           std::move(onApplicationError),
-                                                           std::move(onRuntimeError));
-            }
+            _globalCapabilitiesDirectoryClient->remove(participantId,
+                                                       _localCapabilitiesDirectoryStore,
+                                                       std::move(onGlobalRemoveSuccess),
+                                                       std::move(onApplicationError),
+                                                       std::move(onRuntimeError));
         }
 
         JOYNR_LOG_INFO(logger(),

@@ -40,7 +40,7 @@ public:
                            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));
 
     MOCK_METHOD5(remove, void(const std::string& participantId,
-                              const std::vector<std::string>& gbids,
+                              std::shared_ptr<joynr::LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
                               std::function<void()> onSuccess,
                               std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
                               std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError));

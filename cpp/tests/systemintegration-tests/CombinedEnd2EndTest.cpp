@@ -1040,17 +1040,18 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
     providerQos.setPriority(2);
     auto testProvider = std::make_shared<MockTestProvider>();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(2550));
-
-    std::string testProviderParticipantId = _runtime1->registerProvider<tests::testProvider>(
-            _domainName, testProvider, providerQos);
+    std::string testProviderParticipantId =
+            _runtime1->registerProvider<tests::testProvider>(_domainName,
+                                                             testProvider,
+                                                             providerQos,
+                                                             true, // persist
+                                                             true); // awaitGlobalRegistration
 
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             _runtime2->createProxyBuilder<tests::testProxy>(_domainName);
 
-    std::uint64_t qosRoundTripTTL = 20000;
+    std::uint64_t qosRoundTripTTL = 5000;
 
-    // Send a message and expect to get a result
     std::shared_ptr<tests::testProxy> testProxy(
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(_discoveryQos)
@@ -1078,9 +1079,6 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
         ADD_FAILURE();
     } catch (const exceptions::JoynrTimeOutException& e) {
     }
-
-    EXPECT_THROW(_runtime1->unregisterProvider(testProviderParticipantId),
-                 exceptions::ProviderRuntimeException);
 }
 
 using namespace std::string_literals;

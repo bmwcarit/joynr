@@ -381,15 +381,21 @@ public:
                 _entry,
                 awaitGlobalRegistration,
                 selectedGbids,
-                createAddOnSuccessFunction(),
+                createVoidOnSuccessFunction(),
                 _unexpectedOnDiscoveryErrorFunction);
         EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
+        std::shared_ptr<LocalCapabilitiesDirectoryStore> capturedLCDStore = std::make_shared<LocalCapabilitiesDirectoryStore>();
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    remove(Eq(_dummyParticipantIdsVector[0]),
-                           Eq(expectedGbids), _, _, _)).Times(1);
+                    remove(Eq(_dummyParticipantIdsVector[0]), _, _, _, _))
+                .WillOnce(DoAll(SaveArg<1>(&capturedLCDStore),
+                                InvokeWithoutArgs(&_semaphore, &Semaphore::notify)));
 
         _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0], _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+        EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+
+        std::vector<std::string> capturedGbids = capturedLCDStore->getGbidsForParticipantId(_dummyParticipantIdsVector[0]);
+        EXPECT_EQ(expectedGbids, capturedGbids);
 
         Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
         _localCapabilitiesDirectoryStore->clear();
@@ -446,7 +452,7 @@ public:
                     .WillOnce(InvokeArgument<2>());
 
         _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS,
-                                        createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
+                                        createVoidOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
         EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
         Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
@@ -520,7 +526,7 @@ public:
         };
     }
 
-    std::function<void()> createAddOnSuccessFunction()
+    std::function<void()> createVoidOnSuccessFunction()
     {
         return [this] () {
             _semaphore.notify();
@@ -824,7 +830,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, add_global_invokesGcd)
 {
     checkAddToGcdClient(_KNOWN_GBIDS);
 
-    _localCapabilitiesDirectory->add(_entry, createAddOnSuccessFunction(), _unexpectedProviderRuntimeExceptionFunction);
+    _localCapabilitiesDirectory->add(_entry, createVoidOnSuccessFunction(), _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
@@ -837,7 +843,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithSingleNonDefaultGbid)
     checkAddToGcdClient(expectedGbids);
 
     _localCapabilitiesDirectory->add(
-            _entry, awaitGlobalRegistration, gbids, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
+            _entry, awaitGlobalRegistration, gbids, createVoidOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
@@ -850,7 +856,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addUpdatesLastSeenDate)
     checkAddToGcdClient(expectedGbids);
 
     _localCapabilitiesDirectory->add(
-            _entry, awaitGlobalRegistration, gbids, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
+            _entry, awaitGlobalRegistration, gbids, createVoidOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(TimePoint::now().toMilliseconds() >= _entry.getLastSeenDateMs());
     EXPECT_TRUE(_entry.getLastSeenDateMs() > TimePoint::now().toMilliseconds() - _TIMEOUT);
@@ -865,7 +871,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addWithGbids_global_multipleGbids_invokes
     checkAddToGcdClient(expectedGbids);
 
     _localCapabilitiesDirectory->add(
-                _entry, awaitGlobalRegistration, gbids, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
+                _entry, awaitGlobalRegistration, gbids, createVoidOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
@@ -880,7 +886,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addWithGbids_global_emptyGbidVector_addsT
     _localCapabilitiesDirectory->add(_entry,
                                     awaitGlobalRegistration,
                                     gbids,
-                                    createAddOnSuccessFunction(),
+                                    createVoidOnSuccessFunction(),
                                     _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -896,7 +902,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addToAll_global_invokesGcd)
             .WillOnce(InvokeArgument<2>());
 
     _localCapabilitiesDirectory->addToAll(
-            _entry, awaitGlobalRegistration, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
+            _entry, awaitGlobalRegistration, createVoidOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
@@ -912,7 +918,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, add_local_doesNotInvokeGcd)
 
     _localCapabilitiesDirectory->add(
             _entry,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -932,7 +938,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
 
     _localCapabilitiesDirectoryWithMockCapStorage->add(
             _entry,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -965,7 +971,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocalEntry_callsMockStorage)
 
     _localCapabilitiesDirectoryWithMockCapStorage->add(
             _entry,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -1001,7 +1007,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGloba
     _localCapabilitiesDirectory->add(
             _entry,
             awaitGlobalRegistration,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -1015,7 +1021,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGloba
     _localCapabilitiesDirectory->add(
             _entry,
             awaitGlobalRegistration,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -1084,7 +1090,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addSameGbidTwiceInARow)
              _entry,
              awaitGlobalRegistration,
              gbids,
-             createAddOnSuccessFunction(),
+             createVoidOnSuccessFunction(),
              _unexpectedOnDiscoveryErrorFunction);
 
      EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -1093,7 +1099,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addSameGbidTwiceInARow)
              _entry,
              awaitGlobalRegistration,
              gbids,
-             createAddOnSuccessFunction(),
+             createVoidOnSuccessFunction(),
              _unexpectedOnDiscoveryErrorFunction);
 
      EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -1112,7 +1118,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addDifferentGbidsAfterEachOther)
             _entry,
             awaitGlobalRegistration,
             gbids1,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -1122,7 +1128,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addDifferentGbidsAfterEachOther)
             _entry,
             awaitGlobalRegistration,
             gbids2,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -1178,7 +1184,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAll)
             .WillOnce(InvokeArgument<2>());
 
     _localCapabilitiesDirectory->addToAll(
-            _entry, awaitGlobalRegistration, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
+            _entry, awaitGlobalRegistration, createVoidOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
@@ -1197,7 +1203,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllLocal)
     _localCapabilitiesDirectory->addToAll(
             _entry,
             awaitGlobalRegistration,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedOnDiscoveryErrorFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(2)));
@@ -1322,7 +1328,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillOnce(InvokeArgument<2>());
 
-    _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
+    _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createVoidOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
@@ -1371,7 +1377,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillOnce(InvokeArgument<2>());
 
-    _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
+    _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createVoidOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
@@ -1570,7 +1576,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByParticipantIdWithGbids_globalOnly
     _localCapabilitiesDirectory->add(
                 _entry,
                 true,
-                createAddOnSuccessFunction(),
+                createVoidOnSuccessFunction(),
                 _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -1840,7 +1846,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_localThenGlobal_l
     providerQos.setScope(types::ProviderScope::GLOBAL);
     _entry.setQos(providerQos);
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, _entry);
-    _localCapabilitiesDirectory->add(_entry, createAddOnSuccessFunction(), _unexpectedProviderRuntimeExceptionFunction);
+    _localCapabilitiesDirectory->add(_entry, createVoidOnSuccessFunction(), _unexpectedProviderRuntimeExceptionFunction);
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
     // do actual lookup
@@ -1907,7 +1913,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByParticipantId_localThenGlobal_loc
     providerQos.setScope(types::ProviderScope::LOCAL);
     _entry.setQos(providerQos);
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, _entry);
-    _localCapabilitiesDirectory->add(_entry, createAddOnSuccessFunction(), _defaultProviderRuntimeExceptionError);
+    _localCapabilitiesDirectory->add(_entry, createVoidOnSuccessFunction(), _defaultProviderRuntimeExceptionError);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
@@ -1945,23 +1951,44 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilities_invokesGcdClient)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 remove(Eq(_dummyParticipantIdsVector[0]),
-                       Eq(_KNOWN_GBIDS), _, _, _)).Times(1);
+                       Eq(_localCapabilitiesDirectoryStore), _, _, _)).Times(1);
 
     _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0],
             _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 }
 
-TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_participantNotRegisteredNoGbids_GcdNotCalled)
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_participantNotRegisteredNoGbids_GcdCalled)
 {
+    _localCapabilitiesDirectoryStore->clear();
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                remove(_, _, _, _, _)).Times(0);
-
-    exceptions::ProviderRuntimeException expectedException(
-                        fmt::format("Global remove failed because participantId to GBIDs mapping is "
-                                    "missing for participantId {}", _dummyParticipantIdsVector[0]));
+                remove(Eq(_dummyParticipantIdsVector[0]), _, _, _, _)).Times(1);
     _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0],
-            _defaultOnSuccess, createExpectedProviderRuntimeExceptionFunction(expectedException));
+            createVoidOnSuccessFunction(), _defaultProviderRuntimeExceptionError);
 
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testRemove_localProvider_GcdNotCalled)
+{
+    _localCapabilitiesDirectoryStore->clear();
+    types::ProviderQos providerQos = types::ProviderQos();
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    types::DiscoveryEntry entry(_defaultProviderVersion,
+                                       _DOMAIN_1_NAME,
+                                       _INTERFACE_1_NAME,
+                                       _dummyParticipantIdsVector[0],
+                                       providerQos,
+                                       _lastSeenDateMs,
+                                       _defaultExpiryDateMs,
+                                       _PUBLIC_KEY_ID);
+    _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                remove(Eq(_dummyParticipantIdsVector[0]), _, _, _, _)).Times(0);
+
+    _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0],
+            createVoidOnSuccessFunction(), _defaultProviderRuntimeExceptionError);
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
@@ -2602,7 +2629,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
-    // JoynrTimeOutException timeoutException;
     EXPECT_THROW(_localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[0],
                                                     localDiscoveryQos,
                                                     _KNOWN_GBIDS,
@@ -2734,13 +2760,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
-    // _localCapabilitiesDirectory->registerReceivedCapabilities(_globalCapEntryMap);
 
     const std::vector<types::GlobalDiscoveryEntry>& onSuccessZeroResult{};
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(2)
-            //            .WillOnce(InvokeWithoutArgs(this,
-            //            &LocalCapabilitiesDirectoryTest::simulateTimeout));
             .WillRepeatedly(InvokeArgument<4>(onSuccessZeroResult));
     _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
                                        _INTERFACE_1_NAME,
@@ -3400,7 +3423,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(1).WillOnce(
             InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
-    // JoynrTimeOutException timeoutException;
     EXPECT_THROW(_localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
                                                     _INTERFACE_1_NAME,
                                                     localDiscoveryQos,
@@ -3547,7 +3569,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
     localDiscoveryQos.setCacheMaxAge(100);
     localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
 
-    // JoynrTimeOutException timeoutException;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(1);
 
@@ -3559,7 +3580,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
                                        _lastSeenDateMs,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
-    _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
     _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
@@ -3928,7 +3949,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
                 _entry,
                 false,
                 gbids,
-                createAddOnSuccessFunction(),
+                createVoidOnSuccessFunction(),
                 _unexpectedOnDiscoveryErrorFunction);
 
     std::vector<std::string> expectedParticipantIds {participantId1};
@@ -3961,7 +3982,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchNotCalled_noParticipantIdsToTouch_en
     _entry.setParticipantId(participantId1);
     _localCapabilitiesDirectory->add(
             _entry,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
     // wait for add call
@@ -3994,7 +4015,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_multipleParticipantIdsFor
                 _entry,
                 false,
                 gbids,
-                createAddOnSuccessFunction(),
+                createVoidOnSuccessFunction(),
                 _unexpectedOnDiscoveryErrorFunction);
 
     types::DiscoveryEntry entry2(_entry);
@@ -4003,7 +4024,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_multipleParticipantIdsFor
                 entry2,
                 false,
                 gbids,
-                createAddOnSuccessFunction(),
+                createVoidOnSuccessFunction(),
                 _unexpectedOnDiscoveryErrorFunction);
 
     std::vector<std::string> expectedParticipantIds {participantId1, participantId2};
@@ -4062,7 +4083,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_singleParticipantIdForMul
                 _entry,
                 false,
                 gbids,
-                createAddOnSuccessFunction(),
+                createVoidOnSuccessFunction(),
                 _unexpectedOnDiscoveryErrorFunction);
 
     std::vector<std::string> expectedParticipantIds {participantId1};
@@ -4106,7 +4127,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledTwice_twoParticipantIdsForDiff
                 _entry,
                 false,
                 gbids1,
-                createAddOnSuccessFunction(),
+                createVoidOnSuccessFunction(),
                 _unexpectedOnDiscoveryErrorFunction);
 
     types::DiscoveryEntry entry2(_entry);
@@ -4115,7 +4136,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledTwice_twoParticipantIdsForDiff
                 entry2,
                 false,
                 gbids2,
-                createAddOnSuccessFunction(),
+                createVoidOnSuccessFunction(),
                 _unexpectedOnDiscoveryErrorFunction);
 
     // wait for 2 add calls
@@ -4162,7 +4183,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUses
     _entry.setParticipantId(participantId1);
     _localCapabilitiesDirectory->add(
             _entry,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
     std::int64_t oldLastSeenDate = 0;
@@ -4174,7 +4195,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUses
     _entry.setParticipantId(participantId2);
     _localCapabilitiesDirectory->add(
             _entry,
-            createAddOnSuccessFunction(),
+            createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
     std::vector<std::string> expectedParticipantIds { participantId2 };
