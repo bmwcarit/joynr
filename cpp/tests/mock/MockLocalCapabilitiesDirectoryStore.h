@@ -36,6 +36,9 @@ public:
                                                       std::shared_ptr<ILocalCapabilitiesCallback> callback));
     MOCK_METHOD1(getGbidsForParticipantId, std::vector<std::string> (const std::string& participantId));
     MOCK_CONST_METHOD0(getAllGlobalCapabilities, std::vector<types::DiscoveryEntry> ());
+    MOCK_METHOD1(eraseParticipantIdToGbidMapping, void(const std::string& participantId));
+    MOCK_METHOD0(getGlobalLookupCache, std::shared_ptr<capabilities::CachingStorage>());
+    MOCK_METHOD0(getLocallyRegisteredCapabilities, std::shared_ptr<capabilities::Storage>());
 };
 
 } //namespace joynr

@@ -1122,20 +1122,46 @@ void LocalCapabilitiesDirectory::remove(
                 }
             };
 
-            // TODO: implement as in Java
             auto onApplicationError = [
                 participantId,
                 lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
             ](const types::DiscoveryError::Enum& error)
             {
-                if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
-                    const std::string gbidString = boost::algorithm::join(
-                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
-                    JOYNR_LOG_WARN(logger(),
-                                   "Error removing participantId {} globally for GBIDs >{}<: {}",
-                                   participantId,
-                                   gbidString,
-                                   types::DiscoveryError::getLiteral(error));
+                using namespace types;
+                switch (error) {
+                case DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT:
+                case DiscoveryError::Enum::NO_ENTRY_FOR_SELECTED_BACKENDS:
+                    if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                        const std::string gbidString = boost::algorithm::join(
+                                lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
+                        JOYNR_LOG_WARN(logger(),
+                                       "Error removing participantId {} globally for GBIDs >{}<: "
+                                       "{}. Removing local entry.",
+                                       participantId,
+                                       gbidString,
+                                       types::DiscoveryError::getLiteral(error));
+                        lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId);
+                        lCDStoreSharedPtr->getGlobalLookupCache()->removeByParticipantId(
+                                participantId);
+                        lCDStoreSharedPtr->getLocallyRegisteredCapabilities()
+                                ->removeByParticipantId(participantId);
+                    }
+                    break;
+                case DiscoveryError::Enum::INVALID_GBID:
+                case DiscoveryError::Enum::UNKNOWN_GBID:
+                case DiscoveryError::Enum::INTERNAL_ERROR:
+                default:
+                    if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                        const std::string gbidString = boost::algorithm::join(
+                                lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
+                        JOYNR_LOG_WARN(
+                                logger(),
+                                "Error removing participantId {} globally for GBIDs >{}<: {}",
+                                participantId,
+                                gbidString,
+                                types::DiscoveryError::getLiteral(error));
+                    }
+                    break;
                 }
             };
             auto onRuntimeError = [

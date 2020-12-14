@@ -946,6 +946,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
 
 TEST_F(LocalCapabilitiesDirectoryTest, testReAddAllGlobalDiscoveryEntriesPeriodically)
 {
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     Semaphore gcdSemaphore(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 reAdd(Eq(_localCapabilitiesDirectoryStore),
@@ -1998,6 +2000,161 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveUsesSameGbidOrderAsAdd)
     testRemoveUsesSameGbidOrderAsAdd({_KNOWN_GBIDS[1]});
     testRemoveUsesSameGbidOrderAsAdd({_KNOWN_GBIDS[0], _KNOWN_GBIDS[1] });
     testRemoveUsesSameGbidOrderAsAdd({_KNOWN_GBIDS[1], _KNOWN_GBIDS[0] });
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled_NoEntryForSelectedBackends)
+{
+    Semaphore semaphore;
+    boost::optional<types::DiscoveryEntry> optionalEntry = boost::none;
+    _mockLocallyRegisteredCapabilities->setLookupByParticipantIdResult(optionalEntry);
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                remove(_dummyParticipantIdsVector[0], _, _, _, _))
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_SELECTED_BACKENDS),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getLocallyRegisteredCapabilities())
+            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getGlobalLookupCache())
+            .WillRepeatedly(Return(_mockGlobalLookupCache));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(1);
+    EXPECT_CALL(*_mockGlobalLookupCache,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(1);
+    EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(1);
+
+    _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
+            _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled_NoEntryForParticipant)
+{
+    Semaphore semaphore;
+    boost::optional<types::DiscoveryEntry> optionalEntry = boost::none;
+    _mockLocallyRegisteredCapabilities->setLookupByParticipantIdResult(optionalEntry);
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                remove(_dummyParticipantIdsVector[0], _, _, _, _))
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getLocallyRegisteredCapabilities())
+            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getGlobalLookupCache())
+            .WillRepeatedly(Return(_mockGlobalLookupCache));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(1);
+    EXPECT_CALL(*_mockGlobalLookupCache,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(1);
+    EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(1);
+
+    _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
+            _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled_InvalidGbid)
+{
+    Semaphore semaphore;
+    boost::optional<types::DiscoveryEntry> optionalEntry = boost::none;
+    _mockLocallyRegisteredCapabilities->setLookupByParticipantIdResult(optionalEntry);
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                remove(_dummyParticipantIdsVector[0], _, _, _, _))
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INVALID_GBID),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getLocallyRegisteredCapabilities())
+            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getGlobalLookupCache())
+            .WillRepeatedly(Return(_mockGlobalLookupCache));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
+    EXPECT_CALL(*_mockGlobalLookupCache,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
+    EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
+
+    _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
+            _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled_UnknownGbid)
+{
+    Semaphore semaphore;
+    boost::optional<types::DiscoveryEntry> optionalEntry = boost::none;
+    _mockLocallyRegisteredCapabilities->setLookupByParticipantIdResult(optionalEntry);
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                remove(_dummyParticipantIdsVector[0], _, _, _, _))
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::UNKNOWN_GBID),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getLocallyRegisteredCapabilities())
+            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getGlobalLookupCache())
+            .WillRepeatedly(Return(_mockGlobalLookupCache));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
+    EXPECT_CALL(*_mockGlobalLookupCache,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
+    EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
+
+    _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
+            _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled_InternalError)
+{
+    Semaphore semaphore;
+    boost::optional<types::DiscoveryEntry> optionalEntry = boost::none;
+    _mockLocallyRegisteredCapabilities->setLookupByParticipantIdResult(optionalEntry);
+
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                remove(_dummyParticipantIdsVector[0], _, _, _, _))
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INTERNAL_ERROR),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getLocallyRegisteredCapabilities())
+            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getGlobalLookupCache())
+            .WillRepeatedly(Return(_mockGlobalLookupCache));
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
+    EXPECT_CALL(*_mockGlobalLookupCache,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
+    EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
+                removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
+
+    _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
+            _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
@@ -3122,6 +3279,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 
 TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpiredGlobalEntries)
 {
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     // add a few (remote) entries to the global cache
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
@@ -3481,7 +3640,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
                                        _lastSeenDateMs,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
-    _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
+    _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     _localCapabilitiesDirectory->registerReceivedCapabilities(std::move(_globalCapEntryMap));
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
@@ -3499,6 +3658,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
 
 TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenGlobal)
 {
+    // make sure that there is only one runtime that is periodically calling touch
+    test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
 

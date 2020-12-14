@@ -94,9 +94,9 @@ public:
             const std::vector<InterfaceAddress>& interfaceAddress);
 
     std::recursive_mutex& getCacheLock();
-    void eraseParticipantIdToGbidMapping(const std::string& participantId);
-    std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache();
-    std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities();
+    virtual void eraseParticipantIdToGbidMapping(const std::string& participantId);
+    virtual std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache();
+    virtual std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities();
 
 private:
     boost::optional<types::DiscoveryEntry> searchCaches(const std::string& participantId,
