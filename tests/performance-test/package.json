@@ -6,10 +6,10 @@
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
-    "heapdump": "^0.3.9",
+    "heapdump": "0.3.9",
     "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
     "test-base": "file:../test-base",
-    "ws": "^6.2.1"
+    "ws": "7.1.2"
   },
   "config": {
     "glob": "src/main/js/**/*.ts"
