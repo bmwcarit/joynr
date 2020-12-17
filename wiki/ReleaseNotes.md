@@ -18,6 +18,7 @@ the versioning scheme [here](JoynrVersioning.md).
   about the generator versioning settings.
 
 ## Other Changes
+* **[Java]** Fix starvation of GCD tasks in case of retry of global remove
 * **[C++]** Introduced `JOYNR_SUPPORT_WEBSOCKET` and `JOYNR_SUPPORT_UDS` CMake options to
   suppress unused build artifacts on demand.
 * **[C++]** Removed global domain access controller (GDAC) support from cluster controller.
