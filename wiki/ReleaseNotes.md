@@ -10,18 +10,28 @@ the versioning scheme [here](JoynrVersioning.md).
   comment in fidl files. Package versioning is now enabled by default and can be disabled with
   the `#noVersionGeneration` comment. `addVersionTo` is no longer required and should be
   omitted because it will be removed in a future version. If it is still set,
-  then it has to match the `#noVersionGeneration` comment:
-  If the comment exists, then the `--addVersionTo` setting has to be `none`.
-  If the comment does not exist, then the `--addVersionTo` setting has to be `package`.
+  then it has to match the `#noVersionGeneration` comment:  
+  If the comment exists, then the `--addVersionTo` setting has to be `none`.  
+  If the comment does not exist, then the `--addVersionTo` setting has to be `package`.  
   In case of an invalid configuration, the code generation will be aborted with an exception.  
-  See [Generator documentation](generator.md) for more information
-  about the generator versioning settings.
+  See [Generator documentation](generator.md) for more information about the generator versioning
+  settings.
 
 ## Other Changes
-* **[Java]** Fix starvation of GCD tasks in case of retry of global remove
 * **[C++]** Introduced `JOYNR_SUPPORT_WEBSOCKET` and `JOYNR_SUPPORT_UDS` CMake options to
-  suppress unused build artifacts on demand.
+  suppress unused build artifacts on demand. Both are enabled by default.
 * **[C++]** Removed global domain access controller (GDAC) support from cluster controller.
+* **[C++]** Queued global add (register provider) requests are now aborted when they are expired
+  and the application is informed about the abort. This can happen for example when there are too
+  many queued requests or the processing of requests takes too much time or, of course, if there
+  currently is no global (MQTT) connection. Global remove (unregister provider) requests do not
+  expire.
+* **[C++]** Globally registered providers are now re-added periodically (every 7 days) to the
+  GlobalCapabilitiesDirectory to synchronize the local and global capabilities directory.
+* **[Java]** Improved behavior of global remove operations: fixed potential race condition between
+  queued global add and subsequent remove.
+* **[C++]** Improved behavior of global remove operations: fixed potential race condition between
+  queued global add and subsequent remove.
 
 ## Configuration Property Changes
 * **[C++]** The cluster controller `access-control` settings `global-domain-access-controller-participantid`,
@@ -31,7 +41,10 @@ the versioning scheme [here](JoynrVersioning.md).
   Now, the default TTL of 60 seconds is always used.
 
 ## Bug Fixes
-None.
+* **[C++]** Cluster controller now sets MQTT session expiry interval on reconnect. Before it was only
+  set on initial connect and the session was lost in case of reconnect. This requires additional
+  patches for Mosquitto, see `docker/joynr-base/Dockerfile`.
+* **[Java]** Fix starvation of GCD tasks in case of retry of global remove
 
 # joynr 1.15.5
 
@@ -42,10 +55,11 @@ None.
 * **[Java]** Updated jackson to version 2.11.3
 * **[C++]** MosquittoConnection now adds the GBID to each log message to distinguish multiple
   connections.
-* **[Java]** Queued global add (register provider) and remove (unregister provider) requests
-  are now aborted when they are expired and the application is informed about the abort.
-  This can happen for example when there are too many queued requests or the processing of requests
-  takes too much time and, of course, if there currently is no global (MQTT) connection.
+* **[Java]** Queued global add (register provider) requests are now aborted when they are expired
+  and the application is informed about the abort. This can happen for example when there are too
+  many queued requests or the processing of requests takes too much time and, of course, if there
+  currently is no global (MQTT) connection. Global remove (unregister provider) requests do not
+  expire.
 * **[Java]** DiscoveryQos parameter for ProxyBuilder.setDiscoveryQos is now copied to avoid
   accidental manipulation, e.g. when the same DiscoveryQos is used for subsequent ProxyBuilder calls
   with different setting.
