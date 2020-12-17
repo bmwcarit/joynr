@@ -1094,10 +1094,16 @@ void LocalCapabilitiesDirectory::remove(
                         ->lookupByParticipantId(participantId);
 
         if (optionalEntry.has_value() && !LCDUtil::isGlobal(optionalEntry.get())) {
-            JOYNR_LOG_INFO(
-                    logger(), "Removing locally registered participantId: {}", participantId);
             _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
                     ->removeByParticipantId(participantId);
+            JOYNR_LOG_INFO(
+                    logger(),
+                    "Removed locally registered participantId {}: #localCapabilities {}, "
+                    "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
+                    participantId,
+                    _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->size(),
+                    _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
+                    _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
         } else {
             auto onGlobalRemoveSuccess = [
                 participantId,
@@ -1107,21 +1113,21 @@ void LocalCapabilitiesDirectory::remove(
                 if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
                     const std::string gbidString = boost::algorithm::join(
                             lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
-                    JOYNR_LOG_INFO(
-                            logger(),
-                            "Removing globally registered participantId: {} from GBIDs: >{}<",
-                            participantId,
-                            gbidString);
                     lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId);
                     lCDStoreSharedPtr->getGlobalLookupCache()->removeByParticipantId(participantId);
-                    JOYNR_LOG_INFO(logger(),
-                                   "Removing locally registered participantId: {}",
-                                   participantId);
                     lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->removeByParticipantId(
                             participantId);
+                    JOYNR_LOG_INFO(logger(),
+                                   "Removed globally registered participantId: {} from GBIDs: >{}< "
+                                   "#localCapabilities {}, "
+                                   "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
+                                   participantId,
+                                   gbidString,
+                                   lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->size(),
+                                   lCDStoreSharedPtr->countGlobalCapabilities(),
+                                   lCDStoreSharedPtr->getGlobalLookupCache()->size());
                 }
             };
-
             auto onApplicationError = [
                 participantId,
                 lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
@@ -1145,6 +1151,14 @@ void LocalCapabilitiesDirectory::remove(
                                 participantId);
                         lCDStoreSharedPtr->getLocallyRegisteredCapabilities()
                                 ->removeByParticipantId(participantId);
+                        JOYNR_LOG_INFO(
+                                logger(),
+                                "After removal of participantId {}: #localCapabilities {}, "
+                                "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
+                                participantId,
+                                lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->size(),
+                                lCDStoreSharedPtr->countGlobalCapabilities(),
+                                lCDStoreSharedPtr->getGlobalLookupCache()->size());
                     }
                     break;
                 case DiscoveryError::Enum::INVALID_GBID:
@@ -1188,14 +1202,6 @@ void LocalCapabilitiesDirectory::remove(
                                                        std::move(onApplicationError),
                                                        std::move(onRuntimeError));
         }
-
-        JOYNR_LOG_INFO(logger(),
-                       "After removal of participantId {}: #localCapabilities {}, "
-                       "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
-                       participantId,
-                       _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->size(),
-                       _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
-                       _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
         if (auto messageRouterSharedPtr = _messageRouter.lock()) {
             messageRouterSharedPtr->removeNextHop(participantId);
         } else {

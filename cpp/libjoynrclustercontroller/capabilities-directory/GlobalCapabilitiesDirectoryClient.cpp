@@ -22,6 +22,7 @@
  */
 
 #include <atomic>
+#include <boost/algorithm/string/join.hpp>
 
 #include "GlobalCapabilitiesDirectoryClient.h"
 
@@ -368,6 +369,10 @@ void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::execute()
                         capabilitiesProxy = _capabilitiesProxy.lock();
                 if (capabilitiesProxy) {
                     using std::placeholders::_1;
+                    JOYNR_LOG_INFO(logger(),
+                                   "Removing globally registered participantId {} for GBIDs {}",
+                                   _participantId,
+                                   boost::algorithm::join(foundGbids, ","));
                     capabilitiesProxy->removeAsync(
                             _participantId,
                             foundGbids,
