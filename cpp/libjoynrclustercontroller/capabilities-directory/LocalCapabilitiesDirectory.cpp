@@ -1104,8 +1104,18 @@ void LocalCapabilitiesDirectory::remove(
                     _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->size(),
                     _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
                     _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
+            if (auto messageRouterSharedPtr = _messageRouter.lock()) {
+                messageRouterSharedPtr->removeNextHop(participantId);
+            } else {
+                JOYNR_LOG_FATAL(logger(),
+                                "could not removeNextHop for {} because messageRouter is "
+                                "not available",
+                                participantId);
+            }
+            updatePersistedFile();
         } else {
             auto onGlobalRemoveSuccess = [
+                this,
                 participantId,
                 lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
             ]()
@@ -1127,8 +1137,18 @@ void LocalCapabilitiesDirectory::remove(
                                    lCDStoreSharedPtr->countGlobalCapabilities(),
                                    lCDStoreSharedPtr->getGlobalLookupCache()->size());
                 }
+                if (auto messageRouterSharedPtr = _messageRouter.lock()) {
+                    messageRouterSharedPtr->removeNextHop(participantId);
+                } else {
+                    JOYNR_LOG_FATAL(
+                            logger(),
+                            "could not removeNextHop for {} because messageRouter is not available",
+                            participantId);
+                }
+                updatePersistedFile();
             };
             auto onApplicationError = [
+                this,
                 participantId,
                 lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
             ](const types::DiscoveryError::Enum& error)
@@ -1160,6 +1180,15 @@ void LocalCapabilitiesDirectory::remove(
                                 lCDStoreSharedPtr->countGlobalCapabilities(),
                                 lCDStoreSharedPtr->getGlobalLookupCache()->size());
                     }
+                    if (auto messageRouterSharedPtr = _messageRouter.lock()) {
+                        messageRouterSharedPtr->removeNextHop(participantId);
+                    } else {
+                        JOYNR_LOG_FATAL(logger(),
+                                        "could not removeNextHop for {} because messageRouter is "
+                                        "not available",
+                                        participantId);
+                    }
+                    updatePersistedFile();
                     break;
                 case DiscoveryError::Enum::INVALID_GBID:
                 case DiscoveryError::Enum::UNKNOWN_GBID:
@@ -1202,18 +1231,10 @@ void LocalCapabilitiesDirectory::remove(
                                                        std::move(onApplicationError),
                                                        std::move(onRuntimeError));
         }
-        if (auto messageRouterSharedPtr = _messageRouter.lock()) {
-            messageRouterSharedPtr->removeNextHop(participantId);
-        } else {
-            JOYNR_LOG_FATAL(logger(),
-                            "could not removeNextHop for {} because messageRouter is not available",
-                            participantId);
-        }
     }
     if (onSuccess) {
         onSuccess();
     }
-    updatePersistedFile();
 }
 
 void LocalCapabilitiesDirectory::updatePersistedFile()
