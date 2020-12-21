@@ -155,12 +155,6 @@ public class LocalDomainAccessControllerTest {
                    localDomainAccessController.hasRole(UID1, DOMAIN1, Role.OWNER));
         assertFalse("UID1 should not have role MASTER in DRT",
                     localDomainAccessController.hasRole(UID1, DOMAIN1, Role.MASTER));
-
-        Method method = GlobalDomainRoleControllerProxy.class.getMethod("subscribeToDomainRoleEntryChangedBroadcast",
-                                                                        DomainRoleEntryChangedBroadcastListener.class,
-                                                                        MulticastSubscriptionQos.class,
-                                                                        String[].class);
-        verify(proxyInvocationHandlerMock, times(1)).invoke(any(Object.class), eq(method), any(Object[].class));
     }
 
     @Test

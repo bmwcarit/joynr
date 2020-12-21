@@ -30,7 +30,6 @@ import com.google.inject.name.Named;
 
 import io.joynr.capabilities.CapabilitiesProvisioning;
 import io.joynr.capabilities.CapabilityCallback;
-import io.joynr.capabilities.CapabilityListener;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.provider.PromiseListener;
@@ -63,26 +62,9 @@ public class AccessControllerImpl implements AccessController {
         this.localCapabilitiesDirectory = localCapabilitiesDirectory;
         this.localDomainAccessController = localDomainAccessController;
 
-        defineAndRegisterCapabilityListener();
         whitelistProvisionedEntries(capabilitiesProvisioning);
         whitelistedParticipantIds.add(discoveryProviderParticipantId);
         whitelistedParticipantIds.add(routingProviderParticipantId);
-    }
-
-    private void defineAndRegisterCapabilityListener() {
-        localCapabilitiesDirectory.addCapabilityListener(new CapabilityListener() {
-
-            @Override
-            public void capabilityRemoved(DiscoveryEntry removedCapability) {
-                localDomainAccessController.unsubscribeFromAceChanges(removedCapability.getDomain(),
-                                                                      removedCapability.getInterfaceName());
-            }
-
-            @Override
-            public void capabilityAdded(DiscoveryEntry addedCapability) {
-                // NOOP
-            }
-        });
     }
 
     private void whitelistProvisionedEntries(CapabilitiesProvisioning capabilitiesProvisioning) {

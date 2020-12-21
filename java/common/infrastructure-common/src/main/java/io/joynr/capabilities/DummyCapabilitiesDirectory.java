@@ -58,7 +58,6 @@ public class DummyCapabilitiesDirectory extends AbstractLocalCapabilitiesDirecto
     public Promise<DeferredVoid> add(DiscoveryEntry discoveryEntry) {
         DeferredVoid deferred = new DeferredVoid();
         registeredCapabilities.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, discoveryEntry));
-        notifyCapabilityAdded(discoveryEntry);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
     }

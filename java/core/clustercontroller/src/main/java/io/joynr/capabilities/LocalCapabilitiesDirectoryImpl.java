@@ -413,7 +413,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         }
         localDiscoveryEntryStore.add(discoveryEntry);
-        notifyCapabilityAdded(discoveryEntry);
 
         /*
          * In case awaitGlobalRegistration is true, a result for this 'add' call will not be returned before the call to

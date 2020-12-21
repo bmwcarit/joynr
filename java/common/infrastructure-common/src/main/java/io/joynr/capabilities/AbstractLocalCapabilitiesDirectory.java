@@ -18,51 +18,14 @@
  */
 package io.joynr.capabilities;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import joynr.system.DiscoveryAbstractProvider;
-import joynr.types.DiscoveryEntry;
 
 public abstract class AbstractLocalCapabilitiesDirectory extends DiscoveryAbstractProvider
         implements LocalCapabilitiesDirectory {
-    List<CapabilityListener> capabilityListeners = new ArrayList<>();
-
-    @Override
-    public void addCapabilityListener(CapabilityListener listener) {
-        if (capabilityListeners.contains(listener)) {
-            return;
-        }
-        capabilityListeners.add(listener);
-    }
-
-    @Override
-    public void removeCapabilityListener(CapabilityListener listener) {
-        capabilityListeners.remove(listener);
-    }
 
     @Override
     public void shutdown() {
         shutdown(false);
     }
 
-    /**
-     * Notifies all capability listeners about a newly added capability entry.
-     * @param addedCapability the added entry.
-     */
-    protected void notifyCapabilityAdded(DiscoveryEntry addedCapability) {
-        for (CapabilityListener capabilityListener : capabilityListeners) {
-            capabilityListener.capabilityAdded(addedCapability);
-        }
-    }
-
-    /**
-     * Notifies all capability listeners about a rmoved capability entry.
-     * @param removedCapability the removed entry.
-     */
-    protected void notifyCapabilityRemoved(DiscoveryEntry removedCapability) {
-        for (CapabilityListener capabilityListener : capabilityListeners) {
-            capabilityListener.capabilityRemoved(removedCapability);
-        }
-    }
 }
