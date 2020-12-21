@@ -881,12 +881,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (domainsForGlobalLookup.isEmpty()) {
             capabilitiesCallback.processCapabilitiesReceived(Optional.of(matchedDiscoveryEntries));
         } else {
-            asyncGetGlobalCapabilitities(gbids,
-                                         domainsForGlobalLookup.toArray(new String[domainsForGlobalLookup.size()]),
-                                         interfaceName,
-                                         matchedDiscoveryEntries,
-                                         discoveryQos.getDiscoveryTimeout(),
-                                         capabilitiesCallback);
+            asyncGetGlobalCapabilities(gbids,
+                                       domainsForGlobalLookup.toArray(new String[domainsForGlobalLookup.size()]),
+                                       interfaceName,
+                                       discoveryQos,
+                                       matchedDiscoveryEntries,
+                                       capabilitiesCallback);
         }
     }
 
@@ -1084,11 +1084,19 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 @Override
                 public void onSuccess(GlobalDiscoveryEntry newGlobalDiscoveryEntry) {
                     if (newGlobalDiscoveryEntry != null) {
-                        registerIncomingEndpoints(Arrays.asList(newGlobalDiscoveryEntry));
-                        globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
-                        // No need to filter the received GDE by GBIDs: already done in GCD
-                        capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                                       newGlobalDiscoveryEntry)));
+                        Optional<DiscoveryEntry> localStoreEntry = localDiscoveryEntryStore.lookup(participantId,
+                                                                                                   Long.MAX_VALUE);
+                        if (localStoreEntry.isPresent()) {
+                            capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                                           localStoreEntry.get())));
+
+                        } else {
+                            registerIncomingEndpoints(Arrays.asList(newGlobalDiscoveryEntry));
+                            globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
+                            // No need to filter the received GDE by GBIDs: already done in GCD
+                            capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                                           newGlobalDiscoveryEntry)));
+                        }
                     } else {
                         capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
                     }
@@ -1117,12 +1125,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     /**
      * mixes in the localDiscoveryEntries to global capabilities found by participantId
      */
-    private void asyncGetGlobalCapabilitities(final String[] gbids,
-                                              final String[] domains,
-                                              final String interfaceName,
-                                              Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries2,
-                                              long discoveryTimeout,
-                                              final CapabilitiesCallback capabilitiesCallback) {
+    private void asyncGetGlobalCapabilities(final String[] gbids,
+                                            final String[] domains,
+                                            final String interfaceName,
+                                            DiscoveryQos discoveryQos,
+                                            Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries2,
+                                            final CapabilitiesCallback capabilitiesCallback) {
 
         final Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = localDiscoveryEntries2 == null
                 ? new LinkedList<DiscoveryEntryWithMetaInfo>()
@@ -1133,14 +1141,39 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             @Override
             public void onSuccess(List<GlobalDiscoveryEntry> globalDiscoverEntries) {
                 if (globalDiscoverEntries != null) {
-                    registerIncomingEndpoints(globalDiscoverEntries);
-                    globalDiscoveryEntryCache.add(globalDiscoverEntries);
-                    Collection<DiscoveryEntryWithMetaInfo> allDisoveryEntries = new ArrayList<DiscoveryEntryWithMetaInfo>(globalDiscoverEntries.size()
-                            + localDiscoveryEntries.size());
-                    // No need to filter the received GDEs by GBIDs: already done in GCD
-                    allDisoveryEntries.addAll(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoList(false,
-                                                                                                      globalDiscoverEntries));
-                    allDisoveryEntries.addAll(localDiscoveryEntries);
+                    Collection<DiscoveryEntryWithMetaInfo> allDisoveryEntries = new ArrayList<DiscoveryEntryWithMetaInfo>();
+                    Collection<String> addedParticipantIds = new ArrayList<String>();
+                    synchronized (globalDiscoveryEntryCache) {
+                        for (GlobalDiscoveryEntry entry : globalDiscoverEntries) {
+                            Optional<DiscoveryEntry> localStoreEntry = localDiscoveryEntryStore.lookup(entry.getParticipantId(),
+                                                                                                       Long.MAX_VALUE);
+                            if (localStoreEntry.isPresent()) {
+                                DiscoveryEntry localEntry = localStoreEntry.get();
+                                boolean returnLocalEntry = !(discoveryQos.getDiscoveryScope()
+                                                                         .equals(DiscoveryScope.GLOBAL_ONLY))
+                                        || localEntry.getQos().getScope().equals(ProviderScope.GLOBAL);
+                                Set<String> domainSet = new HashSet<String>(Arrays.asList(domains));
+                                if (returnLocalEntry && interfaceName.equals(localEntry.getInterfaceName())
+                                        && domainSet.contains(localEntry.getDomain())) {
+                                    addedParticipantIds.add(entry.getParticipantId());
+                                    allDisoveryEntries.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                               localStoreEntry.get()));
+                                }
+                                continue;
+                            }
+                            registerIncomingEndpoints(Arrays.asList(entry));
+                            globalDiscoveryEntryCache.add(entry);
+                            addedParticipantIds.add(entry.getParticipantId());
+
+                            // No need to filter the received GDEs by GBIDs: already done in GCD
+                            allDisoveryEntries.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
+                        }
+                    }
+                    for (DiscoveryEntryWithMetaInfo entry : localDiscoveryEntries) {
+                        if (!addedParticipantIds.contains(entry.getParticipantId())) {
+                            allDisoveryEntries.add(entry);
+                        }
+                    }
                     capabilitiesCallback.processCapabilitiesReceived(Optional.of(allDisoveryEntries));
                 } else {
                     capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
@@ -1164,7 +1197,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                              exception);
                 capabilitiesCallback.onError(exception);
             }
-        }, domains, interfaceName, discoveryTimeout, gbids);
+        }, domains, interfaceName, discoveryQos.getDiscoveryTimeout(), gbids);
     }
 
     @Override

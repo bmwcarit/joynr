@@ -398,6 +398,7 @@ public class LocalDiscoveryTest {
 
         doReturn(new HashSet<DiscoveryEntry>()).when(globalDiscoveryEntryCacheMock)
                                                .lookup(any(String[].class), eq(interfaceName), anyLong());
+        doReturn(Optional.empty()).when(localDiscoveryEntryStoreMock).lookup(anyString(), anyLong());
         doAnswer(createLookupAnswer(globalDiscoveryEntries)).when(globalCapabilitiesDirectoryClientMock)
                                                             .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                                     any(String[].class),
@@ -495,6 +496,7 @@ public class LocalDiscoveryTest {
 
         doReturn(localDiscoveryEntries).when(localDiscoveryEntryStoreMock)
                                        .lookup(any(String[].class), eq(interfaceName));
+        doReturn(Optional.empty()).when(localDiscoveryEntryStoreMock).lookup(anyString(), anyLong());
         doReturn(Arrays.asList(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(cachedDiscoveryEntry,
                                                                                    globalAddress))).when(globalDiscoveryEntryCacheMock)
                                                                                                    .lookup(eq(testDomains.toArray(new String[0])),

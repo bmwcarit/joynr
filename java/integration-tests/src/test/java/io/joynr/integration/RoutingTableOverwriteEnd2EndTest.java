@@ -54,7 +54,6 @@ import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import io.joynr.runtime.ProviderRegistrar;
 import io.joynr.servlet.ServletUtil;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
