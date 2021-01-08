@@ -22,6 +22,11 @@ option(
     ON
 )
 message(STATUS "option USE_DUMMY_KEYCHAIN=" ${USE_DUMMY_KEYCHAIN})
+option(
+    USE_REAL_KEYCHAIN
+    "Use the real keychain implementation?"
+    OFF
+)
 
 ##### Start of build ####################
 
@@ -31,13 +36,24 @@ message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 
+if(${USE_DUMMY_KEYCHAIN} AND ${USE_REAL_KEYCHAIN})
+    message(FATAL_ERROR "You need to set either USE_DUMMY_KEYCHAIN or USE_REAL_KEYCHAIN, but not both!")
+endif()
+
+set(KEYCHAIN_TARGET "")
+
 if(${USE_DUMMY_KEYCHAIN})
     find_package(dummyKeychain 0.0.1 REQUIRED)
     message(STATUS "dummyKeychain VERSION=${dummyKeychain_VERSION}")
     set(KEYCHAIN_TARGET dummyKeychain)
-else()
-    set(KEYCHAIN_TARGET "")
-endif(${USE_DUMMY_KEYCHAIN})
+    add_definitions(-DDUMMY_KEYCHAIN)
+endif()
+if(${USE_REAL_KEYCHAIN})
+    find_package(CertManager REQUIRED)
+    message(STATUS "CertManager: Using real keychain")
+    set(KEYCHAIN_TARGET CertManager::certmanager)
+    add_definitions(-DREAL_KEYCHAIN)
+endif(${USE_REAL_KEYCHAIN})
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
