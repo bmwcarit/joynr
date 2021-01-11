@@ -179,8 +179,11 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
                 given(). //
-                       queryParam("bp", "X.Y").and().queryParam("status", "unreachable").when().put(serverUrl
-                               + "/channel-123");
+                       queryParam("bp", "X.Y")
+                       .and()
+                       .queryParam("status", "unreachable")
+                       .when()
+                       .put(serverUrl + "/channel-123");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         assertNull(response.getHeader("Location"));
@@ -188,10 +191,11 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
         Mockito.verify(mock).getChannel("channel-123");
         Mockito.verify(mock).isBounceProxyForChannelResponding("channel-123");
         Mockito.verifyNoMoreInteractions(mock);
-        Mockito.verify(notifierMock).alertBounceProxyUnreachable("channel-123",
-                                                                 "X.Y",
-                                                                 "127.0.0.1",
-                                                                 "Bounce Proxy unreachable for Cluster Controller");
+        Mockito.verify(notifierMock)
+               .alertBounceProxyUnreachable("channel-123",
+                                            "X.Y",
+                                            "127.0.0.1",
+                                            "Bounce Proxy unreachable for Cluster Controller");
     }
 
     @Test
@@ -205,8 +209,11 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
 
         Response response = //
                 given(). //
-                       queryParam("bp", "X.Y").and().queryParam("status", "unreachable").when().put(serverUrl
-                               + "/channel-123");
+                       queryParam("bp", "X.Y")
+                       .and()
+                       .queryParam("status", "unreachable")
+                       .when()
+                       .put(serverUrl + "/channel-123");
 
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals("http://joyn-bp1.muc/bp/channels/channel-123", response.getHeader("Location"));
@@ -215,10 +222,11 @@ public class ChannelRecoveryTest extends AbstractChannelSetUpTest {
         Mockito.verify(mock).isBounceProxyForChannelResponding("channel-123");
         Mockito.verify(mock).createChannel("channel-123", null);
         Mockito.verifyNoMoreInteractions(mock);
-        Mockito.verify(notifierMock).alertBounceProxyUnreachable("channel-123",
-                                                                 "X.Y",
-                                                                 "127.0.0.1",
-                                                                 "Bounce Proxy unreachable for Channel Service");
+        Mockito.verify(notifierMock)
+               .alertBounceProxyUnreachable("channel-123",
+                                            "X.Y",
+                                            "127.0.0.1",
+                                            "Bounce Proxy unreachable for Channel Service");
     }
 
 }

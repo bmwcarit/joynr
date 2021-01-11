@@ -294,10 +294,11 @@ public class PublicationManagerTest {
                 onReceiveSemaphore.release();
                 return null;
             }
-        }).when(dispatcher).sendSubscriptionPublication(eq(providerId),
-                                                        (Set<String>) argThat(contains(proxyId)),
-                                                        any(SubscriptionPublication.class),
-                                                        any(MessagingQos.class));
+        }).when(dispatcher)
+          .sendSubscriptionPublication(eq(providerId),
+                                       (Set<String>) argThat(contains(proxyId)),
+                                       any(SubscriptionPublication.class),
+                                       any(MessagingQos.class));
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
 

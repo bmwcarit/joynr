@@ -1503,9 +1503,10 @@ public class LocalCapabilitiesDirectoryTest {
                                                                 publicKeyId,
                                                                 globalAddress1Serialized);
 
-        doReturn(Arrays.asList(capInfo)).when(globalDiscoveryEntryCacheMock).lookup(eq(domainsForLookup),
-                                                                                    eq(interfaceName),
-                                                                                    eq(discoveryQos.getCacheMaxAge()));
+        doReturn(Arrays.asList(capInfo)).when(globalDiscoveryEntryCacheMock)
+                                        .lookup(eq(domainsForLookup),
+                                                eq(interfaceName),
+                                                eq(discoveryQos.getCacheMaxAge()));
 
         Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                              interfaceName,
@@ -1845,8 +1846,8 @@ public class LocalCapabilitiesDirectoryTest {
         String participantId = discoveryEntry.getParticipantId();
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
 
-        doReturn(Optional.of(globalDiscoveryEntry)).when(globalDiscoveryEntryCacheMock).lookup(eq(participantId),
-                                                                                               anyLong());
+        doReturn(Optional.of(globalDiscoveryEntry)).when(globalDiscoveryEntryCacheMock)
+                                                   .lookup(eq(participantId), anyLong());
 
         Promise<Lookup4Deferred> lookupPromise = localCapabilitiesDirectory.lookup(participantId,
                                                                                    discoveryQos,

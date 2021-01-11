@@ -63,8 +63,8 @@ public class MultipleControlledBounceProxiesTest {
         /* @formatter:on */
         assertThat(listBps,
                    allOf( //
-                          anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")), //
-                          anyOf(containsBounceProxy("A.B", "ALIVE"), containsBounceProxy("A.B", "ACTIVE"))));
+                         anyOf(containsBounceProxy("X.Y", "ALIVE"), containsBounceProxy("X.Y", "ACTIVE")), //
+                         anyOf(containsBounceProxy("A.B", "ALIVE"), containsBounceProxy("A.B", "ACTIVE"))));
 
         // create channel on bounce proxy
         /* @formatter:off */

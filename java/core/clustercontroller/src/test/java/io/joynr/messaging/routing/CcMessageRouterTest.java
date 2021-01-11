@@ -265,8 +265,8 @@ public class CcMessageRouterTest {
             }
         };
 
-        testModule = Modules.override(new JsonMessageSerializerModule()).with(mockModule,
-                                                                              new TestGlobalAddressModule());
+        testModule = Modules.override(new JsonMessageSerializerModule())
+                            .with(mockModule, new TestGlobalAddressModule());
 
         injector = Guice.createInjector(Modules.override(testModule).with(new AbstractModule() {
             @Override
@@ -437,9 +437,10 @@ public class CcMessageRouterTest {
     }
 
     private ImmutableMessage retryRoutingWith1msDelay(MessageRouter messageRouter, int ttlMs) throws Exception {
-        doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock).transmit(any(ImmutableMessage.class),
-                                                                                            any(SuccessAction.class),
-                                                                                            any(FailureAction.class));
+        doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock)
+                                                          .transmit(any(ImmutableMessage.class),
+                                                                    any(SuccessAction.class),
+                                                                    any(FailureAction.class));
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(ttlMs).getValue());
         joynrMessage.setTtlAbsolute(true);
 
@@ -663,9 +664,10 @@ public class CcMessageRouterTest {
 
     @Test
     public void testMessageProcessedListenerCalledForAbortedMessage() throws Exception {
-        doThrow(new JoynrMessageNotSentException("test")).when(messagingStubMock).transmit(any(ImmutableMessage.class),
-                                                                                           any(SuccessAction.class),
-                                                                                           any(FailureAction.class));
+        doThrow(new JoynrMessageNotSentException("test")).when(messagingStubMock)
+                                                         .transmit(any(ImmutableMessage.class),
+                                                                   any(SuccessAction.class),
+                                                                   any(FailureAction.class));
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
@@ -678,9 +680,10 @@ public class CcMessageRouterTest {
         final long routingMaxRetryCount = 0;
         MessageRouter messageRouterWithMaxRetryCount = getMessageRouterWithMaxRetryCount(routingMaxRetryCount);
 
-        doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock).transmit(any(ImmutableMessage.class),
-                                                                                            any(SuccessAction.class),
-                                                                                            any(FailureAction.class));
+        doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock)
+                                                          .transmit(any(ImmutableMessage.class),
+                                                                    any(SuccessAction.class),
+                                                                    any(FailureAction.class));
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
@@ -1118,8 +1121,8 @@ public class CcMessageRouterTest {
                 callback.hasConsumerPermission(true);
                 return null;
             }
-        }).when(accessControllerMock).hasConsumerPermission(any(ImmutableMessage.class),
-                                                            any(HasConsumerPermissionCallback.class));
+        }).when(accessControllerMock)
+          .hasConsumerPermission(any(ImmutableMessage.class), any(HasConsumerPermissionCallback.class));
 
         // JoynrMessageNotSentException will be thrown because of expired message.
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
@@ -1152,8 +1155,8 @@ public class CcMessageRouterTest {
                 callback.hasConsumerPermission(true);
                 return null;
             }
-        }).when(accessControllerMock).hasConsumerPermission(any(ImmutableMessage.class),
-                                                            any(HasConsumerPermissionCallback.class));
+        }).when(accessControllerMock)
+          .hasConsumerPermission(any(ImmutableMessage.class), any(HasConsumerPermissionCallback.class));
 
         // JoynrRuntimeException will be thrown because relative ttl is not supported
         joynrMessage.setTtlAbsolute(false);
@@ -1185,8 +1188,8 @@ public class CcMessageRouterTest {
                 callback.hasConsumerPermission(false);
                 return null;
             }
-        }).when(accessControllerMock).hasConsumerPermission(any(ImmutableMessage.class),
-                                                            any(HasConsumerPermissionCallback.class));
+        }).when(accessControllerMock)
+          .hasConsumerPermission(any(ImmutableMessage.class), any(HasConsumerPermissionCallback.class));
 
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 

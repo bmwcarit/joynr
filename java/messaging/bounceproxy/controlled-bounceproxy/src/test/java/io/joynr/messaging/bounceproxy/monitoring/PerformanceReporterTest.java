@@ -205,9 +205,9 @@ public class PerformanceReporterTest {
         // HttpResponse is set as out parameter of the handle method. The way to
         // set out parameters with Mockito is to use doAnswer
         Answer<Void> answerForHttpResponse = MockitoTestUtils.createAnswerForHttpResponse(HttpStatus.SC_NO_CONTENT);
-        Mockito.doAnswer(answerForHttpResponse).when(mockHandler).handle(any(HttpRequest.class),
-                                                                         any(HttpResponse.class),
-                                                                         any(HttpContext.class));
+        Mockito.doAnswer(answerForHttpResponse)
+               .when(mockHandler)
+               .handle(any(HttpRequest.class), any(HttpResponse.class), any(HttpContext.class));
     }
 
     private Map<String, Integer> createPerformanceMap(int activeLongPolls, int assignedChannels) {

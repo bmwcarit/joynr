@@ -234,8 +234,8 @@ public class CapabilitiesRegistrarTest {
 
     @Test
     public void unregisterProvider_succeeded() {
-        doAnswer(createRemoveAnswerWithSuccess()).when(localDiscoveryAggregator).remove(Matchers.<Callback<Void>> any(),
-                                                                                        eq(participantId));
+        doAnswer(createRemoveAnswerWithSuccess()).when(localDiscoveryAggregator)
+                                                 .remove(Matchers.<Callback<Void>> any(), eq(participantId));
         try {
             Future<Void> future = registrar.unregisterProvider(domain, testProvider);
             verify(localDiscoveryAggregator).remove(Matchers.<Callback<Void>> any(), eq(participantId));

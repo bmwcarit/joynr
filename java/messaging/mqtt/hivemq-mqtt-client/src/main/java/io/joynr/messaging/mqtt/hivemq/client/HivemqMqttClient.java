@@ -114,26 +114,25 @@ public class HivemqMqttClient implements JoynrMqttClient {
         if (!isReceiver || publishesDisposable != null) {
             return;
         }
-        publishesDisposable = client.publishes(MqttGlobalPublishFilter.ALL).subscribe(this::handleIncomingMessage,
-                                                                                      throwable -> {
-                                                                                          if (!cleanSession
-                                                                                                  && throwable instanceof MqttSessionExpiredException) {
-                                                                                              logger.warn("{}: MqttSessionExpiredException encountered in publish callback, trying to resubscribe.",
-                                                                                                          clientInformation,
-                                                                                                          throwable);
-                                                                                          } else {
-                                                                                              logger.error("{}: Error encountered in publish callback, trying to resubscribe.",
-                                                                                                           clientInformation,
-                                                                                                           throwable);
-                                                                                          }
-                                                                                          synchronized (this) {
-                                                                                              if (publishesDisposable != null) {
-                                                                                                  publishesDisposable.dispose();
-                                                                                                  publishesDisposable = null;
-                                                                                              }
-                                                                                              registerPublishCallback();
-                                                                                          }
-                                                                                      });
+        publishesDisposable = client.publishes(MqttGlobalPublishFilter.ALL)
+                                    .subscribe(this::handleIncomingMessage, throwable -> {
+                                        if (!cleanSession && throwable instanceof MqttSessionExpiredException) {
+                                            logger.warn("{}: MqttSessionExpiredException encountered in publish callback, trying to resubscribe.",
+                                                        clientInformation,
+                                                        throwable);
+                                        } else {
+                                            logger.error("{}: Error encountered in publish callback, trying to resubscribe.",
+                                                         clientInformation,
+                                                         throwable);
+                                        }
+                                        synchronized (this) {
+                                            if (publishesDisposable != null) {
+                                                publishesDisposable.dispose();
+                                                publishesDisposable = null;
+                                            }
+                                            registerPublishCallback();
+                                        }
+                                    });
     }
 
     String getClientInformationString() {

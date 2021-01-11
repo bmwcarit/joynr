@@ -109,9 +109,10 @@ public class RemoteBounceProxyFacadeTest {
         ControlledBounceProxyInformation bpInfo = new ControlledBounceProxyInformation("X.Y", URI.create(serverUrl));
         URI channelUri = bpFacade.createChannel(bpInfo, "channel-123", "trackingId-123");
 
-        Mockito.verify(handler).handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
-                                       Mockito.any(HttpResponse.class),
-                                       Mockito.any(HttpContext.class));
+        Mockito.verify(handler)
+               .handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
+                       Mockito.any(HttpResponse.class),
+                       Mockito.any(HttpContext.class));
         Assert.assertEquals("http://www.joynX.de/channels", channelUri.toString());
     }
 
@@ -149,9 +150,10 @@ public class RemoteBounceProxyFacadeTest {
         } catch (JoynrProtocolException e) {
 
         }
-        Mockito.verify(handler).handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
-                                       Mockito.any(HttpResponse.class),
-                                       Mockito.any(HttpContext.class));
+        Mockito.verify(handler)
+               .handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
+                       Mockito.any(HttpResponse.class),
+                       Mockito.any(HttpContext.class));
     }
 
     @Test
@@ -166,9 +168,10 @@ public class RemoteBounceProxyFacadeTest {
         } catch (JoynrProtocolException e) {
 
         }
-        Mockito.verify(handler).handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
-                                       Mockito.any(HttpResponse.class),
-                                       Mockito.any(HttpContext.class));
+        Mockito.verify(handler)
+               .handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
+                       Mockito.any(HttpResponse.class),
+                       Mockito.any(HttpContext.class));
     }
 
     @Test
@@ -183,9 +186,10 @@ public class RemoteBounceProxyFacadeTest {
         } catch (JoynrProtocolException e) {
 
         }
-        Mockito.verify(handler).handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
-                                       Mockito.any(HttpResponse.class),
-                                       Mockito.any(HttpContext.class));
+        Mockito.verify(handler)
+               .handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
+                       Mockito.any(HttpResponse.class),
+                       Mockito.any(HttpContext.class));
     }
 
     @Test
@@ -200,9 +204,10 @@ public class RemoteBounceProxyFacadeTest {
         } catch (JoynrProtocolException e) {
 
         }
-        Mockito.verify(handler).handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
-                                       Mockito.any(HttpResponse.class),
-                                       Mockito.any(HttpContext.class));
+        Mockito.verify(handler)
+               .handle(Mockito.argThat(new IsCreateChannelHttpRequest("channel-123", "trackingId-123")),
+                       Mockito.any(HttpResponse.class),
+                       Mockito.any(HttpContext.class));
     }
 
     /**
@@ -231,8 +236,8 @@ public class RemoteBounceProxyFacadeTest {
                 return null;
             }
         };
-        Mockito.doAnswer(answerForHttpResponse).when(handler).handle(any(HttpRequest.class),
-                                                                     any(HttpResponse.class),
-                                                                     any(HttpContext.class));
+        Mockito.doAnswer(answerForHttpResponse)
+               .when(handler)
+               .handle(any(HttpRequest.class), any(HttpResponse.class), any(HttpContext.class));
     }
 }

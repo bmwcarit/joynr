@@ -152,12 +152,13 @@ public abstract class AbstractMqttMultipleBackendTest {
                 cdl.countDown();
                 return null;
             }
-        }).when(joynrMqttClient).publishMessage(anyString(),
-                                                any(byte[].class),
-                                                anyInt(),
-                                                anyLong(),
-                                                any(SuccessAction.class),
-                                                any(FailureAction.class));
+        }).when(joynrMqttClient)
+          .publishMessage(anyString(),
+                          any(byte[].class),
+                          anyInt(),
+                          anyLong(),
+                          any(SuccessAction.class),
+                          any(FailureAction.class));
         return cdl;
     }
 

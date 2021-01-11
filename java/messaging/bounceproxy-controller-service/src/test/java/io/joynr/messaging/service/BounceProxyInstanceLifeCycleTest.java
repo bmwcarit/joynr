@@ -85,13 +85,13 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
                 given() //
-                        .queryParam("url4cc", "http://testurl/url4cc")
-                        .and()
-                        .queryParam("url4bpc", "http://testurl/url4bpc")
-                        //
-                        .when()
-                        //
-                        .put(serverUrl + "?bpid=0.0");
+                       .queryParam("url4cc", "http://testurl/url4cc")
+                       .and()
+                       .queryParam("url4bpc", "http://testurl/url4bpc")
+                       //
+                       .when()
+                       //
+                       .put(serverUrl + "?bpid=0.0");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         assertNull(response.getHeader("Location"));
@@ -107,15 +107,15 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
                 given() //
-                        .queryParam("url4cc", "http://testurl/url4cc")
-                        //
-                        .and()
-                        //
-                        .queryParam("url4bpc", "http://testurl/url4bpc")
-                        //
-                        .when()
-                        //
-                        .put(serverUrl + "?bpid=0.0");
+                       .queryParam("url4cc", "http://testurl/url4cc")
+                       //
+                       .and()
+                       //
+                       .queryParam("url4bpc", "http://testurl/url4bpc")
+                       //
+                       .when()
+                       //
+                       .put(serverUrl + "?bpid=0.0");
 
         assertEquals(201 /* Created */, response.getStatusCode());
         assertEquals("http://testurl/url4bpc", response.getHeader("Location"));
@@ -131,13 +131,13 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
                 given() //
-                        .when()
-                        //
-                        .contentType(ContentType.JSON)
-                        //
-                        .body("{\"activeLongPolls\":5}")
-                        //
-                        .post(serverUrl + "0.0/performance");
+                       .when()
+                       //
+                       .contentType(ContentType.JSON)
+                       //
+                       .body("{\"activeLongPolls\":5}")
+                       //
+                       .post(serverUrl + "0.0/performance");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         Mockito.verify(mock)
@@ -155,13 +155,13 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
                 given() //
-                        .when()
-                        //
-                        .contentType(ContentType.JSON)
-                        //
-                        .body("{\"activeLongPolls\":5}")
-                        //
-                        .post(serverUrl + "0.0/performance");
+                       .when()
+                       //
+                       .contentType(ContentType.JSON)
+                       //
+                       .body("{\"activeLongPolls\":5}")
+                       //
+                       .post(serverUrl + "0.0/performance");
 
         assertEquals(400 /* Bad Request */, response.getStatusCode());
         assertEquals(String.format("{\"_typeName\":\"Error\",\"code\":%d,\"reason\":\"%s: bounce proxy '0.0'\"}",
@@ -195,13 +195,13 @@ public class BounceProxyInstanceLifeCycleTest extends AbstractServiceInterfaceTe
 
         Response response = //
                 given() //
-                        .when()
-                        //
-                        .contentType(ContentType.JSON)
-                        //
-                        .body("{ \"active\" : 5 }")
-                        //
-                        .post(serverUrl + "0.0/performance");
+                       .when()
+                       //
+                       .contentType(ContentType.JSON)
+                       //
+                       .body("{ \"active\" : 5 }")
+                       //
+                       .post(serverUrl + "0.0/performance");
 
         assertEquals(204 /* No Content */, response.getStatusCode());
         Mockito.verify(mock).updatePerformanceMeasures("0.0", new PerformanceMeasures());

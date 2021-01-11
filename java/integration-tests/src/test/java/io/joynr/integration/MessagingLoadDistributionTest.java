@@ -157,8 +157,13 @@ public class MessagingLoadDistributionTest {
 
         byte[] serializedMessage = bpMock.createImmutableMessage(relativeTtlMs, payload).getSerializedMessage();
         /* @formatter:off */
-        bpMock.onrequest().with().body(serializedMessage).expect().statusCode(201).when().post("message;jsessionid="
-                + sessionId);
+        bpMock.onrequest()
+              .with()
+              .body(serializedMessage)
+              .expect()
+              .statusCode(201)
+              .when()
+              .post("message;jsessionid=" + sessionId);
         /* @formatter:on */
         RestAssured.baseURI = previousBaseUri;
     }

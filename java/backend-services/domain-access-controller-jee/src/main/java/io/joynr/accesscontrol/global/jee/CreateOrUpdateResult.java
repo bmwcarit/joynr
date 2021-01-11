@@ -26,8 +26,8 @@ public class CreateOrUpdateResult<T> {
     private final T entry;
 
     public CreateOrUpdateResult(T entry, ChangeType changeType) {
-        assert changeType == ChangeType.ADD
-                || changeType == ChangeType.UPDATE : "CreateOrUpdateResult change type must be one of ADD or UPDATE";
+        assert changeType == ChangeType.ADD || changeType == ChangeType.UPDATE
+                : "CreateOrUpdateResult change type must be one of ADD or UPDATE";
         this.entry = entry;
         this.changeType = changeType;
     }

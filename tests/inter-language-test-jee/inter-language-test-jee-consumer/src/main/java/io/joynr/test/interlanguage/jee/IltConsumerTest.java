@@ -51,8 +51,8 @@ public abstract class IltConsumerTest {
         logger.info("setUp: Entering");
         if (testInterfaceProxy == null) {
             logger.info("setUp: testInterfaceProxy == null");
-            testInterfaceProxy = IltConsumerHelper.getServiceLocator().get(TestInterfaceSync.class,
-                                                                           "joynr-inter-language-test-domain");
+            testInterfaceProxy = IltConsumerHelper.getServiceLocator()
+                                                  .get(TestInterfaceSync.class, "joynr-inter-language-test-domain");
         }
         logger.info("setUp: Leaving");
     }

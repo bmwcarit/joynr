@@ -178,8 +178,12 @@ public class HttpCommunicationManagerTest {
 
         // post to the channel to see if it exists
 
-        onrequest(1000).with().body(serializedMessage).expect().statusCode(201).when().post("channels/" + testChannelId
-                + "/message/");
+        onrequest(1000).with()
+                       .body(serializedMessage)
+                       .expect()
+                       .statusCode(201)
+                       .when()
+                       .post("channels/" + testChannelId + "/message/");
 
         longpollingMessageReceiver.shutdown(true);
 

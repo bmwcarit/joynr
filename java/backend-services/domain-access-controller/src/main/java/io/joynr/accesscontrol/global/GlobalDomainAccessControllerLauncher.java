@@ -94,8 +94,8 @@ public class GlobalDomainAccessControllerLauncher extends AbstractJoynrApplicati
                             joynrDefaultProperties.getProperty(PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID));
         }
 
-        return Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule(),
-                                                                     new GlobalDomainAccessControllerModule());
+        return Modules.override(new CCInProcessRuntimeModule())
+                      .with(new HivemqMqttClientModule(), new GlobalDomainAccessControllerModule());
     }
 
     private static void waitUntilShutdownRequested() {

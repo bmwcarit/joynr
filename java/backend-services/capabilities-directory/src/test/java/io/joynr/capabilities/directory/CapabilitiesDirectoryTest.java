@@ -431,8 +431,8 @@ public class CapabilitiesDirectoryTest {
                                                                                 validGbids[2]);
         gdep3.setParticipantId(gdep3.getGbid());
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(gdep3);
-        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock).lookup(any(String[].class),
-                                                                                          anyString());
+        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock)
+                                                    .lookup(any(String[].class), anyString());
 
         Promise<Lookup1Deferred> promise = subject.lookup(DOMAINS.clone(), INTERFACE_NAME);
 
@@ -459,8 +459,8 @@ public class CapabilitiesDirectoryTest {
         gdep3.setParticipantId(gdep3.getGbid());
         GlobalDiscoveryEntry expectedEntry1 = new GlobalDiscoveryEntry(gdep1);
         GlobalDiscoveryEntry expectedEntry2 = new GlobalDiscoveryEntry(gdep3);
-        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock).lookup(any(String[].class),
-                                                                                          anyString());
+        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock)
+                                                    .lookup(any(String[].class), anyString());
 
         Promise<Lookup2Deferred> promise = subject.lookup(DOMAINS.clone(),
                                                           INTERFACE_NAME,
@@ -528,8 +528,8 @@ public class CapabilitiesDirectoryTest {
                                                                                 validGbids[2]);
         gdep3.setParticipantId(gdep3.getGbid());
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(gdep3);
-        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock).lookup(any(String[].class),
-                                                                                          anyString());
+        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock)
+                                                    .lookup(any(String[].class), anyString());
 
         Promise<Lookup2Deferred> promise = subject.lookup(DOMAINS.clone(), INTERFACE_NAME, new String[]{ "" });
 
@@ -556,8 +556,8 @@ public class CapabilitiesDirectoryTest {
         gdep3.setParticipantId(gdep3.getGbid());
         GlobalDiscoveryEntry expectedEntry2 = new GlobalDiscoveryEntry(gdep2);
         GlobalDiscoveryEntry expectedEntry3 = new GlobalDiscoveryEntry(gdep3);
-        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock).lookup(any(String[].class),
-                                                                                          anyString());
+        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock)
+                                                    .lookup(any(String[].class), anyString());
 
         Promise<Lookup2Deferred> promise = subject.lookup(DOMAINS.clone(),
                                                           INTERFACE_NAME,
@@ -591,8 +591,8 @@ public class CapabilitiesDirectoryTest {
                                                                                 validGbids[2]);
         gdep3.setParticipantId(gdep3.getGbid());
         GlobalDiscoveryEntry expectedEntry = new GlobalDiscoveryEntry(gdep3);
-        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock).lookup(any(String[].class),
-                                                                                          anyString());
+        doReturn(Arrays.asList(gdep1, gdep2, gdep3)).when(discoveryEntryStoreMock)
+                                                    .lookup(any(String[].class), anyString());
 
         Promise<Lookup2Deferred> promise = subject.lookup(DOMAINS.clone(),
                                                           INTERFACE_NAME,

@@ -194,11 +194,12 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                 callback.onSuccess(globalDiscoveryEntryList);
                 return null;
             }
-        }).when(gcdClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                  any(String[].class),
-                                  anyString(),
-                                  anyLong(),
-                                  any(String[].class));
+        }).when(gcdClient)
+          .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                  any(String[].class),
+                  anyString(),
+                  anyLong(),
+                  any(String[].class));
 
         ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(TESTDOMAIN, testProxy.class);
         proxyBuilder.setDiscoveryQos(discoveryQos);
@@ -233,10 +234,11 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                 callback.onSuccess(null);
                 return null;
             }
-        }).when(gcdClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                               gdeCaptor.capture(),
-                               anyLong(),
-                               any(String[].class));
+        }).when(gcdClient)
+          .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+               gdeCaptor.capture(),
+               anyLong(),
+               any(String[].class));
 
         Future<Void> future = joynrRuntime.getProviderRegistrar(TESTDOMAIN, provider)
                                           .withProviderQos(providerQos)
