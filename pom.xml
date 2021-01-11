@@ -1074,7 +1074,7 @@
 									<pluginExecutionFilter>
 										<groupId>net.revelc.code.formatter</groupId>
 										<artifactId>formatter-maven-plugin</artifactId>
-										<versionRange>[2.7.4,)</versionRange>
+										<versionRange>[2.13.0,)</versionRange>
 										<goals>
 											<goal>format</goal>
 										</goals>
@@ -1494,7 +1494,7 @@
 				<plugin>
 					<groupId>net.revelc.code.formatter</groupId>
 					<artifactId>formatter-maven-plugin</artifactId>
-					<version>2.7.4</version>
+					<version>2.13.0</version>
 					<executions>
 						<execution>
 							<goals>
