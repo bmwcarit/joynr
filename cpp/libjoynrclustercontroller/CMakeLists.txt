@@ -16,8 +16,6 @@ generate_export_header(
 
 add_subdirectory(access-control)
 add_subdirectory(capabilities-directory)
-add_subdirectory(httpnetworking)
-add_subdirectory(http-communication-manager)
 add_subdirectory(messaging)
 add_subdirectory(mqtt)
 add_subdirectory(uds)
@@ -57,8 +55,6 @@ target_link_libraries(${PROJECT_NAME}
 target_link_objlibraries(${PROJECT_NAME}
     PUBLIC JoynrCCLib::AccessControl
     PUBLIC JoynrCCLib::CapabilitiesDirectory
-    PUBLIC JoynrCCLib::HttpNetworking
-    PUBLIC JoynrCCLib::HttpCommunicationManager
     PUBLIC JoynrCCLib::CcJoynrMessaging
     PUBLIC JoynrCCLib::CcMessaging
     PUBLIC JoynrCCLib::Mqtt
