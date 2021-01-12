@@ -1,10 +1,6 @@
 project(CcJoynrMessaging)
 
 set(SOURCES
-    HttpMessagingStub.cpp
-    HttpMessagingStub.h
-    HttpMessagingStubFactory.cpp
-    HttpMessagingStubFactory.h
     MqttMessagingStub.cpp
     MqttMessagingStub.h
     MqttMessagingStubFactory.cpp

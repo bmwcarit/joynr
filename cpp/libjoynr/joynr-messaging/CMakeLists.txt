@@ -9,7 +9,6 @@ set(SOURCES
     DiscoveryResult.cpp
     DummyPlatformSecurityManager.cpp
     GuidedProxyBuilder.cpp
-    HttpMulticastAddressCalculator.cpp
     ImmutableMessage.cpp
     InterfaceAddress.cpp
     LibJoynrMessageRouter.cpp
@@ -38,7 +37,6 @@ set(PUBLIC_HEADERS
     include/joynr/DiscoveryResult.h
     include/joynr/Dispatcher.h
     include/joynr/GuidedProxyBuilder.h
-    include/joynr/HttpMulticastAddressCalculator.h
     include/joynr/ImmutableMessage.h
     include/joynr/InProcessMessagingAddress.h
     include/joynr/InterfaceAddress.h
