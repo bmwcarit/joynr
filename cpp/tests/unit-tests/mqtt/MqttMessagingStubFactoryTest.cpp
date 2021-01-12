@@ -21,7 +21,6 @@
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
@@ -44,9 +43,7 @@ public:
                                      "localhost",
                                      42,
                                      "path"),
-              webSocketClientAddress("clientId"),
-              channelAddress("endPointUrl", "channelId"),
-              browserAddress("windowId")
+              webSocketClientAddress("clientId")
     {
     }
 
@@ -56,8 +53,6 @@ protected:
     joynr::system::RoutingTypes::MqttAddress mqttAddress;
     joynr::system::RoutingTypes::WebSocketAddress webSocketServerAddress;
     joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
-    joynr::system::RoutingTypes::ChannelAddress channelAddress;
-    joynr::system::RoutingTypes::BrowserAddress browserAddress;
 };
 
 TEST_F(MqttMessagingStubFactoryTest, canCreateMqttAddressses)
@@ -82,8 +77,6 @@ TEST_F(MqttMessagingStubFactoryTest, canOnlyCreateMqttAddressses)
     auto mockMessageSender = std::make_shared<MockTransportMessageSender>();
     MqttMessagingStubFactory factory(mockMessageSender, testGbid);
 
-    EXPECT_FALSE(factory.canCreate(channelAddress));
-    EXPECT_FALSE(factory.canCreate(browserAddress));
     EXPECT_FALSE(factory.canCreate(webSocketClientAddress));
     EXPECT_FALSE(factory.canCreate(webSocketServerAddress));
 }
@@ -113,8 +106,6 @@ TEST_F(MqttMessagingStubFactoryTest, createReturnsNullStubForWrongAddressType)
 
     EXPECT_TRUE(factory.create(webSocketClientAddress).get() == nullptr);
     EXPECT_TRUE(factory.create(webSocketServerAddress).get() == nullptr);
-    EXPECT_TRUE(factory.create(channelAddress).get() == nullptr);
-    EXPECT_TRUE(factory.create(browserAddress).get() == nullptr);
 }
 
 } // namespace joynr

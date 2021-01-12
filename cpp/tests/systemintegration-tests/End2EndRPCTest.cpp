@@ -204,10 +204,6 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(Http,
-                        End2EndRPCTest,
-                        testing::Values("test-resources/HttpSystemIntegrationTest1.settings"s));
-
 INSTANTIATE_TEST_CASE_P(Mqtt,
                         End2EndRPCTest,
                         testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));

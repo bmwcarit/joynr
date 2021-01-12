@@ -68,7 +68,7 @@ public:
               capPublicKeyId("publicKeyId"),
               capLastSeenMs(0),
               capExpiryDateMs(1000),
-              capSerializedChannelAddress("testChannelId"),
+              capSerializedMqttAddress("{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"testGbid\",\"topic\":\"testTopic}"),
               gbids({"gbid1", "gbid2"}),
               messagingTtl(10000),
               capProviderQos(),
@@ -81,7 +81,7 @@ public:
                                    capLastSeenMs,
                                    capExpiryDateMs,
                                    capPublicKeyId,
-                                   capSerializedChannelAddress),
+                                   capSerializedMqttAddress),
               mockFuture(std::make_shared<joynr::Future<void>>()),
               onSuccess([]() {}),
               onError([](const types::DiscoveryError::Enum& /*error*/) {}),
@@ -125,7 +125,7 @@ protected:
     const std::string capPublicKeyId;
     const std::int64_t capLastSeenMs;
     const std::int64_t capExpiryDateMs;
-    const std::string capSerializedChannelAddress;
+    const std::string capSerializedMqttAddress;
     const std::vector<std::string> gbids;
     const std::int64_t messagingTtl;
     types::ProviderQos capProviderQos;
@@ -219,7 +219,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
-    gcdClient->reAdd(mockLCDStore, capSerializedChannelAddress);
+    gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
 
@@ -308,7 +308,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
-    gcdClient->reAdd(mockLCDStore, capSerializedChannelAddress);
+    gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
 
@@ -428,7 +428,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_noEntries_resultFutu
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
-    gcdClient->reAdd(mockLCDStore, capSerializedChannelAddress);
+    gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
 
@@ -466,7 +466,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_re
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
-    gcdClient->reAdd(mockLCDStore, capSerializedChannelAddress);
+    gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
 

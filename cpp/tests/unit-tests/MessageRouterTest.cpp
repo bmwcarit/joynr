@@ -27,7 +27,6 @@
 
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Semaphore.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/MessagingStubFactory.h"

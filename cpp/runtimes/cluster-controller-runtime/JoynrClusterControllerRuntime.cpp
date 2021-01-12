@@ -38,7 +38,6 @@
 #include "joynr/CcMessageRouter.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/Dispatcher.h"
-#include "joynr/HttpMulticastAddressCalculator.h"
 #include "joynr/IDispatcher.h"
 #include "joynr/IMessageSender.h"
 #include "joynr/IMulticastAddressCalculator.h"
@@ -82,7 +81,6 @@
 #include "joynr/system/MessageNotificationProvider.h"
 #include "joynr/system/ProviderReregistrationControllerProvider.h"
 #include "joynr/system/RoutingProvider.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/MqttProtocol.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
@@ -103,11 +101,7 @@
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h"
-#include "libjoynrclustercontroller/http-communication-manager/HttpMessagingSkeleton.h"
-#include "libjoynrclustercontroller/http-communication-manager/HttpReceiver.h"
-#include "libjoynrclustercontroller/http-communication-manager/HttpSender.h"
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
-#include "libjoynrclustercontroller/messaging/joynr-messaging/HttpMessagingStubFactory.h"
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 #include "libjoynrclustercontroller/mqtt/MqttSender.h"
@@ -129,18 +123,13 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
         std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
         std::shared_ptr<IKeychain> keyChain,
-        MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory,
-        std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver,
-        std::shared_ptr<ITransportMessageSender> httpMessageSender)
+        MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory)
         : JoynrRuntimeImpl(*settings, std::move(onFatalRuntimeError), std::move(keyChain)),
           _joynrDispatcher(),
           _subscriptionManager(),
           _messageSender(),
           _localCapabilitiesDirectory(nullptr),
           _libJoynrMessagingSkeleton(nullptr),
-          _httpMessageReceiver(httpMessageReceiver),
-          _httpMessageSender(httpMessageSender),
-          _httpMessagingSkeleton(nullptr),
           _mqttMessagingSkeletonFactory(std::move(mqttMessagingSkeletonFactory)),
           _dispatcherList(),
           _settings(std::move(settings)),
@@ -152,10 +141,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _wsSettings(*(this->_settings)),
           _wsCcMessagingSkeleton(nullptr),
           _wsTLSCcMessagingSkeleton(nullptr),
-          _httpMessagingIsRunning(false),
           _mqttMessagingIsRunning(false),
           _doMqttMessaging(false),
-          _doHttpMessaging(false),
           _wsMessagingStubFactory(),
           _multicastMessagingSkeletonDirectory(
                   std::make_shared<MulticastMessagingSkeletonDirectory>()),
@@ -268,12 +255,6 @@ void JoynrClusterControllerRuntime::init()
         addressCalculator = std::make_unique<joynr::MqttMulticastAddressCalculator>(
                 _clusterControllerSettings.getMqttMulticastTopicPrefix(), _availableGbids);
         _doMqttMessaging = true;
-    } else if (brokerProtocol == "HTTP" || brokerProtocol == "HTTPS") {
-        JOYNR_LOG_DEBUG(logger(), "HTTP-Messaging");
-        auto globalAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                defaultBrokerUrl.toString(), "");
-        addressCalculator = std::make_unique<joynr::HttpMulticastAddressCalculator>(globalAddress);
-        _doHttpMessaging = true;
     } else {
         JOYNR_LOG_FATAL(logger(), "invalid broker protocol in broker-url: {}", brokerProtocol);
         throw exceptions::JoynrRuntimeException(
@@ -293,25 +274,11 @@ void JoynrClusterControllerRuntime::init()
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
-    const bool httpMessageReceiverSupplied = _httpMessageReceiver != nullptr;
-
     MessagingPropertiesPersistence persist(
             _messagingSettings.getMessagingPropertiesPersistenceFilename());
     const std::string clusterControllerId = persist.getChannelId();
 
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
-
-    if (_doHttpMessaging) {
-        if (!httpMessageReceiverSupplied) {
-            JOYNR_LOG_DEBUG(logger(),
-                            "The http message receiver supplied is NULL, creating the default "
-                            "http MessageReceiver");
-
-            const std::string receiverId = persist.getReceiverId();
-            _httpMessageReceiver = std::make_shared<HttpReceiver>(
-                    _messagingSettings, clusterControllerId, receiverId);
-        }
-    }
 
     _clusterControllerSettings.printSettings();
     _libjoynrSettings.printSettings();
@@ -453,15 +420,6 @@ void JoynrClusterControllerRuntime::init()
                             capabilitiesDirectoryChannelId,
                             e.what());
         }
-    } else {
-        auto globalCapabilitiesDirectoryAddress =
-                std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-                        _messagingSettings.getCapabilitiesDirectoryUrl() +
-                                capabilitiesDirectoryChannelId + "/",
-                        capabilitiesDirectoryChannelId);
-        _ccMessageRouter->addProvisionedNextHop(capabilitiesDirectoryParticipantId,
-                                                std::move(globalCapabilitiesDirectoryAddress),
-                                                isGloballyVisible);
     }
 
     if (_clusterControllerSettings.isWebSocketEnabled()) {
@@ -500,36 +458,6 @@ void JoynrClusterControllerRuntime::init()
 
     /* CC */
     _libJoynrMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(_joynrDispatcher);
-
-    /**
-      * ClusterController side HTTP
-      *
-      */
-    if (_doHttpMessaging) {
-        if (!httpMessageReceiverSupplied) {
-            _httpMessagingSkeleton = std::make_shared<HttpMessagingSkeleton>(_ccMessageRouter);
-            auto httpMessagingSkeletonCopyForCapturing = _httpMessagingSkeleton;
-            _httpMessageReceiver
-                    ->registerReceiveCallback([httpMessagingSkeleton =
-                                                       httpMessagingSkeletonCopyForCapturing](
-                            smrf::ByteVector &&
-                            msg) { httpMessagingSkeleton->onMessageReceived(std::move(msg)); });
-        }
-
-        // create http message sender
-        if (!_httpMessageSender) {
-            JOYNR_LOG_DEBUG(logger(),
-                            "The http message sender supplied is NULL, creating the default "
-                            "http MessageSender");
-            _httpMessageSender = std::make_shared<HttpSender>(
-                    _messagingSettings.getBrokerUrl(),
-                    std::chrono::milliseconds(_messagingSettings.getSendMsgMaxTtl()),
-                    std::chrono::milliseconds(_messagingSettings.getSendMsgRetryInterval()));
-        }
-
-        messagingStubFactory->registerStubFactory(
-                std::make_shared<HttpMessagingStubFactory>(_httpMessageSender));
-    }
 
     /**
       * ClusterController side MQTT
@@ -934,23 +862,6 @@ JoynrClusterControllerRuntime::~JoynrClusterControllerRuntime()
 
 void JoynrClusterControllerRuntime::startExternalCommunication()
 {
-    if (_doHttpMessaging) {
-        if (!_httpMessagingIsRunning) {
-            if (_httpMessageReceiver) {
-                _httpMessageReceiver->startReceiveQueue();
-                _httpMessagingIsRunning = true;
-            } else {
-                static const exceptions::JoynrConfigurationException fatalError(
-                        "Message receiver deleted before starting external communication. External "
-                        "communication not possible.");
-                if (_onFatalRuntimeError) {
-                    _onFatalRuntimeError(fatalError);
-                }
-                JOYNR_LOG_ERROR(logger(), fatalError.getMessage());
-                return;
-            }
-        }
-    }
     if (_doMqttMessaging && !_mqttMessagingIsRunning) {
         for (const auto& connectionData : _mqttConnectionDataVector) {
             connectionData->getMosquittoConnection()->start();
@@ -962,12 +873,6 @@ void JoynrClusterControllerRuntime::startExternalCommunication()
 void JoynrClusterControllerRuntime::stopExternalCommunication()
 {
     // joynrDispatcher->stopExternalCommunication();
-    if (_doHttpMessaging) {
-        if (_httpMessagingIsRunning) {
-            _httpMessageReceiver->stopReceiveQueue();
-            _httpMessagingIsRunning = false;
-        }
-    }
     if (_doMqttMessaging && _mqttMessagingIsRunning) {
         for (const auto& connecton : _mqttConnectionDataVector) {
             connecton->getMosquittoConnection()->stop();
@@ -1016,7 +921,7 @@ void JoynrClusterControllerRuntime::shutdown()
         _localCapabilitiesDirectory->shutdown();
     }
 
-    stop(true);
+    stop();
 
     if (_multicastMessagingSkeletonDirectory) {
         _multicastMessagingSkeletonDirectory
@@ -1080,12 +985,8 @@ void JoynrClusterControllerRuntime::start()
             _clusterControllerStartDateMs);
 }
 
-void JoynrClusterControllerRuntime::stop(bool deleteHttpChannel)
+void JoynrClusterControllerRuntime::stop()
 {
-    if (deleteHttpChannel) {
-        deleteChannel();
-    }
-
     stopExternalCommunication();
 
     // synchronously stop the underlying boost::asio::io_service
@@ -1096,14 +997,6 @@ void JoynrClusterControllerRuntime::stop(bool deleteHttpChannel)
     }
 }
 
-void JoynrClusterControllerRuntime::deleteChannel()
-{
-    if (_doHttpMessaging) {
-        _httpMessageReceiver->tryToDeleteChannel();
-    }
-    // Nothing to do for MQTT
-}
-
 std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerAddress() const
 {
     const auto defaultConnectionData = _mqttConnectionDataVector[0];
@@ -1111,14 +1004,9 @@ std::string JoynrClusterControllerRuntime::getSerializedGlobalClusterControllerA
         return defaultConnectionData->getMqttMessageReceiver()
                 ->getSerializedGlobalClusterControllerAddress();
     }
-    if (_doHttpMessaging) {
-        return _httpMessageReceiver->getSerializedGlobalClusterControllerAddress();
-    }
     JOYNR_LOG_ERROR(logger(),
-                    "Cannot obtain globalClusterControllerAddress, as doMqttMessaging is: {} and "
-                    "doHttpMessaging is: {}",
-                    _doMqttMessaging,
-                    _doHttpMessaging);
+                    "Cannot obtain globalClusterControllerAddress, as doMqttMessaging is: {}",
+                    _doMqttMessaging);
     // in order to at least allow local communication in case global transport
     // is not correctly configured, a dummy address must be provided since
     // otherwise LibJoynrRuntime cannot be started
@@ -1150,14 +1038,9 @@ const system::RoutingTypes::Address& JoynrClusterControllerRuntime::
     if (_doMqttMessaging) {
         return defaultConnectionData->getMqttMessageReceiver()->getGlobalClusterControllerAddress();
     }
-    if (_doHttpMessaging) {
-        return _httpMessageReceiver->getGlobalClusterControllerAddress();
-    }
     JOYNR_LOG_ERROR(logger(),
-                    "Cannot obtain globalClusterControllerAddress, as doMqttMessaging is: {} and "
-                    "doHttpMessaging is: {}",
-                    _doMqttMessaging,
-                    _doHttpMessaging);
+                    "Cannot obtain globalClusterControllerAddress, as doMqttMessaging is: {}",
+                    _doMqttMessaging);
     // in order to at least allow local communication in case global transport
     // is not correctly configured, a dummy address must be provided since
     // otherwise LibJoynrRuntime cannot be started

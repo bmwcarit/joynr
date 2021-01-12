@@ -31,7 +31,6 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Util.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -125,10 +124,6 @@ protected:
             const std::string& participantId,
             RoutingTable& subject)
     {
-        auto channelAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>("testMessagingEndpointUrl", "testChannelId");
-        auto expectedChannelAddress = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(*channelAddress);
-        testLookupByParticipantIdAndGbid_noGbidReplacement(participantId, subject, channelAddress, expectedChannelAddress);
-
         auto webSocketAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>(system::RoutingTypes::WebSocketProtocol::WS,
                                                                                                       "host",
                                                                                                       42,

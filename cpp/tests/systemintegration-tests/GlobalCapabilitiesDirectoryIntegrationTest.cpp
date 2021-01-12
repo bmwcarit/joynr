@@ -137,7 +137,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
     joynr::types::Version providerVersion(47, 11);
     std::int64_t capLastSeenMs = 0;
     std::int64_t capExpiryDateMs = 1000;
-    std::string capSerializedChannelAddress("testChannelId");
+    std::string capSerializedMqttAddress("{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"testGbid\",\"topic\":\"testTopic}");
     types::GlobalDiscoveryEntry globalDiscoveryEntry(providerVersion,
                                                      capDomain,
                                                      capInterface,
@@ -146,7 +146,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
                                                      capLastSeenMs,
                                                      capExpiryDateMs,
                                                      capPublicKeyId,
-                                                     capSerializedChannelAddress);
+                                                     capSerializedMqttAddress);
 
     JOYNR_LOG_DEBUG(logger(), "Registering capabilities");
     globalCapabilitiesDirectoryClient->add(

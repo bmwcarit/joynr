@@ -69,8 +69,7 @@ public:
     ~MessageNotificationTest() override
     {
         if (clusterControllerRuntime) {
-            const bool deleteChannel = true;
-            clusterControllerRuntime->stop(deleteChannel);
+            clusterControllerRuntime->stop();
             clusterControllerRuntime->shutdown();
         }
 

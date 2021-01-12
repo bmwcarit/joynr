@@ -24,8 +24,6 @@
 #include "joynr/Semaphore.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/system/RoutingTypes/UdsClientAddress.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
@@ -45,8 +43,6 @@ public:
     UdsMessagingStubFactoryTest()
             : _udsServerAddress("some/serverpath"),
               _udsClientAddress("some/clientpath"),
-              _channelAddress("endPointUrl", "channelId"),
-              _browserAddress("windowId"),
               _mqttAddress("brokerUri", "topic"),
               _webSocketAddress(),
               _webSocketClientAddress("id")
@@ -57,8 +53,6 @@ protected:
     ADD_LOGGER(UdsMessagingStubFactoryTest)
     joynr::system::RoutingTypes::UdsAddress _udsServerAddress;
     joynr::system::RoutingTypes::UdsClientAddress _udsClientAddress;
-    joynr::system::RoutingTypes::ChannelAddress _channelAddress;
-    joynr::system::RoutingTypes::BrowserAddress _browserAddress;
     joynr::system::RoutingTypes::MqttAddress _mqttAddress;
     joynr::system::RoutingTypes::WebSocketAddress _webSocketAddress;
     joynr::system::RoutingTypes::WebSocketClientAddress _webSocketClientAddress;
@@ -76,8 +70,6 @@ TEST_F(UdsMessagingStubFactoryTest, canOnlyCreateUdsAddresses)
 {
     UdsMessagingStubFactory udsMessagingStubFactory;
 
-    EXPECT_FALSE(udsMessagingStubFactory.canCreate(_channelAddress));
-    EXPECT_FALSE(udsMessagingStubFactory.canCreate(_browserAddress));
     EXPECT_FALSE(udsMessagingStubFactory.canCreate(_mqttAddress));
     EXPECT_FALSE(udsMessagingStubFactory.canCreate(_webSocketAddress));
     EXPECT_FALSE(udsMessagingStubFactory.canCreate(_webSocketClientAddress));
@@ -138,8 +130,6 @@ TEST_F(UdsMessagingStubFactoryTest, createReturnsNullForNonUdsAddressTypes)
 {
     UdsMessagingStubFactory udsMessagingStubFactory;
 
-    EXPECT_TRUE(udsMessagingStubFactory.create(_browserAddress).get() == nullptr);
-    EXPECT_TRUE(udsMessagingStubFactory.create(_channelAddress).get() == nullptr);
     EXPECT_TRUE(udsMessagingStubFactory.create(_mqttAddress).get() == nullptr);
     EXPECT_TRUE(udsMessagingStubFactory.create(_webSocketAddress).get() == nullptr);
     EXPECT_TRUE(udsMessagingStubFactory.create(_webSocketClientAddress).get() == nullptr);
@@ -201,10 +191,6 @@ TEST_F(UdsMessagingStubFactoryTest, callingOnMessagingStubClosedWithWrongAddress
 {
     UdsMessagingStubFactory udsMessagingStubFactory;
 
-    auto browserAddressCopy =
-            std::make_shared<system::RoutingTypes::BrowserAddress>(_browserAddress);
-    auto channelAddressCopy =
-            std::make_shared<system::RoutingTypes::ChannelAddress>(_channelAddress);
     auto webSocketAddressCopy =
             std::make_shared<system::RoutingTypes::WebSocketAddress>(_webSocketAddress);
     auto webSocketClientAddressCopy =
@@ -212,8 +198,6 @@ TEST_F(UdsMessagingStubFactoryTest, callingOnMessagingStubClosedWithWrongAddress
     auto mqttAddressCopy =
             std::make_shared<system::RoutingTypes::MqttAddress>(_mqttAddress);
 
-    udsMessagingStubFactory.onMessagingStubClosed(*browserAddressCopy);
-    udsMessagingStubFactory.onMessagingStubClosed(*channelAddressCopy);
     udsMessagingStubFactory.onMessagingStubClosed(*webSocketAddressCopy);
     udsMessagingStubFactory.onMessagingStubClosed(*webSocketClientAddressCopy);
     udsMessagingStubFactory.onMessagingStubClosed(*mqttAddressCopy);

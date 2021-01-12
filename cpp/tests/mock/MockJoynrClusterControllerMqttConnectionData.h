@@ -56,15 +56,12 @@ public:
             std::unique_ptr<Settings> settings,
             std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
             std::shared_ptr<IKeychain> keyChain = nullptr,
-            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
-            std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
-            std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr)
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr)
             : JoynrClusterControllerRuntime(std::move(settings),
                                             std::move(onFatalRuntimeError),
                                             keyChain,
-                                            mqttMessagingSkeletonFactory,
-                                            httpMessageReceiver,
-                                            httpMessageSender){};
+                                            mqttMessagingSkeletonFactory)
+    {};
 
     std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>>
     mockJoynrClusterControllerMqttConnectionData(

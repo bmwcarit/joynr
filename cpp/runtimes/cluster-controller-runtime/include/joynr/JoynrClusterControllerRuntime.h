@@ -56,7 +56,6 @@ class AbstractGlobalMessagingSkeleton;
 class AccessControlListEditor;
 class AccessController;
 class CcMessageRouter;
-class HttpMessagingSkeleton;
 class IDispatcher;
 class IKeychain;
 class IMessageRouter;
@@ -105,9 +104,7 @@ public:
             std::unique_ptr<Settings> settings,
             std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
             std::shared_ptr<IKeychain> _keyChain = nullptr,
-            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
-            std::shared_ptr<ITransportMessageReceiver> httpMessageReceiver = nullptr,
-            std::shared_ptr<ITransportMessageSender> httpMessageSender = nullptr);
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
 
@@ -127,7 +124,7 @@ public:
     ~JoynrClusterControllerRuntime() override;
 
     void start();
-    void stop(bool deleteChannel = false);
+    void stop();
     void shutdown() final;
     void runForever();
 
@@ -135,9 +132,6 @@ public:
     void startExternalCommunication() final;
     void stopExternalCommunication() final;
     void shutdownClusterController() final;
-
-    // Functions used by integration tests
-    void deleteChannel();
 
     void init();
 
@@ -165,9 +159,6 @@ protected:
 
     std::shared_ptr<InProcessMessagingSkeleton> _libJoynrMessagingSkeleton;
 
-    std::shared_ptr<ITransportMessageReceiver> _httpMessageReceiver;
-    std::shared_ptr<ITransportMessageSender> _httpMessageSender;
-    std::shared_ptr<HttpMessagingSkeleton> _httpMessagingSkeleton;
     MqttMessagingSkeletonFactory _mqttMessagingSkeletonFactory;
 
     std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
@@ -190,10 +181,8 @@ protected:
     WebSocketSettings _wsSettings;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsCcMessagingSkeleton;
     std::shared_ptr<IWebsocketCcMessagingSkeleton> _wsTLSCcMessagingSkeleton;
-    bool _httpMessagingIsRunning;
     bool _mqttMessagingIsRunning;
     bool _doMqttMessaging;
-    bool _doHttpMessaging;
     std::shared_ptr<WebSocketMessagingStubFactory> _wsMessagingStubFactory;
 
     ADD_LOGGER(JoynrClusterControllerRuntime)

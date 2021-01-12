@@ -41,8 +41,6 @@
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/access-control/IAccessController.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/BrowserAddress.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/system/RoutingTypes/UdsClientAddress.h"
@@ -132,39 +130,7 @@ MATCHER_P2(addressWithChannelId, addressType, channelId, "")
         return false;
     }
 
-    if (addressType == std::string("http")) {
-        auto httpAddress =
-                std::dynamic_pointer_cast<const system::RoutingTypes::ChannelAddress>(arg);
-        if (httpAddress) {
-            return httpAddress->getChannelId() == channelId;
-        }
-        return false;
-    }
     return false;
-}
-
-TEST_F(CcMessageRouterTest, routeMessageToHttpAddress)
-{
-    const std::string destinationParticipantId = "TEST_routeMessageToHttpAddress";
-    const std::string destinationChannelId = "TEST_routeMessageToHttpAddress_channelId";
-    const std::string messageEndPointUrl = "TEST_messageEndPointUrl";
-    auto address = std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(
-            messageEndPointUrl, destinationChannelId);
-    const bool isGloballyVisible = true;
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
-
-    this->_messageRouter->addNextHop(destinationParticipantId,
-                                    address,
-                                    isGloballyVisible,
-                                    expiryDateMs,
-                                    isSticky);
-    this->_mutableMessage.setRecipient(destinationParticipantId);
-
-    EXPECT_CALL(*(this->_messagingStubFactory),
-                create(addressWithChannelId("http", destinationChannelId))).Times(1);
-
-    this->routeMessageToAddress();
 }
 
 TEST_F(CcMessageRouterTest, routeMessageToMqttAddress)
@@ -1558,9 +1524,6 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesTypesAreAddedToRouti
     _messageRouter = createMessageRouter();
     addressIsNotAddedToRoutingTable(ownAddress);
 
-    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>();
-    addressIsAddedToRoutingTable(channelAddress);
-
     auto websocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
     addressIsAddedToRoutingTable(websocketClientAddress);
 
@@ -1569,9 +1532,6 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesTypesAreAddedToRouti
 
     auto inprocessAddress = std::make_shared<const InProcessMessagingAddress>();
     addressIsAddedToRoutingTable(inprocessAddress);
-
-    auto browserAddress = std::make_shared<const system::RoutingTypes::BrowserAddress>();
-    addressIsAddedToRoutingTable(browserAddress);
 }
 
 void CcMessageRouterTest::testRoutingEntryUpdate(const std::string& participantId,
@@ -1612,7 +1572,7 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
 {
     // inProcessAddress can only be replaced with InProcessAddress
     // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
-    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
+    // MqttAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowInProcessUpdateParticipantId";
     auto dispatcher = std::make_shared<MockDispatcher>();
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
@@ -1628,9 +1588,6 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
 
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>();
     testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
-
-    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>();
-    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
 
     auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>();
     testRoutingEntryUpdate(testParticipantId, webSocketClientAddress, oldAddress);
@@ -1648,7 +1605,7 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfInProcessAddress)
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddress)
 {
     // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
-    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
+    // MqttAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowWebSocketClientUpdateParticipantId";
     auto oldAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 "testWebSocketId");
@@ -1665,10 +1622,6 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddres
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
     testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
-
-    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
-                "endpointUrl", "channelId");
-    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
 
     auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 "webSocketId");
@@ -1694,7 +1647,7 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfWebSocketClientAddres
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfUdsClientAddress)
 {
     // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
-    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
+    // MqttAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowUdsClientUpdateParticipantId";
     auto oldAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
                 "testUdsId");
@@ -1711,10 +1664,6 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfUdsClientAddress)
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
     testRoutingEntryUpdate(testParticipantId, mqttAddress, oldAddress);
-
-    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
-                "endpointUrl", "channelId");
-    testRoutingEntryUpdate(testParticipantId, channelAddress, oldAddress);
 
     auto webSocketClientAddress = std::make_shared<const system::RoutingTypes::WebSocketClientAddress>(
                 "webSocketId");
@@ -1737,60 +1686,10 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfUdsClientAddress)
     _messageRouter->removeNextHop(testParticipantId);
 }
 
-TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfChannelAddress)
-{
-    // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
-    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
-    const std::string testParticipantId = "allowChannelUpdateParticipantId";
-    auto oldAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
-                "testEndpointUrl", "testChannelId");
-
-    addNewRoutingEntry(testParticipantId, oldAddress);
-
-    auto webSocketAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
-                system::RoutingTypes::WebSocketProtocol::WS, "host", 4242, "path");
-    testRoutingEntryUpdate(testParticipantId, webSocketAddress, oldAddress);
-
-    auto udsAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("path");
-    testRoutingEntryUpdate(testParticipantId, udsAddress, oldAddress);
-
-    auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
-                "brokerUri", "topic");
-    testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
-    // restore oldAddress
-    _messageRouter->removeNextHop(testParticipantId);
-    addNewRoutingEntry(testParticipantId, oldAddress);
-
-    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
-                "endpointUrl", "channelId");
-    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
-    // restore oldAddress
-    _messageRouter->removeNextHop(testParticipantId);
-    addNewRoutingEntry(testParticipantId, oldAddress);
-
-    auto udsClientAddress = std::make_shared<const system::RoutingTypes::UdsClientAddress>(
-                "udsId");
-    testRoutingEntryUpdate(testParticipantId, udsClientAddress, udsClientAddress);
-    // restore oldAddress
-    _messageRouter->removeNextHop(testParticipantId);
-    addNewRoutingEntry(testParticipantId, oldAddress);
-
-    testRoutingEntryUpdate(testParticipantId, _webSocketClientAddress, _webSocketClientAddress);
-    // restore oldAddress
-    _messageRouter->removeNextHop(testParticipantId);
-    addNewRoutingEntry(testParticipantId, oldAddress);
-
-    auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>();
-    testRoutingEntryUpdate(testParticipantId, inProcessAddress, inProcessAddress);
-
-    // cleanup
-    _messageRouter->removeNextHop(testParticipantId);
-}
-
 TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfMqttAddress)
 {
     // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
-    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
+    // MqttAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowMqttUpdateParticipantId";
     auto oldAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "testbrokerUri", "testTopic");
@@ -1807,13 +1706,6 @@ TEST_F(CcMessageRouterTest, addressValidation_allowUpdateOfMqttAddress)
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
     testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
-    // restore oldAddress
-    _messageRouter->removeNextHop(testParticipantId);
-    addNewRoutingEntry(testParticipantId, oldAddress);
-
-    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
-                "endpointUrl", "channelId");
-    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
     // restore oldAddress
     _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
@@ -1844,7 +1736,7 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAdd
     // Disabled: WebSocketAddress is not allowed in CcMessageRouter
     // Precedence cannot be tested without refactoring MessageRouter and RoutingTable, e.g. like in Java
 
-    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+    // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress > WebSocketAddress
     const std::string testParticipantId = "allowWebSocketUpdateParticipantId";
     auto oldAddress = std::make_shared<const system::RoutingTypes::WebSocketAddress>(
                 system::RoutingTypes::WebSocketProtocol::WSS, "testHost", 23, "testPath");
@@ -1865,13 +1757,6 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfWebSocketAdd
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
     testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
-    // restore oldAddress
-    _messageRouter->removeNextHop(testParticipantId);
-    addNewRoutingEntry(testParticipantId, oldAddress);
-
-    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
-                "endpointUrl", "channelId");
-    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
     // restore oldAddress
     _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);
@@ -1900,7 +1785,7 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfUdsAddress)
     // Precedence cannot be tested without refactoring MessageRouter and RoutingTable, e.g. like in Java
 
     // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress >
-    // MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
+    // MqttAddress > WebSocketAddress/UdsAddress
     const std::string testParticipantId = "allowUdsUpdateParticipantId";
     auto oldAddress = std::make_shared<const system::RoutingTypes::UdsAddress>("testPath");
 
@@ -1915,13 +1800,6 @@ TEST_F(CcMessageRouterTest, DISABLED_addressValidation_allowUpdateOfUdsAddress)
     auto mqttAddress = std::make_shared<const system::RoutingTypes::MqttAddress>(
                 "brokerUri", "topic");
     testRoutingEntryUpdate(testParticipantId, mqttAddress, mqttAddress);
-    // restore oldAddress
-    _messageRouter->removeNextHop(testParticipantId);
-    addNewRoutingEntry(testParticipantId, oldAddress);
-
-    auto channelAddress = std::make_shared<const system::RoutingTypes::ChannelAddress>(
-                "endpointUrl", "channelId");
-    testRoutingEntryUpdate(testParticipantId, channelAddress, channelAddress);
     // restore oldAddress
     _messageRouter->removeNextHop(testParticipantId);
     addNewRoutingEntry(testParticipantId, oldAddress);

@@ -23,10 +23,9 @@
 #include "joynr/IMessagingStub.h"
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
-#include "joynr/system/RoutingTypes/BrowserAddress.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
@@ -43,22 +42,20 @@ class WebSocketMessagingStubFactoryTest : public testing::Test
 {
 public:
     WebSocketMessagingStubFactoryTest()
-            : webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS,
+            : udsAddress("dummyPath"),
+              webSocketServerAddress(joynr::system::RoutingTypes::WebSocketProtocol::WS,
                                      "localhost",
                                      42,
                                      "path"),
-              webSocketClientAddress("clientId"),
-              channelAddress("endPointUrl", "channelId"),
-              browserAddress("windowId")
+              webSocketClientAddress("clientId")
     {
     }
 
 protected:
     ADD_LOGGER(WebSocketMessagingStubFactoryTest)
+    joynr::system::RoutingTypes::UdsAddress udsAddress;
     joynr::system::RoutingTypes::WebSocketAddress webSocketServerAddress;
     joynr::system::RoutingTypes::WebSocketClientAddress webSocketClientAddress;
-    joynr::system::RoutingTypes::ChannelAddress channelAddress;
-    joynr::system::RoutingTypes::BrowserAddress browserAddress;
 };
 
 TEST_F(WebSocketMessagingStubFactoryTest, canCreateWebSocketAddressses)
@@ -73,8 +70,7 @@ TEST_F(WebSocketMessagingStubFactoryTest, canOnlyCreateWebSocketAddressses)
 {
     WebSocketMessagingStubFactory factory;
 
-    EXPECT_FALSE(factory.canCreate(channelAddress));
-    EXPECT_FALSE(factory.canCreate(browserAddress));
+    EXPECT_FALSE(factory.canCreate(udsAddress));
 }
 
 TEST_F(WebSocketMessagingStubFactoryTest, createReturnsNullForUnknownClient)

@@ -45,9 +45,7 @@ public:
               routingDomain(),
               routingProviderParticipantId(),
               runtime(nullptr),
-              mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
-              mockMessageSender(std::make_shared<MockTransportMessageSender>()),
               discoveryQos(),
               routingProxyBuilder(nullptr),
               routingProxy(nullptr),
@@ -65,19 +63,8 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
         discoveryQos.setDiscoveryTimeoutMs(50);
 
-        std::string httpChannelId("http_SystemServicesRoutingTest.ChannelId");
-        std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");
-
-        using system::RoutingTypes::ChannelAddress;
-
-        std::string serializedChannelAddress =
-                joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
 
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(
-                              mockMessageReceiverHttp).get()),
-                    getSerializedGlobalClusterControllerAddress())
-                .WillRepeatedly(::testing::Return(serializedChannelAddress));
         EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(
                               mockMessageReceiverMqtt).get()),
                     getSerializedGlobalClusterControllerAddress())
@@ -92,16 +79,13 @@ public:
         runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings),
                                                                   failOnFatalRuntimeError,
                                                                   nullptr,
-                                                                  nullptr,
-                                                                  mockMessageReceiverHttp,
-                                                                  mockMessageSender);
+                                                                  nullptr);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
     }
 
     ~SystemServicesRoutingTest()
     {
-        runtime->deleteChannel();
         runtime->stopExternalCommunication();
         runtime->shutdown();
         runtime.reset();
@@ -109,12 +93,8 @@ public:
         EXPECT_TRUE(Mock::VerifyAndClearExpectations(
                 std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)
                         .get()));
-        EXPECT_TRUE(Mock::VerifyAndClearExpectations(
-                std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverHttp)
-                        .get()));
 
         test::util::resetAndWaitUntilDestroyed(runtime);
-        test::util::resetAndWaitUntilDestroyed(mockMessageReceiverHttp);
         test::util::resetAndWaitUntilDestroyed(mockMessageReceiverMqtt);
 
         std::remove(settingsFilename.c_str());
@@ -141,9 +121,7 @@ protected:
     std::string routingDomain;
     std::string routingProviderParticipantId;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
-    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
-    std::shared_ptr<MockTransportMessageSender> mockMessageSender;
     DiscoveryQos discoveryQos;
     std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;
     std::shared_ptr<joynr::system::RoutingProxy> routingProxy;
@@ -171,78 +149,6 @@ TEST_F(SystemServicesRoutingTest, unknowParticipantIsNotResolvable)
                            ->build();
 
     bool isResolvable = false;
-    try {
-        routingProxy->resolveNextHop(isResolvable, participantId);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "resolveNextHop was not successful";
-    }
-    EXPECT_FALSE(isResolvable);
-}
-
-TEST_F(SystemServicesRoutingTest, addNextHopHttp)
-{
-    routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(5000))
-                           ->setDiscoveryQos(discoveryQos)
-                           ->build();
-
-    joynr::system::RoutingTypes::ChannelAddress address(
-            "SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
-    bool isResolvable = false;
-
-    try {
-        routingProxy->resolveNextHop(isResolvable, participantId);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "resolveNextHop was not successful";
-    }
-    EXPECT_FALSE(isResolvable);
-
-    try {
-        routingProxy->addNextHop(participantId, address, isGloballyVisible);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "addNextHop was not successful";
-    }
-    try {
-        routingProxy->resolveNextHop(isResolvable, participantId);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "resolveNextHop was not successful";
-    }
-    EXPECT_TRUE(isResolvable);
-}
-
-TEST_F(SystemServicesRoutingTest, removeNextHopHttp)
-{
-    routingProxy = routingProxyBuilder->setMessagingQos(MessagingQos(5000))
-                           ->setDiscoveryQos(discoveryQos)
-                           ->build();
-
-    joynr::system::RoutingTypes::ChannelAddress address(
-            "SystemServicesRoutingTest.ChanneldId.A", "SystemServicesRoutingTest.endPointUrl");
-    bool isResolvable = false;
-
-    try {
-        routingProxy->resolveNextHop(isResolvable, participantId);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "resolveNextHop was not successful";
-    }
-    EXPECT_FALSE(isResolvable);
-
-    try {
-        routingProxy->addNextHop(participantId, address, isGloballyVisible);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "addNextHop was not successful";
-    }
-    try {
-        routingProxy->resolveNextHop(isResolvable, participantId);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "resolveNextHop was not successful";
-    }
-    EXPECT_TRUE(isResolvable);
-
-    try {
-        routingProxy->removeNextHop(participantId);
-    } catch (const exceptions::JoynrException& e) {
-        ADD_FAILURE() << "removeNextHop was not successful";
-    }
     try {
         routingProxy->resolveNextHop(isResolvable, participantId);
     } catch (const exceptions::JoynrException& e) {

@@ -63,8 +63,6 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings)
     EXPECT_TRUE(
             messagingSettings.contains(MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
 
-    EXPECT_TRUE(
-            messagingSettings.contains(MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL()));
     EXPECT_TRUE(messagingSettings.contains(
             MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     EXPECT_TRUE(messagingSettings.contains(

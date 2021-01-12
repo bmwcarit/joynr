@@ -50,7 +50,6 @@
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"

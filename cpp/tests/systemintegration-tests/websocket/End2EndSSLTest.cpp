@@ -71,8 +71,7 @@ public:
     {
         libJoynrRuntime->shutdown();
         libJoynrRuntime.reset();
-        bool deleteChannel = true;
-        ccRuntime->stop(deleteChannel);
+        ccRuntime->stop();
         ccRuntime->shutdown();
         ccRuntime.reset();
 

@@ -38,7 +38,6 @@
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionRequest.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/MutableMessageFactory.h"
 #include "joynr/MutableMessage.h"
@@ -191,19 +190,6 @@ MATCHER(isPointerToMqttAddress, "")
     return true;
 }
 
-MATCHER(isPointerToChannelAddress, "")
-{
-    if (arg == nullptr) {
-        return false;
-    }
-    std::shared_ptr<const joynr::system::RoutingTypes::ChannelAddress> channelAddress =
-            std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(arg);
-    if (channelAddress == nullptr) {
-        return false;
-    }
-    return true;
-}
-
 TEST_F(MqttMessagingSkeletonTest, transmitTest)
 {
     MqttMessagingSkeleton mqttMessagingSkeleton(
@@ -233,23 +219,6 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithMqttReplyToAddress)
                                                Eq(TimePoint::max().toMilliseconds()),
                                                Eq(false),
                                                _,_)).Times(1);
-    auto onFailure =
-            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
-    mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
-}
-
-TEST_F(MqttMessagingSkeletonTest, transmitTestWithNonMqttReplyToAddress)
-{
-    MqttMessagingSkeleton mqttMessagingSkeleton(
-            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
-    _mutableMessage.setReplyTo(joynr::serializer::serializeToJson(
-                                  joynr::system::RoutingTypes::ChannelAddress("dummyuri.com", "testchannel")));
-    std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
-    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
-    EXPECT_CALL(*_mockMessageRouter, addNextHop(_,isPointerToChannelAddress(),
-                                               _,_,_,_,_)).Times(1);
-    EXPECT_CALL(*_mockMessageRouter, addNextHop(_,isPointerToMqttAddress(),
-                                               _,_,_,_,_)).Times(0);
     auto onFailure =
             [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);

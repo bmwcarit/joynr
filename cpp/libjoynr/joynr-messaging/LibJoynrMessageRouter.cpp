@@ -35,7 +35,6 @@
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/system/RoutingTypes/UdsClientAddress.h"
@@ -46,14 +45,6 @@ namespace joynr
 {
 
 class MessagingSettings;
-
-namespace system
-{
-namespace RoutingTypes
-{
-class BrowserAddress;
-}
-}
 
 //------ MessageRouter ---------------------------------------------------------
 
@@ -318,27 +309,11 @@ void LibJoynrMessageRouter::addNextHopToParent(
     };
 
     // add to parent router
-    if (auto channelAddress =
-                std::dynamic_pointer_cast<const joynr::system::RoutingTypes::ChannelAddress>(
+    if (auto mqttAddress =
+                std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(
                         _incomingAddress)) {
         _parentRouter->addNextHopAsync(participantId,
-                                       *channelAddress,
-                                       isGloballyVisible,
-                                       std::move(onSuccess),
-                                       std::move(onErrorWrapper));
-    } else if (auto mqttAddress =
-                       std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(
-                               _incomingAddress)) {
-        _parentRouter->addNextHopAsync(participantId,
                                        *mqttAddress,
-                                       isGloballyVisible,
-                                       std::move(onSuccess),
-                                       std::move(onErrorWrapper));
-    } else if (auto browserAddress =
-                       std::dynamic_pointer_cast<const joynr::system::RoutingTypes::BrowserAddress>(
-                               _incomingAddress)) {
-        _parentRouter->addNextHopAsync(participantId,
-                                       *browserAddress,
                                        isGloballyVisible,
                                        std::move(onSuccess),
                                        std::move(onErrorWrapper));
@@ -397,7 +372,7 @@ bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingE
                                                     const system::RoutingTypes::Address& newAddress)
 {
     // precedence: InProcessAddress > WebSocketAddress/UdsAddress
-    // > WebSocketClientAddress/UdsClientAddress > MqttAddress/ChannelAddress
+    // > WebSocketClientAddress/UdsClientAddress > MqttAddress
     if (typeid(newAddress) == typeid(InProcessMessagingAddress)) {
         return true;
     }
@@ -418,7 +393,7 @@ bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingE
     }
 
     // this means old address is one of those addresses:
-    // WebSocketClientAddress/UdsClientAddress or MqttAddress/ChannelAddress
+    // WebSocketClientAddress/UdsClientAddress or MqttAddress
     // new address of type WebSocketClientAddress/UdsClientAddress have precedence, therefore update
     if (typeid(newAddress) == typeid(system::RoutingTypes::WebSocketClientAddress) ||
         typeid(newAddress) == typeid(system::RoutingTypes::UdsClientAddress)) {
@@ -432,9 +407,8 @@ bool LibJoynrMessageRouter::allowRoutingEntryUpdate(const routingtable::RoutingE
         return false;
     }
 
-    // this means old address is MqttAddress or ChannelAddress, latest precedence. Update entry!
-    if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress) ||
-        typeid(newAddress) == typeid(system::RoutingTypes::ChannelAddress)) {
+    // this means old address is MqttAddress, latest precedence. Update entry!
+    if (typeid(newAddress) == typeid(system::RoutingTypes::MqttAddress)) {
         return true;
     }
 

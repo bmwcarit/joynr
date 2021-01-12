@@ -563,17 +563,17 @@ void CcMessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = onError;
-    auto address =
-            std::make_shared<const joynr::system::RoutingTypes::ChannelAddress>(channelAddress);
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
-    addNextHop(participantId,
-               std::move(address),
-               isGloballyVisible,
-               expiryDateMs,
-               isSticky,
-               std::move(onSuccess));
+    std::ignore = participantId;
+    std::ignore = channelAddress;
+    std::ignore = isGloballyVisible;
+    std::ignore = onSuccess;
+    const std::string errorMessage =
+            "unable to addNextHop using ChannelAddress, as HTTP support has been discontinued";
+
+    JOYNR_LOG_ERROR(logger(), errorMessage);
+    if (onError) {
+        onError(exceptions::ProviderRuntimeException(errorMessage));
+    }
 }
 
 // inherited from joynr::system::RoutingProvider
@@ -604,17 +604,17 @@ void CcMessageRouter::addNextHop(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::ignore = onError;
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
-    auto address =
-            std::make_shared<const joynr::system::RoutingTypes::BrowserAddress>(browserAddress);
-    addNextHop(participantId,
-               std::move(address),
-               isGloballyVisible,
-               expiryDateMs,
-               isSticky,
-               std::move(onSuccess));
+    std::ignore = participantId;
+    std::ignore = browserAddress;
+    std::ignore = isGloballyVisible;
+    std::ignore = onSuccess;
+    const std::string errorMessage =
+            "unable to addNextHop using BrowserAddress, as HTTP support has been discontinued";
+
+    JOYNR_LOG_ERROR(logger(), errorMessage);
+    if (onError) {
+        onError(exceptions::ProviderRuntimeException(errorMessage));
+    }
 }
 
 // inherited from joynr::system::RoutingProvider

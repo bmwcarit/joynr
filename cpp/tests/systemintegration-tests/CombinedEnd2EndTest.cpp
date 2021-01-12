@@ -911,9 +911,6 @@ TEST_P(CombinedEnd2EndTest, deleteChannelViaReceiver)
     std::shared_ptr<Future<int>> testFuture(testProxy->addNumbersAsync(1, 2, 3));
     testFuture->wait();
 
-    // _runtime1->deleteChannel();
-    // _runtime2->deleteChannel();
-
     std::shared_ptr<Future<int>> gpsFuture2(testProxy->addNumbersAsync(1, 2, 3));
     gpsFuture2->wait(1000);
     _runtime1->unregisterProvider(participantId);

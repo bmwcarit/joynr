@@ -49,7 +49,6 @@
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/serializer/Serializer.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/LCDUtil.h"
 #include "joynr/types/DiscoveryQos.h"
@@ -81,16 +80,8 @@ MATCHER_P2(pointerToAddressWithSerializedAddress, addressType, serializedAddress
             return false;
         }
         return serializer::serializeToJson(*mqttAddress) == serializedAddress;
-    } else if (addressType == "http") {
-        auto httpAddress =
-                std::dynamic_pointer_cast<const system::RoutingTypes::ChannelAddress>(arg);
-        if (httpAddress == nullptr) {
-            return false;
-        }
-        return serializer::serializeToJson(*httpAddress) == serializedAddress;
-    } else {
-        return false;
     }
+    return false;
 }
 
 static constexpr std::int64_t conversionDelayToleranceMs = 1000;
@@ -3773,15 +3764,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerReceivedCapabilites_registerMqttA
     const std::string& topic = "mqtt_TEST_channelId";
     system::RoutingTypes::MqttAddress mqttAddress("brokerUri", topic);
     registerReceivedCapabilities(addressType, serializer::serializeToJson(mqttAddress));
-}
-
-TEST_F(LocalCapabilitiesDirectoryTest, registerReceivedCapabilites_registerHttpAddress)
-{
-    const std::string& addressType = "http";
-    const std::string& channelID = "TEST_channelId";
-    const std::string& endPointUrl = "TEST_endPointUrl";
-    const system::RoutingTypes::ChannelAddress channelAddress(endPointUrl, channelID);
-    registerReceivedCapabilities(addressType, serializer::serializeToJson(channelAddress));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)

@@ -43,7 +43,7 @@
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/types/Version.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
 #include "joynr/serializer/Serializer.h"
@@ -345,10 +345,10 @@ TYPED_TEST(RequestReplySerializerTest, serialize_deserialize_ReplyWithArrayAsRes
     std::int64_t expiryDateMs = 7;
 
     std::string publicKeyId("publicKeyId");
-    joynr::system::RoutingTypes::ChannelAddress channelAddress1("localhost", "channelId1");
-    std::string serializedAddress1 = joynr::serializer::serializeToJson(channelAddress1);
-    joynr::system::RoutingTypes::ChannelAddress channelAddress2("localhost", "channelId2");
-    std::string serializedAddress2 = joynr::serializer::serializeToJson(channelAddress2);
+    joynr::system::RoutingTypes::MqttAddress mqttAddress1("localhost", "topic1");
+    std::string serializedAddress1 = joynr::serializer::serializeToJson(mqttAddress1);
+    joynr::system::RoutingTypes::MqttAddress mqttAddress2("localhost", "topic2");
+    std::string serializedAddress2 = joynr::serializer::serializeToJson(mqttAddress2);
 
     std::vector<GlobalDiscoveryEntry> globalDiscoveryEntries;
     globalDiscoveryEntries.emplace_back(providerVersion,

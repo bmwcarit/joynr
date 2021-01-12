@@ -30,7 +30,6 @@
 #include "joynr/Settings.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/DiscoveryProxy.h"
-#include "joynr/system/RoutingTypes/ChannelAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/types/Version.h"
 
@@ -50,7 +49,6 @@ public:
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
     std::shared_ptr<JoynrClusterControllerRuntime> runtime;
-    std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverHttp;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<ITransportMessageSender> mockMessageSenderMqtt;
     DiscoveryQos discoveryQos;
@@ -66,7 +64,6 @@ public:
               discoveryDomain(),
               discoveryProviderParticipantId(),
               runtime(),
-              mockMessageReceiverHttp(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageReceiverMqtt(std::make_shared<MockTransportMessageReceiver>()),
               mockMessageSenderMqtt(std::make_shared<MockTransportMessageSender>()),
               discoveryQos(),
@@ -89,19 +86,8 @@ public:
         discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
         discoveryQos.setDiscoveryTimeoutMs(50);
 
-        std::string httpChannelId("http_SystemServicesDiscoveryTest.ChannelId");
-        std::string httpEndPointUrl("http_SystemServicesRoutingTest.endPointUrl");
-
-        using system::RoutingTypes::ChannelAddress;
-
-        std::string serializedChannelAddress =
-                joynr::serializer::serializeToJson(ChannelAddress(httpEndPointUrl, httpChannelId));
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
 
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(
-                              mockMessageReceiverHttp).get()),
-                    getSerializedGlobalClusterControllerAddress())
-                .WillRepeatedly(Return(serializedChannelAddress));
         EXPECT_CALL(
                 *(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)),
                 getSerializedGlobalClusterControllerAddress())
@@ -115,8 +101,6 @@ public:
         runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings),
                                                                   failOnFatalRuntimeError,
                                                                   nullptr,
-                                                                  nullptr,
-                                                                  mockMessageReceiverHttp,
                                                                   nullptr);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
@@ -129,12 +113,10 @@ public:
     {
         discoveryProxy.reset();
         discoveryProxyBuilder.reset();
-        runtime->deleteChannel();
         runtime->stopExternalCommunication();
 
         runtime->shutdown();
         test::util::resetAndWaitUntilDestroyed(runtime);
-        test::util::resetAndWaitUntilDestroyed(mockMessageReceiverHttp);
         test::util::resetAndWaitUntilDestroyed(mockMessageReceiverMqtt);
         test::util::resetAndWaitUntilDestroyed(mockMessageSenderMqtt);
 
