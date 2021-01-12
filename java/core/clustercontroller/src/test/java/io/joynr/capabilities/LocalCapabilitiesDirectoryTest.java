@@ -3094,7 +3094,6 @@ public class LocalCapabilitiesDirectoryTest {
     @Test(timeout = TEST_TIMEOUT)
     public void remove_FailureStates_NonTimeoutException() throws InterruptedException {
         CountDownLatch cdl = new CountDownLatch(1);
-        localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
         doAnswer(createVoidAnswerWithException(cdl,
                                                new JoynrCommunicationException())).when(globalCapabilitiesDirectoryClient)
                                                                                   .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
