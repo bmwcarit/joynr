@@ -26,7 +26,6 @@ discovery-directories-domain=io.joynr
 # 1814400000 = 21 days
 discovery-messages-ttl=1814400000
 
-capabilities-directory-url=http://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_HTTP_PORT@/discovery/channels/
 capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"@JOYNR_DEFAULT_GBID@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
@@ -38,16 +37,8 @@ mqtt-reconnect-delay-time-seconds=1
 # Maximum time in milliseconds to wait for network activity before timing out.
 mqtt-connection-timeout-ms=1000
 
-index=0
-create-channel-retry-interval=500
-delete-channel-retry-interval=5000
 send-msg-retry-interval=500
-longpoll-retry-interval=5000
-local-proxy-host=
-http-debug=
-local-proxy-port=
 persistence-file=joynr.settings
-long-poll-timeout=
 broker-timeout=
 max-send-ttl=
 

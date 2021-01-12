@@ -49,7 +49,7 @@ using namespace joynr;
 
 /*
  * This test creates two Runtimes and will test communication
- * between the two Runtimes via HttpReceiver
+ * between the two Runtimes via MqttReceiver
  *
  */
 class CombinedEnd2EndTest : public testing::TestWithParam<std::tuple<std::string, std::string>>
@@ -121,7 +121,7 @@ TEST_P(CombinedEnd2EndTest, surviveDestructionOfRuntime)
     }
 }
 
-TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
+TEST_P(CombinedEnd2EndTest, callRpcMethodViaMqttReceiverAndReceiveReply)
 {
 
     // Provider: (_runtime1)
@@ -532,7 +532,7 @@ TEST_P(CombinedEnd2EndTest, callRpcMethodViaHttpReceiverAndReceiveReply)
     _runtime1->unregisterProvider(participantId);
 }
 
-TEST_P(CombinedEnd2EndTest, subscribeViaHttpReceiverAndReceiveReply)
+TEST_P(CombinedEnd2EndTest, subscribeViaMqttReceiverAndReceiveReply)
 {
 
     auto subscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
@@ -818,7 +818,7 @@ TEST_P(CombinedEnd2EndTest, registerAndLookupWithGbids_callMethod)
     _runtime1->unregisterProvider(providerParticipantId);
 }
 
-TEST_P(CombinedEnd2EndTest, unsubscribeViaHttpReceiver)
+TEST_P(CombinedEnd2EndTest, unsubscribeViaMqttReceiver)
 {
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
@@ -1079,12 +1079,6 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
 }
 
 using namespace std::string_literals;
-
-INSTANTIATE_TEST_CASE_P(
-        DISABLED_Http,
-        CombinedEnd2EndTest,
-        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
-                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
 
 INSTANTIATE_TEST_CASE_P(
         Mqtt,

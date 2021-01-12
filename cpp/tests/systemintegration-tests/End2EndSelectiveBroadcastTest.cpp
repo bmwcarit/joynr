@@ -268,12 +268,6 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail)
 using namespace std::string_literals;
 
 INSTANTIATE_TEST_CASE_P(
-        DISABLED_Http,
-        End2EndSelectiveBroadcastTest,
-        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
-                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
-
-INSTANTIATE_TEST_CASE_P(
         Mqtt,
         End2EndSelectiveBroadcastTest,
         testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,

@@ -389,10 +389,6 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegi
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(DISABLED_Http,
-                        GlobalCapabilitiesDirectoryIntegrationTest,
-                        testing::Values("test-resources/HttpSystemIntegrationTest1.settings"s));
-
 INSTANTIATE_TEST_CASE_P(Mqtt,
                         GlobalCapabilitiesDirectoryIntegrationTest,
                         testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));

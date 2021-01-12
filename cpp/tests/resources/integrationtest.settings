@@ -1,11 +1,6 @@
 [messaging]
-create-channel-retry-interval=500
 send-msg-retry-interval=500
-local-proxy-host=
-local-proxy-port=
 index=0
-longpoll-retry-interval=5000
-delete-channel-retry-interval=5000
 
 [capabilitiesClient]
 fakeDomain=integrationDomain

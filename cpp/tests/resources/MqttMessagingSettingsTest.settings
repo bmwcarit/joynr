@@ -3,7 +3,5 @@ broker-url=mqtt://custom-broker-host:1883/
 
 discovery-directories-domain=io.joynr
 
-capabilities-directory-url=http://custom-bounceproxy-host:8080/discovery/channels/
 capabilities-directory-channelid=mqtt_discoverydirectory_channelid
 capabilities-directory-participantid=capabilitiesdirectory_participantid
-

@@ -34,7 +34,6 @@ public:
     MessagingSettingsTest()
             : testSettingsFileNameNonExistent(
                       "test-resources/MessagingSettingsTest-nonexistent.settings"),
-              testSettingsFileNameHttp("test-resources/HttpMessagingSettingsTest.settings"),
               testSettingsFileNameMqtt("test-resources/MqttMessagingSettingsTest.settings"),
               testSettingsFileNameMqttWithGbid("test-resources/MqttMessagingSettingsWithGbidTest.settings")
     {
@@ -43,7 +42,6 @@ public:
 protected:
     ADD_LOGGER(MessagingSettingsTest)
     const std::string testSettingsFileNameNonExistent;
-    const std::string testSettingsFileNameHttp;
     const std::string testSettingsFileNameMqtt;
     const std::string testSettingsFileNameMqttWithGbid;
 };
@@ -95,8 +93,7 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings)
 
 TEST_F(MessagingSettingsTest, overrideDefaultSettings)
 {
-    std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/"
-                                  "MessagingSettingsTest-overrideDefaultSettings/");
+    std::string expectedBrokerUrl("mqtt://custom-broker-host:1883/");
     std::int64_t expectedRoutingTableGracePeriodMs = 5000;
     std::int64_t expectedRoutingTableCleanupIntervalMs = 6000;
     Settings testSettings(testSettingsFileNameNonExistent);
@@ -174,20 +171,6 @@ void checkDiscoveryDirectorySettings(MessagingSettings messagingSettings,
     std::string capabilitiesDirectoryChannelId =
             messagingSettings.getCapabilitiesDirectoryChannelId();
     EXPECT_EQ(expectedCapabilitiesDirectoryChannelId, capabilitiesDirectoryChannelId);
-}
-
-TEST_F(MessagingSettingsTest, httpOnly)
-{
-    std::string expectedBrokerUrl("http://custom-bounceproxy-host:8080/bounceproxy/");
-    std::string expectedCapabilitiesDirectoryChannelId("discoverydirectory_channelid");
-
-    Settings testSettings(testSettingsFileNameHttp);
-    EXPECT_TRUE(testSettings.isLoaded());
-    MessagingSettings messagingSettings(testSettings);
-
-    checkBrokerSettings(messagingSettings, expectedBrokerUrl);
-
-    checkDiscoveryDirectorySettings(messagingSettings, expectedCapabilitiesDirectoryChannelId);
 }
 
 TEST_F(MessagingSettingsTest, mqttOnly)

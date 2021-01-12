@@ -122,8 +122,7 @@ public:
                                                             4)),
               providerParticipantId(),
               integration1Settings("test-resources/libjoynrSystemIntegration1.settings"),
-              integration2Settings("test-resources/libjoynrSystemIntegration2.settings"),
-              httpTransport(false)
+              integration2Settings("test-resources/libjoynrSystemIntegration2.settings")
     {
         auto settings1 = std::make_unique<Settings>(std::get<0>(GetParam()));
         auto settings2 = std::make_unique<Settings>(std::get<1>(GetParam()));
@@ -133,11 +132,6 @@ public:
                 messagingPropertiesPersistenceFileName1);
         messagingSettings2.setMessagingPropertiesPersistenceFilename(
                 messagingPropertiesPersistenceFileName2);
-
-        std::string brokerProtocol =
-                messagingSettings1.getBrokerUrl().getBrokerChannelsBaseUrl().getProtocol();
-        httpTransport =
-                boost::iequals(brokerProtocol, "http") || boost::iequals(brokerProtocol, "https");
 
         Settings::merge(integration1Settings, *settings1, false);
 
@@ -178,14 +172,8 @@ private:
     Settings integration1Settings;
     Settings integration2Settings;
     DISALLOW_COPY_AND_ASSIGN(End2EndBroadcastTestBase);
-    bool httpTransport;
 
 protected:
-    bool usesHttpTransport()
-    {
-        return httpTransport;
-    }
-
     std::shared_ptr<MyTestProvider> registerProvider()
     {
         return registerProvider(runtime1);

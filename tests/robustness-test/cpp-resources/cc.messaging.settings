@@ -12,7 +12,6 @@ broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
 
 discovery-directories-domain=io.joynr
 
-capabilities-directory-url=" "
 capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"@JOYNR_DEFAULT_GBID@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
@@ -20,14 +19,7 @@ mqtt-keep-alive-time-seconds=60
 mqtt-reconnect-sleep-time-ms=1000
 
 index=0
-create-channel-retry-interval=500
-delete-channel-retry-interval=5000
 send-msg-retry-interval=500
-longpoll-retry-interval=5000
-local-proxy-host=
-http-debug=
-local-proxy-port=
 persistence-file=joynr.settings
-long-poll-timeout=
 broker-timeout=
 max-send-ttl=

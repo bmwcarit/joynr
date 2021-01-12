@@ -35,15 +35,8 @@ mqtt-reconnect-sleep-time-ms=1000
 
 
 index=0
-create-channel-retry-interval=500
-delete-channel-retry-interval=5000
 send-msg-retry-interval=500
-longpoll-retry-interval=5000
-local-proxy-host=
-http-debug=
-local-proxy-port=
 persistence-file=joynr.settings
-long-poll-timeout=
 broker-timeout=
 max-send-ttl=
 

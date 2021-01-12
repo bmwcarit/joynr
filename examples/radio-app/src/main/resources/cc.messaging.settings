@@ -3,7 +3,6 @@ broker-url=http://localhost:8080/bounceproxy/
 
 discovery-directories-domain=io.joynr
 
-capabilities-directory-url=http://localhost:8080/discovery/channels/
 capabilities-directory-channelid=discoverydirectory_channelid
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
@@ -11,15 +10,8 @@ mqtt-keep-alive-time-seconds=60
 mqtt-reconnect-sleep-time-ms=1000
 
 index=0
-create-channel-retry-interval=500
-delete-channel-retry-interval=5000
 send-msg-retry-interval=500
-longpoll-retry-interval=5000
-local-proxy-host=
-http-debug=
-local-proxy-port=
 persistence-file=joynr.settings
-long-poll-timeout=
 broker-timeout=
 max-send-ttl=
 

@@ -12,15 +12,9 @@ additional-backend-1-gbid=additional-gbid-1
 additional-backend-1-mqtt-keep-alive-time-seconds=30
 additional-backend-1-mqtt-connection-timeout-ms=40
 
-create-channel-retry-interval=500
 send-msg-retry-interval=500
-local-proxy-host=
-local-proxy-port=
 index=0
-longpoll-retry-interval=5000
-delete-channel-retry-interval=5000
 
-capabilities-directory-url=" "
 capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"defaultGbid","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 

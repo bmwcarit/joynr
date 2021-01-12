@@ -155,9 +155,6 @@ private:
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
     tests::testTypes::TestEnum::Enum expectedTestEnum = tests::testTypes::TestEnum::TWO;
 
     testOneShotBroadcastSubscription(
@@ -181,9 +178,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithEnumOutput)
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
     joynr::ByteBuffer expectedByteBuffer{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     testOneShotBroadcastSubscription(
@@ -206,10 +200,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithByteBufferParameter)
 
 TEST_P(End2EndBroadcastTest, updateBroadcastSubscription)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener =
             std::make_shared<MockGpsSubscriptionListener>();
     std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
@@ -258,10 +248,6 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription)
 
 TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
     auto mockSubscriptionListener2 = std::make_shared<MockGpsSubscriptionListener>();
 
@@ -305,10 +291,6 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice)
 
 TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MockGpsSubscriptionListener> subscriptionListener(
             std::make_shared<MockGpsSubscriptionListener>());
 
@@ -346,10 +328,6 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput)
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MockGpsSubscriptionListener> mockListener =
             std::make_shared<MockGpsSubscriptionListener>();
 
@@ -391,10 +369,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput)
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
     std::shared_ptr<tests::testProxy> testProxy = buildProxy();
 
@@ -428,10 +402,6 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionRegistration)
 
 TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MockGpsSubscriptionListener> mockListener =
             std::make_shared<MockGpsSubscriptionListener>();
 
@@ -485,10 +455,6 @@ TEST_P(End2EndBroadcastTest, waitForSuccessfulSubscriptionUpdate)
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MockSubscriptionListenerZeroTypes> mockListener =
             std::make_shared<MockSubscriptionListenerZeroTypes>();
 
@@ -537,10 +503,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_EmptyOutput)
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     MockGpsFloatSubscriptionListener* mockListener = new MockGpsFloatSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
@@ -601,9 +563,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput)
 
 TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
     std::int64_t receiveBroadcastWait = 2000;
 
     std::shared_ptr<MockGpsSubscriptionListener> mockListenerAttribute =
@@ -649,9 +608,6 @@ TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
 
 TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
     std::int64_t receiveBroadcastWait = 2000;
 
     std::vector<std::string> partitions1{"partition1", "partition2"};
@@ -718,10 +674,6 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions)
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MyTestProvider> testProvider = registerProvider(runtime1);
     std::shared_ptr<tests::testProxy> testProxy = buildProxy(runtime2);
 
@@ -730,10 +682,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards)
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_InProcess)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MyTestProvider> testProvider = registerProvider(runtime1);
     std::shared_ptr<tests::testProxy> testProxy = buildProxy(runtime1);
 
@@ -742,10 +690,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_InProcess)
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxies)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MyTestProvider> testProvider = registerProvider(runtime1);
     std::shared_ptr<tests::testProxy> testProxy1 = buildProxy(runtime2);
     std::shared_ptr<tests::testProxy> testProxy2 = buildProxy(runtime2);
@@ -755,10 +699,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxies)
 
 TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxiesInProcess)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MyTestProvider> testProvider = registerProvider(runtime1);
     std::shared_ptr<tests::testProxy> testProxy1 = buildProxy(runtime1);
     std::shared_ptr<tests::testProxy> testProxy2 = buildProxy(runtime1);
@@ -768,10 +708,6 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcastWithWildcards_TwoProxiesInProce
 
 TEST_P(End2EndBroadcastTest, publishBroadcastWithInvalidPartitions)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
     EXPECT_THROW(testProvider->fireLocationUpdate(gpsLocation2, {"partition0", "partition1", "*"}),
@@ -780,10 +716,6 @@ TEST_P(End2EndBroadcastTest, publishBroadcastWithInvalidPartitions)
 
 TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnSameRuntime)
 {
-    if (usesHttpTransport()) {
-        FAIL() << "multicast subscription via HTTP not implemented";
-    }
-
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
     std::shared_ptr<tests::testProxy> testProxy1 = buildProxy();
     std::shared_ptr<tests::testProxy> testProxy2 = buildProxy();
@@ -829,12 +761,6 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
 }
 
 using namespace std::literals;
-
-INSTANTIATE_TEST_CASE_P(
-        DISABLED_Http,
-        End2EndBroadcastTest,
-        testing::Values(std::make_tuple("test-resources/HttpSystemIntegrationTest1.settings"s,
-                                        "test-resources/HttpSystemIntegrationTest2.settings"s)));
 
 INSTANTIATE_TEST_CASE_P(
         Mqtt,
