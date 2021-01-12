@@ -736,7 +736,9 @@ void CcMessageRouter::resolveNextHop(
     onSuccess(resolved);
 }
 
-void CcMessageRouter::registerMulticastReceiver(
+// NOTE for reviewer: code parts of addMulticastReceiver() has not been implemented here.
+// Look at the comment in addMulticastReceiver()
+void CcMessageRouter::registerMulticastInSkeleton(
         const std::string& multicastId,
         const std::string& subscriberParticipantId,
         const std::string& providerParticipantId,
@@ -772,6 +774,10 @@ void CcMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
+    // NOTE for reviewer: unfortuntely the functionality of this function except wrappers
+    // could not be moved to registerMulticastInSkeleton() function, because at the end we check
+    // whether provider address of routing enty is not null and has MqttAdress type. In order to
+    // remain the same logic, this part of refactoring will not be done.
     boost::optional<routingtable::RoutingEntry> routingEntry;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
     {
@@ -830,12 +836,12 @@ void CcMessageRouter::addMulticastReceiver(
     providerAddress = routingEntry->address;
 
     if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(providerAddress.get()) != nullptr) {
-        registerMulticastReceiver(multicastId,
-                                  subscriberParticipantId,
-                                  providerParticipantId,
-                                  std::move(providerAddress),
-                                  std::move(onSuccessWrapper),
-                                  std::move(onErrorWrapper));
+        registerMulticastInSkeleton(multicastId,
+                                    subscriberParticipantId,
+                                    providerParticipantId,
+                                    std::move(providerAddress),
+                                    std::move(onSuccessWrapper),
+                                    std::move(onErrorWrapper));
     } else {
         onSuccessWrapper();
     }
@@ -916,17 +922,12 @@ void CcMessageRouter::removeMulticastReceivers(
     }
 }
 
-void CcMessageRouter::removeMulticastReceiver(
+void CcMessageRouter::unregisterMulticastInSkeleton(
         const std::string& multicastId,
-        const std::string& subscriberParticipantId,
         const std::string& providerParticipantId,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
-
-    saveMulticastReceiverDirectory();
-
     boost::optional<routingtable::RoutingEntry> routingEntry;
     {
         ReadLocker lock(_routingTableLock);
@@ -956,9 +957,23 @@ void CcMessageRouter::removeMulticastReceiver(
                                     providerAddress->toString() + ").");
         }
     }
+
     if (onSuccess) {
         onSuccess();
     }
+}
+
+void CcMessageRouter::removeMulticastReceiver(
+        const std::string& multicastId,
+        const std::string& subscriberParticipantId,
+        const std::string& providerParticipantId,
+        std::function<void()> onSuccess,
+        std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+{
+    _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+    saveMulticastReceiverDirectory();
+    unregisterMulticastInSkeleton(
+            multicastId, providerParticipantId, std::move(onSuccess), std::move(onError));
 }
 
 void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -241,13 +241,18 @@ private:
                                  const system::RoutingTypes::Address& newAddress) final;
 
     void reestablishMulticastSubscriptions();
-    void registerMulticastReceiver(
+    void registerMulticastInSkeleton(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
+    void unregisterMulticastInSkeleton(
+            const std::string& multicastId,
+            const std::string& providerParticipantId,
+            std::function<void()> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError);
 
     void sendQueuedMessages(const std::string& destinationPartId,
                             std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
