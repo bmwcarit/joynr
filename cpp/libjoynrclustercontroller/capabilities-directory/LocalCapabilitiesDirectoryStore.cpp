@@ -188,7 +188,7 @@ bool LocalCapabilitiesDirectoryStore::callReceiverIfPossible(
     return false;
 }
 
-std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getCachedLocalCapabilities(
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getLocalCapabilities(
         const std::string& participantId)
 {
     std::lock_guard<std::recursive_mutex> localCachedRetrievalLock(_cacheLock);
@@ -196,7 +196,7 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getCachedLoc
             _locallyRegisteredCapabilities->lookupByParticipantId(participantId));
 }
 
-std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getCachedLocalCapabilities(
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getLocalCapabilities(
         const std::vector<InterfaceAddress>& interfaceAddresses)
 {
     return searchLocalCache(interfaceAddresses);

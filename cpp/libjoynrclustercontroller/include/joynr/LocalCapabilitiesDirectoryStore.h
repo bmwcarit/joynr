@@ -59,9 +59,9 @@ public:
       * when capabilities from the global directory are received, to check if a new
       * local provider was registered in the meantime.
       */
-    virtual std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(
+    virtual std::vector<types::DiscoveryEntry> getLocalCapabilities(
             const std::string& participantId);
-    std::vector<types::DiscoveryEntry> getCachedLocalCapabilities(
+    std::vector<types::DiscoveryEntry> getLocalCapabilities(
             const std::vector<InterfaceAddress>& interfaceAddress);
 
     virtual std::vector<types::DiscoveryEntry> getAllGlobalCapabilities() const;

@@ -128,7 +128,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_insertInLocalCapabilitiesStorag
 {
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getCachedLocalCapabilities(_participantId).size());
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocalCapabilities(_participantId).size());
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
 }
 
@@ -194,7 +194,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_countGlobalCapabilities)
 }
 
 //It's basically the same method....
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_searchLocalCacheAndGetCachedLocalCapabilities)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, test_searchLocalCacheAndGetLocalCapabilities)
 {
     InterfaceAddress interfaceAddress(
             _localEntry.getDomain(), _localEntry.getInterfaceName());
@@ -202,12 +202,12 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_searchLocalCacheAndGetCachedLoc
     interfaceAddresses.push_back(interfaceAddress);
 
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.searchLocalCache(interfaceAddresses).size());
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getCachedLocalCapabilities(interfaceAddresses).size());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocalCapabilities(interfaceAddresses).size());
 
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
 
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.searchLocalCache(interfaceAddresses).size());
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getCachedLocalCapabilities(interfaceAddresses).size());
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocalCapabilities(interfaceAddresses).size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, test_handlingOfGbidMappings)

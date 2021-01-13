@@ -573,7 +573,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                 }
                 thisSharedPtr->capabilitiesReceived(
                         result,
-                        thisSharedPtr->_localCapabilitiesDirectoryStore->getCachedLocalCapabilities(
+                        thisSharedPtr->_localCapabilitiesDirectoryStore->getLocalCapabilities(
                                 participantId),
                         callback,
                         discoveryScope);
@@ -637,8 +637,8 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                     }
                     thisSharedPtr->capabilitiesReceived(
                             result,
-                            thisSharedPtr->_localCapabilitiesDirectoryStore
-                                    ->getCachedLocalCapabilities(interfaceAddresses),
+                            thisSharedPtr->_localCapabilitiesDirectoryStore->getLocalCapabilities(
+                                    interfaceAddresses),
                             callback,
                             discoveryQos.getDiscoveryScope());
                 }

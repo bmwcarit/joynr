@@ -4354,12 +4354,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUses
             .WillOnce(ReleaseSemaphore(&gcdSemaphore));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
 
-    ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId1)[0].getLastSeenDateMs());
-    ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId1)[0].getExpiryDateMs());
+    ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getLastSeenDateMs());
+    ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getExpiryDateMs());
     ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId1).has_value());
 
-    ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId2)[0].getLastSeenDateMs());
-    ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getCachedLocalCapabilities(participantId2)[0].getExpiryDateMs());
+    ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getLastSeenDateMs());
+    ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getExpiryDateMs());
     ASSERT_TRUE(oldLastSeenDate <
                 _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
     ASSERT_TRUE(oldExpiryDate <
