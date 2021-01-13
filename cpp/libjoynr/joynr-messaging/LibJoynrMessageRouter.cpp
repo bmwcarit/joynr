@@ -510,13 +510,9 @@ void LibJoynrMessageRouter::addMulticastReceiver(
         return;
     }
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
-    {
-        ReadLocker lock(_routingTableLock);
-        const auto routingEntry =
-                _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
-        if (routingEntry) {
-            providerAddress = routingEntry->address;
-        }
+    const auto routingEntry = getRoutingEntry(providerParticipantId);
+    if (routingEntry) {
+        providerAddress = routingEntry->address;
     }
 
     std::function<void()> onSuccessWrapper = [
@@ -647,13 +643,9 @@ void LibJoynrMessageRouter::removeMulticastReceiver(
     _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
 
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
-    {
-        ReadLocker lock(_routingTableLock);
-        const auto routingEntry =
-                _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
-        if (routingEntry) {
-            providerAddress = routingEntry->address;
-        }
+    const auto routingEntry = getRoutingEntry(providerParticipantId);
+    if (routingEntry) {
+        providerAddress = routingEntry->address;
     }
 
     if (!providerAddress) {

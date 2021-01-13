@@ -280,9 +280,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
             continue;
         }
 
-        ReadLocker lock(_routingTableLock);
-        const auto routingEntry =
-                _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
+        const auto routingEntry = getRoutingEntry(providerParticipantId);
         if (!routingEntry) {
             JOYNR_LOG_WARN(logger(),
                            "Persisted multicast receivers: No provider address found for "
@@ -736,8 +734,6 @@ void CcMessageRouter::resolveNextHop(
     onSuccess(resolved);
 }
 
-// NOTE for reviewer: code parts of addMulticastReceiver() has not been implemented here.
-// Look at the comment in addMulticastReceiver()
 void CcMessageRouter::registerMulticastInSkeleton(
         const std::string& multicastId,
         const std::string& subscriberParticipantId,
@@ -774,16 +770,9 @@ void CcMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    // NOTE for reviewer: unfortuntely the functionality of this function except wrappers
-    // could not be moved to registerMulticastInSkeleton() function, because at the end we check
-    // whether provider address of routing enty is not null and has MqttAdress type. In order to
-    // remain the same logic, this part of refactoring will not be done.
     boost::optional<routingtable::RoutingEntry> routingEntry;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
-    {
-        ReadLocker lock(_routingTableLock);
-        routingEntry = _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
-    }
+    routingEntry = getRoutingEntry(providerParticipantId);
 
     std::function<void()> onSuccessWrapper = [
         thisWeakPtr = joynr::util::as_weak_ptr(
@@ -907,9 +896,8 @@ void CcMessageRouter::removeMulticastReceivers(
     std::unordered_set<std::string> multicastReceivers =
             _multicastReceiverDirectory.getReceivers(multicastId);
     for (const auto& participantId : multicastReceivers) {
-        const auto routingEntry = _routingTable.lookupRoutingEntryByParticipantId(participantId);
+        const auto routingEntry = getRoutingEntry(participantId);
         if (routingEntry && destAddress == routingEntry->address) {
-            // for the time being, just do it async
             JOYNR_LOG_INFO(logger(),
                            "removeMulticastReceivers: calling removeMulticastReceiver "
                            "multicastId {}, participantId {}, providerParticipantId {}",
@@ -928,11 +916,7 @@ void CcMessageRouter::unregisterMulticastInSkeleton(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    boost::optional<routingtable::RoutingEntry> routingEntry;
-    {
-        ReadLocker lock(_routingTableLock);
-        routingEntry = _routingTable.lookupRoutingEntryByParticipantId(providerParticipantId);
-    }
+    const auto routingEntry = getRoutingEntry(providerParticipantId);
 
     if (!routingEntry) {
         exceptions::ProviderRuntimeException exception(

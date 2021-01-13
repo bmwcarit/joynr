@@ -600,6 +600,13 @@ void AbstractMessageRouter::stopSubscription(std::shared_ptr<ImmutableMessage> m
     std::ignore = message;
 }
 
+boost::optional<routingtable::RoutingEntry> AbstractMessageRouter::getRoutingEntry(
+        const std::string& participantId)
+{
+    ReadLocker lock(_routingTableLock);
+    return _routingTable.lookupRoutingEntryByParticipantId(participantId);
+}
+
 /**
  * IMPLEMENTATION of MessageRunnable class
  */

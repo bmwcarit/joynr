@@ -193,6 +193,8 @@ protected:
 
     virtual void stopSubscription(std::shared_ptr<ImmutableMessage> message);
 
+    boost::optional<routingtable::RoutingEntry> getRoutingEntry(const std::string& participantId);
+
     std::chrono::milliseconds createDelayWithExponentialBackoff(
             std::uint32_t sendMsgRetryIntervalMs,
             std::uint32_t tryCount) const;
