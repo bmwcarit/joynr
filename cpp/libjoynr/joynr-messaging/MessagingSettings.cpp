@@ -90,12 +90,6 @@ const std::string& MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_URL()
-{
-    static const std::string value("messaging/capabilities-directory-url");
-    return value;
-}
-
 const std::string& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_CHANNELID()
 {
     static const std::string value("messaging/capabilities-directory-channelid");
@@ -192,51 +186,15 @@ const std::string& MessagingSettings::SETTING_INDEX()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_CREATE_CHANNEL_RETRY_INTERVAL()
-{
-    static const std::string value("messaging/create-channel-retry-interval");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_DELETE_CHANNEL_RETRY_INTERVAL()
-{
-    static const std::string value("messaging/delete-channel-retry-interval");
-    return value;
-}
-
 const std::string& MessagingSettings::SETTING_SEND_MSG_RETRY_INTERVAL()
 {
     static const std::string value("messaging/send-msg-retry-interval");
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_LONGPOLL_RETRY_INTERVAL()
-{
-    static const std::string value("messaging/longpoll-retry-interval");
-    return value;
-}
-
 const std::string& MessagingSettings::SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS()
 {
     static const std::string value("messaging/discovery-entry-expiry-interval-ms");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_LOCAL_PROXY_HOST()
-{
-    static const std::string value("messaging/local-proxy-host");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_HTTP_DEBUG()
-{
-    static const std::string value("messaging/http-debug");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_LOCAL_PROXY_PORT()
-{
-    static const std::string value("messaging/local-proxy-port");
     return value;
 }
 
@@ -292,30 +250,6 @@ const std::string& MessagingSettings::DEFAULT_PERSISTENCE_FILENAME()
 {
     static const std::string value("joynr.settings");
     return value;
-}
-
-const std::string& MessagingSettings::SETTING_LONGPOLL_TIMEOUT_MS()
-{
-    static const std::string value("messaging/long-poll-timeout");
-    return value;
-}
-
-std::int64_t MessagingSettings::DEFAULT_LONGPOLL_TIMEOUT_MS()
-{
-    // 10 minutes
-    return (10 * 60 * 100);
-}
-
-const std::string& MessagingSettings::SETTING_HTTP_CONNECT_TIMEOUT_MS()
-{
-    static const std::string value("messaging/http-connect-timeout");
-    return value;
-}
-
-std::int64_t MessagingSettings::DEFAULT_HTTP_CONNECT_TIMEOUT_MS()
-{
-    // 1 minute
-    return (1 * 60 * 1000);
 }
 
 const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
@@ -517,11 +451,6 @@ std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
     return _settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN());
 }
 
-std::string MessagingSettings::getCapabilitiesDirectoryUrl() const
-{
-    return _settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL());
-}
-
 std::string MessagingSettings::getCapabilitiesDirectoryChannelId() const
 {
     return _settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID());
@@ -583,26 +512,6 @@ void MessagingSettings::setIndex(std::int64_t index)
     _settings.set(SETTING_INDEX(), index);
 }
 
-int MessagingSettings::getCreateChannelRetryInterval() const
-{
-    return _settings.get<int>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL());
-}
-
-void MessagingSettings::setCreateChannelRetryInterval(const int& retryInterval)
-{
-    _settings.set(SETTING_CREATE_CHANNEL_RETRY_INTERVAL(), retryInterval);
-}
-
-int MessagingSettings::getDeleteChannelRetryInterval() const
-{
-    return _settings.get<int>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL());
-}
-
-void MessagingSettings::setDeleteChannelRetryInterval(const int& retryInterval)
-{
-    _settings.set(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), retryInterval);
-}
-
 std::int64_t MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
 {
     return _settings.get<std::int64_t>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
@@ -623,46 +532,6 @@ void MessagingSettings::setSendMsgRetryInterval(const std::uint32_t& retryInterv
     _settings.set(SETTING_SEND_MSG_RETRY_INTERVAL(), retryInterval);
 }
 
-int MessagingSettings::getLongPollRetryInterval() const
-{
-    return _settings.get<int>(SETTING_LONGPOLL_RETRY_INTERVAL());
-}
-
-void MessagingSettings::setLongPollRetryInterval(const int& retryInterval)
-{
-    _settings.set(SETTING_LONGPOLL_RETRY_INTERVAL(), retryInterval);
-}
-
-std::string MessagingSettings::getLocalProxyPort() const
-{
-    return _settings.get<std::string>(SETTING_LOCAL_PROXY_PORT());
-}
-
-void MessagingSettings::setLocalProxyPort(const int& localProxyPort)
-{
-    _settings.set(SETTING_LOCAL_PROXY_PORT(), localProxyPort);
-}
-
-std::string MessagingSettings::getLocalProxyHost() const
-{
-    return _settings.get<std::string>(SETTING_LOCAL_PROXY_HOST());
-}
-
-void MessagingSettings::setLocalProxyHost(const std::string& localProxyHost)
-{
-    _settings.set(SETTING_LOCAL_PROXY_HOST(), localProxyHost);
-}
-
-bool MessagingSettings::getHttpDebug() const
-{
-    return _settings.get<bool>(SETTING_HTTP_DEBUG());
-}
-
-void MessagingSettings::setHttpDebug(const bool& httpDebug)
-{
-    _settings.set(SETTING_HTTP_DEBUG(), httpDebug);
-}
-
 bool MessagingSettings::getMqttExponentialBackoffEnabled() const
 {
     return _settings.get<bool>(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED());
@@ -681,26 +550,6 @@ std::string MessagingSettings::getMessagingPropertiesPersistenceFilename() const
 void MessagingSettings::setMessagingPropertiesPersistenceFilename(const std::string& filename)
 {
     _settings.set(SETTING_PERSISTENCE_FILENAME(), filename);
-}
-
-std::int64_t MessagingSettings::getLongPollTimeoutMs() const
-{
-    return _settings.get<std::int64_t>(SETTING_LONGPOLL_TIMEOUT_MS());
-}
-
-void MessagingSettings::setLongPollTimeoutMs(std::int64_t timeout_ms)
-{
-    _settings.set(SETTING_LONGPOLL_TIMEOUT_MS(), timeout_ms);
-}
-
-std::int64_t MessagingSettings::getHttpConnectTimeout() const
-{
-    return _settings.get<std::int64_t>(SETTING_HTTP_CONNECT_TIMEOUT_MS());
-}
-
-void MessagingSettings::setHttpConnectTimeoutMs(std::int64_t timeout_ms)
-{
-    _settings.set(SETTING_HTTP_CONNECT_TIMEOUT_MS(), timeout_ms);
 }
 
 std::int64_t MessagingSettings::getBrokerTimeoutMs() const
@@ -822,14 +671,6 @@ void MessagingSettings::checkSettings()
     }
 
     assert(_settings.contains(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
-
-    assert(_settings.contains(SETTING_CAPABILITIES_DIRECTORY_URL()));
-    std::string capabilitiesDirectoryUrl =
-            _settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL());
-    if (capabilitiesDirectoryUrl.back() != '/') {
-        capabilitiesDirectoryUrl.append("/");
-        _settings.set(SETTING_CAPABILITIES_DIRECTORY_URL(), capabilitiesDirectoryUrl);
-    }
     assert(_settings.contains(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     assert(_settings.contains(SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID()));
 
@@ -855,17 +696,8 @@ void MessagingSettings::checkSettings()
     if (!_settings.contains(SETTING_INDEX())) {
         _settings.set(SETTING_INDEX(), 0);
     }
-    if (!_settings.contains(SETTING_CREATE_CHANNEL_RETRY_INTERVAL())) {
-        _settings.set(SETTING_CREATE_CHANNEL_RETRY_INTERVAL(), 5000);
-    }
-    if (!_settings.contains(SETTING_DELETE_CHANNEL_RETRY_INTERVAL())) {
-        _settings.set(SETTING_DELETE_CHANNEL_RETRY_INTERVAL(), 5000);
-    }
     if (!_settings.contains(SETTING_SEND_MSG_RETRY_INTERVAL())) {
         _settings.set(SETTING_SEND_MSG_RETRY_INTERVAL(), 5000);
-    }
-    if (!_settings.contains(SETTING_LONGPOLL_RETRY_INTERVAL())) {
-        _settings.set(SETTING_LONGPOLL_RETRY_INTERVAL(), 5000);
     }
     if (!_settings.contains(SETTING_PERSISTENCE_FILENAME())) {
         _settings.set(SETTING_PERSISTENCE_FILENAME(), DEFAULT_PERSISTENCE_FILENAME());
@@ -1065,10 +897,6 @@ void MessagingSettings::printSettings() const
                    _settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
-                   SETTING_CAPABILITIES_DIRECTORY_URL(),
-                   _settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_URL()));
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
                    SETTING_CAPABILITIES_DIRECTORY_CHANNELID(),
                    _settings.get<std::string>(SETTING_CAPABILITIES_DIRECTORY_CHANNELID()));
     JOYNR_LOG_INFO(logger(),
@@ -1097,28 +925,8 @@ void MessagingSettings::printSettings() const
                    _settings.get<std::string>(SETTING_INDEX()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
-                   SETTING_CREATE_CHANNEL_RETRY_INTERVAL(),
-                   _settings.get<std::string>(SETTING_CREATE_CHANNEL_RETRY_INTERVAL()));
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_DELETE_CHANNEL_RETRY_INTERVAL(),
-                   _settings.get<std::string>(SETTING_DELETE_CHANNEL_RETRY_INTERVAL()));
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
                    SETTING_SEND_MSG_RETRY_INTERVAL(),
                    _settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL()));
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_LONGPOLL_RETRY_INTERVAL(),
-                   _settings.get<std::string>(SETTING_LONGPOLL_RETRY_INTERVAL()));
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_LOCAL_PROXY_HOST(),
-                   _settings.get<std::string>(SETTING_LOCAL_PROXY_HOST()));
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_LOCAL_PROXY_PORT(),
-                   _settings.get<std::string>(SETTING_LOCAL_PROXY_PORT()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_PERSISTENCE_FILENAME(),

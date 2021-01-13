@@ -48,7 +48,6 @@ public:
     static std::string SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(std::uint8_t index);
 
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
-    static const std::string& SETTING_CAPABILITIES_DIRECTORY_URL();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
     static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS();
@@ -58,23 +57,14 @@ public:
     static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
     static const std::string& SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES();
     static const std::string& SETTING_INDEX();
-    static const std::string& SETTING_CREATE_CHANNEL_RETRY_INTERVAL();
-    static const std::string& SETTING_DELETE_CHANNEL_RETRY_INTERVAL();
     static const std::string& SETTING_SEND_MSG_RETRY_INTERVAL();
-    static const std::string& SETTING_LONGPOLL_RETRY_INTERVAL();
     static const std::string& SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
-
-    static const std::string& SETTING_LOCAL_PROXY_HOST();
-    static const std::string& SETTING_LOCAL_PROXY_PORT();
 
     static const std::string& SETTING_CERTIFICATE_AUTHORITY();
     static const std::string& SETTING_CLIENT_CERTIFICATE();
     static const std::string& SETTING_CLIENT_CERTIFICATE_PASSWORD();
 
-    static const std::string& SETTING_HTTP_DEBUG();
     static const std::string& SETTING_PERSISTENCE_FILENAME();
-    static const std::string& SETTING_LONGPOLL_TIMEOUT_MS();
-    static const std::string& SETTING_HTTP_CONNECT_TIMEOUT_MS();
     static const std::string& SETTING_BROKER_TIMEOUT_MS();
 
     static const std::string& SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS();
@@ -107,9 +97,7 @@ public:
     static const std::string& DEFAULT_GBID();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
-    static std::int64_t DEFAULT_LONGPOLL_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
-    static std::int64_t DEFAULT_HTTP_CONNECT_TIMEOUT_MS();
     static std::int64_t DEFAULT_BROKER_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS();
@@ -150,7 +138,6 @@ public:
 
     std::string getDiscoveryDirectoriesDomain() const;
 
-    std::string getCapabilitiesDirectoryUrl() const;
     std::string getCapabilitiesDirectoryChannelId() const;
     std::string getCapabilitiesDirectoryParticipantId() const;
 
@@ -163,24 +150,12 @@ public:
     bool getMqttExponentialBackoffEnabled() const;
     void setMqttExponentialBackoffEnabled(const bool& enable);
     std::chrono::milliseconds getMqttConnectionTimeoutMs() const;
-    std::int64_t getIndex() const;
     void setIndex(std::int64_t index);
-    int getCreateChannelRetryInterval() const;
-    void setCreateChannelRetryInterval(const int& retryInterval);
-    int getDeleteChannelRetryInterval() const;
-    void setDeleteChannelRetryInterval(const int& retryInterval);
+    std::int64_t getIndex() const;
     std::int64_t getDiscoveryEntryExpiryIntervalMs() const;
     void setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs);
     std::uint32_t getSendMsgRetryInterval() const;
     void setSendMsgRetryInterval(const std::uint32_t& retryInterval);
-    int getLongPollRetryInterval() const;
-    void setLongPollRetryInterval(const int& retryInterval);
-    std::string getLocalProxyHost() const;
-    void setLocalProxyHost(const std::string& localProxyHost);
-    std::string getLocalProxyPort() const;
-    void setLocalProxyPort(const int& localProxyPort);
-    void setHttpDebug(const bool& httpDebug);
-    bool getHttpDebug() const;
     std::string getCertificateAuthority() const;
     void setCertificateAuthority(const std::string& certificateAuthority);
     std::string getClientCertificate() const;
@@ -189,10 +164,6 @@ public:
     void setClientCertificatePassword(const std::string& clientCertificatePassword);
     std::string getMessagingPropertiesPersistenceFilename() const;
     void setMessagingPropertiesPersistenceFilename(const std::string& persistenceFilename);
-    std::int64_t getLongPollTimeoutMs() const;
-    void setLongPollTimeoutMs(std::int64_t timeout_ms);
-    std::int64_t getHttpConnectTimeout() const;
-    void setHttpConnectTimeoutMs(std::int64_t timeout_ms);
     std::int64_t getBrokerTimeoutMs() const;
     void setBrokerTimeoutMs(std::int64_t timeout_ms);
     std::int64_t getRoutingTableGracePeriodMs() const;
