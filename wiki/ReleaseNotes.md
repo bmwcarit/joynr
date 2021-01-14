@@ -2,6 +2,13 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.7
+
+## Security Fixes
+* **[Generator]** Upgraded Java `guava` library from `21.0`/`15.0` to `30.1`, fixing
+*CVE-2020-8908* and *CVE-2018-10237*.
+* **[Test]** Upgraded Java `junit` library from `4.12` to `4.13.1`, fixing *CVE-2020-15250*.
+
 # joynr 1.15.6
 
 ## API-relevant Changes
