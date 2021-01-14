@@ -303,7 +303,8 @@ void AbstractMessageRouter::scheduleMessage(
                             "message.",
                             message->getTrackingInfo(),
                             destAddress->toString());
-            removeMulticastReceivers(message->getRecipient(), destAddress, message->getSender());
+            removeUnreachableMulticastReceivers(
+                    message->getRecipient(), destAddress, message->getSender());
         } else if (message->getType() == Message::VALUE_MESSAGE_TYPE_PUBLICATION()) {
             JOYNR_LOG_ERROR(logger(),
                             "Publication message {} could not be sent to recipient, {}. Stub "
@@ -583,7 +584,7 @@ std::chrono::milliseconds AbstractMessageRouter::createDelayWithExponentialBacko
     return std::chrono::milliseconds(retryInterval);
 }
 
-void AbstractMessageRouter::removeMulticastReceivers(
+void AbstractMessageRouter::removeUnreachableMulticastReceivers(
         const std::string& multicastId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         const std::string& providerParticipantId)

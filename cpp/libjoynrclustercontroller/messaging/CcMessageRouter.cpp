@@ -879,17 +879,24 @@ void CcMessageRouter::stopSubscription(std::shared_ptr<ImmutableMessage> message
     }
 }
 
-void CcMessageRouter::removeMulticastReceivers(
+void CcMessageRouter::removeUnreachableMulticastReceivers(
         const std::string& multicastId,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         const std::string& providerParticipantId)
 {
-    JOYNR_LOG_INFO(
-            logger(),
-            "removeMulticastReceivers: multicastId {}, destAddress {}, providerParticipantId {}",
-            multicastId,
-            destAddress->toString(),
-            providerParticipantId);
+    JOYNR_LOG_INFO(logger(),
+                   "removeUnreachableMulticastReceivers: multicastId {}, destAddress {}, "
+                   "providerParticipantId {}",
+                   multicastId,
+                   destAddress->toString(),
+                   providerParticipantId);
+
+    std::shared_ptr<IMessagingMulticastSubscriber> multicastMessagingSkeleton;
+    try {
+        multicastMessagingSkeleton = getMulticastMessagingSkeleton(providerParticipantId);
+    } catch (const exceptions::ProviderRuntimeException& exception) {
+        JOYNR_LOG_ERROR(logger(), exception.getMessage());
+    }
 
     // we need the list of all participantIds that match this destAddress
     std::unordered_set<std::string> multicastReceivers =
@@ -897,14 +904,17 @@ void CcMessageRouter::removeMulticastReceivers(
     for (const auto& participantId : multicastReceivers) {
         const auto routingEntry = getRoutingEntry(participantId);
         if (routingEntry && destAddress == routingEntry->address) {
-            JOYNR_LOG_INFO(logger(),
-                           "removeMulticastReceivers: calling removeMulticastReceiver "
-                           "multicastId {}, participantId {}, providerParticipantId {}",
-                           multicastId,
-                           participantId,
-                           providerParticipantId);
-            removeMulticastReceiver(
-                    multicastId, participantId, providerParticipantId, nullptr, nullptr);
+            JOYNR_LOG_INFO(
+                    logger(),
+                    "removeUnreachableMulticastReceivers: removing subscription for"
+                    "multicastId {}, participantId {}",
+                    multicastId,
+                    participantId);
+            _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, participantId);
+            saveMulticastReceiverDirectory();
+            if (multicastMessagingSkeleton) {
+                multicastMessagingSkeleton->unregisterMulticastSubscription(multicastId);
+            }
         }
     }
 }
