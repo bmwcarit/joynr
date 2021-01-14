@@ -58,7 +58,7 @@ public class ConnectorFactory {
      * @param fromParticipantId origin participant id
      * @param arbitrationResult result of arbitration
      * @param qosSettings QOS settings
-     * @param statelessAsyncParticipantId
+     * @param statelessAsyncParticipantId stateless async participant id
      * @return connector object
      */
     public Optional<ConnectorInvocationHandler> create(final String fromParticipantId,

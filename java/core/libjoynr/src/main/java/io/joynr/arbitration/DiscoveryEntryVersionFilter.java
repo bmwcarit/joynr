@@ -30,7 +30,7 @@ import joynr.types.Version;
 
 /**
  * Given the version of an interface for which a proxy is being created (the caller) and a set of {@link DiscoveryEntry
- * discovery entries}, this class' {@link #filter(Version, Set<DiscoveryEntry>)} method can be used to filter out all
+ * discovery entries}, this class' {@link #filter} method can be used to filter out all
  * discovery entries which are not compatible with the caller version.
  * Uses the {@link VersionCompatibilityChecker} to determine whether the versions
  * are compatible or not.

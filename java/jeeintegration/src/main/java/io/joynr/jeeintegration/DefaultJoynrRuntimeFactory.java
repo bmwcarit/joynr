@@ -133,8 +133,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
      * @param rawMessagePreprocessor can be optionally provided to intercept incoming messages and inspect or modify them
      * @param mqttClientIdProvider can be optionally provided to generate custom mqtt client id
      * @param messagePersister can be optionally provided to persist joynr messages and thus increase sudden crash resilience
-     * @param beanManager
-     * @param mqttStatusReceiver Is passed to POJO joynr and receives metrics about the status of the mqtt connection.
+     * @param beanManager bean manager
+     * @param joynrStatusMetrics Is passed to POJO joynr and receives metrics about the status of the mqtt connection.
      */
     // CHECKSTYLE:OFF
     @Inject

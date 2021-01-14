@@ -31,6 +31,7 @@ public interface JoynrStatusMetrics {
 
     /**
      * @return Returns a collection with the status metrics objects for the given gbid.
+     * @param gbid the selected GBID
      */
     Collection<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid);
 

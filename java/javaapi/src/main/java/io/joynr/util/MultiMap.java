@@ -28,6 +28,7 @@ public class MultiMap<K, V> implements Serializable {
     private final Map<K, Set<V>> storage = new HashMap<>();
 
     /**
+     * @param key key
      * @return {@code true} if at least one key-value pair exists
      * for {@code key}
      */
@@ -43,6 +44,7 @@ public class MultiMap<K, V> implements Serializable {
     }
 
     /**
+     * @param key key
      * @return a set view of the values associated with {@code key}
      */
     public Set<V> get(K key) {
@@ -54,6 +56,8 @@ public class MultiMap<K, V> implements Serializable {
 
     /**
      * Stores a {@code key}-{@code value} pair.
+     * @param key key
+     * @param value value
      */
     public void put(K key, V value) {
         Set<V> set = storage.get(key);
@@ -67,6 +71,8 @@ public class MultiMap<K, V> implements Serializable {
     /**
      * Removes {@code key}-{@code value} pair if it exists.
      *
+     * @param key key
+     * @param value value
      * @return {@code true} if pair was removed, {@code false} otherwise
      */
     public boolean remove(K key, V value) {
@@ -83,6 +89,7 @@ public class MultiMap<K, V> implements Serializable {
 
     /**
      * Removes all values associated with {@code key}.
+     * @param key key
      */
     public void removeAll(K key) {
         storage.remove(key);

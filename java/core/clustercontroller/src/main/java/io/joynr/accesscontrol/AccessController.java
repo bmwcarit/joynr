@@ -29,7 +29,7 @@ public interface AccessController {
      * Does the given request message has permission to reach the provider?
      *
      * @param message The message to check
-     * @return true if the message has permission, false otherwise
+     * @param callback will be called with true if the message has permission, false otherwise
      */
     void hasConsumerPermission(final ImmutableMessage message, final HasConsumerPermissionCallback callback);
 

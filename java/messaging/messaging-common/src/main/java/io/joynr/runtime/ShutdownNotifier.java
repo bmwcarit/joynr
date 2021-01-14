@@ -53,7 +53,7 @@ public class ShutdownNotifier {
     /**
      * register to have the listener's shutdown method called at system shutdown
      * NOTE: no shutdown order is guaranteed.
-     * @param shutdownListener
+     * @param shutdownListener ShutdownListener
      */
     public void registerForShutdown(ShutdownListener shutdownListener) {
         synchronized (shutdownListenerList) {
@@ -68,7 +68,7 @@ public class ShutdownNotifier {
      * listener's shutdown will be called after all listeners registered using
      * {@link #registerForShutdown(ShutdownListener)}.
      * NOTE: Listeners who manage some executor service should use this method.
-     * @param shutdownListener
+     * @param shutdownListener ShutdownListener
      */
     public void registerToBeShutdownAsLast(ShutdownListener shutdownListener) {
         synchronized (shutdownListenerList) {

@@ -195,26 +195,29 @@ class JoynrJavaGeneratorExtensions extends JoynrGeneratorExtensions {
 
 	// for parts
 	def appendJavadocComment(FModelElement element, String prefixForNewLines)'''
-		«IF element.comment !== null»
-			«FOR comment : element.comment.elements»
-				«IF comment.type == FAnnotationType::DESCRIPTION»
-					«ReformatComment(comment, prefixForNewLines)»
-				«ENDIF»
-			«ENDFOR»
-		«ENDIF»
+		«getElementDescription(element, prefixForNewLines)»
 	'''
 
-	def appendJavadocParameter(FTypedElement element, String prefixForNewLines) {
-		var description = prefixForNewLines + " @param " + element.joynrName + " ";
+	def String getElementDescription(FModelElement element, String prefixForNewLines) {
+		var description = "";
+		var found = false;
 		if (element.comment !== null) {
 			for (comment : element.comment.elements) {
 				if (comment.type == FAnnotationType::DESCRIPTION) {
 					description += ReformatComment(comment, prefixForNewLines)
+					found = true
 				}
 			}
-		} else {
+		}
+		if (!found) {
 			description += "description missing in Franca model."
 		}
+		return description;
+	}
+
+	def appendJavadocParameter(FTypedElement element, String prefixForNewLines) {
+		var description = prefixForNewLines + " @param " + element.joynrName + " ";
+		description += getElementDescription(element, prefixForNewLines);
 		if (element.type.isTypeDef) {
 			description += "\n" + prefixForNewLines +
 			" (type resolved from modeled Franca typedef " + 

@@ -63,9 +63,10 @@ import android.util.Log;
  * The logging levels specified for SLF4J can be almost directly mapped to
  * the levels that exist in the Google Android platform. The following table
  * shows the mapping implemented by this logger.
+ * </p>
  * <p>
- * <table border="1">
- * 	<tr><th><b>SLF4J<b></th><th><b>Android</b></th></tr>
+ * <table border="1" summary="">
+ * 	<tr><th><b>SLF4J</b></th><th><b>Android</b></th></tr>
  * 	<tr><td>TRACE</td><td>{@link Log#VERBOSE}</td></tr>
  * 	<tr><td>DEBUG</td><td>{@link Log#DEBUG}</td></tr>
  * 	<tr><td>INFO</td><td>{@link Log#INFO}</td></tr>

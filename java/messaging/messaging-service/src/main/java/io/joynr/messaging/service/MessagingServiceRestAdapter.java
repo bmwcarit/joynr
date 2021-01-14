@@ -84,7 +84,7 @@ public class MessagingServiceRestAdapter {
      *
      * @param ccid
      *            channel id of the receiver.
-     * @param message
+     * @param serializedMessage
      *            the content being sent (serialized SMRF message).
      * @return a location for querying the message status
      */

@@ -27,7 +27,7 @@ public interface MulticastAddressCalculator {
 
     /**
      * Call this method to calculate a multicast address for the given message.
-     * The message must be of type {@link ImmutableMessage#VALUE_MESSAGE_TYPE_MULTICAST}.
+     * The message must be of type {@link joynr.Message.MessageType#VALUE_MESSAGE_TYPE_MULTICAST}.
      *
      * @param message the message for which to calculate the address.
      *

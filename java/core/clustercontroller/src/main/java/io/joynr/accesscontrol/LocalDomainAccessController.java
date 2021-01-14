@@ -57,7 +57,7 @@ public interface LocalDomainAccessController {
      *                      argument is the permission to access the given interface, or NULL if
      *                      there is more than one ACE for given uid, domain, interfaceName.
      *                      If the callback returns NULL, use {@link #getConsumerPermission(String,
-     *                      String, String, TrustLevel)} to gain Permission on interface operation.
+     *                      String, String, String, TrustLevel)} to gain Permission on interface operation.
      */
     void getConsumerPermission(String userId,
                                String domain,

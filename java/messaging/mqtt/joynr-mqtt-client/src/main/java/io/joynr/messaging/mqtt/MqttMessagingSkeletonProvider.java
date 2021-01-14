@@ -47,7 +47,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * A provider for {@link IMessagingSkeletonFactory} instances which checks with the property configured under
- * {@link io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} If shared subscriptions are
+ * {@link io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} If shared subscriptions are
  * enabled, it returns an instance of {@link SharedSubscriptionsMqttMessagingSkeleton}. Otherwise (default behaviour),
  * it returns an instance of the normal {@link MqttMessagingSkeleton}.
  */

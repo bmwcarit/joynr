@@ -128,6 +128,8 @@ public interface ProxyBuilder<T> {
 
     /**
      * For internal use only!
+     * @param arbitrationResult ArbitrationResult
+     * @return proxy object
      */
     T build(ArbitrationResult arbitrationResult);
 

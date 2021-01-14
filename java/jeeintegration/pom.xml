@@ -40,10 +40,9 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<includeDependencySources>true</includeDependencySources>
-					<dependencySourceExcludes>
-						<dependencySourceExclude>integrationTest:*</dependencySourceExclude>
-					</dependencySourceExcludes>
-					<additionalparam>-Xdoclint:none</additionalparam>
+					<sourceFileExcludes>
+						<sourceFileExclude>**/integrationTest/**</sourceFileExclude>
+					</sourceFileExcludes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -340,15 +339,6 @@
 					</testResource>
 				</testResources>
 				<plugins>
-					<plugin>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<configuration>
-							<includeDependencySources>true</includeDependencySources>
-							<dependencySourceIncludes>
-							</dependencySourceIncludes>
-							<additionalparam>-Xdoclint:none</additionalparam>
-						</configuration>
-					</plugin>
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>

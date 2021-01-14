@@ -56,12 +56,11 @@ import joynr.infrastructure.GlobalDomainRoleControllerProvider;
  * <p>
  *     Values which you will most likely want to override to match your deployment setup are:
  *     <ul>
- *         <li>{@link ConfigurableMessagingSettings#PROPERTY_GBIDS}</li>
- *         <li>{@link MqttModule#PROPERTY_MQTT_BROKER_URIS}</li>
+ *         <li>{@link io.joynr.messaging.ConfigurableMessagingSettings#PROPERTY_GBIDS}</li>
+ *         <li>{@link io.joynr.messaging.mqtt.MqttModule#PROPERTY_MQTT_BROKER_URIS}</li>
  *         <li>{@link MessagingPropertyKeys#PROPERTY_SERVLET_CONTEXT_ROOT}</li>
  *         <li>{@link MessagingPropertyKeys#PROPERTY_SERVLET_HOST_PATH}</li>
  *     </ul>
- * </p>
  */
 @Singleton
 public class JoynrConfigurationProvider {

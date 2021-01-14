@@ -1015,8 +1015,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
      * @param participantId The participant id to search for.
      * @param discoveryQos The discovery quality of service for the search.
      * @param gbids Global Backend IDs for which (global) provider should be returned.
-     * @param callback called if the capability with the given participant ID
-     *      is retrieved. Or null if not found.
+     * @param capabilityCallback callback to return the result
      */
     public void lookup(final String participantId,
                        final DiscoveryQos discoveryQos,

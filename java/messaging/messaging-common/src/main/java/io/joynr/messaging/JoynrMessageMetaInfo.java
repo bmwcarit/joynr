@@ -25,9 +25,9 @@ import java.util.Map;
 import io.joynr.context.JoynrMessageScoped;
 
 /**
- * A container object for the {@link joynr.JoynrMessage#getMessageMetaInfo() message meta info} scoped to the
- * {@link JoynrMessageScoped processing of a joynr message}. The meta-info contains custom headers and other
- * information about the message being delivered.
+ * A container object for the message meta info scoped to the {@link JoynrMessageScoped processing
+ * of a joynr message}. The meta-info contains custom headers and other information about the
+ * message being delivered.
  */
 @JoynrMessageScoped
 public class JoynrMessageMetaInfo {

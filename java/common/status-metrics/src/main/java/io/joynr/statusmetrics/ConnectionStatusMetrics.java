@@ -73,7 +73,7 @@ public interface ConnectionStatusMetrics {
     long getConnectionDrops();
 
     /**
-     * @return Returns the number of connection attempts made with this connection.<br/>
+     * @return Returns the number of connection attempts made with this connection.<br>
      *     <b>NOTE:</b> HivemqMqttClient currently only reports initial connection attempts. (Automatic) Reconnect attempts
      *     after a connection loss are not available.
      */

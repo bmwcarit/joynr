@@ -29,21 +29,22 @@ public interface SubscriptionRequestStorage {
 
     /**
      * Maps providerParticipantId to all its active subscriptionRequests
+     * @return saved subscriptionRequests
      */
     MultiMap<String, PersistedSubscriptionRequest> getSavedSubscriptionRequests();
 
     /**
      * Removes the subscriptionRequest from persistence
-     * @param providerId
-     * @param subscriptionRequest
+     * @param providerId provider participant id
+     * @param subscriptionRequest subscriptionRequest to be removed
      */
     void removeSubscriptionRequest(String providerId, PersistedSubscriptionRequest subscriptionRequest);
 
     /**
      * Persists the subscriptionRequest so that the subscription can be reactivated on provider restart
-     * @param proxyParticipantId
-     * @param providerParticipantId
-     * @param subscriptionRequest
+     * @param proxyParticipantId proxy participant id
+     * @param providerParticipantId provider participant id
+     * @param subscriptionRequest subscriptionRequest to persist
      */
     void persistSubscriptionRequest(String proxyParticipantId,
                                     String providerParticipantId,

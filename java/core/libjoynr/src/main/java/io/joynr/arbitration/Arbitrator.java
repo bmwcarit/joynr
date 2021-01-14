@@ -178,6 +178,8 @@ public class Arbitrator {
 
     /**
      * Sets the arbitration result at the arbitrationListener if the listener is already registered
+     * @param arbitrationStatus ArbitrationStatus
+     * @param arbitrationResult ArbitrationResult
      */
     protected void arbitrationFinished(ArbitrationStatus arbitrationStatus, ArbitrationResult arbitrationResult) {
         this.arbitrationStatus = arbitrationStatus;

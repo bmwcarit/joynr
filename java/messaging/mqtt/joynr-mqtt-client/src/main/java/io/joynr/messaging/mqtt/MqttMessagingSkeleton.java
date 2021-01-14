@@ -106,7 +106,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     }
 
     /**
-     * Performs standard subscription to the {@link #ownAddress own address'} topic; override this method to perform
+     * Performs standard subscription to the own address topic; override this method to perform
      * custom subscriptions. One use-case could be to subscribe to one topic for incoming messages and another topic for
      * replies.
      */

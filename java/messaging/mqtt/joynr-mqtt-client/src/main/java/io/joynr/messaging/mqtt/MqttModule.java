@@ -81,8 +81,8 @@ public class MqttModule extends AbstractModule {
      * subscriptions are a feature of HiveMQ which allow queue semantics to be used for subscribers to MQTT topics. That
      * is, only one subscriber receives a message, rather than all subscribers. This feature can be used to load balance
      * incoming messages on MQTT. This feature is useful if you want to run a cluster of JEE nodes while using only MQTT
-     * for communication (an alternative is to use the
-     * {@link JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP bridge} configuration).
+     * for communication (an alternative is to use the HTTP bridge configuration
+     * (JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP bridge}.
      */
     public static final String PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS = "joynr.messaging.mqtt.enable.sharedsubscriptions";
     public static final String PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT = "joynr.messaging.mqtt.maxmsgsinflight";

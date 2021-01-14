@@ -58,7 +58,7 @@ public class MultiDomainNoCompatibleProviderFoundException extends JoynrRuntimeE
     }
 
     /**
-     * Gets a set of domains for which we have {@Link NoCompatibleProviderFoundException} information available.
+     * Gets a set of domains for which we have {@link NoCompatibleProviderFoundException} information available.
      *
      * @return see method description.
      */
@@ -81,10 +81,10 @@ public class MultiDomainNoCompatibleProviderFoundException extends JoynrRuntimeE
     }
 
     /**
-     * Returns the {@Link NoCompatibleProviderFoundException} for the given domain if one exists.
+     * Returns the {@link NoCompatibleProviderFoundException} for the given domain if one exists.
      *
      * @param domain
-     *            the domain for which to get the {@Link NoCompatibleProviderFoundException}.
+     *            the domain for which to get the {@link NoCompatibleProviderFoundException}.
      *
      * @return the exception if there is one, or <code>null</code> if not.
      */

@@ -18,7 +18,6 @@
  */
 package io.joynr.bounceproxy.service;
 
-import java.io.IOException;
 import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
@@ -78,14 +77,11 @@ public class MessagingWithoutContentTypeService {
      * @param ccid the channel id
      * @param serializedMessage a serialized SMRF message to be sent
      * @return response builder object with the URL that can be queried to get the message
-     * @throws IOException on I/O error
-     * @throws JsonParseException on parsing problems due to non-well formed content
-     * @throws JsonMappingException on fatal problems with mapping of content
+     * @throws WebApplicationException on parsing problems due to non-well formed content and fatal problems with mapping of content
      */
     @POST
     @Consumes({ MediaType.APPLICATION_OCTET_STREAM })
-    public Response postMessageWithoutContentType(@PathParam("ccid") String ccid,
-                                                  byte[] serializedMessage) throws IOException {
+    public Response postMessageWithoutContentType(@PathParam("ccid") String ccid, byte[] serializedMessage) {
         ImmutableMessage message;
 
         try {

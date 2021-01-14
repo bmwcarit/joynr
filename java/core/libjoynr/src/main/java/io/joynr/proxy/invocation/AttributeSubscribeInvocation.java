@@ -37,10 +37,10 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
 
     /**
      *
-     * @param method
+     * @param method method information
      * @param args contains the arguments passed to the subscribeTo call. subscribe to can be called with or
      * without a subscriptionId in position 0.
-     * @param future
+     * @param future result future for the subscribe invocation
      */
     public AttributeSubscribeInvocation(Method method, Object[] args, Future<String> future) {
         super(future, getAttributeNameFromAnnotation(method), getQosParameter(args));

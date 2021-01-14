@@ -62,7 +62,6 @@ public class MessagingQos {
     }
 
     /**
-     * @param ttl_ms Roundtrip timeout for rpc requests.
      * @param effort the effort to expend in ensuring message delivery.
      */
     public MessagingQos(MessagingQosEffort effort) {
@@ -159,7 +158,7 @@ public class MessagingQos {
      * @param key   may contain ascii alphanumeric or hyphen.
      * @param value may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark, hyphen,
      *              dot, star, forward slash and back slash.
-     * @Throws {@link IllegalArgumentException} if key or value contain any illegal characters
+     * @throws IllegalArgumentException if key or value contain any illegal characters
      */
     public void putCustomMessageHeader(String key, String value) {
         checkKeyAndValue(key, value);
@@ -171,7 +170,7 @@ public class MessagingQos {
      *                         Keys may contain ascii alphanumeric or hyphen. <br>
      *                         Values may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question mark,
      *                         hyphen, dot, star, forward slash and back slash.
-     * @Throws {@link IllegalArgumentException} if key or value contain any illegal characters
+     * @throws IllegalArgumentException if key or value contain any illegal characters
      */
     public void putAllCustomMessageHeaders(Map<String, String> newCustomHeaders) {
         for (Map.Entry<String, String> entry : newCustomHeaders.entrySet()) {

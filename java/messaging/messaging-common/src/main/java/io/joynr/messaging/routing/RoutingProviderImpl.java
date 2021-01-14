@@ -61,6 +61,9 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
 
     /**
      * @param messageRouter handles the logic for the RoutingProvider
+     * @param multicastReceiverRegistrar registry for multicast subscriber participantIds
+     * @param globalAddressProvider provider for the global address of a single cluster controller or a clustered application if shared subscriptions are enabled
+     * @param replyToAddressProvider provider for the cluster controller's replyTo address
      */
     @Inject
     public RoutingProviderImpl(final MessageRouter messageRouter,

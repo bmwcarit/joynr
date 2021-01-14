@@ -40,7 +40,7 @@ public interface MessagingService {
      * Passes the message to the registered message receiver.
      * 
      * @param ccid the channel to pass the message on
-     * @param message the message to send (serialized SMRF message)
+     * @param serializedMessage the message to send (serialized SMRF message)
      */
     void passMessageToReceiver(String ccid, byte[] serializedMessage);
 

@@ -39,8 +39,7 @@ public interface RequestReplyManager {
      *            DiscoveryEntry of the endpoint to send to
      * @param request
      *            Request to be send
-     * @param ttl_ms
-     *            Time to live in milliseconds.
+     * @param qosSettings MessagingQos for the request
      */
 
     public void sendRequest(final String fromParticipantId,
@@ -60,8 +59,7 @@ public interface RequestReplyManager {
      *            Request to be send
      * @param synchronizedReplyCaller
      *            Synchronized reply caller
-     * @param ttl_ms
-     *            Time to live in milliseconds.
+     * @param qosSettings MessagingQos for the request
      * @return response object
      */
 
@@ -80,8 +78,7 @@ public interface RequestReplyManager {
      *            DiscveryEntries of the endpoints to send to
      * @param oneWayRequest
      *            The request data tto send to the endpoints
-     * @param ttl_ms
-     *            Time to live in milliseconds.
+     * @param messagingQos MessagingQos for the request
      */
 
     public void sendOneWayRequest(final String fromParticipantId,

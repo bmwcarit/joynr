@@ -63,6 +63,11 @@ public interface RoutingTable {
 
     /**
      * Overload of put method with isSticky set to false.
+     *
+     * @param participantId participant id for which a routing entry shall be created
+     * @param address Address which shall be associated with the participant id
+     * @param isGloballyVisible States whether the endpoint is globally visible or not
+     * @param expiryDateMs Expiry date of the routing entry in milliseconds
      */
     void put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs);
 
@@ -70,23 +75,23 @@ public interface RoutingTable {
 
     /**
      * Query the routing table for the status of isGloballyVisible parameter
-     * @param participantId
+     * @param participantId participantId for which the visibility shall be looked up
      * @return true if participantId is globally visible,
      *         false if participantId is not globally visible
-     * @throws JoynrRuntimeException if no entry exists for the given participantId
+     * @throws io.joynr.exceptions.JoynrRuntimeException if no entry exists for the given participantId
      */
     boolean getIsGloballyVisible(String participantId);
 
     /**
      * Query the expiry date of a routing entry for a participant id.
-     * @param participantId
+     * @param participantId participantId for which the expiryDate shall be looked up
      * @return The routing entry's expiry date in ms.
      */
     long getExpiryDateMs(String participantId);
 
     /**
      * Query the sticky-flag of a routing entry for a participant id.
-     * @param participantId
+     * @param participantId participantId for which the sticky-flag shall be looked up
      * @return The routing entry's sticky state.
      */
     boolean getIsSticky(String participantId);

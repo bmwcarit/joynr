@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.jeeintegration.api.JoynrJeeMessageScoped;
 
 /**
- * Portable CDI extension which registers the {@Link JoynrJeeMessageContext} for the {@link JoynrJeeMessageScoped joynr
+ * Portable CDI extension which registers the {@link JoynrJeeMessageContext} for the {@link JoynrJeeMessageScoped joynr
  * JEE message scope}.
  */
 public class RegisterJoynrJeeMessageContextExtension implements Extension {

@@ -51,7 +51,7 @@ import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 /**
- * Sample implementation of the {@link TestInterfaceSyncSync} interface.
+ * Sample implementation of the {@link TestInterfaceSync} interface.
  */
 @Stateless
 @ServiceProvider(serviceInterface = TestInterfaceSync.class)

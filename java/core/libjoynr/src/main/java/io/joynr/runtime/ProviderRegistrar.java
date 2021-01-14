@@ -94,6 +94,7 @@ public class ProviderRegistrar {
     /**
      * @param providerQos
      *            The provider's quality of service settings.
+     * @return the ProviderRegistrar instance.
      */
     public ProviderRegistrar withProviderQos(ProviderQos providerQos) {
         this.providerQos = providerQos;
@@ -106,6 +107,7 @@ public class ProviderRegistrar {
      *            registration.
      *            If the 'gbids' parameter is empty, the GBIDs configured in the cluster controller
      *            are used (reset to default behavior).
+     * @return the ProviderRegistrar instance.
      */
     public ProviderRegistrar withGbids(String[] gbids) {
         if (gbids == null) {
@@ -121,8 +123,8 @@ public class ProviderRegistrar {
     }
 
     /**
-     * @param awaitGlobalRegistration
-     *            If true, wait for global registration to complete or timeout in case of problems.
+     * Enable awaitGlobalRegistration to wait for global registration result.
+     * @return the ProviderRegistrar instance.
      */
     public ProviderRegistrar awaitGlobalRegistration() {
         this.awaitGlobalRegistration = true;

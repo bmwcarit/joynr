@@ -30,7 +30,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import io.joynr.jeeintegration.api.JoynrJeeMessageScoped;
 
 /**
- * The {@link Context} which holds {@Link JoynrJeeMessageScoped} {@link Contextual contextual instances} for the
+ * The {@link Context} which holds {@link JoynrJeeMessageScoped} {@link Contextual contextual instances} for the
  * duration of a joynr message being processed.
  */
 public class JoynrJeeMessageContext implements Context {

@@ -63,7 +63,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 /**
  * Like {@link io.joynr.messaging.mqtt.MqttModule}, but configures the {@link JeeMqttMessagingSkeletonProvider} so that if
  * the {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} property
- * is set to <code>true</true>, messages are only sent via MQTT, but not received via MQTT.
+ * is set to <code>true</code>, messages are only sent via MQTT, but not received via MQTT.
  *
  * In the case of the HTTP bridge, this is so that we can receive messages via HTTP from the
  * {@link JeeServletMessageReceiver} in order for a load balancer to be able to distribute the load across a JEE

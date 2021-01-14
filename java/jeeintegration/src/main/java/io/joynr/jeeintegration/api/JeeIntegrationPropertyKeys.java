@@ -45,7 +45,7 @@ public class JeeIntegrationPropertyKeys {
      * This key is used to check whether the JEE integration should activate
      * the HTTP bridge, which has two consequences - one, the integration
      * will attempt to register itself with an endpoint registry
-     * (See {@link io.joynr.integration.httpbridge.HttpBridgeRegistryClient}),
+     * (See {@link io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient}),
      * and two, the {@link io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule}
      * will register the {@link io.joynr.jeeintegration.messaging.NoOpMqttMessagingSkeleton}
      * to prevent the MQTT messaging module to subscribe to the channel's

@@ -55,6 +55,7 @@ public class JoynrDelayMessageException extends JoynrRuntimeException {
      *
      * @param delayMs how long the message should be delayed
      * @param reason why the message is being delayed
+     * @param cause cause
      */
     public JoynrDelayMessageException(long delayMs, String reason, Throwable cause) {
         super(reason, cause);

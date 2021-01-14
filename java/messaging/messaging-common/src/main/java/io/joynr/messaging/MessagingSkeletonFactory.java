@@ -55,8 +55,9 @@ public class MessagingSkeletonFactory implements ShutdownListener {
      *  messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessMessagingSkeletonFactory.class);
      * </pre>
      *
-     * @param messagingSkeletons a map of all skeletons (message receivers) that are to be started
+     * @param messagingSkeletonFactories a map of all skeletons (message receivers) that are to be started
      * @param scheduler ExecutorService that schedules all messaging communication
+     * @param shutdownNotifier ShutdownNotifier
      */
     @Inject
     public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETON_FACTORIES) Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactories,

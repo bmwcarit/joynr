@@ -197,20 +197,18 @@ public interface JoynrRuntime {
      * providers were matched will result in an exception being thrown.
      *
      * @param <T> interface of the provider you want to build a proxy for.
-     * @param domains
-     *            the set of domains of the providers.
-     * @param interfaceClass
-     *            Interface the provider offers.
+     * @param domains the set of domains of the providers.
+     * @param interfaceClass Interface the provider offers.
      * @return After setting arbitration, proxy and messaging QoS parameters the returned ProxyBuilder can be used to
      *         build the proxy instance.
      */
     <T> ProxyBuilder<T> getProxyBuilder(final Set<String> domains, final Class<T> interfaceClass);
 
     /**
-     *
-     * @param domains
-     * @param interfaceClass
-     * @return
+     * @param domains the set of domains to be considered when searching the providers.
+     * @param interfaceClass Interface the provider offers.
+     * @return After configuration, the returned GuidedProxyBuilder can be used to discover providers and build a proxy
+     *         instance for selected provider(s).
      */
     GuidedProxyBuilder getGuidedProxyBuilder(final Set<String> domains, final Class<?> interfaceClass);
 

@@ -37,7 +37,6 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<configuration>
 					<source>8</source>
-					<additionalparam>-Xdoclint:none</additionalparam>
 					<tags>
 						<tag>
 							<name>parameter</name>

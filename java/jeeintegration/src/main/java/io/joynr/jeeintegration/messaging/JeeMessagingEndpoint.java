@@ -55,7 +55,7 @@ import joynr.ImmutableMessage;
 
 /**
  * The <code>JeeMessagingEndpoint</code> is a JAX-RS endpoint which receives joynr messages to be processed.
- * See {@link #postMessage(String, String, UriInfo)} for details.
+ * See {@link #postMessage(String, byte[], UriInfo)} for details.
  * <p>
  * The following characters are allowed in the id - upper and lower case characters - numbers - underscore (_) hyphen
  * (-) and dot (.)

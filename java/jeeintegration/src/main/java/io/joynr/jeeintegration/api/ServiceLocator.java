@@ -98,7 +98,7 @@ public interface ServiceLocator {
 
     /**
      * Obtains a client proxy for multiple services of the given service interface in the given domains. Calls
-     * {@link #get(Class, Set<String>, MessagingQos, DiscoveryQos)} with default values for messaging and discovery quality
+     * {@link #get(Class, Set, MessagingQos, DiscoveryQos)} with default values for messaging and discovery quality
      * of service.
      *
      * @param <I>
@@ -116,8 +116,8 @@ public interface ServiceLocator {
     <I> I get(Class<I> serviceInterface, Set<String> domains);
 
     /**
-     * Like {@link #get(Class, Set<String>)}, but allows you to specify the maximum time-to-live for messages sent to the
-     * services. Calls {@link #get(Class, Set<String>, MessagingQos, DiscoveryQos)}, setting the TTL passed in on the
+     * Like {@link #get(Class, Set)}, but allows you to specify the maximum time-to-live for messages sent to the
+     * services. Calls {@link #get(Class, Set, MessagingQos, DiscoveryQos)}, setting the TTL passed in on the
      * messaging quality of service and providing default values for the discovery quality of service.
      *
      * @param <I>
@@ -138,7 +138,7 @@ public interface ServiceLocator {
     <I> I get(Class<I> serviceInterface, Set<String> domains, long ttl);
 
     /**
-     * Like {@link #get(Class, Set<String>)}, but allows you to specify the messaging and discovery quality of service
+     * Like {@link #get(Class, Set)}, but allows you to specify the messaging and discovery quality of service
      * information to use.
      *
      * @param <I>
@@ -161,7 +161,7 @@ public interface ServiceLocator {
     <I> I get(Class<I> serviceInterface, Set<String> domains, MessagingQos messagingQos, DiscoveryQos discoveryQos);
 
     /**
-     * Like {@link #get(Class, Set<String>)}, but allows you to specify the messaging and discovery quality of service
+     * Like {@link #get(Class, Set)}, but allows you to specify the messaging and discovery quality of service
      * information to use, as well as the stateless async use case in order to identify the {@link CallbackHandler}
      * bean to use for processing stateless async replies received for requests made from this proxy.
      *
@@ -236,7 +236,7 @@ public interface ServiceLocator {
          * Set the stateless async use case name use to find the relevant {@link CallbackHandler} to use for processing
          * stateless async replies resulting from requests sent from this proxy.
          *
-         * @param useCase
+         * @param useCase stateless async use case name
          * @return the builder.
          */
         ServiceProxyBuilder<T> withUseCase(String useCase);

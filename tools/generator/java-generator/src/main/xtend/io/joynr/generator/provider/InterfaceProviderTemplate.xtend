@@ -147,11 +147,12 @@ public interface «className» {
 		/**
 		 * «methodName»
 		«IF !comments.equals("")»«comments»«ENDIF»
-		 * @return promise for asynchronous handling
-		 */
 		«IF method.fireAndForget»
+		 */
 		public void «methodName»(
 		«ELSE»
+		 * @return promise for asynchronous handling
+		 */
 		public Promise<«methodToDeferredName.get(method)»> «methodName»(
 		«ENDIF»
 				«IF !params.equals("")»«params»«ENDIF»

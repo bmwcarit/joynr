@@ -107,7 +107,7 @@
 						<additionalDependency>
 							<groupId>junit</groupId>
 							<artifactId>junit</artifactId>
-							<version>4.12</version>
+							<version>4.13.1</version>
 						</additionalDependency>
 						<additionalDependency>
 							<groupId>io.joynr.java</groupId>
@@ -116,7 +116,6 @@
 							<type>test-jar</type>
 						</additionalDependency>
 					</additionalDependencies>
-					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 				<executions>
 					<execution>

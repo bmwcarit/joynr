@@ -22,7 +22,7 @@ import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 
 /**
- * Implementations of this interface are used by the {@link JoynrMessageFactory} in order
+ * Implementations of this interface are used by the io.joynr.dispatching.MutableMessageFactory in order
  * to allow applications to provide logic which processes messages further after they've
  * been created, but before they've been signed and sent.
  */
