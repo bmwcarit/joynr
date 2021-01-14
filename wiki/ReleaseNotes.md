@@ -2,13 +2,6 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
-# joynr 1.15.7
-
-## Security Fixes
-* **[Generator]** Upgraded Java `guava` library from `21.0`/`15.0` to `30.1`, fixing
-*CVE-2020-8908* and *CVE-2018-10237*.
-* **[Test]** Upgraded Java `junit` library from `4.12` to `4.13.1`, fixing *CVE-2020-15250*.
-
 # joynr 1.15.6
 
 ## API-relevant Changes
@@ -25,6 +18,7 @@ the versioning scheme [here](JoynrVersioning.md).
   settings.
 
 ## Other Changes
+* **[Maven]** Increased minimum required Maven to 3.3.3.
 * **[C++]** Introduced `JOYNR_SUPPORT_WEBSOCKET` and `JOYNR_SUPPORT_UDS` CMake options to
   suppress unused build artifacts on demand. Both are enabled by default.
 * **[C++]** Removed global domain access controller (GDAC) support from cluster controller.
@@ -46,6 +40,11 @@ the versioning scheme [here](JoynrVersioning.md).
   corresponds to the former default behavior (`use-ldas-only=true`).
 * **[Java]** Removed property `PROPERTY_DISCOVERY_GLOBAL_ADD_AND_REMOVE_TTL_MS`.
   Now, the default TTL of 60 seconds is always used.
+
+## Security Fixes
+* **[Generator]** Upgraded Java `guava` library from `21.0`/`15.0` to `30.1`, fixing
+*CVE-2020-8908* and *CVE-2018-10237*.
+* **[Test]** Upgraded Java `junit` library from `4.12` to `4.13.1`, fixing *CVE-2020-15250*.
 
 ## Bug Fixes
 * **[C++]** Cluster controller now sets MQTT session expiry interval on reconnect. Before it was only
