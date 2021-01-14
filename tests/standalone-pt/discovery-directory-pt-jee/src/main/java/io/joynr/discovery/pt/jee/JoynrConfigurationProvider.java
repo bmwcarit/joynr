@@ -76,8 +76,8 @@ public class JoynrConfigurationProvider {
     }
 
     private void readAndSetProperty(Properties joynrProperties, String propertyKey, String defaultValue) {
-        assert propertyKey != null && !propertyKey.trim().isEmpty()
-                : "You must specify a non-null, non-empty property key";
+        assert propertyKey != null
+                && !propertyKey.trim().isEmpty() : "You must specify a non-null, non-empty property key";
         logger.trace("Called with joynrProperties {}, propertyKey {} and defaultValue {}",
                      joynrProperties,
                      propertyKey,
