@@ -29,6 +29,7 @@
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/BoostIoserviceForwardDecl.h"
 #include "joynr/JoynrExport.h"
+#include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ReadWriteLock.h"
@@ -266,6 +267,8 @@ private:
                       ReadLocker& messageQueueRetryReadLock) final;
 
     bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const final;
+    std::shared_ptr<IMessagingMulticastSubscriber> getMulticastMessagingSkeleton(
+            const std::string& providerParticipantId);
 
     DISALLOW_COPY_AND_ASSIGN(CcMessageRouter);
     ADD_LOGGER(CcMessageRouter)

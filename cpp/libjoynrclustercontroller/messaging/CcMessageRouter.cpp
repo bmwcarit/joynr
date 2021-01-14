@@ -31,7 +31,6 @@
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/IMessageSender.h"
-#include "joynr/IMessagingMulticastSubscriber.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/ImmutableMessage.h"
@@ -910,36 +909,47 @@ void CcMessageRouter::removeMulticastReceivers(
     }
 }
 
+std::shared_ptr<IMessagingMulticastSubscriber> CcMessageRouter::getMulticastMessagingSkeleton(
+        const std::string& providerParticipantId)
+{
+    const auto routingEntry = getRoutingEntry(providerParticipantId);
+    if (!routingEntry) {
+        exceptions::ProviderRuntimeException exception(
+                "Failed to get multicast messaging skeleton: no routing entry for provider (" +
+                providerParticipantId + ") found.");
+        throw exception;
+    }
+    const auto providerAddress = routingEntry->address;
+    std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
+            _multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
+    if (!skeleton) {
+        JOYNR_LOG_TRACE(logger(),
+                        "No messaging skeleton found for multicast "
+                        "provider (address=" +
+                                providerAddress->toString() + ").");
+    }
+    return skeleton;
+}
+
 void CcMessageRouter::unregisterMulticastInSkeleton(
         const std::string& multicastId,
         const std::string& providerParticipantId,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    const auto routingEntry = getRoutingEntry(providerParticipantId);
-
-    if (!routingEntry) {
-        exceptions::ProviderRuntimeException exception(
-                "No routing entry for multicast provider (providerParticipantId=" +
-                providerParticipantId + ") found.");
+    std::shared_ptr<IMessagingMulticastSubscriber> multicastMessagingSkeleton;
+    try {
+        multicastMessagingSkeleton = getMulticastMessagingSkeleton(providerParticipantId);
+    } catch (const exceptions::ProviderRuntimeException& exception) {
         JOYNR_LOG_ERROR(logger(), exception.getMessage());
         if (onError) {
             onError(exception);
         }
         return;
     }
-    const auto providerAddress = routingEntry->address;
-    if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(providerAddress.get()) != nullptr) {
-        std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-                _multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
-        if (skeleton) {
-            skeleton->unregisterMulticastSubscription(multicastId);
-        } else {
-            JOYNR_LOG_TRACE(logger(),
-                            "No messaging skeleton found for multicast "
-                            "provider (address=" +
-                                    providerAddress->toString() + ").");
-        }
+
+    if (multicastMessagingSkeleton) {
+        multicastMessagingSkeleton->unregisterMulticastSubscription(multicastId);
     }
 
     if (onSuccess) {
