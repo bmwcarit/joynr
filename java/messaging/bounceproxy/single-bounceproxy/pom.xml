@@ -69,11 +69,6 @@
 			<artifactId>smrf-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.smrf.java</groupId>
-			<artifactId>smrf-api</artifactId>
-			<version>${smrf.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.jboss.spec</groupId>
 			<artifactId>jboss-javaee-6.0</artifactId>
 			<version>1.0.0.Final</version>

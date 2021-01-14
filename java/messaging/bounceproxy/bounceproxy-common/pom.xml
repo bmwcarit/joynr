@@ -116,11 +116,6 @@
 			<artifactId>smrf-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.smrf.java</groupId>
-			<artifactId>smrf-api</artifactId>
-			<version>${smrf.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.atmosphere</groupId>
 			<artifactId>atmosphere-guice</artifactId>
 			<!-- There's not a version for every atmosphere version. -->
