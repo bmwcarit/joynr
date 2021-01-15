@@ -28,6 +28,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/optional.hpp>
 
+#include "joynr/InterfaceAddress.h"
 #include "joynr/Logger.h"
 #include "joynr/types/DiscoveryEntry.h"
 
@@ -101,6 +102,10 @@ public:
     static types::GlobalDiscoveryEntry toGlobalDiscoveryEntry(
             const types::DiscoveryEntry& discoveryEntry,
             const std::string& localAddress);
+
+    static std::vector<InterfaceAddress> getInterfaceAddresses(
+            const std::vector<std::string>& domains,
+            const std::string& interfaceName);
 
 private:
     ADD_LOGGER(LCDUtil)

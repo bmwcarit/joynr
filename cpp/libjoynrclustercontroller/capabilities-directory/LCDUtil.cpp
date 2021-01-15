@@ -187,4 +187,17 @@ types::GlobalDiscoveryEntry LCDUtil::toGlobalDiscoveryEntry(
                                        discoveryEntry.getPublicKeyId(),
                                        localAddress);
 }
+
+std::vector<InterfaceAddress> LCDUtil::getInterfaceAddresses(
+        const std::vector<std::string>& domains,
+        const std::string& interfaceName)
+{
+    std::vector<InterfaceAddress> interfaceAddresses;
+    interfaceAddresses.reserve(domains.size());
+    for (const auto& domain : domains) {
+        interfaceAddresses.push_back(InterfaceAddress(domain, interfaceName));
+    }
+    return interfaceAddresses;
 }
+
+} // namespace joynr

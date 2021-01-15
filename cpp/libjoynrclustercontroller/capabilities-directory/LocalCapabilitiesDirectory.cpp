@@ -607,11 +607,8 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                         std::shared_ptr<ILocalCapabilitiesCallback> callback,
                                         const joynr::types::DiscoveryQos& discoveryQos)
 {
-    std::vector<InterfaceAddress> interfaceAddresses;
-    interfaceAddresses.reserve(domains.size());
-    for (const auto& domain : domains) {
-        interfaceAddresses.push_back(InterfaceAddress(domain, interfaceName));
-    }
+    std::vector<InterfaceAddress> interfaceAddresses =
+            LCDUtil::getInterfaceAddresses(domains, interfaceName);
 
     // get the local and cached entries
     bool receiverCalled = _localCapabilitiesDirectoryStore->getLocalAndCachedCapabilities(
