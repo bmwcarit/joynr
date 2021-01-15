@@ -65,6 +65,7 @@
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/utils/PtrUtils.h"
 
+using ::testing::Matcher;
 using namespace ::testing;
 using namespace joynr;
 
@@ -977,7 +978,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalEntryByParticipantId_callsMock
     std::vector<std::string> gbids{_KNOWN_GBIDS[1]};
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getLocalAndCachedCapabilities(Eq(_dummyParticipantIdsVector[0]),_,Eq(gbids),_))
+                getLocalAndCachedCapabilities(Matcher<const std::string&>(_dummyParticipantIdsVector[0]),_,Eq(gbids),_))
                 .Times(1).WillOnce(Return(true));
 
     _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
