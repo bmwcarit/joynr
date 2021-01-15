@@ -4,10 +4,20 @@ the versioning scheme [here](JoynrVersioning.md).
 
 # joynr 1.15.7
 
+## API-relevant Changes
+None.
+
 ## Other Changes
 * **[Java]** Removed global domain access controller (GDAC) support from cluster controller.
 * **[C++]** Added mosquitto 1.6.8 to CMakeLists.txt of standalone performance test
 * **[Docker]** Added specific HiveMQ image to standalone performance test
+* **[C++]** No longer required HTTP related communication support has been removed.
+* **[C++]** Dependency to curl library has been removed
+
+## Configuration Property Changes
+* **[C++]** Messaging settings related to HTTP communication have been removed
+  (create-channel-retry-interval, delete-channel-retry-interval, longpoll-retry-interval,
+  local-proxy-host, local-proxy-port, http-debug, long-poll-timeout, capabilities-directory-url).
 
 ## Security Fixes
 None.
