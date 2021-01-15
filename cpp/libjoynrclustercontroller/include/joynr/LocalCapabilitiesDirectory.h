@@ -232,7 +232,8 @@ private:
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<types::DiscoveryEntry>&& localEntries,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
-                              joynr::types::DiscoveryScope::Enum discoveryScope);
+                              joynr::types::DiscoveryScope::Enum discoveryScope,
+                              const std::vector<std::string>& domains = {});
     void removeStaleProvidersOfClusterController(const std::int64_t& clusterControllerStartDateMs,
                                                  const std::string gbid);
     /*

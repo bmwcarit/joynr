@@ -521,29 +521,54 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
         const std::vector<types::GlobalDiscoveryEntry>& results,
         std::vector<types::DiscoveryEntry>&& localEntries,
         std::shared_ptr<ILocalCapabilitiesCallback> callback,
-        joynr::types::DiscoveryScope::Enum discoveryScope)
+        joynr::types::DiscoveryScope::Enum discoveryScope,
+        const std::vector<std::string>& domains)
 {
     std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
     std::vector<types::DiscoveryEntryWithMetaInfo> globalEntries;
 
+    std::unordered_set<std::string> localGlobalParticipantIds;
     for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
-        types::DiscoveryEntryWithMetaInfo convertedEntry =
-                util::convert(false, globalDiscoveryEntry);
-        capabilitiesMap.insert(
-                {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
-        globalEntries.push_back(std::move(convertedEntry));
+        // check whether this entry exists in the local store. if so, then skip it
+        auto localEntries2 = _localCapabilitiesDirectoryStore->getLocalCapabilities(
+                globalDiscoveryEntry.getParticipantId());
+        if (localEntries2.empty()) {
+            types::DiscoveryEntryWithMetaInfo convertedEntry =
+                    util::convert(false, globalDiscoveryEntry);
+            capabilitiesMap.insert(
+                    {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
+            globalEntries.push_back(std::move(convertedEntry));
+        } else if (localEntries2[0].getQos().getScope() == types::ProviderScope::GLOBAL &&
+                   (domains.empty() ||
+                    (localEntries2[0].getInterfaceName() ==
+                             globalDiscoveryEntry.getInterfaceName() &&
+                     std::find(domains.begin(), domains.end(), localEntries2[0].getDomain()) !=
+                             domains.cend()))) {
+            // add globally registered local providers to global only lookup result
+            localGlobalParticipantIds.insert(globalDiscoveryEntry.getParticipantId());
+        }
     }
+    // stores remote entries in global cache
     registerReceivedCapabilities(std::move(capabilitiesMap));
 
     if (discoveryScope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL ||
         discoveryScope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
         auto localEntriesWithMetaInfo = util::convert(true, localEntries);
-        // look if in the meantime there are some local providers registered
-        // lookup in the local directory to get local providers which were registered in the
-        // meantime.
-        globalEntries = LCDUtil::filterDuplicates(
-                std::move(localEntriesWithMetaInfo), std::move(globalEntries));
+        // combine local and global entries (duplicates are already filtered)
+        globalEntries.insert(globalEntries.end(),
+                             localEntriesWithMetaInfo.begin(),
+                             localEntriesWithMetaInfo.end());
+    } else { // GLOBAL_ONLY
+        for (auto localEntry : localEntries) {
+            // add globally registered local entries to the result
+            if (localGlobalParticipantIds.find(localEntry.getParticipantId()) !=
+                localGlobalParticipantIds.cend()) {
+                auto localEntryWithMetaInfo = util::convert(true, localEntry);
+                globalEntries.push_back(localEntryWithMetaInfo);
+            }
+        }
     }
+
     callback->capabilitiesReceived(std::move(globalEntries));
 }
 
@@ -571,6 +596,8 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                 if (replaceGdeGbid) {
                     LCDUtil::replaceGbidWithEmptyString(result);
                 }
+                std::lock_guard<std::recursive_mutex> cacheLock(
+                        thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
                 thisSharedPtr->capabilitiesReceived(
                         result,
                         thisSharedPtr->_localCapabilitiesDirectoryStore->getLocalCapabilities(
@@ -619,6 +646,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         // search for global entries in the global capabilities directory
         auto onSuccess = [
             thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+            domains,
             interfaceAddresses,
             callback,
             discoveryQos,
@@ -632,12 +660,15 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                     if (replaceGdeGbid) {
                         LCDUtil::replaceGbidWithEmptyString(result);
                     }
+                    std::lock_guard<std::recursive_mutex> cacheLock(
+                            thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
                     thisSharedPtr->capabilitiesReceived(
                             result,
                             thisSharedPtr->_localCapabilitiesDirectoryStore->getLocalCapabilities(
                                     interfaceAddresses),
                             callback,
-                            discoveryQos.getDiscoveryScope());
+                            discoveryQos.getDiscoveryScope(),
+                            domains);
                 }
                 thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
                         interfaceAddresses, callback);
