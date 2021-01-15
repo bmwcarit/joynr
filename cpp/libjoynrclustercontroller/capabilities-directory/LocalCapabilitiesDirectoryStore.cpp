@@ -29,7 +29,6 @@
 #include "joynr/CapabilityUtils.h"
 #include "joynr/types/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
-#include "joynr/InterfaceAddress.h"
 #include "joynr/LCDUtil.h"
 #include "joynr/Util.h"
 

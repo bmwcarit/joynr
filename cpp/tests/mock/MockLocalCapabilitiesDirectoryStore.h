@@ -27,6 +27,8 @@ namespace joynr
 class MockLocalCapabilitiesDirectoryStore : public joynr::LocalCapabilitiesDirectoryStore {
 public:
     MOCK_METHOD1(getLocalCapabilities, std::vector<types::DiscoveryEntry> (const std::string& participantId));
+    MOCK_METHOD1(getLocalCapabilities, std::vector<types::DiscoveryEntry> (const std::vector<InterfaceAddress>&
+                                                                           interfaceAddresses));
     MOCK_METHOD1(insertInLocalCapabilitiesStorage, void (const types::DiscoveryEntry& entry));
     MOCK_METHOD2(insertInGlobalLookupCache, void (const types::DiscoveryEntry& entry,
                                                   const std::vector<std::string>& gbids));
@@ -34,6 +36,10 @@ public:
                                                       const joynr::types::DiscoveryQos& discoveryQos,
                                                       const std::vector<std::string>& gbids,
                                                       std::shared_ptr<ILocalCapabilitiesCallback> callback));
+    MOCK_METHOD4(getLocalAndCachedCapabilities, bool (const std::vector<InterfaceAddress>& interfaceAddresses,
+                                                          const joynr::types::DiscoveryQos& discoveryQos,
+                                                          const std::vector<std::string>& gbids,
+                                                          std::shared_ptr<ILocalCapabilitiesCallback> callback));
     MOCK_METHOD1(getGbidsForParticipantId, std::vector<std::string> (const std::string& participantId));
     MOCK_CONST_METHOD0(getAllGlobalCapabilities, std::vector<types::DiscoveryEntry> ());
     MOCK_METHOD1(eraseParticipantIdToGbidMapping, void(const std::string& participantId));

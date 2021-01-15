@@ -26,13 +26,13 @@
 #include <unordered_map>
 #include <vector>
 
+#include "joynr/InterfaceAddress.h"
 #include "joynr/Logger.h"
 #include "joynr/types/DiscoveryScope.h"
 
 namespace joynr
 {
 class DiscoveryEntry;
-class InterfaceAddress;
 class ILocalCapabilitiesCallback;
 
 namespace capabilities
@@ -61,7 +61,7 @@ public:
       */
     virtual std::vector<types::DiscoveryEntry> getLocalCapabilities(
             const std::string& participantId);
-    std::vector<types::DiscoveryEntry> getLocalCapabilities(
+    virtual std::vector<types::DiscoveryEntry> getLocalCapabilities(
             const std::vector<InterfaceAddress>& interfaceAddress);
 
     virtual std::vector<types::DiscoveryEntry> getAllGlobalCapabilities() const;
@@ -70,10 +70,11 @@ public:
 
     std::size_t countGlobalCapabilities() const;
 
-    bool getLocalAndCachedCapabilities(const std::vector<InterfaceAddress>& interfaceAddress,
-                                       const joynr::types::DiscoveryQos& discoveryQos,
-                                       const std::vector<std::string>& gbids,
-                                       std::shared_ptr<ILocalCapabilitiesCallback> callback);
+    virtual bool getLocalAndCachedCapabilities(
+            const std::vector<InterfaceAddress>& interfaceAddress,
+            const joynr::types::DiscoveryQos& discoveryQos,
+            const std::vector<std::string>& gbids,
+            std::shared_ptr<ILocalCapabilitiesCallback> callback);
     virtual bool getLocalAndCachedCapabilities(
             const std::string& participantId,
             const joynr::types::DiscoveryQos& discoveryQos,
