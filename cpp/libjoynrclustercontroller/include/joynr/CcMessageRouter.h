@@ -258,7 +258,7 @@ private:
             std::shared_ptr<const system::RoutingTypes::Address> destAddress,
             std::uint32_t tryCount = 0) final;
     void queueMessage(std::shared_ptr<ImmutableMessage> message,
-                      const ReadLocker& messageQueueRetryReadLock) final;
+                      ReadLocker& messageQueueRetryReadLock) final;
 
     bool canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const final;
 

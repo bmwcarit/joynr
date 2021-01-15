@@ -962,20 +962,20 @@ void CcMessageRouter::removeMulticastReceiver(
 }
 
 void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
-                                   const ReadLocker& messageQueueRetryReadLock)
+                                   ReadLocker& messageQueueRetryReadLock)
 {
     assert(messageQueueRetryReadLock.owns_lock());
-    std::ignore = messageQueueRetryReadLock;
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
+    std::string recipient = message->getRecipient();
+    _messageQueue->queueMessage(std::move(recipient), message);
     // do not fire a broadcast for an undeliverable message sent by
     // messageNotificationProvider (e.g. messageQueueForDelivery publication)
     // since it may cause an endless loop
     if (message->getSender() != _messageNotificationProviderParticipantId) {
+        messageQueueRetryReadLock.unlock();
         _messageNotificationProvider->fireMessageQueuedForDelivery(
                 message->getRecipient(), message->getType());
     }
-    std::string recipient = message->getRecipient();
-    _messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
 
 bool CcMessageRouter::canMessageBeTransmitted(std::shared_ptr<ImmutableMessage> message) const

@@ -433,7 +433,7 @@ void AbstractMessageRouter::onRoutingTableCleanerTimerExpired(
 }
 
 void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
-                                         const ReadLocker& messageQueueRetryReadLock)
+                                         ReadLocker& messageQueueRetryReadLock)
 {
     assert(messageQueueRetryReadLock.owns_lock());
     std::ignore = messageQueueRetryReadLock;

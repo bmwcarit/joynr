@@ -177,7 +177,7 @@ protected:
     void onRoutingTableCleanerTimerExpired(const boost::system::error_code& errorCode);
 
     virtual void queueMessage(std::shared_ptr<ImmutableMessage> message,
-                              const ReadLocker& messageQueueRetryReadLock);
+                              ReadLocker& messageQueueRetryReadLock);
     /*
      * return always true in libjoynr and result accessControlChecked for the CCMessageRouter
      */
