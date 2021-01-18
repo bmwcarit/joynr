@@ -735,20 +735,21 @@ void CcMessageRouter::resolveNextHop(
 
 void CcMessageRouter::registerMulticastInSkeleton(
         const std::string& multicastId,
-        const std::string& subscriberParticipantId,
         const std::string& providerParticipantId,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
 {
-    std::ignore = subscriberParticipantId;
-    std::ignore = providerParticipantId;
+    std::shared_ptr<IMessagingMulticastSubscriber> multicastMessagingSkeleton;
+    try {
+        multicastMessagingSkeleton = getMulticastMessagingSkeleton(providerParticipantId);
+    } catch (const exceptions::ProviderRuntimeException& exception) {
+        onError(exception);
+        return;
+    }
 
-    std::shared_ptr<IMessagingMulticastSubscriber> skeleton =
-            _multicastMessagingSkeletonDirectory->getSkeleton(providerAddress);
-    if (skeleton) {
+    if (multicastMessagingSkeleton) {
         try {
-            skeleton->registerMulticastSubscription(multicastId);
+            multicastMessagingSkeleton->registerMulticastSubscription(multicastId);
             onSuccess();
         } catch (const exceptions::JoynrRuntimeException& error) {
             onError(error);
@@ -756,8 +757,8 @@ void CcMessageRouter::registerMulticastInSkeleton(
     } else {
         JOYNR_LOG_TRACE(logger(),
                         "No messaging skeleton found for multicast "
-                        "provider (address=" +
-                                providerAddress->toString() + ").");
+                        "provider (" +
+                                providerParticipantId + ").");
         onSuccess();
     }
 }
@@ -769,10 +770,6 @@ void CcMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    boost::optional<routingtable::RoutingEntry> routingEntry;
-    std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress;
-    routingEntry = getRoutingEntry(providerParticipantId);
-
     std::function<void()> onSuccessWrapper = [
         thisWeakPtr = joynr::util::as_weak_ptr(
                 std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this())),
@@ -814,25 +811,10 @@ void CcMessageRouter::addMulticastReceiver(
         }
     };
 
-    if (!routingEntry) {
-        exceptions::ProviderRuntimeException exception(
-                "No routing entry for multicast provider (providerParticipantId=" +
-                providerParticipantId + ") found.");
-        onErrorWrapper(exception);
-        return;
-    }
-    providerAddress = routingEntry->address;
-
-    if (dynamic_cast<const system::RoutingTypes::MqttAddress*>(providerAddress.get()) != nullptr) {
-        registerMulticastInSkeleton(multicastId,
-                                    subscriberParticipantId,
-                                    providerParticipantId,
-                                    std::move(providerAddress),
-                                    std::move(onSuccessWrapper),
-                                    std::move(onErrorWrapper));
-    } else {
-        onSuccessWrapper();
-    }
+    registerMulticastInSkeleton(multicastId,
+                                providerParticipantId,
+                                std::move(onSuccessWrapper),
+                                std::move(onErrorWrapper));
 }
 
 void CcMessageRouter::stopSubscription(std::shared_ptr<ImmutableMessage> message)
@@ -904,12 +886,11 @@ void CcMessageRouter::removeUnreachableMulticastReceivers(
     for (const auto& participantId : multicastReceivers) {
         const auto routingEntry = getRoutingEntry(participantId);
         if (routingEntry && destAddress == routingEntry->address) {
-            JOYNR_LOG_INFO(
-                    logger(),
-                    "removeUnreachableMulticastReceivers: removing subscription for"
-                    "multicastId {}, participantId {}",
-                    multicastId,
-                    participantId);
+            JOYNR_LOG_INFO(logger(),
+                           "removeUnreachableMulticastReceivers: removing subscription for"
+                           "multicastId {}, participantId {}",
+                           multicastId,
+                           participantId);
             _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, participantId);
             saveMulticastReceiverDirectory();
             if (multicastMessagingSkeleton) {

@@ -244,9 +244,7 @@ private:
     void reestablishMulticastSubscriptions();
     void registerMulticastInSkeleton(
             const std::string& multicastId,
-            const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> providerAddress,
             std::function<void()> onSuccess,
             std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError);
     void unregisterMulticastInSkeleton(
