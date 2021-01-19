@@ -44,7 +44,6 @@ find_package(CURL REQUIRED)
 include(CheckCurlImportTargets)
 
 ######## Add Boost ########
-
 find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     filesystem
@@ -55,6 +54,10 @@ include_directories(${Boost_INCLUDE_DIRS})
 ######## Add dependency to dummyKeychain ########
 find_package(dummyKeychain 0.0.1 REQUIRED)
 message(STATUS "Found dummyKeychain version ${dummyKeychain_VERSION}")
+
+######## Add Mosquitto ########
+find_package(mosquitto 1.6.8 REQUIRED)
+include(CheckMosquittoImportTargets)
 
 add_subdirectory(src/main/cpp/consumer-app)
 
