@@ -2,6 +2,11 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.7
+
+## Other Changes
+* **[Java]** Removed global domain access controller (GDAC) support from cluster controller.
+
 # joynr 1.15.6
 
 ## API-relevant Changes
