@@ -290,8 +290,7 @@ message headers.
 The ttl for subscription requests is calculated from the ```expiryDateMs```
 in the [SubscriptionQos](#quality-of-service-settings-for-subscriptions) settings.
 For internal joynr messages, the value of PROPERTY_MESSAGING_MAXIMUM_TTL_MS is used.
-*GlobalDomainAccessControllerClient and GlobalCapabilitiesDirectoryClient use TTL_30_DAYS_IN_MS
-(30 days)*
+*The GlobalCapabilitiesDirectoryClient uses TTL_30_DAYS_IN_MS (30 days)*
 
 If no specific setting is given, the default roundtrip timeout is 60 seconds.
 The keys of custom message headers may contain ascii alphanumeric or hyphen.
