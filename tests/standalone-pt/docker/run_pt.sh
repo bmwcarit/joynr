@@ -39,7 +39,7 @@ fi
 mkdir results
 
 echo "Starting the orchestra"
-docker-compose up -d --scale cppapp=20
+docker-compose up -d --scale consumer=5
 
 if [ $? -ne 0 ]
 then
