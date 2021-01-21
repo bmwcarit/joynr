@@ -6,6 +6,14 @@ the versioning scheme [here](JoynrVersioning.md).
 
 ## Other Changes
 * **[Java]** Removed global domain access controller (GDAC) support from cluster controller.
+* **[C++]** Added mosquitto 1.6.8 to CMakeLists.txt of standalone performance test
+* **[Docker]** Added specific HiveMQ image to standalone performance test
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Docker]** Introduced better error checking in standalone PT scripts
 
 # joynr 1.15.6
 
