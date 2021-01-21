@@ -2,11 +2,13 @@ version: '2.0'
 
 services:
 
-  mqttbroker-1:
-    image: 'hivemq/hivemq4'
-    container_name: mqttbroker-1
+  mqttbroker:
+    image: 'joynr-hivemq'
+    container_name: mqttbroker
     environment:
       - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+    ports:
+      - "8080:8080"
 
   infra-db:
     image: "joynr-infra-db:latest"
