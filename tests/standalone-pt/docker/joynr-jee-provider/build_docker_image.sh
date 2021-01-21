@@ -1,7 +1,7 @@
 #!/bin/bash
 set -Eeuxo pipefail
 
-echo "### start build_docker_image.sh for joynr-faked-backend-jee-1 ###"
+echo "### start build_docker_image.sh for joynr-jee-provider ###"
 
 EXTRA_OPTIONS="--no-cache"
 
@@ -28,8 +28,8 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 	exit 1
 fi
 
-docker build $EXTRA_OPTIONS -t joynr-faked-backend-jee-1:latest .
+docker build $EXTRA_OPTIONS -t joynr-jee-provider:latest .
 #docker image prune
 rm -rf target
 
-echo "### end build_docker_image.sh for joynr-faked-backend-jee-1 ###"
+echo "### end build_docker_image.sh for joynr-jee-provider ###"

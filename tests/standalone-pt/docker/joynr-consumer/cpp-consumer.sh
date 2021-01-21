@@ -19,3 +19,6 @@ cd /home/joynr
 ln -sf /usr/bin/performance-consumer-app-cc performance-consumer-app-cc
 
 echo "/usr/lib" > /etc/ld.so.conf.d/usr-lib.conf
+
+mkdir /var/run/joynr/
+chown joynr /var/run/joynr/

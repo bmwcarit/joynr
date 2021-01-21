@@ -1,6 +1,6 @@
 [messaging]
 persistence-file=performancetest-consumer-messaging-settings.persist
-broker-url=mqtt://mqttbroker-1:1883/
+broker-url=mqtt://mqttbroker:1883/
 max-ttl-ms=2592000000
 discovery-directories-domain=io.joynr
 discovery-messages-ttl=1814400000

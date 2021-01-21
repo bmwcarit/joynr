@@ -13,4 +13,4 @@ asadmin --user admin --passwordfile=/opt/payara41/pwdfile deploy /domain-access-
 # where are the logs in this payara installation?
 wait $PID
 
-echo "end of start-me-up of joynr-backend-jee-1"
+echo "end of start-me-up of joynr-infra"

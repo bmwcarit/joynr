@@ -2,8 +2,8 @@
 set -Eeuxo pipefail
 
 base_image=joynr-complete-with-joynr
-intermediate_container=joynr-installed-with-consumer-app-tmp
-output_image=joynr-installed-with-consumer-app
+intermediate_container=joynr-consumer-tmp
+output_image=joynr-consumer
 current_work_dir=$(cd $(dirname $0) && pwd)
 joynr_root=$(git rev-parse --show-toplevel)
 

@@ -8,29 +8,45 @@ services:
     environment:
       - HIVEMQ_DISABLE_AUTH_PLUGIN=true
 
-  joynrbackend-db:
-    image: "joynr-backend-jee-db:latest"
-    container_name: joynrbackend-db
+  infra-db:
+    image: "joynr-infra-db:latest"
+    container_name: infra-db
 
-  joynrbackend-1:
-    image: "joynr-backend-jee-1:latest"
-    container_name: joynrbackend-1
+  infra:
+    image: "joynr-infra:latest"
+    container_name: joynr-infra
     depends_on:
-      - "mqttbroker-1"
-      - "joynrbackend-db"
+      - "mqttbroker"
+      - "infra-db"
 
-  joynrfakedbackend-1:
-    image: "joynr-faked-backend-jee-1:latest"
-    container_name: joynrfakedbackend-1
+  jee-provider:
+    image: "joynr-jee-provider:latest"
+    container_name: jee-provider
     depends_on:
-      - "mqttbroker-1"
-      - "joynrbackend-db"
+      - "mqttbroker"
+      - "infra"
     environment:
       - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
-      - PT_LOGGING_INTERVAL_MS=1000
+      - PT_LOGGING_INTERVAL_MS=500
       - PT_RESULTS=/home/joynr/build/results_backend.csv
     volumes:
       - ./results:/home/joynr/build
+
+  consumer:
+    image: "joynr-consumer:latest"
+    depends_on:
+      - "mqttbroker"
+      - "jee-provider"
+    environment:
+      - JOYNR_LOG_LEVEL=ERROR
+    volumes:
+      - ./results:/home/joynr/build
+    command: |
+     sh -c "cd /home/joynr; \
+            ./start-me-up.sh \
+            --calls 500 \
+            --maxInflightCalls 100; \
+           "
 
   # # jee consumer container
   # jeeapp-1:
@@ -50,18 +66,3 @@ services:
   #     - PT_NUMBER_OF_REPETITIONS=
 
   # cpp consumer containers
-  cppapp:
-    image: "joynr-installed-with-consumer-app:latest"
-    depends_on:
-      - "mqttbroker-1"
-      - "joynrbackend-1"
-    environment:
-      - JOYNR_LOG_LEVEL=ERROR
-    volumes:
-      - ./results:/home/joynr/build
-    command: |
-     sh -c "cd /home/joynr; \
-            ./start-me-up.sh \
-            --calls 10000 \
-            --maxInflightCalls 100; \
-           "
