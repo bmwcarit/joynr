@@ -474,7 +474,7 @@ public class PublicationManagerImpl
         }
     }
 
-    protected void removePublication(String subscriptionId) {
+    private void removePublication(String subscriptionId) {
         PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
         if (publicationInformation == null) {
             return;
