@@ -240,8 +240,6 @@ public class PublicationManagerImpl
                                            SubscriptionRequest subscriptionRequest,
                                            ProviderContainer providerContainer) {
         final String subscriptionId = subscriptionRequest.getSubscriptionId();
-        SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-        MessagingQos messagingQos = createMessagingQos(subscriptionQos);
 
         try {
             Method method = findGetterForAttributeName(providerContainer.getProviderProxy().getClass(),
@@ -249,6 +247,7 @@ public class PublicationManagerImpl
 
             triggerPublication(publicationInformation, providerContainer, method);
 
+            SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
             boolean hasSubscriptionHeartBeat = subscriptionQos instanceof HeartbeatSubscriptionInformation;
             boolean isOnChangeSubscription = subscriptionQos instanceof OnChangeSubscriptionQos;
 
@@ -268,15 +267,15 @@ public class PublicationManagerImpl
                 handleOnChangeSubscription(subscriptionRequest, providerContainer, subscriptionId);
             }
 
+            MessagingQos messagingQos = createMessagingQos(subscriptionQos);
             dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
                                              publicationInformation.proxyParticipantId,
                                              new SubscriptionReply(subscriptionId),
                                              messagingQos);
         } catch (NoSuchMethodException e) {
-            cancelPublicationCreation(subscriptionId);
             logger.error("Error subscribing: {}. The provider does not have the requested attribute",
                          subscriptionRequest);
-            sendSubscriptionReplyWithError(publicationInformation, subscriptionId, e, messagingQos);
+            throw new SubscriptionException(subscriptionId, e.getMessage());
         }
     }
 
@@ -302,19 +301,6 @@ public class PublicationManagerImpl
                                          new UnregisterAttributeListener(subscriptionPublisher,
                                                                          attributeName,
                                                                          attributeListener));
-    }
-
-    private void sendSubscriptionReplyWithError(PublicationInformation publicationInformation,
-                                                String subscriptionId,
-                                                Exception exception,
-                                                MessagingQos messagingQos) {
-        SubscriptionException subscriptionException = new SubscriptionException(subscriptionId, exception.getMessage());
-        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, subscriptionException);
-        dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
-                                         publicationInformation.proxyParticipantId,
-                                         subscriptionReply,
-                                         messagingQos);
-
     }
 
     private void handleBroadcastSubscriptionRequest(String proxyParticipantId,
@@ -395,13 +381,7 @@ public class PublicationManagerImpl
                                                 PublicationInformation publicationInformation,
                                                 SubscriptionRequest subscriptionRequest) {
         SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-        MessagingQos messagingQos = new MessagingQos();
-        if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
-            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
-        } else {
-            // TTL uplift will be done in JoynrMessageFactory
-            messagingQos.setTtl_ms(subscriptionQos.getExpiryDateMs() - System.currentTimeMillis());
-        }
+        MessagingQos messagingQos = createMessagingQos(subscriptionQos);
 
         SubscriptionReply subscriptionReply = new SubscriptionReply(publicationInformation.getSubscriptionId(), e);
         dispatcher.sendSubscriptionReply(publicationInformation.providerParticipantId,
@@ -457,11 +437,6 @@ public class PublicationManagerImpl
             }
         }
         return subscriptionEndDelay;
-    }
-
-    private void cancelPublicationCreation(String subscriptionId) {
-        subscriptionId2PublicationInformation.remove(subscriptionId);
-        logger.error("Subscription request rejected. Removing publication.");
     }
 
     private boolean publicationExists(String subscriptionId) {
