@@ -49,23 +49,6 @@
 using namespace ::testing;
 using namespace joynr;
 
-MATCHER_P(pointerToMqttAddress, expectedAddress, "")
-{
-    if (arg == nullptr) {
-        std::cout << "NULLPTR_1" << std::endl;
-        return false;
-    }
-    auto mqttAddress =
-            std::dynamic_pointer_cast<const system::RoutingTypes::MqttAddress>(arg);
-    if (mqttAddress == nullptr) {
-        std::cout << "NULLPTR_2" << std::endl;
-        return false;
-    }
-    bool result = expectedAddress.equals(*mqttAddress, 0);
-    std::cout << "RESULT: " << std::to_string(result) << std::endl;
-    return result;
-}
-
 class LocalCapabilitiesDirectoryEmptyGbidTest : public ::testing::Test
 {
 public:

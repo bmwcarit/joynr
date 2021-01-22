@@ -28,6 +28,7 @@
 #include "joynr/MutableMessage.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wvariadic-macros"
@@ -156,6 +157,21 @@ MATCHER_P2(joynrException, typeName, msg,
            "JoynrException with typeName=" + ::testing::PrintToString(typeName)
            + " and message=" + ::testing::PrintToString(msg)) {
     return arg.getTypeName() == typeName && arg.getMessage() == msg;
+}
+
+MATCHER_P(pointerToMqttAddress, expectedAddress, "")
+{
+    if (arg == nullptr) {
+        *result_listener << "actual address is nullptr";
+        return false;
+    }
+    auto mqttAddress =
+            std::dynamic_pointer_cast<const joynr::system::RoutingTypes::MqttAddress>(arg);
+    if (mqttAddress == nullptr) {
+        *result_listener << "actual address is not mqtt address";
+        return false;
+    }
+    return expectedAddress.equals(*mqttAddress, 0);
 }
 
 #endif // JOYNRTEST_H_
