@@ -1,5 +1,7 @@
 FROM fedora:30
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 ###################################################
 # create data directories and volumes
 ###################################################

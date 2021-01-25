@@ -1,4 +1,7 @@
 FROM payaradocker/payaraserver:4.1.1.161.1
+
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 COPY target/discovery-directory-pt-jee.war /discovery-directory-pt-jee.war
 COPY start-me-up.sh /start-me-up.sh
 

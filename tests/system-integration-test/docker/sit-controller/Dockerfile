@@ -1,5 +1,7 @@
 FROM payaradocker/payaraserver:4.1.1.161.1
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 COPY sit-controller.war /sit-controller.war
 COPY start-me-up.sh /start-me-up.sh
 

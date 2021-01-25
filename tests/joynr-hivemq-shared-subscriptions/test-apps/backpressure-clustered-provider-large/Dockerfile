@@ -1,5 +1,7 @@
 FROM openjdk:8-jdk-alpine
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 RUN apk add --no-cache curl
 
 COPY src/main/payara/post-boot.txt /post-boot.txt

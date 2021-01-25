@@ -1,5 +1,7 @@
 FROM payaradocker/payaraserver:4.1.1.161.1
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 COPY target/discovery-directory-jee-shared-db.war /discovery-directory-jee-shared-db.war
 COPY target/domain-access-controller-jee.war /domain-access-controller-jee.war
 COPY start-me-up.sh /start-me-up.sh

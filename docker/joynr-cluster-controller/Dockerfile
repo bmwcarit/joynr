@@ -1,5 +1,7 @@
 FROM fedora:24
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 ARG JOYNR_VERSION
 
 #install joynr from rpm

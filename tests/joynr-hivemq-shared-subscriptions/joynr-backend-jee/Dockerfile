@@ -1,5 +1,7 @@
 FROM payara/server-full:4.181
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 COPY target/discovery-directory-jee.war /discovery-directory-jee.war
 COPY start-me-up.sh /start-me-up.sh
 

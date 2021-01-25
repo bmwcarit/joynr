@@ -1,5 +1,7 @@
 FROM openjdk:11-jre-slim
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 ARG HIVEMQ_VERSION=4.3.2
 ENV HIVEMQ_GID=10000
 ENV HIVEMQ_UID=10000

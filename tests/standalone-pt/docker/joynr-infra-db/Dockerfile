@@ -1,5 +1,7 @@
 FROM payaradocker/payaraserver:4.1.1.161.1
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 COPY start-me-up.sh /start-me-up.sh
 
 ENV PATH ${PATH}:/opt/payara41/glassfish/bin

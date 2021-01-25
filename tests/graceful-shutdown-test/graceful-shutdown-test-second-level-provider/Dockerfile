@@ -1,5 +1,7 @@
 FROM openjdk:8-jdk-alpine
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 RUN apk add --no-cache curl
 
 COPY target/graceful-shutdown-test-second-level-provider-*-microbundle.jar /app.jar
