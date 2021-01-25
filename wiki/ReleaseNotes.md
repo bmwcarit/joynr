@@ -24,6 +24,15 @@ None.
 
 ## Bug Fixes
 * **[Docker]** Introduced better error checking in standalone PT scripts
+* **[C++]** Fixed a deadlock that could occur in message router while routing a message to
+  a currently not running provider. Such a message was queued and in case there was a
+  subscription for the messageQueuedForDelivery filtered broadcast for that specific
+  provider participantId it additionally triggered a publication.
+  The routing thread acquired and held a read lock for the currently non deliverable message
+  and acquired the same lock a second time to route the publication message. Afterwards it
+  released both locks. The deadlock occured if the message queue cleanup job (which was
+  triggered periodically) tried to acquire the same lock as a write lock when the routing
+  thread already held its first lock but had not yet acquired the second one.
 
 # joynr 1.15.6
 
