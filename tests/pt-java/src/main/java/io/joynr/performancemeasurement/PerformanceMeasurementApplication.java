@@ -21,6 +21,9 @@ package io.joynr.performancemeasurement;
 
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +40,7 @@ import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
+import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
@@ -45,6 +49,7 @@ import io.joynr.runtime.JoynrRuntime;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProxy;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
@@ -55,6 +60,9 @@ public class PerformanceMeasurementApplication {
 
     private static JoynrRuntime runtime;
     private static PerformanceMeasurementProvider provider = null;
+
+    private static AtomicInteger resultCounterReceived;
+    private static ConcurrentLinkedQueue<Long> durationQueue;
 
     public static void main(String[] args) {
         try {
@@ -107,8 +115,8 @@ public class PerformanceMeasurementApplication {
             return;
         }
 
-        String[] providerDomains = new String[]{ LOCAL_DOMAIN };
-        String interfaceName = "infrastructure/GlobalCapabilitiesDirectory";
+        int numOfRequestCalls = 10000;
+        int maxRequestInflightCalls = 100;
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         String key = "";
@@ -116,12 +124,12 @@ public class PerformanceMeasurementApplication {
             key = scanner.nextLine();
             switch (key) {
             case "tc1":
-                performanceProxy.lookup(providerDomains, interfaceName);
+                performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
                 break;
             default:
                 StringBuilder usageStringBuilder = new StringBuilder();
                 usageStringBuilder.append("\n\nUSAGE press\n");
-                usageStringBuilder.append(" tc1\tto perform lookup\n");
+                usageStringBuilder.append(" tc1\tperform " + numOfRequestCalls + " lookup requests\n");
                 usageStringBuilder.append(" q\tto quit\n");
                 logger.info(usageStringBuilder.toString());
                 break;
@@ -129,6 +137,69 @@ public class PerformanceMeasurementApplication {
         }
         scanner.close();
 
+    }
+
+    private static void performLookupRequestInLoop(GlobalCapabilitiesDirectoryProxy proxy,
+                                                   int numOfCalls,
+                                                   int maxInflightCalls) {
+        String[] providerDomains = new String[]{ LOCAL_DOMAIN };
+        String interfaceName = "infrastructure/GlobalCapabilitiesDirectory";
+        Semaphore testPerformedSemaphore = new Semaphore(0);
+        Semaphore maxInflightSemaphore = new Semaphore(maxInflightCalls);
+
+        resultCounterReceived = new AtomicInteger(0);
+        durationQueue = new ConcurrentLinkedQueue<Long>();
+
+        long startOfTotalDuration = System.currentTimeMillis();
+        for (int i = 0; i < numOfCalls; i++) {
+            try {
+                maxInflightSemaphore.acquire();
+            } catch (InterruptedException e) {
+                logger.error("PerformanceMeasurement: maxInflightSemaphore.acquire() failed!");
+                System.exit(1);
+            }
+            AsyncResponseCallback lookupCallback = new AsyncResponseCallback() {
+                private long mStartTime;
+
+                @Override
+                public void setStartTime(long startTime) {
+                    this.mStartTime = startTime;
+                }
+
+                @Override
+                public void onSuccess(GlobalDiscoveryEntry[] result) {
+                    logger.debug("PerformanceMeasurement: lookup succeeded");
+                    updateRequestDataInCallback(mStartTime);
+                    maxInflightSemaphore.release();
+                    mStartTime = 0l;
+                    if (resultCounterReceived.incrementAndGet() == numOfCalls) {
+                        testPerformedSemaphore.release();
+                    }
+                }
+
+                @Override
+                public void onFailure(JoynrRuntimeException runtimeException) {
+                    logger.error("PerformanceMeasurement: lookup failed");
+                    updateRequestDataInCallback(mStartTime);
+                    maxInflightSemaphore.release();
+                    mStartTime = 0l;
+                    if (resultCounterReceived.incrementAndGet() == numOfCalls) {
+                        testPerformedSemaphore.release();
+                    }
+                }
+            };
+            lookupCallback.setStartTime(System.currentTimeMillis());
+            proxy.lookup(lookupCallback, providerDomains, interfaceName);
+        }
+        // Use this semaphore to wait until all requests are completed
+        try {
+            testPerformedSemaphore.acquire();
+        } catch (InterruptedException e) {
+            logger.error("PerformanceMeasurement: testPerformedSemaphore.acquire() failed!");
+            System.exit(1);
+        }
+        long endOfTotalDuration = System.currentTimeMillis();
+        long totalDurationMs = endOfTotalDuration - startOfTotalDuration;
     }
 
     private static void shutdown() {
@@ -171,4 +242,14 @@ public class PerformanceMeasurementApplication {
         });
         return gcdProxyFuture.get();
     }
+
+    private static void updateRequestDataInCallback(long startTime) {
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        durationQueue.add(duration);
+    }
+}
+
+abstract class AsyncResponseCallback extends Callback<GlobalDiscoveryEntry[]> {
+    public abstract void setStartTime(long startTime);
 }
