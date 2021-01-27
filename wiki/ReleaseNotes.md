@@ -13,6 +13,15 @@ None.
 * **[Docker]** Added specific HiveMQ image to standalone performance test
 * **[C++]** No longer required HTTP related communication support has been removed.
 * **[C++]** Dependency to curl library has been removed
+* **[Java]** Fixed concurrency management in PublicationManager (responsible for subscription
+  handling on provider side) to avoid race conditions.
+* **[Java,C++]** Improved protection of the cluster controller / LocalCapabilitiesDirectory
+  against violation of the uniqueness of participantIds (participantIds must be unique within the
+  whole system). If a remote DiscoveryEntry has the same participantId as a local provider (i.e.
+  a provider connected to the local cluster controller), the remote provider will be ignored now.
+  Such a provider would cause an invalid state in the cluster controller because routing entries are
+  already protected so that the routing entry for the provider's participantId still points to the
+  local provider.
 
 ## Configuration Property Changes
 * **[C++]** Messaging settings related to HTTP communication have been removed
