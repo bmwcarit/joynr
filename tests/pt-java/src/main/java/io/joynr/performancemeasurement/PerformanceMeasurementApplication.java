@@ -65,6 +65,9 @@ public class PerformanceMeasurementApplication {
     private static AtomicInteger resultCounterReceived;
     private static ConcurrentLinkedQueue<Long> durationQueue;
     private static AtomicInteger proxyCreatedCounter;
+
+    private static PerformanceTestData performanceTestData;
+
     private static Thread proxyCreationThread;
     private static ProxyCreationRunnable proxyCreationRunnable;
 
@@ -129,12 +132,16 @@ public class PerformanceMeasurementApplication {
             key = scanner.nextLine();
             switch (key) {
             case "tc1":
+                performanceTestData = new PerformanceTestData("Test Case 1");
                 performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
+                PerformanceMeasurementStatistics.printStatistics(performanceTestData);
                 break;
             case "tc2":
+                performanceTestData = new PerformanceTestData("Test Case 2");
                 performProxiesCreationInLoopInSeparateThread(numOfProxyCreations);
                 performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
                 shutdownProxyCreationSeparateThread();
+                PerformanceMeasurementStatistics.printStatistics(performanceTestData);
                 break;
             default:
                 StringBuilder usageStringBuilder = new StringBuilder();
@@ -236,6 +243,8 @@ public class PerformanceMeasurementApplication {
         }
         long endOfTotalDuration = System.currentTimeMillis();
         long totalDurationMs = endOfTotalDuration - startOfTotalDuration;
+        RequestDurationData durationData = new RequestDurationData(durationQueue, totalDurationMs);
+        performanceTestData.setRequestDurationData(durationData);
     }
 
     private static void shutdown() {
@@ -341,6 +350,7 @@ public class PerformanceMeasurementApplication {
                     });
                 }
                 int numberOfCreatedProxies = proxyCreatedCounter.get();
+                performanceTestData.setNumberOfCreatedProxies(numberOfCreatedProxies);
                 logger.info("PerformanceMeasurement: wait for proxy creations (created until now {})",
                             numberOfCreatedProxies);
                 if (proxiesCreationMaxInflightSemaphore.tryAcquire(5, TimeUnit.SECONDS)) {
