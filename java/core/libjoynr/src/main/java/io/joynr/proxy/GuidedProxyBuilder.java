@@ -90,8 +90,8 @@ public class GuidedProxyBuilder {
      * )
      */
     public GuidedProxyBuilder setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
-        applyDefaultValues(discoveryQos);
-        this.discoveryQos = discoveryQos;
+        this.discoveryQos = new DiscoveryQos(discoveryQos);
+        applyDefaultValues(this.discoveryQos);
         return this;
     }
 

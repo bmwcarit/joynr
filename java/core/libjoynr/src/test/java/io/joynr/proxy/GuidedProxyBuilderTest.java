@@ -46,8 +46,10 @@ import org.mockito.stubbing.Answer;
 
 import io.joynr.arbitration.ArbitrationCallback;
 import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -264,18 +266,49 @@ public class GuidedProxyBuilderTest {
         arbitrationResultField.setAccessible(true);
         arbitrationResultField.set(subject, mockedArbitrationResult);
 
+        long originalDiscoveryTimeoutMs = 42L;
+        ArbitrationStrategy originalArbitrationStrategy = ArbitrationStrategy.HighestPriority;
+        long originalCacheMaxAgeMs = 42000L;
+        boolean originalProviderMustSupportOnChange = true;
+        long originalRetryIntervalMs = 420L;
+        DiscoveryScope originalDiscoveryScope = DiscoveryScope.LOCAL_ONLY;
+
+        discoveryQos.setDiscoveryTimeoutMs(originalDiscoveryTimeoutMs);
+        discoveryQos.setArbitrationStrategy(originalArbitrationStrategy);
+        discoveryQos.setCacheMaxAgeMs(originalCacheMaxAgeMs);
+        discoveryQos.setProviderMustSupportOnChange(originalProviderMustSupportOnChange);
+        discoveryQos.setRetryIntervalMs(originalRetryIntervalMs);
+        discoveryQos.setDiscoveryScope(originalDiscoveryScope);
+
         subject.setDiscoveryQos(discoveryQos);
         subject.setMessagingQos(messagingQos);
         subject.setStatelessAsyncCallbackUseCase(statelessAsyncCallbackUseCase);
         subject.setGbids(gbids);
 
+        discoveryQos.setDiscoveryTimeoutMs(24L);
+        discoveryQos.setArbitrationStrategy(ArbitrationStrategy.Keyword);
+        discoveryQos.setCacheMaxAgeMs(24000L);
+        discoveryQos.setProviderMustSupportOnChange(false);
+        discoveryQos.setRetryIntervalMs(240L);
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+
+        ArgumentCaptor<DiscoveryQos> discoveryQosCaptor = ArgumentCaptor.forClass(DiscoveryQos.class);
+
         subject.buildProxy(testProxy.class, testParticipantId);
         verify(proxyBuilderFactory).get(Mockito.<Set<String>> any(), eq(testProxy.class));
-        verify(proxyBuilder).setDiscoveryQos(eq(discoveryQos));
+        verify(proxyBuilder).setDiscoveryQos(discoveryQosCaptor.capture());
         verify(proxyBuilder).setMessagingQos(eq(messagingQos));
         verify(proxyBuilder).setStatelessAsyncCallbackUseCase(eq(statelessAsyncCallbackUseCase));
         verify(proxyBuilder).setGbids(eq(gbids));
         verify(proxyBuilder).build(Mockito.<ArbitrationResult> any());
+
+        assertEquals(originalDiscoveryTimeoutMs, discoveryQosCaptor.getValue().getDiscoveryTimeoutMs());
+        assertEquals(originalArbitrationStrategy, discoveryQosCaptor.getValue().getArbitrationStrategy());
+        assertEquals(originalCacheMaxAgeMs, discoveryQosCaptor.getValue().getCacheMaxAgeMs());
+        assertEquals(originalProviderMustSupportOnChange,
+                     discoveryQosCaptor.getValue().getProviderMustSupportOnChange());
+        assertEquals(originalRetryIntervalMs, discoveryQosCaptor.getValue().getRetryIntervalMs());
+        assertEquals(originalDiscoveryScope, discoveryQosCaptor.getValue().getDiscoveryScope());
     }
 
 }
