@@ -71,6 +71,8 @@ public class PerformanceMeasurementApplication {
     private static Thread proxyCreationThread;
     private static ProxyCreationRunnable proxyCreationRunnable;
 
+    private static final String csvFileName = "PerformanceMeasurementTest.csv";
+
     public static void main(String[] args) {
         try {
             runtime = createRuntime();
@@ -134,14 +136,14 @@ public class PerformanceMeasurementApplication {
             case "tc1":
                 performanceTestData = new PerformanceTestData("Test Case 1");
                 performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
-                PerformanceMeasurementStatistics.printStatistics(performanceTestData);
+                PerformanceMeasurementStatistics.writeTestDataToCsvFile(performanceTestData, csvFileName);
                 break;
             case "tc2":
                 performanceTestData = new PerformanceTestData("Test Case 2");
                 performProxiesCreationInLoopInSeparateThread(numOfProxyCreations);
                 performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
                 shutdownProxyCreationSeparateThread();
-                PerformanceMeasurementStatistics.printStatistics(performanceTestData);
+                PerformanceMeasurementStatistics.writeTestDataToCsvFile(performanceTestData, csvFileName);
                 break;
             default:
                 StringBuilder usageStringBuilder = new StringBuilder();
