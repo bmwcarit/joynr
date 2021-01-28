@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -63,6 +64,9 @@ public class PerformanceMeasurementApplication {
 
     private static AtomicInteger resultCounterReceived;
     private static ConcurrentLinkedQueue<Long> durationQueue;
+    private static AtomicInteger proxyCreatedCounter;
+    private static Thread proxyCreationThread;
+    private static ProxyCreationRunnable proxyCreationRunnable;
 
     public static void main(String[] args) {
         try {
@@ -117,6 +121,7 @@ public class PerformanceMeasurementApplication {
 
         int numOfRequestCalls = 10000;
         int maxRequestInflightCalls = 100;
+        int numOfProxyCreations = 2000;
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         String key = "";
@@ -126,10 +131,17 @@ public class PerformanceMeasurementApplication {
             case "tc1":
                 performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
                 break;
+            case "tc2":
+                performProxiesCreationInLoopInSeparateThread(numOfProxyCreations);
+                performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
+                shutdownProxyCreationSeparateThread();
+                break;
             default:
                 StringBuilder usageStringBuilder = new StringBuilder();
                 usageStringBuilder.append("\n\nUSAGE press\n");
                 usageStringBuilder.append(" tc1\tperform " + numOfRequestCalls + " lookup requests\n");
+                usageStringBuilder.append(" tc2\tperform " + numOfRequestCalls + " lookup requests with "
+                        + numOfProxyCreations + " parallel proxy creations\n");
                 usageStringBuilder.append(" q\tto quit\n");
                 logger.info(usageStringBuilder.toString());
                 break;
@@ -137,6 +149,30 @@ public class PerformanceMeasurementApplication {
         }
         scanner.close();
 
+    }
+
+    private static synchronized void performProxiesCreationInLoopInSeparateThread(int numOfCreations) {
+        if (proxyCreationRunnable == null) {
+            proxyCreationRunnable = new ProxyCreationRunnable();
+            proxyCreationRunnable.setNumberOfCalls(numOfCreations);
+        }
+
+        proxyCreationThread = new Thread(proxyCreationRunnable);
+        proxyCreationThread.start();
+    }
+
+    public static synchronized void shutdownProxyCreationSeparateThread() {
+        if (proxyCreationRunnable != null) {
+            proxyCreationRunnable.stop();
+            proxyCreationRunnable = null;
+        }
+        if (proxyCreationThread != null) {
+            try {
+                proxyCreationThread.join();
+            } catch (InterruptedException e) {
+                logger.error("proxyCreationThread.join() interrupted", e);
+            }
+        }
     }
 
     private static void performLookupRequestInLoop(GlobalCapabilitiesDirectoryProxy proxy,
@@ -211,6 +247,7 @@ public class PerformanceMeasurementApplication {
             }
         }
 
+        shutdownProxyCreationSeparateThread();
         runtime.shutdown(true);
         System.exit(0);
     }
@@ -247,6 +284,76 @@ public class PerformanceMeasurementApplication {
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
         durationQueue.add(duration);
+    }
+
+    private static class ProxyCreationRunnable implements Runnable {
+
+        private Logger logger = LoggerFactory.getLogger(ProxyCreationRunnable.class);
+        private volatile int numOfProxyCreations = 1;
+        private volatile boolean stopped = false;
+        private Semaphore proxiesCreationMaxInflightSemaphore = new Semaphore(0);
+
+        public void setNumberOfCalls(int numOfCalls) {
+            this.numOfProxyCreations = numOfCalls;
+        }
+
+        public void stop() {
+            this.stopped = true;
+        }
+
+        @Override
+        public void run() {
+            try {
+                proxiesCreationMaxInflightSemaphore = new Semaphore(numOfProxyCreations);
+                proxyCreatedCounter = new AtomicInteger(0);
+
+                DiscoveryQos discoveryQos = new DiscoveryQos();
+                discoveryQos.setDiscoveryTimeoutMs(10000);
+                discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+                discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
+
+                while (!stopped) {
+                    proxiesCreationMaxInflightSemaphore.acquire();
+
+                    if (stopped) {
+                        break;
+                    }
+
+                    ProxyBuilder<GlobalCapabilitiesDirectoryProxy> proxyBuilder = runtime.getProxyBuilder(LOCAL_DOMAIN,
+                                                                                                          GlobalCapabilitiesDirectoryProxy.class)
+                                                                                         .setDiscoveryQos(discoveryQos);
+
+                    proxyBuilder.build(new ProxyCreatedCallback<GlobalCapabilitiesDirectoryProxy>() {
+
+                        @Override
+                        public void onProxyCreationFinished(GlobalCapabilitiesDirectoryProxy result) {
+                            logger.debug("PerformanceMeasurement: proxy creation in a separate thread succeeded!");
+                            proxyCreatedCounter.incrementAndGet();
+                            proxiesCreationMaxInflightSemaphore.release();
+                        }
+
+                        @Override
+                        public void onProxyCreationError(JoynrRuntimeException error) {
+                            logger.error("PerformanceMeasurement: proxy creation in a separate thread failed!");
+                            proxyCreatedCounter.incrementAndGet();
+                            proxiesCreationMaxInflightSemaphore.release();
+                        }
+                    });
+                }
+                int numberOfCreatedProxies = proxyCreatedCounter.get();
+                logger.info("PerformanceMeasurement: wait for proxy creations (created until now {})",
+                            numberOfCreatedProxies);
+                if (proxiesCreationMaxInflightSemaphore.tryAcquire(5, TimeUnit.SECONDS)) {
+                    logger.info("PerformanceMeasurement: proxy creations finished (creations: {})",
+                                proxyCreatedCounter.get());
+                } else {
+                    logger.error("PerformanceMeasurement: proxy creations didn't finish in 5 seconds (created until now {})",
+                                 proxyCreatedCounter.get());
+                }
+            } catch (Exception e) {
+                logger.error("PerformanceMeasurement: Unexpected exception in ProxyCreationRunnable: ", e);
+            }
+        }
     }
 }
 
