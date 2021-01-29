@@ -74,7 +74,7 @@ public class BinderService extends Service {
                 }
 
             } catch (Exception error) {
-                logger.error("BinderService message not processed: {}", error.getMessage());
+                logger.error("BinderService transmit message not processed: {}", error.getMessage());
             }
         }
     };
@@ -112,16 +112,20 @@ public class BinderService extends Service {
         @Override
         public void handleMessage(android.os.Message msg) {
 
-            Injector injector = AndroidBinderRuntime.getInjector();
-            if (injector != null) {
-                messagesWaitingProcessing.forEach(immutableMessage -> {
-                    processMessage(injector, immutableMessage);
-                });
-                messagesWaitingProcessing.clear();
-                logger.debug("BinderService Runtime available. Processing {} messages", messagesWaitingProcessing.size());
-            } else {
-                logger.debug("BinderService Runtime not available. Checking again in 1 second...");
-                removeAndSendMessageDelayedToHandler();
+            try {
+                Injector injector = AndroidBinderRuntime.getInjector();
+                if (injector != null) {
+                    messagesWaitingProcessing.forEach(immutableMessage -> {
+                        processMessage(injector, immutableMessage);
+                    });
+                    messagesWaitingProcessing.clear();
+                    logger.debug("BinderService Runtime available. Processing {} messages", messagesWaitingProcessing.size());
+                } else {
+                    logger.debug("BinderService Runtime not available. Checking again in 1 second...");
+                    removeAndSendMessageDelayedToHandler();
+                }
+            } catch (Exception error) {
+                logger.error("BinderService handleMessage message not processed: {}", error.getMessage());
             }
         }
     };
