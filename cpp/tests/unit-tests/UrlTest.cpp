@@ -137,3 +137,9 @@ TEST_F(UrlTest, parseValid)
         ASSERT_EQ(expectedResult, url);
     }
 }
+
+TEST_F(UrlTest, parseEmpty)
+{
+    Url url{""};
+    ASSERT_FALSE(url.isValid());
+}
