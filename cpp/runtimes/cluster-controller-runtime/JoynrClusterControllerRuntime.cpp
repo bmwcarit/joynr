@@ -297,7 +297,7 @@ void JoynrClusterControllerRuntime::init()
         const bool isMqttExponentialBackoffEnabled =
                 _messagingSettings.getMqttExponentialBackoffEnabled();
         std::chrono::seconds mqttKeepAliveTimeSeconds(0);
-        BrokerUrl brokerUrl("");
+        BrokerUrl brokerUrl = defaultBrokerUrl;
 
         // default brokerIndex = 0
         for (std::uint8_t brokerIndex = 0; brokerIndex < _mqttConnectionDataVector.size();
