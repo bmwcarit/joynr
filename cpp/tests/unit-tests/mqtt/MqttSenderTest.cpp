@@ -50,7 +50,7 @@ protected:
         Settings testSettings(testSettingsFileNameMqtt);
         MessagingSettings messagingSettings(testSettings);
         const ClusterControllerSettings ccSettings(testSettings);
-        BrokerUrl brokerUrl("testBrokerUrl");
+        BrokerUrl brokerUrl("mqtt://testBrokerHost:1883");
         std::chrono::seconds mqttKeepAliveTimeSeconds(1);
         std::chrono::seconds mqttReconnectDelayTimeSeconds(1);
         std::chrono::seconds mqttReconnectMaxDelayTimeSeconds(1);

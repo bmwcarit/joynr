@@ -116,7 +116,7 @@ public:
               gbid("gbid"),
               mockMosquittoConnection(
                       std::make_shared<MockMosquittoConnection>(ccSettings,
-                                                                joynr::BrokerUrl("testBrokerUrl"),
+                                                                joynr::BrokerUrl("mqtt://testBrokerHost:1883"),
                                                                 std::chrono::seconds(1),
                                                                 std::chrono::seconds(1),
                                                                 std::chrono::seconds(1),

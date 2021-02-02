@@ -97,7 +97,7 @@ public:
               _isLocalMessage(false),
               _settings(),
               _ccSettings(_settings),
-              _brokerUrl("testBrokerUrl"),
+              _brokerUrl("mqtt://testBrokerHost:1883"),
               _mqttKeepAliveTimeSeconds(1),
               _mqttReconnectDelayTimeSeconds(1),
               _mqttReconnectMaxDelayTimeSeconds(1),
