@@ -20,7 +20,6 @@
 package io.joynr.performancemeasurement;
 
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +40,7 @@ import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
+import io.joynr.performancemeasurement.ApplicationInvocationParameters.TESTCASE;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilder;
@@ -71,10 +71,11 @@ public class PerformanceMeasurementApplication {
     private static Thread proxyCreationThread;
     private static ProxyCreationRunnable proxyCreationRunnable;
 
-    private static final String csvFileName = "PerformanceMeasurementTest.csv";
+    private static ApplicationInvocationParameters appInvocationParameters = null;
 
     public static void main(String[] args) {
         try {
+            appInvocationParameters = new ApplicationInvocationParameters(args);
             runtime = createRuntime();
             run();
             shutdown();
@@ -124,40 +125,27 @@ public class PerformanceMeasurementApplication {
             return;
         }
 
-        int numOfRequestCalls = 10000;
-        int maxRequestInflightCalls = 100;
-        int numOfProxyCreations = 2000;
+        int numOfRequestCalls = appInvocationParameters.getNumberOfRequestCalls();
+        int maxRequestInflightCalls = appInvocationParameters.getNumberOfMaxInflightCalls();
+        int numOfProxyCreations = appInvocationParameters.getNumberOfProxyCreations();
+        String filename = appInvocationParameters.getFileName();
+        int numOfIterations = appInvocationParameters.getNumberOfIterations();
 
-        Scanner scanner = new Scanner(System.in, "UTF-8");
-        String key = "";
-        while (!key.equals("q")) {
-            key = scanner.nextLine();
-            switch (key) {
-            case "tc1":
-                performanceTestData = new PerformanceTestData("Test Case 1");
+        if (appInvocationParameters.getTestCase() == TESTCASE.REQUESTS_ONLY) {
+            for (int i = 0; i < numOfIterations; i++) {
+                performanceTestData = new PerformanceTestData("Requests only");
                 performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
-                PerformanceMeasurementStatistics.writeTestDataToCsvFile(performanceTestData, csvFileName);
-                break;
-            case "tc2":
-                performanceTestData = new PerformanceTestData("Test Case 2");
+                PerformanceMeasurementStatistics.writeTestDataToCsvFile(performanceTestData, filename);
+            }
+        } else if (appInvocationParameters.getTestCase() == TESTCASE.REQUESTS_WITH_PROXY) {
+            for (int i = 0; i < numOfIterations; i++) {
+                performanceTestData = new PerformanceTestData("Requests and proxies");
                 performProxiesCreationInLoopInSeparateThread(numOfProxyCreations);
                 performLookupRequestInLoop(performanceProxy, numOfRequestCalls, maxRequestInflightCalls);
                 shutdownProxyCreationSeparateThread();
-                PerformanceMeasurementStatistics.writeTestDataToCsvFile(performanceTestData, csvFileName);
-                break;
-            default:
-                StringBuilder usageStringBuilder = new StringBuilder();
-                usageStringBuilder.append("\n\nUSAGE press\n");
-                usageStringBuilder.append(" tc1\tperform " + numOfRequestCalls + " lookup requests\n");
-                usageStringBuilder.append(" tc2\tperform " + numOfRequestCalls + " lookup requests with "
-                        + numOfProxyCreations + " parallel proxy creations\n");
-                usageStringBuilder.append(" q\tto quit\n");
-                logger.info(usageStringBuilder.toString());
-                break;
+                PerformanceMeasurementStatistics.writeTestDataToCsvFile(performanceTestData, filename);
             }
         }
-        scanner.close();
-
     }
 
     private static synchronized void performProxiesCreationInLoopInSeparateThread(int numOfCreations) {
