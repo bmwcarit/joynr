@@ -32,6 +32,11 @@ public:
     {
     }
 
+    void createBrokerUrlWithEmptyString()
+    {
+        BrokerUrl brokerUrl("");
+    }
+
 protected:
     BrokerUrl brokerUrlHttp;
     BrokerUrl brokerUrlMqtt;
@@ -69,4 +74,9 @@ TEST_F(BrokerUrlTest, getTimeCheckUrl)
     EXPECT_EQ("http://localhost:8080/bounceproxy/time/", timeCheckUrlHttp.toString());
     Url timeCheckUrlMqtt = brokerUrlMqtt.getTimeCheckUrl();
     EXPECT_EQ("mqtt://localhost:1883/time/", timeCheckUrlMqtt.toString());
+}
+
+TEST_F(BrokerUrlTest, createEmptyBrokerUrlWithEmptyStringThrows)
+{
+    EXPECT_THROW(createBrokerUrlWithEmptyString(), std::invalid_argument);
 }

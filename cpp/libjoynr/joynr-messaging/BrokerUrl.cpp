@@ -16,6 +16,11 @@
  * limitations under the License.
  * #L%
  */
+
+#include <iostream>
+#include <sstream>
+#include <string>
+
 #include "joynr/BrokerUrl.h"
 
 namespace joynr
@@ -58,6 +63,11 @@ BrokerUrl::BrokerUrl(const std::string& brokerChannelsBaseUrl)
     channelsBaseUrl.append(CHANNEL_PATH_SUFFIX());
     channelsBaseUrl.append(URL_PATH_SEPARATOR());
     this->_brokerChannelsBaseUrl = Url(channelsBaseUrl);
+    if (!this->_brokerChannelsBaseUrl.isValid()) {
+        std::ostringstream errorStringStream;
+        errorStringStream << "could not parse URL >" << brokerChannelsBaseUrl << "<";
+        throw std::invalid_argument(errorStringStream.str());
+    }
 }
 
 BrokerUrl& BrokerUrl::operator=(const BrokerUrl& brokerUrl)
