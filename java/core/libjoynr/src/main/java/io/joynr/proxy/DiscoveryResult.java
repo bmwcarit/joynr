@@ -29,10 +29,20 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
 
+/**
+ * This class represents a List of DiscoveryEntries resulting from an arbitration.
+ * It provides several filtering methods that allow to retrieve DiscoveryEntries by
+ * different criteria.
+ */
 public class DiscoveryResult {
 
     private List<DiscoveryEntry> discoveryEntries;
 
+    /**
+     * Constructor for internal use only.
+     *
+     * @param discoveryEntries DiscoveryEntries for initialization.
+     */
     public DiscoveryResult(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries) {
         this.discoveryEntries = new ArrayList<>();
         for (DiscoveryEntry entry : discoveryEntries) {
@@ -40,6 +50,17 @@ public class DiscoveryResult {
         }
     }
 
+    /**
+     * Returns the DiscoveryEntry with the most recent last seen date from this DiscoveryResult.
+     * <p>
+     * The last seen date of a provider is periodically updated by joynr at a configurable interval, property:
+     * {@link io.joynr.runtime.SystemServicesSettings#PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS}.
+     * <p>
+     * Providers with a very outdated last seen date are most likely not reachable anymore, for example because of
+     * connectivity issues or a crash of the provider application.
+     *
+     * @return Returns the DiscoveryEntry with the most recent last seen date from this DiscoveryResult.
+     */
     public DiscoveryEntry getLastSeen() {
         DiscoveryEntry lastSeenEntry = discoveryEntries.get(0);
         for (DiscoveryEntry entry : discoveryEntries) {
@@ -50,6 +71,15 @@ public class DiscoveryResult {
         return lastSeenEntry;
     }
 
+    /**
+     * Returns the DiscoveryEntry with the highest priority from this DiscoveryResult.
+     * <p>
+     * The priority of a provider can be set by an application when registering the provider, see
+     * {@link joynr.types.ProviderQos#setPriority(Long)}.
+     *
+     * @return Returns the DiscoveryEntry with the highest priority from this DiscoveryResult.
+     * @see joynr.types.ProviderQos#setPriority(Long)
+     */
     public DiscoveryEntry getHighestPriority() {
         DiscoveryEntry entryWithHighestPriority = discoveryEntries.get(0);
         for (DiscoveryEntry entry : discoveryEntries) {
@@ -60,6 +90,11 @@ public class DiscoveryResult {
         return entryWithHighestPriority;
     }
 
+    /**
+     * Returns the DiscoveryEntry with the highest Version number from this DiscoveryResult.
+     *
+     * @return Returns the DiscoveryEntry with the highest Version from this DiscoveryResult.
+     */
     public DiscoveryEntry getLatestVersion() {
         DiscoveryEntry entryWithLatestVersion = discoveryEntries.get(0);
         for (DiscoveryEntry entry : discoveryEntries) {
@@ -76,10 +111,21 @@ public class DiscoveryResult {
         return entryWithLatestVersion;
     }
 
+    /**
+     * Returns a Collection with all DiscoveryEntries in this DiscoveryResult.
+     *
+     * @return Returns a Collection with all DiscoveryEntries in this DiscoveryResult.
+     */
     public Collection<DiscoveryEntry> getAllDiscoveryEntries() {
         return discoveryEntries;
     }
 
+    /**
+     * Returns the DiscoveryEntry with the given participantId, or null if it doesn't exist.
+     *
+     * @param participantId ParticipantId of the required DiscoveryEntry.
+     * @return Returns the DiscoveryEntry with the given participantId, or null if it doesn't exist.
+     */
     public DiscoveryEntry getParticipantId(String participantId) {
         for (DiscoveryEntry entry : discoveryEntries) {
             if (entry.getParticipantId().equals(participantId)) {
@@ -89,6 +135,17 @@ public class DiscoveryResult {
         return null; //Or throw exception?
     }
 
+    /**
+     * Returns a Collection of DiscoveryEntries that have the given keyword in their custom parameters.
+     * <p>
+     * A keyword for a provider can be set by an application when registering the provider by setting a custom parameter
+     * in the {@link joynr.types.ProviderQos} with the special key {@link ArbitrationConstants#KEYWORD_PARAMETER}, see
+     * {@link joynr.types.ProviderQos#setCustomParameters(CustomParameter[])}.
+     *
+     * @param keyword The custom parameters of the required DiscoveryEntries should contain this keyword.
+     * @return Returns a Collection of DiscoveryEntries that have the given keyword in their custom parameters.
+     * @see joynr.types.ProviderQos#setCustomParameters(CustomParameter[])
+     */
     public Collection<DiscoveryEntry> getWithKeyword(String keyword) {
         List<DiscoveryEntry> entriesWithKeyword = new ArrayList<>();
         for (DiscoveryEntry entry : discoveryEntries) {
