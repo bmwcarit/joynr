@@ -1120,7 +1120,7 @@ void LocalCapabilitiesDirectory::remove(
                 _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
                         ->lookupByParticipantId(participantId);
 
-        if (optionalEntry.has_value() && !LCDUtil::isGlobal(optionalEntry.get())) {
+        if (optionalEntry && !LCDUtil::isGlobal(optionalEntry.get())) {
             _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
                     ->removeByParticipantId(participantId);
             JOYNR_LOG_INFO(

@@ -40,7 +40,7 @@ TEST_F(DiscoveryResultTest, testGetLastSeenHasNoValueWhenEntriesEmpty)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
     boost::optional<joynr::types::DiscoveryEntry> discoveryEntryLastSeen = discoveryResult.getLastSeen();
-    EXPECT_FALSE(discoveryEntryLastSeen.has_value());
+    EXPECT_FALSE(discoveryEntryLastSeen);
 }
 
 TEST_F(DiscoveryResultTest, testGetHighestPriorityHasNoValueWhenEntriesEmpty)
@@ -48,7 +48,7 @@ TEST_F(DiscoveryResultTest, testGetHighestPriorityHasNoValueWhenEntriesEmpty)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
     boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithHighestPriority = discoveryResult.getHighestPriority();
-    EXPECT_FALSE(discoveryEntryWithHighestPriority.has_value());
+    EXPECT_FALSE(discoveryEntryWithHighestPriority);
 }
 
 TEST_F(DiscoveryResultTest, testGetLatestVersionHasNoValueWhenEntriesEmpty)
@@ -56,7 +56,7 @@ TEST_F(DiscoveryResultTest, testGetLatestVersionHasNoValueWhenEntriesEmpty)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
     boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithLatestVersion = discoveryResult.getLatestVersion();
-    EXPECT_FALSE(discoveryEntryWithLatestVersion.has_value());
+    EXPECT_FALSE(discoveryEntryWithLatestVersion);
 }
 
 TEST_F(DiscoveryResultTest, testGetParticipantIdHasNoValueWhenEntriesEmpty)
@@ -64,7 +64,7 @@ TEST_F(DiscoveryResultTest, testGetParticipantIdHasNoValueWhenEntriesEmpty)
     std::vector<joynr::types::DiscoveryEntry> discoveryEntries;
     discoveryResult = joynr::DiscoveryResult(discoveryEntries);
     boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithParticipantId = discoveryResult.getParticipantId("participantId");
-    EXPECT_FALSE(discoveryEntryWithParticipantId.has_value());
+    EXPECT_FALSE(discoveryEntryWithParticipantId);
 }
 
 TEST_F(DiscoveryResultTest, testGetWithKeywordHasNoValueWhenEntriesEmpty)
@@ -230,7 +230,7 @@ TEST_F(DiscoveryResultTest, testGetParticipantIdHasNoValue)
 
     boost::optional<joynr::types::DiscoveryEntry> discoveryEntryWithNoValue = discoveryResult.getParticipantId(participantId3);
 
-    EXPECT_FALSE(discoveryEntryWithNoValue.has_value());
+    EXPECT_FALSE(discoveryEntryWithNoValue);
 }
 
 TEST_F(DiscoveryResultTest, testGetWithKeyword)

@@ -4806,7 +4806,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUses
 
     ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getLastSeenDateMs());
     ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getExpiryDateMs());
-    ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId1).has_value());
+    ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId1));
 
     ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getLastSeenDateMs());
     ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getExpiryDateMs());
