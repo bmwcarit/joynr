@@ -304,7 +304,13 @@ endfunction()
 ###############
 
 if(${BUILD_UNIT_TESTS})
-    GetSourceFiles(g_UnitTests_SOURCES INPUT_DIR unit-tests)
+    if(NOT ${JOYNR_SUPPORT_WEBSOCKET})
+        list(APPEND excludedUnitTests ".*/websocket/.*")
+    endif()
+    if(NOT ${JOYNR_SUPPORT_UDS})
+        list(APPEND excludedUnitTests ".*/uds/.*")
+    endif()
+    GetSourceFiles(g_UnitTests_SOURCES INPUT_DIR unit-tests EXCLUDES ${excludedUnitTests})
 
     AddTest(
         g_UnitTests
@@ -337,12 +343,12 @@ endif(${BUILD_UNIT_TESTS})
 
 if(${BUILD_INTEGRATION_TESTS})
     if(NOT ${JOYNR_SUPPORT_WEBSOCKET})
-        list(APPEND excludedTests ".*/websocket/.*")
+        list(APPEND excludedIntegrationTests ".*/websocket/.*")
     endif()
     if(NOT ${JOYNR_SUPPORT_UDS})
-        list(APPEND excludedTests ".*/uds/.*")
+        list(APPEND excludedIntegrationTests ".*/uds/.*")
     endif()
-    GetSourceFiles(g_IntegrationTests_SOURCES INPUT_DIR integration-tests EXCLUDES ${excludedTests})
+    GetSourceFiles(g_IntegrationTests_SOURCES INPUT_DIR integration-tests EXCLUDES ${excludedIntegrationTests})
 
     AddTest(
        g_IntegrationTests
@@ -392,12 +398,12 @@ endif(${BUILD_INTEGRATION_TESTS})
 
 if(${BUILD_SYSTEM_INTEGRATION_TESTS})
     if(NOT ${JOYNR_SUPPORT_WEBSOCKET})
-        list(APPEND excludedTests ".*/websocket/.*")
+        list(APPEND excludedSystemIntegrationTests ".*/websocket/.*")
     endif()
     if(NOT ${JOYNR_SUPPORT_UDS})
-        list(APPEND excludedTests ".*/uds/.*")
+        list(APPEND excludedSystemIntegrationTests ".*/uds/.*")
     endif()
-    GetSourceFiles(g_SystemIntegrationTests_SOURCES INPUT_DIR systemintegration-tests EXCLUDES ${excludedTests})
+    GetSourceFiles(g_SystemIntegrationTests_SOURCES INPUT_DIR systemintegration-tests EXCLUDES ${excludedSystemIntegrationTests})
 
     AddTest(
        g_SystemIntegrationTests
