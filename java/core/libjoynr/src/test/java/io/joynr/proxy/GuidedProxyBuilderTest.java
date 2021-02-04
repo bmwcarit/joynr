@@ -146,6 +146,35 @@ public class GuidedProxyBuilderTest {
         }
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testSetDiscoveryQosThrowsDuringLookup() throws Exception {
+        setup();
+        subject.discoverAsync();
+        subject.setDiscoveryQos(new DiscoveryQos());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSetMessagingQosThrowsDuringLookup() throws Exception {
+        setup();
+        subject.discoverAsync();
+        subject.setMessagingQos(new MessagingQos());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSetStatelessAsyncCallbackUseCaseThrowsDuringLookup() throws Exception {
+        setup();
+        subject.discoverAsync();
+        subject.setStatelessAsyncCallbackUseCase("Test");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSetGbidsThrowsDuringLookup() throws Exception {
+        setup();
+        subject.discoverAsync();
+        String[] gbids = new String[]{};
+        subject.setGbids(gbids);
+    }
+
     @Test(expected = ExecutionException.class)
     public void testLookupExceptionIsProperlyThrown() throws Exception {
         setup();

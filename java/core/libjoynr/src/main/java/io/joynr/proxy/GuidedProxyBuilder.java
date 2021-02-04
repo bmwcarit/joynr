@@ -64,6 +64,7 @@ public class GuidedProxyBuilder {
     private final long defaultDiscoveryTimeoutMs;
     private final long defaultDiscoveryRetryIntervalMs;
     private ObjectMapper objectMapper;
+    private boolean discoveryInProgress;
 
     public GuidedProxyBuilder(DiscoverySettingsStorage discoverySettingsStorage,
                               Set<String> domains,
@@ -91,6 +92,9 @@ public class GuidedProxyBuilder {
      * )
      */
     public GuidedProxyBuilder setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
+        if (discoveryInProgress) {
+            throw new IllegalStateException("setDiscoveryQos called while discovery in progress");
+        }
         this.discoveryQos = new DiscoveryQos(discoveryQos);
         applyDefaultValues(this.discoveryQos);
         return this;
@@ -102,7 +106,10 @@ public class GuidedProxyBuilder {
      * @see
      * io.joynr.proxy.ProxyBuilder#setMessagingQos(io.joynr.messaging.MessagingQos)
      */
-    public GuidedProxyBuilder setMessagingQos(final MessagingQos messagingQos) {
+    public GuidedProxyBuilder setMessagingQos(final MessagingQos messagingQos) throws DiscoveryException {
+        if (discoveryInProgress) {
+            throw new IllegalStateException("setMessagingQos called while discovery in progress");
+        }
         if (messagingQos.getRoundTripTtl_ms() > maxMessagingTtl) {
             logger.warn("Error in MessageQos. domains: {} interface: {} Max allowed ttl: {}. Passed ttl: {}",
                         domains,
@@ -123,6 +130,9 @@ public class GuidedProxyBuilder {
      * io.joynr.proxy.ProxyBuilder#setStatelessAsyncCallback(Object)
      */
     public GuidedProxyBuilder setStatelessAsyncCallbackUseCase(String statelessAsyncCallbackUseCase) {
+        if (discoveryInProgress) {
+            throw new IllegalStateException("setStatelessAsyncCallbackUseCase called while discovery in progress");
+        }
         this.statelessAsyncCallbackUseCase = statelessAsyncCallbackUseCase;
         return this;
     }
@@ -134,6 +144,9 @@ public class GuidedProxyBuilder {
      * io.joynr.proxy.ProxyBuilder#setGbids(String[] gbids)
      */
     public GuidedProxyBuilder setGbids(final String[] gbids) {
+        if (discoveryInProgress) {
+            throw new IllegalStateException("setGbids called while discovery in progress");
+        }
         if (gbids == null || gbids.length == 0) {
             throw new IllegalArgumentException("GBIDs array must not be null or empty.");
         }
@@ -194,6 +207,7 @@ public class GuidedProxyBuilder {
             public void onSuccess(ArbitrationResult arbitrationResult) {
                 savedArbitrationResult = arbitrationResult;
                 discoveryCompletedOnce = true;
+                discoveryInProgress = false;
                 resultFuture.complete(arbitrationResult);
             }
 
@@ -205,9 +219,13 @@ public class GuidedProxyBuilder {
                 } else {
                     reason = new JoynrRuntimeException(throwable);
                 }
+                discoveryInProgress = false;
                 resultFuture.completeExceptionally(reason);
             }
         });
+        savedArbitrationResult = new ArbitrationResult();
+        discoveryInProgress = true;
+        discoveryCompletedOnce = false;
         arbitrator.lookup();
         return resultFuture;
     }
