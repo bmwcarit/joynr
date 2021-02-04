@@ -37,6 +37,7 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.util.ReflectionUtils;
+import io.joynr.util.VersionUtil;
 import io.joynr.util.ObjectMapper;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -222,7 +223,13 @@ public class GuidedProxyBuilder {
             }
         }
         if (discoveryEntryForProxy == null) {
-            throw new IllegalStateException("No provider with participant ID " + participantId + " was discovered!");
+            throw new IllegalArgumentException("No provider with participant ID " + participantId + " was discovered!");
+        }
+        Version interfaceVersion = VersionUtil.getVersionFromAnnotation(interfaceClass);
+        Version providerVersion = discoveryEntryForProxy.getProviderVersion();
+        if (!interfaceVersion.equals(providerVersion)) {
+            throw new IllegalArgumentException("Provider Version " + providerVersion
+                    + " does not match interface version " + interfaceVersion + " !");
         }
         ArbitrationResult arbitrationResultForProxy = new ArbitrationResult(discoveryEntryForProxy);
         registerInterfaceClassTypes(interfaceClass, "Cannot create ProxyBuilder");

@@ -20,7 +20,6 @@ package io.joynr.proxy;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -57,9 +56,11 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyTest.TestInterface;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
+import io.joynr.util.VersionUtil;
 import joynr.tests.testProxy;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.Version;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GuidedProxyBuilderTest {
@@ -224,15 +225,8 @@ public class GuidedProxyBuilderTest {
         DiscoveryQos discoveryQos = new DiscoveryQos();
         DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         mockedDiscoveryEntry.setParticipantId(testParticipantId);
-        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
-
-        Field discoveryCompletedFiled = GuidedProxyBuilder.class.getDeclaredField("discoveryCompletedOnce");
-        discoveryCompletedFiled.setAccessible(true);
-        discoveryCompletedFiled.set(subject, true);
-
-        Field arbitrationResultField = GuidedProxyBuilder.class.getDeclaredField("savedArbitrationResult");
-        arbitrationResultField.setAccessible(true);
-        arbitrationResultField.set(subject, mockedArbitrationResult);
+        mockedDiscoveryEntry.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+        mockSuccessfulDiscovery(mockedDiscoveryEntry);
 
         subject.setDiscoveryQos(discoveryQos);
         subject.buildProxy(testProxy.class, testParticipantId);
@@ -256,15 +250,8 @@ public class GuidedProxyBuilderTest {
         String[] gbids = new String[]{ "gbid1", "gbid2" };
         DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         mockedDiscoveryEntry.setParticipantId(testParticipantId);
-        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
-
-        Field discoveryCompletedFiled = GuidedProxyBuilder.class.getDeclaredField("discoveryCompletedOnce");
-        discoveryCompletedFiled.setAccessible(true);
-        discoveryCompletedFiled.set(subject, true);
-
-        Field arbitrationResultField = GuidedProxyBuilder.class.getDeclaredField("savedArbitrationResult");
-        arbitrationResultField.setAccessible(true);
-        arbitrationResultField.set(subject, mockedArbitrationResult);
+        mockedDiscoveryEntry.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+        mockSuccessfulDiscovery(mockedDiscoveryEntry);
 
         long originalDiscoveryTimeoutMs = 42L;
         ArbitrationStrategy originalArbitrationStrategy = ArbitrationStrategy.HighestPriority;
@@ -309,6 +296,49 @@ public class GuidedProxyBuilderTest {
                      discoveryQosCaptor.getValue().getProviderMustSupportOnChange());
         assertEquals(originalRetryIntervalMs, discoveryQosCaptor.getValue().getRetryIntervalMs());
         assertEquals(originalDiscoveryScope, discoveryQosCaptor.getValue().getDiscoveryScope());
+    }
+
+    private void mockSuccessfulDiscovery(DiscoveryEntryWithMetaInfo mockedDiscoveryEntry) throws NoSuchFieldException,
+                                                                                          IllegalAccessException {
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
+
+        Field discoveryCompletedFiled = GuidedProxyBuilder.class.getDeclaredField("discoveryCompletedOnce");
+        discoveryCompletedFiled.setAccessible(true);
+        discoveryCompletedFiled.set(subject, true);
+
+        Field arbitrationResultField = GuidedProxyBuilder.class.getDeclaredField("savedArbitrationResult");
+        arbitrationResultField.setAccessible(true);
+        arbitrationResultField.set(subject, mockedArbitrationResult);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testBuildProxyThrowsOnIncompatibleVersion() throws Exception {
+        setup();
+        String testParticipantId = "test";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+
+        DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        mockedDiscoveryEntry.setParticipantId(testParticipantId);
+        mockedDiscoveryEntry.setProviderVersion(new Version(500, 600));
+        mockSuccessfulDiscovery(mockedDiscoveryEntry);
+
+        subject.setDiscoveryQos(discoveryQos);
+        subject.buildProxy(testProxy.class, testParticipantId);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testBuildProxyThrowsOnUnavailableParticipantId() throws Exception {
+        setup();
+        String testParticipantId = "test";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+
+        DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        mockedDiscoveryEntry.setParticipantId(testParticipantId);
+        mockedDiscoveryEntry.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+        mockSuccessfulDiscovery(mockedDiscoveryEntry);
+
+        subject.setDiscoveryQos(discoveryQos);
+        subject.buildProxy(testProxy.class, "unavailableParticipantId");
     }
 
 }
