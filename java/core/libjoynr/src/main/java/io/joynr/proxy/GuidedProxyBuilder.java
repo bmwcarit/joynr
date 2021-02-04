@@ -43,6 +43,32 @@ import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
 
+/**
+ * The GuidedProxyBuilder provides methods to discover providers for a given interface and build a proxy for selected
+ * providers. Compared to {@link io.joynr.proxy.ProxyBuilder}, it separates the provider discovery from the actual proxy
+ * creation and allows extended (manual) control over the provider selection. The user has full control over the provider
+ * selection. Filtering by version and arbitration strategy is skipped in the GuidedProxyBuilder and has to be done manually.
+ * The discovered providers are only filtered by support for on change subscriptions if
+ * {@link DiscoveryQos#setProviderMustSupportOnChange(boolean)} has been set to <code>true</code>.
+ * In contrast to the ProxyBuilder, the provider version is not required to be known in advance. The appropriate Proxy
+ * interface class for the selected provider has to be passed to the GuidedProxyBuilder in the second step.
+ * <p>
+ * The proxy creation with the GuidedProxyBuilder consists of two steps:
+ * <ol>
+ * <li> Select domains and interface of the provider, set optional additional parameters
+ * ({@link #setDiscoveryQos(DiscoveryQos)}, {@link #setGbids(String[])}, {@link #setMessagingQos(MessagingQos)},
+ * {@link #setStatelessAsyncCallbackUseCase(String)}) and call {@link #discover()} or {@link #discoverAsync()} to receive
+ * either the {@link DiscoveryResult} or a CompletableFuture thereof.
+ * <li> From the discoveryResult, select the entry with the provider that you are looking for and pass its participantId
+ * together with the matching Proxy interface class (same interface and same or compatible version as the selected
+ * provder) to the {@link #buildProxy(Class, String)} method. In contrast to the ProxyBuilder, this proxy interface class
+ * does not necessarily have to be the same as the one used to create the GuidedProxyBuilder and configure the interface
+ * for the discovery.<br>
+ * Note that only providers that have been discovered with the most recent discovery will be accepted.
+ * </ol>
+ *
+ * @see io.joynr.proxy.ProxyBuilder
+ */
 public class GuidedProxyBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(GuidedProxyBuilder.class);
@@ -66,6 +92,17 @@ public class GuidedProxyBuilder {
     private ObjectMapper objectMapper;
     private boolean discoveryInProgress;
 
+    /**
+     * Constructor for internal use only.
+     * <p>
+     * Do not use the constructor of the GuidedProxyBuilder to create instances of this class.
+     * Use the {@link io.joynr.runtime.JoynrRuntime#getGuidedProxyBuilder(Set, Class)} method (Java) or the
+     * <code>getGuidedProxyBuilder</code> method of <code>ServiceLocator</code> (JEE) instead.
+     *
+     * @param discoverySettingsStorage
+     * @param domains
+     * @param interfaceClass
+     */
     public GuidedProxyBuilder(DiscoverySettingsStorage discoverySettingsStorage,
                               Set<String> domains,
                               Class<?> interfaceClass) {
@@ -84,12 +121,13 @@ public class GuidedProxyBuilder {
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Sets discovery scope, timeout and other discovery specific parameters.
      *
-     * @see
-     * io.joynr.proxy.ProxyBuilder#setDiscoveryQos(io.joynr.arbitration.DiscoveryQos
-     * )
+     * @param discoveryQos discovery quality of service
+     * @return Returns the GuidedProxyBuilder instance.
+     * @throws IllegalStateException in case the setter gets called after a discovery has been started
+     * @see DiscoveryQos
      */
     public GuidedProxyBuilder setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         if (discoveryInProgress) {
@@ -100,11 +138,13 @@ public class GuidedProxyBuilder {
         return this;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Sets the MessagingQos (e.g. request timeouts) which will be used by the created proxy.
      *
-     * @see
-     * io.joynr.proxy.ProxyBuilder#setMessagingQos(io.joynr.messaging.MessagingQos)
+     * @param messagingQos messaging quality of service
+     * @return Returns the GuidedProxyBuilder instance.
+     * @throws IllegalStateException in case the setter gets called after a discovery has been started
+     * @see MessagingQos
      */
     public GuidedProxyBuilder setMessagingQos(final MessagingQos messagingQos) throws DiscoveryException {
         if (discoveryInProgress) {
@@ -123,11 +163,15 @@ public class GuidedProxyBuilder {
         return this;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * If you want to use any {@link io.joynr.StatelessAsync} calls, then you must provide a use case name, which will
+     * be used in constructing the relevant stateless async callback IDs, so that when Reply payloads arrive at a
+     * runtime the latter is able to discern which callback handler instance to route the data to.
      *
-     * @see
-     * io.joynr.proxy.ProxyBuilder#setStatelessAsyncCallback(Object)
+     * @param statelessAsyncCallbackUseCase the use case for which the proxy is being used, in order to construct
+     * stateless async callback IDs mapping to the correct callback handler.
+     * @return Returns the GuidedProxyBuilder instance.
+     * @throws IllegalStateException in case the setter gets called after a discovery has been started
      */
     public GuidedProxyBuilder setStatelessAsyncCallbackUseCase(String statelessAsyncCallbackUseCase) {
         if (discoveryInProgress) {
@@ -137,11 +181,17 @@ public class GuidedProxyBuilder {
         return this;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Sets the GBIDs (Global Backend Identifiers) to select the backends in which the provider will be discovered.<br>
+     * Global discovery (if enabled in DiscoveryQos) will be done via the GlobalCapabilitiesDirectory in the backend of
+     * the first provided GBID.<br>
+     * By default, providers will be discovered in all backends known to the cluster controller via the
+     * GlobalCapabilitiesDirectory in the default backend.
      *
-     * @see
-     * io.joynr.proxy.ProxyBuilder#setGbids(String[] gbids)
+     * @param gbids an array of GBIDs
+     * @return Returns the GuidedProxyBuilder instance.
+     * @throws IllegalArgumentException if provided gbids array is null or empty
+     * @throws IllegalStateException in case the setter gets called after a discovery has been started
      */
     public GuidedProxyBuilder setGbids(final String[] gbids) {
         if (discoveryInProgress) {
@@ -154,6 +204,13 @@ public class GuidedProxyBuilder {
         return this;
     }
 
+    /**
+     * Triggers a synchronous discovery with the previously set parameters
+     * and returns as soon as the discovery is finished. This is a blocking call.
+     *
+     * @return Returns a DiscoveryResult containing the discovered DiscoveryEntries.
+     * @throws DiscoveryException if the discovery fails.
+     */
     public DiscoveryResult discover() {
         try {
             return discoverAsync().get();
@@ -170,6 +227,15 @@ public class GuidedProxyBuilder {
         }
     }
 
+    /**
+     * Triggers an asynchronous discovery with the previously set parameters
+     * and returns immediately. The returned CompletableFuture can either be completed normally,
+     * in which case it will contain the accumulated DiscoveryResult, or it can be completed
+     * exceptionally. In the latter case, the ComplatableFuture contains an exception with
+     * the cause of the error.
+     *
+     * @return Returns a CompletableFuture that will contain the result of the discovery as soon as it is completed.
+     */
     public CompletableFuture<DiscoveryResult> discoverAsync() {
         return discoverAsyncInternal().thenCompose(this::createDiscoveryResultFromArbitrationResult);
     }
@@ -230,6 +296,18 @@ public class GuidedProxyBuilder {
         return resultFuture;
     }
 
+    /**
+     * Builds a proxy for the given interface class that connects to the provider with the given participantId.
+     * The version of the interface class must fit the version of the discovered provider (the DiscoverEntry
+     * containing the participantId also contains a version). Also, the provider must have been discovered by the
+     * same GuidedProxyBuilder that the proxy is built with.
+     *
+     * @param <T> Class of the required proxy.
+     * @param interfaceClass Class of the required proxy.
+     * @param participantId ParticipantId of the target provider.
+     * @return A proxy implementing all methods of the interfaceClass that is connected to the provider with the given
+     * participantId.
+     */
     public <T> T buildProxy(Class<T> interfaceClass, String participantId) {
         if (!discoveryCompletedOnce) {
             throw new IllegalStateException("Discovery has to be completed before building a proxy!");

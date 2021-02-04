@@ -293,5 +293,13 @@ public interface ServiceLocator {
      */
     <I> ServiceProxyBuilder<I> builder(Class<I> serviceInterface, String... domains);
 
+    /**
+     * Returns a guided proxy builder instance to build a proxy object for a selected provider in a given set of domains.
+     *
+     * @param interfaceClass Interface the provider offers.
+     * @param domains the set of domains to be considered when searching the providers.
+     * @return After configuration, the returned GuidedProxyBuilder can be used to discover providers and build a proxy
+     *         instance for the selected provider.
+     */
     GuidedProxyBuilder getGuidedProxyBuilder(Class<?> interfaceClass, Set<String> domains);
 }

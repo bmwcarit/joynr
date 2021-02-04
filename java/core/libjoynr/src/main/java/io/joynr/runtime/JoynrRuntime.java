@@ -205,10 +205,12 @@ public interface JoynrRuntime {
     <T> ProxyBuilder<T> getProxyBuilder(final Set<String> domains, final Class<T> interfaceClass);
 
     /**
+     * Returns a guided proxy builder instance to build a proxy object for a selected provider in a given set of domains.
+     *
      * @param domains the set of domains to be considered when searching the providers.
      * @param interfaceClass Interface the provider offers.
      * @return After configuration, the returned GuidedProxyBuilder can be used to discover providers and build a proxy
-     *         instance for selected provider(s).
+     *         instance for the selected provider.
      */
     GuidedProxyBuilder getGuidedProxyBuilder(final Set<String> domains, final Class<?> interfaceClass);
 
