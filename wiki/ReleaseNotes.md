@@ -2,6 +2,30 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.7.1
+**[Android]** Release required for Android deployment.
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Copy passed DiscoveryQos parameter in GuidedProxyBuilder to guard against accidental
+  modification of the DiscoveryQos after it has already been passed in.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Fix message TTL with no connectivity.
+* **[C++]** Fixed handling of empty broker-url which was converted into an invalid URL.
+  E.g. if additional-backend-1-gbid was configured but additional-backend-1-broker-url
+  was empty. This resulted in MQTT connection attempts to `channels/://:80`.
+* **[C++]** Fixed compatibility with Boost 1.65.0: fall back to operator bool() instead of using
+  `has_value()` method for boost::optional which is not yet supported.
+
 # joynr 1.15.7
 
 ## API-relevant Changes
