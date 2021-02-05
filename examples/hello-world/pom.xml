@@ -7,7 +7,7 @@
 	<groupId>io.joynr</groupId>
 	<artifactId>hello-world-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>1.15.8-SNAPSHOT</version>
+	<version>1.15.7.1</version>
 
 	<modules>
 		<module>interface</module>
@@ -15,7 +15,7 @@
 	</modules>
 
 	<properties>
-		<joynr.version>1.15.8-SNAPSHOT</joynr.version>
+		<joynr.version>1.15.7.1</joynr.version>
 	</properties>
 
 </project>
