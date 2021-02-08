@@ -522,7 +522,6 @@ public class HivemqMqttClientIntegrationTest {
         CountDownLatch cdl = new CountDownLatch(1);
         setIncomingMessageHandler(clientReceiver.getClient(), mqtt5Publish -> {
             logger.trace("Incoming message {}", mqtt5Publish);
-            assertEquals(expectedExpiryInterval, mqtt5Publish.getMessageExpiryInterval().getAsLong());
             assertTrue(expectedExpiryInterval >= mqtt5Publish.getMessageExpiryInterval().getAsLong());
             assertTrue(expectedExpiryInterval - mqtt5Publish.getMessageExpiryInterval().getAsLong() <= 2); // tolerance: 2sec
             cdl.countDown();
