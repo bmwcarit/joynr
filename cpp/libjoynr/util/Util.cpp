@@ -222,17 +222,6 @@ void validatePartitions(const std::vector<std::string>& partitions, bool allowWi
     }
 }
 
-std::string truncateSerializedMessage(const std::string& message)
-{
-    constexpr std::size_t maxSize = 2048;
-    const std::size_t messageSize = message.size();
-    if (messageSize > maxSize) {
-        return message.substr(0, maxSize) + std::string("<**truncated, length=") +
-               std::to_string(messageSize);
-    }
-    return message;
-}
-
 bool isAdditionOnPointerCausesOverflow(std::uintptr_t address, int payloadLength)
 {
     if (payloadLength <= 0) {

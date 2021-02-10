@@ -119,11 +119,6 @@ void appendStringToFile(const std::string& fileName, const std::string& strToSav
  */
 std::string createUuid();
 
-/**
- * truncate a serialized Joynr message for logging
- */
-std::string truncateSerializedMessage(const std::string& message);
-
 template <typename T>
 std::set<T> vectorToSet(const std::vector<T>& v)
 {
@@ -194,31 +189,6 @@ bool invokeOn(const Fun& fun)
     using BeginIterator = typename boost::mpl::begin<Sequence>::type;
     using EndIterator = typename boost::mpl::end<Sequence>::type;
     return invokeOnImpl<BeginIterator, EndIterator>(fun);
-}
-
-template <template <typename...> class MultiMap, typename K, typename V>
-std::size_t removeAllPairsFromMultiMap(MultiMap<K, V>& map, const std::pair<K, V>& pair)
-{
-    std::size_t removedElements = 0;
-    auto range = map.equal_range(pair.first);
-    auto it = range.first;
-    while (it != range.second) {
-        if (it->second == pair.second) {
-            it = map.erase(it);
-            ++removedElements;
-        } else {
-            ++it;
-        }
-    }
-    return removedElements;
-}
-
-template <typename Map>
-auto getKeyVectorForMap(const Map& map)
-{
-    std::vector<typename Map::key_type> keys;
-    boost::copy(map | boost::adaptors::map_keys, std::back_inserter(keys));
-    return keys;
 }
 
 template <typename T>
