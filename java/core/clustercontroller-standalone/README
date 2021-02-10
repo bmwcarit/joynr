@@ -4,7 +4,7 @@
 mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="-t websocketcc"
 
 ## from the JAR in target directory:
-java -jar clustercontroller-standalone-1.15.8-SNAPSHOT-jar-with-dependencies.jar -t websocketcc
+java -jar clustercontroller-standalone-1.15.8-jar-with-dependencies.jar -t websocketcc
 
 
 # Start a cluster controller, connecting to a local MQTT broker
@@ -13,7 +13,7 @@ java -jar clustercontroller-standalone-1.15.8-SNAPSHOT-jar-with-dependencies.jar
 mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="-t mqtt"
 
 ## from the JAR in target directory:
-java -jar clustercontroller-standalone-1.15.8-SNAPSHOT-jar-with-dependencies.jar -t mqtt
+java -jar clustercontroller-standalone-1.15.8-jar-with-dependencies.jar -t mqtt
 
 
 ## Show cluster controller usage info for additional options
@@ -22,5 +22,5 @@ java -jar clustercontroller-standalone-1.15.8-SNAPSHOT-jar-with-dependencies.jar
 mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="-h"
 
 ## from the JAR in target directory:
-java -jar clustercontroller-standalone-1.15.8-SNAPSHOT-jar-with-dependencies.jar -h
+java -jar clustercontroller-standalone-1.15.8-jar-with-dependencies.jar -h
 
