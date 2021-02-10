@@ -2,6 +2,26 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.8
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Added javadoc documentation to GuidedProxyBuilder and DiscoveryResult.
+* **[Java]** Prevent GuidedProxyBuilder from wrong usage:
+  * Proxy version must match the version of the selected provider
+  * Setters (to configure discovery) must not be called while discovery is in progress
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.15.7.1
 **[Android]** Release required for Android deployment.
 
