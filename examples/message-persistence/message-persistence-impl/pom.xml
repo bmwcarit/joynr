@@ -25,7 +25,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<parent>
 		<groupId>io.joynr.examples</groupId>
 		<artifactId>message-persistence</artifactId>
-		<version>1.15.8</version>
+		<version>1.15.9-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
