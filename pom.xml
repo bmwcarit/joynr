@@ -958,7 +958,7 @@
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.equinox.registry</artifactId>
-				<version>3.8.200</version>
+				<version>3.9.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
