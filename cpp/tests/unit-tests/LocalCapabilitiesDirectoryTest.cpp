@@ -313,11 +313,13 @@ public:
 
     void fakeCapabilitiesClientAddWithException (
             const types::GlobalDiscoveryEntry& entry,
+            const bool awaitGlobalRegistration,
             const std::vector<std::string>& gbids,
             std::function<void()> onSuccess,
             std::function<void(const types::DiscoveryError::Enum& errorEnum)> onError,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError) {
         std::ignore = entry;
+        std::ignore = awaitGlobalRegistration;
         std::ignore = gbids;
         std::ignore = onSuccess;
         std::ignore = onError;
@@ -327,11 +329,13 @@ public:
 
     void fakeCapabilitiesClientAddSuccess (
             const types::GlobalDiscoveryEntry& entry,
+            const bool awaitGlobalRegistration,
             const std::vector<std::string>& gbids,
             std::function<void()> onSuccess,
             std::function<void(const types::DiscoveryError::Enum& errorEnum)> onError,
             std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError) {
         std::ignore = entry;
+        std::ignore = awaitGlobalRegistration;
         std::ignore = gbids;
         std::ignore = onError;
         std::ignore = onRuntimeError;
@@ -437,8 +441,8 @@ public:
         const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(false, _entry);
 
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    add(_, _, _, _, _)).Times(1)
-                    .WillOnce(InvokeArgument<2>());
+                    add(_, _, _, _, _, _)).Times(1)
+                    .WillOnce(InvokeArgument<3>());
 
         _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS,
                                         createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
@@ -577,8 +581,8 @@ public:
 
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(DiscoveryEntryMatcher(_entry)),
-                _, _, _, _)).Times(1)
-                .WillOnce(InvokeArgument<3>(expectedError));
+                _, _, _, _, _)).Times(1)
+                .WillOnce(InvokeArgument<4>(expectedError));
 
         _localCapabilitiesDirectory->addToAll(
                 _entry,
@@ -659,8 +663,8 @@ public:
         const bool awaitGlobalRegistration = true;
         const std::vector<std::string>& gbids = {_KNOWN_GBIDS[0]};
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(1)
-                .WillOnce(InvokeArgument<3>(expectedDiscoveryError));
+                add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _)).Times(1)
+                .WillOnce(InvokeArgument<4>(expectedDiscoveryError));
 
         _localCapabilitiesDirectory->add(
                 _entry,
@@ -675,8 +679,8 @@ public:
     void testAddIsProperlyRejected(const types::DiscoveryError::Enum& expectedDiscoveryError) {
         const bool awaitGlobalRegistration = true;
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(1)
-                .WillOnce(InvokeArgument<3>(expectedDiscoveryError));
+                add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _)).Times(1)
+                .WillOnce(InvokeArgument<4>(expectedDiscoveryError));
 
         joynr::exceptions::ProviderRuntimeException expectedException(
                 fmt::format("Error registering provider {} in default backend: {}",
@@ -693,15 +697,15 @@ public:
 
     void checkAddToGcdClient(const std::vector<std::string>& expectedGbids) {
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(GlobalDiscoveryEntryMatcher(_expectedGlobalCapEntry),
+                add(GlobalDiscoveryEntryMatcher(_expectedGlobalCapEntry), _,
                 Eq(expectedGbids), _, _, _)).Times(1)
-                .WillOnce(InvokeArgument<2>());
+                .WillOnce(InvokeArgument<3>());
     }
 
     void testGbidValidationOnAdd(
             const std::vector<std::string>& gbids, const types::DiscoveryError::Enum& expectedDiscoveryError)
     {
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(_, _, _, _, _)).Times(0);
+        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(_, _, _, _, _, _)).Times(0);
         const bool awaitGlobalRegistration = true;
         _localCapabilitiesDirectory->add(
                 _entry,
@@ -885,9 +889,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, addToAll_global_invokesGcd)
     const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
     const bool awaitGlobalRegistration = true;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-             add(GlobalDiscoveryEntryMatcher(_expectedGlobalCapEntry), Eq(expectedGbids), _, _, _))
+             add(GlobalDiscoveryEntryMatcher(_expectedGlobalCapEntry), _, Eq(expectedGbids), _, _, _))
             .Times(1)
-            .WillOnce(InvokeArgument<2>());
+            .WillOnce(InvokeArgument<3>());
 
     _localCapabilitiesDirectory->addToAll(
             _entry, awaitGlobalRegistration, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
@@ -902,7 +906,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, add_local_doesNotInvokeGcd)
     _entry.setQos(providerQos);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-            add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _)).Times(0);
+            add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _)).Times(0);
 
     _localCapabilitiesDirectory->add(
             _entry,
@@ -975,8 +979,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGloba
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
              add(Matcher<const types::GlobalDiscoveryEntry&>(
-                     DiscoveryEntryMatcher(_entry)), _, _, _, _))
-            .WillOnce(InvokeArgument<2>());
+                     DiscoveryEntryMatcher(_entry)), _, _, _, _, _))
+            .WillOnce(InvokeArgument<3>());
 
     _localCapabilitiesDirectory->add(
             _entry,
@@ -989,8 +993,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGloba
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
              add(Matcher<const types::GlobalDiscoveryEntry&>(
-                     DiscoveryEntryMatcher(_entry)), _, _, _, _))
-            .WillOnce(InvokeArgument<2>());
+                     DiscoveryEntryMatcher(_entry)), _, _, _, _, _))
+            .WillOnce(InvokeArgument<3>());
 
     _localCapabilitiesDirectory->add(
             _entry,
@@ -1057,8 +1061,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addSameGbidTwiceInARow)
 
      EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
               add(Matcher<const types::GlobalDiscoveryEntry&>(
-                      DiscoveryEntryMatcher(_entry)), Eq(expectedGbids), _, _, _)).Times(2)
-             .WillRepeatedly(InvokeArgument<2>());
+                      DiscoveryEntryMatcher(_entry)), _, Eq(expectedGbids), _, _, _)).Times(2)
+             .WillRepeatedly(InvokeArgument<3>());
 
      _localCapabilitiesDirectory->add(
              _entry,
@@ -1133,7 +1137,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddKnownLocalEntryDoesNothing)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(An<const types::GlobalDiscoveryEntry&>(),
-                _, _, _, _)).Times(0);
+                _, _, _, _, _)).Times(0);
 
     _localCapabilitiesDirectory->add(
             _entry,
@@ -1154,8 +1158,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAll)
     const bool awaitGlobalRegistration = true;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
             add(Matcher<const types::GlobalDiscoveryEntry&>(DiscoveryEntryMatcher(_entry)),
-            Eq(expectedGbids), _, _, _)).Times(1)
-            .WillOnce(InvokeArgument<2>());
+            _, Eq(expectedGbids), _, _, _)).Times(1)
+            .WillOnce(InvokeArgument<3>());
 
     _localCapabilitiesDirectory->addToAll(
             _entry, awaitGlobalRegistration, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
@@ -1172,7 +1176,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllLocal)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
             add(An<const types::GlobalDiscoveryEntry&>(),
-            _, _, _, _)).Times(0);
+            _, _, _, _, _)).Times(0);
 
     _localCapabilitiesDirectory->addToAll(
             _entry,
@@ -1204,7 +1208,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllIsProperlyRejected_exception)
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
             add(Matcher<const types::GlobalDiscoveryEntry&>(DiscoveryEntryMatcher(_entry)),
-            Eq(_KNOWN_GBIDS), _, _, _)).Times(1)
+            _, Eq(_KNOWN_GBIDS), _, _, _)).Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddWithException));
 
     _localCapabilitiesDirectory->addToAll(
@@ -1298,9 +1302,9 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(false, _entry);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-            add(DiscoveryEntryMatcher(_entry), Eq(_KNOWN_GBIDS), _, _, _))
+            add(DiscoveryEntryMatcher(_entry), _, Eq(_KNOWN_GBIDS), _, _, _))
             .Times(1)
-            .WillOnce(InvokeArgument<2>());
+            .WillOnce(InvokeArgument<3>());
 
     _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
@@ -1347,9 +1351,9 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(false, _entry);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-            add(DiscoveryEntryMatcher(_entry), Eq(_KNOWN_GBIDS), _, _, _))
+            add(DiscoveryEntryMatcher(_entry), _, Eq(_KNOWN_GBIDS), _, _, _))
             .Times(1)
-            .WillOnce(InvokeArgument<2>());
+            .WillOnce(InvokeArgument<3>());
 
     _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createAddOnSuccessFunction(), _unexpectedOnDiscoveryErrorFunction);
 
@@ -1546,7 +1550,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByParticipantIdWithGbids_globalOnly
     providerQos.setScope(types::ProviderScope::LOCAL);
     _entry.setQos(providerQos);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
     _localCapabilitiesDirectory->add(
                 _entry,
                 true,
@@ -1917,7 +1921,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilities_invokesGcdClient)
                                         _PUBLIC_KEY_ID);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(1);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(1);
 
     _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -1983,10 +1987,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
                     _,
                     _,
                     _,
+                    _,
                     _)).Times(1);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
                             DiscoveryEntryMatcher(entry2)),
+                    _,
                     _,
                     _,
                     _,
@@ -2015,10 +2021,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
                     _,
                     _,
                     _,
+                    _,
                     _)).Times(1);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(
                             DiscoveryEntryMatcher(expectedEntry2)),
+                    _,
                     _,
                     _,
                     _,
@@ -2076,6 +2084,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                     _,
                     _,
                     _,
+                    _,
                     _)).Times(1);
 
     _localCapabilitiesDirectory->add(entry1, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
@@ -2110,10 +2119,12 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 _,
                 _,
                 _,
+                _,
                 _)).Times(1);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Property(&joynr::types::GlobalDiscoveryEntry::getParticipantId, Eq(entry2.getParticipantId())),
+                _,
                 _,
                 _,
                 _,
@@ -2143,7 +2154,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _))
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _))
             .Times(0);
 
     // sleep to get new values of lastSeenDateMs and expiryDateMs in triggerGlobalProviderReregistration
@@ -2174,7 +2185,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _))
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _))
             .Times(0);
 
     // sleep to get new values of lastSeenDateMs and expiryDateMs in triggerGlobalProviderReregistration
@@ -2220,7 +2231,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(1);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(1);
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
                                        _DOMAIN_1_NAME,
@@ -2253,7 +2264,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
                        A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
 
@@ -2513,8 +2524,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
 
     {
         InSequence inSequence;
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(GlobalDiscoveryEntryMatcher(globalDiscoveryEntryInfo1), _, _, _, _)).Times(1);
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(GlobalDiscoveryEntryMatcher(globalDiscoveryEntryInfo2), _, _, _, _)).Times(1);
+        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(GlobalDiscoveryEntryMatcher(globalDiscoveryEntryInfo1), _, _, _, _, _)).Times(1);
+        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(GlobalDiscoveryEntryMatcher(globalDiscoveryEntryInfo2), _, _, _, _, _)).Times(1);
     }
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
@@ -2602,7 +2613,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
     localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
                                        _DOMAIN_1_NAME,
@@ -2654,7 +2665,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     _localCapabilitiesDirectory->registerReceivedCapabilities(std::move(_globalCapEntryMap));
 
@@ -2713,7 +2724,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     // _localCapabilitiesDirectory->registerReceivedCapabilities(_globalCapEntryMap);
 
@@ -2792,7 +2803,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
 
     const std::vector<types::GlobalDiscoveryEntry>& onSuccessResult = getGlobalDiscoveryEntries(2);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(1).WillRepeatedly(
@@ -2913,7 +2924,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
@@ -2997,7 +3008,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
 
     const std::vector<types::GlobalDiscoveryEntry>& onSuccessResult = getGlobalDiscoveryEntries(2);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(1).WillRepeatedly(
@@ -3036,7 +3047,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientLookupWithDiscoveryException));
@@ -3229,7 +3240,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
 
     const std::vector<types::GlobalDiscoveryEntry>& onSuccessResult = getGlobalDiscoveryEntries(2);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(1).WillRepeatedly(
@@ -3266,7 +3277,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_
                                        _defaultExpiryDateMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(1).WillRepeatedly(
             Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientLookupWithDiscoveryException));
@@ -3367,7 +3378,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
     localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(0);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
                                        _DOMAIN_1_NAME,
@@ -3430,7 +3441,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
     localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(1);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(1);
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
                                        _DOMAIN_1_NAME,
@@ -3466,7 +3477,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
     localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(1);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(1);
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
                                        _DOMAIN_1_NAME,
@@ -3530,7 +3541,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
 
     // JoynrTimeOutException timeoutException;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(1);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(1);
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
                                        _DOMAIN_1_NAME,
@@ -3804,7 +3815,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, entry);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(1);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(1);
 
     _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -3856,7 +3867,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
     const std::vector<types::GlobalDiscoveryEntry>& globalEntryVec = {globalEntry};
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _)).Times(1);
+                add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(1);
 
     _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -4200,7 +4211,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGloba
 
     // 1st call
     Semaphore gcdSemaphore(0);
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _))
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
             .WillOnce(DoAll(
                           Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddWithException),
                           ReleaseSemaphore(&gcdSemaphore)
@@ -4211,7 +4222,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGloba
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::seconds(1)));
 
     // 2nd call
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _))
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
             .WillOnce(DoAll(
                           Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddSuccess),
                           ReleaseSemaphore(&gcdSemaphore)
@@ -4399,7 +4410,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
     if (testingGlobalScope) {
         // simulate capabilities client cannot connect to global directory
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _))
+                    add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _))
                 .Times(numberOfDuplicatedEntriesToAdd)
                 .WillRepeatedly(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddSuccess));
     }

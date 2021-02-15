@@ -43,12 +43,17 @@ GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
 
 void GlobalCapabilitiesDirectoryClient::add(
         const types::GlobalDiscoveryEntry& entry,
+        const bool awaitGlobalRegistration,
         const std::vector<std::string>& gbids,
         std::function<void()> onSuccess,
         std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
         std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
 {
     MessagingQos addMessagingQos = _messagingQos;
+    if (!awaitGlobalRegistration) {
+        // extended lifetime 90 minutes
+        addMessagingQos.setTtl(90 * 60000);
+    }
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
     _capabilitiesProxy->addAsync(entry,
                                  std::move(gbids),

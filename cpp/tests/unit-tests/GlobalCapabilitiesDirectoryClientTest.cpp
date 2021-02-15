@@ -97,6 +97,8 @@ public:
     }
 
 protected:
+    void testAddUsesCorrectRemainingTtl(const bool awaitGlobalRegistration);
+
     const std::string capDomain;
     const std::string capInterface;
     const std::string capParticipantId;
@@ -127,11 +129,65 @@ void testMessagingQosForCustomHeaderGbidKey(std::string gbid, std::shared_ptr<jo
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd)
 {
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
+    Semaphore semaphore;
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
-            .WillRepeatedly(DoAll(SaveArg<5>(&messagingQosCapture), Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
+            .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
+                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            Return(mockFuture)));
+    globalCapabilitiesDirectoryClient->add(
+            globalDiscoveryEntry, true, gbids, onSuccess, onError, onRuntimeError);
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
+}
+
+void GlobalCapabilitiesDirectoryClientTest::testAddUsesCorrectRemainingTtl(const bool awaitGlobalRegistration) {
+    std::uint64_t expectedTtl;
+
+    if (awaitGlobalRegistration) {
+        expectedTtl = messagingQos.getTtl();
+    } else {
+        expectedTtl = 90 * 60000;
+    }
+
+    types::GlobalDiscoveryEntry globalDiscoveryEntry2(globalDiscoveryEntry);
+    globalDiscoveryEntry2.setParticipantId("ParticipantId2");
+
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                addAsyncMock(Eq(globalDiscoveryEntry),
+                             Eq(gbids),
+                             _,
+                             _,
+                             _,
+                             Pointee(Property(&joynr::MessagingQos::getTtl, Eq(expectedTtl)))))
+            .WillOnce(Return(mockFuture));
+
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
+                addAsyncMock(Eq(globalDiscoveryEntry2),
+                             Eq(gbids),
+                             _,
+                             _,
+                             _,
+                             Pointee(Property(&joynr::MessagingQos::getTtl, Eq(expectedTtl)))))
+            .WillOnce(Return(mockFuture));
+
+    globalCapabilitiesDirectoryClient->add(
+            globalDiscoveryEntry, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->add(
+            globalDiscoveryEntry2, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtlWithAwaitGlobalRegistration)
+{
+    const bool awaitGlobalRegistration = true;
+    testAddUsesCorrectRemainingTtl(awaitGlobalRegistration);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtlWithoutAwaitGlobalRegistration)
+{
+    const bool awaitGlobalRegistration = false;
+    testAddUsesCorrectRemainingTtl(awaitGlobalRegistration);
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupDomainInterface)

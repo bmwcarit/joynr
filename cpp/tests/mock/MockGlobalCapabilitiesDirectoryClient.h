@@ -27,7 +27,8 @@
 
 class MockGlobalCapabilitiesDirectoryClient : public joynr::IGlobalCapabilitiesDirectoryClient {
 public:
-    MOCK_METHOD5(add, void(const joynr::types::GlobalDiscoveryEntry& entry,
+    MOCK_METHOD6(add, void(const joynr::types::GlobalDiscoveryEntry& entry,
+                           const bool awaitGlobalRegistration,
                            const std::vector<std::string>& gbids,
                            std::function<void()> onSuccess,
                            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
