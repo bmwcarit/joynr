@@ -40,15 +40,6 @@ protected:
     joynr::MulticastMessagingSkeletonDirectory multicastMessagingSkeletonDirectory;
 };
 
-TEST_F(MulticastMessagingSkeletonDirectoryTest, emptyDirectoryDoesNotContainEntry)
-{
-    auto mqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
-    EXPECT_FALSE(multicastMessagingSkeletonDirectory.contains(mqttAddress));
-
-    auto webSocketClientAddress =
-            std::make_shared<joynr::system::RoutingTypes::WebSocketClientAddress>();
-    EXPECT_FALSE(multicastMessagingSkeletonDirectory.contains(webSocketClientAddress));
-}
 
 TEST_F(MulticastMessagingSkeletonDirectoryTest, getSkeletonReturnsNullptrForNonExistingSkeleton)
 {
@@ -60,15 +51,6 @@ TEST_F(MulticastMessagingSkeletonDirectoryTest, unregisterNonExistingEntryDoesNo
 {
     EXPECT_NO_THROW(multicastMessagingSkeletonDirectory
                             .unregisterSkeletons<joynr::system::RoutingTypes::MqttAddress>());
-}
-
-TEST_F(MulticastMessagingSkeletonDirectoryTest, containsEntryAfterRegister)
-{
-    auto mqttAddress = std::make_shared<joynr::system::RoutingTypes::MqttAddress>();
-    multicastMessagingSkeletonDirectory.registerSkeleton<joynr::system::RoutingTypes::MqttAddress>(
-            mockMessagingMulticastSubscriber);
-
-    EXPECT_TRUE(multicastMessagingSkeletonDirectory.contains(mqttAddress));
 }
 
 TEST_F(MulticastMessagingSkeletonDirectoryTest, getsSkeletonAfterRegister)
@@ -87,7 +69,10 @@ TEST_F(MulticastMessagingSkeletonDirectoryTest, unregisterRemovesSkeleton)
     multicastMessagingSkeletonDirectory.registerSkeleton<joynr::system::RoutingTypes::MqttAddress>(
             mockMessagingMulticastSubscriber);
 
+    EXPECT_EQ(mockMessagingMulticastSubscriber,
+              multicastMessagingSkeletonDirectory.getSkeleton(mqttAddress));
+
     multicastMessagingSkeletonDirectory
             .unregisterSkeletons<joynr::system::RoutingTypes::MqttAddress>();
-    EXPECT_FALSE(multicastMessagingSkeletonDirectory.contains(mqttAddress));
+    EXPECT_EQ(nullptr, multicastMessagingSkeletonDirectory.getSkeleton(mqttAddress));
 }

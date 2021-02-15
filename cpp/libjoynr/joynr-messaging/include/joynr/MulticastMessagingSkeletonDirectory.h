@@ -95,9 +95,9 @@ public:
     std::shared_ptr<IMessagingMulticastSubscriber> getSkeleton(
             std::shared_ptr<const system::RoutingTypes::Address> address);
 
+private:
     bool contains(std::shared_ptr<const system::RoutingTypes::Address> address);
 
-private:
     DISALLOW_COPY_AND_ASSIGN(MulticastMessagingSkeletonDirectory);
     ADD_LOGGER(MulticastMessagingSkeletonDirectory)
     std::map<std::pair<std::type_index, std::string>,
