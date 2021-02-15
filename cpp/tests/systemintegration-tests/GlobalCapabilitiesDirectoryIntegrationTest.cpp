@@ -151,6 +151,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
     JOYNR_LOG_DEBUG(logger(), "Registering capabilities");
     globalCapabilitiesDirectoryClient->add(
                 globalDiscoveryEntry,
+                false,
                 gbids,
                 []() {},
                 [](const joynr::types::DiscoveryError::Enum& /*error*/) {},

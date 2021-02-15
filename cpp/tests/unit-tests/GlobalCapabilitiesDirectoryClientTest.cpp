@@ -119,6 +119,8 @@ public:
     }
 
 protected:
+    void testAddUsesCorrectRemainingTtl(const bool awaitGlobalRegistration);
+
     const std::string capDomain;
     const std::string capInterface;
     const std::string capParticipantId;
@@ -171,7 +173,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskTimeoutFunctionCallsOnR
         }
     };
     gcdClient->add(
-            globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+            globalDiscoveryEntry, true, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
     capturedTask._timeout();
     ASSERT_TRUE(onRuntimeErrorCalled);
@@ -193,7 +195,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskExpiryDateHasCorrectVal
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
     gcdClient->add(
-            globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+            globalDiscoveryEntry, true, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
     auto actualTaskExpiryDate = capturedTask._expiryDate;
     ASSERT_TRUE(actualTaskExpiryDate - expectedTaskExpiryDate < std::chrono::milliseconds(1000));
@@ -533,14 +535,19 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd)
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
-            globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+            globalDiscoveryEntry, true, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtl)
-{
-    std::uint64_t defaultTtl = MessagingQos().getTtl();
+void GlobalCapabilitiesDirectoryClientTest::testAddUsesCorrectRemainingTtl(const bool awaitGlobalRegistration) {
+    std::uint64_t expectedTtl;
+
+    if (awaitGlobalRegistration) {
+        expectedTtl = MessagingQos().getTtl();
+    } else {
+        expectedTtl = 90 * 60000;
+    }
     std::function<void()> onSuccessCallback;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     Semaphore semaphore;
@@ -559,9 +566,9 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtl)
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
-            globalDiscoveryEntry, gbids, onSuccess, onError, onRuntimeError);
+            globalDiscoveryEntry, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
     globalCapabilitiesDirectoryClient->add(
-            globalDiscoveryEntry2, gbids, onSuccess, onError, onRuntimeError);
+            globalDiscoveryEntry2, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
     std::int64_t firstNow = TimePoint::now().toMilliseconds();
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
@@ -570,8 +577,20 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtl)
     onSuccessCallback();
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
     auto capturedTtl = messagingQosCapture->getTtl();
-    EXPECT_TRUE(capturedTtl <= (defaultTtl - delta));
-    EXPECT_TRUE(capturedTtl > (defaultTtl - delta - 1000));
+    EXPECT_TRUE(capturedTtl <= (expectedTtl - delta));
+    EXPECT_TRUE(capturedTtl > (expectedTtl - delta - 1000));
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtlWithAwaitGlobalRegistration)
+{
+    const bool awaitGlobalRegistration = true;
+    testAddUsesCorrectRemainingTtl(awaitGlobalRegistration);
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtlWithoutAwaitGlobalRegistration)
+{
+    const bool awaitGlobalRegistration = false;
+    testAddUsesCorrectRemainingTtl(awaitGlobalRegistration);
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest, testLookupDomainInterface)

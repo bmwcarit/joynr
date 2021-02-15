@@ -417,6 +417,7 @@ void LocalCapabilitiesDirectory::addInternal(
         };
 
         _globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry,
+                                                awaitGlobalRegistration,
                                                 std::move(gbids),
                                                 std::move(onSuccessWrapper),
                                                 std::move(onErrorWrapper),
@@ -490,6 +491,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                     };
                     _globalCapabilitiesDirectoryClient->add(
                             LCDUtil::toGlobalDiscoveryEntry(capability, _localAddress),
+                            false,
                             foundGbids,
                             nullptr,
                             std::move(onApplicationError),

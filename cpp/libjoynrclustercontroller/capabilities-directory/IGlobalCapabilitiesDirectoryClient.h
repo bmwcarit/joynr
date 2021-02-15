@@ -43,6 +43,7 @@ public:
 
     virtual void add(
             const types::GlobalDiscoveryEntry& entry,
+            const bool awaitGlobalRegistration,
             const std::vector<std::string>& gbids,
             std::function<void()> onSuccess,
             std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
