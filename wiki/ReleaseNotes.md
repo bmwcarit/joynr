@@ -2,6 +2,26 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.9
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[C++]** Provider registration without awaitGlobalRegistration now uses an extended
+  timeout of 90 minutes towards GlobalCapabilitiesDirectory. Note this registration is
+  still unreliable since the application will not get informed about the result and thus
+  has no chance to retry in case of failure.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.15.8
 
 ## API-relevant Changes
