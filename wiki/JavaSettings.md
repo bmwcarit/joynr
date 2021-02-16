@@ -607,11 +607,11 @@ trying to connect again.
 ### `PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC`
 Sets the "keep alive" interval measured in seconds. If no message is transmitted during this period,
 the client sends a ping message which is acknowledged by the server. This allows a client to detect
-disconnects without using TCP/IP mechanisms. A value of 0 disables the "keep alive" mechanism.
+disconnects without using TCP/IP mechanisms. A value of 0 disables the "keep alive" mechanism.  
 For multiple backends, a value has to be provided for each specified GBID. The values must be passed as
 a string of int values separated by commas, e.g. 60,30,0...
 
-* **OPTIONAL**
+* **OPTIONAL, REQUIRED if multiple Broker URIs are configured**
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.keepalivetimerssec`
 * **Default value**: `30`
@@ -619,11 +619,11 @@ a string of int values separated by commas, e.g. 60,30,0...
 ### `PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC`
 Sets the connection timeout measured in seconds. This value states how long a client will wait until
 a network connection to the server is established. A value of 0 means that a client will wait until
-the network connection is established successfully or fails.
+the network connection is established successfully or fails.  
 For multiple backends, a value has to be provided for each specified GBID. The values must be passed as
 a string of int values separated by commas, e.g. 60,30,0...
 
-* **OPTIONAL**
+* **OPTIONAL, REQUIRED if multiple Broker URIs are configured**
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.connectiontimeoutssec`
 * **Default value**: `60`
