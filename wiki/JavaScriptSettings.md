@@ -13,7 +13,6 @@ var udsLibJoynrProvisioning = {
     capabilities: capabilitiesValue, // optional, see common settings
     discoveryQos: discoveryQosValue, // optional, see common settings
     logging: loggingValue, // optional, see common settings
-    internalMessagingQos: internalMessagingQosValue, // optional, see common settings
     messaging: messagingValue, // optional, see common settings
     persistency: persistencyValue, // optional, see common settings
     shutdownSettings: shutdownSettingsValue, // optional, see common settings
@@ -45,7 +44,6 @@ var websocketLibJoynrProvisioning = {
     capabilities: capabilitiesValue, // optional, see common settings
     discoveryQos: discoveryQosValue, // optional, see common settings
     logging: loggingValue, // optional, see common settings
-    internalMessagingQos: internalMessagingQosValue, // optional, see common settings
     messaging: messagingValue, // optional, see common settings
     persistency: persistencyValue, // optional, see common settings
     shutdownSettings: shutdownSettingsValue, // optional, see common settings
@@ -103,10 +101,6 @@ var loggingValue = {
                        * - only one appender is supported. Others will be ignored.
                        * - reduced complexity of supported patternLayouts.
                        */
-};
-
-var internalMessagingQosValue = { //messaging qos used for joynr internal communication
-    ttl: <ttl> // round trip timeout ms for rpc requests, default value is 60000
 };
 
 var messagingValue = {

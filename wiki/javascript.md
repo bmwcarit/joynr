@@ -265,8 +265,8 @@ The ```MesssagingQos``` object defines the **roundtrip timeout in milliseconds**
 definition of additional custom message headers.
 The ttl for subscription requests is calculated from the ```expiryDateMs```
 in the [SubscriptionQos](#subscription-quality-of-service) settings.
-The ttl of internal joynr messages (e.g. provider discovery) can be set via the
-internalMessagingQosValue in the [provisioning settings](JavaScriptSettings.md)
+The ttl of internal joynr messages cannot be changed (corresponding setting
+is deprecated and will be ignored).
 
 If no specific setting is given, the default roundtrip timeout is 60 seconds.
 The keys of custom message headers may contain ascii alphanumeric or hyphen.

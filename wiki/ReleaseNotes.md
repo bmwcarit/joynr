@@ -5,7 +5,8 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.15.9
 
 ## API-relevant Changes
-None.
+* **[TS]** Marked `internalMessagingQos` in `Provisioning` as deprecated. TTL of
+  internal messages cannot be changed anymore, default value 70000 ms will always be used.
 
 ## Other Changes
 * **[C++]** Provider registration without awaitGlobalRegistration now uses an extended
