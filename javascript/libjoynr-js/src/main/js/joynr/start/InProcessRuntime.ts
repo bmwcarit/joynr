@@ -30,9 +30,6 @@ import MqttMulticastAddressCalculator from "../messaging/mqtt/MqttMulticastAddre
 import MessagingStubFactory from "../messaging/MessagingStubFactory";
 import InProcessMessagingStubFactory from "../messaging/inprocess/InProcessMessagingStubFactory";
 import InProcessAddress from "../messaging/inprocess/InProcessAddress";
-import MessagingQos from "../messaging/MessagingQos";
-import DiscoveryQos from "../proxy/DiscoveryQos";
-import DiscoveryScope from "../../generated/joynr/types/DiscoveryScope";
 import * as UtilInternal from "../util/UtilInternal";
 import * as CapabilitiesUtil from "../util/CapabilitiesUtil";
 import loggingManager from "../system/LoggingManager";
@@ -170,21 +167,11 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
         );
         const globalCapabilitiesCache = new CapabilitiesStore(typedCapabilities);
 
-        const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
-
-        const defaultProxyBuildSettings = {
-            domain: "io.joynr",
-            messagingQos: internalMessagingQos,
-            discoveryQos: new DiscoveryQos({
-                discoveryScope: DiscoveryScope.GLOBAL_ONLY,
-                cacheMaxAgeMs: UtilInternal.getMaxLongValue()
-            })
-        };
-
+        const capabilityDiscoveryDomain = "io.joynr";
         const capabilityDiscovery = new CapabilityDiscovery(
             localCapabilitiesStore,
             globalCapabilitiesCache,
-            defaultProxyBuildSettings.domain,
+            capabilityDiscoveryDomain,
             provisioning.gbids || clusterControllerSettings.gbids
         );
 

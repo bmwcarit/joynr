@@ -109,6 +109,7 @@ for (const [key, value] of Object.entries(config)) {
 
 import UdsLibJoynrRuntime from "../../../../main/js/joynr/start/UdsLibJoynrRuntime";
 import JoynrRuntimeException from "../../../../main/js/joynr/exceptions/JoynrRuntimeException";
+import MessagingQos from "../../../../main/js/joynr/messaging/MessagingQos";
 
 describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
     let runtime: any;
@@ -338,15 +339,13 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         await runtime.shutdown();
     });
 
-    it("will call MessagingQos with the settings from the provisioning", async () => {
-        const ttl = 1000;
-        provisioning.internalMessagingQos = { ttl };
+    it("will call MessagingQos with the default ttl", async () => {
+        const ttl = MessagingQos.DEFAULT_TTL + 10000;
         runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);
         expect(spies.MessagingQos).toHaveBeenCalledWith({ ttl });
         await runtime.shutdown();
     });
-
     it("calls UdsClient.enableShutdownMode in terminateAllSubscriptions", async () => {
         runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
         await runtime.start(provisioning);

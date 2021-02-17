@@ -34,7 +34,6 @@ import MessageQueue from "../messaging/routing/MessageQueue";
 import InProcessMessagingSkeleton from "../messaging/inprocess/InProcessMessagingSkeleton";
 import InProcessMessagingStub from "../messaging/inprocess/InProcessMessagingStub";
 import InProcessAddress from "../messaging/inprocess/InProcessAddress";
-import MessagingQos from "../messaging/MessagingQos";
 import DiscoveryQos from "../proxy/DiscoveryQos";
 import TypeRegistrySingleton from "../types/TypeRegistrySingleton";
 import nanoid from "nanoid";
@@ -234,15 +233,6 @@ class JoynrRuntime<T extends Provisioning> {
                 typeRegistry: this.typeRegistry
             }
         );
-
-        /*
-         * if no internalMessagingQos is provided, extend the default ttl by 10 seconds in order
-         * to allow the cluster controller to handle timeout for global discovery requests and
-         * send back the response to discoveryProxy
-         */
-        if (provisioning.internalMessagingQos === undefined || provisioning.internalMessagingQos === null) {
-            provisioning.internalMessagingQos = { ttl: MessagingQos.DEFAULT_TTL + 10000 };
-        }
     }
 
     /**

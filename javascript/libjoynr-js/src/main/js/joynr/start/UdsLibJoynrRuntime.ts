@@ -180,7 +180,7 @@ class UdsLibJoynrRuntime extends JoynrRuntime<UdsLibJoynrProvisioning> {
 
         clusterControllerMessagingSkeleton.registerListener(onMessageSend);
 
-        const internalMessagingQos = new MessagingQos(provisioning.internalMessagingQos);
+        const internalMessagingQos = new MessagingQos({ ttl: MessagingQos.DEFAULT_TTL + 10000 });
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return this.proxyBuilder!.build(RoutingProxy, {

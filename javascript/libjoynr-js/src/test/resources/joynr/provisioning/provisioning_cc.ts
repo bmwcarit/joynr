@@ -48,9 +48,6 @@ const provisioning = {
     brokerUri: "tcp://127.0.0.1:1883",
     bounceProxyBaseUrl,
     bounceProxyUrl: `${bounceProxyBaseUrl}/bounceproxy/`,
-    internalMessagingQos: {
-        ttl
-    },
     persistency: {
         routingTable: false,
         capabilities: false,

@@ -109,6 +109,7 @@ for (const [key, value] of Object.entries(config)) {
 }
 import WebSocketLibjoynrRuntime from "../../../../main/js/joynr/start/WebSocketLibjoynrRuntime";
 import JoynrRuntimeException from "../../../../main/js/joynr/exceptions/JoynrRuntimeException";
+import MessagingQos from "../../../../main/js/joynr/messaging/MessagingQos";
 
 describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
     let runtime: any;
@@ -246,9 +247,8 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         await runtime.shutdown();
     });
 
-    it("will call MessagingQos with the settings from the provisioning", async () => {
-        const ttl = 1000;
-        provisioning.internalMessagingQos = { ttl };
+    it("will call MessagingQos with the default ttl", async () => {
+        const ttl = MessagingQos.DEFAULT_TTL + 10000;
         runtime = new WebSocketLibjoynrRuntime(onFatalRuntimeError);
         await runtime.start(provisioning);
         expect(spies.MessagingQos).toHaveBeenCalledWith({ ttl });
