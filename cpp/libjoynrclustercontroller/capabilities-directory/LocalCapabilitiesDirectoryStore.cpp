@@ -237,6 +237,7 @@ void LocalCapabilitiesDirectoryStore::insertInGlobalLookupCache(
     std::vector<std::string> allGbids(gbids);
     const auto foundMapping = _globalParticipantIdsToGbidsMap.find(participantId);
     if (foundMapping != _globalParticipantIdsToGbidsMap.cend()) {
+        // entry already exists
         const auto& oldGbids = foundMapping->second;
         for (const auto& gbid : oldGbids) {
             if (std::find(allGbids.cbegin(), allGbids.cend(), gbid) == allGbids.cend()) {

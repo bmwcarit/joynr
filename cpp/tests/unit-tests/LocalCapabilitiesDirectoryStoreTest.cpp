@@ -142,6 +142,40 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, insertInGlobalLookupCache)
     ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId));
 }
 
+TEST_F(LocalCapabilitiesDirectoryStoreTest, updateEntryInGlobalLookupCacheIfItExists)
+{
+    const std::vector<std::string> gbids1 = {"gbid1", "gbid2"};
+    const std::vector<std::string> expectedGbids1 = {gbids1};
+    const std::vector<types::DiscoveryEntry> expectedDiscoveryEntries1 = {_localEntry};
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
+
+    _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_localEntry, gbids1);
+
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
+    ASSERT_EQ(expectedGbids1, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId));
+    ASSERT_EQ(expectedDiscoveryEntries1,
+              _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries());
+
+    // change the entry and re-add it again. It expected to be updated
+    _localEntry.setDomain("anotherDomain");
+
+    const std::vector<std::string> gbids2 = {"gbid2", "gbid3"};
+    const std::vector<std::string> expectedGbids2 = {"gbid2", "gbid3", "gbid1"};
+    const std::vector<types::DiscoveryEntry> expectedDiscoveryEntries2 = {_localEntry};
+
+    _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_localEntry, gbids2);
+
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries().size());
+    ASSERT_EQ(expectedGbids2, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId));
+
+    // check that the entry is updated
+    ASSERT_EQ(expectedDiscoveryEntries2,
+                _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries());
+    ASSERT_EQ(expectedDiscoveryEntries2[0].getDomain(),
+                _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries()[0].getDomain());
+}
+
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getAllGlobalCapabilities)
 {
     const std::string participantId1 = "participantId1";
