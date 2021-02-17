@@ -114,17 +114,17 @@ protected:
 };
 
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getGlobalLookupCache)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getGlobalLookupCache)
 {
     ASSERT_NE(nullptr, _localCapabilitiesDirectoryStore.getGlobalLookupCache());
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocallyRegisteredCapabilities)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocallyRegisteredCapabilities)
 {
     ASSERT_NE(nullptr, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities());
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_insertInLocalCapabilitiesStorage)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, insertInLocalCapabilitiesStorage)
 {
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
@@ -132,7 +132,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_insertInLocalCapabilitiesStorag
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_insertInGlobalLookupCache)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, insertInGlobalLookupCache)
 {
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
@@ -142,7 +142,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_insertInGlobalLookupCache)
     ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getAllGlobalCapabilities)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getAllGlobalCapabilities)
 {
     const std::string participantId1 = "participantId1";
     const std::string participantId2 = "participantId2";
@@ -176,7 +176,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getAllGlobalCapabilities)
     EXPECT_TRUE(foundEntry2);
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_clear)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, clear)
 {
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
@@ -185,7 +185,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_clear)
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_countGlobalCapabilities)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, countGlobalCapabilities)
 {
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.countGlobalCapabilities());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
@@ -194,7 +194,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_countGlobalCapabilities)
 }
 
 //It's basically the same method....
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_searchLocalCacheAndGetLocalCapabilities)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, searchLocalCacheAndGetLocalCapabilities)
 {
     InterfaceAddress interfaceAddress(
             _localEntry.getDomain(), _localEntry.getInterfaceName());
@@ -210,7 +210,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_searchLocalCacheAndGetLocalCapa
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocalCapabilities(interfaceAddresses).size());
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_handlingOfGbidMappings)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, handlingOfGbidMappings)
 {
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
@@ -226,7 +226,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_handlingOfGbidMappings)
 
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_interfaceAddresses_local_only)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interfaceAddresses_local_only)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
@@ -251,7 +251,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_i
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_interfaceAddresses_local_and_global)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interfaceAddresses_local_and_global)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
@@ -288,7 +288,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_i
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_interfaceAddresses_local_then_global)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interfaceAddresses_local_then_global)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
@@ -313,7 +313,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_i
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_interfaceAddresses_global_only)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interfaceAddresses_global_only)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
@@ -339,7 +339,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_i
 }
 
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_participantId_local_only)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_local_only)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
@@ -373,7 +373,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_p
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_participantId_local_and_global)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_local_and_global)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
@@ -421,7 +421,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_p
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_participantId_local_then_global)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_local_then_global)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
@@ -469,7 +469,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_p
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, test_getLocalAndCachedCapabilities_participantId_global_only)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_global_only)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
