@@ -690,7 +690,6 @@ void JoynrClusterControllerRuntime::enableAccessController(
             if (fs::is_regular_file(entry.path())) {
                 const std::string aclPath = entry.path().string();
                 localDomainAccessStore->mergeDomainAccessStore(LocalDomainAccessStore(aclPath));
-                JOYNR_LOG_INFO(logger(), "Loading ACL/RCL templates from {}", aclPath);
             }
         }
     } else {

@@ -24,6 +24,7 @@
 #include <set>
 #include <string>
 #include <tuple>
+#include <typeinfo>
 #include <vector>
 
 #include <boost/optional.hpp>
@@ -770,6 +771,26 @@ private:
         }
         return true;
     }
+
+    void logControlEntry(
+            const infrastructure::DacTypes::MasterAccessControlEntry& masterAccessControlEntry,
+            const std::string title);
+
+    void logControlEntry(
+            const infrastructure::DacTypes::OwnerAccessControlEntry& ownerAccessControlEntry,
+            const std::string title);
+
+    void logControlEntry(const infrastructure::DacTypes::MasterRegistrationControlEntry&
+                                 masterRegistrationControlEntry,
+                         const std::string title);
+
+    void logControlEntry(const infrastructure::DacTypes::OwnerRegistrationControlEntry&
+                                 ownerRegistrationControlEntry,
+                         const std::string title);
+
+    void logRoleEntry(const infrastructure::DacTypes::DomainRoleEntry& domainRoleEntry);
+
+    void logTables();
 
     template <typename Entry>
     void addToWildcardStorage(const Entry& updatedEntry)
