@@ -82,12 +82,10 @@ export interface ShutdownSettings {
 export interface Provisioning {
     discoveryQos?: DiscoveryQos;
     logging?: Logging;
-    /** messaging qos used for joynr internal communication */
+    /**
+     * @deprecated will be ignored
+     */
     internalMessagingQos?: {
-        /**
-         * round trip timeout ms for rpc requests
-         * @default 60000
-         */
         ttl: number;
     };
     messaging?: {
