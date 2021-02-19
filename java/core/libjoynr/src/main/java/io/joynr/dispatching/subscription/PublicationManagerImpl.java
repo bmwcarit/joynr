@@ -446,12 +446,10 @@ public class PublicationManagerImpl
         long subscriptionEndDelay;
         if (subscriptionQos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
             subscriptionEndDelay = SubscriptionQos.NO_EXPIRY_DATE;
+        } else if (subscriptionQos.getExpiryDateMs() > (Long.MAX_VALUE - ttlUpliftMs)) {
+            subscriptionEndDelay = Long.MAX_VALUE - System.currentTimeMillis();
         } else {
-            if (subscriptionQos.getExpiryDateMs() > (Long.MAX_VALUE - ttlUpliftMs)) {
-                subscriptionEndDelay = Long.MAX_VALUE - System.currentTimeMillis();
-            } else {
-                subscriptionEndDelay = subscriptionQos.getExpiryDateMs() + ttlUpliftMs - System.currentTimeMillis();
-            }
+            subscriptionEndDelay = subscriptionQos.getExpiryDateMs() + ttlUpliftMs - System.currentTimeMillis();
         }
         return subscriptionEndDelay;
     }
