@@ -350,10 +350,10 @@ public class PublicationManagerImpl
 
     // requires addRemoveLock: handleSubscriptionRequest, handleBroadcastSubscriptionRequest,
     // subscriptionId2PublicationInformation, addSubscriptionCleanupIfNecessary
-    private void addSubscriptionRequest(String proxyParticipantId,
-                                        String providerParticipantId,
-                                        SubscriptionRequest subscriptionRequest,
-                                        ProviderContainer providerContainer) {
+    private void addSubscriptionRequestInternal(String proxyParticipantId,
+                                                String providerParticipantId,
+                                                SubscriptionRequest subscriptionRequest,
+                                                ProviderContainer providerContainer) {
 
         PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                    proxyParticipantId,
@@ -469,10 +469,10 @@ public class PublicationManagerImpl
         synchronized (addRemoveLock) {
             ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
             if (providerContainer != null) {
-                addSubscriptionRequest(proxyParticipantId,
-                                       providerParticipantId,
-                                       subscriptionRequest,
-                                       providerContainer);
+                addSubscriptionRequestInternal(proxyParticipantId,
+                                               providerParticipantId,
+                                               subscriptionRequest,
+                                               providerContainer);
             } else {
                 logger.trace("Adding subscription request for non existing provider to queue.");
                 PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
@@ -615,10 +615,10 @@ public class PublicationManagerImpl
                 PublicationInformation publicationInformation = queuedRequestsIterator.next();
                 queuedRequestsIterator.remove();
                 if (!isExpired(publicationInformation)) {
-                    addSubscriptionRequest(publicationInformation.getProxyParticipantId(),
-                                           publicationInformation.getProviderParticipantId(),
-                                           publicationInformation.subscriptionRequest,
-                                           providerContainer);
+                    addSubscriptionRequestInternal(publicationInformation.getProxyParticipantId(),
+                                                   publicationInformation.getProviderParticipantId(),
+                                                   publicationInformation.subscriptionRequest,
+                                                   providerContainer);
                 }
             }
         }
