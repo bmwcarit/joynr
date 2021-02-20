@@ -38,8 +38,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -62,6 +64,7 @@ import io.joynr.dispatching.DispatcherImpl;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
+import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.Deferred;
@@ -70,6 +73,7 @@ import io.joynr.provider.ProviderContainer;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.publication.BroadcastFilter;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.util.MultiMap;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
@@ -483,8 +487,27 @@ public class PublicationManagerTest {
     }
 
     @SuppressWarnings("unchecked")
+    private MultiMap<String, PublicationInformation> getQueuedSubscriptionRequests() throws ReflectiveOperationException {
+        Field queuedSubscriptionRequestsField = PublicationManagerImpl.class.getDeclaredField("queuedSubscriptionRequests");
+        queuedSubscriptionRequestsField.setAccessible(true);
+
+        MultiMap<String, PublicationInformation> queuedSubscriptionRequests = (MultiMap<String, PublicationInformation>) queuedSubscriptionRequestsField.get(publicationManager);
+        return queuedSubscriptionRequests;
+    }
+
+    private void checkRequestsQueue(SubscriptionRequest subscriptionRequest1) throws ReflectiveOperationException {
+        PublicationInformation pubInfo = new PublicationInformation(PROVIDER_PARTICIPANT_ID,
+                                                                    PROXY_PARTICIPANT_ID,
+                                                                    subscriptionRequest1);
+        Set<PublicationInformation> pubInfoSet = new HashSet<>();
+        pubInfoSet.add(pubInfo);
+        assertEquals(1, getQueuedSubscriptionRequests().size());
+        assertEquals(pubInfoSet, getQueuedSubscriptionRequests().get(PROVIDER_PARTICIPANT_ID));
+    }
+
+    @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
-    public void removeQueuedSubscriptionsProperly() throws Exception {
+    public void stopPublication_removesQueuedSubscriptionsProperly() throws Exception {
         int period = 200;
         String subscriptionId1 = "subscriptionid_removeQueuedSubscriptionsProperly";
         SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos().setPeriodMs(100)
@@ -495,14 +518,110 @@ public class PublicationManagerTest {
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
 
+        checkRequestsQueue(subscriptionRequest1);
+
         publicationManager.stopPublication(subscriptionId1);
 
+        // queued subscriptions are removed
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+
+        // at this point no pending request(s) in the subscription queue exist
         publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
+    }
+
+    @Test(timeout = 3000)
+    public void removePendingQueuedSubscriptionsAfterProviderRegistered() throws Exception {
+        String subscriptionId1 = "subscriptionid_subscriptionsDoesNotExpire";
+        SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setAlertAfterIntervalMs(500)
+                                                                   .setPublicationTtlMs(1000);
+        SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qosNoExpiry);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
+
+        checkRequestsQueue(subscriptionRequest1);
+
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 4000)
+    public void removeExpiredQueuedSubscriptionsAfterProviderRegistered() throws Exception {
+        int period = 500;
+        String subscriptionId1 = "subscriptionid_subscriptionsDoesNotExpire";
+        long validityMs = 150; // the number of milliseconds until the subscription will expire
+        SubscriptionQos qosExpires = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                  .setValidityMs(validityMs)
+                                                                  .setAlertAfterIntervalMs(500)
+                                                                  .setPublicationTtlMs(1000);
+        SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qosExpires);
+
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
+
+        checkRequestsQueue(subscriptionRequest1);
+
+        Semaphore semaphore = new Semaphore(0);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                semaphore.release();
+                return null;
+            }
+        }).when(dispatcher)
+          .sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                       (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                       any(SubscriptionPublication.class),
+                                       any(MessagingQos.class));
+
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+
+        // wait for 2 publications
+        assertTrue(semaphore.tryAcquire(2, 1, TimeUnit.SECONDS));
+
+        // when the sleep time elapsed, the subscription would be already expired and removed from the queue.
+        // sendSubscriptionPublication wont' be called
+        // Based on the sleep period = 500 ms and the reschedule of publication setPeriodMs = 100 ms, sendSubscriptionPublication
+        // supposed to be called 5 times. But since the subscription expires after 150 ms, the sendSubscriptionPublication will
+        // be rescheduled only 2 times, then the subscription expires and it will be removed from the queue.
+        verify(dispatcher, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
+        reset(dispatcher);
+        Thread.sleep(period);
+        verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+    }
+
+    @Test(timeout = 3000)
+    public void checkCleanupIfNoProviderIsRegisteredSubReqExpired() throws Exception {
+        int period = 500;
+        String subscriptionId1 = "subscriptionid_subscriptionsDoesNotExpire";
+        long validityMs = 150; // the number of milliseconds until the subscription will expire
+        SubscriptionQos qosExpires = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                  .setValidityMs(validityMs)
+                                                                  .setAlertAfterIntervalMs(500)
+                                                                  .setPublicationTtlMs(1000);
+        SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qosExpires);
+
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
+
+        checkRequestsQueue(subscriptionRequest1);
+
+        Thread.sleep(period);
+        assertEquals(0, getQueuedSubscriptionRequests().size());
     }
 
     @SuppressWarnings("unchecked")
@@ -857,7 +976,6 @@ public class PublicationManagerTest {
         assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
     }
 
-    @SuppressWarnings("unchecked")
     @Test(timeout = 5000)
     public void multicastSubscriptionRequestsAreNeverPersisted() throws Exception {
         final String persistenceFileName = "target/" + PublicationManagerTest.class.getCanonicalName()
@@ -913,7 +1031,6 @@ public class PublicationManagerTest {
         publicationManager.shutdown();
     }
 
-    @SuppressWarnings("unchecked")
     @Test(timeout = 5000)
     public void subscriptionRequestsAreNotPersistedIfPersistencyIsDisabled() throws Exception {
         String persistenceFileName = "target/" + PublicationManagerTest.class.getCanonicalName()
