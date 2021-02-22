@@ -494,11 +494,7 @@ public class PublicationManagerImpl
         }
 
         // Remove (eventually) queued subcriptionRequest
-        Collection<PublicationInformation> queuedSubscriptionRequestsForParticipant = queuedSubscriptionRequests.get(publicationInformation.getProviderParticipantId());
-
-        if (queuedSubscriptionRequestsForParticipant != null) {
-            queuedSubscriptionRequestsForParticipant.remove(publicationInformation);
-        }
+        queuedSubscriptionRequests.remove(publicationInformation.getProviderParticipantId(), publicationInformation);
 
         PublicationTimer publicationTimer = publicationTimers.remove(subscriptionId);
         if (publicationTimer != null) {
