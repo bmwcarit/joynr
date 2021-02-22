@@ -609,11 +609,11 @@ public class PublicationManagerImpl
      */
     private void restoreQueuedSubscription(String providerId, ProviderContainer providerContainer) {
         synchronized (addRemoveLock) {
-            Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.get(providerId);
+            // After the provider is registered, the queued requests must be subsequently removed
+            Collection<PublicationInformation> queuedRequests = queuedSubscriptionRequests.getAndRemoveAll(providerId);
             Iterator<PublicationInformation> queuedRequestsIterator = queuedRequests.iterator();
             while (queuedRequestsIterator.hasNext()) {
                 PublicationInformation publicationInformation = queuedRequestsIterator.next();
-                queuedRequestsIterator.remove();
                 if (!isExpired(publicationInformation)) {
                     addSubscriptionRequestInternal(publicationInformation.getProxyParticipantId(),
                                                    publicationInformation.getProviderParticipantId(),
