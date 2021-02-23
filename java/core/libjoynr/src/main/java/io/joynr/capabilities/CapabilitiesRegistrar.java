@@ -66,5 +66,30 @@ public interface CapabilitiesRegistrar {
                                             ProviderQos providerQos,
                                             boolean awaitGlobalRegistration);
 
+    /**
+     * Trigger the unregistration of a provider from the joynr communication framework so that it can
+     * no longer be used or discovered.
+     *
+     * This method just triggers the removal of a provider without waiting until it is actually
+     * triggered. It returns immediately but it is possible and recommended to get notified if
+     * the removal has been triggered via the returned future.
+     *
+     * <b>Note</b>: This does not guarantee a successful execution of provider's removal from the
+     * GlobalCapabilitiesDirectory in case the provider is registered globally (default),
+     * i.e. ProviderScope.GLOBAL has been set in ProviderQos when registering the provider.
+     * It does not wait for a response from global capabilities directory and does not get informed
+     * about errors or success.  The cluster controller will internally repeat the global remove
+     * operation until it succeeds or the cluster controller is shut down. The provider will be
+     * removed from the local capabilities directory after the global removal. If the provider
+     * is running in libjoynr runtime connected to a standalone cluster controller, the cluster
+     * controller will still repeat the global remove operation until it succeeds or the
+     * cluster controller is shut down.
+     * 
+     * @param domain
+     *            The domain the provider was registered for.
+     * @param provider
+     *            The provider instance.
+     * @return unregistration future
+     */
     Future<Void> unregisterProvider(String domain, Object provider);
 }

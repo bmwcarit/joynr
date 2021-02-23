@@ -132,7 +132,27 @@ public interface JoynrRuntime {
     public ProviderRegistrar getProviderRegistrar(String domain, JoynrProvider provider);
 
     /**
-     * Unregisters the provider from the joynr framework. It can no longer be used or discovered.
+     * Trigger the unregistration of a provider from the joynr communication framework so that it can
+     * no longer be used or discovered.
+     *
+     * This method just triggers the removal. It does not wait for a response and does not get informed
+     * about errors or success.
+     *
+     * During {@link #shutdown(boolean)}, the joynr runtime waits for a maximum number of 5 seconds for
+     * a response from the local capabilities directory of the cluster controller (standalone or embedded
+     * within the same runtime). Errors are just logged.
+     *
+     * <b>Note</b>: A successful response from the local capabilities directory does not guarantee
+     * a successful execution of provider's removal from the GlobalCapabilitiesDirectory in case
+     * the provider is registered globally (default), i.e. ProviderScope.GLOBAL has been set in
+     * ProviderQos when registering the provider.
+     * It does not wait for a response from global capabilities directory and does not get informed
+     * about errors or success. If the provider is running in libjoynr runtime connected to a standalone
+     * cluster controller, the cluster controller will still repeat the global remove operation until
+     * it succeeds or the cluster controller is shut down.
+     * If the cluster controller is embedded within the same runtime (cluster controller runtime) and
+     * the provider is registered globally, consider waiting some grace period after calling unregisterProvider
+     * before calling {@link #shutdown(boolean)} to give the joynr framework a chance to perform the provider removal.
      *
      * @param domain
      *            The domain the provider was registered for.

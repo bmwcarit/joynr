@@ -296,7 +296,25 @@ class CapabilitiesRegistrar {
     }
 
     /**
-     * Unregisters a provider so that it is not publicly available anymore
+     * Unregister a provider from the joynr communication framework so that it
+     * can no longer be called or discovered.
+     *
+     * If the provider is registered globally (default), i.e. ProviderScope.GLOBAL
+     * has been set in ProviderQos when registering the provider:
+     * This function triggers a global remove operation in the local capabilities
+     * directory of the cluster controller (standalone or embedded within the same runtime)
+     * and returns. It does not wait for a response from global capabilities directory and
+     * does not get informed about errors or success. The cluster controller will repeat
+     * the global remove operation until it succeeds or the cluster controller is shut down.
+     *
+     * If the provider is registered only locally, i.e. ProviderScope.LOCAL
+     * has been set in ProviderQos when registering the provider:
+     * This function removes the provider from the local capabilities directory
+     * of the cluster controller (standalone or embedded within the same runtime)
+     * and waits for the result.
+     *
+     * @note: This function does not guarantee a successful execution of provider's removal
+     * from the global capabilities directory.
      *
      * @param domain
      * @param provider

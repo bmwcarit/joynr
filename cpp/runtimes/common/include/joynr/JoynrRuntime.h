@@ -255,10 +255,34 @@ public:
     }
 
     /**
-     * @brief Unregisters the provider from the joynr communication framework.
+     * @brief Unregister a provider from the joynr communication framework so that it can no longer
+     * be called or discovered.
      *
-     * Unregister a provider identified by its globally unique participant ID. The participant ID is
-     * returned during the provider registration process.
+     * Unregister a provider identified by its globally unique participantId (the participantId is
+     * returned during the provider registration process).
+     *
+     * If the provider is registered globally (default), i.e. ProviderScope.GLOBAL has been set in
+     * ProviderQos when registering the provider:
+     * This function triggers a global remove operation in the local capabilities directory of the
+     * cluster controller (standalone or embedded within the same runtime) without waiting until
+     * it is actually triggered. It returns immediately but it is possible and recommended to get
+     * notified if the removal has been triggered via onSuccess or onError callbacks.
+     * It still does not wait for a response from global capabilities directory and does not get
+     * informed about errors or success of the global remove operation. The cluster controller will
+     * internally repeat the global remove operation until it succeeds or the cluster controller is
+     * shut down. The provider will be removed from the local capabilities directory after the
+     * global removal.
+     *
+     * If the provider is registered only locally, i.e. ProviderScope.LOCAL has been set in
+     * ProviderQos when registering the provider:
+     * This function removes the provider from the local capabilities directory of the cluster
+     * controller (standalone or embedded within the same runtime) and returns without waiting
+     * for the result. It is possible to get notified about the operation's result via
+     * onSuccess or onError callbacks if necessary.
+     *
+     * @note: This function does not guarantee a successful execution of provider's removal from the
+     * GlobalCapabilitiesDirectory.
+     *
      * @param participantId The participantId of the provider which shall be unregistered
      * @param onSucess: Will be invoked when provider unregistration succeeded.
      * @param onError: Will be invoked when the provider could not be unregistered. An exception,
@@ -274,7 +298,31 @@ public:
     }
 
     /**
-     * @brief Unregisters the provider from the joynr framework
+     * @brief Unregister a provider from the joynr communication framework so that it can no longer
+     * be called or discovered.
+     *
+     * If the provider is registered globally (default), i.e. ProviderScope.GLOBAL has been set in
+     * ProviderQos when registering the provider:
+     * This function triggers a global remove operation in the local capabilities directory of the
+     * cluster controller (standalone or embedded within the same runtime) without waiting until
+     * it is actually triggered. It returns immediately but it is possible and recommended to get
+     * notified if the removal has been triggered via onSuccess or onError callbacks.
+     * It still does not wait for a response from global capabilities directory and does not get
+     * informed about errors or success of the global remove operation. The cluster controller will
+     * internally repeat the global remove operation until it succeeds or the cluster controller is
+     * shut down. The provider will be removed from the local capabilities directory after the
+     * global removal.
+     *
+     * If the provider is registered only locally, i.e. ProviderScope.LOCAL has been set in
+     * ProviderQos when registering the provider:
+     * This function removes the provider from the local capabilities directory of the cluster
+     * controller (standalone or embedded within the same runtime) and returns without waiting
+     * for the result. It is possible to get notified about the operation's result via
+     * onSuccess or onError callbacks if necessary.
+     *
+     * @note: This function does not guarantee a successful execution of provider's removal from the
+     * GlobalCapabilitiesDirectory.
+     *
      * @tparam TIntfProvider The interface class of the provider to unregister. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
      * @param domain The domain to unregister the provider from. It must match the domain used
@@ -298,10 +346,30 @@ public:
     }
 
     /**
-     * @brief Unregisters the provider from the joynr communication framework.
+     * @brief Unregister a provider from the joynr communication framework so that it can no longer
+     * be called or discovered.
      *
-     * Unregister a provider identified by its globally unique participant ID. The participant ID is
-     * returned during the provider registration process.
+     * Unregister a provider identified by its globally unique participantId (the participantId is
+     * returned during the provider registration process).
+     *
+     * If the provider is registered globally (default), i.e. ProviderScope.GLOBAL has been set in
+     * ProviderQos when registering the provider:
+     * This function triggers a global remove operation in the local capabilities directory of the
+     * cluster controller (standalone or embedded within the same runtime) and returns afterwards.
+     * It will throw if the cluster controller does not respond in time.
+     * It does not wait for a response from global capabilities directory and does not get
+     * informed about errors or success of the global remove operation. The cluster controller
+     * will internally repeat the global remove operation until it succeeds or the cluster
+     * controller is shut down.
+     *
+     * If the provider is registered only locally, i.e. ProviderScope.LOCAL has been set in
+     * ProviderQos when registering the provider:
+     * This function removes the provider from the local capabilities directory of the cluster
+     * controller (standalone or embedded within the same runtime) and waits for the result.
+     *
+     * @note: This function does not guarantee a successful execution of provider's removal from the
+     * GlobalCapabilitiesDirectory.
+     *
      * @param participantId The participantId of the provider which shall be unregistered
      */
     void unregisterProvider(const std::string& participantId)
@@ -318,7 +386,27 @@ public:
     }
 
     /**
-     * @brief Unregisters the provider from the joynr framework
+     * @brief Unregister a provider from the joynr communication framework so that it can no longer
+     * be called or discovered.
+     *
+     * If the provider is registered globally (default), i.e. ProviderScope.GLOBAL has been set in
+     * ProviderQos when registering the provider:
+     * This function triggers a global remove operation in the local capabilities directory of the
+     * cluster controller (standalone or embedded within the same runtime) and returns afterwards.
+     * It will throw if the cluster controller does not respond in time.
+     * It does not wait for a response from global capabilities directory and does not get
+     * informed about errors or success of the global remove operation. The cluster controller
+     * will internally repeat the global remove operation until it succeeds or the cluster
+     * controller is shut down.
+     *
+     * If the provider is registered only locally, i.e. ProviderScope.LOCAL has been set in
+     * ProviderQos when registering the provider:
+     * This function removes the provider from the local capabilities directory of the cluster
+     * controller (standalone or embedded within the same runtime) and waits for the result.
+     *
+     * @note: This function does not guarantee a successful execution of provider's removal from the
+     * GlobalCapabilitiesDirectory.
+     *
      * @tparam TIntfProvider The interface class of the provider to unregister. The corresponding
      * template parameter of a Franca interface called "MyDemoIntf" is "MyDemoIntfProvider".
      * @param domain The domain to unregister the provider from. It must match the domain used
