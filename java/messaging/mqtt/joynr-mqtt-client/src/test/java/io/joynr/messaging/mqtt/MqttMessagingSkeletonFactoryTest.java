@@ -65,6 +65,16 @@ public class MqttMessagingSkeletonFactoryTest {
 
     @Test
     public void getSkeletonReturnsCorrectSkeleton() {
+        JoynrMqttClient mqttClient1 = mock(JoynrMqttClient.class);
+        JoynrMqttClient mqttClient2 = mock(JoynrMqttClient.class);
+        JoynrMqttClient mqttClient3 = mock(JoynrMqttClient.class);
+        when(mqttClientFactory.createReceiver(gbids[0])).thenReturn(mqttClient1);
+        when(mqttClientFactory.createReceiver(gbids[1])).thenReturn(mqttClient2);
+        when(mqttClientFactory.createReceiver(gbids[2])).thenReturn(mqttClient3);
+        when(mqttClientFactory.createSender(gbids[0])).thenReturn(mqttClient1);
+        when(mqttClientFactory.createSender(gbids[1])).thenReturn(mqttClient2);
+        when(mqttClientFactory.createSender(gbids[2])).thenReturn(mqttClient3);
+
         MqttMessagingSkeletonFactory factory = new MqttMessagingSkeletonFactory(gbids,
                                                                                 ownAddress,
                                                                                 maxIncomingMqttRequests,
@@ -75,16 +85,6 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 messageProcessors,
                                                                                 mockJoynrStatusMetricsReceiver,
                                                                                 routingTable);
-
-        JoynrMqttClient mqttClient1 = mock(JoynrMqttClient.class);
-        JoynrMqttClient mqttClient2 = mock(JoynrMqttClient.class);
-        JoynrMqttClient mqttClient3 = mock(JoynrMqttClient.class);
-        when(mqttClientFactory.createReceiver(gbids[0])).thenReturn(mqttClient1);
-        when(mqttClientFactory.createReceiver(gbids[1])).thenReturn(mqttClient2);
-        when(mqttClientFactory.createReceiver(gbids[2])).thenReturn(mqttClient3);
-        when(mqttClientFactory.createSender(gbids[0])).thenReturn(mqttClient1);
-        when(mqttClientFactory.createSender(gbids[1])).thenReturn(mqttClient2);
-        when(mqttClientFactory.createSender(gbids[2])).thenReturn(mqttClient3);
 
         MqttAddress testAddress = mock(MqttAddress.class);
         when(testAddress.getBrokerUri()).thenReturn(gbids[0]);
@@ -135,6 +135,19 @@ public class MqttMessagingSkeletonFactoryTest {
         assertNotEquals(skeleton1, skeleton3);
         assertNotEquals(skeleton2, skeleton3);
 
+        verify(mqttClientFactory).createReceiver(gbids[0]);
+        verify(mqttClientFactory).createReceiver(gbids[1]);
+        verify(mqttClientFactory).createReceiver(gbids[2]);
+
+        factory.init();
+
+        verify(mqttClientFactory).createSender(gbids[0]);
+        verify(mqttClientFactory).createSender(gbids[1]);
+        verify(mqttClientFactory).createSender(gbids[2]);
+    }
+
+    @Test
+    public void initAllSkeletons() {
         JoynrMqttClient mqttClient = mock(JoynrMqttClient.class);
         when(mqttClientFactory.createReceiver(gbids[0])).thenReturn(mqttClient);
         when(mqttClientFactory.createReceiver(gbids[1])).thenReturn(mqttClient);
@@ -143,18 +156,6 @@ public class MqttMessagingSkeletonFactoryTest {
         when(mqttClientFactory.createSender(gbids[1])).thenReturn(mqttClient);
         when(mqttClientFactory.createSender(gbids[2])).thenReturn(mqttClient);
 
-        factory.init();
-
-        verify(mqttClientFactory).createReceiver(gbids[0]);
-        verify(mqttClientFactory).createReceiver(gbids[1]);
-        verify(mqttClientFactory).createReceiver(gbids[2]);
-        verify(mqttClientFactory).createSender(gbids[0]);
-        verify(mqttClientFactory).createSender(gbids[1]);
-        verify(mqttClientFactory).createSender(gbids[2]);
-    }
-
-    @Test
-    public void initAllSkeletons() {
         MqttMessagingSkeletonFactory factory = new MqttMessagingSkeletonFactory(gbids,
                                                                                 ownAddress,
                                                                                 maxIncomingMqttRequests,
@@ -170,6 +171,14 @@ public class MqttMessagingSkeletonFactoryTest {
 
     @Test
     public void initAllSkeletons_sharedSubscriptions() {
+        JoynrMqttClient mqttClient = mock(JoynrMqttClient.class);
+        when(mqttClientFactory.createReceiver(gbids[0])).thenReturn(mqttClient);
+        when(mqttClientFactory.createReceiver(gbids[1])).thenReturn(mqttClient);
+        when(mqttClientFactory.createReceiver(gbids[2])).thenReturn(mqttClient);
+        when(mqttClientFactory.createSender(gbids[0])).thenReturn(mqttClient);
+        when(mqttClientFactory.createSender(gbids[1])).thenReturn(mqttClient);
+        when(mqttClientFactory.createSender(gbids[2])).thenReturn(mqttClient);
+
         final boolean backpressureEnabled = false;
         final int backpressureIncomingMqttRequestsUpperThreshold = 42;
         final int backpressureIncomingMqttRequestsLowerThreshold = 41;
