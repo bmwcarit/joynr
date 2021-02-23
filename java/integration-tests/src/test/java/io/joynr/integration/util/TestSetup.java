@@ -1,8 +1,7 @@
 /*
  * #%L
- * joynr::java::messaging::bounceproxy::controlled-bounceproxy
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +16,29 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.messaging.bounceproxy.monitoring;
+package io.joynr.integration.util;
 
-import java.util.Map;
+import java.io.IOException;
+import java.net.ServerSocket;
 
-/**
- * Monitor for performance measures of a bounce proxy instance.
- * 
- * @author christina.strobel
- * 
- */
-public interface BounceProxyPerformanceMonitor {
-
+public class TestSetup {
     /**
-     * Returns performance measures as key value pairs.
+     * Find a free port on the test system
      * 
-     * @return performance measures as map of string-integer key-value pairs
+     * @return the socket number
+     * @throws IOException in case of I/O failure
      */
-    public Map<String, Integer> getAsKeyValuePairs();
+    public static int findFreePort() throws IOException {
+        ServerSocket socket = null;
 
+        try {
+            socket = new ServerSocket(0);
+
+            return socket.getLocalPort();
+        } finally {
+            if (socket != null) {
+                socket.close();
+            }
+        }
+    }
 }
