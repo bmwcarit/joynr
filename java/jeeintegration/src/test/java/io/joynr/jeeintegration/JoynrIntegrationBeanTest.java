@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +43,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -51,11 +54,16 @@ import com.google.inject.Guice;
 import com.google.inject.name.Names;
 
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ProviderRegistrar;
@@ -64,6 +72,8 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
+import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 
@@ -79,6 +89,8 @@ public class JoynrIntegrationBeanTest {
 
     private static final int REGISTRATION_RETRY_INTERVAL = 500;
     private static final int REGISTRATION_RETRIES = 2;
+
+    private static final String[] GBIDS = new String[]{ "jeeGbid1", "jeeGbid2", "jeeGbid3" };
 
     @ServiceProvider(serviceInterface = MyServiceSync.class)
     private static class MyServiceBean implements MyServiceSync {
@@ -223,6 +235,11 @@ public class JoynrIntegrationBeanTest {
     private JoynrRuntime joynrRuntime;
 
     @Mock
+    private MessagingSkeletonFactory messagingSkeletonFactory;
+    @Mock
+    private JeeSharedSubscriptionsMqttMessagingSkeleton sharedSubscriptionsSkeleton;
+
+    @Mock
     private ProviderRegistrar providerRegistrar;
 
     @Mock
@@ -245,17 +262,7 @@ public class JoynrIntegrationBeanTest {
         Bean bean = mock(Bean.class);
         when(bean.getBeanClass()).thenReturn(MyServiceBean.class);
         serviceProviderBeans.add(bean);
-        when(joynrRuntimeFactory.getInjector()).thenReturn(Guice.createInjector(new AbstractModule() {
-            @Override
-            protected void configure() {
-                bind(Integer.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES))
-                                   .toInstance(REGISTRATION_RETRIES);
-                bind(Integer.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS))
-                                   .toInstance(REGISTRATION_RETRY_INTERVAL);
-                bind(Boolean.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_AWAIT_REGISTRATION))
-                                   .toInstance(true);
-            }
-        }));
+        mockInjector(true, false);
         when(joynrRuntimeFactory.create(any())).thenReturn(joynrRuntime);
         when(joynrRuntimeFactory.getLocalDomain()).thenReturn(LOCAL_DOMAIN);
         when(joynrRuntime.getProviderRegistrar(any(), any())).thenReturn(providerRegistrar);
@@ -277,14 +284,118 @@ public class JoynrIntegrationBeanTest {
                                            callbackHandlerDiscovery);
     }
 
+    private void mockInjector(boolean awaitGlobalRegistration, boolean enableSharedSubscriptions) {
+        mockInjector(awaitGlobalRegistration, enableSharedSubscriptions, new String[0]);
+    }
+
+    private void mockInjector(boolean awaitGlobalRegistration, boolean enableSharedSubscriptions, String[] gbids) {
+        doReturn(Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(MessagingSkeletonFactory.class).toInstance(messagingSkeletonFactory);
+                bind(Integer.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES))
+                                   .toInstance(REGISTRATION_RETRIES);
+                bind(Integer.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS))
+                                   .toInstance(REGISTRATION_RETRY_INTERVAL);
+                bind(Boolean.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_AWAIT_REGISTRATION))
+                                   .toInstance(awaitGlobalRegistration);
+                bind(Boolean.class).annotatedWith(Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))
+                                   .toInstance(enableSharedSubscriptions);
+                if (gbids.length > 0) {
+                    bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY)).toInstance(gbids);
+                }
+            }
+        })).when(joynrRuntimeFactory).getInjector();
+    }
+
     @Test
-    public void testInitialise() {
+    public void testInitialise_noSharedSubscriptions() {
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(new HashSet<>());
 
         subject.initialise();
 
         verify(joynrRuntimeFactory).create(new HashSet<>());
         verify(serviceProviderDiscovery).findServiceProviderBeans();
+        verify(messagingSkeletonFactory, times(0)).getSkeleton(any(Address.class));
+    }
+
+    @Test
+    public void testInitialise_withSharedSubscriptions() {
+        // test that MQTT subscription to shared topic is triggered for all configured GBIDs
+        when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
+        mockInjector(false, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
+
+        subject.initialise();
+
+        Set<Class<?>> expectedProviderInterfaceClasses = new HashSet<>();
+        expectedProviderInterfaceClasses.add(MyServiceSync.class);
+        verify(joynrRuntimeFactory).create(expectedProviderInterfaceClasses);
+        verify(serviceProviderDiscovery).findServiceProviderBeans();
+
+        for (String gbid : GBIDS) {
+            verify(messagingSkeletonFactory).getSkeleton(argThat(new ArgumentMatcher<Address>() {
+                @Override
+                public boolean matches(Object argument) {
+                    if (!MqttAddress.class.isInstance(argument)) {
+                        return false;
+                    }
+                    if (MqttAddress.class.cast(argument).getBrokerUri() == gbid) {
+                        return true;
+                    }
+                    return false;
+                }
+            }));
+        }
+        verify(sharedSubscriptionsSkeleton, times(GBIDS.length)).subscribeToSharedTopic();
+        verify(providerRegistrar).register();
+    }
+
+    @Test
+    public void testInitialise_withSharedSubscriptions_awaitGlobalRegistration() throws Exception {
+        // test that MQTT subscription to shared topic is triggered for all configured GBIDs but not before all providers are registered
+        when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
+        mockInjector(true, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
+
+        Semaphore providerRegistration = new Semaphore(0);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                verify(providerRegistrar).register();
+                verify(messagingSkeletonFactory, times(0)).getSkeleton(any(Address.class));
+                verify(sharedSubscriptionsSkeleton, times(0)).subscribeToSharedTopic();
+                providerRegistration.release();
+                return null;
+            }
+        }).when(mockVoidFuture).get(anyLong());
+
+        subject.initialise();
+
+        Set<Class<?>> expectedProviderInterfaceClasses = new HashSet<>();
+        expectedProviderInterfaceClasses.add(MyServiceSync.class);
+        verify(joynrRuntimeFactory).create(expectedProviderInterfaceClasses);
+        verify(serviceProviderDiscovery).findServiceProviderBeans();
+
+        assertTrue(providerRegistration.tryAcquire(10, TimeUnit.SECONDS));
+
+        for (String gbid : GBIDS) {
+            verify(messagingSkeletonFactory).getSkeleton(argThat(new ArgumentMatcher<Address>() {
+                @Override
+                public boolean matches(Object argument) {
+                    if (!MqttAddress.class.isInstance(argument)) {
+                        return false;
+                    }
+                    if (MqttAddress.class.cast(argument).getBrokerUri() == gbid) {
+                        return true;
+                    }
+                    return false;
+                }
+            }));
+        }
+        verify(sharedSubscriptionsSkeleton, times(GBIDS.length)).subscribeToSharedTopic();
     }
 
     @Test
@@ -437,7 +548,6 @@ public class JoynrIntegrationBeanTest {
         Semaphore semaphore = new Semaphore(0);
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
-        doReturn(mockVoidFuture).when(providerRegistrar).register();
         doAnswer(new Answer<Void>() {
             private boolean firstInvocation = true;
 
@@ -497,7 +607,6 @@ public class JoynrIntegrationBeanTest {
         JoynrRuntimeException expectedException = new JoynrRuntimeException("Provider registration failed for bean "
                 + serviceProviderBeans.iterator().next(), exceptionFromFuture);
 
-        doReturn(mockVoidFuture).when(providerRegistrar).register();
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
@@ -567,21 +676,9 @@ public class JoynrIntegrationBeanTest {
 
     @Test
     public void testRegisterWithAwaitGlobalRegistrationDisabled_singleProvider() throws Exception {
-        when(joynrRuntimeFactory.getInjector()).thenReturn(Guice.createInjector(new AbstractModule() {
-            @Override
-            protected void configure() {
-                bind(Integer.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES))
-                                   .toInstance(REGISTRATION_RETRIES);
-                bind(Integer.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS))
-                                   .toInstance(REGISTRATION_RETRY_INTERVAL);
-                bind(Boolean.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_AWAIT_REGISTRATION))
-                                   .toInstance(false);
-            }
-        }));
+        mockInjector(false, false);
 
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
-
-        doReturn(mockVoidFuture).when(providerRegistrar).register();
 
         subject.initialise();
 
@@ -602,19 +699,8 @@ public class JoynrIntegrationBeanTest {
         when(bean.getBeanClass()).thenReturn(CustomDomainMyServiceBean.class);
         serviceProviderBeans.add(bean);
 
-        doReturn(Guice.createInjector(new AbstractModule() {
-            @Override
-            protected void configure() {
-                bind(Integer.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRIES))
-                                   .toInstance(REGISTRATION_RETRIES);
-                bind(Integer.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_PROVIDER_REGISTRATION_RETRY_INTERVAL_MS))
-                                   .toInstance(REGISTRATION_RETRY_INTERVAL);
-                bind(Boolean.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_JEE_AWAIT_REGISTRATION))
-                                   .toInstance(false);
-            }
-        })).when(joynrRuntimeFactory).getInjector();
+        mockInjector(false, false);
         doReturn(serviceProviderBeans).when(serviceProviderDiscovery).findServiceProviderBeans();
-        doReturn(mockVoidFuture).when(providerRegistrar).register();
 
         subject.initialise();
 
