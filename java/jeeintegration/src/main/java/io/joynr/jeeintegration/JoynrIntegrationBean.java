@@ -19,7 +19,9 @@
 package io.joynr.jeeintegration;
 
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -45,7 +47,11 @@ import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
@@ -54,6 +60,7 @@ import io.joynr.runtime.ProviderRegistrar;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.ProviderQos;
 
 /**
@@ -101,6 +108,27 @@ public class JoynrIntegrationBean {
         joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
         registerProviders(serviceProviderBeans, joynrRuntime);
         registerCallbackHandlers(joynrRuntime);
+        boolean sharedSubscriptionsEnabled = (getJoynrInjector().getInstance(Key.get(Boolean.class,
+                                                                                     Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))));
+        if (sharedSubscriptionsEnabled) {
+            subscribeToSharedSubscriptionsTopic();
+        }
+    }
+
+    private void subscribeToSharedSubscriptionsTopic() {
+        String[] gbids = getJoynrInjector().getInstance(Key.get(String[].class,
+                                                                Names.named(MessagingPropertyKeys.GBID_ARRAY)));
+        MessagingSkeletonFactory factory = getJoynrInjector().getInstance(MessagingSkeletonFactory.class);
+        Arrays.stream(gbids).forEach(gbid -> {
+            Optional<IMessagingSkeleton> skeleton = factory.getSkeleton(new MqttAddress(gbid, ""));
+            if (!skeleton.isPresent()) {
+                throw new IllegalStateException("No skeleton for GBID " + gbid);
+            } else if (!JeeSharedSubscriptionsMqttMessagingSkeleton.class.isInstance(skeleton.get())) {
+                throw new IllegalStateException("Skeleton for GBID " + gbid
+                        + " is not of type JeeSharedSubscriptionsMqttMessagingSkeleton");
+            }
+            JeeSharedSubscriptionsMqttMessagingSkeleton.class.cast(skeleton.get()).subscribeToSharedTopic();
+        });
     }
 
     private void registerCallbackHandlers(JoynrRuntime joynrRuntime) {

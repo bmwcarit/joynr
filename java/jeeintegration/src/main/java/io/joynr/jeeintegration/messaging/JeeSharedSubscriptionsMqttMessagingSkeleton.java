@@ -32,6 +32,9 @@ import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 /**
  * Almost the same as {@link SharedSubscriptionsMqttMessagingSkeleton} but separates the subscription to the replyTo
  * topic from the subscription to the shared topic.
+ * <p>
+ * It subscribes automatically to the replyTo topic when {@link #subscribe()} is called.<br>
+ * The subscription to the global topic has to be triggered manually if required.
  */
 public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscriptionsMqttMessagingSkeleton {
 
@@ -71,7 +74,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
     @Override
     protected void subscribe() {
         super.subscribeToReplyTopic();
-        subscribeToSharedTopic();
     }
 
     public void subscribeToSharedTopic() {
