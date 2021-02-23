@@ -47,12 +47,6 @@ Additionally, the method must be annotated with
 
 #### Mandatory Properties
 
-* `MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT` - this property needs
-  to be set to the context root of your deployed application, with `/messaging`
-  added to the end. E.g.: `/myapp/root/messaging`.
-* `MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH` - this property needs to
-  be set to the URL under which the application server you are running on can be
-  reached, e.g. `https://myapp.mycompany.net`.
 * `MessagingpropertyKeys.CHANNELID` - this property should be set to the
   application's unique DNS entry, e.g. `myapp.mycompany.net`. This is important,
   so that all nodes of the cluster are identified by the same channel ID.
@@ -75,17 +69,7 @@ Additionally, the method must be annotated with
   [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows
   clustering of JEE applications using just MQTT for communication. Set this to `true`
   to enable the feature. Defaults to `false`.
-* `JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY` -
-  set this property to `true` if you want to use the HTTP Bridge functionality. In this
-  configuration incoming messages are communicated via HTTP and can then be load-balanced
-  accross a cluster via, e.g. nginx, and outgoing messages are communicated directly
-  via MQTT. If you activate this mode, then you must also provide an endpoint registry
-  (see next property).
-* `JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI` -
-  this property needs to point to the endpoint registration service's URL with which the
-  JEE Integration will register itself for its channel's topic.
-  E.g. `http://endpointregistry.mycompany.net:8080`.
-* `MessagingPropertyKeys.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL`  configure the address
+* `MessagingPropertyKeys.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` configure the address  
   for the discovery directory service.
 * `MessagingPropertyKeys.PERSISTENCE_FILE` - if you are deploying multiple joynr-enabled
   applications to the same container instance, then you will need to set a different filename
@@ -99,8 +83,7 @@ for details.
 
 #### Example
 
-An example of a configuration EJB, which uses `servlet` (http) as primary global transport
-(default is `mqtt`, `longpolling` is not supported in joynr JEE), is:
+An example of a configuration EJB, which uses `mqtt` as primary global transport is:
 
 ```
 @Singleton
@@ -110,22 +93,12 @@ public class JoynrConfigurationProvider {
   @JoynrProperties
   public Properties joynrProperties() {
     Properties joynrProperties = new Properties();
-    joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
-        "/inter-language-test-jee-provider/messaging");
-    joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH,
-        "http://localhost:8080");
     joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
         "io.joynr.test.interlanguage.jee.provider");
     joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS,
         "joynrdefaultgbid");
     joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS,
         "tcp://localhost:1883");
-    joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
-        "http://localhost:8383/bounceproxy/");
-    joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT,
-         "servlet");
-    joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL,
-        "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
 
     return joynrProperties;
   }

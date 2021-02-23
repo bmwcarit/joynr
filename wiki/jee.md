@@ -73,29 +73,9 @@ the backends identified by `ConfigurableMessagingModule.PROPERTY_GBIDS`.
 If used, the number of configured broker-uris must be equal to the number of configured GBIDs.
 E.g. `tcp://mqtt.mycompany.net:1883,tcp://mqtt.othercompany.net:1883`.
 
-#### Conditionally required Properties in case of HTTP based communication
-
-* `MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT` - this property needs
-to be set to the context root of your deployed application, with `/messaging`
-added to the end. E.g.: `/myapp/root/messaging`.
-* `MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH` - this property needs to
-be set to the URL under which the application server you are running on can be
-reached, e.g. `https://myapp.mycompany.net`.
-
-#### Optional Properties
+ #### Optional Properties
 
 * `MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` - enables the [HiveMQ](http://www.hivemq.com) specific 'shared subscription' feature, which allows clustering of JEE applications using just MQTT for communication. Set this to `true` to enable the feature. Defaults to `false`.
-* `JeeIntegrationPropertyKeys.JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY` -
-set this property to `true` if you want to use the HTTP Bridge functionality. In this
-configuration incoming messages are communicated via HTTP and can then be load-balanced
-accross a cluster via, e.g. nginx, and outgoing messages are communicated directly
-via MQTT. If you activate this mode, then you must also provide an endpoint registry
-(see next property).
-* `JeeIntegrationPropertyKeys.JEE_INTEGRATION_ENDPOINTREGISTRY_URI` -
-this property needs to
-point to the endpoint registration service's URL with which the
-JEE Integration will register itself for its channel's topic.
-E.g. `http://endpointregistry.mycompany.net:8080`.
 * `MessagingPropertyKeys.PERSISTENCE_FILE` - if you are deploying multiple joynr-enabled
 applications to the same container instance, then you will need to set a different filename
 for this property for each application. E.g.: `"my-app-joynr.properties"` for one and
@@ -118,10 +98,6 @@ public class JoynrConfigurationProvider {
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
-            "/myapp/messaging");
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH,
-            "http://myapp.com:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID,
             "provider.domain");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS,
@@ -130,8 +106,6 @@ public class JoynrConfigurationProvider {
             "joynrdefaultgbid");
         joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS,
             "tcp://mqttbroker.com:1883");
-        joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
-            "http://joynrbackend/bounceproxy/");
 
         return joynrProperties;
     }
@@ -788,26 +762,8 @@ public class MyServiceBean {
 
 ## Clustering
 
-The joynr JEE integration currently supports two forms of enabling clustering.
-We recommend using the 'shared subscription' model, as this provides the most
-functionality and best performance. It does, however, rely on a proprietary
-feature from the [HiveMQ](http://www.hivemq.com) MQTT broker for MQTT versions
-prior to v5.
-
-The other alternative is to use the so-called 'HTTP Bridge' mode. This requires
-implementing a plugin for an MQTT broker which forwards incoming messages
-to clustered applications which have previously registered themselves to an
-endpoint registry application. The application will register a URL and a topic
-which it is interested in. The plugin must then forward all incoming messages
-on that topic to the given URL. See also
-`io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient`.
-The joynr project only provides the hook-in points as part of the project. The
-plugin for the MQTT broker and the endpoint registry must be implemented
-separately.
-
-### Shared Subscriptions
-
-This solution offers load balancing on incoming messages via shared
+Clustering is enabled by the 'shared subscription' model.
+The solution offers load balancing on incoming messages via shared
 subscriptions (part of MQTT v5 and proprietary to the HiveMQ broker prior thereto)
 across all nodes in the cluster, and enables reply messages
 for requests originating from inside the cluster to be routed directly
@@ -819,21 +775,6 @@ property.
 
 Make sure to use the same fixed participant IDs for the providers in all nodes of the cluster. See
 [Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId).
-
-### HTTP Bridge
-
-The HTTP Bridge solution to clustering requires an HTTP load balancer to be
-in front of the cluster (which will probably be the case anyway), as well as
-an MQTT broker with a suitable plugin installed to perform the forwarding of
-the MQTT messages to the cluster and also an endpoint registry application
-which holds the mappings between application URLs and the topics for which
-they are interested in.
-
-A limitation of this solution is that replies for requests which originated
-from a clustered application are not guaranteed to be received by the cluster
-node which sent the request. A possible solution could be to provide extra
-logic on the load balancer. However, without this you should only use
-fire-and-forget semantics for outgoing messages.
 
 ## <a name="status_monitoring"></a> Joynr Status Monitoring
 

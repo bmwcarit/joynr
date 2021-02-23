@@ -91,11 +91,6 @@ After choosing which RuntimeModule you are using, override it with the
 ```MyRadioConsumerApplication``` and ```MyRadioProviderApplication``` for a detailed example of how
 this is done.
 
-If using more than one global transport middleware, PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT (see
-[Java Configuration Reference](JavaSettings.md)) has to be set to select the transport middleware
-which is used to register providers. Providers will be reachable via the selected global transport
-middleware.
-
 # Building a Java consumer application
 
 A java joynr application inherits from ```AbstractJoynrApplication``` class and contains at least a

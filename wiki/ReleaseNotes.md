@@ -10,6 +10,10 @@ None.
 ## Other Changes
 * **[Java, JEE, Franca]** Completely removed the GlobalDomainAccessController. Local ACL is
   still possible
+* **[Java]** HTTP bridge has been removed. `joynr.jeeintegration.enable.httpbridge` and related
+ properties are ignored.
+* **[Java]** HTTP messaging has been removed. `joynr.bounceproxy`, `joynr.messaging` and
+ `joynr.servlet` and related properties are ignored.
 
 ## Configuration Property Changes
 None.

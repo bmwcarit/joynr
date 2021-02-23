@@ -122,30 +122,6 @@ the value of this property.
 * **Unit**: milliseconds
 * **Default value**: `3628800000 (6 weeks)`
 
-### `PROPERTY_HOSTS_FILENAME`
-File used by the HTTP messaging stub to map URLs. It uses the Java properties file format. The key
-of an entry identifies a hostname that must be replaced in a URL. The value of an entry consists of
-up to four compoments separated by a colon:
-
-1. replacement host name,
-2. replacement port,
-3. path search term and
-4. replacement path.
-
-```
-hostname-to-replace=host-replacement:port-replacement:path-search-term:path-replacement
-```
-
-This entry will apply to all URLs with hostname `hostname-to-replace`. The original hostname and
-port are replaced by `host-replacement` and `port-replacement`, respectively. Furthermore, the
-original path is searched for `path-search-term` and the first occurance is replaced by
-`path-replacement`.
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.messaging.hostsFileName`
-* **Default value**: `hosts.properties`
-
 ### `PROPERTY_MAX_MESSAGE_SIZE`
 The maximum length of a text message the WebSocket transport is able to send/receive.
 
@@ -191,7 +167,7 @@ The number of milliseconds between two consecutive invocations of the routing ta
 * **Default value**: `60000`
 
 ### `PROPERTY_SEND_MSG_RETRY_INTERVAL_MS`
-The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
+The message router sends joynr messages through different messaging middlewares (WebSockets,
 MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
 initiates a retransmission.
 
@@ -212,7 +188,7 @@ is reached, see `PROPERTY_ROUTING_MAX_RETRY_COUNT`.
 * **Default value**: `3000`
 
 ### `PROPERTY_ROUTING_MAX_RETRY_COUNT`
-The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
+The message router sends joynr messages through different messaging middlewares (WebSockets,
 MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
 initiates a retransmission until the message's TTL expires.
 
@@ -226,7 +202,7 @@ further retransmission attempts are initiated and the message is dropped with an
 * **Default value**: `-1` (retry count is not taken into account)
 
 ### `PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS`
-The message router sends joynr messages through different messaging middlewares (WebSockets, HTTP,
+The message router sends joynr messages through different messaging middlewares (WebSockets,
 MQTT, ...) using middleware-specific messaging stubs. On transmission errors the message router
 initiates a retransmission until the message's TTL expires.
 The time till the next retransmission increases exponentially with each unsuccessful retransmission.
@@ -357,33 +333,16 @@ The GCD is always contacted via one of the configured MQTT connections
 (`PROPERTY_MQTT_BROKER_URIS`, `PROPERTY_GBIDS`). By default, the first (default) GBID of
 `PROPERTY_GBIDS` is used.
 
-In case the capabilities directory is using HTTP (longpolling) as its primary transport:  
-URL of the receive channel (incoming message queue) of the global capabilities directory backend
-service. To connect to the global capabilities directory the cluster controller creates an
-appropriate entry in the local capabilities directory.
-The URL you set here is that of the capabilities directory's channel
-(channelId=discoverydirectory_channelid) at the Bounceproxy. E.g.
-`http://localhost:8080/discovery/channels/discoverydirectory_channelid/`
-
 See also the static capabilities provisioning documentation below.
 
-* **REQUIRED to override the provisioned GCD DiscoveryEntry or to use HTTP to connect to the GCD**
+* **REQUIRED to override the provisioned GCD DiscoveryEntry to connect to the GCD**
 * **Type**: String
 * **User property**: `joynr.messaging.gcd.url`
 * **Default value**: ``
 
-See also the `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` documentation above and
-the static capabilities provisioning documentation below.
-
-* **REQUIRED if using a non default backend or HTTP to connect to the GDAC**
-* **Type**: String
-* **User property**: `joynr.messaging.gdac.url`
-* **Default value**: ``
-
 #### `PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN`
 The domain of the discovery services (backend). To be able to connect to the global discovery
-directories (capability directory, channel url directory) a discovery entry is
-created in the local capabilities directory.
+directory (capability directory) a discovery entry is created in the local capabilities directory.
 
 > To override the default value from the provisioning file,
 > `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` has to be configured as well.
@@ -484,21 +443,10 @@ Enables or disables access control checks.
 
 ## MessagingPropertyKeys
 
-### `PROPERTY_BOUNCE_PROXY_URL`
-The root URL of the BounceProxy backend service when using HTTP messaging. The cluster controller
-uses this service to create a receive channel (message queue). Messages are posted to the receive
-channel in the backend. The cluster controller polls the channel to download the incoming messages.
-
-* **REQUIRED if using the AtmosphereMessagingModule**
-* **Type**: String
-* **User property**: `joynr.messaging.bounceproxyurl`
-* **Default value**: `http://localhost:8080/bounceproxy/`
-
 ### `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT`
 Select primary global transport middleware which will be used to register providers. The provider
 will be reachable via the selected global transport middleware.
-Possible values: `mqtt, longpolling, servlet`
-Longpolling is not supported in Jee.
+Possible values: `mqtt`
 
 * **REQUIRED if using more than one global transport**
 * **Type**: String
@@ -538,47 +486,6 @@ Set the mqtt prefix to be prepended to multicast topics.
 * **Type**: String
 * **User property**: `joynr.messaging.mqtt.topicprefix.multicast`
 * **Default value**: ``
-
-### `PROPERTY_SERVLET_HOST_PATH`
-If a joynr application is deployed into a servlet on an application server, the servlet host path is
-used to register provider with the global capabilities and channel URL directories. Hence, this must
-be a public host that is directly addressable from all joynr endpoints.
-
-* **REQUIRED if using the JEE integration with HTTP based communication**
-* **Type**: String
-* **User property**: `joynr.servlet.hostpath`
-* **Default value**: `http://localhost:8080`
-
-### `PROPERTY_SERVLET_CONTEXT_ROOT`
-If a joynr application is deployed into a servlet on an application server, the servlet context root is
-becoming part of the generated endpoint URLs
-
-* **REQUIRED if using the JEE integration with HTTP based communication**
-* **Type**: String
-* **User property**: `joynr.servlet.context.root`
-* **Default value**: `/defaultContextRoot`
-
-### `PROPERTY_SERVLET_SHUTDOWN_TIMEOUT`
-During joynr shutdown, providers must be removed from the global capabilities directory.
-Since messages could not be received during servlet shutdown anymore, the joynr message receiver
-switches to long polling to perform the directory cleanup. This timeout (in milliseconds) is
-used to switch to long polling.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.servlet.shutdown.timeout`
-* **Default value**: `10000`
-
-### `PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION`
-If set to true, the joynr message receiver will not switch to long polling for deregistration (cf.
-[`PROPERTY_SERVLET_SHUTDOWN_TIMEOUT`](#property_servlet_shutdown_timeout)).
-
-
-* **OPTIONAL**
-* **Type**: boolean
-* **User property**: `joynr.servlet.skiplongpollderegistration`
-* **Default value**: `false`
-
 
 ## MessageQueue
 
@@ -736,8 +643,7 @@ Use this key to activate shared subscription support by setting the property's v
 Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for
 subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all
 subscribers. This feature can be used to load balance incoming messages on MQTT. This feature
-is useful if you want to run a cluster of JEE nodes while using only MQTT for communication
-(an alternative is to use the HTTP bridge configuration).
+is useful if you want to run a cluster of JEE nodes.
 Make sure to use the same fixed participant IDs for the providers in all nodes of the cluster. See
 [Joynr Java Developer Guide](java.md#register-provider-with-fixed-%28custom%29-participantId).
 
@@ -923,31 +829,6 @@ for more information on the provider registration in joynr JEE.
 * **Type**: int
 * **User property**: `joynr.jeeintegration.registration.retryintervalms`
 * **Default value**: `30000`
-
-### `JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY`
-
-Set this property to `true` if you want to use the HTTP Bridge functionality. In this
-configuration incoming messages are communicated via HTTP and can then be load-balanced
-accross a cluster via, e.g. nginx, and outgoing messages are communicated directly
-via MQTT. If you activate this mode, then you must also provide an endpoint registry
-(see next property).
-
-* **OPTIONAL**
-* **Type**: Boolean
-* **User property**: `joynr.jeeintegration.enable.httpbridge`
-* **Default value**: `false`
-
-### `JEE_INTEGRATION_ENDPOINTREGISTRY_URI`
-
-This property needs to point to the endpoint registration service's URL with which the
-JEE Integration will register itself for its channel's topic.
-E.g. `http://endpointregistry.mycompany.net:8080`.
-See also `io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient`.
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.jeeintegration.endpointregistry.uri`
-* **Default value**: n/a
 
 ## Static Capabilties Provisioning
 

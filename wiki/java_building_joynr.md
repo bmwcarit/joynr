@@ -18,7 +18,7 @@ components (listed by subfolder) are built and installed into the local Maven re
 * `java`
   * joynr Java API
   * generated Java source code (needed to access infrastructure services and tests)
-  * infrastructure services (bounceproxy and discovery directories)
+  * infrastructure services (discovery directory)
 * `cpp`
   * generated C++ source code (needed to access infrastructure services and tests)
 * `examples`

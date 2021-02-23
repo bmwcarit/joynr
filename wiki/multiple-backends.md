@@ -7,7 +7,7 @@ Joynr applications are clustered in two layers:
   * The smallest possible joynr network consists of a [cluster-controller](using_joynr.md#cluster-controller) and all joynr applications ([consumers/proxies](using_joynr.md#consumer) and [providers](using_joynr.md#provider)) connected to this cluster-controller. The applications are either standalone libjoynr runtimes connected to the cluster-controller via Web Sockets (local transport) or applications in the cluster-controller process itself (inprocess applications).
   * Multiple cluster-controllers can be connected via a global transport layer, either MQTT or HTTP Long Polling. Currently, only MQTT is fully supported.
 * **global transport level:**
-  * Originally, all cluster-controllers of a joynr network were connected to the same single [MQTT Broker](using_joynr.md#mqtt-broker) or HTTP Bounceproxy, no further clustering was possible.
+  * Originally, all cluster-controllers of a joynr network were connected to the same single [MQTT Broker](using_joynr.md#mqtt-broker), no further clustering was possible.
   * Starting with joynr 1.11.0 (joynr 1.9.0 for Java only), cluster-controllers can be connected to an arbitrary number of MQTT Brokers, see also [Release Notes](ReleaseNotes.md).
 
 ![Overview](images/multiple-backends_draw.io.png)

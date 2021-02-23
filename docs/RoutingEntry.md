@@ -39,9 +39,9 @@ An address may be of type
  * **WebSocketAddress**  
    the participantId is reachable from this (libjoynr) runtime using a connection to the specified
    websocket server (cluster controller)
- * **MqttAddress**/**ChannelAddress**  
+ * **MqttAddress**  
    the participantId is reachable from this runtime (cluster controller) using a connection to the
-   specified MQTT broker/Http Bounceproxy
+   specified MQTT broker
  * **InProcessAddress**  
    the participantId is in the same runtime
  * **BrowserAddress**  
