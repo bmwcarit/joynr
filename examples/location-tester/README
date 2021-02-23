@@ -1,9 +1,0 @@
-Use this project to test the Android Location Provider and Consumer applications with a PC-based counterpart
-
-You can start the consumer from the command line as follows (first replace provider-domain and hostname):
-
- mvn exec:java -Dexec.classpathScope="test" -Dexec.mainClass="io.joynr.examples.android_location_provider.GpsConsumerApplication" -Dexec.args="<provider-domain>" -Djoynr.messaging.bounceproxyurl=http://<hostname>:8080/bounceproxy/
- 
- You can start the provider from the command line as follows (first replace provider-domain and hostname):
-
- mvn exec:java -Dexec.classpathScope="test" -Dexec.mainClass="io.joynr.examples.android_example.MyGpsProviderApplication" -Dexec.args="<provider-domain>" -Djoynr.messaging.bounceproxyurl=http://<hostname>:8080/bounceproxy/
