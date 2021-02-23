@@ -90,6 +90,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.ownGbid = ownGbid;
+        mqttClient = mqttClientFactory.createReceiver(ownGbid);
     }
 
     @Override
@@ -98,7 +99,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
 
         messageRouter.registerMessageProcessedListener(this);
 
-        mqttClient = mqttClientFactory.createReceiver(ownGbid);
         mqttClient.setMessageListener(this);
         mqttClient.start();
         mqttClientFactory.createSender(ownGbid).start();

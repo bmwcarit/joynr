@@ -103,6 +103,8 @@ public class MqttMessagingSkeletonTest {
         Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);
         objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
+        when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClientReceiver);
+        when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClientSender);
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
@@ -113,14 +115,12 @@ public class MqttMessagingSkeletonTest {
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable);
-        when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClientReceiver);
-        when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClientSender);
+        verify(mqttClientFactory).createReceiver(ownGbid);
         subject.init();
     }
 
     @Test
     public void testSkeletonCreatesAndStartsSenderAndReceiverForItsOwnGbid() {
-        verify(mqttClientFactory).createReceiver(ownGbid);
         verify(mqttClientFactory).createSender(ownGbid);
 
         verify(mqttClientReceiver).start();
