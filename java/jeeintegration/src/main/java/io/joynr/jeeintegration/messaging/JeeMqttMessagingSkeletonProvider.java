@@ -52,11 +52,18 @@ import joynr.system.RoutingTypes.MqttAddress;
  * Like {@link MqttMessagingSkeletonProvider}. It checks the property configured under
  * {@link io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys#JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY} to see if
  * messages should be received via HTTP instead of MQTT. In this case, it returns an instance of
- * {@link NoOpMqttMessagingSkeleton}. Otherwise it behaves like {@link MqttMessagingSkeletonProvider}.
+ * {@link NoOpMqttMessagingSkeleton}.
+ * <p>
+ * If shared subscriptions are enabled, it returns an instance of
+ * {@link JeeSharedSubscriptionsMqttMessagingSkeletonFactory}
+ * instead of {@link io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton}.
+ * <p>
+ * Otherwise it returns an instance of the normal {@link io.joynr.messaging.mqtt.MqttMessagingSkeleton} like
+ * {@link MqttMessagingSkeletonProvider}.
  */
 public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvider {
 
-    private final static Logger logger = LoggerFactory.getLogger(MqttMessagingSkeletonProvider.class);
+    private final static Logger logger = LoggerFactory.getLogger(JeeMqttMessagingSkeletonProvider.class);
 
     private boolean httpBridgeEnabled;
 
@@ -109,5 +116,24 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
         } else {
             return super.get();
         }
+    }
+
+    @Override
+    protected IMessagingSkeletonFactory createSharedSubscriptionsFactory() {
+        return new JeeSharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
+                                                                      ownAddress,
+                                                                      maxIncomingMqttRequests,
+                                                                      backpressureEnabled,
+                                                                      backpressureIncomingMqttRequestsUpperThreshold,
+                                                                      backpressureIncomingMqttRequestsLowerThreshold,
+                                                                      replyToAddress,
+                                                                      messageRouter,
+                                                                      mqttClientFactory,
+                                                                      channelId,
+                                                                      mqttTopicPrefixProvider,
+                                                                      rawMessagingPreprocessor,
+                                                                      messageProcessors,
+                                                                      joynrStatusMetricsReceiver,
+                                                                      routingTable);
     }
 }
