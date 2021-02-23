@@ -56,19 +56,19 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     private final static Logger logger = LoggerFactory.getLogger(MqttMessagingSkeletonProvider.class);
 
     protected MqttClientFactory mqttClientFactory;
-    private boolean sharedSubscriptionsEnabled;
-    private MqttAddress ownAddress;
-    private int maxIncomingMqttRequests;
-    private boolean backpressureEnabled;
-    private int backpressureIncomingMqttRequestsUpperThreshold;
-    private int backpressureIncomingMqttRequestsLowerThreshold;
-    private MqttAddress replyToAddress;
-    private MessageRouter messageRouter;
-    private String channelId;
-    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
-    private RawMessagingPreprocessor rawMessagingPreprocessor;
-    private Set<JoynrMessageProcessor> messageProcessors;
-    private JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
+    protected boolean sharedSubscriptionsEnabled;
+    protected MqttAddress ownAddress;
+    protected int maxIncomingMqttRequests;
+    protected boolean backpressureEnabled;
+    protected int backpressureIncomingMqttRequestsUpperThreshold;
+    protected int backpressureIncomingMqttRequestsLowerThreshold;
+    protected MqttAddress replyToAddress;
+    protected MessageRouter messageRouter;
+    protected String channelId;
+    protected MqttTopicPrefixProvider mqttTopicPrefixProvider;
+    protected RawMessagingPreprocessor rawMessagingPreprocessor;
+    protected Set<JoynrMessageProcessor> messageProcessors;
+    protected JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
     protected final String[] gbids;
     protected final RoutingTable routingTable;
 
@@ -115,22 +115,30 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     @Override
     public IMessagingSkeletonFactory get() {
         if (sharedSubscriptionsEnabled) {
-            return new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
-                                                                       ownAddress,
-                                                                       maxIncomingMqttRequests,
-                                                                       backpressureEnabled,
-                                                                       backpressureIncomingMqttRequestsUpperThreshold,
-                                                                       backpressureIncomingMqttRequestsLowerThreshold,
-                                                                       replyToAddress,
-                                                                       messageRouter,
-                                                                       mqttClientFactory,
-                                                                       channelId,
-                                                                       mqttTopicPrefixProvider,
-                                                                       rawMessagingPreprocessor,
-                                                                       messageProcessors,
-                                                                       joynrStatusMetricsReceiver,
-                                                                       routingTable);
+            return createSharedSubscriptionsFactory();
         }
+        return createFactory();
+    }
+
+    protected IMessagingSkeletonFactory createSharedSubscriptionsFactory() {
+        return new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
+                                                                   ownAddress,
+                                                                   maxIncomingMqttRequests,
+                                                                   backpressureEnabled,
+                                                                   backpressureIncomingMqttRequestsUpperThreshold,
+                                                                   backpressureIncomingMqttRequestsLowerThreshold,
+                                                                   replyToAddress,
+                                                                   messageRouter,
+                                                                   mqttClientFactory,
+                                                                   channelId,
+                                                                   mqttTopicPrefixProvider,
+                                                                   rawMessagingPreprocessor,
+                                                                   messageProcessors,
+                                                                   joynrStatusMetricsReceiver,
+                                                                   routingTable);
+    }
+
+    protected IMessagingSkeletonFactory createFactory() {
         return new MqttMessagingSkeletonFactory(gbids,
                                                 ownAddress,
                                                 maxIncomingMqttRequests,
