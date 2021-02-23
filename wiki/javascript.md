@@ -921,6 +921,19 @@ await joynr.registration.unregisterProvider(
     «Interface»provider
 );
 ```
+If the provider is registered globally (default), i.e `ProviderScope.GLOBAL` has been set in `ProviderQos`
+when registering the provider, then this function triggers a global remove operation in the local
+capabilities directory of the cluster controller (standalone or embedded within the same runtime)
+and returns.
+
+If the provider is registered only locally, i.e `ProviderScope.LOCAL` has been set in `ProviderQos`
+when registering the provider, then this function removes the provider from the local capabilities directory
+of the cluster controller (standalone or embedded within the same runtime) and waits for the result.
+
+__IMPORTANT__: the `unregisterProvider` function does not wait for a response from the global capabilities
+directory and do not get informed about errors or success. The cluster controller will repeat the global
+remove operation until it succeeds or the cluster controller is shut down. This function does not guarantee
+a successful execution of provider's removal from the global capabilities directory.
 
 ## The Provider implementation for an interface
 The function implementing the interface must provide code for all its methods and a getter function

@@ -1034,7 +1034,7 @@ The following optional parameters are supported:
 Note that the optional parameters are ordered, e.g. if providing 3. then 1. and 2. have to be provided as well.
 
 ### Shutting down
-On exit of the application it should cleanly unregister any providers the application had registered earlier and free resources.
+On exit of the application it should unregister any providers the application had registered earlier and free resources.
 
 ```cpp
     // for each provider class
@@ -1060,6 +1060,28 @@ asynchronously:
         onSuccess,
         onError);
 ```
+If the provider is registered globally (default), i.e. `ProviderScope.GLOBAL` has been set in `ProviderQos`
+when registering the provider, then the `unregisterProvider` function triggers a global remove operation in the local
+capabilities directory of the cluster controller (standalone or embedded within the same runtime) and returns
+afterwards. It throws an error if the cluster controller does not respond in time.
+The `unregisterProviderAsync` method triggers a global remove operation in the local capabilities directory of the
+cluster controller (standalone or embedded within the same runtime) without waiting until it is actually triggered.
+It returns immediately but it is possible and recommended to get notified if the removal has been triggered via
+`onSuccess` or `onError` callbacks.
+
+If the provider is registered only locally, i.e. `ProviderScope.LOCAL` has been set in `ProviderQos`
+when registering the provider, then the `unregisterProvider` function removes the provider from the local
+capabilities directory of the cluster controller (standalone or embedded within the same runtime) and
+waits for the result. The `unregisterProviderAsync` removes the provider from the local capabilities directory
+of the cluster controller and returns without waiting for the result. It is possible to get notified
+about the operation's result via `onSuccess` or `onError` callbacks if necessary.
+
+__IMPORTANT__: The `unregisterProvider` or `unregisterProviderAsync` functions do not guarantee a
+successful execution of provider's removal from the global capabilities directory. They do not wait
+for a response from global capabilities directory and do not get informed about errors or success.
+The cluster controller will internally repeat the global remove operation until it succeeds or
+the cluster controller is shut down. The provider will be removed from the local capabilities
+directory after the global removal.
 
 ## The My&lt;Interface>Provider class
 

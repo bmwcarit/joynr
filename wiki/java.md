@@ -1496,8 +1496,8 @@ change again in the future.
 > persistence file or the entry for the provider has to be deleted to enable the fixed participantId.
 
 ### The shutdown method
-The ```shutdown``` method should be called on exit of the application. It should cleanly unregister
-any providers the application had registered earlier.
+The `shutdown` method should be called on exit of the application. It should unregister any
+providers the application had registered earlier.
 
 ```java
 @Override
@@ -1519,6 +1519,21 @@ public void shutdown() {
     System.exit(0);
 }
 ```
+The `unregisterProvider` method just triggers the removal of the provider. It does not wait for a response and does not
+get informed about errors or success. During the `shutdown`, the joynr runtime waits for a maximum number of 5
+seconds for a response from the local capabilities directory of the cluster controller (standalone or embedded
+within the same runtime).
+
+__IMPORTANT__: A successful response from the local capabilities directory does not guarantee a successful execution
+of provider's removal from the global capabilities directory in case the provider is registered globally, i.e
+`ProviderScope.GLOBAL` has been set in `ProviderQos` when registering the provider.
+
+If the provider is running in libjoynr runtime connected to a standalone cluster controller, the cluster controller
+will still repeat the global remove operation until it succeeds or the cluster controller is shut down.
+
+If the cluster controller is embedded within the same runtime (cluster controller runtime) and the provider is
+registered globally, consider waiting some grace period after calling `unregisterProvider` before calling `shutdown`
+to give the joynr framework a chance to perform the provider removal.
 
 ### Access control
 
