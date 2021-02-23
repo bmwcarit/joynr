@@ -12,6 +12,7 @@ None.
   timeout of 90 minutes towards GlobalCapabilitiesDirectory. Note this registration is
   still unreliable since the application will not get informed about the result and thus
   has no chance to retry in case of failure.
+* **[Java]** Removed the dependency net.sourceforge.htmlunit:htmlunit
 
 ## Configuration Property Changes
 None.
