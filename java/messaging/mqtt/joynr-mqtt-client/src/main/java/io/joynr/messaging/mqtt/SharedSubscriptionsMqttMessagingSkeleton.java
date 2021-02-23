@@ -38,6 +38,8 @@ import io.joynr.messaging.routing.RoutingTable;
 /**
  * Overrides the standard {@link MqttMessagingSkeleton} in order to customise the topic subscription strategy in the
  * case where HiveMQ shared subscriptions are available.
+ * <p>
+ * It subscribes automatically to the replyTo topic and the shared topic when {@link #subscribe()} is called.
  *
  * @see io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS
  */
@@ -141,12 +143,20 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
 
     @Override
     protected void subscribe() {
-        logger.info("Subscribing to shared topic: {}", sharedSubscriptionsTopic);
-        getClient().subscribe(sharedSubscriptionsTopic);
-        subscribedToSharedSubscriptionsTopic.set(true);
+        subscribeToReplyTopic();
+        subscribeToSharedTopic();
+    }
+
+    protected void subscribeToReplyTopic() {
         String topic = replyToTopic + "/#";
         logger.info("Subscribing to reply-to topic: {}", topic);
         getClient().subscribe(topic);
+    }
+
+    protected void subscribeToSharedTopic() {
+        logger.info("Subscribing to shared topic: {}", sharedSubscriptionsTopic);
+        getClient().subscribe(sharedSubscriptionsTopic);
+        subscribedToSharedSubscriptionsTopic.set(true);
     }
 
     @Override
