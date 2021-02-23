@@ -111,20 +111,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
-
-		<!--
-			The following dependencies allow to run a jetty server that
-			contains the minimum backend
-		-->
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>single-bounceproxy</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
-
-
-
 	</dependencies>
 
 	<build>
@@ -288,13 +274,6 @@
 					</filesets>
 				</configuration>
 			</plugin>
-
-			<!--
-				The following plugins are only required for convenience
-				and are not required for the demo app itself.
-				They allow to run a jetty server / JEE application server (e.g. Payara)
-				that contains the minimum backend
-			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -303,78 +282,7 @@
 						<id>copy-backend-services-jee</id>
 						<phase>process-test-resources</phase>
 					</execution>
-					<execution>
-						<id>copy-backend-services</id>
-						<!--
-							NOTE: jetty:run runs in phase test-compile. Hence, backend services
-							must be copied at latest in the process-test-resources phase.
-						-->
-						<phase>process-test-resources</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>single-bounceproxy</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
-					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>org.slf4j</groupId>
-						<artifactId>slf4j-log4j12</artifactId>
-						<version>1.6.6</version>
-					</dependency>
-				</dependencies>
-				<configuration>
-					<webApp>
-						<contextPath>/</contextPath>
-					</webApp>
-					<stopPort>9966</stopPort>
-					<stopKey>joynr</stopKey>
-					<contextHandlers>
-						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/bounceproxy.war</war>
-							<contextPath>/bounceproxy</contextPath>
-						</contextHandler>
-						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/discovery.war</war>
-							<contextPath>/discovery</contextPath>
-						</contextHandler>
-						<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-							<war>${project.build.directory}/accesscontrol.war</war>
-							<contextPath>/accesscontrol</contextPath>
-						</contextHandler>
-					</contextHandlers>
-					<systemProperties>
-						<systemProperty>
-							<name>log4j.configuration</name>
-							<value>file:${basedir}/src/main/resources/log4j.properties</value>
-						</systemProperty>
-						<systemProperty>
-							<name>joynr.servlet.hostPath</name>
-							<value>http://localhost:8080</value>
-						</systemProperty>
-						<systemProperty>
-							<name>org.atmosphere.useNative</name>
-							<value>true</value>
-						</systemProperty>
-					</systemProperties>
-				</configuration>
 			</plugin>
 
 			<plugin>

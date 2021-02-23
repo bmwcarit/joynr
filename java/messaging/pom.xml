@@ -30,13 +30,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modules>
-		<module>bounceproxy</module>
 		<module>messaging-common</module>
-		<module>servlet-common</module>
-		<module>messaging-service</module>
-		<module>channel-service</module>
-		<module>bounceproxy-controller-service</module>
-		<module>service-common</module>
 		<module>websocket</module>
 		<module>mqtt</module>
 	</modules>

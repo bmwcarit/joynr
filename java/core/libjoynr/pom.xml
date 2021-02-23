@@ -94,6 +94,7 @@
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-library</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -121,27 +122,6 @@
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.jayway.restassured</groupId>
-			<artifactId>rest-assured</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>single-bounceproxy</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -244,31 +224,6 @@
 							</program>
 						</programs>
 					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-dependency-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>copy-test-dependencies</id>
-							<phase>process-test-resources</phase>
-							<goals>
-								<goal>copy</goal>
-							</goals>
-							<configuration>
-								<artifactItems>
-									<artifactItem>
-										<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-										<artifactId>single-bounceproxy</artifactId>
-										<version>${project.version}</version>
-										<type>war</type>
-										<outputDirectory>${project.build.directory}</outputDirectory>
-										<destFileName>bounceproxy.war</destFileName>
-									</artifactItem>
-								</artifactItems>
-							</configuration>
-						</execution>
-					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>

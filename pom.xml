@@ -210,8 +210,6 @@
 			</activation>
 			<properties>
 				<JOYNR_SERVER_HOST>joyntest</JOYNR_SERVER_HOST>
-				<JOYNR_SERVER_HTTP_PORT>8080</JOYNR_SERVER_HTTP_PORT>
-				<JOYNR_TEST_SERVER>joyntest:8080</JOYNR_TEST_SERVER>
 			</properties>
 		</profile>
 		<profile>
@@ -219,7 +217,6 @@
 				NOTE: if you change activation or the profile ID here, your also must
 				change it in the following child modules that extend this profile:
 				* io.joynr.java.messaging:messaging-common
-				* io.joynr.java.messaging:channel-service
 				* io.joynr.javascript:libjoynr-js
 			-->
 			<id>carit-copyright</id>
@@ -399,9 +396,7 @@
 
 	<properties>
 		<JOYNR_SERVER_HOST>localhost</JOYNR_SERVER_HOST>
-		<JOYNR_SERVER_HTTP_PORT>8080</JOYNR_SERVER_HTTP_PORT>
 		<JOYNR_SERVER_MQTT_PORT>1883</JOYNR_SERVER_MQTT_PORT>
-		<JOYNR_TEST_SERVER>localhost:8080</JOYNR_TEST_SERVER>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -429,7 +424,6 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<slf4j.version>1.7.25</slf4j.version>
 		<smrf.version>0.3.3</smrf.version>
-		<jayway.restassured.version>1.8.1</jayway.restassured.version>
 		<jacoco.version>0.8.4</jacoco.version>
 		<surefire.version>3.0.0-M3</surefire.version>
 	</properties>
@@ -696,27 +690,6 @@
 				<version>1.10.19</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpclient</artifactId>
-				<version>4.3.6</version>
-				<type>test-jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpclient</artifactId>
-				<version>4.3.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpclient-android</artifactId>
-				<version>4.3.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpcore</artifactId>
-				<version>4.3.3</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.arquillian.extension</groupId>
 				<artifactId>arquillian-transaction-jta</artifactId>
 				<version>1.0.5</version>
@@ -789,32 +762,8 @@
 				<artifactId>hamcrest-library</artifactId>
 				<version>1.3</version>
 			</dependency>
-			<dependency>
-				<groupId>com.jayway.restassured</groupId>
-				<artifactId>rest-assured</artifactId>
-				<version>${jayway.restassured.version}</version>
-				<exclusions>
-					<!-- Exclude Groovy because of classpath issue -->
-					<exclusion>
-						<groupId>org.codehaus.groovy</groupId>
-						<artifactId>groovy</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>com.jayway.restassured</groupId>
-				<artifactId>json-path</artifactId>
-				<version>${jayway.restassured.version}</version>
-			</dependency>
 
 			<!-- included to prevent classpath issue with rest-asured -->
-			<dependency>
-				<groupId>org.codehaus.groovy</groupId>
-				<artifactId>groovy-all</artifactId>
-				<!-- Needs to be the same version that REST Assured depends on -->
-				<version>2.1.2</version>
-				<scope>test</scope>
-			</dependency>
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
@@ -1277,54 +1226,6 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
 					<version>1.10</version>
-				</plugin>
-				<plugin>
-					<groupId>org.eclipse.jetty</groupId>
-					<artifactId>jetty-maven-plugin</artifactId>
-					<version>${jetty.version}</version>
-					<dependencies>
-						<dependency>
-							<groupId>org.slf4j</groupId>
-							<artifactId>slf4j-log4j12</artifactId>
-							<version>1.6.6</version>
-						</dependency>
-					</dependencies>
-					<configuration>
-						<webApp>
-							<contextPath>/</contextPath>
-						</webApp>
-						<stopPort>9966</stopPort>
-						<stopKey>joynr</stopKey>
-						<stopWait>60</stopWait>
-						<contextHandlers>
-							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-								<war>${project.build.directory}/bounceproxy.war</war>
-								<contextPath>/bounceproxy</contextPath>
-							</contextHandler>
-							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-								<war>${project.build.directory}/discovery.war</war>
-								<contextPath>/discovery</contextPath>
-							</contextHandler>
-							<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-								<war>${project.build.directory}/accesscontrol.war</war>
-								<contextPath>/accesscontrol</contextPath>
-							</contextHandler>
-						</contextHandlers>
-						<systemProperties>
-							<systemProperty>
-								<name>log4j.configuration</name>
-								<value>file:${basedir}/src/main/resources/log4j.properties</value>
-							</systemProperty>
-							<systemProperty>
-								<name>joynr.servlet.hostPath</name>
-								<value>http://localhost:8080</value>
-							</systemProperty>
-							<systemProperty>
-								<name>org.atmosphere.useNative</name>
-								<value>true</value>
-							</systemProperty>
-						</systemProperties>
-					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.xtend</groupId>

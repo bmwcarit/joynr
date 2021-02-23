@@ -35,15 +35,9 @@ PERFORMANCETESTS_RESULTS_DIR=""
 
 JOYNR_BIN_DIR=""
 
-JETTY_PATH=""
-
-
 ### general options ###
 
 MQTT_SEPARATE_CONNECTIONS=false
-
-# Select backend service protocol
-BACKEND_SERVICES="MQTT"
 
 USE_MAVEN=OFF # Indicates whether java applications shall be started with maven or as standalone apps
 
@@ -102,7 +96,6 @@ MQTT_BROKER_URIS="tcp://localhost:1883"
 
 
 # Process IDs for processes which must be terminated later
-JETTY_PID=""
 MOSQUITTO_PID=""
 CLUSTER_CONTROLLER_PID=""
 
@@ -131,10 +124,6 @@ function startMeasureCpuUsage {
     START_TIME=$(cat /proc/uptime | cut -d" " -f 1)
 
     #get cluster-controller & provider initial cputime
-    if [ -n "$JETTY_PID" ]
-    then
-        JETTY_CPU_TIME_1=$(getCpuTime $JETTY_PID)
-    fi
     if [ -n "$MOSQUITTO_PID" ]
     then
         MOSQUITTO_CPU_TIME_1=$(getCpuTime $MOSQUITTO_PID)
@@ -148,13 +137,6 @@ function stopMeasureCpuUsage {
 
     echo "----- overall statistics -----" | tee -a $REPORTFILE_PARAM
     echo "startTime:         $START_TIME" | tee -a $REPORTFILE_PARAM
-    if [ -n "$JETTY_PID" ]
-    then
-        JETTY_CPU_TIME_2=$(getCpuTime $JETTY_PID)
-        JETTY_CPU_TIME=$(minus $JETTY_CPU_TIME_2 $JETTY_CPU_TIME_1)
-    else
-        JETTY_CPU_TIME=0
-    fi
     if [ -n "$MOSQUITTO_PID" ]
     then
         MOSQUITTO_CPU_TIME_2=$(getCpuTime $MOSQUITTO_PID)
@@ -181,54 +163,15 @@ function stopMeasureCpuUsage {
 
     #sum up all cputime values
     TEST_CPU_TIME=$(echo -e "$TEST_UTIME\n$TEST_STIME" | awk '{sum+=$1};END{print sum}')
-    TOTAL_CPU_TIME=$(echo -e "$CC_CPU_TIME\n$PROVIDER_CPU_TIME\n$JETTY_CPU_TIME\n$MOSQUITTO_CPU_TIME\n$TEST_UTIME\n$TEST_STIME" | awk '{sum+=$1};END{print sum}')
+    TOTAL_CPU_TIME=$(echo -e "$CC_CPU_TIME\n$PROVIDER_CPU_TIME\n$MOSQUITTO_CPU_TIME\n$TEST_UTIME\n$TEST_STIME" | awk '{sum+=$1};END{print sum}')
     echo "ccCpuTime:         $CC_CPU_TIME" | tee -a $REPORTFILE_PARAM
     echo "providerCpuTime:   $PROVIDER_CPU_TIME" | tee -a $REPORTFILE_PARAM
-    echo "jettyCpuTime:      $JETTY_CPU_TIME" | tee -a $REPORTFILE_PARAM
     echo "mosquittoCpuTime:  $MOSQUITTO_CPU_TIME" | tee -a $REPORTFILE_PARAM
     echo "testCpuTime:       $TEST_CPU_TIME" | tee -a $REPORTFILE_PARAM
     echo "totalCpuTime:      $TOTAL_CPU_TIME" | tee -a $REPORTFILE_PARAM
     CLOCK_TICK_DURATION=10 # milliseconds; we can get number of clock ticks per second from "getconf CLK_TCK", by default this is 100
     CPU_PERCENT=$(echo $TOTAL_CPU_TIME $CLOCK_TICK_DURATION $WALL_CLOCK_DURATION | awk '{ printf "%f", 100*($1 * $2 / $3) }')
     echo "cpuPercent:        $CPU_PERCENT" | tee -a $REPORTFILE_PARAM
-}
-
-function waitUntilJettyStarted {
-    started=0
-    count=0
-    while [ "$started" != "200" -a "$count" -lt "30" ]
-    do
-            sleep 2
-            started=`curl -o /dev/null --silent --head --write-out '%{http_code}\n' \
-            http://localhost:8080/bounceproxy/time/`
-            let count+=1
-    done
-    if [ "$started" != "200" ]
-    then
-            # startup failed
-            echo "ERROR: Failed to start jetty"
-            exit
-    fi
-    echo "Jetty started."
-    sleep 5
-}
-
-function startJetty {
-    echo '### Starting jetty ###'
-
-    JETTY_STDOUT=$PERFORMANCETESTS_RESULTS_DIR/jetty_stdout.txt
-    JETTY_STDERR=$PERFORMANCETESTS_RESULTS_DIR/jetty_stderr.txt
-
-    cd $JETTY_PATH
-
-    if [ "$USE_MAVEN" != "ON" ]
-    then
-        java -jar start.jar 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
-    else
-        mvn jetty:run-war --quiet 1>$JETTY_STDOUT 2>$JETTY_STDERR & JETTY_PID=$!
-    fi
-
-    waitUntilJettyStarted
 }
 
 function startMosquitto {
@@ -453,23 +396,6 @@ function performJsPerformanceTest {
     fi
 }
 
-function stopJetty {
-    echo "Stopping jetty"
-
-    JETTY_CPU_TIME_2=$(getCpuTime $JETTY_PID)
-    JETTY_CPU_TIME=$(minus $PROVIDER_CPU_TIME_2 $PROVIDER_CPU_TIME_1)
-    if [ "$USE_MAVEN" != "ON" ]
-    then
-        kill $JETTY_PID
-    else
-        cd $JETTY_PATH
-        mvn jetty:stop --quiet
-    fi
-
-    wait $JETTY_PID
-    JETTY_PID=""
-}
-
 function stopMosquitto {
     echo "Stopping mosquitto"
     MOSQUITTO_CPU_TIME_2=$(getCpuTime $MOSQUITTO_PID)
@@ -554,25 +480,14 @@ function stopPayara {
 function startServices {
     startMosquitto
     echo '# starting services'
-
-    if [ "$BACKEND_SERVICES" = "HTTP" ]
-    then
-        startJetty
-    else
-        startPayara
-    fi
+    startPayara
     sleep 5
 }
 
 function stopServices {
     echo '# stopping services'
 
-    if [ "$BACKEND_SERVICES" = "HTTP" ]
-    then
-        stopJetty
-    else
-        stopPayara
-    fi
+    stopPayara
 
     if [ -n "$MOSQUITTO_PID" ]
     then
@@ -588,11 +503,9 @@ function echoUsage {
     echo "   -s <performance-source-dir>"
     echo "   -r <performance-results-dir> (optional, default <performance-source-dir>/perf-results-<current-date>"
     echo "   -y <joynr-bin-dir> (C++ cluster-controller, use release build for performance tests)"
-    echo "   -j <jetty-dir> (only for HTTP backend service with OAP_TO_BACK_MOSQ; deprecated)"
     echo ""
     echo "  general options (all optional):"
     echo "   -S <mqtt-separate-connections (true|false)> (optional, defaults to $MQTT_SEPARATE_CONNECTIONS)"
-    echo "   -B <backend-services (MQTT|HTTP)> (optional, default $BACKEND_SERVICES)"
     echo "   -m <use maven ON|OFF> (optional, default to $USE_MAVEN)"
     echo "      Indicates whether java applications shall be started with maven or as standalone apps"
     echo "   -n <use npm ON|OFF> (optional, default $USE_NPM)"
@@ -639,7 +552,7 @@ function checkIfBackendServicesAreNeeded {
     return 0
 }
 
-while getopts "p:s:r:y:j:S:B:m:n:z:e:d:a:t:c:x:k:I:CP:T:h" OPTIONS;
+while getopts "p:s:r:y:S:m:n:z:e:d:a:t:c:x:k:I:CP:T:h" OPTIONS;
 do
     case $OPTIONS in
 # paths
@@ -655,15 +568,9 @@ do
         y)
             JOYNR_BIN_DIR=$(realpath ${OPTARG%/})
             ;;
-        j)
-            JETTY_PATH=$(realpath ${OPTARG%/})
-            ;;
 # general options
         S)
             MQTT_SEPARATE_CONNECTIONS=$OPTARG
-            ;;
-        B)
-            BACKEND_SERVICES=$OPTARG
             ;;
         m)
             USE_MAVEN=$OPTARG
@@ -779,13 +686,6 @@ then
     echo "Invalid value for mqtt-separate-connections: $MQTT_SEPARATE_CONNECTIONS"
     exit 1
 fi
-
-if [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
-then
-    echo 'Invalid value for backend services: $BACKEND_SERVICES.'
-    exit 1
-fi
-
 
 if [ "$TESTTYPE" != "OAP_TO_BACKEND_MOSQ" ] && [ "$TESTTYPE" != "JEE_PROVIDER" ]
 then
@@ -919,7 +819,6 @@ fi
 
 if [ "$TESTTYPE" == "OAP_TO_BACKEND_MOSQ" ]
 then
-    checkDirExists $JETTY_PATH
     startServices
     startCppClusterController
     startJavaPerformanceTestProvider

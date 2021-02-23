@@ -66,37 +66,12 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>channel-service</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messaging-service</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>servlet-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>service-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
 			<artifactId>joynr-mqtt-client</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>bounceproxy-controller-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -114,48 +89,6 @@
 			<artifactId>joynr-websocket-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>single-bounceproxy</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>bounceproxy-controller-nonclustered</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>bounceproxy-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>bounceproxy-controller-clustered</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence</groupId>
-			<artifactId>jdbc</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy.bounceproxy-controller-persistence</groupId>
-			<artifactId>persistence-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>controlled-bounceproxy</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>infrastructure-common</artifactId>

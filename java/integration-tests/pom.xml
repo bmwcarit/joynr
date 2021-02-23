@@ -30,21 +30,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.jayway.restassured</groupId>
-			<artifactId>json-path</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.jayway.restassured</groupId>
-			<artifactId>rest-assured</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>clustercontroller-inprocess-runtime</artifactId>
 			<version>${project.version}</version>
@@ -111,69 +96,10 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>servlet-common</artifactId>
-			<scope>test</scope>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>service-common</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
-		</dependency>
-		<!-- This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>single-bounceproxy</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
-		<!-- This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>bounceproxy-controller-nonclustered</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
-		<!-- This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>bounceproxy-controller-clustered</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-		</dependency>
-		<!-- This dependency is needed to ensure the correct build order.
-			Some artifacts is needed by the maven-dependency-plugin, which
-			copies them to the currrent build directory.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>controlled-bounceproxy</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
@@ -194,10 +120,6 @@
 			<artifactId>status-metrics</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpcore</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.smrf.java</groupId>
@@ -230,11 +152,6 @@
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>infrastructure-common</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -315,57 +232,6 @@
 						<goals>
 							<goal>test-jar</goal>
 						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-integration-test-dependencies</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>single-bounceproxy</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>bounceproxy-controller-nonclustered</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy-controller-nonclustered.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>bounceproxy-controller-clustered</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>bounceproxy-controller-clustered.war</destFileName>
-								</artifactItem>
-								<artifactItem>
-									<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-									<artifactId>controlled-bounceproxy</artifactId>
-									<version>${project.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>controlled-bounceproxy.war</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>

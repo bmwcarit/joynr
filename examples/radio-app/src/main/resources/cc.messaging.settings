@@ -1,6 +1,4 @@
 [messaging]
-broker-url=http://localhost:8080/bounceproxy/
-
 discovery-directories-domain=io.joynr
 
 capabilities-directory-channelid=discoverydirectory_channelid

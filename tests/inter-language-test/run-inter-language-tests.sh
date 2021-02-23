@@ -6,8 +6,7 @@ JOYNR_SOURCE_DIR=""
 ILT_BUILD_DIR=""
 ILT_RESULTS_DIR=""
 CC_LANGUAGE=""
-BACKEND_SERVICES=""
-while getopts "b:c:r:s:B:" OPTIONS;
+while getopts "b:c:r:s:" OPTIONS;
 do
 	case $OPTIONS in
 		c)
@@ -29,12 +28,9 @@ do
 				echo "JOYNR_SOURCE_DIR=$OPTARG"
 			fi
 			;;
-		B)
-			BACKEND_SERVICES=$OPTARG
-			;;
 		\?)
 			echo "Illegal option found."
-			echo "Synopsis: run-inter-language-tests.sh [-b <ilt-build-dir>] [-c <cluster-controller-language (CPP|JAVA)>] [-r <ilt-results-dir>] [-s <joynr-source-dir>] [-B <backend-services> (MQTT|HTTP)"
+			echo "Synopsis: run-inter-language-tests.sh [-b <ilt-build-dir>] [-c <cluster-controller-language (CPP|JAVA)>] [-r <ilt-results-dir>] [-s <joynr-source-dir>]"
 			exit 1
 			;;
 	esac
@@ -77,16 +73,6 @@ fi
 if [ -z "$ILT_RESULTS_DIR" ]
 then
 	ILT_RESULTS_DIR=$ILT_DIR/ilt-results-$(date "+%Y-%m-%d-%H:%M:%S")
-fi
-
-if [ -z "$BACKEND_SERVICES" ]
-then
-	# use default (MQTT/JEE) Discovery
-	BACKEND_SERVICES=MQTT
-elif [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
-then
-	log 'Invalid value for backend services: $BACKEND_SERVICES.'
-	exit 1
 fi
 
 # process ids for background stuff
@@ -171,12 +157,6 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$ILT_DIR/target/bounceproxy.war" ]
-	then
-		log 'bounceproxy.war not found in $ILT_DIR/target/bounceproxy.war'
-		exit 1
-	fi
-
 }
 
 function start_payara {
@@ -184,6 +164,11 @@ function start_payara {
 
     echo "Starting payara"
 
+	# When starting the database there is no need to add the option:
+	# --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true"
+	# It is already added in inter-language-test/docker/joynr-backend-jee/start-me-up.sh
+	# Otherwise CI reports an error:
+	# Repeats not allowed for option: jvmoptions
 	asadmin start-database
 	asadmin start-domain
 
@@ -204,39 +189,6 @@ function stop_payara {
 	asadmin stop-database
 }
 
-function start_jetty {
-	mvn $SPECIAL_MAVEN_OPTIONS jetty:run-war --quiet > $ILT_RESULTS_DIR/jetty-$1.log 2>&1 &
-	JETTY_PID=$!
-	echo "Starting Jetty with PID $JETTY_PID"
-	# wait until server is up and running or 60 seconds (= 30 * 2) timeout is exceeded
-	started=
-	count=0
-	while [ "$started" != "200" -a "$count" -lt "30" ]
-	do
-		sleep 2
-		started=`curl -o /dev/null --silent --head --write-out '%{http_code}\n' http://localhost:8080/bounceproxy/time/`
-		let count+=1
-	done
-	if [ "$started" != "200" ]
-	then
-		log "Starting Jetty FAILED"
-		# startup failed
-		stopall
-	fi
-	echo "Jetty successfully started."
-}
-
-function stop_jetty {
-	if [ -n "$JETTY_PID" ]
-	then
-		cd $ILT_DIR
-		mvn $SPECIAL_MAVEN_OPTIONS jetty:stop --quiet
-		wait $JETTY_PID
-		echo "Stopped Jetty with PID $JETTY_PID"
-		JETTY_PID=""
-	fi
-}
-
 function start_services {
 	cd $ILT_DIR
 	rm -f joynr.properties
@@ -249,24 +201,14 @@ function start_services {
 	echo "Mosquitto started with PID $MOSQUITTO_PID"
 	sleep 2
 
-	if [ "$BACKEND_SERVICES" = "HTTP" ]
-	then
-		start_jetty
-	else
-		start_payara
-	fi
+	start_payara
 	sleep 10
 }
 
 function stop_services {
 	log '# stopping services'
 
-	if [ "$BACKEND_SERVICES" = "HTTP" ]
-	then
-		stop_jetty
-	else
-		stop_payara
-	fi
+	stop_payara
 
 	if [ -n "$MOSQUITTO_PID" ]
 	then
@@ -284,12 +226,7 @@ function start_cluster_controller {
 		log '# starting JAVA clustercontroller'
 		CLUSTER_CONTROLLER_DIR=$JOYNR_SOURCE_DIR/java/core/clustercontroller-standalone
 		cd $CLUSTER_CONTROLLER_DIR
-		if [ "$BACKEND_SERVICES" = "HTTP" ]
-		then
-			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="-t http" -Djoynr.messaging.gcd.url="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
-		else
-			mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="-t mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
-		fi
+		mvn exec:java -Dexec.mainClass="io.joynr.runtime.ClusterController" -Dexec.args="-t mqtt" > $ILT_RESULTS_DIR/clustercontroller-java-$1.log 2>&1 &
 	else
 		log '# starting C++ clustercontroller'
 		if [ ! -d $ILT_BUILD_DIR -o ! -d $ILT_BUILD_DIR/bin ]
@@ -303,12 +240,7 @@ function start_cluster_controller {
 		cp -a $ILT_BUILD_DIR/bin $CLUSTER_CONTROLLER_DIR
 		cd $CLUSTER_CONTROLLER_DIR
 		[[ $? == "0" ]] && echo "cd $CLUSTER_CONTROLLER_DIR OK"
-		if [ "$BACKEND_SERVICES" = "HTTP" ]
-		then
-			./cluster-controller resources/cc.http.messaging.settings > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
-		else
-			./cluster-controller resources/cc.mqtt.messaging.settings > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
-		fi
+		./cluster-controller resources/cc.mqtt.messaging.settings > $ILT_RESULTS_DIR/clustercontroller-cpp-$1.log 2>&1 &
 	fi
 	CLUSTER_CONTROLLER_PID=$!
 	echo "Started external cluster controller with PID $CLUSTER_CONTROLLER_PID in directory $CLUSTER_CONTROLLER_DIR"
@@ -336,12 +268,7 @@ function start_java_provider_cc {
 	log 'Starting Java provider CC (with in process clustercontroller).'
 	cd $ILT_DIR
 	rm -f java-provider.persistence_file
-	if [ "$BACKEND_SERVICES" = "HTTP" ]
-	then
-		mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN http" -Djoynr.messaging.gcd.url="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
-	else
-		mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN mqtt" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
-	fi
+	mvn $SPECIAL_MAVEN_OPTIONS exec:java -Dexec.mainClass="io.joynr.test.interlanguage.IltProviderApplication" -Dexec.args="$DOMAIN mqtt" > $ILT_RESULTS_DIR/provider-java-cc.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Java provider cc with PID $PROVIDER_PID"
 	# Allow some time for startup
@@ -453,12 +380,7 @@ function start_java_consumer_cc {
 	rm -f java-consumer.persistence_file
 	mkdir $ILT_RESULTS_DIR/consumer-java-cc-$1
 	rm -fr $ILT_DIR/target/surefire-reports
-	if [ "$BACKEND_SERVICES" = "HTTP" ]
-	then
-		mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=http -Djoynr.messaging.gcd.url="http://localhost:8080/discovery/channels/discoverydirectory_channelid/" -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
-	else
-		mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=mqtt -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
-	fi
+	mvn $SPECIAL_MAVEN_OPTIONS surefire:test -Dtransport=mqtt -DskipTests=false >> $ILT_RESULTS_DIR/consumer-java-cc-$1.log 2>&1
 	SUCCESS=$?
 	cp -a $ILT_DIR/target/surefire-reports $ILT_RESULTS_DIR/consumer-java-cc-$1
 	if [ "$SUCCESS" != 0 ]

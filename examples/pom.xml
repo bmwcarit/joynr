@@ -48,7 +48,6 @@
 			<id>android</id>
 			<modules>
 				<module>android</module>
-				<module>location-tester</module>
 			</modules>
 		</profile>
 		<profile>

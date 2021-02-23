@@ -92,33 +92,6 @@
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 		</dependency>
-
-		<!--
-			Due to compatibility reasons of httpclient library provided within the
-			Android platform, we use an Android port httpclient-android. It is
-			compiled against official Android SDK, however we must use shaded
-			(org.apache.http.**.*HC4) classes.
-
-			See also: https://hc.apache.org/httpcomponents-client-4.3.x/android-port.html
-
-			The dependency to httpclient is needed here anyway, because httpclient-android
-			is not pulling in transitive dependencies. httpclient is then excluded in
-			Android projects to avoid duplicate file errors during apk build.
-		-->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpcore</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
@@ -146,27 +119,10 @@
 			<artifactId>hamcrest-library</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.jayway.restassured</groupId>
-			<artifactId>rest-assured</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<!-- This dependency is needed to ensure the correct build order.
 			Some artifacts is needed by the maven-dependency-plugin, which
 			copies them to the currrent build directory.
 		-->
-		<dependency>
-			<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-			<artifactId>single-bounceproxy</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
@@ -283,31 +239,6 @@
 							</program>
 						</programs>
 					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-dependency-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>copy-test-dependencies</id>
-							<phase>process-test-resources</phase>
-							<goals>
-								<goal>copy</goal>
-							</goals>
-							<configuration>
-								<artifactItems>
-									<artifactItem>
-										<groupId>io.joynr.java.messaging.bounceproxy</groupId>
-										<artifactId>single-bounceproxy</artifactId>
-										<version>${project.version}</version>
-										<type>war</type>
-										<outputDirectory>${project.build.directory}</outputDirectory>
-										<destFileName>bounceproxy.war</destFileName>
-									</artifactItem>
-								</artifactItems>
-							</configuration>
-						</execution>
-					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>

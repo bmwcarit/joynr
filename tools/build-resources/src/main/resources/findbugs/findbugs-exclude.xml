@@ -20,12 +20,6 @@
 
 <FindBugsFilter>
 	<Match>
-		<!-- This method is enhanced (added to bytecode) by OpenJPA. Known issue since 2009-->
-		<Class name="~io\.joynr\..*\.entities\..*Entity"/>
-		<Method name="pcIsDetached" />
-		<Bug pattern="NP_BOOLEAN_RETURN_NULL"/>
-	</Match>
-	<Match>
 		<Class name="~.*\.R\$.*"/>
 		<Bug code="Nm"/>
 	</Match>
@@ -122,32 +116,8 @@
 		<Bug pattern="IS2_INCONSISTENT_SYNC"/>
 	</Match>
 	<Match>
-		<Class name="io.joynr.messaging.bounceproxy.BounceProxyBroadcaster" />
-		<Bug pattern="JLM_JSR166_UTILCONCURRENT_MONITORENTER"/>
-	</Match>
-	<Match>
 		<Class name="io.joynr.messaging.info.PerformanceMeasures" />
 		<Bug pattern="NP_NONNULL_RETURN_VIOLATION"/>
-	</Match>
-	<Match>
-		<Class name="io.joynr.messaging.http.operation.HttpCommunicationManagerTest" />
-		<Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
-	</Match>
-	<Match>
-		<Class name="io.joynr.messaging.http.operation.LongPollingMessageReceiver" />
-		<Bug pattern="NP_NONNULL_PARAM_VIOLATION"/>
-	</Match>
-	<Match>
-		<Class name="io.joynr.messaging.http.operation.LongPollingMessageReceiver" />
-		<Bug pattern="IS2_INCONSISTENT_SYNC"/>
-	</Match>
-	<Match>
-		<Class name="io.joynr.messaging.http.operation.LongPollingChannelLifecycle" />
-		<Bug pattern="IS2_INCONSISTENT_SYNC"/>
-	</Match>
-	<Match>
-		<Class name="io.joynr.messaging.http.operation.LongPollingChannelLifecycle" />
-		<Bug pattern="SWL_SLEEP_WITH_LOCK_HELD"/>
 	</Match>
 	<Match>
 		<Class name="io.joynr.proxy.invocation.StatelessAsyncMethodInvocation" />
