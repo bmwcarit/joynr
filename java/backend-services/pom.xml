@@ -34,8 +34,6 @@
 	<modules>
 		<module>discovery-directory-jee</module>
 		<module>capabilities-directory</module>
-		<module>domain-access-controller</module>
-		<module>domain-access-controller-jee</module>
 	</modules>
 
 	<build>

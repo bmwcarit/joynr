@@ -124,7 +124,6 @@
 					Following jar-with-dependencies are created during build:
 
 					java/backend-services/capabilities-directory/target/deploy/capabilities-directory-jar-with-dependencies.jar
-					java/backend-services/domain-access-controller/target/deploy/domain-access-controller-jar-with-dependencies.jar
 					java/core/clustercontroller-standalone/target/clustercontroller-standalone-<version>-jar-with-dependencies.jar
 					tests/system-integration-test/sit-java-app/target/sit-java-app-<version>-jar-with-dependencies.jar
 				-->

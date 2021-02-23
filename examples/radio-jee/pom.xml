@@ -163,10 +163,6 @@
 									<war>${project.build.directory}/discovery.war</war>
 									<contextPath>/discovery</contextPath>
 								</contextHandler>
-								<contextHandler implementation="org.eclipse.jetty.webapp.WebAppContext">
-									<war>${project.build.directory}/accesscontrol.war</war>
-									<contextPath>/accesscontrol</contextPath>
-								</contextHandler>
 							</contextHandlers>
 							<systemProperties>
 								<systemProperty>
@@ -183,10 +179,6 @@
 								</systemProperty>
 								<systemProperty>
 									<name>joynr.messaging.gcd.url</name>
-									<value>http://localhost:8383/discovery/channels/discoverydirectory_channelid/</value>
-								</systemProperty>
-								<systemProperty>
-									<name>joynr.messaging.gdac.url</name>
 									<value>http://localhost:8383/discovery/channels/discoverydirectory_channelid/</value>
 								</systemProperty>
 								<systemProperty>

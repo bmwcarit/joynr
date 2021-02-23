@@ -182,18 +182,8 @@
 			<artifactId>capabilities-directory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>domain-access-controller</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		-->
 		<!-- ignore WAR Files
-		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>domain-access-controller-jee</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>discovery-directory-jee</artifactId>

@@ -50,12 +50,6 @@
                     <deployArtifacts>
                         <artifactItem>
                             <groupId>io.joynr.java.backend-services</groupId>
-                            <artifactId>domain-access-controller-jee</artifactId>
-                            <version>${project.version}</version>
-                            <type>war</type>
-                        </artifactItem>
-                        <artifactItem>
-                            <groupId>io.joynr.java.backend-services</groupId>
                             <artifactId>discovery-directory-jee</artifactId>
                             <version>${project.version}</version>
                             <type>war</type>
