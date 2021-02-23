@@ -51,7 +51,6 @@ import io.joynr.runtime.ReplyToAddressProvider;
 import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingSubscriptionPublisher;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.UdsAddress;
@@ -77,8 +76,6 @@ public class RoutingProviderImplTest {
 
     private MqttAddress expectedMqttAddress;
     private String expectedMqttAddressString;
-    private ChannelAddress expectedChannelAddress;
-    private String expectedChannelAddressString;
     private RoutingProviderImpl routingProvider;
     @Captor
     private ArgumentCaptor<TransportReadyListener> transportReadyListener;
@@ -96,8 +93,6 @@ public class RoutingProviderImplTest {
 
         expectedMqttAddress = new MqttAddress("mqtt://test-broker-uri", "test-topic");
         expectedMqttAddressString = RoutingTypesUtil.toAddressString(expectedMqttAddress);
-        expectedChannelAddress = new ChannelAddress("http://test-bounceproxy-url", "test-channelId");
-        expectedChannelAddressString = RoutingTypesUtil.toAddressString(expectedChannelAddress);
 
         routingProvider = new RoutingProviderImpl(mockMessageRouter,
                                                   mockMulticastReceiverRegistrar,
@@ -195,11 +190,7 @@ public class RoutingProviderImplTest {
 
         verify(mockRoutingSubscriptionPublisher).globalAddressChanged(expectedMqttAddressString);
 
-        transportReadyListener.getValue().transportReady(Optional.of(expectedChannelAddress));
-
-        verify(mockRoutingSubscriptionPublisher).globalAddressChanged(expectedChannelAddressString);
-
-        globalAddressChangedSemaphore.acquire(2);
+        globalAddressChangedSemaphore.acquire(1);
     }
 
     @Test(timeout = 500)
@@ -209,11 +200,7 @@ public class RoutingProviderImplTest {
 
         verify(mockRoutingSubscriptionPublisher).replyToAddressChanged(expectedMqttAddressString);
 
-        transportReadyListener.getValue().transportReady(Optional.of(expectedChannelAddress));
-
-        verify(mockRoutingSubscriptionPublisher).replyToAddressChanged(expectedChannelAddressString);
-
-        replyToAddressChangedSemaphore.acquire(2);
+        replyToAddressChangedSemaphore.acquire(1);
     }
 
     @Test

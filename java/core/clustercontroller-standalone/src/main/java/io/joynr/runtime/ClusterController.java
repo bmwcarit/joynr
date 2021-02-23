@@ -39,7 +39,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
@@ -116,7 +115,7 @@ public class ClusterController {
         if (transport != null) {
             Module backendTransportModules = Modules.EMPTY_MODULE;
             if (transport.contains("atmosphere") || transport.contains("http")) {
-                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
+                logger.error("Atmosphere/HTTP transport is no longer supported.");
             }
             if (transport.contains("mqtt")) {
                 if (brokerUri != null) {
@@ -222,7 +221,7 @@ public class ClusterController {
         Option optionTransport = Option.builder("t")
                                        .required(false)
                                        .argName("transport")
-                                       .desc("the transport (optional, combination of http or atmosphere and mqtt with colon as separator)")
+                                       .desc("the transport (optional, select 'mqtt' to establish connection with broker)")
                                        .longOpt("transport")
                                        .hasArg(true)
                                        .numberOfArgs(1)

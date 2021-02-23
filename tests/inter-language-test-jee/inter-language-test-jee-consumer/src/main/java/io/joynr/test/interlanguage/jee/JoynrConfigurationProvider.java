@@ -35,7 +35,6 @@ public class JoynrConfigurationProvider {
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.test.interlanguage.jee.consumer");
-        joynrProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://localhost:8383/bounceproxy/");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "ilt-jee-consumer-joynr.properties");
 
         return joynrProperties;

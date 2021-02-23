@@ -241,13 +241,7 @@ public interface JoynrRuntime {
      * <li>Does not wait for incoming messages
      * </ul>
      *
-     * @param clear
-     *            If true, the instance removes all artifacts it created:
-     *            <ul>
-     *            <li>all global capabilities are deregistered from the Global Capabilities Directory
-     *            <li>The channel is deregistered from the Channel Url Directory
-     *            <li>The channel is removed from the bounce proxy
-     *            </ul>
+     * @param clear Deprecated, no longer used
      */
     void shutdown(boolean clear);
 

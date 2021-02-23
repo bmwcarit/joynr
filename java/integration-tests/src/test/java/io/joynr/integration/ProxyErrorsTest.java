@@ -56,7 +56,6 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import joynr.test.JoynrTestLoggingRule;
-import joynr.tests.test;
 import joynr.tests.testAbstractProvider;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.ProviderQos;

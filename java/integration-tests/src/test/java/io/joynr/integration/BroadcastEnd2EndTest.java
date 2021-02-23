@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.eclipse.jetty.server.Server;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,8 +31,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.integration.util.ServersUtil;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -45,25 +42,22 @@ public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
 
     private List<DummyJoynrApplication> dummyApplications = new ArrayList<>();
 
-    private static Server jettyServer;
     private static Properties originalProperties;
 
     @BeforeClass
     public static void startServer() throws Exception {
         originalProperties = System.getProperties();
-        System.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION, "true");
         // keep delays and timeout low for tests
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS, "10");
         System.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS, "200");
 
         provisionDiscoveryDirectoryAccessControlEntries();
-        jettyServer = ServersUtil.startServers();
 
     }
 
     @Override
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
-        Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        Module runtimeModule = new CCInProcessRuntimeModule();
         Module modulesWithRuntime = Modules.override(modules).with(runtimeModule);
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
@@ -84,7 +78,6 @@ public class BroadcastEnd2EndTest extends AbstractBroadcastEnd2EndTest {
 
     @AfterClass
     public static void stopServer() throws Exception {
-        jettyServer.stop();
         System.setProperties(originalProperties);
     }
 }

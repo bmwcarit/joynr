@@ -24,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BinderAddress;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
@@ -60,7 +59,7 @@ public class LibjoynrBinderRoutingTableAddressValidator implements RoutingTableA
                     return true;
                 } else if (!(oldEntry.getAddress() instanceof WebSocketClientAddress)) {
                     // old address is MqttAddress or ChannelAddress
-                    if (newEntry.address instanceof MqttAddress || newEntry.address instanceof ChannelAddress) {
+                    if (newEntry.address instanceof MqttAddress) {
                         return true;
                     }
                 }

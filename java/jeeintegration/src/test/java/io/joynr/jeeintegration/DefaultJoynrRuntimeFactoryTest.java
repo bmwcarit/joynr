@@ -110,8 +110,6 @@ public class DefaultJoynrRuntimeFactoryTest {
     private Instance<Properties> createPropertiesMock(Properties additionalProperties) {
         Instance<Properties> joynrProperties = mock(Instance.class);
         Properties joynrPropertiesValues = new Properties();
-        joynrPropertiesValues.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/");
-        joynrPropertiesValues.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         joynrPropertiesValues.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
         if (additionalProperties != null) {
             joynrPropertiesValues.putAll(additionalProperties);

@@ -38,7 +38,6 @@ import io.joynr.JoynrVersion;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
@@ -129,7 +128,7 @@ public class LegacyCapabilitiesProvisioning {
             if (localChannelId.equals(channelId)) {
                 address = new InProcessAddress();
             } else if (uriForAddress.startsWith("http") || uriForAddress.startsWith("https")) {
-                address = new ChannelAddress(uriForAddress, channelId);
+                throw new IllegalArgumentException("HTTP(s) channels are no longer supported. Use MQTT instead.");
             } else {
                 // allows anything else, which is expected to be a GBID
                 address = new MqttAddress(uriForAddress, channelId);

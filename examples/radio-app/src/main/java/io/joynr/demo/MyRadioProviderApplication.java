@@ -41,7 +41,6 @@ import com.google.inject.util.Modules;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
@@ -81,7 +80,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // run application from cmd line using Maven:
         // mvn exec:java -Dexec.mainClass="io.joynr.demo.MyRadioProviderApplication" -Dexec.args="<arguments>"
         // where arguments provided as
-        // -d provider-domain [-h websocket-host] [-p websocket-port] [-t [(websocket | websocketCC):[http]:[mqtt]] [-l]
+        // -d provider-domain [-h websocket-host] [-p websocket-port] [-t [(websocket | websocketCC):[mqtt]] [-l]
 
         ProviderScope tmpProviderScope = ProviderScope.GLOBAL;
         String host = "localhost";
@@ -263,7 +262,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         Option optionTransport = Option.builder("t")
                                        .required(false)
                                        .argName("transport")
-                                       .desc("the transport (optional, combination of websocket, http, mqtt with colon as separator, default: mqtt, any combination without websocket uses an embedded cluster controller)")
+                                       .desc("the transport (optional, combination of websocket, mqtt with colon as separator, default: mqtt, any combination without websocket uses an embedded cluster controller)")
                                        .longOpt("transport")
                                        .hasArg(true)
                                        .numberOfArgs(1)
@@ -293,9 +292,6 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             }
 
             Module backendTransportModules = Modules.EMPTY_MODULE;
-            if (transport.contains("http")) {
-                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
-            }
 
             if (transport.contains("mqtt")) {
                 configureMqtt(joynrConfig);

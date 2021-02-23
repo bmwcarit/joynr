@@ -30,33 +30,6 @@ public class JeeIntegrationPropertyKeys {
     public static final String JEE_MESSAGING_SCHEDULED_EXECUTOR_RESOURCE = "concurrent/joynrMessagingScheduledExecutor";
 
     /**
-     * Use this property key to set the value for the URI of the HTTP Bridge
-     * endpoint registry used by the JEE integration to register itself
-     * as a recipient of joynr messages for a given topic.
-     * Its value is 'joynr.jeeintegration.endpointregistry.uri'.
-     * You only need to specify a value for this property if you have the
-     * {@link #JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY HTTP Bridge enabled}.
-     *
-     * @see io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClient
-     */
-    public static final String JEE_INTEGRATION_ENDPOINTREGISTRY_URI = "joynr.jeeintegration.endpointregistry.uri";
-
-    /**
-     * This key is used to check whether the JEE integration should activate
-     * the HTTP bridge, which has two consequences - one, the integration
-     * will attempt to register itself with an endpoint registry
-     * (See {@link io.joynr.jeeintegration.httpbridge.HttpBridgeRegistryClient}),
-     * and two, the {@link io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule}
-     * will register the {@link io.joynr.jeeintegration.messaging.NoOpMqttMessagingSkeleton}
-     * to prevent the MQTT messaging module to subscribe to the channel's
-     * topic on the broker, because the messages arriving at the broker will
-     * be forwarded via HTTP.
-     *
-     * See {@link io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule}.
-     */
-    public static final String JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY = "joynr.jeeintegration.enable.httpbridge";
-
-    /**
      * This key is used to configure the number of provider registration retry attempts for a single provider.
      * <br>
      * Joynr JEE integration automatically registers providers during startup (deployment). If the registration fails,

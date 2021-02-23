@@ -40,7 +40,6 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.util.ObjectMapper;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
@@ -142,8 +141,7 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                                                    String localChannelId,
                                                    GlobalDiscoveryEntry globalDiscoveryEntry,
                                                    Address address) throws JsonProcessingException {
-        if ((address instanceof ChannelAddress && localChannelId.equals(((ChannelAddress) address).getChannelId()))
-                || (address instanceof MqttAddress && localChannelId.equals(((MqttAddress) address).getTopic()))) {
+        if (address instanceof MqttAddress && localChannelId.equals(((MqttAddress) address).getTopic())) {
             Address localAddress = new InProcessAddress();
             globalDiscoveryEntry.setAddress(objectMapper.writeValueAsString(localAddress));
         }

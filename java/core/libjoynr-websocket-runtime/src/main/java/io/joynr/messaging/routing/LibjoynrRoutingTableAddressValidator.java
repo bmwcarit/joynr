@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.UdsAddress;
 import joynr.system.RoutingTypes.UdsClientAddress;
@@ -47,7 +46,7 @@ public class LibjoynrRoutingTableAddressValidator implements RoutingTableAddress
 
     @Override
     public boolean allowUpdate(final RoutingEntry oldEntry, final RoutingEntry newEntry) {
-        // precedence: InProcessAddress > WebSocketAddress/UdsAddress > WebSocketClientAddress/UdsClientAddress > MqttAddress/ChannelAddress
+        // precedence: InProcessAddress > WebSocketAddress/UdsAddress > WebSocketClientAddress/UdsClientAddress > MqttAddress
         if (newEntry.address instanceof InProcessAddress) {
             return true;
         }
@@ -56,14 +55,14 @@ public class LibjoynrRoutingTableAddressValidator implements RoutingTableAddress
                 return true;
             } else if (!(oldEntry.getAddress() instanceof WebSocketAddress)
                     && !(oldEntry.getAddress() instanceof UdsAddress)) {
-                // old address is WebSocketClientAddress or UdsClientAddress or MqttAddress/ChannelAddress
+                // old address is WebSocketClientAddress or UdsClientAddress or MqttAddress
                 if (newEntry.getAddress() instanceof WebSocketClientAddress
                         || newEntry.getAddress() instanceof UdsClientAddress) {
                     return true;
                 } else if (!(oldEntry.getAddress() instanceof WebSocketClientAddress)
                         && !(oldEntry.getAddress() instanceof UdsClientAddress)) {
-                    // old address is MqttAddress or ChannelAddress
-                    if (newEntry.address instanceof MqttAddress || newEntry.address instanceof ChannelAddress) {
+                    // old address is MqttAddress
+                    if (newEntry.address instanceof MqttAddress) {
                         return true;
                     }
                 }

@@ -38,7 +38,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
@@ -115,10 +114,6 @@ public abstract class IltConsumerTest {
         }
 
         Module backendTransportModules = Modules.EMPTY_MODULE;
-        if (transport.contains("http")) {
-            logger.info("getRuntimeModule: using AtmosphereMessagingModule");
-            backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
-        }
 
         if (transport.contains("mqtt")) {
             logger.info("getRuntimeModule: using HivemqMqttClientModule");

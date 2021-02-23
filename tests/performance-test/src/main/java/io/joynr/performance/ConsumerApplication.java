@@ -35,7 +35,6 @@ import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
@@ -101,9 +100,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
                 joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
-            } else {
-                // HTTP
-                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
             }
         }
 

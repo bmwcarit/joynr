@@ -48,7 +48,6 @@ public class JeeMqttMessagingSkeletonProviderTest {
 
     private void createProvider(boolean enableSharedSubscriptions) {
         subject = new JeeMqttMessagingSkeletonProvider(new String[0],
-                                                       false,
                                                        enableSharedSubscriptions,
                                                        new MqttAddress(),
                                                        42,

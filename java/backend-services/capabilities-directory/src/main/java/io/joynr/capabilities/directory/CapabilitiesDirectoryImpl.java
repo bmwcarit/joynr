@@ -46,7 +46,6 @@ import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
@@ -134,8 +133,6 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
         if (address instanceof MqttAddress) {
             // not always the clusterControllerId. If a unicast topic prefix is set, this clusterControllerId is a part of the topic
             clusterControllerId = ((MqttAddress) address).getTopic();
-        } else if (address instanceof ChannelAddress) {
-            clusterControllerId = ((ChannelAddress) address).getChannelId();
         } else {
             logger.error("Error adding DiscoveryEntry for {}. Unknown address type: {}",
                          globalDiscoveryEntry.getParticipantId(),

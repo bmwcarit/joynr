@@ -20,6 +20,7 @@ package io.joynr.test;
 
 import java.util.Properties;
 
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.JoynrApplicationModule;
 
@@ -37,7 +38,6 @@ public class TestApplicationModule extends JoynrApplicationModule {
         Properties fProperties = new Properties();
         if (overrideJoynDefaultProps) {
             fProperties.setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY, "test-value");
-            fProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, "http://test-bounce-proxy-url");
         } else {
             fProperties.setProperty(TestJoynrApplication.PROPERTY_TEST_CONFIG_ENTRY, "default-value");
         }

@@ -59,7 +59,7 @@ import joynr.Message;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
@@ -76,9 +76,9 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private RoutingProxy messageRouterParentUdsAddress;
     @Mock
-    private ChannelAddress parentAddress;
+    private MqttAddress parentAddress;
     @Mock
-    private ChannelAddress nextHopAddress;
+    private MqttAddress nextHopAddress;
     @Mock
     private WebSocketClientAddress incomingAddress;
     @Mock
@@ -122,7 +122,7 @@ public class LibJoynrMessageRouterTest {
         when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
         when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
-        when(parentAddress.getChannelId()).thenReturn("LibJoynrMessageRouterTestChannel");
+        when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");
         when(messagingSkeletonFactory.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
 
         messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),

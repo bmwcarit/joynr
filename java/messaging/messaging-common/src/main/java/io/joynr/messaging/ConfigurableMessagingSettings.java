@@ -38,18 +38,13 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     public static final String PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS = "joynr.discovery.minimumretryintervalms";
     public static final String PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS = "joynr.discovery.provider.defaultexpirytimems";
 
-    public static final String PROPERTY_CREATE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.createchannelretryintervalms";
-    public static final String PROPERTY_DELETE_CHANNEL_RETRY_INTERVAL_MS = "joynr.messaging.deletechannelretryintervalms";
     public static final String PROPERTY_SEND_MSG_RETRY_INTERVAL_MS = "joynr.messaging.sendmsgretryintervalms";
-    public static final String PROPERTY_LONG_POLL_RETRY_INTERVAL_MS = "joynr.messaging.longpollretryintervalms";
-    public static final String PROPERTY_MAX_RETRY_COUNT = "joynr.messaging.maxretriescount";
     public static final String PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr.discovery.participantids_persistence_file";
     public static final String DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr_participantIds.properties";
     public static final String PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE = "joynr.dispatching.subscription.subscriptionrequests_persistence_file";
     public static final String PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY = "joynr.dispatching.subscription.subscriptionrequests_persistency";
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS = "joynr.messaging.maximumparallelsends";
-    public static final String PROPERTY_HOSTS_FILENAME = "joynr.messaging.hostsfilename";
 
     public static final String PROPERTY_MAX_MESSAGE_SIZE = "joynr.messaging.maxmessagesize";
 
@@ -67,50 +62,20 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL = "joynr.messaging.gcd.url";
 
-    private final BounceProxyUrl bounceProxyUrl;
-    private final long createChannelRetryIntervalMs;
-    private final long deleteChannelRetryIntervalMs;
     private final long sendMsgRetryIntervalMs;
-    private final long longPollRetryIntervalMs;
-    private final int maxRetriesCount;
     private int maximumParallelSends;
 
     @Inject
     // CHECKSTYLE:OFF
-    public ConfigurableMessagingSettings(@Named(MessagingPropertyKeys.BOUNCE_PROXY_URL) String bounceProxyUrl,
-                                         @Named(PROPERTY_MAX_RETRY_COUNT) int maxRetriesCount,
-                                         @Named(PROPERTY_CREATE_CHANNEL_RETRY_INTERVAL_MS) long createChannelRetryIntervalMs,
-                                         @Named(PROPERTY_DELETE_CHANNEL_RETRY_INTERVAL_MS) long deleteChannelRetryIntervalMs,
-                                         @Named(PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                                         @Named(PROPERTY_LONG_POLL_RETRY_INTERVAL_MS) long longPollRetryIntervalMs,
+    public ConfigurableMessagingSettings(@Named(PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                                          @Named(PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
         // CHECKSTYLE:ON
-        this.maxRetriesCount = maxRetriesCount;
         this.maximumParallelSends = maximumParallelSends;
-        this.bounceProxyUrl = new BounceProxyUrl(bounceProxyUrl);
-        this.createChannelRetryIntervalMs = createChannelRetryIntervalMs;
-        this.deleteChannelRetryIntervalMs = deleteChannelRetryIntervalMs;
         this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
-        this.longPollRetryIntervalMs = longPollRetryIntervalMs;
     }
 
     public int getMaximumParallelSends() {
         return maximumParallelSends;
-    }
-
-    @Override
-    public BounceProxyUrl getBounceProxyUrl() {
-        return bounceProxyUrl;
-    }
-
-    @Override
-    public long getCreateChannelRetryIntervalMs() {
-        return createChannelRetryIntervalMs;
-    }
-
-    @Override
-    public long getDeleteChannelRetryIntervalMs() {
-        return deleteChannelRetryIntervalMs;
     }
 
     @Override
@@ -119,18 +84,7 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
     }
 
     @Override
-    public long getLongPollRetryIntervalMs() {
-        return longPollRetryIntervalMs;
-    }
-
-    @Override
     public String toString() {
-        return "MessagingSettings [bounceProxyUrl=" + bounceProxyUrl + ", createChannelRetryIntervalMs="
-                + createChannelRetryIntervalMs + ", sendMsgRetryIntervalMs=" + sendMsgRetryIntervalMs + "]";
-    }
-
-    @Override
-    public int getMaxRetriesCount() {
-        return maxRetriesCount;
+        return "MessagingSettings [sendMsgRetryIntervalMs=" + sendMsgRetryIntervalMs + "]";
     }
 }

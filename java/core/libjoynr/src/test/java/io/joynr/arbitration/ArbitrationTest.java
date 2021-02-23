@@ -75,7 +75,7 @@ import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
+import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -87,6 +87,7 @@ public class ArbitrationTest {
 
     private static final long ARBITRATION_TIMEOUT = 1000;
     private static final Long NO_EXPIRY = Long.MAX_VALUE;
+    private static final MqttAddress testAddress = new MqttAddress("mqtt://testUrl", "testTopic");
     private static String interfaceName = "testInterface";
     private static Version interfaceVersion = new Version(0, 0);
 
@@ -316,7 +317,7 @@ public class ArbitrationTest {
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] qosParameters = { new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword) };
         providerQos.setCustomParameters(qosParameters);
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                                                            domain,
                                                                                            TestInterface.INTERFACE_NAME,
@@ -359,7 +360,7 @@ public class ArbitrationTest {
                 new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "wrongkeyword") };
         providerQos.setCustomParameters(qosParameters);
 
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                             domain,
                                                             TestInterface.INTERFACE_NAME,
@@ -420,7 +421,7 @@ public class ArbitrationTest {
         providerQos2.setCustomParameters(qosParameters2);
         providerQos2.setSupportsOnChangeSubscriptions(true);
 
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                                                            domain,
                                                                                            TestInterface.INTERFACE_NAME,
@@ -490,7 +491,7 @@ public class ArbitrationTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(testPriority);
 
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                                                            domain,
                                                                                            TestInterface.INTERFACE_NAME,
@@ -519,7 +520,7 @@ public class ArbitrationTest {
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
 
-        Address thirdEndpointAddress = new ChannelAddress("http://testUrl", "thirdChannelId");
+        Address thirdEndpointAddress = new MqttAddress(testAddress.getBrokerUri(), "topic1");
         ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -545,7 +546,7 @@ public class ArbitrationTest {
         ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(Long.MIN_VALUE);
 
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         ArrayList<Address> expectedEndpointAddresses = new ArrayList<Address>();
         expectedEndpointAddresses.add(expectedEndpointAddress);
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -598,7 +599,7 @@ public class ArbitrationTest {
         providerQos.setPriority(testPriority);
         providerQos.setSupportsOnChangeSubscriptions(true);
 
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                                                            domain,
                                                                                            TestInterface.INTERFACE_NAME,
@@ -615,7 +616,7 @@ public class ArbitrationTest {
         providerQos2.setPriority(testPriority + 1);
         providerQos2.setSupportsOnChangeSubscriptions(false);
 
-        Address otherEndpointAddress = new ChannelAddress("http://testUrl", "otherChannelId");
+        Address otherEndpointAddress = new MqttAddress(testAddress.getBrokerUri(), "topic1");
         ArrayList<Address> otherEndpointAddresses = new ArrayList<Address>();
         otherEndpointAddresses.add(otherEndpointAddress);
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -633,7 +634,7 @@ public class ArbitrationTest {
         providerQos3.setPriority(testPriority + 2);
         providerQos3.setSupportsOnChangeSubscriptions(false);
 
-        Address thirdEndpointAddress = new ChannelAddress("http://testUrl", "thirdChannelId");
+        Address thirdEndpointAddress = new MqttAddress(testAddress.getBrokerUri(), "topic2");
         ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -710,7 +711,7 @@ public class ArbitrationTest {
         // Expected provider supports onChangeSubscriptions
         ProviderQos providerQos = new ProviderQos();
 
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                                                    domain,
                                                                                    TestInterface.INTERFACE_NAME,
@@ -745,7 +746,7 @@ public class ArbitrationTest {
 
         String publicKeyId = "publicKeyId";
 
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         String[] participantIds = new String[]{ "first-participant", "second-participant" };
         for (int index = 0; index < participantIds.length; index++) {
             DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -780,7 +781,7 @@ public class ArbitrationTest {
     public void testVersionFilterUsed() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
         String publicKeyId = "publicKeyId";
-        expectedEndpointAddress = new ChannelAddress("http://testUrl", "testChannelId");
+        expectedEndpointAddress = testAddress;
         String[] participantIds = new String[]{ "first-participant", "second-participant" };
         for (int index = 0; index < participantIds.length; index++) {
             DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(index, index),

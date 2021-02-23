@@ -307,8 +307,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         Properties defaultJoynrProperties = new Properties();
         defaultJoynrProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
         defaultJoynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, MQTT);
-        defaultJoynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/defaultContextRoot");
-        defaultJoynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         defaultJoynrProperties.putAll(configuredProperties);
         return defaultJoynrProperties;
     }

@@ -40,7 +40,6 @@ import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -112,16 +111,6 @@ public class AbstractGlobalMessagingSkeletonTest {
 
         final String expectedBrokerUri = gbidsArray[0];
         final MqttAddress expectedAddress = new MqttAddress(expectedBrokerUri, topic);
-
-        testRegisteringGlobalRoutingEntryForRequestTypes(address, expectedAddress);
-    }
-
-    @Test
-    public void testRegisteringGlobalRoutingEntryRequestChannelAddress() throws Exception {
-        final String messagingEndpointUrl = "messagingEndpointUrl";
-        final String channelId = "channelId";
-        final ChannelAddress address = new ChannelAddress(messagingEndpointUrl, channelId);
-        final ChannelAddress expectedAddress = new ChannelAddress(address);
 
         testRegisteringGlobalRoutingEntryForRequestTypes(address, expectedAddress);
     }

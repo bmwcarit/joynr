@@ -41,10 +41,6 @@ public class JoynrConfigurationProvider {
     public Properties joynrProperties() {
 
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
-                                    "/backpressure-monitor-app/messaging");
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH,
-                                    "http://backpressure-monitor-app:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.backpressure.test.monitorapp");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
 

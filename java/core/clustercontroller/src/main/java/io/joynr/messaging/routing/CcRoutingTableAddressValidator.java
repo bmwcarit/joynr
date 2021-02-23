@@ -34,7 +34,6 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.UdsAddress;
 import joynr.system.RoutingTypes.UdsClientAddress;
@@ -107,7 +106,7 @@ public class CcRoutingTableAddressValidator implements RoutingTableAddressValida
 
     @Override
     public boolean allowUpdate(final RoutingEntry oldEntry, final RoutingEntry newEntry) {
-        // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress > MqttAddress/ChannelAddress > WebSocketAddress/UdsAddress
+        // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress > MqttAddress > WebSocketAddress/UdsAddress
         if (newEntry.address instanceof InProcessAddress) {
             return true;
         }
@@ -116,8 +115,8 @@ public class CcRoutingTableAddressValidator implements RoutingTableAddressValida
                 return true;
             } else if (!(oldEntry.getAddress() instanceof WebSocketClientAddress)
                     && !(oldEntry.getAddress() instanceof UdsClientAddress)) {
-                // old address is MqttAddress/ChannelAddress or WebSocketAddress or UdsAddress
-                if (newEntry.address instanceof MqttAddress || newEntry.address instanceof ChannelAddress) {
+                // old address is MqttAddress or WebSocketAddress or UdsAddress
+                if (newEntry.address instanceof MqttAddress) {
                     return true;
                 } else if (oldEntry.getAddress() instanceof WebSocketAddress
                         || oldEntry.getAddress() instanceof UdsAddress) {

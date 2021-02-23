@@ -19,16 +19,5 @@
 package io.joynr.messaging;
 
 public interface MessagingSettings {
-    BounceProxyUrl getBounceProxyUrl();
-
-    long getCreateChannelRetryIntervalMs();
-
-    long getDeleteChannelRetryIntervalMs();
-
     long getSendMsgRetryIntervalMs();
-
-    long getLongPollRetryIntervalMs();
-
-    int getMaxRetriesCount();
-
 }

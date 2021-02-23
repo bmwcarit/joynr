@@ -37,8 +37,6 @@ import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.BrowserAddress;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
@@ -139,18 +137,11 @@ public class CcRoutingTableAddressValidatorTest {
         globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
         assertFalse(validator.isValidForRoutingTable(globalAddress));
 
-        Address otherAddress = new ChannelAddress();
-        assertTrue(validator.isValidForRoutingTable(otherAddress));
-
-        otherAddress = new WebSocketClientAddress();
+        Address otherAddress = new WebSocketClientAddress();
         assertTrue(validator.isValidForRoutingTable(otherAddress));
 
         otherAddress = new InProcessAddress();
         assertTrue(validator.isValidForRoutingTable(otherAddress));
-
-        otherAddress = new BrowserAddress();
-        assertTrue(validator.isValidForRoutingTable(otherAddress));
-
     }
 
     @Test
@@ -163,10 +154,6 @@ public class CcRoutingTableAddressValidatorTest {
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
         final RoutingEntry newEntry = new RoutingEntry(mqttAddress, isGloballyVisible, expiryDateMs, false);
-        assertFalse(validator.allowUpdate(oldEntry, newEntry));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        newEntry.setAddress(channelAddress);
         assertFalse(validator.allowUpdate(oldEntry, newEntry));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
@@ -184,7 +171,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void allowUpdateOfWebSocketClientAddress() {
-        // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+        // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress > WebSocketAddress
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
         final WebSocketClientAddress oldAddress = new WebSocketClientAddress("testWebSocketId");
@@ -192,10 +179,6 @@ public class CcRoutingTableAddressValidatorTest {
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
         final RoutingEntry newEntry = new RoutingEntry(mqttAddress, isGloballyVisible, expiryDateMs, false);
-        assertFalse(validator.allowUpdate(oldEntry, newEntry));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        newEntry.setAddress(channelAddress);
         assertFalse(validator.allowUpdate(oldEntry, newEntry));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
@@ -213,7 +196,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void allowUpdateOfWebSocketAddress() {
-        // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+        // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress > WebSocketAddress
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
         final WebSocketAddress oldAddress = new WebSocketAddress(WebSocketProtocol.WSS, "testHost", 23, "testPath");
@@ -223,42 +206,9 @@ public class CcRoutingTableAddressValidatorTest {
         final RoutingEntry newEntry = new RoutingEntry(mqttAddress, isGloballyVisible, expiryDateMs, false);
         assertTrue(validator.allowUpdate(oldEntry, newEntry));
 
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        newEntry.setAddress(channelAddress);
-        assertTrue(validator.allowUpdate(oldEntry, newEntry));
-
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
         newEntry.setAddress(websocketAddress);
         assertTrue(validator.allowUpdate(oldEntry, newEntry));
-
-        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
-        newEntry.setAddress(websocketClientAddress);
-        assertTrue(validator.allowUpdate(oldEntry, newEntry));
-
-        final InProcessAddress inProcessAddress = new InProcessAddress();
-        newEntry.setAddress(inProcessAddress);
-        assertTrue(validator.allowUpdate(oldEntry, newEntry));
-    }
-
-    @Test
-    public void allowUpdateOfChannelAddress() {
-        // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
-        final boolean isGloballyVisible = true;
-        final long expiryDateMs = Long.MAX_VALUE;
-        final ChannelAddress oldAddress = new ChannelAddress("testEndpointUrl", "testChannelId");
-        final RoutingEntry oldEntry = new RoutingEntry(oldAddress, isGloballyVisible, expiryDateMs, false);
-
-        final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
-        final RoutingEntry newEntry = new RoutingEntry(mqttAddress, isGloballyVisible, expiryDateMs, false);
-        assertTrue(validator.allowUpdate(oldEntry, newEntry));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        newEntry.setAddress(channelAddress);
-        assertTrue(validator.allowUpdate(oldEntry, newEntry));
-
-        final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
-        newEntry.setAddress(websocketAddress);
-        assertFalse(validator.allowUpdate(oldEntry, newEntry));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
         newEntry.setAddress(websocketClientAddress);
@@ -271,7 +221,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void allowUpdateOfMqttAddress() {
-        // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress/ChannelAddress > WebSocketAddress
+        // precedence: InProcessAddress > WebSocketClientAddress > MqttAddress > WebSocketAddress
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;
         final MqttAddress oldAddress = new MqttAddress("testBrokerUri", "testTopic");
@@ -279,10 +229,6 @@ public class CcRoutingTableAddressValidatorTest {
 
         final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
         final RoutingEntry newEntry = new RoutingEntry(mqttAddress, isGloballyVisible, expiryDateMs, false);
-        assertTrue(validator.allowUpdate(oldEntry, newEntry));
-
-        final ChannelAddress channelAddress = new ChannelAddress("endpointUrl", "channelId");
-        newEntry.setAddress(channelAddress);
         assertTrue(validator.allowUpdate(oldEntry, newEntry));
 
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");

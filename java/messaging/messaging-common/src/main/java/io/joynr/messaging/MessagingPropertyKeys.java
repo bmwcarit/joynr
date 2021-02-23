@@ -21,7 +21,6 @@ package io.joynr.messaging;
 public final class MessagingPropertyKeys {
     //NOTE: all property identifiers must be lower-case only.
     public static final String CHANNELID = "joynr.messaging.channelid"; //NOT USUALLY SET BY THE APPLICATION!
-    public static final String BOUNCE_PROXY_URL = "joynr.messaging.bounceproxyurl";
     public static final String RECEIVERID = "joynr.messaging.receiverid"; //NEVER SET BY THE APPLICATION!
     public static final String PERSISTENCE_FILE = "joynr.messaging.persistence_file";
     public static final String DEFAULT_PERSISTENCE_FILE = "joynr.properties";
@@ -31,10 +30,6 @@ public final class MessagingPropertyKeys {
 
     public static final String JOYNR_PROPERTIES = "joynr.properties";
 
-    public static final String PROPERTY_SERVLET_CONTEXT_ROOT = "joynr.servlet.context.root";
-    public static final String PROPERTY_SERVLET_SHUTDOWN_TIMEOUT = "joynr.servlet.shutdown.timeout";
-    public static final String PROPERTY_SERVLET_HOST_PATH = "joynr.servlet.hostpath";
-    public static final String PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION = "joynr.servlet.skiplongpollderegistration";
     public static final String PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT = "joynr.messaging.primaryglobaltransport";
     public static final String PROPERTY_MESSAGING_COMPRESS_REPLIES = "joynr.messaging.compressreplies";
 

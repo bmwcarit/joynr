@@ -27,7 +27,6 @@ import java.util.Properties;
 import org.hamcrest.core.StringContains;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,6 +35,7 @@ import com.google.inject.CreationException;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.guice.IApplication;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.test.TestApplicationModule;
 import io.joynr.test.TestJoynrApplication;
@@ -47,15 +47,15 @@ public class JoynrInjectorFactoryTest {
     private Properties applicationCreationProperties;
     private String systemTestConfigEntry;
     private Properties originalSystemproperties;
-    private static final String factoryBounceProxyUrl = "http://factory-test-value";
-    private static final String systemBounceProxyUrl = "http://system-test-value";
+    private static final long factoryDiscoveryDefaultTimeoutValue = 42;
 
     @Before
     public void setUp() {
         originalSystemproperties = (Properties) System.getProperties().clone();
 
         Properties basicProperties = new Properties();
-        basicProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, "localdomain");
+        basicProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
+                                    Long.toString(factoryDiscoveryDefaultTimeoutValue));
         injectorfactory = new JoynrInjectorFactory(basicProperties, new TestRuntimeModule());
 
         creationTestConfigEntry = "creation-test-value";
@@ -85,20 +85,12 @@ public class JoynrInjectorFactoryTest {
     @Test
     public void applicationCreationPropertiesCannotOverrideJoynFactoryProperties() {
         creationException.expect(CreationException.class);
-        creationException.expectMessage(StringContains.containsString("A binding to java.lang.String annotated with @com.google.inject.name.Named(value=joynr.messaging.bounceproxyurl) was already configured"));
+        creationException.expectMessage(StringContains.containsString("A binding to java.lang.String annotated with @com.google.inject.name.Named(value=joynr.discovery.defaulttimeoutms) was already configured"));
 
-        applicationCreationProperties.setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL,
-                                                  "http://test-bounce-proxy-url");
+        applicationCreationProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
+                                                  "0");
 
         injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties));
-    }
-
-    @Test
-    public void applicationLevelDefaultPropertiesCannotOverrideJoynDefaultProperties() {
-        creationException.expect(CreationException.class);
-        creationException.expectMessage(StringContains.containsString("A binding to java.lang.String annotated with @com.google.inject.name.Named(value=joynr.messaging.bounceproxyurl) was already configured"));
-
-        injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties, true));
     }
 
     @Test
@@ -129,30 +121,38 @@ public class JoynrInjectorFactoryTest {
         assertEquals(systemTestConfigEntry, ((TestJoynrApplication) application).testConfigEntry);
     }
 
-    @Ignore("Will not run in environments with MessagingPropertyKeys.BOUNCE_PROXY_URL set as environment variable (e.g. on build server).")
     @Test
     public void joynrFactoryPropertiesOverrideJoynDefaultProperties() {
 
         Properties defaultProperties = PropertyLoader.loadProperties(MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE);
-        String defaultBounceProxyUrl = defaultProperties.getProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL);
+        String defaultValue = defaultProperties.getProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS);
 
-        assertFalse(factoryBounceProxyUrl.equals(defaultBounceProxyUrl));
+        assertFalse(defaultValue.equals(Long.toString(factoryDiscoveryDefaultTimeoutValue)));
 
         IApplication application = injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties));
         assertTrue(application instanceof TestJoynrApplication);
 
-        assertEquals(factoryBounceProxyUrl, ((TestJoynrApplication) application).bounceProxyUrl);
+        assertEquals(factoryDiscoveryDefaultTimeoutValue,
+                     ((TestJoynrApplication) application).defaultDiscoveryTimeoutMs);
     }
 
-    @Ignore("Will not run in environments with MessagingPropertyKeys.BOUNCE_PROXY_URL set as environment variable (e.g. on build server).")
     @Test
-    public void joynrSystemPropertiesOverrideJoynFactoryProperties() {
-        System.getProperties().setProperty(MessagingPropertyKeys.BOUNCE_PROXY_URL, systemBounceProxyUrl);
+    public void systemPropertiesOverrideJoynFactoryProperties() {
+        long systemDiscoveryDefaultTimeoutValue = 24;
+        assertFalse(systemDiscoveryDefaultTimeoutValue == factoryDiscoveryDefaultTimeoutValue);
+        System.getProperties()
+              .setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
+                           Long.toString(systemDiscoveryDefaultTimeoutValue));
+
+        Properties propertiesBeforeModification = new Properties(originalSystemproperties);
+        setUp(); //Re-init JoynrFactory with new system
+        originalSystemproperties = propertiesBeforeModification;
 
         IApplication application = injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties));
         assertTrue(application instanceof TestJoynrApplication);
 
-        assertEquals(systemBounceProxyUrl, ((TestJoynrApplication) application).bounceProxyUrl);
+        assertEquals(systemDiscoveryDefaultTimeoutValue,
+                     ((TestJoynrApplication) application).defaultDiscoveryTimeoutMs);
     }
 
     @Test
@@ -160,8 +160,8 @@ public class JoynrInjectorFactoryTest {
         String key = "joynrapp.myproperty.123";
         Properties properties = new Properties();
         properties.put(key, "1");
-        String dontFindkey = "joynr.messaging.bounceProxyUrl";
-        properties.put(dontFindkey, "http://system-test-value");
+        String dontFindkey = "joynr.messaging.gdac.url";
+        properties.put(dontFindkey, "whatever");
 
         Properties propertiesWithPattern = PropertyLoader.getPropertiesWithPattern(properties,
                                                                                    JoynrApplicationModule.PATTERN_STARTS_WITH_JOYNAPP);

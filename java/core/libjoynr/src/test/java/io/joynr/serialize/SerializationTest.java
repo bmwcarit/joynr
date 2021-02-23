@@ -45,10 +45,7 @@ import com.google.inject.Injector;
 import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PersistedSubscriptionRequest;
 import io.joynr.exceptions.DiscoveryException;
-import io.joynr.exceptions.JoynrChannelMissingException;
-import io.joynr.exceptions.JoynrChannelNotAssignableException;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrHttpException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
@@ -379,7 +376,7 @@ public class SerializationTest {
     @Test
     public void serializeAndDeserializeGlobalDiscoveryEntryTest() throws Exception {
         ProviderQos qos = new ProviderQos();
-        String channelAddress = "channelId";
+        String address = "someGenericAddress";
         final GlobalDiscoveryEntry[] capInfos = { new GlobalDiscoveryEntry(new Version(47, 11),
                                                                            "domain",
                                                                            "interface",
@@ -388,7 +385,7 @@ public class SerializationTest {
                                                                            System.currentTimeMillis(),
                                                                            expiryDateMs,
                                                                            publicKeyId,
-                                                                           channelAddress) };
+                                                                           address) };
 
         String writeValueAsString = null;
 
@@ -407,7 +404,7 @@ public class SerializationTest {
                                                                              System.currentTimeMillis(),
                                                                              expiryDateMs,
                                                                              publicKeyId,
-                                                                             channelAddress);
+                                                                             address);
         writeValueAsString = objectMapper.writeValueAsString(globalDiscoveryEntry);
         System.err.println(writeValueAsString);
         GlobalDiscoveryEntry readCapInfo = objectMapper.readValue(writeValueAsString, GlobalDiscoveryEntry.class);
@@ -714,19 +711,6 @@ public class SerializationTest {
     }
 
     @Test
-    public void serializeReplyWithJoynrChannelNotAssignableException() throws IOException {
-
-        JoynrChannelNotAssignableException error = new JoynrChannelNotAssignableException("detail message: JoynrChannelNotAssignableException",
-                                                                                          "CCID");
-        Reply reply = new Reply(createUuidString(), error);
-
-        String writeValueAsString = objectMapper.writeValueAsString(reply);
-
-        Reply receivedReply = objectMapper.readValue(writeValueAsString, Reply.class);
-        Assert.assertEquals(reply, receivedReply);
-    }
-
-    @Test
     public void serializeReplyWithJoynrCommunicationException() throws IOException {
 
         JoynrCommunicationException error = new JoynrCommunicationException("detail message: JoynrCommunicationException");
@@ -743,32 +727,6 @@ public class SerializationTest {
     public void serializeReplyWithJoynrCommunicationExceptionWithoutMessage() throws IOException {
 
         JoynrCommunicationException error = new JoynrCommunicationException();
-        Reply reply = new Reply(createUuidString(), error);
-
-        String writeValueAsString = objectMapper.writeValueAsString(reply);
-        System.out.println(writeValueAsString);
-
-        Reply receivedReply = objectMapper.readValue(writeValueAsString, Reply.class);
-        Assert.assertEquals(reply, receivedReply);
-    }
-
-    @Test
-    public void serializeReplyWithJoynrChannelMissingException() throws IOException {
-
-        JoynrChannelMissingException error = new JoynrChannelMissingException("detail message: JoynrChannelMissingException");
-        Reply reply = new Reply(createUuidString(), error);
-
-        String writeValueAsString = objectMapper.writeValueAsString(reply);
-        System.out.println(writeValueAsString);
-
-        Reply receivedReply = objectMapper.readValue(writeValueAsString, Reply.class);
-        Assert.assertEquals(reply, receivedReply);
-    }
-
-    @Test
-    public void serializeReplyWithJoynrHttpException() throws IOException {
-
-        JoynrHttpException error = new JoynrHttpException(404, "detail message: JoynrHttpException");
         Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);

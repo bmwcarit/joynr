@@ -45,7 +45,6 @@ import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
@@ -269,7 +268,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
         Option optionTransport = Option.builder("t")
                                        .required(false)
                                        .argName("transport")
-                                       .desc("the transport (optional, combination of websocket, http, mqtt with colon as separator, default: mqtt, any combination without websocket uses an embedded cluster controller)")
+                                       .desc("the transport (optional, combination of websocket, mqtt with colon as separator, default: mqtt, any combination without websocket uses an embedded cluster controller)")
                                        .longOpt("transport")
                                        .hasArg(true)
                                        .numberOfArgs(1)
@@ -299,9 +298,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             }
 
             Module backendTransportModules = Modules.EMPTY_MODULE;
-            if (transport.contains("http")) {
-                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
-            }
 
             if (transport.contains("mqtt")) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");

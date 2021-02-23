@@ -35,8 +35,6 @@ public class JoynrConfigurationProducer {
     @JoynrProperties
     public Properties joynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/messaging");
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.examples.messagepersistence.jee");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "jee-messagepersistence-joynr.properties");
         // limit parallel processing of requests

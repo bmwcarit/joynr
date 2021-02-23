@@ -41,9 +41,6 @@ public class JoynrConfigurationProvider {
     public Properties joynrProperties() {
 
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT, "/clustered-app/messaging");
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH,
-                                    System.getenv("joynr_servlet_hostpath"));
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.sharedsubscriptions.test.clusteredapp");
 
         final String brokerUri = System.getenv("MQTT_BROKER_URL");

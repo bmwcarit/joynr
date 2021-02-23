@@ -40,6 +40,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.integration.util.TestSetup;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
@@ -54,7 +55,6 @@ import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import io.joynr.servlet.ServletUtil;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
@@ -75,7 +75,7 @@ public class RoutingTableOverwriteEnd2EndTest {
     @Before
     public void setUp() throws IOException {
         webSocketConfig = new Properties();
-        final int port = ServletUtil.findFreePort();
+        final int port = TestSetup.findFreePort();
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + port);
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");

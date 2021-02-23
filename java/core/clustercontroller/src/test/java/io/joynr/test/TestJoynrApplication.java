@@ -21,7 +21,7 @@ package io.joynr.test;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.runtime.AbstractJoynrApplication;
 
 public class TestJoynrApplication extends AbstractJoynrApplication {
@@ -32,8 +32,8 @@ public class TestJoynrApplication extends AbstractJoynrApplication {
     public String testConfigEntry;
 
     @Inject
-    @Named(MessagingPropertyKeys.BOUNCE_PROXY_URL)
-    public String bounceProxyUrl;
+    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS)
+    public long defaultDiscoveryTimeoutMs;
 
     @Override
     public void run() {

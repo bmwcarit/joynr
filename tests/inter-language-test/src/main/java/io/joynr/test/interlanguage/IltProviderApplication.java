@@ -31,7 +31,6 @@ import com.google.inject.util.Modules;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AtmosphereMessagingModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
@@ -102,10 +101,6 @@ public class IltProviderApplication extends AbstractJoynrApplication {
             }
 
             Module backendTransportModules = Modules.EMPTY_MODULE;
-            if (transport.contains("http")) {
-                logger.info("Configuring HTTP...");
-                backendTransportModules = Modules.combine(backendTransportModules, new AtmosphereMessagingModule());
-            }
 
             if (transport.contains("mqtt")) {
                 logger.info("Configuring MQTT...");
@@ -114,7 +109,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
             }
             return Modules.override(runtimeModule).with(backendTransportModules);
         }
-        return Modules.override(new CCInProcessRuntimeModule()).with(new AtmosphereMessagingModule());
+        return new CCInProcessRuntimeModule();
     }
 
     private static void configureWebSocket(Properties joynrConfig) {

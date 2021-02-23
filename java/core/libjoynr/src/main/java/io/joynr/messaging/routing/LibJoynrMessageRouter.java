@@ -42,8 +42,6 @@ import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BinderAddress;
-import joynr.system.RoutingTypes.BrowserAddress;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 
@@ -155,11 +153,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
 
     private void addNextHopToParent(String participantId, boolean isGloballyVisible) {
         logger.trace("Adding next hop with participantId {} to parent router", participantId);
-        if (incomingAddress instanceof ChannelAddress) {
-            parentRouter.addNextHop(participantId, (ChannelAddress) incomingAddress, isGloballyVisible);
-        } else if (incomingAddress instanceof BrowserAddress) {
-            parentRouter.addNextHop(participantId, (BrowserAddress) incomingAddress, isGloballyVisible);
-        } else if (incomingAddress instanceof WebSocketAddress) {
+        if (incomingAddress instanceof WebSocketAddress) {
             parentRouter.addNextHop(participantId, (WebSocketAddress) incomingAddress, isGloballyVisible);
         } else if (incomingAddress instanceof WebSocketClientAddress) {
             parentRouter.addNextHop(participantId, (WebSocketClientAddress) incomingAddress, isGloballyVisible);

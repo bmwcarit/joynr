@@ -37,8 +37,6 @@ import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BinderAddress;
-import joynr.system.RoutingTypes.BrowserAddress;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.UdsAddress;
@@ -108,9 +106,11 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     }
 
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, ChannelAddress address, Boolean isGloballyVisible) {
-        messageRouter.addNextHop(participantId, address, isGloballyVisible);
-        return resolvedDeferred();
+    public Promise<DeferredVoid> addNextHop(String participantId,
+                                            joynr.system.RoutingTypes.ChannelAddress address,
+                                            Boolean isGloballyVisible) {
+        throw new IllegalArgumentException(joynr.system.RoutingTypes.ChannelAddress.class.getCanonicalName()
+                + " no longer supported.");
     }
 
     @Override
@@ -120,9 +120,11 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     }
 
     @Override
-    public Promise<DeferredVoid> addNextHop(String participantId, BrowserAddress address, Boolean isGloballyVisible) {
-        messageRouter.addNextHop(participantId, address, isGloballyVisible);
-        return resolvedDeferred();
+    public Promise<DeferredVoid> addNextHop(String participantId,
+                                            joynr.system.RoutingTypes.BrowserAddress address,
+                                            Boolean isGloballyVisible) {
+        throw new IllegalArgumentException(joynr.system.RoutingTypes.BrowserAddress.class.getCanonicalName()
+                + " no longer supported.");
     }
 
     @Override

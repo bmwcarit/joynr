@@ -102,7 +102,6 @@ import joynr.system.DiscoveryProvider.Lookup2Deferred;
 import joynr.system.DiscoveryProvider.Lookup3Deferred;
 import joynr.system.DiscoveryProvider.Lookup4Deferred;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
@@ -120,7 +119,7 @@ public class LocalCapabilitiesDirectoryTest {
     private static final int TEST_TIMEOUT = 10000;
     private static final int DEFAULT_WAIT_TIME_MS = 5000; // value should be shorter than TEST_TIMEOUT
     private static final String INTERFACE_NAME = "interfaceName";
-    private static final String TEST_URL = "http://testUrl";
+    private static final String TEST_URL = "mqtt://testUrl:42";
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
     private static final long freshnessUpdateIntervalMs = 300;
     private static final long DEFAULT_EXPIRY_TIME_MS = 3628800000l;
@@ -275,7 +274,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         String discoveryDirectoriesDomain = "io.joynr";
         String capabilitiesDirectoryParticipantId = "capDir_participantId";
-        String capabiltitiesDirectoryChannelId = "dirchannelId";
+        String capabiltitiesDirectoryTopic = "dirTopic";
         GlobalDiscoveryEntry globalCapabilitiesDirectoryDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0,
                                                                                                                              1),
                                                                                                                  discoveryDirectoriesDomain,
@@ -284,9 +283,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                                  new ProviderQos(),
                                                                                                                  System.currentTimeMillis(),
                                                                                                                  expiryDateMs,
-                                                                                                                 capabiltitiesDirectoryChannelId,
-                                                                                                                 new ChannelAddress(TEST_URL,
-                                                                                                                                    capabiltitiesDirectoryChannelId));
+                                                                                                                 "provisionedPublicKey",
+                                                                                                                 new MqttAddress(TEST_URL,
+                                                                                                                                 capabiltitiesDirectoryTopic));
 
         provisionedGlobalDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                                   "provisioneddomain",

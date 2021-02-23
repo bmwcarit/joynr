@@ -16,24 +16,21 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.integration;
+package io.joynr.messaging.routing;
 
-import java.util.Properties;
+import java.util.Optional;
 
-import com.google.inject.Injector;
+import joynr.system.RoutingTypes.MqttAddress;
 
-import io.joynr.runtime.JoynrBaseModule;
-import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.JoynrRuntime;
-
-public class LocalCommunicationTest extends AbstractLocalCommunicationTest {
-
-    private Injector injectorA;
+public class MockMqttAddressFactory extends GlobalAddressFactory<MqttAddress> {
 
     @Override
-    protected JoynrRuntime getRuntime(Properties joynrConfig) {
-        injectorA = new JoynrInjectorFactory(new JoynrBaseModule(joynrConfig)).getInjector();
-        return injectorA.getInstance(JoynrRuntime.class);
+    public MqttAddress create() {
+        return new MqttAddress("brokerUri", "topic");
     }
 
+    @Override
+    public boolean supportsTransport(Optional<String> transport) {
+        return "longpolling".equals(transport.isPresent() ? transport.get() : null);
+    }
 }

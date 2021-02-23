@@ -53,7 +53,6 @@ import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySubscriptionPublisher;
 import joynr.infrastructure.GlobalCapabilitiesDirectorySync;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.types.DiscoveryError;
@@ -123,13 +122,7 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
         }
 
         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
-        String clusterControllerId = "";
-        if (address instanceof MqttAddress) {
-            // not always the clusterControllerId. If a unicast topic prefix is set, this clusterControllerId is a part of the topic
-            clusterControllerId = ((MqttAddress) address).getTopic();
-        } else if (address instanceof ChannelAddress) {
-            clusterControllerId = ((ChannelAddress) address).getChannelId();
-        } else {
+        if (!(address instanceof MqttAddress)) {
             logger.error("Error adding DiscoveryEntry for participantId {}. Unknown address type: {}",
                          globalDiscoveryEntry.getParticipantId(),
                          globalDiscoveryEntry.getAddress());
@@ -137,9 +130,11 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                     + globalDiscoveryEntry.getParticipantId() + ". Unknown address type: "
                     + globalDiscoveryEntry.getAddress());
         }
-
+        MqttAddress mqttAddress = (MqttAddress) address;
+        String clusterControllerId = mqttAddress.getTopic();
         String participantId = globalDiscoveryEntry.getParticipantId();
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId AND gdep.gbid = :gbid";
+
         try {
             for (String gbid : gbids) {
                 String toAddGbid;
@@ -165,11 +160,8 @@ public class GlobalCapabilitiesDirectoryEjb implements GlobalCapabilitiesDirecto
                     throw new JoynrIllegalStateException("There should be max only one discovery entry! Found "
                             + queryResult.size() + " discovery entries");
                 }
-
-                if (address instanceof MqttAddress) {
-                    ((MqttAddress) address).setBrokerUri(toAddGbid);
-                    globalDiscoveryEntry.setAddress(RoutingTypesUtil.toAddressString(address));
-                }
+                mqttAddress.setBrokerUri(toAddGbid);
+                globalDiscoveryEntry.setAddress(RoutingTypesUtil.toAddressString(mqttAddress));
                 GlobalDiscoveryEntryPersisted entity = new GlobalDiscoveryEntryPersisted(globalDiscoveryEntry,
                                                                                          clusterControllerId,
                                                                                          toAddGbid);

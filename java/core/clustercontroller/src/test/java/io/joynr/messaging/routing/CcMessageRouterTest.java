@@ -99,8 +99,6 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
-import io.joynr.messaging.channel.ChannelMessagingSkeletonFactory;
-import io.joynr.messaging.channel.ChannelMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import io.joynr.messaging.persistence.MessagePersister;
@@ -118,7 +116,6 @@ import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -128,8 +125,8 @@ import joynr.system.RoutingTypes.WebSocketProtocol;
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest {
 
-    private String channelId = "MessageSchedulerTest_" + createUuidString();
-    private final ChannelAddress channelAddress = new ChannelAddress("http://testUrl", channelId);
+    private String mqttTopic = "MessageSchedulerTest_" + createUuidString();
+    private final MqttAddress mqttAddress = new MqttAddress("mqtt://testUrl:42", mqttTopic);
     private final int maximumParallelSends = 1;
     private final long routingTableGracePeriodMs = 30000;
 
@@ -140,8 +137,6 @@ public class CcMessageRouterTest {
     private AddressManager addressManager;
 
     @Mock
-    private ChannelMessagingStubFactory middlewareMessagingStubFactoryMock;
-    @Mock
     private IMessagingStub messagingStubMock;
     @Mock
     private AbstractMiddlewareMessagingStubFactory<IMessagingStub, MqttAddress> mqttMessagingStubFactoryMock;
@@ -151,8 +146,6 @@ public class CcMessageRouterTest {
     private AbstractMiddlewareMessagingStubFactory<IMessagingStub, WebSocketAddress> webSocketMessagingStubFactoryMock;
     @Mock
     private AbstractMiddlewareMessagingStubFactory<IMessagingStub, InProcessAddress> inProcessMessagingStubFactoryMock;
-    @Mock
-    private ChannelMessagingSkeletonFactory messagingSkeletonFactoryMock;
     @Mock
     private ShutdownNotifier shutdownNotifier;
     @Mock
@@ -189,7 +182,7 @@ public class CcMessageRouterTest {
                                                 new HashSet<MulticastAddressCalculator>(),
                                                 multicastReceiverRegistry));
 
-        when(middlewareMessagingStubFactoryMock.create(any(ChannelAddress.class))).thenReturn(messagingStubMock);
+        when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
 
         AbstractModule mockModule = new AbstractModule() {
 
@@ -233,21 +226,15 @@ public class CcMessageRouterTest {
                                                               new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>>() {
                                                               },
                                                               Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
-                messagingStubFactory.addBinding(ChannelAddress.class).toInstance(middlewareMessagingStubFactoryMock);
                 messagingStubFactory.addBinding(WebSocketClientAddress.class)
                                     .toInstance(websocketClientMessagingStubFactoryMock);
                 messagingStubFactory.addBinding(WebSocketAddress.class).toInstance(webSocketMessagingStubFactoryMock);
                 messagingStubFactory.addBinding(MqttAddress.class).toInstance(mqttMessagingStubFactoryMock);
                 messagingStubFactory.addBinding(InProcessAddress.class).toInstance(inProcessMessagingStubFactoryMock);
 
-                MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
-                messagingSkeletonFactory = MapBinder.newMapBinder(binder(),
-                                                                  new TypeLiteral<Class<? extends Address>>() {
-                                                                  },
-                                                                  new TypeLiteral<IMessagingSkeletonFactory>() {
-                                                                  },
-                                                                  Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETON_FACTORIES));
-                messagingSkeletonFactory.addBinding(ChannelAddress.class).toInstance(messagingSkeletonFactoryMock);
+                MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
+                }, new TypeLiteral<IMessagingSkeletonFactory>() {
+                }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETON_FACTORIES));
 
                 Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
                 });
@@ -282,7 +269,7 @@ public class CcMessageRouterTest {
         final boolean isGloballyVisible = true; // toParticipantId is globally visible
         final long expiryDateMs = Long.MAX_VALUE;
         final boolean isSticky = true;
-        routingTable.put(toParticipantId, channelAddress, isGloballyVisible, expiryDateMs, isSticky);
+        routingTable.put(toParticipantId, mqttAddress, isGloballyVisible, expiryDateMs, isSticky);
 
         Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
 
@@ -305,7 +292,7 @@ public class CcMessageRouterTest {
         final long delayMs = passedDelaybleMessage.getAllValues().get(0).getDelay(TimeUnit.MILLISECONDS);
         assertTrue("Delay was: " + delayMs, delayMs <= 0);
 
-        verify(middlewareMessagingStubFactoryMock, timeout(1000)).create(eq(channelAddress));
+        verify(mqttMessagingStubFactoryMock, timeout(1000)).create(eq(mqttAddress));
         verify(messagingStubMock, timeout(100)).transmit(eq(immutableMessage),
                                                          any(SuccessAction.class),
                                                          any(FailureAction.class));
@@ -323,7 +310,7 @@ public class CcMessageRouterTest {
             messageRouter.route(immutableMessage);
         } catch (JoynrMessageNotSentException e) {
             verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
-            verify(middlewareMessagingStubFactoryMock, never()).create(any(ChannelAddress.class));
+            verify(mqttMessagingStubFactoryMock, never()).create(any(MqttAddress.class));
             return;
         }
         fail("scheduling an expired message should throw");
@@ -349,8 +336,8 @@ public class CcMessageRouterTest {
 
     @Test
     public void testNoMessageDuplicationForMulticastForMultipleAddressesWithErrorFromStubForAllAddresses() throws Exception {
-        ChannelAddress receiverAddress1 = new ChannelAddress("http://testUrl", "channelId1");
-        ChannelAddress receiverAddress2 = new ChannelAddress("http://testUrl", "channelId2");
+        MqttAddress receiverAddress1 = new MqttAddress("what", "ever1");
+        MqttAddress receiverAddress2 = new MqttAddress("what", "ever2");
         prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress2);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
@@ -377,8 +364,8 @@ public class CcMessageRouterTest {
         verify(messagingStubMock, times(4)).transmit(eq(immutableMessage),
                                                      any(SuccessAction.class),
                                                      any(FailureAction.class));
-        verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress1);
-        verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress2);
+        verify(mqttMessagingStubFactoryMock, times(2)).create(receiverAddress1);
+        verify(mqttMessagingStubFactoryMock, times(2)).create(receiverAddress2);
     }
 
     @Test
@@ -695,8 +682,8 @@ public class CcMessageRouterTest {
     public void testMessageProcessedListenerOnlyCalledOnceForMulticast() throws Exception {
         final Semaphore semaphore = new Semaphore(-1);
 
-        ChannelAddress receiverAddress1 = new ChannelAddress("http://testUrl", "channelId1");
-        ChannelAddress receiverAddress2 = new ChannelAddress("http://testUrl", "channelId2");
+        MqttAddress receiverAddress1 = new MqttAddress("what", "ever1");
+        MqttAddress receiverAddress2 = new MqttAddress("what", "ever2");
         prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress2);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
@@ -770,7 +757,7 @@ public class CcMessageRouterTest {
         final Set<String> participantIdSet = new HashSet<>();
         participantIdSet.add(AddressManager.multicastAddressCalculatorParticipantId);
         doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
-        doReturn(Optional.of(channelAddress)).when(addressManager).getAddressForDelayableImmutableMessage(any());
+        doReturn(Optional.of(mqttAddress)).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         doThrow(new JoynrDelayMessageException(200, "test42")).when(messagingStubMock)
                                                               .transmit(any(ImmutableMessage.class),
@@ -830,7 +817,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testOnlyOneParticipantIdResolution() throws Exception {
-        testOnlyOneParticipantIdResolution(channelAddress);
+        testOnlyOneParticipantIdResolution(mqttAddress);
 
         when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
         testOnlyOneParticipantIdResolution(new MqttAddress("brokerUri", "topic"));
@@ -972,7 +959,7 @@ public class CcMessageRouterTest {
         participantIdSet.add(recipient);
 
         doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(failingMessage);
-        doReturn(Optional.of(channelAddress)).when(addressManager).getAddressForDelayableImmutableMessage(any());
+        doReturn(Optional.of(mqttAddress)).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -1016,6 +1003,7 @@ public class CcMessageRouterTest {
         assertTrue(semaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void messageWorkerUsesSameFailureActionForStubAndThrownException() throws Exception {
         // route multicast message to two recipients
@@ -1023,16 +1011,16 @@ public class CcMessageRouterTest {
         // throw exception in second stub call
         // make sure that the message is rescheduled only once
         // (multiple executions of the same failure action reschedule only in the first call, further calls are just logged)
-        ChannelAddress receiverAddress1 = new ChannelAddress("http://testUrl", "channelId1");
-        ChannelAddress receiverAddress2 = new ChannelAddress("http://testUrl", "channelId2");
+        MqttAddress receiverAddress1 = new MqttAddress("what", "ever1");
+        MqttAddress receiverAddress2 = new MqttAddress("what", "ever2");
         prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress2);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
         IMessagingStub messagingStubMock1 = mock(IMessagingStub.class);
         IMessagingStub messagingStubMock2 = mock(IMessagingStub.class);
-        reset(middlewareMessagingStubFactoryMock);
-        doReturn(messagingStubMock1).when(middlewareMessagingStubFactoryMock).create(receiverAddress1);
-        doReturn(messagingStubMock2).when(middlewareMessagingStubFactoryMock).create(receiverAddress2);
+        reset(mqttMessagingStubFactoryMock);
+        doReturn(messagingStubMock1).when(mqttMessagingStubFactoryMock).create(receiverAddress1);
+        doReturn(messagingStubMock2).when(mqttMessagingStubFactoryMock).create(receiverAddress2);
 
         Answer<Void> stubAnswer = new Answer<Void>() {
             private volatile int callCount = 0;
@@ -1074,8 +1062,8 @@ public class CcMessageRouterTest {
         verify(messagingStubMock2, times(2)).transmit(eq(immutableMessage),
                                                       any(SuccessAction.class),
                                                       any(FailureAction.class));
-        verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress1);
-        verify(middlewareMessagingStubFactoryMock, times(2)).create(receiverAddress2);
+        verify(mqttMessagingStubFactoryMock, times(2)).create(receiverAddress1);
+        verify(mqttMessagingStubFactoryMock, times(2)).create(receiverAddress2);
     }
 
     @Test

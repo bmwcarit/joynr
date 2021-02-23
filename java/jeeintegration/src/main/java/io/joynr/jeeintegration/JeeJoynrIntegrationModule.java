@@ -29,8 +29,6 @@ import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
-import io.joynr.jeeintegration.httpbridge.HttpBridgeEndpointRegistryClientModule;
-import io.joynr.jeeintegration.messaging.JeeHttpMessagingModule;
 import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessagingSkeletonFactory;
@@ -87,8 +85,6 @@ public class JeeJoynrIntegrationModule extends AbstractModule {
 
         Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);
 
-        install(new JeeHttpMessagingModule(messagingSkeletonFactory, messagingStubFactory));
-        install(new HttpBridgeEndpointRegistryClientModule());
         install(new JeeMqttMessageSendingModule(messagingSkeletonFactory, messagingStubFactory));
     }
 

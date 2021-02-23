@@ -43,8 +43,6 @@ public class TestJoynrConfigurationProvider {
     @JoynrProperties
     public Properties getJoynrProperties() {
         Properties joynrProperties = new Properties();
-        joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_SERVLET_CONTEXT_ROOT,
-                                    "/discovery-directory-jee/messaging");
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "discoverydirectory_channelid");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
                                     "test-discovery-directory-joynr.properties");

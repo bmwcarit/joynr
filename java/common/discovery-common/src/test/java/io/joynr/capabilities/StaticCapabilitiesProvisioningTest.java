@@ -58,7 +58,6 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.system.RoutingTypes.Address;
-import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
@@ -119,14 +118,6 @@ public class StaticCapabilitiesProvisioningTest {
     private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries,
                                         String interfaceName,
                                         String participantId,
-                                        String channelAddressUri) {
-        assertContainsEntryFor(entries, interfaceName, participantId, channelAddressUri, null);
-    }
-
-    private void assertContainsEntryFor(Collection<GlobalDiscoveryEntry> entries,
-                                        String interfaceName,
-                                        String participantId,
-                                        String channelAddressUri,
                                         String mqttAddressUri) {
         boolean found = false;
         for (DiscoveryEntry entry : entries) {
@@ -134,11 +125,6 @@ public class StaticCapabilitiesProvisioningTest {
                 GlobalDiscoveryEntry globalDiscoveryEntry = (GlobalDiscoveryEntry) entry;
                 if (globalDiscoveryEntry.getInterfaceName().equals(interfaceName)
                         && (participantId == null || participantId.equals(globalDiscoveryEntry.getParticipantId()))) {
-                    if (channelAddressUri != null) {
-                        Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
-                        assertTrue(address instanceof ChannelAddress);
-                        assertEquals(channelAddressUri, ((ChannelAddress) address).getMessagingEndpointUrl());
-                    }
                     if (mqttAddressUri != null) {
                         Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry);
                         assertTrue(address instanceof MqttAddress);
@@ -219,7 +205,6 @@ public class StaticCapabilitiesProvisioningTest {
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                properties.capabilitiesDirectoryParticipantId,
-                               null,
                                properties.discoveryDirectoryUri);
     }
 
@@ -252,7 +237,6 @@ public class StaticCapabilitiesProvisioningTest {
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                null,
-                               null,
                                DEFAULT_GBID);
     }
 
@@ -270,9 +254,8 @@ public class StaticCapabilitiesProvisioningTest {
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                null,
-                               null,
                                DEFAULT_GBID);
-        assertContainsEntryFor(provisionedDiscoveryEntries, testinterfacename, null, null, PROVISIONED_GBID);
+        assertContainsEntryFor(provisionedDiscoveryEntries, testinterfacename, null, PROVISIONED_GBID);
     }
 
     @Test
@@ -289,12 +272,10 @@ public class StaticCapabilitiesProvisioningTest {
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                GCD_PARTICIPANT_ID,
-                               null,
                                TEST_GBID);
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                testInterface,
                                testInterface + TEST_PARTICIPANT_ID,
-                               null,
                                PROVISIONED_GBID);
     }
 

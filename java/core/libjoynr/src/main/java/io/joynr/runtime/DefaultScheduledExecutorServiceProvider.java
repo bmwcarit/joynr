@@ -55,7 +55,6 @@ public class DefaultScheduledExecutorServiceProvider implements Provider<Schedul
          *                (1) routingTableCleanup
          * ArbitratorFactory: 1 arbitratorRunnable
          * MessagingSkeletonFactory: 1 per skeleton (transport), only required during startup, can be executed one after the other
-         * HttpBridgeEndpointRegistryClient: N/A (JEE only): uses scheduledExecutorServcie of the application server
          * HivemqMqttClientFactory: 4 per Mqtt connection?
          * ExpiredDiscoveryEntryCacheCleaner: (1) cleanupAction
          * RequestReplyManagerImpl: (1) cleanupScheduler for queued requests

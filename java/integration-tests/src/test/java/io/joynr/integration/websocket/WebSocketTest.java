@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.joynr.dispatching.MutableMessageFactory;
+import io.joynr.integration.util.TestSetup;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingQos;
@@ -58,7 +59,6 @@ import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
 import io.joynr.messaging.websocket.WebSocketMessagingStub;
 import io.joynr.messaging.websocket.jetty.client.WebSocketJettyClientFactory;
 import io.joynr.messaging.websocket.server.WebSocketJettyServerFactory;
-import io.joynr.servlet.ServletUtil;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.OneWayRequest;
@@ -91,7 +91,7 @@ public class WebSocketTest {
     @Before
     public void init() throws IOException {
         logger.debug("INIT WebsocketTest");
-        port = ServletUtil.findFreePort();
+        port = TestSetup.findFreePort();
         serverAddress = new WebSocketAddress(WebSocketProtocol.WS, "localhost", port, "/test");
         Mockito.doAnswer(new Answer<Object>() {
             @Override

@@ -33,6 +33,7 @@ import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
 import io.joynr.integration.util.DummyJoynrApplication;
+import io.joynr.integration.util.TestSetup;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
@@ -44,7 +45,6 @@ import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
-import io.joynr.servlet.ServletUtil;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.tests.testProxy;
 
@@ -58,7 +58,7 @@ public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2
     @Before
     @Override
     public void baseSetup() throws Exception {
-        final int port = ServletUtil.findFreePort();
+        final int port = TestSetup.findFreePort();
         webSocketConfig = new Properties();
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
         webSocketConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + port);

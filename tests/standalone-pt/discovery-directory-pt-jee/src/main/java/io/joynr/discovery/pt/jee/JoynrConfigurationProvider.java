@@ -42,8 +42,8 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
  *     (see the
  *     <a href="https://github.com/bmwcarit/joynr/blob/develop/wiki/JavaSettings.md">Java Configuration Reference</a>
  *     for details) and replace all period
- *     characters ('.') with underscores ('_'). Hence, <code>joynr.servlet.hostpath</code>
- *     becomes <code>joynr_servlet_hostpath</code>. Case is ignored, so you can feel free
+ *     characters ('.') with underscores ('_'). Hence, <code>joynr.messaging.mqtt.brokeruris</code>
+ *     becomes <code>joynr_messaging_mqtt_brokeruris</code>. Case is ignored, so you can feel free
  *     to use upper-case to make any of the longer names more readable in your setup.
  * </p>
  * <p>
@@ -51,8 +51,6 @@ import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
  *     <ul>
  *         <li>{@link io.joynr.messaging.ConfigurableMessagingSettings#PROPERTY_GBIDS}</li>
  *         <li>{@link io.joynr.messaging.mqtt.MqttModule#PROPERTY_MQTT_BROKER_URIS}</li>
- *         <li>{@link MessagingPropertyKeys#PROPERTY_SERVLET_CONTEXT_ROOT}</li>
- *         <li>{@link MessagingPropertyKeys#PROPERTY_SERVLET_HOST_PATH}</li>
  *     </ul>
  */
 @Singleton
@@ -64,7 +62,6 @@ public class JoynrConfigurationProvider {
     @JoynrProperties
     public Properties getJoynrProperties() {
         Properties joynrProperties = new Properties();
-        readAndSetProperty(joynrProperties, MessagingPropertyKeys.PROPERTY_SERVLET_HOST_PATH, "http://localhost:8080");
         readAndSetProperty(joynrProperties,
                            MessagingPropertyKeys.PERSISTENCE_FILE,
                            "discovery-directory-pt-joynr.properties");
