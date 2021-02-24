@@ -342,65 +342,63 @@ void MosquittoConnection::on_disconnect_v5(struct mosquitto* mosq,
                         rc,
                         errno,
                         errorString);
-        return;
+    } else {
+        // There was indeed a disconnect...set connect to false
+        mosquittoConnection->_isConnected = false;
+
+        if (rc == MOSQ_ERR_SUCCESS) {
+            JOYNR_LOG_INFO(logger(),
+                           "[{}] Disconnected from tcp://{}:{}",
+                           mosquittoConnection->_gbid,
+                           mosquittoConnection->_host,
+                           mosquittoConnection->_port);
+        } else {
+            JOYNR_LOG_ERROR(logger(),
+                            "[{}] Unexpectedly disconnected from tcp://{}:{}, rc: {}, errno: {}, "
+                            "error: {}",
+                            mosquittoConnection->_gbid,
+                            mosquittoConnection->_host,
+                            mosquittoConnection->_port,
+                            rc,
+                            storedErrno,
+                            errorString);
+        }
     }
 
-    // There was indeed a disconnect...set connect to false
-    mosquittoConnection->_isConnected = false;
-
-    if (rc == MOSQ_ERR_SUCCESS) {
-        JOYNR_LOG_INFO(logger(),
-                       "[{}] Disconnected from tcp://{}:{}",
-                       mosquittoConnection->_gbid,
-                       mosquittoConnection->_host,
-                       mosquittoConnection->_port);
+    // trigger restart for all known fatal cases where Mosquitto leaves the loop
+    // and thus does not attempt the reconnect itself
+    switch (rc) {
+    case MOSQ_ERR_SUCCESS:
+    case MOSQ_ERR_NOMEM:
+    case MOSQ_ERR_PROTOCOL:
+    case MOSQ_ERR_INVAL:
+    case MOSQ_ERR_NOT_FOUND:
+    case MOSQ_ERR_PAYLOAD_SIZE:
+    case MOSQ_ERR_NOT_SUPPORTED:
+    case MOSQ_ERR_AUTH:
+    case MOSQ_ERR_ACL_DENIED:
+    case MOSQ_ERR_UNKNOWN:
+    case MOSQ_ERR_EAI:
+    case MOSQ_ERR_PROXY:
         JOYNR_LOG_INFO(logger(), "[{}] Triggering loop restart", mosquittoConnection->_gbid);
         mosquittoConnection->_restartSemaphore.notify();
-    } else {
-        JOYNR_LOG_ERROR(logger(),
-                        "[{}] Unexpectedly disconnected from tcp://{}:{}, rc: {}, errno: {}, "
-                        "error: {}",
-                        mosquittoConnection->_gbid,
-                        mosquittoConnection->_host,
-                        mosquittoConnection->_port,
-                        rc,
-                        storedErrno,
-                        errorString);
-        // trigger restart for all known fatal cases where Mosquitto leaves the loop
-        // and thus does not attempt the reconnect itself
-        switch (rc) {
-        case MOSQ_ERR_NOMEM:
-        case MOSQ_ERR_PROTOCOL:
-        case MOSQ_ERR_INVAL:
-        case MOSQ_ERR_NOT_FOUND:
-        case MOSQ_ERR_PAYLOAD_SIZE:
-        case MOSQ_ERR_NOT_SUPPORTED:
-        case MOSQ_ERR_AUTH:
-        case MOSQ_ERR_ACL_DENIED:
-        case MOSQ_ERR_UNKNOWN:
-        case MOSQ_ERR_EAI:
-        case MOSQ_ERR_PROXY:
+        return;
+    case MOSQ_ERR_ERRNO:
+        if (storedErrno == EPROTO) {
             JOYNR_LOG_INFO(logger(), "[{}] Triggering loop restart", mosquittoConnection->_gbid);
             mosquittoConnection->_restartSemaphore.notify();
             return;
-        case MOSQ_ERR_ERRNO:
-            if (storedErrno == EPROTO) {
-                JOYNR_LOG_INFO(
-                        logger(), "[{}] Triggering loop restart", mosquittoConnection->_gbid);
-                mosquittoConnection->_restartSemaphore.notify();
-                return;
-            }
-            break;
-        case MOSQ_ERR_CONN_PENDING:
-        case MOSQ_ERR_NO_CONN:
-        case MOSQ_ERR_CONN_REFUSED:
-        case MOSQ_ERR_CONN_LOST:
-        case MOSQ_ERR_TLS:
-        default:
-            break;
         }
-        mosquitto_reconnect(mosq);
+        break;
+    case MOSQ_ERR_CONN_PENDING:
+    case MOSQ_ERR_NO_CONN:
+    case MOSQ_ERR_CONN_REFUSED:
+    case MOSQ_ERR_CONN_LOST:
+    case MOSQ_ERR_TLS:
+    default:
+        break;
     }
+    mosquitto_reconnect(mosq);
 }
 
 void MosquittoConnection::on_publish_v5(struct mosquitto* mosq,
