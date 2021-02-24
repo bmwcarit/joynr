@@ -18,80 +18,36 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.createTestMessage;
-import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.failIfCalledAction;
-import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.feedMqttSkeletonWithRequests;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.startsWith;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.util.HashSet;
-import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
-import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.util.ObjectMapper;
-import joynr.Message;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 /**
  * Unit tests for {@link SharedSubscriptionsMqttMessagingSkeleton}.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SharedSubscriptionsMqttMessagingSkeletonTest {
-    private int maxMqttMessagesInQueue = 20;
-    private boolean backpressureEnabled = false;
-    private int backpressureIncomingMqttRequestsUpperThreshold = 80;
-    private int backpressureIncomingMqttRequestsLowerThreshold = 20;
+public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
-    private String ownGbid = "testOwnGbid";
-
-    @Mock
-    private MqttClientFactory mqttClientFactory;
-
-    @Mock
-    private JoynrMqttClient mqttClient;
-
-    private final String ownTopic = "testOwnTopic";
-    private final String replyToTopic = "testReplyToTopic";
-
-    @Mock
-    private MessageRouter messageRouter;
-
-    @Mock
-    private RoutingTable routingTable;
-
-    @Mock
-    private MqttTopicPrefixProvider mqttTopicPrefixProvider;
-
-    @Mock
-    private JoynrStatusMetricsReceiver mockJoynrStatusMetrics;
-
-    private SharedSubscriptionsMqttMessagingSkeleton subject;
-
-    @Before
-    public void setup() throws Exception {
-        Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
-        objectMapperField.setAccessible(true);
-        objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
-        when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClient);
-        when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClient);
+    @Override
+    protected void initAndSubscribe() {
+        subject.init();
+        // SharedSubscriptionsMqttMessagingSkeleton automatically subscribes to shared topic in init()
+        verify(mqttClient).subscribe(startsWith("$share/"));
     }
 
-    private void createAndInitSkeleton(String channelId) {
+    @Override
+    protected void createSkeleton(String channelId) {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownTopic,
                                                                maxMqttMessagesInQueue,
                                                                backpressureEnabled,
@@ -107,143 +63,24 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest {
                                                                mockJoynrStatusMetrics,
                                                                ownGbid,
                                                                routingTable);
+    }
+
+    @Test
+    public void initSubscribesToSharedAndReplyToTopic() {
+        createSkeleton("channelId");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.init();
-        verify(mqttClient).subscribe(startsWith("$share/"));
-    }
-
-    private void triggerAndVerifySharedSubscriptionsTopicUnsubscribeAndSubscribeCycle(String expectedChannelId,
-                                                                                      int expectedTotalUnsubscribeCallCount,
-                                                                                      int expectedTotalSubscribeCallCount) throws Exception {
-        final String expectedSharedSubscriptionsTopicPrefix = "$share/" + expectedChannelId + "/";
-
-        final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue
-                * backpressureIncomingMqttRequestsUpperThreshold) / 100;
-        final int mqttRequestsToHitLowerThreshold = (maxMqttMessagesInQueue
-                * backpressureIncomingMqttRequestsLowerThreshold) / 100;
-
-        // fill up with requests and verify unsubscribe
-        List<String> messageIds = feedMqttSkeletonWithRequests(subject, mqttRequestsToHitUpperThreshold + 1);
-        verify(mqttClient,
-               times(expectedTotalUnsubscribeCallCount)).unsubscribe(startsWith(expectedSharedSubscriptionsTopicPrefix));
-
-        // finish processing of as many requests needed to drop below lower threshold
-        final int numOfRequestsToProcess = mqttRequestsToHitUpperThreshold - mqttRequestsToHitLowerThreshold + 2;
-        for (int i = 0; i < numOfRequestsToProcess; i++) {
-            subject.messageProcessed(messageIds.get(i));
-        }
-
-        // verify that now subscribe is triggered again
-        verify(mqttClient,
-               times(expectedTotalSubscribeCallCount)).subscribe(startsWith(expectedSharedSubscriptionsTopicPrefix));
-
-        // cleanup: process the rest of the messages in order to have 0 pending requests
-        for (int i = numOfRequestsToProcess; i < messageIds.size(); i++) {
-            subject.messageProcessed(messageIds.get(i));
-        }
-    }
-
-    @Test
-    public void testSubscribesToSharedSubscription() {
-        createAndInitSkeleton("channelId");
-        verify(mqttClient).subscribe(eq("$share/channelId/" + ownTopic + "/#"));
         verify(mqttClient).subscribe(eq(replyToTopic + "/#"));
+        verify(mqttClient).subscribe(eq("$share/channelId/" + ownTopic + "/#"));
     }
 
     @Test
-    public void testChannelIdStrippedOfNonAlphaChars() {
-        createAndInitSkeleton("channel@123_bling$$");
-        verify(mqttClient).subscribe(startsWith("$share/channelbling/"));
+    public void subscribeSubscribesToSharedAndReplyToTopic() {
+        createSkeleton("channelId");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+        subject.subscribe();
+        verify(mqttClient).subscribe(eq(replyToTopic + "/#"));
+        verify(mqttClient).subscribe(eq("$share/channelId/" + ownTopic + "/#"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testIllegalChannelId() {
-        createAndInitSkeleton("@123_$$-!");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testInvalidBackpressureParametersNoMaxMqttMessagesInQueue() {
-        backpressureEnabled = true;
-        maxMqttMessagesInQueue = 0;
-
-        createAndInitSkeleton("channelId");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testInvalidBackpressureParametersInvalidUpperThreshold() {
-        backpressureEnabled = true;
-        backpressureIncomingMqttRequestsUpperThreshold = 101;
-
-        createAndInitSkeleton("channelId");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testInvalidBackpressureParametersInvalidLowerThreshold() {
-        backpressureEnabled = true;
-        backpressureIncomingMqttRequestsLowerThreshold = -1;
-
-        createAndInitSkeleton("channelId");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testInvalidBackpressureParametersLowerThresholdAboveUpper() {
-        backpressureEnabled = true;
-        backpressureIncomingMqttRequestsUpperThreshold = 70;
-        backpressureIncomingMqttRequestsLowerThreshold = 75;
-
-        createAndInitSkeleton("channelId");
-    }
-
-    @Test
-    public void testBackpressureTriggersUnsubscribeWhenUpperThresholdHit() throws Exception {
-        backpressureEnabled = true;
-        createAndInitSkeleton("channelIdBackpressure");
-
-        final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue
-                * backpressureIncomingMqttRequestsUpperThreshold) / 100;
-        feedMqttSkeletonWithRequests(subject, mqttRequestsToHitUpperThreshold - 1);
-
-        // just below threshold, still no unsubscribe call expected
-        verify(mqttClient, times(0)).unsubscribe(any(String.class));
-
-        // messages that are not of request type should not trigger unsubscribe as well
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
-                         failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
-                         failIfCalledAction);
-        verify(mqttClient, times(0)).unsubscribe(any(String.class));
-
-        // a further request should hit the threshold value and trigger an unsubscribe
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST).getSerializedMessage(),
-                         failIfCalledAction);
-        verify(mqttClient).unsubscribe(startsWith("$share/channelIdBackpressure/"));
-    }
-
-    @Test
-    public void testBackpressureTriggersResubscribeWhenDroppedBelowLowerThreshold() throws Exception {
-        backpressureEnabled = true;
-        final String channelId = "channelIdBackpressureOneCycle";
-        createAndInitSkeleton(channelId);
-
-        final int expectedTotalUnsubscribeCallCount = 1;
-        final int expectedTotalSubscribeCallCount = 2; // one call is from the init method of the skeleton
-        triggerAndVerifySharedSubscriptionsTopicUnsubscribeAndSubscribeCycle(channelId,
-                                                                             expectedTotalUnsubscribeCallCount,
-                                                                             expectedTotalSubscribeCallCount);
-    }
-
-    @Test
-    public void testBackpressureTriggersUnsubscribeAndSubscribeRepeatedly() throws Exception {
-        backpressureEnabled = true;
-        final String channelId = "channelIdBackpressureMultipleCycles";
-        createAndInitSkeleton(channelId);
-
-        final int numCycles = 10;
-        for (int i = 1; i <= numCycles; i++) {
-            final int expectedTotalUnsubscribeCallCount = i;
-            final int expectedTotalSubscribeCallCount = i + 1; // one call is from the init method of the skeleton
-            triggerAndVerifySharedSubscriptionsTopicUnsubscribeAndSubscribeCycle(channelId,
-                                                                                 expectedTotalUnsubscribeCallCount,
-                                                                                 expectedTotalSubscribeCallCount);
-        }
-    }
 }
