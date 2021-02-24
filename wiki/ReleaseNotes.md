@@ -14,6 +14,7 @@ the versioning scheme [here](JoynrVersioning.md).
   still unreliable since the application will not get informed about the result and thus
   has no chance to retry in case of failure.
 * **[Java]** Removed the dependency net.sourceforge.htmlunit:htmlunit
+* **[Java]** Improved logging of Access Control Entries for better readability.
 
 ## Configuration Property Changes
 None.
@@ -22,7 +23,7 @@ None.
 None.
 
 ## Bug Fixes
-None.
+* **[C++]** MosquittoConnection attempts to reconnect when client was not authorized to connect
 
 # joynr 1.15.8
 
@@ -362,6 +363,22 @@ None.
 * **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 * **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
   occurs after connection has been established
+
+# joynr 1.14.5
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed a bug where the CONNACK sent on MQTT reconnect did not
+  include the session expiry interval property causing the session to end
+  when the network connection is closed.
 
 # joynr 1.14.4
 
@@ -844,6 +861,9 @@ None.
   See the [Java Configuration Reference](JavaSettings.md) for details about this property.
 * **[Java, JEE]** Singleton JeeJoynrServiceLocator will now be created at startup time.
 
+## Configuration property changes
+None.
+
 # joynr 1.8.10
 
 ## API relevant changes
@@ -853,6 +873,9 @@ None.
 * **[Java, JEE]** Fixed automatically generated `DiscoveryQos` when using the
   `GuidedProxyBuilder` to actually use the default values, instead of invalid
   values.
+
+## Configuration property changes
+None.
 
 # joynr 1.8.9
 
