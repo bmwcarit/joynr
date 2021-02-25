@@ -8,7 +8,8 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
-None.
+* **[Java, JEE, Franca]** Completely removed the GlobalDomainAccessController. Local ACL is
+  still possible
 
 ## Configuration Property Changes
 None.
