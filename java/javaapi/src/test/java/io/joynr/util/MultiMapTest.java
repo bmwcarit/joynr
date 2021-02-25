@@ -92,6 +92,41 @@ public class MultiMapTest {
     }
 
     @Test
+    public void getAndRemoveAllForNonExisitingKeyReturnsEmptySet() {
+        MultiMap<String, String> multiMap = new MultiMap<>();
+        final String key = "key";
+        final String value = "value";
+        final String nonExistedKey = "nonExistedKey";
+        multiMap.put(key, value);
+        assertEquals(1, multiMap.size());
+
+        Set<String> values = multiMap.getAndRemoveAll(nonExistedKey);
+
+        assertTrue(values.isEmpty());
+        assertEquals(1, multiMap.size());
+    }
+
+    @Test
+    public void getAndRemoveAllForExisitingKeyReturnsSetThenRemoveItFromTheBaseMap() {
+        MultiMap<String, String> multiMap = new MultiMap<>();
+        final String key = "key";
+        final String value1 = "value1";
+        final String value2 = "value2";
+        final String value3 = "value3";
+        multiMap.put(key, value1);
+        multiMap.put(key, value2);
+        multiMap.put(key, value3);
+
+        assertTrue(multiMap.containsKey(key));
+        assertEquals(3, multiMap.size());
+
+        Set<String> values = multiMap.getAndRemoveAll(key);
+
+        assertEquals(3, values.size());
+        assertEquals(0, multiMap.size());
+    }
+
+    @Test
     public void removeNonExistingKeyValuePairReturnsFalse() {
         MultiMap<String, String> multiMap = new MultiMap<>();
         final String key = "key";

@@ -69,6 +69,18 @@ public class MultiMap<K, V> implements Serializable {
     }
 
     /**
+     * @param key key
+     * @return a set view of the values associated with {@code key} then remove it from the container storage
+     */
+    public Set<V> getAndRemoveAll(K key) {
+        Set<V> values = storage.remove(key);
+        if (values == null) {
+            return new HashSet<V>();
+        }
+        return values;
+    }
+
+    /**
      * Removes {@code key}-{@code value} pair if it exists.
      *
      * @param key key
