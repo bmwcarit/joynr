@@ -491,7 +491,6 @@ Next, create a datasource resource pointing to that database connection. Here's 
 example of what that would look like when using the connection pool created above:
 
     bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS
-    bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS
 
 Afterwards you can stop the Payara server by executing
 
@@ -506,10 +505,9 @@ bin/asadmin start-database
 bin/asadmin start-domain
 ```
 
-Finally, fire up the joynr backend services:
+Finally, fire up the joynr backend service:
 ```bash
 bin/asadmin deploy <RADIO_HOME>/target/discovery-jee.war
-bin/asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
 ```
 
 ### Java

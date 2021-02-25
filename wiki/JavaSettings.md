@@ -313,10 +313,9 @@ this setting since they are published on a 1:n base and thus need no persistency
 
 ### Properties to override the DiscoveryEntries of the joynr backend services
 
-The following properties can be used to override the provisioned DiscoveryEntries for
-`GlobalCapabilitiesDirectory` (GCD) and `GlobalDomainAccessController` (GDAC) without providing a
-provisioning file for all required DiscoveryEntries (see section
-`PROPERTY_PROVISIONED_CAPABILITIES_FILE`).
+The following properties can be used to override the provisioned DiscoveryEntry for the
+`GlobalCapabilitiesDirectory` (GCD) without providing a provisioning file for all required
+DiscoveryEntries (see section `PROPERTY_PROVISIONED_CAPABILITIES_FILE`).
 
 Note: Specifying an incomplete entry by, e.g., setting the participant ID to an empty value will
 result in the system failing to start.
@@ -335,20 +334,6 @@ directory as well as an appropriate routing table entry.
 * **User property**: `joynr.messaging.capabilitiesdirectorychannelid`
 * **Default value**: `discoverydirectory_channelid`
 
-#### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID`
-The channel ID (topic in case of Mqtt) of the global domain access controller (backend). To be able
-to connect to the global domain access controller a discovery entry is created in the local
-capabilities directory as well as an appropriate routing table entry.
-
-> To override the default value from the provisioning file,
-> `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL` has to be configured as well.
-> **This property will be ignored otherwise.**
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.messaging.domainaccesscontrollerchannelid`
-* **Default value**: `domainaccesscontroller_channelid`
-
 #### `PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID`
 The participant ID of the global capabilities directory (backend). To be able to connect to the
 global capabilities directory a discovery entry is created in the local capabilities directory as
@@ -362,20 +347,6 @@ well as an appropriate routing table entry.
 * **Type**: String
 * **User property**: `joynr.messaging.capabilitiesdirectoryparticipantid`
 * **Default value**: `capabilitiesdirectory_participantid`
-
-#### `PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID`
-The participant ID of the global domain access controller (backend). To be able to connect to the
-global domain access controller a discovery entry is created in the local capabilities directory as
-well as an appropriate routing table entry.
-
-> To override the default value from the provisioning file,
-> `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL` has to be configured as well.
-> **This property will be ignored otherwise.**
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.messaging.domainaccesscontrollerparticipantid`
-* **Default value**: `domainaccesscontroller_participantid`
 
 #### `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL`
 
@@ -401,21 +372,6 @@ See also the static capabilities provisioning documentation below.
 * **User property**: `joynr.messaging.gcd.url`
 * **Default value**: ``
 
-#### `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL`
-
-The GBID (Mqtt) or URL (Http) of the receive channel (incoming message queue) of the global domain
-access controller service. To connect to the global domain access controller directory the cluster
-controller creates an appropriate entry in the local capabilities directory.
-
-If the domain access controller is using MQTT as its primary transport (default), then the value you
-set here is the GBID of the backend where the domain access controller you want to use is located,
-e.g. `gbid2`. By default, the first (default) GBID of `PROPERTY_GBIDS` is used.
-
-If the domain access controller is using HTTP (longpolling) as its primary transport, then the URL
-you set here is that of the domain access controller's channel
-(channelId=domainaccesscontroller_channelid) at the Bounceproxy. E.g.
-`http://localhost:8080/discovery/channels/domainaccesscontroller_channelid/`
-
 See also the `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` documentation above and
 the static capabilities provisioning documentation below.
 
@@ -426,12 +382,11 @@ the static capabilities provisioning documentation below.
 
 #### `PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN`
 The domain of the discovery services (backend). To be able to connect to the global discovery
-directories (capability directory, channel url directory, access controller) a discovery entry is
+directories (capability directory, channel url directory) a discovery entry is
 created in the local capabilities directory.
 
 > To override the default value from the provisioning file,
-> `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` and/or `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL`
-> has to be configured as well.
+> `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` has to be configured as well.
 > **This property will be ignored otherwise.**
 
 * **OPTIONAL**
@@ -1002,8 +957,8 @@ This property can be used to determine the name, URI or path of a file / resourc
 can be read from either a remote URI, the local file system, or if not found there the
 classpath and contains the capabilities to be statically provisioned for the runtime.
 
-By default the global capabilities directory and global domain access directory are
-statically provisioned. But you are not limited to just provisioning those.
+By default the global capabilities directory is statically provisioned. But you are able
+to provision further entries.
 
 The content of the file is a JSON serialised array of GlobalDiscoveryEntry objects. The
 default file is `provisioned_capabilities.json` and is read from the classpath from the
@@ -1013,19 +968,17 @@ When specifying a URI as the source of the provisioning file, then ensure that i
 an absolute URI (contains the scheme, e.g. `http://` or `file:`) and that the resource
 it points to is available for reading at startup time of the application.
 
-The capabilities directory and domain access control directory have a special status, in
-that the system requires exactly one entry for each to be provisioned. The system will
-fail to start if either one is lacking or duplicate entries have been provisioned.
-If you want to change either one of those entries from the default, you don't have to
-do so using the JSON format. You can override the entries from the JSON by using the
+The capabilities directory has a special status, in that the system requires exactly one
+entry for it to be provisioned. The system will fail to start if it is lacking or duplicate
+entries have been provisioned. If you want to change the entry from the default, you don't
+have to do so using the JSON format. You can override the entry from the JSON by using the
 properties listed in the `ConfigurableMessagingSettings` section above.
-Generally you will simply specifiy one of `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL`
-and/or `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL` to use another than the default
-backend for these services. It is also possible to override all other parts of the entry
-if necessary. Specifying an incomplete entry by, e.g., setting the participant ID to an
-empty value will result in the system failing to start.
+Generally you will simply specifiy `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` to use
+another than the default backend for these services. It is also possible to override all
+other parts of the entry if necessary. Specifying an incomplete entry by, e.g., setting
+the participant ID to an empty value will result in the system failing to start.
 Be aware, that joynr ignores the GBID value of the statically provisioned capabilities for
-the internal backend services (capabilities directory, domain access control directory, etc.).
+the internal backend services (capabilities directory etc.).
 It always uses the backends specified by the GBIDs of `PROPERTY_GBIDS` to contact
 these services (this is a trade off to reduce the amount of required properties).
 To use another (default) backend for the internal backend services, reorder `PROPERTY_GBIDS`

@@ -57,11 +57,9 @@ and a local standalone cluster-controller need to be started first.
 ### Starting the Backend
 
 Run a MQTT broker (e.g. [Mosquitto](http://mosquitto.org)) listening on port 1883 and deploy
-discovery-directory-jee and domain-access-controller-jee to a Java EE application server
-(e.g. Payara):
+discovery-directory-jee to a Java EE application server (e.g. Payara):
 ```
 asadmin deploy <RADIO_HOME>/target/discovery-jee.war
-asadmin deploy <RADIO_HOME>/target/accesscontrol-jee.war
 ```
 
 See [JEE Developer Guide](jee.md) or [Radio App Tutorial](Tutorial.md) for the

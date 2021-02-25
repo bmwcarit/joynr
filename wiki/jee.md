@@ -1070,7 +1070,6 @@ Next, create a datasource resource pointing to that database connection. Here's 
 example of what that would look like when using the connection pool created above:
 ```
 `bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS`
-`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS`
 ```
 
 After this, you can start the database:
@@ -1083,9 +1082,8 @@ Then start up the Payara server by changing to the Payara install directory and 
 `bin/asadmin start-domain`. Follow the instructions above for configuring the required
 managed executor service and databse.
 
-Next, fire up the joynr backend services:
+Next, fire up the joynr backend service:
 - `bin/asadmin deploy <joynr home>/asadmin deploy <JOYNR_REPO>/examples/radio-jee/radio-jee-backend-services/target/discovery-jee.war`
-- `bin/asadmin deploy <joynr home>/asadmin deploy <JOYNR_REPO>/examples/radio-jee/radio-jee-backend-services/target/accesscontrol-jee.war`
 
 Finally, deploy the provider and consumer applications:
 

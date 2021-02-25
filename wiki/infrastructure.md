@@ -10,34 +10,27 @@ infrastructure components.
 
 ## Components
 
-The following components are necessary in order to set up a
+The following component is necessary in order to set up a
 joynr environment:
 
 * Global Discovery service (GlobalCapabilitiesDirectory)
    * A joynr based application with which the participants
      register their providers and query to discover other
      participants
-* Global Domain Access Controller service (GlobalDomainAccessController)
-   * Used to register Access Control Entries in the system
-     in order to allow applications to specify who may
-     access the providers and their functionality
 
 Additionally, you have to ensure that any required transport
 layer components, such as MQTT brokers, are set up.
 
 ## Java
 
-This section describes configuring and starting the JAVA versions of the Discovery and Domain
-Access Controller services.
+This section describes configuring and starting the JAVA version of the Discovery service.
 
 GlobalCapabilitiesDirectory: see [GCD Readme](../java/backend-services/capabilities-directory/README.md).
-GlobalDomainAccessController: see [GDAC Readme](../java/backend-services/domain-access-controller/README.md).
 
 ## JEE
 
 This section describes configuring and installing the JEE
-versions of the Discovery and Domain Access Controller services
-in a Glassfish / Payara container.
+versions of the Discovery service in a Glassfish / Payara container.
 This document assumes you are familiar with the basics of installing and setting up the container
 itself.
 
@@ -71,10 +64,10 @@ Next, we start the new domain and create the executor service:
 
 ### Database
 
-Both the Discovery and Domain Access Controller services require
-a database to store their data. Which database you use is principally
-up to you, but you may have to customise the schema creation if the
-standard JPA mechanisms don't work with your database of choice.
+The Discovery service requires a database to store its data.
+Which database you use is principally up to you, but you may
+have to customise the schema creation if the standard JPA
+mechanisms don't work with your database of choice.
 
 This document will describe setting up the Derby database service
 which is shipped with Glassfish / Payara.
@@ -82,7 +75,6 @@ which is shipped with Glassfish / Payara.
     cd ${GF_HOME}
     bin/asadmin create-jdbc-connection-pool --datasourceclassname org.apache.derby.jdbc.ClientDataSource --restype javax.sql.XADataSource --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
     bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS
-    bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS
     bin/asadmin start-database
 
 The last command starts the local Derby database instance. This required
@@ -95,10 +87,8 @@ the application server subsequently.
 In a production environment, you most likely won't want to use the
 Derby database, but instead an enterprise level database such as
 PostgreSQL, Oracle, DB2, etc. In that case, note that you might
-have to alter the `persistence.xml` files of the projects
+have to alter the `persistence.xml` files of the project
 [Discovery Directory JEE](../java/backend-services/discovery-directory-jee/src/main/resources/META-INF/persistence.xml)
-and
-[Domain Access Controller JEE](../java/backend-services/domain-access-controller-jee/src/main/resources/META-INF/persistence.xml)
 in order to match your database.
 
 You also might not want to use the automatic JPA schema creation in that
@@ -118,7 +108,7 @@ as above.
 
 This guide assumes you have checked out the joynr source code and have
 built the entire project, so that the build artifacts for the Discovery
-and Domain Access Controller services are present on your local drive.
+service is present on your local drive.
 
 `${JOYNR_HOME}` is used to denote the root directory to which you checked
 out the source code.
@@ -130,7 +120,6 @@ by the build.
 
     cd ${GF_HOME}
     bin/asadmin deploy ${JOYNR_HOME}/java/backend-services/discovery-directory-jee/target/discovery-directory-jee-${JOYNR_VERSION}.war
-    bin/asadmin deploy ${JOYNR_HOME}/java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee-${JOYNR_VERSION}.war
 
 #### Multiple backends
 

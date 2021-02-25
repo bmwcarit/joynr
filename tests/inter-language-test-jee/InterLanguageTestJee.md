@@ -85,9 +85,8 @@ Additionally, the method must be annotated with
   this property needs to point to the endpoint registration service's URL with which the
   JEE Integration will register itself for its channel's topic.
   E.g. `http://endpointregistry.mycompany.net:8080`.
-* `MessagingPropertyKeys.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` and
-  `MessagingPropertyKeys.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL` - configure the addresses for the
-  discovery directory and domain access control services.
+* `MessagingPropertyKeys.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL`  configure the address
+  for the discovery directory service.
 * `MessagingPropertyKeys.PERSISTENCE_FILE` - if you are deploying multiple joynr-enabled
   applications to the same container instance, then you will need to set a different filename
   for this property for each application. E.g.: `"my-app-joynr.properties"` for one and
@@ -126,8 +125,6 @@ public class JoynrConfigurationProvider {
     joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT,
          "servlet");
     joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL,
-        "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
-    joynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL,
         "http://localhost:8383/discovery/channels/discoverydirectory_channelid/");
 
     return joynrProperties;
@@ -195,7 +192,6 @@ Next, create a datasource resource pointing to that database connection. Here's 
 example of what that would look like when using the connection pool created above:
 
 `bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS`
-`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS`
 
 After this, you can start the database:
 
@@ -204,7 +200,6 @@ After this, you can start the database:
 Next, fire up the joynr backend services:
 - When using primaryglobaltransport=mqtt, deploy the required war files:
     - `bin/asadmin deploy <joynr home>/tests/inter-language-test-jee/target/discovery-jee.war`
-    - `bin/asadmin deploy <joynr home>/tests/inter-language-test-jee/target/accesscontrol-jee.war`
 - When using primaryglobaltransport=longpolling, change to the `inter-language-test-jee`
 directory and execute `mvn -N -Pbackend-services-http jetty:run`.
 
