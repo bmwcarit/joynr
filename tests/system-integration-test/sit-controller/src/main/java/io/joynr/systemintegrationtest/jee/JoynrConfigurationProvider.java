@@ -20,7 +20,6 @@ package io.joynr.systemintegrationtest.jee;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GBIDS;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL;
 
 import java.util.Properties;
 
@@ -59,7 +58,6 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(PROPERTY_GBIDS, GBIDS);
 
         joynrProperties.setProperty(PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL, "joynrdefaultgbid");
-        joynrProperties.setProperty(PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL, "joynrdefaultgbid");
 
         joynrProperties.setProperty(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES_FILE,
                                     "sit_provisioned_capabilities.json");

@@ -177,16 +177,10 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$ILT_DIR/target/accesscontrol-jee.war" ]
-	then
-		log 'accesscontrol-jee.war not found in $ILT_DIR/target/accesscontrol-jee.war'
-		exit 1
-	fi
 }
 
 function start_payara {
 	DISCOVERY_WAR_FILE=$ILT_DIR/target/discovery-jee.war
-	ACCESS_CONTROL_WAR_FILE=$ILT_DIR/target/accesscontrol-jee.war
 
     echo "Starting payara"
 
@@ -194,7 +188,6 @@ function start_payara {
 	asadmin start-domain
 
 	asadmin deploy --force=true $DISCOVERY_WAR_FILE
-	asadmin deploy --force=true $ACCESS_CONTROL_WAR_FILE
 
     echo "payara started"
 }

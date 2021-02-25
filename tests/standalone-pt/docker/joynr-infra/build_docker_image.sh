@@ -19,10 +19,8 @@ function copy_war {
 }
 
 DISCOVERY_WAR_FILE=../../../../java/backend-services/discovery-directory-jee/target/discovery-directory-jee-shared-db*.war
-ACCESS_CTRL_WAR_FILE=../../../../java/backend-services/domain-access-controller-jee/target/domain-access-controller-jee*.war
 
 copy_war $DISCOVERY_WAR_FILE target/discovery-directory-jee-shared-db.war
-copy_war $ACCESS_CTRL_WAR_FILE target/domain-access-controller-jee.war
 
 if [ -z "$(docker version 2>/dev/null)" ]; then
 	echo "ERROR: The docker command seems to be unavailable."

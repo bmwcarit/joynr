@@ -518,7 +518,6 @@ function stopAnyProvider {
 
 function startPayara {
     DISCOVERY_WAR_FILE=$PERFORMANCETESTS_SOURCE_DIR/target/discovery-jee.war
-    ACCESS_CONTROL_WAR_FILE=$PERFORMANCETESTS_SOURCE_DIR/target/accesscontrol-jee.war
 
     echo "Starting payara"
 
@@ -529,7 +528,6 @@ function startPayara {
     asadmin start-domain
 
     asadmin deploy --force=true $DISCOVERY_WAR_FILE
-    asadmin deploy --force=true $ACCESS_CONTROL_WAR_FILE
 
     if [ -n "$OLD_VALUE" ]
     then
