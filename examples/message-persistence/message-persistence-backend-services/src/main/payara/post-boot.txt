@@ -1,7 +1,6 @@
 create-jdbc-connection-pool --datasourceclassname org.h2.jdbcx.JdbcDataSource --restype javax.sql.XADataSource --property url="jdbc\:h2\:mem\:joynr" JoynrPool
 
 create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS
-create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS
 
 start-database
 

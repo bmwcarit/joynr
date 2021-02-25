@@ -51,9 +51,7 @@ MOSQUITTO_PID=$!
 # Use the default discovery-directory-jee with embedded db. Its name is e.g. discovery-directory-jee-1.10.0-SNAPSHOT.war
 DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-[0-9].*war")
 
-DOMAIN_ACCESS_CONTROLLER_WAR_FILE=$(find /data/src/java/backend-services/domain-access-controller-jee/target -iregex ".*domain-access-controller-jee-.*war")
-
-/data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE,$DOMAIN_ACCESS_CONTROLLER_WAR_FILE
+/data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
 
 # Assume that mosquitto and payara have sufficient time to startup before reaching
 # any test code that requires it;

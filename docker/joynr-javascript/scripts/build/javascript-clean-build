@@ -41,11 +41,10 @@ then
     mosquitto -c /data/src/docker/joynr-base/mosquitto.conf &
     MOSQUITTO_PID=$!
 
-    ACCESS_CTRL_WAR_FILE=$(find /data/src/java/backend-services/domain-access-controller-jee/target -iregex ".*domain-access-controller-jee*.war")
     # Use the default discovery-directory-jee with embedded db. Its name is e.g. discovery-directory-jee-1.10.0-SNAPSHOT.war
     DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-[0-9].*war")
 
-    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE,$ACCESS_CTRL_WAR_FILE
+    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
 fi
 
 (

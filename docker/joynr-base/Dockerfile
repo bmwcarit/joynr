@@ -127,7 +127,6 @@ RUN asadmin start-domain && \
     asadmin --user admin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor && \
     asadmin --user admin create-jdbc-connection-pool --datasourceclassname org.apache.derby.jdbc.ClientDataSource --restype javax.sql.XADataSource --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool && \
     asadmin --user admin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS && \
-    asadmin --user admin create-jdbc-resource --connectionpoolid JoynrPool joynr/DomainAccessControllerDS && \
     asadmin --user admin set-log-levels io.joynr.messaging=FINE && \
     asadmin --user admin set-log-levels io.joynr.dispatching=FINE && \
     asadmin --user admin set-log-levels io.joynr.jeeintegration=FINE && \

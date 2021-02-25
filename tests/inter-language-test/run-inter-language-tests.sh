@@ -81,7 +81,7 @@ fi
 
 if [ -z "$BACKEND_SERVICES" ]
 then
-	# use default (MQTT/JEE) Discovery and Access Control
+	# use default (MQTT/JEE) Discovery
 	BACKEND_SERVICES=MQTT
 elif [ "$BACKEND_SERVICES" != "MQTT" ] && [ "$BACKEND_SERVICES" != "HTTP" ]
 then
@@ -194,7 +194,7 @@ function start_payara {
 
 function stop_payara {
     echo "stopping payara"
-	for app in `asadmin list-applications | egrep '(discovery|access)' | cut -d" " -f1`;
+	for app in `asadmin list-applications | egrep '(discovery)' | cut -d" " -f1`;
 	do
 		echo "undeploy $app";
 		asadmin undeploy --droptables=true $app;

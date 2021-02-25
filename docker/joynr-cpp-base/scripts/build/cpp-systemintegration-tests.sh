@@ -32,17 +32,15 @@ function stopmosquitto
     JOYNR_VERSION=$(mvn -q -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:exec)
     MVN_REPO=${REPODIR:=/home/$(whoami)/.m2/repository}
 
-    ACCESS_CTRL_WAR_FILE="$MVN_REPO/io/joynr/java/backend-services/domain-access-controller-jee/$JOYNR_VERSION/domain-access-controller-jee-$JOYNR_VERSION.war"
     DISCOVERY_DIRECTORY_WAR_FILE="$MVN_REPO/io/joynr/java/backend-services/discovery-directory-jee/$JOYNR_VERSION/discovery-directory-jee-$JOYNR_VERSION.war"
 
-    echo ACCESS_CTRL_WAR_FILE=$ACCESS_CTRL_WAR_FILE
     echo DISCOVERY_DIRECTORY_WAR_FILE=$DISCOVERY_DIRECTORY_WAR_FILE
-    if [ ! -f $ACCESS_CTRL_WAR_FILE ] || [ ! -f $DISCOVERY_DIRECTORY_WAR_FILE ]; then
-      log "Cannot run tests: paths to ACCESS_CTRL_WAR_FILE and DISCOVERY_DIRECTORY_WAR_FILE do not exist.\nMVN_REPO=$MVN_REPO"
+    if [ ! -f $DISCOVERY_DIRECTORY_WAR_FILE ]; then
+      log "Cannot run tests: path DISCOVERY_DIRECTORY_WAR_FILE does not exist.\nMVN_REPO=$MVN_REPO"
       exit 1
     fi
 
-    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE,$ACCESS_CTRL_WAR_FILE
+    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
     SUCCESS=$?
     exit $SUCCESS
 )
