@@ -25,9 +25,14 @@ RUN asadmin start-domain && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true" && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile healthcheck-configure --enabled=true --dynamic=true && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile deploy /discovery-directory-jee.war && \
+	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.multiLineMode=false && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.messaging=FINE && \
 	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.dispatching=FINE && \
-	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.jeeintegration=FINE || \
+	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.discovery=FINEST && \
+	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.capabilities=FINEST && \
+	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.arbitration=FINEST && \
+	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.proxy=FINE && \
+	asadmin --user admin --passwordfile=/tmp/pwdfile set-log-levels io.joynr.jeeintegration=FINEST || \
 	true
 
 ENTRYPOINT ["/start-me-up.sh"]
