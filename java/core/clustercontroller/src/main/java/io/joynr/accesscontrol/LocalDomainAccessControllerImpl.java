@@ -41,7 +41,6 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
@@ -178,7 +177,6 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         // Allow access to the global directories
         if (domain.equals(discoveryDirectoriesDomain) || domain.equals(systemServicesDomain)) {
             if (interfaceName.equals(GlobalCapabilitiesDirectory.INTERFACE_NAME)
-                    || interfaceName.equals(GlobalDomainAccessController.INTERFACE_NAME)
                     || interfaceName.equals(Discovery.INTERFACE_NAME) || interfaceName.equals(Routing.INTERFACE_NAME)) {
                 return Optional.of(Permission.YES);
             }

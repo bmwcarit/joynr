@@ -55,8 +55,6 @@ import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.infrastructure.GlobalDomainRoleControllerBroadcastInterface.DomainRoleEntryChangedBroadcastListener;
-import joynr.infrastructure.GlobalDomainRoleControllerProxy;
 import joynr.types.GlobalDiscoveryEntry;
 
 import net.sf.ehcache.CacheManager;

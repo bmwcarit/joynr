@@ -21,10 +21,6 @@ package io.joynr.capabilities;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID;
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID;
 import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static org.junit.Assert.assertEquals;
@@ -61,9 +57,6 @@ import com.google.inject.name.Names;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalDomainAccessControlListEditor;
-import joynr.infrastructure.GlobalDomainAccessController;
-import joynr.infrastructure.GlobalDomainRoleController;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -81,7 +74,6 @@ public class StaticCapabilitiesProvisioningTest {
     private static final String TEST_GBID = "testgbid42";
     private static final String PROVISIONED_GBID = "brokerUri";
     private static final String GCD_PARTICIPANT_ID = "capdir_participant_id";
-    private static final String GDAC_PARTICIPANT_ID = "acl_participant_id";
     private static final String TEST_PARTICIPANT_ID = "particpantId";
 
     private ObjectMapper objectMapper;
@@ -173,18 +165,16 @@ public class StaticCapabilitiesProvisioningTest {
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
         Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
-        assertEquals(4, provisionedDiscoveryEntries.size());
+        assertEquals(3, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName1");
         assertContainsEntryFor(provisionedDiscoveryEntries, "interfaceName2");
         assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
-        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
     }
 
     @Test
     public void testLoadingSerializedDiscoveryEntriesNoLegacy() throws Exception {
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME);
 
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
@@ -192,16 +182,14 @@ public class StaticCapabilitiesProvisioningTest {
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
         Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
-        assertEquals(2, provisionedDiscoveryEntries.size());
+        assertEquals(1, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries, GlobalCapabilitiesDirectory.INTERFACE_NAME);
-        assertContainsEntryFor(provisionedDiscoveryEntries, GlobalDomainAccessController.INTERFACE_NAME);
     }
 
     @Test
     public void testSetGcdParticipantIdInRoutingTableCalledOnlyForGcdDiscoveryEntry() throws Exception {
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME);
 
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
@@ -217,8 +205,7 @@ public class StaticCapabilitiesProvisioningTest {
     @Test
     public void testOverrideJsonWithLegacy() throws IOException {
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME);
 
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
 
@@ -228,17 +215,12 @@ public class StaticCapabilitiesProvisioningTest {
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
         Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
 
-        assertEquals(2, provisionedDiscoveryEntries.size());
+        assertEquals(1, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                properties.capabilitiesDirectoryParticipantId,
                                null,
                                properties.discoveryDirectoryUri);
-        assertContainsEntryFor(provisionedDiscoveryEntries,
-                               GlobalDomainAccessController.INTERFACE_NAME,
-                               properties.domainAccessControllerParticipantId,
-                               null,
-                               properties.domainAccessControllerUri);
     }
 
     @Test(expected = CreationException.class)
@@ -246,8 +228,7 @@ public class StaticCapabilitiesProvisioningTest {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = createLegacyProvisioningPropertiesHolder();
         properties.capabilitiesDirectoryParticipantId = "";
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                      GlobalDomainAccessController.INTERFACE_NAME);
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME);
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         createInjectorForJsonValue(serializedDiscoveryEntries, properties);
         fail("Expecting legacy capabilities provisioning to fail fast.");
@@ -262,10 +243,7 @@ public class StaticCapabilitiesProvisioningTest {
     @Test
     public void testGbidsOfInternalProvidersAreReplacedByDefaultGbid() throws IOException {
         Set<DiscoveryEntry> discoveryEntries = createDiscoveryEntries("io.joynr",
-                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                                                                      GlobalDomainAccessController.INTERFACE_NAME,
-                                                                      GlobalDomainRoleController.INTERFACE_NAME,
-                                                                      GlobalDomainAccessControlListEditor.INTERFACE_NAME);
+                                                                      GlobalCapabilitiesDirectory.INTERFACE_NAME);
         final String serializedDiscoveryEntries = objectMapper.writeValueAsString(discoveryEntries);
         Injector injector = createInjectorForJsonValue(serializedDiscoveryEntries);
 
@@ -273,21 +251,6 @@ public class StaticCapabilitiesProvisioningTest {
         Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
-                               null,
-                               null,
-                               DEFAULT_GBID);
-        assertContainsEntryFor(provisionedDiscoveryEntries,
-                               GlobalDomainAccessController.INTERFACE_NAME,
-                               null,
-                               null,
-                               DEFAULT_GBID);
-        assertContainsEntryFor(provisionedDiscoveryEntries,
-                               GlobalDomainRoleController.INTERFACE_NAME,
-                               null,
-                               null,
-                               DEFAULT_GBID);
-        assertContainsEntryFor(provisionedDiscoveryEntries,
-                               GlobalDomainAccessControlListEditor.INTERFACE_NAME,
                                null,
                                null,
                                DEFAULT_GBID);
@@ -322,15 +285,10 @@ public class StaticCapabilitiesProvisioningTest {
 
         CapabilitiesProvisioning subject = injector.getInstance(CapabilitiesProvisioning.class);
         Collection<GlobalDiscoveryEntry> provisionedDiscoveryEntries = subject.getDiscoveryEntries();
-        assertEquals(3, provisionedDiscoveryEntries.size());
+        assertEquals(2, provisionedDiscoveryEntries.size());
         assertContainsEntryFor(provisionedDiscoveryEntries,
                                GlobalCapabilitiesDirectory.INTERFACE_NAME,
                                GCD_PARTICIPANT_ID,
-                               null,
-                               TEST_GBID);
-        assertContainsEntryFor(provisionedDiscoveryEntries,
-                               GlobalDomainAccessController.INTERFACE_NAME,
-                               GDAC_PARTICIPANT_ID,
                                null,
                                TEST_GBID);
         assertContainsEntryFor(provisionedDiscoveryEntries,
@@ -343,11 +301,8 @@ public class StaticCapabilitiesProvisioningTest {
     private LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder createLegacyProvisioningPropertiesHolder() {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder properties = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
         properties.capabilitiesDirectoryParticipantId = GCD_PARTICIPANT_ID;
-        properties.domainAccessControllerParticipantId = GDAC_PARTICIPANT_ID;
         properties.discoveryDirectoryUri = TEST_GBID;
-        properties.domainAccessControllerUri = TEST_GBID;
         properties.channelId = "local_channel_id";
-        properties.domainAccessControllerChannelId = "acl_channel_id";
         properties.capabilitiesDirectoryChannelId = "capdir_channel_id";
         properties.discoveryDirectoriesDomain = "io.joynr";
         return properties;
@@ -356,12 +311,9 @@ public class StaticCapabilitiesProvisioningTest {
     private Injector createInjectorForJsonValue(final String jsonValue) throws IOException {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder propertiesHolder = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder();
         propertiesHolder.capabilitiesDirectoryParticipantId = GCD_PARTICIPANT_ID;
-        propertiesHolder.domainAccessControllerParticipantId = "";
         propertiesHolder.discoveryDirectoryUri = "";
-        propertiesHolder.domainAccessControllerUri = "";
         propertiesHolder.channelId = "";
         propertiesHolder.capabilitiesDirectoryChannelId = "";
-        propertiesHolder.domainAccessControllerChannelId = "";
         propertiesHolder.discoveryDirectoriesDomain = "";
         return createInjectorForJsonValue(jsonValue, propertiesHolder);
     }
@@ -386,19 +338,9 @@ public class StaticCapabilitiesProvisioningTest {
                                   .toInstance(provisioningProperties.capabilitiesDirectoryParticipantId);
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN))
                                   .toInstance(provisioningProperties.discoveryDirectoriesDomain);
-                bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_CHANNEL_ID))
-                                  .toInstance(provisioningProperties.domainAccessControllerChannelId);
-                bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROLLER_PARTICIPANT_ID))
-                                  .toInstance(provisioningProperties.domainAccessControllerParticipantId);
                 bind(String.class).annotatedWith(Names.named(CHANNELID)).toInstance(provisioningProperties.channelId);
                 bind(String.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL))
                                   .toInstance(provisioningProperties.discoveryDirectoryUri);
-                bind(String.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL))
-                                  .toInstance(provisioningProperties.domainAccessControllerUri);
-                bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ACCESS_CONTROL_LISTEDITOR_PARTICIPANT_ID))
-                                  .toInstance("");
-                bind(String.class).annotatedWith(Names.named(PROPERTY_DOMAIN_ROLE_CONTROLLER_PARTICIPANT_ID))
-                                  .toInstance("");
                 bind(String[].class).annotatedWith(Names.named(GBID_ARRAY))
                                     .toInstance(new String[]{ DEFAULT_GBID, "testgbid2" });
 

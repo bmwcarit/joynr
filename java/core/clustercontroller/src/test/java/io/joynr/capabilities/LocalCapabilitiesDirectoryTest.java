@@ -95,7 +95,6 @@ import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.DiscoveryProvider.Add1Deferred;
 import joynr.system.DiscoveryProvider.AddToAllDeferred;
 import joynr.system.DiscoveryProvider.Lookup1Deferred;
@@ -277,8 +276,6 @@ public class LocalCapabilitiesDirectoryTest {
         String discoveryDirectoriesDomain = "io.joynr";
         String capabilitiesDirectoryParticipantId = "capDir_participantId";
         String capabiltitiesDirectoryChannelId = "dirchannelId";
-        String domainAccessControllerParticipantId = "domainAccessControllerParticipantId";
-        String domainAccessControllerChannelId = "domainAccessControllerChannelId";
         GlobalDiscoveryEntry globalCapabilitiesDirectoryDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0,
                                                                                                                              1),
                                                                                                                  discoveryDirectoriesDomain,
@@ -287,21 +284,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                                  new ProviderQos(),
                                                                                                                  System.currentTimeMillis(),
                                                                                                                  expiryDateMs,
-                                                                                                                 domainAccessControllerChannelId,
+                                                                                                                 capabiltitiesDirectoryChannelId,
                                                                                                                  new ChannelAddress(TEST_URL,
                                                                                                                                     capabiltitiesDirectoryChannelId));
-
-        GlobalDiscoveryEntry domainAccessControllerDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0,
-                                                                                                                        1),
-                                                                                                            discoveryDirectoriesDomain,
-                                                                                                            GlobalDomainAccessController.INTERFACE_NAME,
-                                                                                                            domainAccessControllerParticipantId,
-                                                                                                            new ProviderQos(),
-                                                                                                            System.currentTimeMillis(),
-                                                                                                            expiryDateMs,
-                                                                                                            domainAccessControllerChannelId,
-                                                                                                            new ChannelAddress(TEST_URL,
-                                                                                                                               domainAccessControllerChannelId));
 
         provisionedGlobalDiscoveryEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
                                                                                   "provisioneddomain",
@@ -315,7 +300,6 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                   "provisionedtopic"));
 
         when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(new HashSet<GlobalDiscoveryEntry>(Arrays.asList(globalCapabilitiesDirectoryDiscoveryEntry,
-                                                                                                                        domainAccessControllerDiscoveryEntry,
                                                                                                                         provisionedGlobalDiscoveryEntry)));
         localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
                                                                         globalAddressProvider,

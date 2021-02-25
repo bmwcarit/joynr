@@ -19,7 +19,6 @@
 package io.joynr.capabilities;
 
 import static io.joynr.messaging.MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY;
-import static io.joynr.messaging.MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
@@ -33,8 +32,6 @@ public class StaticCapabilitiesProvisioningModule extends AbstractModule {
                                             .asEagerSingleton();
         bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
                                         .toProvider(GlobalCapabilitiesDirectoryDiscoveryEntryProvider.class);
-        bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY))
-                                        .toProvider(GlobalDomainAccessControllerDiscoveryEntryProvider.class);
     }
 
 }

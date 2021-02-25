@@ -58,11 +58,9 @@ import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.capabilities.StaticCapabilitiesProvisioning;
 import io.joynr.integration.setup.SystemPropertyServletConfiguration;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.servlet.ServletUtil;
 import io.joynr.util.ObjectMapper;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalDomainAccessController;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
@@ -132,19 +130,8 @@ public class ServersUtil {
                                                                                       "",
                                                                                       new ChannelAddress(directoriesUrl,
                                                                                                          channelId));
-        String accessParticipantId = "domainaccesscontroller_participantid";
-        GlobalDiscoveryEntry accessControlEntry = CapabilityUtils.newGlobalDiscoveryEntry(new Version(0, 1),
-                                                                                          "io.joynr",
-                                                                                          GlobalDomainAccessController.INTERFACE_NAME,
-                                                                                          accessParticipantId,
-                                                                                          new ProviderQos(),
-                                                                                          System.currentTimeMillis(),
-                                                                                          Long.MAX_VALUE,
-                                                                                          "",
-                                                                                          new InProcessAddress());
         List<DiscoveryEntry> entries = new ArrayList<>();
         entries.add(discoveryEntry);
-        entries.add(accessControlEntry);
         return objectMapper.writeValueAsString(entries);
     }
 

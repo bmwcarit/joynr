@@ -27,7 +27,6 @@ public final class MessagingPropertyKeys {
     public static final String DEFAULT_PERSISTENCE_FILE = "joynr.properties";
     public static final String DEFAULT_MESSAGING_PROPERTIES_FILE = "defaultMessaging.properties";
 
-    public static final String DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY = "joynr.messaging.domainaccesscontroller.discoveryentry";
     public static final String CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY = "joynr.messaging.capabilitiesdirectory.discoveryentry";
 
     public static final String JOYNR_PROPERTIES = "joynr.properties";

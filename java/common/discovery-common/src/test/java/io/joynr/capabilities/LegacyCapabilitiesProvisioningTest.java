@@ -46,13 +46,10 @@ public class LegacyCapabilitiesProvisioningTest {
     @Test
     public void testMqttAddressGeneratedCorrectly() {
         LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder propertiesHolder = new LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder("tcp://localhost:1883",
-                                                                                                                                                                   "tcp://localhost:1883",
                                                                                                                                                                    "channel_id",
                                                                                                                                                                    "discovery_domain",
                                                                                                                                                                    "capabilities_domain",
-                                                                                                                                                                   "capdir_channel_id",
-                                                                                                                                                                   "domain_access_ctrl_participant_id",
-                                                                                                                                                                   "domain_access_ctrl_channel_id");
+                                                                                                                                                                   "capdir_channel_id");
         LegacyCapabilitiesProvisioning subject = new LegacyCapabilitiesProvisioning(propertiesHolder);
         Address address = subject.getAddressForInterface(GlobalCapabilitiesDirectory.class);
         assertTrue(address instanceof MqttAddress);

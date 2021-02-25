@@ -39,7 +39,6 @@ import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.PropertyLoader;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import joynr.infrastructure.GlobalDomainAccessControllerProvider;
 import joynr.system.DiscoveryProvider;
 import joynr.system.RoutingProvider;
 import joynr.types.GlobalDiscoveryEntry;
@@ -49,7 +48,6 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
 
     private static final Logger logger = LoggerFactory.getLogger(PropertiesFileParticipantIdStorage.class);
     private final GlobalDiscoveryEntry capabilitiesDirectoryEntry;
-    private final GlobalDiscoveryEntry domainAccessControllerEntry;
     Properties persistedParticipantIds;
     private String persistenceFileName;
     private Properties joynrProperties;
@@ -61,12 +59,10 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
                                               @Named(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE) String persistenceFileName,
                                               @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
                                               @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId,
-                                              @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry,
-                                              @Named(MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY) GlobalDiscoveryEntry domainAccessControllerEntry) {
+                                              @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry) {
         this.joynrProperties = joynrProperties;
         this.persistenceFileName = persistenceFileName;
         this.capabilitiesDirectoryEntry = capabilitiesDirectoryEntry;
-        this.domainAccessControllerEntry = domainAccessControllerEntry;
         this.discoveryProviderParticipantId = discoveryProviderParticipantId;
         this.routingProviderParticipantId = routingProviderParticipantId;
         File persistenceFile = new File(persistenceFileName);
@@ -97,9 +93,6 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (ProviderAnnotations.getInterfaceName(GlobalCapabilitiesDirectoryProvider.class)
                                       .equals(interfaceName)) {
             participantId = capabilitiesDirectoryEntry.getParticipantId();
-        } else if (ProviderAnnotations.getInterfaceName(GlobalDomainAccessControllerProvider.class)
-                                      .equals(interfaceName)) {
-            participantId = domainAccessControllerEntry.getParticipantId();
         } else if (ProviderAnnotations.getInterfaceName(DiscoveryProvider.class).equals(interfaceName)) {
             participantId = discoveryProviderParticipantId;
         } else if (ProviderAnnotations.getInterfaceName(RoutingProvider.class).equals(interfaceName)) {

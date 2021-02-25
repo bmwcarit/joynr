@@ -74,8 +74,6 @@ public class ParticipantIdStorageTest {
             protected void configure() {
                 bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY))
                                                 .toInstance(capabilitiesDirectoryEntry);
-                bind(GlobalDiscoveryEntry.class).annotatedWith(Names.named(MessagingPropertyKeys.DOMAIN_ACCESS_CONTROLLER_DISCOVERY_ENTRY))
-                                                .toInstance(domainAccessControllerEntry);
                 bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
             }
         }, new JoynrPropertiesModule(testProperties));

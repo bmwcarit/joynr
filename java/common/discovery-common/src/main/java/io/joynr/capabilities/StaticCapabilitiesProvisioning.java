@@ -39,9 +39,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.util.ObjectMapper;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
-import joynr.infrastructure.GlobalDomainAccessControlListEditor;
-import joynr.infrastructure.GlobalDomainAccessController;
-import joynr.infrastructure.GlobalDomainRoleController;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.ChannelAddress;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -75,9 +72,6 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids) {
         internalInterfaces = new HashSet<String>();
         internalInterfaces.add(GlobalCapabilitiesDirectory.INTERFACE_NAME);
-        internalInterfaces.add(GlobalDomainAccessController.INTERFACE_NAME);
-        internalInterfaces.add(GlobalDomainRoleController.INTERFACE_NAME);
-        internalInterfaces.add(GlobalDomainAccessControlListEditor.INTERFACE_NAME);
         discoveryEntries = new HashSet<>();
         this.gbids = gbids.clone();
         this.resourceContentProvider = resourceContentProvider;
@@ -97,11 +91,6 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
         if (globalCapabilitiesEntry != null) {
             removeExistingEntryForInterface(GlobalCapabilitiesDirectory.INTERFACE_NAME);
             discoveryEntries.add(globalCapabilitiesEntry);
-        }
-        GlobalDiscoveryEntry domainAccessControllerEntry = legacyCapabilitiesProvisioning.getDiscoveryEntryForInterface(GlobalDomainAccessController.class);
-        if (domainAccessControllerEntry != null) {
-            removeExistingEntryForInterface(GlobalDomainAccessController.INTERFACE_NAME);
-            discoveryEntries.add(domainAccessControllerEntry);
         }
     }
 
