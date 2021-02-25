@@ -953,7 +953,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/communication-model/generated/datatypes/types/DiscoveryQos.cpp \
                          libjoynr/communication-model/generated/interfaces/infrastructure/IChannelUrlDirectory.cpp \
                          libjoynr/communication-model/generated/interfaces/infrastructure/IGlobalCapabilitiesDirectory.cpp \
-                         libjoynr/communication-model/generated/interfaces/infrastructure/IGlobalDomainAccessController.cpp \
                          libjoynr/communication-model/generated/interfaces/system/IDiscovery.cpp \
                          libjoynr/communication-model/generated/interfaces/system/ILogging.cpp \
                          libjoynr/communication-model/generated/interfaces/system/IRouting.cpp \
@@ -998,7 +997,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/infrastructure/DacTypes/TrustLevel.h \
                          libjoynr/include/joynr/infrastructure/DefaultChannelUrlDirectoryProvider.h \
                          libjoynr/include/joynr/infrastructure/DefaultGlobalCapabilitiesDirectoryProvider.h \
-                         libjoynr/include/joynr/infrastructure/DefaultGlobalDomainAccessControllerProvider.h \
                          libjoynr/include/joynr/infrastructure/GlobalCapabilitiesDirectoryAsyncProxy.h \
                          libjoynr/include/joynr/infrastructure/GlobalCapabilitiesDirectoryInProcessConnector.h \
                          libjoynr/include/joynr/infrastructure/GlobalCapabilitiesDirectoryJoynrMessagingConnector.h \
@@ -1008,35 +1006,10 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/infrastructure/GlobalCapabilitiesDirectoryRequestCaller.h \
                          libjoynr/include/joynr/infrastructure/GlobalCapabilitiesDirectoryRequestInterpreter.h \
                          libjoynr/include/joynr/infrastructure/GlobalCapabilitiesDirectorySyncProxy.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerAsyncProxy.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilter.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerDomainRoleEntryChangedBroadcastFilterParameters.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerInProcessConnector.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerJoynrMessagingConnector.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilter.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerMasterAccessControlEntryChangedBroadcastFilterParameters.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerMasterRegistrationControlEntryChangedBroadcastFilter.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerMasterRegistrationControlEntryChangedBroadcastFilterParameters.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilter.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerMediatorAccessControlEntryChangedBroadcastFilterParameters.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerMediatorRegistrationControlEntryChangedBroadcastFilter.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerMediatorRegistrationControlEntryChangedBroadcastFilterParameters.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilter.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerOwnerAccessControlEntryChangedBroadcastFilterParameters.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerOwnerRegistrationControlEntryChangedBroadcastFilter.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerOwnerRegistrationControlEntryChangedBroadcastFilterParameters.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerProvider.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerProxyBase.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerProxy.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerRequestCaller.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerRequestInterpreter.h \
-                         libjoynr/include/joynr/infrastructure/GlobalDomainAccessControllerSyncProxy.h \
                          libjoynr/include/joynr/infrastructure/IChannelUrlDirectoryConnector.h \
                          libjoynr/include/joynr/infrastructure/IChannelUrlDirectory.h \
                          libjoynr/include/joynr/infrastructure/IGlobalCapabilitiesDirectoryConnector.h \
                          libjoynr/include/joynr/infrastructure/IGlobalCapabilitiesDirectory.h \
-                         libjoynr/include/joynr/infrastructure/IGlobalDomainAccessControllerConnector.h \
-                         libjoynr/include/joynr/infrastructure/IGlobalDomainAccessController.h \
                          libjoynr/include/joynr/InProcessMessagingAddress.h \
                          libjoynr/include/joynr/InterfaceRegistrar.h \
                          libjoynr/include/joynr/IPlatformSecurityManager.h \
@@ -1128,7 +1101,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/include/joynr/types/DiscoveryQos.h \
                          libjoynr/in-process/generated/infrastructure/ChannelUrlDirectoryInProcessConnector.cpp \
                          libjoynr/in-process/generated/infrastructure/GlobalCapabilitiesDirectoryInProcessConnector.cpp \
-                         libjoynr/in-process/generated/infrastructure/GlobalDomainAccessControllerInProcessConnector.cpp \
                          libjoynr/in-process/generated/system/DiscoveryInProcessConnector.cpp \
                          libjoynr/in-process/generated/system/LoggingInProcessConnector.cpp \
                          libjoynr/in-process/generated/system/RoutingInProcessConnector.cpp \
@@ -1150,7 +1122,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/joynr-messaging/DummyPlatformSecurityManager.h \
                          libjoynr/joynr-messaging/generated/infrastructure/ChannelUrlDirectoryJoynrMessagingConnector.cpp \
                          libjoynr/joynr-messaging/generated/infrastructure/GlobalCapabilitiesDirectoryJoynrMessagingConnector.cpp \
-                         libjoynr/joynr-messaging/generated/infrastructure/GlobalDomainAccessControllerJoynrMessagingConnector.cpp \
                          libjoynr/joynr-messaging/generated/system/DiscoveryJoynrMessagingConnector.cpp \
                          libjoynr/joynr-messaging/generated/system/LoggingJoynrMessagingConnector.cpp \
                          libjoynr/joynr-messaging/generated/system/RoutingJoynrMessagingConnector.cpp \
@@ -1165,13 +1136,9 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/provider/generated/infrastructure/ChannelUrlDirectoryRequestInterpreter.cpp \
                          libjoynr/provider/generated/infrastructure/DefaultChannelUrlDirectoryProvider.cpp \
                          libjoynr/provider/generated/infrastructure/DefaultGlobalCapabilitiesDirectoryProvider.cpp \
-                         libjoynr/provider/generated/infrastructure/DefaultGlobalDomainAccessControllerProvider.cpp \
                          libjoynr/provider/generated/infrastructure/GlobalCapabilitiesDirectoryProvider.cpp \
                          libjoynr/provider/generated/infrastructure/GlobalCapabilitiesDirectoryRequestCaller.cpp \
                          libjoynr/provider/generated/infrastructure/GlobalCapabilitiesDirectoryRequestInterpreter.cpp \
-                         libjoynr/provider/generated/infrastructure/GlobalDomainAccessControllerProvider.cpp \
-                         libjoynr/provider/generated/infrastructure/GlobalDomainAccessControllerRequestCaller.cpp \
-                         libjoynr/provider/generated/infrastructure/GlobalDomainAccessControllerRequestInterpreter.cpp \
                          libjoynr/provider/generated/system/DefaultDiscoveryProvider.cpp \
                          libjoynr/provider/generated/system/DefaultLoggingProvider.cpp \
                          libjoynr/provider/generated/system/DefaultRoutingProvider.cpp \
@@ -1196,10 +1163,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/proxy/generated/infrastructure/GlobalCapabilitiesDirectoryProxyBase.cpp \
                          libjoynr/proxy/generated/infrastructure/GlobalCapabilitiesDirectoryProxy.cpp \
                          libjoynr/proxy/generated/infrastructure/GlobalCapabilitiesDirectorySyncProxy.cpp \
-                         libjoynr/proxy/generated/infrastructure/GlobalDomainAccessControllerAsyncProxy.cpp \
-                         libjoynr/proxy/generated/infrastructure/GlobalDomainAccessControllerProxyBase.cpp \
-                         libjoynr/proxy/generated/infrastructure/GlobalDomainAccessControllerProxy.cpp \
-                         libjoynr/proxy/generated/infrastructure/GlobalDomainAccessControllerSyncProxy.cpp \
                          libjoynr/proxy/generated/system/DiscoveryAsyncProxy.cpp \
                          libjoynr/proxy/generated/system/DiscoveryProxyBase.cpp \
                          libjoynr/proxy/generated/system/DiscoveryProxy.cpp \

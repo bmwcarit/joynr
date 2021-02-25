@@ -69,9 +69,15 @@ set(PUBLIC_HEADERS
     include/joynr/UnicastBroadcastListener.h
     include/joynr/UnicastSubscriptionCallback.h
     include/joynr/UnicastSubscriptionQos.h
+
+    include/joynr/infrastructure/DacTypes/DomainRoleEntry.h
+    include/joynr/infrastructure/DacTypes/Role.h
 )
 
 set(SOURCES
+    communication-model/datatypes/infrastructure/DacTypes/DomainRoleEntry.cpp
+    communication-model/datatypes/infrastructure/DacTypes/Role.cpp
+
     exceptions/JoynrExceptionUtil.cpp
     exceptions/MethodInvocationException.cpp
     exceptions/NoCompatibleProviderFoundException.cpp
