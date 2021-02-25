@@ -474,14 +474,26 @@ public class PublicationManagerImpl
                                                subscriptionRequest,
                                                providerContainer);
             } else {
-                logger.trace("Adding subscription request for non existing provider to queue.");
-                PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
-                                                                                           proxyParticipantId,
-                                                                                           subscriptionRequest);
-                queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
-                subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
-                                                          publicationInformation);
+                queueSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
+
             }
+        }
+    }
+
+    private void queueSubscriptionRequest(String proxyParticipantId,
+                                          String providerParticipantId,
+                                          SubscriptionRequest subscriptionRequest) {
+        PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
+                                                                                   proxyParticipantId,
+                                                                                   subscriptionRequest);
+        try {
+            long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
+            queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
+            subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(), publicationInformation);
+            addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
+            logger.trace("Added subscription request for non existing provider to queue.");
+        } catch (SubscriptionException e) {
+            sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
         }
     }
 
