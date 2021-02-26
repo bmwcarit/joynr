@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ class RoutingEntry {
         setIsGloballyVisible(isGloballyVisible);
         this.expiryDateMs = expiryDateMs;
         this.isSticky = isSticky;
+        this.refCount = 1L;
     }
 
     public Address getAddress() {
@@ -44,6 +45,10 @@ class RoutingEntry {
         return isSticky;
     }
 
+    public long getRefCount() {
+        return refCount;
+    }
+
     public void setAddress(Address address) {
         this.address = address;
     }
@@ -60,8 +65,26 @@ class RoutingEntry {
         this.isSticky = isSticky;
     }
 
+    public void setRefCount(long refCount) {
+        this.refCount = refCount;
+    }
+
+    public long incRefCount() {
+        return ++refCount;
+    }
+
+    public long decRefCount() throws IllegalStateException {
+        if (refCount <= 0) {
+            String exceptionMessage = "Reference count of the routing entry (" + address.toString()
+                    + ") is less or equal to 0. It could not be decremented.";
+            throw new IllegalStateException(exceptionMessage);
+        }
+        return --refCount;
+    }
+
     Address address;
     boolean isGloballyVisible;
     long expiryDateMs;
     boolean isSticky;
+    long refCount;
 }
