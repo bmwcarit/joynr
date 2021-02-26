@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>1.15.9-SNAPSHOT</version>
+		<version>1.15.9</version>
 	</parent>
 
 	<dependencies>
