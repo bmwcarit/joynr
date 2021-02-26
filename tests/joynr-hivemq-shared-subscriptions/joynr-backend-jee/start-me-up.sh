@@ -1,4 +1,4 @@
 #!/bin/bash
 
-asadmin start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true"
-asadmin start-domain --verbose
+asadmin --user admin --passwordfile=/opt/payara41/pwdfile start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true"
+asadmin --user admin --passwordfile=/opt/payara41/pwdfile start-domain --verbose
