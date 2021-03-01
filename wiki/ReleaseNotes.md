@@ -2,6 +2,31 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.14.6
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Updated jackson to version 2.11.3
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++]** MosquittoConnection attempts to reconnect when client was not authorized to connect
+* **[Java]** ObjectMapper is now protected by ReentrantReadWriteLock
+  to avoid potential occurrence of ConcurrentModificationException
+* **[JEE]** Delay MQTT shared subscription until providers are registered in order to prevent a
+  potential deadlock during application deployment in an environment with high load. It could occur
+  if the MQTT Broker had a lot of request messages for a provider in the starting application. The
+  incoming messages then blocked all joynr message worker threads because they tried to invoke the
+  not yet fully registered and initialized provider bean which required a synchronized block that
+  was already locked by another thread that tried to register the provider. The provider
+  registration (and the deployment) subsequently failed because all message worker threads were
+  blocked and the registration message could not be delivered to the global capabilities directory.
+* **[Docker]** Fixed docker image joynr-backend-jee
+
 # joynr 1.14.5
 
 ## API-relevant Changes
