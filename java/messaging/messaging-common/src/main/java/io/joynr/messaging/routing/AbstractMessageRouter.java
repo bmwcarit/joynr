@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -87,10 +88,12 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     private static class ProxyInformation {
         public String participantId;
         public ShutdownListener shutdownListener;
+        public final Set<String> providerParticipantIds;
 
         public ProxyInformation(String participantId, ShutdownListener shutdownListener) {
             this.participantId = participantId;
             this.shutdownListener = shutdownListener;
+            this.providerParticipantIds = new HashSet<String>();
         }
     }
 
