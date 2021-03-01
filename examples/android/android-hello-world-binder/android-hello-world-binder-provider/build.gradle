@@ -3,7 +3,7 @@
 buildscript {
     ext {
         kotlin_version = '1.3.61'
-        joynr_version = "1.14.5"
+        joynr_version = "1.14.6"
     }
     repositories {
         google()
