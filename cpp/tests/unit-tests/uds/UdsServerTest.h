@@ -60,6 +60,24 @@ protected:
     static std::function<void(const joynr::exceptions::JoynrRuntimeException&)>
             _ignoreClientFatalRuntimeErrors;
 
+    struct AtomicCounter
+    {
+        AtomicCounter() : _c(0)
+        {
+        }
+        void increment()
+        {
+            _c++;
+        }
+        std::uint64_t size()
+        {
+            return _c.load();
+        }
+
+    private:
+        std::atomic_uint64_t _c;
+    };
+
     class ErroneousClient
     {
         boost::asio::local::stream_protocol::endpoint _endpoint;
@@ -147,17 +165,14 @@ protected:
         }
     };
 
-    std::unique_ptr<joynr::UdsServer> createServer()
-    {
-        return std::make_unique<joynr::UdsServer>(_udsSettings);
-    }
-
     std::unique_ptr<joynr::UdsServer> createServer(MockUdsServerCallbacks& mock)
     {
-        auto udsServerTest = createServer();
-        udsServerTest->setConnectCallback([&mock](
-                const joynr::system::RoutingTypes::UdsClientAddress& id,
-                std::shared_ptr<joynr::IUdsSender> connection) { mock.connected(id, connection); });
+        auto udsServerTest = std::make_unique<joynr::UdsServer>(_udsSettings);
+        udsServerTest->setConnectCallback(
+                [&mock](const joynr::system::RoutingTypes::UdsClientAddress& id,
+                        std::unique_ptr<joynr::IUdsSender> connection) {
+                    mock.connected(id, std::move(connection));
+                });
         udsServerTest->setDisconnectCallback(
                 [&mock](const joynr::system::RoutingTypes::UdsClientAddress& id) {
                     mock.disconnected(id);
@@ -172,7 +187,12 @@ protected:
     void sendFromClient(smrf::Byte message)
     {
         smrf::ByteVector messageVector(1, message);
-        smrf::ByteArrayView messageView(messageVector);
+        sendFromClient(messageVector);
+    }
+
+    void sendFromClient(const smrf::ByteVector& message)
+    {
+        smrf::ByteArrayView messageView(message);
         _client->send(messageView, [](const joynr::exceptions::JoynrRuntimeException&) {});
     }
 

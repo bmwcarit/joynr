@@ -263,7 +263,6 @@ TEST_F(UdsClientTest, disconnectedCallbackException)
     stopServer();
     ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
             << "fatal error callback not invoked";
-    ASSERT_EQ(countServerConnections(0), 0);
 }
 
 TEST_F(UdsClientTest, receivedCallbackException)

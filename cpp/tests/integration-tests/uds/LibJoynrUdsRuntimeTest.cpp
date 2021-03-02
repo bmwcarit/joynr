@@ -89,17 +89,17 @@ protected:
     std::unique_ptr<UdsServer> createServer(MockUdsServerCallbacks& mock)
     {
         auto result = createServer();
-        result->setConnectCallback([&mock](
-                const system::RoutingTypes::UdsClientAddress& id,
-                std::shared_ptr<IUdsSender> remoteClient) { mock.connected(id, remoteClient); });
+        result->setConnectCallback([&mock](const system::RoutingTypes::UdsClientAddress& id,
+                                           std::unique_ptr<IUdsSender> remoteClient) {
+            mock.connected(id, std::move(remoteClient));
+        });
         result->setDisconnectCallback([&mock](const system::RoutingTypes::UdsClientAddress& id) {
             mock.disconnected(id);
         });
         result->setReceiveCallback(
                 [&mock](const system::RoutingTypes::UdsClientAddress& id,
-                        smrf::ByteVector&& val, const std::string creator) { 
-                mock.received(id, std::move(val), creator); 
-        });
+                        smrf::ByteVector&& val,
+                        const std::string creator) { mock.received(id, std::move(val), creator); });
         return result;
     }
 
@@ -142,13 +142,14 @@ TEST_F(LibJoynrUdsRuntimeTest, createAndDelete)
 TEST_F(LibJoynrUdsRuntimeTest, shutdownAfterConnect)
 {
     Semaphore serverSemaphore;
+    std::shared_ptr<joynr::IUdsSender> sender;
     MockUdsServerCallbacks serverCallbacks;
     /*
      * onSuccess of runtime is currently not checked, since it waits for
      * routing-proxy replies, which are not simulated by this test setup.
      */
-    EXPECT_CALL(serverCallbacks, connected(_, _))
-            .WillOnce(InvokeWithoutArgs(&serverSemaphore, &Semaphore::notify));
+    EXPECT_CALL(serverCallbacks, connectedMock(_, _)).WillOnce(
+            DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&serverSemaphore, &Semaphore::notify)));
     EXPECT_CALL(_runtimeCallbacks, onSuccess()).Times(0);
     auto runtime = connectRuntime(this);
     auto server = createServer(serverCallbacks);
@@ -179,13 +180,14 @@ TEST_F(LibJoynrUdsRuntimeTest, shutdownWhileWaitingForConnect)
 TEST_F(LibJoynrUdsRuntimeTest, connectionLoss)
 {
     Semaphore serverSemaphore;
+    std::shared_ptr<joynr::IUdsSender> sender;
     MockUdsServerCallbacks serverCallbacks;
     /*
      * onSuccess of runtime is currently not checked, since it waits for
      * routing-proxy replies, which are not simulated by this test setup.
      */
-    EXPECT_CALL(serverCallbacks, connected(_, _))
-            .WillOnce(InvokeWithoutArgs(&serverSemaphore, &Semaphore::notify));
+    EXPECT_CALL(serverCallbacks, connectedMock(_, _)).WillOnce(
+            DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&serverSemaphore, &Semaphore::notify)));
     connectRuntime(this);
     auto server = createServer(serverCallbacks);
     server->start();

@@ -149,7 +149,8 @@ void UdsClient::run()
             }
         });
         _ioContext.run();
-        _socket.close();
+        boost::system::error_code ignore;
+        _socket.close(ignore);
     }
     if (State::CONNECTED == _state.load()) {
         doHandleFatalError("State machine stopped unexpectedly");
@@ -260,7 +261,8 @@ void UdsClient::doHandleFatalError(const std::string& errorMessage) noexcept
                             "internal fatal runtime error.",
                             _address.getId());
         }
-        boost::system::error_code ignore; // Maybe the socket is not open.
+        boost::system::error_code ignore;
+        _socket.shutdown(boost::asio::socket_base::shutdown_both, ignore);
         _socket.close(ignore);
     }
 }

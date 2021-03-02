@@ -836,7 +836,7 @@ void JoynrClusterControllerRuntime::startLocalCommunication()
         _udsServer =
                 std::make_unique<UdsServer>(_udsSettings); // Stops implicitly old server if exists
         _udsServer->setConnectCallback([this](const system::RoutingTypes::UdsClientAddress& address,
-                                              std::shared_ptr<IUdsSender> sender) {
+                                              std::unique_ptr<IUdsSender> sender) {
             _udsMessagingStubFactory->addClient(address, std::move(sender));
         });
         _udsServer->setDisconnectCallback(

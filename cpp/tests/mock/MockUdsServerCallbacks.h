@@ -32,8 +32,13 @@ class UdsServerCallbackInterface
 {
 public:
     virtual ~UdsServerCallbackInterface() = default;
-    virtual void connected(const joynr::system::RoutingTypes::UdsClientAddress&,
-                           std::shared_ptr<joynr::IUdsSender>) = 0;
+    virtual void connectedMock(const joynr::system::RoutingTypes::UdsClientAddress&,
+                               std::shared_ptr<joynr::IUdsSender>) = 0;
+    void connected(const joynr::system::RoutingTypes::UdsClientAddress& addr,
+                   std::unique_ptr<joynr::IUdsSender> sender)
+    {
+        connectedMock(addr, std::move(sender));
+    }
     virtual void disconnected(const joynr::system::RoutingTypes::UdsClientAddress&) = 0;
     virtual void receivedMock(const joynr::system::RoutingTypes::UdsClientAddress&,
                               smrf::ByteVector,
@@ -50,7 +55,7 @@ public:
 class MockUdsServerCallbacks : public UdsServerCallbackInterface
 {
 public:
-    MOCK_METHOD2(connected,
+    MOCK_METHOD2(connectedMock,
                  void(const joynr::system::RoutingTypes::UdsClientAddress&,
                       std::shared_ptr<joynr::IUdsSender>));
     MOCK_METHOD1(disconnected, void(const joynr::system::RoutingTypes::UdsClientAddress&));

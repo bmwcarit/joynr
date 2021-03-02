@@ -51,11 +51,12 @@ protected:
     struct ClientInfo
     {
         joynr::system::RoutingTypes::UdsClientAddress _address;
-        std::weak_ptr<joynr::IUdsSender> _sender;
+        std::unique_ptr<joynr::IUdsSender> _sender;
         std::vector<smrf::ByteVector> _receivedMessages;
+        bool _connected;
         ClientInfo(joynr::system::RoutingTypes::UdsClientAddress address,
-                   std::shared_ptr<joynr::IUdsSender>& sender)
-                : _address{address}, _sender{std::weak_ptr<joynr::IUdsSender>(sender)}
+                   std::unique_ptr<joynr::IUdsSender> sender)
+                : _address{address}, _sender{std::move(sender)}, _connected{true}
         {
         }
         bool operator==(const joynr::system::RoutingTypes::UdsClientAddress& address)
@@ -77,7 +78,7 @@ protected:
         std::size_t sum{0};
         std::lock_guard<std::mutex> lck(_connectedClientsMutex);
         for (const auto& clientInfo : _connectedClients) {
-            sum += clientInfo._sender.expired() ? 0u : 1u;
+            sum += clientInfo._connected ? 1u : 0u;
         }
         return sum;
     }
@@ -160,10 +161,7 @@ protected:
         smrf::ByteVector array(1, value);
         smrf::ByteArrayView view(array);
         for (auto& clientInfo : _connectedClients) {
-            auto senderLock = clientInfo._sender.lock();
-            if (senderLock) {
-                senderLock->send(view, [](const joynr::exceptions::JoynrRuntimeException&) {});
-            }
+            clientInfo._sender->send(view, [](const joynr::exceptions::JoynrRuntimeException&) {});
         }
     }
 
@@ -207,21 +205,28 @@ public:
         _server = std::make_unique<joynr::UdsServer>(_udsSettings);
         _server->setConnectCallback(
                 [this](const joynr::system::RoutingTypes::UdsClientAddress& address,
-                       std::shared_ptr<joynr::IUdsSender> sender) {
+                       std::unique_ptr<joynr::IUdsSender> sender) {
                     std::lock_guard<std::mutex> lck(_connectedClientsMutex);
-                    _connectedClients.push_back(ClientInfo(address, sender));
+                    _connectedClients.push_back(ClientInfo(address, std::move(sender)));
                 });
         _server->setDisconnectCallback([this](
                 const joynr::system::RoutingTypes::UdsClientAddress& address) {
             std::lock_guard<std::mutex> lck(_connectedClientsMutex);
-            if (_connectedClients.end() ==
-                std::find(_connectedClients.begin(), _connectedClients.end(), address)) {
-                FAIL() << "Client with ID " << address.getId() << " has not connected (yet).";
+            auto clientToErase =
+                    std::find(_connectedClients.begin(), _connectedClients.end(), address);
+            if (_connectedClients.end() == clientToErase) {
+                FAIL() << "Client with ID " << address.getId()
+                       << " has not connected yet or is already disconnected.";
             }
+            if (!clientToErase->_connected) {
+                FAIL() << "Client with ID " << address.getId() << " has already been disconnected.";
+            }
+            clientToErase->_connected = false;
         });
         _server->setReceiveCallback([this](
                 const joynr::system::RoutingTypes::UdsClientAddress& address,
-                smrf::ByteVector&& message, const std::string& creator) {
+                smrf::ByteVector&& message,
+                const std::string& creator) {
             std::ignore = creator;
             std::lock_guard<std::mutex> lck(_connectedClientsMutex);
             auto clientInfo =

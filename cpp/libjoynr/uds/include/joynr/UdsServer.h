@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,9 @@
 
 #include <atomic>
 #include <future>
+#include <list>
 #include <memory>
-#include <set>
+#include <mutex>
 
 #include <boost/asio.hpp>
 
@@ -58,7 +59,7 @@ class UdsServer
 {
 public:
     using Connected = std::function<
-            void(const system::RoutingTypes::UdsClientAddress&, std::shared_ptr<IUdsSender>)>;
+            void(const system::RoutingTypes::UdsClientAddress&, std::unique_ptr<IUdsSender>)>;
     using Disconnected = std::function<void(const system::RoutingTypes::UdsClientAddress&)>;
     using Received = std::function<void(const system::RoutingTypes::UdsClientAddress&,
                                         smrf::ByteVector&&,
@@ -76,7 +77,6 @@ public:
     /**
      * @brief Sets callback for sucuessful connection of a client. Connection is successful if
      * initial message has been received.
-     * The provided sender must not exist longer than the UDS server.
      * @param callback Callback
      */
     void setConnectCallback(const Connected& callback);
@@ -111,25 +111,28 @@ private:
                                         const std::string&) {};
     };
 
-    // Connection to remote client, lifetime is decoupled from server
-    class Connection : public std::enable_shared_from_this<Connection>, public IUdsSender
+    // Connection to remote client
+    class Connection : public std::enable_shared_from_this<Connection>
     {
+        friend class UdsSender;
+
     public:
-        using Active = std::set<std::shared_ptr<Connection>>;
-        Connection(uds::socket&& socket,
-                   std::shared_ptr<boost::asio::io_service> ioContext,
-                   std::weak_ptr<Active> registry,
+        Connection(std::shared_ptr<boost::asio::io_service>& ioContext,
                    const ConnectionConfig& config) noexcept;
+
         /** Notifies sender if the connection got lost (error occured) */
-        virtual ~Connection();
+        ~Connection() = default;
 
         // remote clients are shared
         DISALLOW_COPY_AND_ASSIGN(Connection);
         DISALLOW_MOVE_AND_ASSIGN(Connection);
 
-        void send(const smrf::ByteArrayView& msg, const IUdsSender::SendFailed& callback) override;
-        // All do-actions are executed by the UdsServer thread pool. If the pool is stopped, the
-        // actions are dropped
+        uds::socket& getSocket();
+
+        void send(const smrf::ByteArrayView& msg, const IUdsSender::SendFailed& callback);
+
+        void shutdown();
+
         void doReadInitHeader() noexcept;
 
     private:
@@ -142,19 +145,15 @@ private:
         bool doCheck(const boost::system::error_code& ec) noexcept;
         void doClose(const std::string& errorMessage, const std::exception& error) noexcept;
         void doClose(const std::string& errorMessage) noexcept;
+        void doClose() noexcept;
 
-        // Socket is always available, hence sending does not require any locks
+        std::weak_ptr<boost::asio::io_service> _ioContext;
         uds::socket _socket;
-        // Socket is dependent on the _ioContext
-        std::shared_ptr<boost::asio::io_service> _ioContext;
-        // Registry is only available as long as the server exists
-        std::weak_ptr<Active> _registry;
-
         Connected _connectedCallback;
         Disconnected _disconnectedCallback;
         Received _receivedCallback;
 
-        std::atomic_bool _closedDueToError;
+        std::atomic_bool _isClosed;
 
         system::RoutingTypes::UdsClientAddress _address; // Only accessed by read-strand
 
@@ -167,21 +166,33 @@ private:
         ADD_LOGGER(Connection)
     };
 
+    // Lifetime of connection user is decoupled from server
+    class UdsSender : public IUdsSender
+    {
+    public:
+        UdsSender(std::weak_ptr<Connection> connection);
+        virtual ~UdsSender();
+        void send(const smrf::ByteArrayView& msg, const IUdsSender::SendFailed& callback) override;
+
+    private:
+        std::weak_ptr<Connection> _connection;
+        ADD_LOGGER(UdsSender)
+    };
+
     void run();
 
     // I/O context functions
     void doAcceptClient() noexcept;
 
-    /** Currently one thread handles server socket and all client sockets. Therefore no strands are
-     * implemented for remote-client read/write */
+    // One thread handles server socket and all client sockets. Therefore no strands are required.
     static constexpr int _threadsPerServer = 1;
+    // Context is shared with the connection (but lifetime depends on DecoupledUser and UdsServer)
     std::shared_ptr<boost::asio::io_service> _ioContext;
-    std::shared_ptr<Connection::Active> _registry;
     ConnectionConfig _remoteConfig;
     std::chrono::milliseconds _openSleepTime;
     uds::endpoint _endpoint;
     uds::acceptor _acceptor;
-    uds::socket _newClientSocket;
+    std::shared_ptr<Connection> _newConnection;
     std::future<void> _worker;
     std::atomic_bool _started;
     ADD_LOGGER(UdsServer)
