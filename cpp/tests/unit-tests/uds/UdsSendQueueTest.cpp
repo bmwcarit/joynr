@@ -142,6 +142,70 @@ TEST_F(UdsSendQueueTest, queueLimitExceeded)
             << "Unexpected data reported by error call backs";
 }
 
+TEST_F(UdsSendQueueTest, queueLimitExceededWhileSending)
+{
+    constexpr smrf::Byte testLimit{3};
+    UdsSendQueue<UdsFrameBufferV1> test(testLimit);
+
+    for (smrf::Byte i = 0; i < testLimit; i++) {
+        test.pushBack(createFrame(i), [this, i](const exceptions::JoynrRuntimeException& ex) {
+            _queuedErrorCallbacks.push_back({i, ex});
+        });
+    }
+
+    const void* sendDataPtr = test.showFront().data();
+
+    for (smrf::Byte i = testLimit; i < testLimit + 2; i++) {
+        test.pushBack(createFrame(i), [this, i](const exceptions::JoynrRuntimeException& ex) {
+            _queuedErrorCallbacks.push_back({i, ex});
+        });
+    }
+
+    EXPECT_EQ(0, extractBodyData(test.showFront())) << "Front queue element not very first one "
+                                                       "(shown before the test limit has been "
+                                                       "reached.";
+
+    EXPECT_EQ(sendDataPtr, test.showFront().data()) << "Front queue element not very first one "
+                                                       "(shown before the test limit has been "
+                                                       "reached.";
+
+    EXPECT_EQ(testLimit, _queuedErrorCallbacks.size());
+
+    for (std::size_t i = 0; i < _queuedErrorCallbacks.size(); i++) {
+        EXPECT_EQ(_queuedErrorCallbacks[i].first, i + 1)
+                << "The error callback shall start at the second entry inserted, since the first "
+                   "entry has already been shown to the sender socket.";
+    }
+}
+
+TEST_F(UdsSendQueueTest, clearQueueWhileSending)
+{
+    constexpr smrf::Byte testLimit{3};
+    UdsSendQueue<UdsFrameBufferV1> test(testLimit);
+
+    for (smrf::Byte i = 0; i < testLimit; i++) {
+        test.pushBack(createFrame(i), [this, i](const exceptions::JoynrRuntimeException& ex) {
+            _queuedErrorCallbacks.push_back({i, ex});
+        });
+    }
+
+    test.showFront();
+
+    test.emptyQueueAndNotify("");
+
+    EXPECT_EQ(testLimit, _queuedErrorCallbacks.size())
+            << "All data shall be provided in the error callback.";
+
+    test.emptyQueueAndNotify("");
+    EXPECT_EQ(testLimit, _queuedErrorCallbacks.size())
+            << "Error callback for entry already shown to the sender shall not be be called twice.";
+
+    EXPECT_EQ(extractBodyData(test.showFront()), 0) << "Should contain first element.";
+
+    EXPECT_EQ(test.popFrontOnSuccess(boost::system::error_code()), false)
+            << "Queue should be empty.";
+}
+
 TEST_F(UdsSendQueueTest, zeroLimit)
 {
     constexpr smrf::Byte testIterations{3};

@@ -41,7 +41,8 @@ template <typename FRAME>
 class UdsSendQueue
 {
 public:
-    explicit UdsSendQueue(const std::size_t& maxSize) noexcept : _maxSize{maxSize}
+    explicit UdsSendQueue(const std::size_t& maxSize) noexcept : _maxSize{maxSize},
+                                                                 _entryInSendingBuffer{emptyEntry()}
     {
     }
 
@@ -63,10 +64,10 @@ public:
                     boost::format(
                             "Sending queue size %d exceeded. Rescheduling all queued messages.") %
                     _maxSize;
-            emptyQueueAndNotify(errorMsg.str());
+            emptyQueueAndNotify(true, errorMsg.str());
         }
         _buffer.push_back(Entry(std::move(frame), callback));
-        return previousSize == 0;
+        return (previousSize == 0) && !_entryInSendingBuffer.first;
     }
 
     /**
@@ -75,24 +76,27 @@ public:
      */
     boost::asio::const_buffers_1 showFront() noexcept
     {
-        if (_buffer.empty()) {
-            return boost::asio::const_buffers_1(boost::asio::const_buffer());
+        if (!_entryInSendingBuffer.first) {
+            if (_buffer.empty()) {
+                return boost::asio::const_buffers_1(boost::asio::const_buffer());
+            }
+            _entryInSendingBuffer = std::move(_buffer.front());
+            _buffer.pop_front();
         }
-        const auto& frameBuffer = _buffer.front().first;
-        return frameBuffer.raw();
+        return _entryInSendingBuffer.first.raw();
     }
 
     /**
-     * Removes first entry in queue if the queue is not empty and the sending has been successful.
+     * Removes entry in queue if the queue is not empty and the sending has been successful.
      * @param sentFailed Error code signalling whe sucess or failure of sending the entry
      * @return True if the queue is not empty after removal and no error occured.
      */
     bool popFrontOnSuccess(const boost::system::error_code& sentFailed) noexcept
     {
-        if (_buffer.empty() || sentFailed) {
+        if ((!_entryInSendingBuffer.first) || sentFailed) {
             return false;
         }
-        _buffer.pop_front();
+        _entryInSendingBuffer = emptyEntry();
         return !_buffer.empty();
     }
 
@@ -102,17 +106,36 @@ public:
      */
     void emptyQueueAndNotify(const std::string& errorMessage)
     {
+        emptyQueueAndNotify(false, errorMessage);
+    }
+
+private:
+    void emptyQueueAndNotify(const bool queueFull, const std::string& errorMessage)
+    {
         const joynr::exceptions::JoynrDelayMessageException error(errorMessage);
+        if (_entryInSendingBuffer.first && !queueFull) {
+            // In this stage it can be safely assumed, that the sending is failed or will fail.
+            _entryInSendingBuffer.second(error);
+            // Release resources which might be attached to function and prevent sending message
+            // again.
+            _entryInSendingBuffer.second = [](const joynr::exceptions::JoynrRuntimeException&) {};
+            // The message itself must not be touched since it might be accessed by the socket
+            // writer.
+        }
         for (const auto& entry : _buffer) {
             entry.second(error);
         }
         _buffer.clear();
     }
 
-private:
     using Entry = std::pair<FRAME, IUdsSender::SendFailed>;
+    static inline Entry emptyEntry()
+    {
+        return Entry{FRAME(), [](const joynr::exceptions::JoynrRuntimeException&) {}};
+    }
     std::deque<Entry> _buffer;
     std::size_t _maxSize;
+    Entry _entryInSendingBuffer;
 };
 
 } // namespace joynr

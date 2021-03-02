@@ -74,6 +74,12 @@ public:
      */
     explicit UdsFrameBufferV1(const joynr::system::RoutingTypes::UdsClientAddress& clientAddress);
 
+    /** @return True if buffer contains valid message. */
+    inline explicit operator bool() const noexcept
+    {
+        return _isValid;
+    }
+
     /** @return Get view on the raw buffer content. */
     boost::asio::const_buffers_1 raw() const noexcept;
 
@@ -116,6 +122,8 @@ private:
                                                            clientAddress.getId());
         }
     }
+
+    bool _isValid;
 
     smrf::ByteVector _buffer;
     static constexpr std::size_t _cookieSize = sizeof(Cookie);

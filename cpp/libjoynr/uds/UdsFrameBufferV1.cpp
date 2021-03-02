@@ -28,7 +28,7 @@ namespace joynr
 constexpr UdsFrameBufferV1::Cookie UdsFrameBufferV1::_initMagicCookie;
 constexpr UdsFrameBufferV1::Cookie UdsFrameBufferV1::_msgMagicCookie;
 
-UdsFrameBufferV1::UdsFrameBufferV1() noexcept : _buffer(empty())
+UdsFrameBufferV1::UdsFrameBufferV1() noexcept : _isValid{false}, _buffer(empty())
 {
 }
 
@@ -42,6 +42,7 @@ UdsFrameBufferV1::UdsFrameBufferV1(const smrf::ByteArrayView& view) : UdsFrameBu
         writeMagicCookie(_msgMagicCookie);
         writeLength(view.size());
         std::memcpy(_buffer.data() + _headerSize, view.data(), view.size());
+        _isValid = true;
     }
 }
 
@@ -50,6 +51,7 @@ UdsFrameBufferV1::UdsFrameBufferV1(
         : UdsFrameBufferV1(smrf::ByteArrayView(serializeClientAddress(clientAddress)))
 {
     writeMagicCookie(_initMagicCookie);
+    _isValid = true;
 }
 
 boost::asio::const_buffers_1 UdsFrameBufferV1::raw() const noexcept

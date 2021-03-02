@@ -61,6 +61,7 @@ TEST(UdsFrameBufferV1Test, defaultCtor)
     ASSERT_EQ(test.header().size(), headerSize) << "Frame buffer header has not expected length";
     ASSERT_THAT(convertAsioBuffer(test.header()), Each(0))
             << "Frame header (size element) not initialized with 0";
+    ASSERT_FALSE(test) << "Default CTOR should should not be interpreted as valid.";
     try {
         test.body();
         FAIL() << "Empty frame should not be interpreted as message frame";
@@ -97,6 +98,8 @@ TEST(UdsFrameBufferV1Test, messageCtor)
     ASSERT_THAT(smrf::ByteVector(
                         raw.begin() + sizeof(UdsFrameBufferV1::Cookie), raw.begin() + headerSize),
                 ElementsAre(0, 0, 4, 0));
+
+    ASSERT_TRUE(test);
 }
 
 TEST(UdsFrameBufferV1Test, messageCtorException)
@@ -109,6 +112,7 @@ TEST(UdsFrameBufferV1Test, messageCtorException)
         std::string exceptionMessage = "JoynrRuntimeException not thrown by CTOR.";
         try {
             const UdsFrameBufferV1 unused(testView);
+            ASSERT_FALSE(unused);
             ASSERT_EQ(0, unused.raw().size()) << "Expected exception not thrown.";
         } catch (const joynr::exceptions::JoynrRuntimeException& e) {
             exceptionMessage = e.what();
@@ -135,6 +139,7 @@ TEST(UdsFrameBufferV1Test, clientAddressCtor)
     ASSERT_THAT(smrf::ByteVector(raw.begin(), raw.begin() + sizeof(UdsFrameBufferV1::Cookie)),
                 ElementsAre('M', 'J', 'I', '1'));
     ASSERT_THAT(convertAsioBuffer(test.body()), ElementsAreArray(testSerialized));
+    ASSERT_TRUE(test);
 }
 
 TEST(UdsFrameBufferV1Test, bodyException)
