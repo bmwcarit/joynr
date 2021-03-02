@@ -14,6 +14,10 @@ None.
 None.
 
 ## Bug Fixes
+* **[C++]** Provider registration without awaitGlobalRegistration now uses an extended
+  timeout of 90 minutes towards GlobalCapabilitiesDirectory. Note this registration is
+  still unreliable since the application will not get informed about the result and thus
+  has no chance to retry in case of failure.
 * **[C++]** MosquittoConnection attempts to reconnect when client was not authorized to connect
 * **[Java]** ObjectMapper is now protected by ReentrantReadWriteLock
   to avoid potential occurrence of ConcurrentModificationException
