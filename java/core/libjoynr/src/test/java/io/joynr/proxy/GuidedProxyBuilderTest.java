@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -137,7 +138,8 @@ public class GuidedProxyBuilderTest {
         DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         String testParticipantId = "test";
         mockedDiscoveryEntry.setParticipantId(testParticipantId);
-        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries);
         callbackCaptor.getValue().onSuccess(mockedArbitrationResult);
         Collection<DiscoveryEntry> resultEntries = result.get().getAllDiscoveryEntries();
         assertEquals(1, resultEntries.size());
@@ -219,7 +221,8 @@ public class GuidedProxyBuilderTest {
                 DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
                 String testParticipantId = "test";
                 mockedDiscoveryEntry.setParticipantId(testParticipantId);
-                ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
+                Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
+                ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries);
 
                 callbacks[0].onSuccess(mockedArbitrationResult);
                 return null;
@@ -329,7 +332,8 @@ public class GuidedProxyBuilderTest {
 
     private void mockSuccessfulDiscovery(DiscoveryEntryWithMetaInfo mockedDiscoveryEntry) throws NoSuchFieldException,
                                                                                           IllegalAccessException {
-        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries);
 
         Field discoveryCompletedFiled = GuidedProxyBuilder.class.getDeclaredField("discoveryCompletedOnce");
         discoveryCompletedFiled.setAccessible(true);

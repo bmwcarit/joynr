@@ -327,6 +327,9 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+
         capabilitiesList.add(expectedDiscoveryEntry);
         ProviderQos providerQos2 = new ProviderQos();
         CustomParameter[] qosParameters2 = {
@@ -348,7 +351,6 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
 
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
@@ -431,6 +433,9 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+
         capabilitiesList.add(expectedDiscoveryEntry);
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
@@ -439,7 +444,6 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
 
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
@@ -466,8 +470,10 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
-        capabilitiesList.add(expectedDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
 
+        capabilitiesList.add(expectedDiscoveryEntry);
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                             domain,
                                                             TestInterface.INTERFACE_NAME,
@@ -482,7 +488,6 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
 
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
@@ -501,6 +506,9 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+
         capabilitiesList.add(expectedDiscoveryEntry);
 
         long lessPrior = 1;
@@ -537,7 +545,6 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
 
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
@@ -609,6 +616,9 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+
         capabilitiesList.add(expectedDiscoveryEntry);
 
         // A provider with a higher priority that does not support onChangeSubscriptions
@@ -652,7 +662,6 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
 
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 
@@ -692,8 +701,8 @@ public class ArbitrationTest {
                                                                                           true);
 
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(anotherDiscoveryEntry);
-
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
 
         capabilitiesList.add(anotherDiscoveryEntry);
 
@@ -721,6 +730,9 @@ public class ArbitrationTest {
                                                                                    NO_EXPIRY,
                                                                                    publicKeyId,
                                                                                    true);
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(discoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+
         capabilitiesList.add(discoveryEntry);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
@@ -734,7 +746,6 @@ public class ArbitrationTest {
                times(1)).select(eq(discoveryQos.getCustomParameters()),
                                 eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
 
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(discoveryEntry);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
 
     }
@@ -772,8 +783,8 @@ public class ArbitrationTest {
                times(1)).select(eq(discoveryQos.getCustomParameters()),
                                 eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
 
-        DiscoveryEntryWithMetaInfo[] expectedDiscoveryEntries = new DiscoveryEntryWithMetaInfo[capabilitiesList.size()];
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(capabilitiesList.toArray(expectedDiscoveryEntries));
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(capabilitiesList);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 

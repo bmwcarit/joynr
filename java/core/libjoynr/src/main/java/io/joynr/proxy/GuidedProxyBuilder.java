@@ -21,6 +21,7 @@ package io.joynr.proxy;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -36,9 +37,9 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.util.ObjectMapper;
 import io.joynr.util.ReflectionUtils;
 import io.joynr.util.VersionUtil;
-import io.joynr.util.ObjectMapper;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Version;
@@ -327,7 +328,8 @@ public class GuidedProxyBuilder {
             throw new IllegalArgumentException("Provider Version " + providerVersion
                     + " does not match interface version " + interfaceVersion + " !");
         }
-        ArbitrationResult arbitrationResultForProxy = new ArbitrationResult(discoveryEntryForProxy);
+        Set<DiscoveryEntryWithMetaInfo> discoveryEntriesForProxy = new HashSet<>(Arrays.asList(discoveryEntryForProxy));
+        ArbitrationResult arbitrationResultForProxy = new ArbitrationResult(discoveryEntriesForProxy);
         registerInterfaceClassTypes(interfaceClass, "Cannot create ProxyBuilder");
         ProxyBuilder<T> proxyBuilder = proxyBuilderFactory.get(domains, interfaceClass);
         if (discoveryQos == null) {

@@ -24,14 +24,11 @@ import java.util.Set;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public class ArbitrationResult {
-    private Set<DiscoveryEntryWithMetaInfo> discoveryEntries;
+    private Set<DiscoveryEntryWithMetaInfo> selectedDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
 
-    public ArbitrationResult(final DiscoveryEntryWithMetaInfo... discoveryEntries) {
-        this.discoveryEntries = new HashSet<>();
-        if (discoveryEntries != null && discoveryEntries.length > 0) {
-            for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
-                this.discoveryEntries.add(discoveryEntry);
-            }
+    public ArbitrationResult(final Set<DiscoveryEntryWithMetaInfo> selectedDiscoverEntries) {
+        if (selectedDiscoverEntries != null) {
+            this.selectedDiscoveryEntries = selectedDiscoverEntries;
         }
     }
 
@@ -39,40 +36,39 @@ public class ArbitrationResult {
     }
 
     public Set<DiscoveryEntryWithMetaInfo> getDiscoveryEntries() {
-        return discoveryEntries;
+        return selectedDiscoveryEntries;
     }
 
     public void setDiscoveryEntries(Set<DiscoveryEntryWithMetaInfo> discoveryEntries) {
-        this.discoveryEntries = discoveryEntries;
+        if (discoveryEntries != null) {
+            this.selectedDiscoveryEntries = discoveryEntries;
+        } else {
+            this.selectedDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
+        }
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((discoveryEntries == null) ? 0 : discoveryEntries.hashCode());
+        result = prime * result + ((selectedDiscoveryEntries == null) ? 0 : selectedDiscoveryEntries.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
+        if (this == obj)
             return true;
-        }
-        if (obj == null) {
+        if (obj == null)
             return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (getClass() != obj.getClass())
             return false;
-        }
         ArbitrationResult other = (ArbitrationResult) obj;
-        if (discoveryEntries == null) {
-            if (other.discoveryEntries != null) {
+        if (selectedDiscoveryEntries == null) {
+            if (other.selectedDiscoveryEntries != null)
                 return false;
-            }
-        } else if (!discoveryEntries.equals(other.discoveryEntries)) {
+        } else if (!selectedDiscoveryEntries.equals(other.selectedDiscoveryEntries))
             return false;
-        }
         return true;
     }
 

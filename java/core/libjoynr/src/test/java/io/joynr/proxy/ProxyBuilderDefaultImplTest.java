@@ -331,7 +331,8 @@ public class ProxyBuilderDefaultImplTest {
         String testParticipantId = "test";
         DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         mockedDiscoveryEntry.setParticipantId(testParticipantId);
-        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedDiscoveryEntry);
+        Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries);
 
         DiscoveryQos discoveryQos = new DiscoveryQos();
 
