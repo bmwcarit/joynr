@@ -454,12 +454,12 @@ and cpp-java.
 You need to have Maven installed. Joynr is tested with Maven 3.3.3,
 but more recent versions should also work here.
 
-For both, consumer and provider, the backend (Discovery and Access Control) has to be started first.
+For both, consumer and provider, the backend (Global Capabilities Directory) has to be started first.
 You will also need to install an MQTT broker, e.g. [Mosquitto](http://mosquitto.org).
 
 ### Starting the Backend
 
-The following section describes how to run the joynr MQTT backend services on
+The following section describes how to run the joynr MQTT backend service on
 (Payara 4.1](http://www.payara.fish).
 First, install the application server. It has to be configured once before the first start:
 
@@ -477,7 +477,7 @@ resource which has the name `'concurrent/joynrMessagingScheduledExecutor'`:
 Note the `--corepoolsize=100` option. The default will only create one thread,
 which can lead to blocking.
 
-You also need a connection pool for the database which shall be used by the backend services
+You also need a connection pool for the database which shall be used by the backend service
 to persist data.
 For this example, we'll create a database on the JavaDB (based on Derby) database which is
 installed as part of Payara:

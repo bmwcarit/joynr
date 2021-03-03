@@ -51,7 +51,7 @@ for consumer implementation details.
 
 You need to have Maven installed.
 
-For both, consumer and provider, the backend (MQTT broker, JEE based Discovery and AccessControl)
+For both, consumer and provider, the backend (MQTT broker, Global Discovery Service)
 and a local standalone cluster-controller need to be started first.
 
 ### Starting the Backend
