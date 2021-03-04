@@ -328,7 +328,7 @@ public class ArbitrationTest {
                                                                                            publicKeyId,
                                                                                            true);
         Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
 
         capabilitiesList.add(expectedDiscoveryEntry);
         ProviderQos providerQos2 = new ProviderQos();
@@ -434,7 +434,7 @@ public class ArbitrationTest {
                                                                                            publicKeyId,
                                                                                            true);
         Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
 
         capabilitiesList.add(expectedDiscoveryEntry);
 
@@ -471,7 +471,7 @@ public class ArbitrationTest {
                                                                                            publicKeyId,
                                                                                            true);
         Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
 
         capabilitiesList.add(expectedDiscoveryEntry);
         capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
@@ -507,7 +507,7 @@ public class ArbitrationTest {
                                                                                            publicKeyId,
                                                                                            true);
         Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
 
         capabilitiesList.add(expectedDiscoveryEntry);
 
@@ -617,7 +617,7 @@ public class ArbitrationTest {
                                                                                            publicKeyId,
                                                                                            true);
         Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
 
         capabilitiesList.add(expectedDiscoveryEntry);
 
@@ -702,7 +702,7 @@ public class ArbitrationTest {
 
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(anotherDiscoveryEntry);
         Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
 
         capabilitiesList.add(anotherDiscoveryEntry);
 
@@ -731,7 +731,7 @@ public class ArbitrationTest {
                                                                                    publicKeyId,
                                                                                    true);
         Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(discoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
 
         capabilitiesList.add(discoveryEntry);
 
@@ -784,7 +784,7 @@ public class ArbitrationTest {
                                 eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
 
         Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(capabilitiesList);
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries);
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
     }
 

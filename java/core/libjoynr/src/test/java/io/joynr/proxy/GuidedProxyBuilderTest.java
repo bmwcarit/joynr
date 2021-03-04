@@ -139,7 +139,7 @@ public class GuidedProxyBuilderTest {
         String testParticipantId = "test";
         mockedDiscoveryEntry.setParticipantId(testParticipantId);
         Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
-        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries);
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries, null);
         callbackCaptor.getValue().onSuccess(mockedArbitrationResult);
         Collection<DiscoveryEntry> resultEntries = result.get().getAllDiscoveryEntries();
         assertEquals(1, resultEntries.size());
@@ -222,7 +222,7 @@ public class GuidedProxyBuilderTest {
                 String testParticipantId = "test";
                 mockedDiscoveryEntry.setParticipantId(testParticipantId);
                 Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
-                ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries);
+                ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries, null);
 
                 callbacks[0].onSuccess(mockedArbitrationResult);
                 return null;
@@ -333,7 +333,7 @@ public class GuidedProxyBuilderTest {
     private void mockSuccessfulDiscovery(DiscoveryEntryWithMetaInfo mockedDiscoveryEntry) throws NoSuchFieldException,
                                                                                           IllegalAccessException {
         Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
-        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries);
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries, null);
 
         Field discoveryCompletedFiled = GuidedProxyBuilder.class.getDeclaredField("discoveryCompletedOnce");
         discoveryCompletedFiled.setAccessible(true);

@@ -25,10 +25,15 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public class ArbitrationResult {
     private Set<DiscoveryEntryWithMetaInfo> selectedDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
+    private Set<DiscoveryEntryWithMetaInfo> otherDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
 
-    public ArbitrationResult(final Set<DiscoveryEntryWithMetaInfo> selectedDiscoverEntries) {
+    public ArbitrationResult(final Set<DiscoveryEntryWithMetaInfo> selectedDiscoverEntries,
+                             final Set<DiscoveryEntryWithMetaInfo> otherDiscoveryEntries) {
         if (selectedDiscoverEntries != null) {
             this.selectedDiscoveryEntries = selectedDiscoverEntries;
+        }
+        if (otherDiscoveryEntries != null) {
+            this.otherDiscoveryEntries = otherDiscoveryEntries;
         }
     }
 
@@ -47,10 +52,23 @@ public class ArbitrationResult {
         }
     }
 
+    public Set<DiscoveryEntryWithMetaInfo> getOtherDiscoveryEntries() {
+        return otherDiscoveryEntries;
+    }
+
+    public void setOtherDiscoveryEntries(Set<DiscoveryEntryWithMetaInfo> otherDiscoveryEntries) {
+        if (otherDiscoveryEntries != null) {
+            this.otherDiscoveryEntries = otherDiscoveryEntries;
+        } else {
+            this.otherDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
+        }
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ((otherDiscoveryEntries == null) ? 0 : otherDiscoveryEntries.hashCode());
         result = prime * result + ((selectedDiscoveryEntries == null) ? 0 : selectedDiscoveryEntries.hashCode());
         return result;
     }
@@ -64,6 +82,11 @@ public class ArbitrationResult {
         if (getClass() != obj.getClass())
             return false;
         ArbitrationResult other = (ArbitrationResult) obj;
+        if (otherDiscoveryEntries == null) {
+            if (other.otherDiscoveryEntries != null)
+                return false;
+        } else if (!otherDiscoveryEntries.equals(other.otherDiscoveryEntries))
+            return false;
         if (selectedDiscoveryEntries == null) {
             if (other.selectedDiscoveryEntries != null)
                 return false;
@@ -71,5 +94,4 @@ public class ArbitrationResult {
             return false;
         return true;
     }
-
 }

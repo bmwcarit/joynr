@@ -329,7 +329,8 @@ public class GuidedProxyBuilder {
                     + " does not match interface version " + interfaceVersion + " !");
         }
         Set<DiscoveryEntryWithMetaInfo> discoveryEntriesForProxy = new HashSet<>(Arrays.asList(discoveryEntryForProxy));
-        ArbitrationResult arbitrationResultForProxy = new ArbitrationResult(discoveryEntriesForProxy);
+        ArbitrationResult arbitrationResultForProxy = new ArbitrationResult(discoveryEntriesForProxy,
+                                                                            savedArbitrationResult.getOtherDiscoveryEntries());
         registerInterfaceClassTypes(interfaceClass, "Cannot create ProxyBuilder");
         ProxyBuilder<T> proxyBuilder = proxyBuilderFactory.get(domains, interfaceClass);
         if (discoveryQos == null) {
