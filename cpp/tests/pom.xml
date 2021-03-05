@@ -109,38 +109,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-jetty-config-files</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/jetty-config-files</outputDirectory>
-							<resources>
-								<resource>
-									<directory>resources</directory>
-									<filtering>true</filtering>
-									<includes>
-										<include>jetty*.xml</include>
-									</includes>
-								</resource>
-								<resource>
-									<directory>resources</directory>
-									<filtering>false</filtering>
-									<includes>
-										<include>localhost.jks</include>
-										<include>truststore.jks</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>properties-maven-plugin</artifactId>
 				<executions>
@@ -158,17 +126,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<configuration>
-					<!--
-					Don't define system properties here, because it will override system
-					properties defined in plugin management in super POM.
-					-->
-					<jettyXml>${project.build.directory}/jetty-config-files/jetty.xml,${project.build.directory}/jetty-config-files/jetty-http.xml,${project.build.directory}/jetty-config-files/jetty-ssl.xml,${project.build.directory}/jetty-config-files/jetty-https.xml</jettyXml>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
