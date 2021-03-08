@@ -16,7 +16,19 @@ None.
  `joynr.servlet` and related properties are ignored.
 
 ## Configuration Property Changes
-None.
+* **[Java]** Removed settings:
+  * `PROPERTY_BOUNCE_PROXY_URL` / `joynr.messaging.bounceproxyurl`
+  * `PROPERTY_GLOBAL_DOMAIN_ACCESS_CONTROLLER_URL` / `joynr.messaging.gdac.url`
+  * `PROPERTY_HOSTS_FILENAME` / `joynr.messaging.hostsFileName`
+  * `PROPERTY_SERVLET_CONTEXT_ROOT` / `joynr.servlet.context.root`
+  * `PROPERTY_SERVLET_HOST_PATH` / `joynr.servlet.hostpath`
+  * `PROPERTY_SERVLET_SHUTDOWN_TIMEOUT` / `joynr.servlet.shutdown.timeout`
+  * `PROPERTY_SERVLET_SKIP_LONGPOLL_DEREGISTRATION` / `joynr.servlet.skiplongpollderegistration`
+* **[Java]** Settings no longer support HTTP bridging values:
+  * `PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL` / `joynr.messaging.gcd.url`
+* **[JEE]** Removed settings:
+  * `JEE_ENABLE_HTTP_BRIDGE_CONFIGURATION_KEY` / `joynr.jeeintegration.enable.httpbridge`
+  * `JEE_INTEGRATION_ENDPOINTREGISTRY_URI` / `joynr.jeeintegration.endpointregistry.uri`
 
 ## Security Fixes
 None.
