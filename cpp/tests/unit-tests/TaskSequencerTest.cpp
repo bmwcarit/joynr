@@ -121,6 +121,8 @@ protected:
         return _sequence;
     }
 
+    void waitForTimeouts(size_t expectedNumberOfTimeouts, TimePoint expectedTimeout);
+
     std::uint64_t _creationCounter;
     std::uint64_t _executionCounter;
 
@@ -248,18 +250,35 @@ TEST_F(TaskSequencerTest, runRobustness)
     EXPECT_EQ(1, sequence.size());
 }
 
-TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksWhenOtherTaskIsRunning)
+void TaskSequencerTest::waitForTimeouts(size_t expectedNumberOfTimeouts, TimePoint expectedTimeout)
 {
+    for (int i = 0; i < 10; i++) {
+        if (expectedNumberOfTimeouts == _actualTimeoutDateMs.size()) {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    EXPECT_EQ(expectedNumberOfTimeouts, _actualTimeoutDateMs.size());
+    for (size_t i = 0; i < expectedNumberOfTimeouts; i++) {
+        EXPECT_TRUE(_actualTimeoutDateMs[i] - expectedTimeout.toMilliseconds() < 500);
+        EXPECT_TRUE(_actualTimeoutDateMs[i] >= expectedTimeout.toMilliseconds());
+    }
+}
+
+TEST_F(TaskSequencerTest, taskTimeoutCalledForQueuedTasksWhenOtherTaskIsRunning)
+{
+    // This test checks that starting a long running task does not delay the cancellation
+    // of expired tasks that are already queued
     TestTaskSequencer test;
     TimePoint expectedTimeoutDateMs = TimePoint::fromRelativeMs(1500);
+    // add a task that blocks the sequencer until the other tasks are enqueued
     TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000), true, true);
     // add a task that won't be finished and blocks the following tasks
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000), false);
+    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000), false);
     TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
     TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
     test.add(task1);
     auto sequence = waitForTestFutureCreation(1, std::chrono::seconds{10});
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // TaskSequencer is blocked now until the future of task1 is ready because it waits forever by default.
     test.add(task2);
     test.add(task3);
@@ -267,20 +286,48 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksWhenOtherTaskIsRunn
     // fulfill future of task1
     _fulfillDelayedFuture = true;
     sequence = waitForTestFutureCreation(2, std::chrono::seconds{10});
-    // wait for expiration of task3 and task4
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    // TaskSequencer is now blocked in task2 that will never finish
     EXPECT_EQ(2, sequence.size());
-    // task3 and task4 are expired after waiting for more than their ttl
-    EXPECT_EQ(2, _actualTimeoutDateMs.size());
-    EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs.toMilliseconds() < 500);
-    EXPECT_TRUE(_actualTimeoutDateMs[1] - expectedTimeoutDateMs.toMilliseconds() < 500);
-    EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
-    EXPECT_TRUE(_actualTimeoutDateMs[1] >= expectedTimeoutDateMs.toMilliseconds());
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // task3 and task4 are not yet expired
+    EXPECT_EQ(0, _actualTimeoutDateMs.size());
+    // wait for expiration of task3 and task4
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    waitForTimeouts(2, expectedTimeoutDateMs);
+    // TaskSequencer is still blocked in task2
+    EXPECT_EQ(2, sequence.size());
+    
+}
+
+TEST_F(TaskSequencerTest, taskTimeoutCalledForNewTasksWhenOtherTaskIsRunning)
+{
+    // This test checks that a long running task does not delay the cancellation
+    // of expired tasks that are added to the sequencer when the long running task
+    // is already running
+    TestTaskSequencer test(std::chrono::milliseconds(1000));
+    TimePoint expectedTimeoutDateMs = TimePoint::fromRelativeMs(1500);
+    // add a task that won't be finished and blocks the following tasks
+    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000), false);
+    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
+    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
+    test.add(task1);
+    auto sequence = waitForTestFutureCreation(1, std::chrono::seconds{10});
+    // TaskSequencer is blocked now in task1 that will never finish
+    test.add(task2);
+    test.add(task3);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // task2 and task3 are not yet expired
+    EXPECT_EQ(0, _actualTimeoutDateMs.size());
+    // wait for expiration of task2 and task3
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    waitForTimeouts(2, expectedTimeoutDateMs);
+    // TaskSequencer is still blocked in task1
+    EXPECT_EQ(1, sequence.size());
 }
 
 TEST_F(TaskSequencerTest, testTaskTimeoutNotCalledWithoutExpiredTasks)
 {
-    TestTaskSequencer test;
+    TestTaskSequencer test(std::chrono::milliseconds(1000));
     TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(500));
     // add a task that won't be finished and blocks the following tasks
     TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000), false);
@@ -296,7 +343,7 @@ TEST_F(TaskSequencerTest, testTaskTimeoutNotCalledWithoutExpiredTasks)
     std::this_thread::sleep_for(std::chrono::milliseconds{1500});
     EXPECT_EQ(2, sequence.size());
     // none of tasks in queue are timeout because we waited less than the expiry
-    // date of the enqueued tasks are reached
+    // date of the enqueued tasks
     EXPECT_EQ(0, _actualTimeoutDateMs.size());
 }
 
@@ -313,7 +360,7 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForTaskToBeExecutedNext)
     TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000));
     TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000));
     // wait some time before TaskSequncer starts to run
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     TimePoint expectedTimeoutDateMs = TimePoint::now();
     test.add(task1);
     test.add(task2);
@@ -328,6 +375,7 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForTaskToBeExecutedNext)
 
 TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksBeforeOtherTaskIsStarted) {
     TestTaskSequencer test;
+    // add a task that blocks the sequencer until the other tasks are enqueued
     TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000), true, true);
     TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000));
     // add task that will be removed after the future of task1 is ready, during calculation of timeToWait for task2

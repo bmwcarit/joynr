@@ -52,10 +52,6 @@ namespace joynr
  * @note
  * The TaskSequencer cancels queued tasks as soon as they are expired: It calls the timeout()
  * function provided in TaskWithExpiryDate and removes the expired tasks from the queue.
- * TaskSequencer assumes that the tasks which do not have an unlimited expiry
- * (= TimePoint::max() ) date are ordered, i.e. a new task that is added should
- * have an expiryDate that is not less than the expiryDate of any previously
- * added task with not unlimited expiry date.
  *
  * @tparam Ts Future return types
  */
@@ -81,14 +77,13 @@ public:
 
     /**
      * @brief Creates queue processor.
-     * @param defaultTimeToWait - if there are no further tasks in the queue,
-     *        this time in milliseconds is used to wait for the current task to
-     *        complete until the queue is checked for expired tasks again even if
-     *        the current task has not completed yet. If the queue is not empty,
-     *        the wait time is calculated from the task with the minimum expiry date.
+     * @param maxTimeToWait the maximum time to wait until the queue is checked for expired tasks
+     * again even if the current task has not completed yet. This should be set to the minimum ttl
+     * of tasks added to the sequencer. The actual time to wait is calculated from the remaining ttl
+     * of the task with the minimum expiry date in the queue.
      */
-    TaskSequencer(std::chrono::milliseconds defaultTimeToWait = std::chrono::milliseconds::max())
-            : _isRunning{true}, _future{nothingToDo()}, _defaultTimeToWait{defaultTimeToWait}
+    TaskSequencer(std::chrono::milliseconds maxTimeToWait = std::chrono::milliseconds::max())
+            : _isRunning{true}, _future{nothingToDo()}, _maxTimeToWait{maxTimeToWait}
     {
         _worker = std::thread(&TaskSequencer::run, this);
     }
@@ -147,12 +142,12 @@ private:
     std::condition_variable _tasksChanged;
     std::vector<TaskWithExpiryDate> _tasks;
     std::thread _worker;
-    const std::chrono::milliseconds _defaultTimeToWait;
+    const std::chrono::milliseconds _maxTimeToWait;
 
     void run()
     {
         while (_isRunning.load()) {
-            std::chrono::milliseconds timeToWaitMs = _defaultTimeToWait;
+            std::chrono::milliseconds timeToWaitMs = _maxTimeToWait;
             {
                 std::unique_lock<std::mutex> lock(_tasksMutex);
                 if (!_tasks.empty()) {
@@ -162,11 +157,13 @@ private:
                             [](const TaskWithExpiryDate& first, const TaskWithExpiryDate& second) {
                                 return first._expiryDate < second._expiryDate;
                             });
-
-                    timeToWaitMs = taskWithMinExpiryDate->_expiryDate.relativeFromNow();
-
+                    // use _maxTimeToWait as maximum time to wait
+                    if (taskWithMinExpiryDate->_expiryDate.relativeFromNow() < _maxTimeToWait) {
+                        timeToWaitMs = taskWithMinExpiryDate->_expiryDate.relativeFromNow();
+                    }
                     if (taskWithMinExpiryDate->_expiryDate.toMilliseconds() <=
                         TimePoint::now().toMilliseconds()) {
+                        // cancel expired task
                         taskWithMinExpiryDate->_timeout();
                         _tasks.erase(taskWithMinExpiryDate);
                         continue;
@@ -176,18 +173,18 @@ private:
             auto futureStatus = _future->_resultFuture.wait_for(timeToWaitMs);
 
             if (futureStatus != std::future_status::ready) {
+                // cancel expired tasks
                 std::unique_lock<std::mutex> lock(_tasksMutex);
                 for (auto it = _tasks.begin(); it != _tasks.end();) {
                     if (it->_expiryDate.toMilliseconds() <= TimePoint::now().toMilliseconds()) {
                         it->_timeout();
                         it = _tasks.erase(it);
-                    } else if (it->_expiryDate != TimePoint::max()) {
-                        break;
                     } else {
                         ++it;
                     }
                 }
             } else {
+                // task finished, get and execute next task
                 _future = nothingToDo();
                 try {
                     if (_isRunning.load()) {
