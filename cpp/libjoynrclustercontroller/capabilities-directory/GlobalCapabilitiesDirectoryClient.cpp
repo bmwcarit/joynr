@@ -75,14 +75,14 @@ void GlobalCapabilitiesDirectoryClient::add(
     }
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
     using std::move;
-    TaskSequencer<void>::TaskWithExpiryDate taskWithExpiryDate;
-    taskWithExpiryDate._expiryDate =
+    TaskSequencer<void>::TaskWithExpiryDate addTask;
+    addTask._expiryDate =
             TimePoint::fromRelativeMs(static_cast<std::int64_t>(addMessagingQos.getTtl()));
-    taskWithExpiryDate._timeout = [onRuntimeError]() {
+    addTask._timeout = [onRuntimeError]() {
         onRuntimeError(exceptions::JoynrRuntimeException(
                 "Failed to process global registration in time, please try again"));
     };
-    taskWithExpiryDate._task = [
+    addTask._task = [
         this,
         entry,
         gbids,
@@ -90,7 +90,7 @@ void GlobalCapabilitiesDirectoryClient::add(
         onError{move(onError)},
         onRuntimeError{move(onRuntimeError)},
         addMessagingQos{move(addMessagingQos)},
-        timeoutTaskExpiryDate = taskWithExpiryDate._expiryDate
+        timeoutTaskExpiryDate = addTask._expiryDate
     ]() mutable
     {
         auto future = std::make_shared<Future<void>>();
@@ -137,7 +137,15 @@ void GlobalCapabilitiesDirectoryClient::add(
         return future;
     };
 
-    _sequentialTasks->add(taskWithExpiryDate);
+    JOYNR_LOG_DEBUG(logger(),
+                    "Global provider registration scheduled: participantId {}, domain {}, "
+                    "interface {}, {}, awaitGlobalRegistration {}",
+                    entry.getParticipantId(),
+                    entry.getDomain(),
+                    entry.getInterfaceName(),
+                    entry.getProviderVersion().toString(),
+                    awaitGlobalRegistration);
+    _sequentialTasks->add(addTask);
 }
 
 void GlobalCapabilitiesDirectoryClient::reAdd(
@@ -156,6 +164,7 @@ void GlobalCapabilitiesDirectoryClient::reAdd(
         addMessagingQos = std::move(addMessagingQos)
     ]() mutable
     {
+        JOYNR_LOG_DEBUG(logger(), "Re-Add started.");
         std::shared_ptr<Future<void>> reAddResultFuture = std::make_shared<Future<void>>();
         std::vector<types::DiscoveryEntry> discoveryEntries;
         discoveryEntries = localCapabilitiesDirectoryStore->getAllGlobalCapabilities();
@@ -170,7 +179,7 @@ void GlobalCapabilitiesDirectoryClient::reAdd(
 
         auto onAddCompleted = [reAddCounter, reAddResultFuture]() {
             if (reAddCounter->fetch_sub(1) == 1) {
-                JOYNR_LOG_INFO(logger(), "Re-Add: completed.");
+                JOYNR_LOG_INFO(logger(), "Re-Add completed.");
                 reAddResultFuture->onSuccess();
             }
         };
@@ -225,6 +234,7 @@ void GlobalCapabilitiesDirectoryClient::reAdd(
         return reAddResultFuture;
     };
 
+    JOYNR_LOG_DEBUG(logger(), "Re-Add scheduled.");
     _sequentialTasks->add(reAddTask);
 }
 
@@ -244,15 +254,16 @@ void GlobalCapabilitiesDirectoryClient::remove(
                                                    std::move(onError),
                                                    std::move(onRuntimeError),
                                                    std::move(removeMessagingQos));
-    TaskSequencer<void>::TaskWithExpiryDate timeoutTask;
-    timeoutTask._expiryDate = TimePoint::max();
-    timeoutTask._timeout = []() {};
-    timeoutTask._task = [retryRemoveOperation]() {
+    TaskSequencer<void>::TaskWithExpiryDate removeTask;
+    removeTask._expiryDate = TimePoint::max();
+    removeTask._timeout = []() {};
+    removeTask._task = [retryRemoveOperation]() {
         retryRemoveOperation->execute();
         return retryRemoveOperation;
     };
 
-    _sequentialTasks->add(timeoutTask);
+    JOYNR_LOG_DEBUG(logger(), "Global remove scheduled, participantId {}", participantId);
+    _sequentialTasks->add(removeTask);
 }
 
 void GlobalCapabilitiesDirectoryClient::lookup(
