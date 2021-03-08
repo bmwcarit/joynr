@@ -813,22 +813,34 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                        CapabilitiesCallback capabilitiesCallback,
                                        Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
                                        Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
-        Set<String> domainsForGlobalLookup = new HashSet<>();
-        Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries = new HashSet<>();
-        for (String domainToMatch : domains) {
-            boolean domainMatched = addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
-            domainMatched = domainMatched
-                    || addEntriesForDomain(globalDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
-            if (!domainMatched) {
-                domainsForGlobalLookup.add(domainToMatch);
+        boolean isDomainMissing = false;
+        Set<String> missingDomains = new HashSet<String>(Arrays.asList(domains));
+        Set<String> addedParticipantIds = new HashSet<String>();
+        Set<DiscoveryEntryWithMetaInfo> result = localDiscoveryEntries;
+
+        for (DiscoveryEntryWithMetaInfo localEntry : localDiscoveryEntries) {
+            missingDomains.remove(localEntry.getDomain());
+            addedParticipantIds.add(localEntry.getParticipantId());
+        }
+
+        if (!missingDomains.isEmpty()) {
+            for (DiscoveryEntryWithMetaInfo globalEntry : globalDiscoveryEntries) {
+                if (!addedParticipantIds.contains(globalEntry.getParticipantId())
+                        && missingDomains.contains(globalEntry.getDomain())) {
+                    result.add(globalEntry);
+                    missingDomains.remove(globalEntry.getDomain());
+                }
             }
         }
-        handleMissingGlobalEntries(domainsForGlobalLookup,
+
+        isDomainMissing = !missingDomains.isEmpty();
+        handleMissingGlobalEntries(domains,
                                    interfaceName,
                                    discoveryQos,
                                    gbids,
                                    capabilitiesCallback,
-                                   matchedDiscoveryEntries);
+                                   result,
+                                   isDomainMissing);
     }
 
     private void handleLocalAndGlobal(String[] domains,
@@ -838,23 +850,30 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                       CapabilitiesCallback capabilitiesCallback,
                                       Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
                                       Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
-        Set<String> domainsForGlobalLookup = new HashSet<>();
-        Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries = new HashSet<>();
-        for (String domainToMatch : domains) {
-            addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
-            if (!addNonDuplicatedEntriesForDomain(globalDiscoveryEntries,
-                                                  matchedDiscoveryEntries,
-                                                  domainToMatch,
-                                                  localDiscoveryEntries)) {
-                domainsForGlobalLookup.add(domainToMatch);
-            }
+        boolean isDomainMissing = false;
+        Set<String> missingDomains = new HashSet<String>(Arrays.asList(domains));
+        Set<String> addedParticipantIds = new HashSet<String>();
+        Set<DiscoveryEntryWithMetaInfo> result = localDiscoveryEntries;
+
+        for (DiscoveryEntryWithMetaInfo localEntry : localDiscoveryEntries) {
+            addedParticipantIds.add(localEntry.getParticipantId());
         }
-        handleMissingGlobalEntries(domainsForGlobalLookup,
+
+        for (DiscoveryEntryWithMetaInfo globalEntry : globalDiscoveryEntries) {
+            if (!addedParticipantIds.contains(globalEntry.getParticipantId())) {
+                result.add(globalEntry);
+            }
+            missingDomains.remove(globalEntry.getDomain());
+        }
+
+        isDomainMissing = !missingDomains.isEmpty();
+        handleMissingGlobalEntries(domains,
                                    interfaceName,
                                    discoveryQos,
                                    gbids,
                                    capabilitiesCallback,
-                                   matchedDiscoveryEntries);
+                                   result,
+                                   isDomainMissing);
     }
 
     private void handleGlobalOnly(String[] domains,
@@ -863,66 +882,38 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                   String[] gbids,
                                   CapabilitiesCallback capabilitiesCallback,
                                   Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
-        Set<String> domainsForGlobalLookup = new HashSet<>(Arrays.asList(domains));
-        for (DiscoveryEntry discoveryEntry : globalDiscoveryEntries) {
-            domainsForGlobalLookup.remove(discoveryEntry.getDomain());
+        Set<String> missingDomains = new HashSet<>(Arrays.asList(domains));
+        for (DiscoveryEntryWithMetaInfo discoveryEntry : globalDiscoveryEntries) {
+            missingDomains.remove(discoveryEntry.getDomain());
         }
-        handleMissingGlobalEntries(domainsForGlobalLookup,
+
+        boolean isDomainMissing = !missingDomains.isEmpty();
+        handleMissingGlobalEntries(domains,
                                    interfaceName,
                                    discoveryQos,
                                    gbids,
                                    capabilitiesCallback,
-                                   globalDiscoveryEntries);
+                                   globalDiscoveryEntries,
+                                   isDomainMissing);
     }
 
-    private void handleMissingGlobalEntries(Set<String> domainsForGlobalLookup,
+    private void handleMissingGlobalEntries(String[] domains,
                                             String interfaceName,
                                             DiscoveryQos discoveryQos,
                                             String[] gbids,
                                             CapabilitiesCallback capabilitiesCallback,
-                                            Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries) {
-        if (domainsForGlobalLookup.isEmpty()) {
+                                            Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries,
+                                            boolean isDomainMissing) {
+        if (!isDomainMissing) {
             capabilitiesCallback.processCapabilitiesReceived(Optional.of(matchedDiscoveryEntries));
         } else {
-            asyncGetGlobalCapabilities(domainsForGlobalLookup.toArray(new String[domainsForGlobalLookup.size()]),
+            asyncGetGlobalCapabilities(domains,
                                        interfaceName,
                                        discoveryQos,
                                        gbids,
                                        capabilitiesCallback,
                                        matchedDiscoveryEntries);
         }
-    }
-
-    private boolean addEntriesForDomain(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries,
-                                        Collection<DiscoveryEntryWithMetaInfo> addTo,
-                                        String domain) {
-        boolean domainMatched = false;
-        for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
-            if (discoveryEntry.getDomain().equals(domain)) {
-                addTo.add(discoveryEntry);
-                domainMatched = true;
-            }
-        }
-        return domainMatched;
-    }
-
-    private boolean addNonDuplicatedEntriesForDomain(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries,
-                                                     Collection<DiscoveryEntryWithMetaInfo> addTo,
-                                                     String domain,
-                                                     Collection<DiscoveryEntryWithMetaInfo> possibleDuplicateEntries) {
-
-        boolean domainMatched = false;
-        Collection<DiscoveryEntry> possibleDuplicates = CapabilityUtils.convertToDiscoveryEntryList(possibleDuplicateEntries);
-        for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
-            if (discoveryEntry.getDomain().equals(domain)) {
-                DiscoveryEntry foundDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
-                if (!possibleDuplicates.contains(foundDiscoveryEntry)) {
-                    addTo.add(discoveryEntry);
-                }
-                domainMatched = true;
-            }
-        }
-        return domainMatched;
     }
 
     private Set<DiscoveryEntryWithMetaInfo> getGloballyCachedEntriesIfRequired(DiscoveryScope discoveryScope,

@@ -2023,7 +2023,7 @@ public class LocalCapabilitiesDirectoryTest {
                                       .lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAge()));
         doAnswer(createLookupAnswer(new ArrayList<GlobalDiscoveryEntry>())).when(globalCapabilitiesDirectoryClient)
                                                                            .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                                                   argThat(org.hamcrest.Matchers.arrayContaining(domains[1])),
+                                                                                   eq(domains),
                                                                                    eq(interfaceName),
                                                                                    eq(discoveryQos.getDiscoveryTimeout()),
                                                                                    eq(knownGbids));
@@ -2031,7 +2031,7 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
 
         verifyGcdLookupAndPromiseFulfillment(1,
-                                             new String[]{ domains[1] },
+                                             domains,
                                              interfaceName,
                                              discoveryQos.getDiscoveryTimeout(),
                                              knownGbids,
@@ -2088,7 +2088,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                   remoteEntry2,
                                                   remoteEntry3))).when(globalCapabilitiesDirectoryClient)
                                                                  .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                                         eq(new String[]{ remoteDomain }),
+                                                                         eq(domains),
                                                                          eq(INTERFACE_NAME),
                                                                          eq(discoveryQos.getDiscoveryTimeout()),
                                                                          eq(knownGbids));
@@ -2101,12 +2101,12 @@ public class LocalCapabilitiesDirectoryTest {
                                                      eq(INTERFACE_NAME),
                                                      eq(discoveryQos.getCacheMaxAge()));
         verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                         eq(new String[]{ remoteDomain }),
+                                                         eq(domains),
                                                          eq(INTERFACE_NAME),
                                                          eq(discoveryQos.getDiscoveryTimeout()),
                                                          eq(knownGbids));
         Object[] values = verifyGcdLookupAndPromiseFulfillment(1,
-                                                               new String[]{ remoteDomain },
+                                                               domains,
                                                                INTERFACE_NAME,
                                                                discoveryQos.getDiscoveryTimeout(),
                                                                knownGbids,
@@ -2318,7 +2318,7 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
 
         verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                         eq(new String[]{ "domain3" }),
+                                                         eq(domains),
                                                          eq(interfaceName),
                                                          eq(discoveryQos.getDiscoveryTimeout()),
                                                          eq(knownGbids));
@@ -2757,7 +2757,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                                        remoteGlobalEntry);
         doAnswer(createLookupAnswer(Arrays.asList(remoteGlobalEntry))).when(globalCapabilitiesDirectoryClient)
                                                                       .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                                              eq(new String[]{ remoteGlobalDomain }),
+                                                                              eq(domains),
                                                                               eq(interfaceName),
                                                                               anyLong(),
                                                                               eq(knownGbids));

@@ -308,17 +308,12 @@ public class LocalDiscoveryTest {
         };
     }
 
-    private void verifyGlobalLookup(String interfaceName, String testDomain) {
-        ArgumentCaptor<String[]> globalDomainCaptor = ArgumentCaptor.forClass(String[].class);
+    private void verifyGlobalLookup(String interfaceName, String[] testDomains) {
         verify(globalCapabilitiesDirectoryClientMock).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                                             globalDomainCaptor.capture(),
+                                                             eq(testDomains),
                                                              eq(interfaceName),
                                                              anyLong(),
                                                              any(String[].class));
-        List<String[]> globalDomainCaptorValues = globalDomainCaptor.getAllValues();
-        assertEquals(1, globalDomainCaptorValues.size());
-        assertEquals(1, globalDomainCaptorValues.get(0).length);
-        assertEquals(testDomain, globalDomainCaptorValues.get(0)[0]);
     }
 
     @Test
@@ -382,6 +377,7 @@ public class LocalDiscoveryTest {
     @Test
     public void testRemoteGlobalDiscoveryEntries() {
         String testDomain = "testDomain";
+        String[] testDomains = { testDomain };
         String interfaceName = testProxy.INTERFACE_NAME;
         final List<GlobalDiscoveryEntry> globalDiscoveryEntries = new ArrayList<>();
         final Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = new HashSet<>();
@@ -431,7 +427,7 @@ public class LocalDiscoveryTest {
                                                               any(MessagingQos.class),
                                                               eq(null));
 
-            verifyGlobalLookup(interfaceName, testDomain);
+            verifyGlobalLookup(interfaceName, testDomains);
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
@@ -531,7 +527,7 @@ public class LocalDiscoveryTest {
                                                               any(MessagingQos.class),
                                                               eq(null));
 
-            verifyGlobalLookup(interfaceName, remoteDomain);
+            verifyGlobalLookup(interfaceName, testDomains.toArray(new String[testDomains.size()]));
         } catch (Exception e) {
             Assert.fail("Unexpected exception from ProxyCreatedCallback: " + e);
         }
