@@ -763,7 +763,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                        String[] gbids,
                        final CapabilitiesCallback capabilitiesCallback) {
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
-        Set<DiscoveryEntry> localDiscoveryEntries = getLocalEntriesIfRequired(discoveryScope, domains, interfaceName);
+        Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = getLocalEntriesIfRequired(discoveryScope,
+                                                                                          domains,
+                                                                                          interfaceName);
         Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries = getGloballyCachedEntriesIfRequired(discoveryScope,
                                                                                                     gbids,
                                                                                                     domains,
@@ -771,8 +773,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                                                                                     discoveryQos.getCacheMaxAge());
         switch (discoveryScope) {
         case LOCAL_ONLY:
-            capabilitiesCallback.processCapabilitiesReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
-                                                                                                                                localDiscoveryEntries)));
+            handleLocalOnly(capabilitiesCallback, localDiscoveryEntries);
             break;
         case LOCAL_THEN_GLOBAL:
             handleLocalThenGlobal(domains,
@@ -780,11 +781,8 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                   discoveryQos,
                                   gbids,
                                   capabilitiesCallback,
-                                  CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localDiscoveryEntries),
+                                  localDiscoveryEntries,
                                   globalDiscoveryEntries);
-            break;
-        case GLOBAL_ONLY:
-            handleGlobalOnly(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, globalDiscoveryEntries);
             break;
         case LOCAL_AND_GLOBAL:
             handleLocalAndGlobal(domains,
@@ -795,9 +793,17 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                  localDiscoveryEntries,
                                  globalDiscoveryEntries);
             break;
+        case GLOBAL_ONLY:
+            handleGlobalOnly(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, globalDiscoveryEntries);
+            break;
         default:
             throw new IllegalStateException("Unknown or illegal DiscoveryScope value: " + discoveryScope);
         }
+    }
+
+    private void handleLocalOnly(final CapabilitiesCallback capabilitiesCallback,
+                                 Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries) {
+        capabilitiesCallback.processCapabilitiesReceived(Optional.of(localDiscoveryEntries));
     }
 
     private void handleLocalThenGlobal(String[] domains,
@@ -817,11 +823,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 domainsForGlobalLookup.add(domainToMatch);
             }
         }
-        handleMissingGlobalEntries(interfaceName,
+        handleMissingGlobalEntries(domainsForGlobalLookup,
+                                   interfaceName,
                                    discoveryQos,
                                    gbids,
                                    capabilitiesCallback,
-                                   domainsForGlobalLookup,
                                    matchedDiscoveryEntries);
     }
 
@@ -830,15 +836,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                       DiscoveryQos discoveryQos,
                                       String[] gbids,
                                       CapabilitiesCallback capabilitiesCallback,
-                                      Set<DiscoveryEntry> localDiscoveryEntries,
+                                      Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
                                       Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
-        Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntriesWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
-                                                                                                                                   localDiscoveryEntries);
-
         Set<String> domainsForGlobalLookup = new HashSet<>();
         Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries = new HashSet<>();
         for (String domainToMatch : domains) {
-            addEntriesForDomain(localDiscoveryEntriesWithMetaInfo, matchedDiscoveryEntries, domainToMatch);
+            addEntriesForDomain(localDiscoveryEntries, matchedDiscoveryEntries, domainToMatch);
             if (!addNonDuplicatedEntriesForDomain(globalDiscoveryEntries,
                                                   matchedDiscoveryEntries,
                                                   domainToMatch,
@@ -846,11 +849,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 domainsForGlobalLookup.add(domainToMatch);
             }
         }
-        handleMissingGlobalEntries(interfaceName,
+        handleMissingGlobalEntries(domainsForGlobalLookup,
+                                   interfaceName,
                                    discoveryQos,
                                    gbids,
                                    capabilitiesCallback,
-                                   domainsForGlobalLookup,
                                    matchedDiscoveryEntries);
     }
 
@@ -864,29 +867,29 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         for (DiscoveryEntry discoveryEntry : globalDiscoveryEntries) {
             domainsForGlobalLookup.remove(discoveryEntry.getDomain());
         }
-        handleMissingGlobalEntries(interfaceName,
+        handleMissingGlobalEntries(domainsForGlobalLookup,
+                                   interfaceName,
                                    discoveryQos,
                                    gbids,
                                    capabilitiesCallback,
-                                   domainsForGlobalLookup,
                                    globalDiscoveryEntries);
     }
 
-    private void handleMissingGlobalEntries(String interfaceName,
+    private void handleMissingGlobalEntries(Set<String> domainsForGlobalLookup,
+                                            String interfaceName,
                                             DiscoveryQos discoveryQos,
                                             String[] gbids,
                                             CapabilitiesCallback capabilitiesCallback,
-                                            Set<String> domainsForGlobalLookup,
                                             Set<DiscoveryEntryWithMetaInfo> matchedDiscoveryEntries) {
         if (domainsForGlobalLookup.isEmpty()) {
             capabilitiesCallback.processCapabilitiesReceived(Optional.of(matchedDiscoveryEntries));
         } else {
-            asyncGetGlobalCapabilities(gbids,
-                                       domainsForGlobalLookup.toArray(new String[domainsForGlobalLookup.size()]),
+            asyncGetGlobalCapabilities(domainsForGlobalLookup.toArray(new String[domainsForGlobalLookup.size()]),
                                        interfaceName,
                                        discoveryQos,
-                                       matchedDiscoveryEntries,
-                                       capabilitiesCallback);
+                                       gbids,
+                                       capabilitiesCallback,
+                                       matchedDiscoveryEntries);
         }
     }
 
@@ -906,13 +909,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private boolean addNonDuplicatedEntriesForDomain(Collection<DiscoveryEntryWithMetaInfo> discoveryEntries,
                                                      Collection<DiscoveryEntryWithMetaInfo> addTo,
                                                      String domain,
-                                                     Collection<DiscoveryEntry> possibleDuplicateEntries) {
+                                                     Collection<DiscoveryEntryWithMetaInfo> possibleDuplicateEntries) {
 
         boolean domainMatched = false;
+        Collection<DiscoveryEntry> possibleDuplicates = CapabilityUtils.convertToDiscoveryEntryList(possibleDuplicateEntries);
         for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
             if (discoveryEntry.getDomain().equals(domain)) {
                 DiscoveryEntry foundDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
-                if (!possibleDuplicateEntries.contains(foundDiscoveryEntry)) {
+                if (!possibleDuplicates.contains(foundDiscoveryEntry)) {
                     addTo.add(discoveryEntry);
                 }
                 domainMatched = true;
@@ -935,11 +939,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return null;
     }
 
-    private Set<DiscoveryEntry> getLocalEntriesIfRequired(DiscoveryScope discoveryScope,
-                                                          String[] domains,
-                                                          String interfaceName) {
+    private Set<DiscoveryEntryWithMetaInfo> getLocalEntriesIfRequired(DiscoveryScope discoveryScope,
+                                                                      String[] domains,
+                                                                      String interfaceName) {
         if (INCLUDE_LOCAL_SCOPES.contains(discoveryScope)) {
-            return new HashSet<DiscoveryEntry>(localDiscoveryEntryStore.lookup(domains, interfaceName));
+            return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
+                                                                          new HashSet<DiscoveryEntry>(localDiscoveryEntryStore.lookup(domains,
+                                                                                                                                      interfaceName)));
         }
         return null;
     }
@@ -1125,12 +1131,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     /**
      * mixes in the localDiscoveryEntries to global capabilities found by participantId
      */
-    private void asyncGetGlobalCapabilities(final String[] gbids,
-                                            final String[] domains,
+    private void asyncGetGlobalCapabilities(final String[] domains,
                                             final String interfaceName,
                                             DiscoveryQos discoveryQos,
-                                            Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries2,
-                                            final CapabilitiesCallback capabilitiesCallback) {
+                                            final String[] gbids,
+                                            final CapabilitiesCallback capabilitiesCallback,
+                                            Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries2) {
 
         final Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = localDiscoveryEntries2 == null
                 ? new LinkedList<DiscoveryEntryWithMetaInfo>()
