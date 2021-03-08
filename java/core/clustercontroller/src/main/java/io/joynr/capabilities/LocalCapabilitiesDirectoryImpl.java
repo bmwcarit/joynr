@@ -489,13 +489,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         final GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
                                                                                                               globalAddress);
         if (globalDiscoveryEntry != null) {
-
-            logger.debug("Global provider registration started: participantId {}, domain {}, interface {}, {}",
-                         globalDiscoveryEntry.getParticipantId(),
-                         globalDiscoveryEntry.getDomain(),
-                         globalDiscoveryEntry.getInterfaceName(),
-                         globalDiscoveryEntry.getProviderVersion());
-
             long expiryDateMs = System.currentTimeMillis() + defaultTtlAddAndRemove;
             CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
 
@@ -544,6 +537,12 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
             };
             GcdTask addTask = GcdTask.createAddTask(callback, globalDiscoveryEntry, expiryDateMs, gbids);
+            logger.debug("Global provider registration scheduled: participantId {}, domain {}, interface {}, {}, awaitGlobalRegistration {}",
+                         globalDiscoveryEntry.getParticipantId(),
+                         globalDiscoveryEntry.getDomain(),
+                         globalDiscoveryEntry.getInterfaceName(),
+                         globalDiscoveryEntry.getProviderVersion(),
+                         awaitGlobalRegistration);
             gcdTaskSequencer.addTask(addTask);
         }
     }
@@ -625,6 +624,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 }
             };
             GcdTask removeTask = GcdTask.createRemoveTask(callback, participantId);
+            logger.debug("Global remove scheduled, participantId {}", participantId);
             gcdTaskSequencer.addTask(removeTask);
         }
     }
@@ -1449,6 +1449,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         private void performAdd(long remainingTtl) {
+            logger.debug("Global provider registration started: participantId {}, domain {}, interface {}, {}",
+                         task.globalDiscoveryEntry.getParticipantId(),
+                         task.globalDiscoveryEntry.getDomain(),
+                         task.globalDiscoveryEntry.getInterfaceName(),
+                         task.globalDiscoveryEntry.getProviderVersion());
             try {
                 globalCapabilitiesDirectoryClient.add(task.callback,
                                                       task.globalDiscoveryEntry,
@@ -1465,6 +1470,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
 
         private void performReAdd() {
+            logger.info("Re-Add started.");
             Set<DiscoveryEntry> discoveryEntries;
             synchronized (globalDiscoveryEntryCache) {
                 discoveryEntries = localDiscoveryEntryStore.getAllGlobalEntries();
@@ -1537,7 +1543,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             try {
                 logger.trace("Re-Add: waiting for completion.");
                 if (cdlReAdd.await(defaultTtlAddAndRemove, TimeUnit.MILLISECONDS)) {
-                    logger.info("Re-Add: completed.");
+                    logger.info("Re-Add completed.");
                 } else {
                     logger.error("Re-Add: timed out waiting for completion.");
                 }
