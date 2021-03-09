@@ -37,6 +37,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -199,6 +200,12 @@ public class LocalCapabilitiesDirectoryTest {
 
     private static class DiscoveryEntryWithUpdatedLastSeenDateMsMatcher extends ArgumentMatcher<DiscoveryEntry> {
 
+        @Override
+        public void describeTo(Description description) {
+            super.describeTo(description);
+            description.appendText(", expected: " + expected);
+        }
+
         private DiscoveryEntry expected;
 
         private DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(DiscoveryEntry expected) {
@@ -239,6 +246,12 @@ public class LocalCapabilitiesDirectoryTest {
                 && expected.getPublicKeyId() == actual.getPublicKeyId() && expected.getQos().equals(actual.getQos())
                 && expected.getLastSeenDateMs() <= actual.getLastSeenDateMs()
                 && (expected.getLastSeenDateMs() + 1000) >= actual.getLastSeenDateMs();
+    }
+
+    private static boolean discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(DiscoveryEntryWithMetaInfo expected,
+                                                                                    DiscoveryEntryWithMetaInfo actual) {
+        return discoveryEntriesMatchWithUpdatedLastSeenDate(expected, actual)
+                && expected.getIsLocal() == actual.getIsLocal();
     }
 
     private static boolean globalDiscoveryEntriesMatchWithUpdatedLastSeenDate(GlobalDiscoveryEntry expected,
@@ -358,8 +371,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                                         localDiscoveryEntryStoreMock)));
     }
 
-    private void checkAddToGlobalCapabilitiesDirectoryClientAndCache(Promise<? extends AbstractDeferred> promise,
-                                                                     String[] expectedGbids) throws InterruptedException {
+    private void checkAddGlobal_invokesLocalStoreAndGcd(Promise<? extends AbstractDeferred> promise,
+                                                        String[] expectedGbids) throws InterruptedException {
         ArgumentCaptor<GlobalDiscoveryEntry> argumentCaptor = ArgumentCaptor.forClass(GlobalDiscoveryEntry.class);
         ArgumentCaptor<Long> remainingTtlCapture = ArgumentCaptor.forClass(Long.class);
         checkPromiseSuccess(promise, "add failed");
@@ -376,8 +389,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                       capturedGlobalDiscoveryEntry));
 
         verify(localDiscoveryEntryStoreMock).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
-        verify(globalDiscoveryEntryCacheMock,
-               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
     }
 
     private void checkRemainingTtl(ArgumentCaptor<Long> remainingTtlCaptor) {
@@ -387,31 +399,31 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void add_global_invokesGcdAndCache() throws InterruptedException {
+    public void add_global_invokesGcdAndStore() throws InterruptedException {
         final boolean awaitGlobalRegistration = true;
         String[] expectedGbids = knownGbids;
 
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
-        checkAddToGlobalCapabilitiesDirectoryClientAndCache(promise, expectedGbids);
+        checkAddGlobal_invokesLocalStoreAndGcd(promise, expectedGbids);
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void addWithGbids_global_singleNonDefaultGbid_invokesGcdAndCache() throws InterruptedException {
+    public void addWithGbids_global_singleNonDefaultGbid_invokesGcdAndStore() throws InterruptedException {
         String[] gbids = new String[]{ knownGbids[1] };
         String[] expectedGbids = gbids.clone();
         final boolean awaitGlobalRegistration = true;
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkAddToGlobalCapabilitiesDirectoryClientAndCache(promise, expectedGbids);
+        checkAddGlobal_invokesLocalStoreAndGcd(promise, expectedGbids);
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void addWithGbids_global_multipleGbids_invokesGcdAndCache() throws InterruptedException {
+    public void addWithGbids_global_multipleGbids_invokesGcdAndStore() throws InterruptedException {
         // expectedGbids element order intentionally differs from knownGbids element order
         String[] gbids = new String[]{ knownGbids[1], knownGbids[0] };
         String[] expectedGbids = gbids.clone();
         final boolean awaitGlobalRegistration = true;
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkAddToGlobalCapabilitiesDirectoryClientAndCache(promise, expectedGbids);
+        checkAddGlobal_invokesLocalStoreAndGcd(promise, expectedGbids);
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -420,25 +432,27 @@ public class LocalCapabilitiesDirectoryTest {
         String[] gbids = new String[0];
         String[] expectedGbids = knownGbids;
         Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, gbids);
-        checkAddToGlobalCapabilitiesDirectoryClientAndCache(promise, expectedGbids);
+        checkAddGlobal_invokesLocalStoreAndGcd(promise, expectedGbids);
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void addToAll_global_invokesGcdAndCache() throws InterruptedException {
+    public void addToAll_global_invokesGcdAndStore() throws InterruptedException {
         String[] expectedGbids = knownGbids.clone();
         final boolean awaitGlobalRegistration = true;
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
                                                                                 awaitGlobalRegistration);
-        checkAddToGlobalCapabilitiesDirectoryClientAndCache(promise, expectedGbids);
+        checkAddGlobal_invokesLocalStoreAndGcd(promise, expectedGbids);
     }
 
     @Test(timeout = TEST_TIMEOUT)
     public void add_local_doesNotInvokeGcdAndCache() throws InterruptedException {
         discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        expectedDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
 
+        Thread.sleep(100);
         Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
         checkPromiseSuccess(promise, "add failed");
-        verify(localDiscoveryEntryStoreMock).add(discoveryEntry);
+        verify(localDiscoveryEntryStoreMock).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
         verify(globalCapabilitiesDirectoryClient,
                never()).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                             any(GlobalDiscoveryEntry.class),
@@ -459,8 +473,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         verify(localDiscoveryEntryStoreMock,
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
-        verify(globalDiscoveryEntryCacheMock,
-               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
@@ -486,8 +499,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         verify(localDiscoveryEntryStoreMock,
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry2)));
-        verify(globalDiscoveryEntryCacheMock,
-               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry2)));
+        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry2)),
@@ -512,6 +524,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                  System.currentTimeMillis(),
                                                                  expiryDateMs,
                                                                  publicKeyId);
+        final DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
         globalDiscoveryEntry = new GlobalDiscoveryEntry(new Version(47, 11),
                                                         domain,
                                                         INTERFACE_NAME,
@@ -540,10 +553,12 @@ public class LocalCapabilitiesDirectoryTest {
                                                       Matchers.<String[]> any());
         checkRemainingTtl(remainingTtlCaptor);
 
-        verify(globalDiscoveryEntryCacheMock,
-               never()).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
+        verify(localDiscoveryEntryStoreMock,
+               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(expectedDiscoveryEntry.getParticipantId()));
 
-        reset(globalCapabilitiesDirectoryClient);
+        reset(globalCapabilitiesDirectoryClient, localDiscoveryEntryStoreMock);
 
         doAnswer(createAnswerWithSuccess()).when(globalCapabilitiesDirectoryClient)
                                            .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -551,6 +566,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                 anyLong(),
                                                 Matchers.<String[]> any());
 
+        DiscoveryEntry expectedDiscoveryEntry2 = new DiscoveryEntry(expectedDiscoveryEntry);
+        expectedDiscoveryEntry2.setLastSeenDateMs(System.currentTimeMillis());
         GlobalDiscoveryEntry expectedGlobalDiscoveryEntry2 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
         expectedGlobalDiscoveryEntry2.setLastSeenDateMs(System.currentTimeMillis());
 
@@ -562,6 +579,10 @@ public class LocalCapabilitiesDirectoryTest {
                                                       remainingTtlCaptor.capture(),
                                                       Matchers.<String[]> any());
         checkRemainingTtl(remainingTtlCaptor);
+        verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
+        verify(localDiscoveryEntryStoreMock,
+               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry2)));
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
     }
 
     private void testAddWithGbidsIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
@@ -676,8 +697,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         verify(localDiscoveryEntryStoreMock,
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
-        verify(globalDiscoveryEntryCacheMock,
-               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
         ArgumentCaptor<Long> remainingTtlCaptor = ArgumentCaptor.forClass(Long.class);
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -705,8 +725,7 @@ public class LocalCapabilitiesDirectoryTest {
         // entry is added again (with newer lastSeenDateMs)
         verify(localDiscoveryEntryStoreMock,
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry2)));
-        verify(globalDiscoveryEntryCacheMock,
-               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry2)));
+        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry2)),
@@ -722,7 +741,7 @@ public class LocalCapabilitiesDirectoryTest {
         String[] expectedGbids1 = gbids1.clone();
         String[] gbids2 = new String[]{ knownGbids[1] };
         String[] expectedGbids2 = gbids2.clone();
-        DiscoveryEntryWithMetaInfo expectedEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+        DiscoveryEntryWithMetaInfo expectedEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                    discoveryEntry);
         DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(discoveryEntry);
 
@@ -737,8 +756,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         verify(localDiscoveryEntryStoreMock,
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
-        verify(globalDiscoveryEntryCacheMock,
-               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
         ArgumentCaptor<Long> remainingTtlCaptor = ArgumentCaptor.forClass(Long.class);
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
@@ -764,8 +782,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         verify(localDiscoveryEntryStoreMock,
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry2)));
-        verify(globalDiscoveryEntryCacheMock,
-               times(1)).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry2)));
+        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
         verify(globalCapabilitiesDirectoryClient,
                times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry2)),
@@ -774,8 +791,10 @@ public class LocalCapabilitiesDirectoryTest {
         checkRemainingTtl(remainingTtlCaptor);
 
         // provider is now registered for both GBIDs
-        doReturn(Arrays.asList(globalDiscoveryEntry)).when(globalDiscoveryEntryCacheMock)
-                                                     .lookup(any(String[].class), anyString(), anyLong());
+        doReturn(Arrays.asList(discoveryEntry)).when(localDiscoveryEntryStoreMock)
+                                               .lookupGlobalEntries(eq(new String[]{
+                                                       expectedDiscoveryEntry.getDomain() }), eq(INTERFACE_NAME));
+
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
         discoveryQos.setCacheMaxAge(ONE_DAY_IN_MS);
@@ -788,11 +807,11 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryEntryWithMetaInfo[] result1 = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promiseLookup1,
                                                                                                   "lookup failed")[0];
         assertEquals(1, result1.length);
-        assertEquals(expectedEntryWithMetaInfo, result1[0]);
+        assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntryWithMetaInfo, result1[0]));
         DiscoveryEntryWithMetaInfo[] result2 = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promiseLookup2,
                                                                                                   "lookup failed")[0];
         assertEquals(1, result2.length);
-        assertEquals(expectedEntryWithMetaInfo, result2[0]);
+        assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntryWithMetaInfo, result2[0]));
 
         verify(globalCapabilitiesDirectoryClient,
                times(0)).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
@@ -847,13 +866,14 @@ public class LocalCapabilitiesDirectoryTest {
         doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
                                              .lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
 
-        DiscoveryEntry newDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
-        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(newDiscoveryEntry, false, knownGbids);
-
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, false, knownGbids);
         checkPromiseSuccess(promise, "add failed");
+
         verify(localDiscoveryEntryStoreMock).hasDiscoveryEntry(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
         verify(localDiscoveryEntryStoreMock).lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
+
         verify(globalDiscoveryEntryCacheMock, never()).lookup(anyString(), anyLong());
+        verify(globalDiscoveryEntryCacheMock, never()).remove(anyString());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
         verify(globalCapabilitiesDirectoryClient, never()).add(any(), any(), anyLong(), any());
     }
@@ -873,7 +893,9 @@ public class LocalCapabilitiesDirectoryTest {
         verify(localDiscoveryEntryStoreMock).hasDiscoveryEntry(newDiscoveryEntry);
         verify(localDiscoveryEntryStoreMock).lookup(eq(newDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
         verify(localDiscoveryEntryStoreMock).add(eq(newDiscoveryEntry));
-        verify(globalDiscoveryEntryCacheMock, never()).lookup(anyString(), anyLong());
+        // check whether the local entry is in the global cache (unlikely). If so, then remove it
+        verify(globalDiscoveryEntryCacheMock, times(1)).lookup(anyString(), anyLong());
+        verify(globalDiscoveryEntryCacheMock, never()).remove(anyString());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
         verify(globalCapabilitiesDirectoryClient, never()).add(any(), any(), anyLong(), any());
     }
@@ -901,7 +923,7 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseSuccess(promise, "addToAll failed");
         verify(localDiscoveryEntryStoreMock,
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
-        verify(globalDiscoveryEntryCacheMock).add(argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)));
+        verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
         verify(globalCapabilitiesDirectoryClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                       argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
                                                       remainingTtlCapture.capture(),
@@ -1359,37 +1381,30 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupByParticipantId_localEntry() throws InterruptedException {
-        String domain1 = "domain1";
-        String interfaceName1 = "interfaceName1";
-        String participantId1 = "participantId1";
+    public void lookupByParticipantId_defaultScopelocalAndGlobal_localEntry() throws InterruptedException {
         DiscoveryQos discoveryQos = new DiscoveryQos(Long.MAX_VALUE,
                                                      Long.MAX_VALUE,
                                                      DiscoveryScope.LOCAL_AND_GLOBAL,
                                                      false);
 
-        // add local entry
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntryWithMetaInfo = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                            expectedDiscoveryEntry);
+
+        // add locally registered entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
-
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
-                                                           domain1,
-                                                           interfaceName1,
-                                                           participantId1,
-                                                           providerQos,
-                                                           System.currentTimeMillis(),
-                                                           expiryDateMs,
-                                                           publicKeyId);
-        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
-                                                                                                                discoveryEntry);
-        when(localDiscoveryEntryStoreMock.lookup(eq(participantId1),
+        when(localDiscoveryEntryStoreMock.lookup(eq(expectedDiscoveryEntry.getParticipantId()),
                                                  eq(discoveryQos.getCacheMaxAge()))).thenReturn(Optional.of(discoveryEntry));
 
-        Promise<Lookup3Deferred> lookupPromise = localCapabilitiesDirectory.lookup(participantId1);
+        reset(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+        Promise<Lookup3Deferred> lookupPromise = localCapabilitiesDirectory.lookup(expectedDiscoveryEntry.getParticipantId());
 
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
         DiscoveryEntryWithMetaInfo retrievedCapabilityEntry = (DiscoveryEntryWithMetaInfo) values[0];
-        assertEquals(expectedDiscoveryEntry, retrievedCapabilityEntry);
+        assertEquals(expectedDiscoveryEntryWithMetaInfo, retrievedCapabilityEntry);
+
+        verify(localDiscoveryEntryStoreMock).lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
+        verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -1494,55 +1509,6 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupByDomainInterface_localAndGlobal_filtersDuplicates() throws InterruptedException {
-        String domain = "domain";
-        String[] domainsForLookup = new String[]{ domain };
-        String interfaceName = "interfaceName";
-        String participant = "participant";
-        DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.LOCAL_AND_GLOBAL, false);
-
-        // add same discovery entry to localCapabilitiesDirectory and cached GlobalCapabilitiesDirectory
-        ProviderQos providerQos = new ProviderQos();
-        long currentTime = System.currentTimeMillis();
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
-                                                           domain,
-                                                           interfaceName,
-                                                           participant,
-                                                           providerQos,
-                                                           currentTime,
-                                                           expiryDateMs,
-                                                           publicKeyId);
-
-        when(localDiscoveryEntryStoreMock.lookup(eq(new String[]{ domain }),
-                                                 eq(interfaceName))).thenReturn(Arrays.asList(discoveryEntry));
-
-        GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
-                                                                domain,
-                                                                interfaceName,
-                                                                participant,
-                                                                providerQos,
-                                                                currentTime,
-                                                                expiryDateMs,
-                                                                publicKeyId,
-                                                                globalAddress1Serialized);
-
-        doReturn(Arrays.asList(capInfo)).when(globalDiscoveryEntryCacheMock)
-                                        .lookup(eq(domainsForLookup),
-                                                eq(interfaceName),
-                                                eq(discoveryQos.getCacheMaxAge()));
-
-        Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domainsForLookup,
-                                                                             interfaceName,
-                                                                             discoveryQos);
-
-        Object[] values = checkPromiseSuccess(promise, "lookup failed");
-        DiscoveryEntryWithMetaInfo[] receivedValues = (DiscoveryEntryWithMetaInfo[]) values[0];
-        assertEquals(1, receivedValues.length);
-        assertTrue(Arrays.asList(receivedValues)
-                         .contains(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true, discoveryEntry)));
-    }
-
-    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbids_globalOnly_filtersRemoteCachedEntriesByGbids() throws InterruptedException {
         String domain = "domain";
         String[] domainsForLookup = new String[]{ domain };
@@ -1593,32 +1559,38 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void testLookupByDomainInterfaceWithGbids_globalOnly_filtersLocalCachedEntriesByGbids() throws InterruptedException {
+    public void testLookupByDomainInterfaceWithGbids_globalOnly_filtersLocalEntriesByGbids() throws InterruptedException {
         String domain = "domain";
         String[] domainsForLookup = new String[]{ domain };
         String interfaceName = "interfaceName";
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
 
-        DiscoveryEntry localEntry = new DiscoveryEntry(new Version(47, 11),
-                                                       domain,
-                                                       interfaceName,
-                                                       "participantId1",
-                                                       new ProviderQos(),
-                                                       System.currentTimeMillis(),
-                                                       expiryDateMs,
-                                                       publicKeyId);
-        GlobalDiscoveryEntry cachedEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(localEntry,
-                                                                                               globalAddressWithoutGbid);
-        DiscoveryEntryWithMetaInfo expectedEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                       cachedEntry);
+        DiscoveryEntry localEntry1 = new DiscoveryEntry(new Version(47, 11),
+                                                        domain,
+                                                        interfaceName,
+                                                        "participantId1",
+                                                        new ProviderQos(),
+                                                        System.currentTimeMillis(),
+                                                        expiryDateMs,
+                                                        publicKeyId);
+        DiscoveryEntryWithMetaInfo expectedEntry1 = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                        localEntry1);
+        DiscoveryEntry localEntry2 = new DiscoveryEntry(localEntry1);
+        localEntry2.setParticipantId("participantId2");
+        DiscoveryEntryWithMetaInfo expectedEntry2 = new DiscoveryEntryWithMetaInfo(expectedEntry1);
+        expectedEntry2.setParticipantId(localEntry2.getParticipantId());
 
-        doReturn(Arrays.asList(cachedEntry)).when(globalDiscoveryEntryCacheMock)
-                                            .lookup(eq(domainsForLookup),
-                                                    eq(interfaceName),
-                                                    eq(discoveryQos.getCacheMaxAge()));
+        doReturn(Arrays.asList(localEntry1, localEntry2)).when(localDiscoveryEntryStoreMock)
+                                                         .lookupGlobalEntries(eq(domainsForLookup), eq(interfaceName));
 
-        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(localEntry, true, knownGbids);
+        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(localEntry1, true, knownGbids);
         checkPromiseSuccess(promiseAdd, "add failed");
+        promiseAdd = localCapabilitiesDirectory.add(localEntry2, true, new String[]{ knownGbids[1] });
+        checkPromiseSuccess(promiseAdd, "add failed");
+
+        verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
+        verify(localDiscoveryEntryStoreMock).add(eq(localEntry1));
+        verify(localDiscoveryEntryStoreMock).add(eq(localEntry2));
 
         Promise<Lookup2Deferred> promiseLookup1 = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                                     interfaceName,
@@ -1627,8 +1599,12 @@ public class LocalCapabilitiesDirectoryTest {
 
         DiscoveryEntryWithMetaInfo[] result1 = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promiseLookup1,
                                                                                                   "lookup failed")[0];
-        assertEquals(1, result1.length);
-        assertEquals(expectedEntry, result1[0]);
+
+        assertEquals(2, result1.length);
+        int actualEntry1 = expectedEntry1.getParticipantId().equals(result1[0].getParticipantId()) ? 0 : 1;
+        int actualEntry2 = (actualEntry1 + 1) % 2;
+        assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry1, result1[actualEntry1]));
+        assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry2, result1[actualEntry2]));
 
         Promise<Lookup2Deferred> promiseLookup2 = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                                     interfaceName,
@@ -1638,7 +1614,7 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryEntryWithMetaInfo[] result2 = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promiseLookup2,
                                                                                                   "lookup failed")[0];
         assertEquals(1, result2.length);
-        assertEquals(expectedEntry, result2[0]);
+        assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry1, result2[0]));
 
         Promise<Lookup2Deferred> promiseLookup3 = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                                     interfaceName,
@@ -1647,12 +1623,15 @@ public class LocalCapabilitiesDirectoryTest {
 
         DiscoveryEntryWithMetaInfo[] result3 = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promiseLookup3,
                                                                                                   "lookup failed")[0];
-        assertEquals(1, result3.length);
-        assertEquals(expectedEntry, result3[0]);
+        assertEquals(2, result3.length);
+        actualEntry1 = expectedEntry1.getParticipantId().equals(result3[0].getParticipantId()) ? 0 : 1;
+        actualEntry2 = (actualEntry1 + 1) % 2;
+        assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry1, result3[actualEntry1]));
+        assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry2, result3[actualEntry2]));
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void testLookupByParticipantIdWithGbids_globalOnly_filtersLocalCachedEntriesByGbids() throws InterruptedException {
+    public void testLookupByParticipantIdWithGbids_globalOnly_filtersLocalEntriesByGbids() throws InterruptedException {
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
 
         DiscoveryEntry localEntry = new DiscoveryEntry(new Version(47, 11),
@@ -1663,50 +1642,63 @@ public class LocalCapabilitiesDirectoryTest {
                                                        System.currentTimeMillis(),
                                                        expiryDateMs,
                                                        publicKeyId);
-        GlobalDiscoveryEntry cachedEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(localEntry,
-                                                                                               globalAddressWithoutGbid);
-        DiscoveryEntryWithMetaInfo expectedEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                       cachedEntry);
+        DiscoveryEntry localStoreEntry = new DiscoveryEntry(localEntry);
+        DiscoveryEntryWithMetaInfo expectedLocalEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                            localEntry);
 
-        doReturn(Optional.of(cachedEntry)).when(globalDiscoveryEntryCacheMock)
-                                          .lookup(eq(expectedEntry.getParticipantId()), eq(30000L));
-
-        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(localEntry, true, knownGbids);
+        // register in knownGbids[1]
+        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(localEntry,
+                                                                          true,
+                                                                          new String[]{ knownGbids[1] });
         checkPromiseSuccess(promiseAdd, "add failed");
+        reset((Object) localDiscoveryEntryStoreMock,
+              (Object) globalDiscoveryEntryCacheMock,
+              (Object) globalCapabilitiesDirectoryClient);
 
-        Promise<Lookup4Deferred> promiseLookup1 = localCapabilitiesDirectory.lookup(expectedEntry.getParticipantId(),
+        doReturn(Optional.of(localStoreEntry)).when(localDiscoveryEntryStoreMock)
+                                              .lookup(eq(expectedLocalEntry.getParticipantId()), eq(Long.MAX_VALUE));
+
+        // lookup knownGbids[1], expect local entry
+        Promise<Lookup4Deferred> promiseLookup1 = localCapabilitiesDirectory.lookup(expectedLocalEntry.getParticipantId(),
                                                                                     discoveryQos,
                                                                                     new String[]{ knownGbids[1] });
 
-        verify(globalDiscoveryEntryCacheMock).lookup(eq(expectedEntry.getParticipantId()), eq(30000L));
         DiscoveryEntryWithMetaInfo result1 = (DiscoveryEntryWithMetaInfo) checkPromiseSuccess(promiseLookup1,
                                                                                               "lookup failed")[0];
-        assertEquals(expectedEntry, result1);
+        verify(localDiscoveryEntryStoreMock, times(1)).lookup(eq(expectedLocalEntry.getParticipantId()),
+                                                              eq(Long.MAX_VALUE));
+        verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+        assertEquals(expectedLocalEntry, result1);
 
-        Promise<Lookup4Deferred> promiseLookup2 = localCapabilitiesDirectory.lookup(expectedEntry.getParticipantId(),
+        // lookup knownGbids[0], expect DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
+        Promise<Lookup4Deferred> promiseLookup2 = localCapabilitiesDirectory.lookup(expectedLocalEntry.getParticipantId(),
                                                                                     discoveryQos,
                                                                                     new String[]{ knownGbids[0] });
 
-        DiscoveryEntryWithMetaInfo result2 = (DiscoveryEntryWithMetaInfo) checkPromiseSuccess(promiseLookup2,
-                                                                                              "lookup failed")[0];
-        assertEquals(expectedEntry, result2);
+        checkPromiseError(promiseLookup2, DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+        verify(localDiscoveryEntryStoreMock, times(2)).lookup(eq(expectedLocalEntry.getParticipantId()),
+                                                              eq(Long.MAX_VALUE));
+        verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
 
-        Promise<Lookup4Deferred> promiseLookup3 = localCapabilitiesDirectory.lookup(expectedEntry.getParticipantId(),
+        // lookup all gbids, expect local entry
+        Promise<Lookup4Deferred> promiseLookup3 = localCapabilitiesDirectory.lookup(expectedLocalEntry.getParticipantId(),
                                                                                     discoveryQos,
                                                                                     knownGbids);
 
         DiscoveryEntryWithMetaInfo result3 = (DiscoveryEntryWithMetaInfo) checkPromiseSuccess(promiseLookup3,
                                                                                               "lookup failed")[0];
-        assertEquals(expectedEntry, result3);
+        verify(localDiscoveryEntryStoreMock, times(3)).lookup(eq(expectedLocalEntry.getParticipantId()),
+                                                              eq(Long.MAX_VALUE));
+        verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+        assertEquals(expectedLocalEntry, result3);
     }
 
-    private void testLookupByDomainInterfaceWithGbids_globalOnly_allCached(String[] gbidsForLookup,
-                                                                           DiscoveryEntry entryForGbid1,
-                                                                           DiscoveryEntry entryForGbid2,
-                                                                           DiscoveryEntry entryForGbid3,
-                                                                           DiscoveryEntry entryForGbid2And3,
-                                                                           Set<String> expectedParticipantIds,
-                                                                           int expectedResultSize) throws InterruptedException {
+    private void testLookupByDomainInterfaceWithGbids_globalOnly_allLocal(String[] gbidsForLookup,
+                                                                          DiscoveryEntry entryForGbid1,
+                                                                          DiscoveryEntry entryForGbid2,
+                                                                          DiscoveryEntry entryForGbid3,
+                                                                          DiscoveryEntry entryForGbid2And3,
+                                                                          Set<String> expectedParticipantIds) throws InterruptedException {
         String[] domainsForLookup = new String[]{ discoveryEntry.getDomain() };
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
         final boolean awaitGlobalRegistration = true;
@@ -1727,14 +1719,13 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         new String[]{ knownGbids[1], knownGbids[2] });
         checkPromiseSuccess(promise4, "add failed");
 
-        List<GlobalDiscoveryEntry> cachedEntries = new ArrayList<>(4);
-        cachedEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(entryForGbid1, globalAddressWithoutGbid));
-        cachedEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(entryForGbid2, globalAddressWithoutGbid));
-        cachedEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(entryForGbid3, globalAddressWithoutGbid));
-        cachedEntries.add(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(entryForGbid2And3,
-                                                                              globalAddressWithoutGbid));
-        doReturn(cachedEntries).when(globalDiscoveryEntryCacheMock)
-                               .lookup(eq(domainsForLookup), eq(INTERFACE_NAME), anyLong());
+        doReturn(Arrays.asList(entryForGbid1,
+                               entryForGbid2,
+                               entryForGbid3,
+                               entryForGbid2And3)).when(localDiscoveryEntryStoreMock)
+                                                  .lookupGlobalEntries(eq(domainsForLookup), eq(INTERFACE_NAME));
+        doReturn(new ArrayList<GlobalDiscoveryEntry>()).when(globalDiscoveryEntryCacheMock)
+                                                       .lookup(eq(domainsForLookup), eq(INTERFACE_NAME), anyLong());
 
         Promise<Lookup2Deferred> lookupPromise = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                                    INTERFACE_NAME,
@@ -1742,7 +1733,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                    gbidsForLookup);
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
         DiscoveryEntryWithMetaInfo[] foundEntries = (DiscoveryEntryWithMetaInfo[]) values[0];
-        assertEquals(expectedResultSize, foundEntries.length);
+        assertEquals(expectedParticipantIds.size(), foundEntries.length);
 
         Set<String> foundParticipantIds = new HashSet<>();
         for (DiscoveryEntryWithMetaInfo foundEntry : foundEntries) {
@@ -1758,8 +1749,8 @@ public class LocalCapabilitiesDirectoryTest {
                                 any(String[].class));
     }
 
-    private void testLookupByDomainInterfaceWithGbids_globalOnly_noneCached(String[] gbidsForLookup,
-                                                                            String[] expectedGbids) throws InterruptedException {
+    private void testLookupByDomainInterfaceWithGbids_globalOnly_noneLocalOrCached(String[] gbidsForLookup,
+                                                                                   String[] expectedGbids) throws InterruptedException {
         String[] domainsForLookup = new String[]{ discoveryEntry.getDomain() };
         String[] expectedDomains = domainsForLookup.clone();
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
@@ -1811,13 +1802,12 @@ public class LocalCapabilitiesDirectoryTest {
         expectedParticipantIds.add(entryForGbid3.getParticipantId());
         expectedParticipantIds.add(entryForGbid2And3.getParticipantId());
 
-        testLookupByDomainInterfaceWithGbids_globalOnly_allCached(gbidsForLookup,
-                                                                  entryForGbid1,
-                                                                  entryForGbid2,
-                                                                  entryForGbid3,
-                                                                  entryForGbid2And3,
-                                                                  expectedParticipantIds,
-                                                                  3);
+        testLookupByDomainInterfaceWithGbids_globalOnly_allLocal(gbidsForLookup,
+                                                                 entryForGbid1,
+                                                                 entryForGbid2,
+                                                                 entryForGbid3,
+                                                                 entryForGbid2And3,
+                                                                 expectedParticipantIds);
     }
 
     @Test
@@ -1838,31 +1828,30 @@ public class LocalCapabilitiesDirectoryTest {
         expectedParticipantIds.add(entryForGbid3.getParticipantId());
         expectedParticipantIds.add(entryForGbid2And3.getParticipantId());
 
-        testLookupByDomainInterfaceWithGbids_globalOnly_allCached(gbidsForLookup,
-                                                                  entryForGbid1,
-                                                                  entryForGbid2,
-                                                                  entryForGbid3,
-                                                                  entryForGbid2And3,
-                                                                  expectedParticipantIds,
-                                                                  4);
+        testLookupByDomainInterfaceWithGbids_globalOnly_allLocal(gbidsForLookup,
+                                                                 entryForGbid1,
+                                                                 entryForGbid2,
+                                                                 entryForGbid3,
+                                                                 entryForGbid2And3,
+                                                                 expectedParticipantIds);
     }
 
     @Test
     public void testLookupByDomainInterfaceWithGbids_globalOnly_multipleGbids_noneCached() throws InterruptedException {
         String[] gbidsForLookup = new String[]{ knownGbids[0], knownGbids[2] };
 
-        testLookupByDomainInterfaceWithGbids_globalOnly_noneCached(gbidsForLookup, gbidsForLookup.clone());
+        testLookupByDomainInterfaceWithGbids_globalOnly_noneLocalOrCached(gbidsForLookup, gbidsForLookup.clone());
 
         String[] gbidsForLookup2 = new String[]{ knownGbids[2], knownGbids[0] };
 
-        testLookupByDomainInterfaceWithGbids_globalOnly_noneCached(gbidsForLookup2, gbidsForLookup2.clone());
+        testLookupByDomainInterfaceWithGbids_globalOnly_noneLocalOrCached(gbidsForLookup2, gbidsForLookup2.clone());
     }
 
     @Test
     public void testLookupByDomainInterfaceWithGbids_globalOnly_emptyGbidsArray_noneCached() throws InterruptedException {
         String[] gbidsForLookup = new String[0];
 
-        testLookupByDomainInterfaceWithGbids_globalOnly_noneCached(gbidsForLookup, knownGbids);
+        testLookupByDomainInterfaceWithGbids_globalOnly_noneLocalOrCached(gbidsForLookup, knownGbids);
     }
 
     private void testLookupByParticipantIdWithGbids_globalOnly_allCached(String[] gbidsForLookup) throws InterruptedException {
@@ -2011,9 +2000,40 @@ public class LocalCapabilitiesDirectoryTest {
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
 
         List<GlobalDiscoveryEntry> entries = new ArrayList<>();
-        List<Promise<Add1Deferred>> promises = new ArrayList<>();
         for (String domain : domains) {
             GlobalDiscoveryEntry entry = new GlobalDiscoveryEntry();
+            entry.setParticipantId("participantIdFor-" + domain);
+            entry.setDomain(domain);
+            entry.setAddress(globalAddress1Serialized);
+            entries.add(entry);
+        }
+
+        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
+                                                  eq(interfaceName),
+                                                  eq(discoveryQos.getCacheMaxAge()))).thenReturn(entries);
+
+        Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
+
+        verifyGcdLookupAndPromiseFulfillment(0,
+                                             domains,
+                                             interfaceName,
+                                             discoveryQos.getDiscoveryTimeout(),
+                                             knownGbids,
+                                             promise,
+                                             2); // 2 cached entries
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void testLookupMultipleDomains_globalOnly_allLocalGlobal() throws InterruptedException {
+        String[] domains = new String[]{ "domain1", "domain2" };
+        String interfaceName = "interface1";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+
+        List<DiscoveryEntry> entries = new ArrayList<>();
+        List<Promise<Add1Deferred>> promises = new ArrayList<>();
+        for (String domain : domains) {
+            DiscoveryEntry entry = new GlobalDiscoveryEntry();
             entry.setParticipantId("participantIdFor-" + domain);
             entry.setDomain(domain);
             entries.add(entry);
@@ -2027,9 +2047,7 @@ public class LocalCapabilitiesDirectoryTest {
             }
         });
 
-        when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
-                                                  eq(interfaceName),
-                                                  eq(discoveryQos.getCacheMaxAge()))).thenReturn(entries);
+        doReturn(entries).when(localDiscoveryEntryStoreMock).lookupGlobalEntries(eq(domains), eq(interfaceName));
 
         Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
 
@@ -2095,16 +2113,13 @@ public class LocalCapabilitiesDirectoryTest {
         doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
                                              .lookup(eq(discoveryEntry.getParticipantId()), anyLong());
 
-        // cached entry for local provider and cached entry for participantId2 for cachedDomain
-        GlobalDiscoveryEntry cachedLocalEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
-                                                                                                    globalAddressWithoutGbid);
+        // cached entry for participantId2 for cachedDomain
         GlobalDiscoveryEntry cachedRemoteEntry = new GlobalDiscoveryEntry();
         cachedRemoteEntry.setParticipantId("participantId2");
         cachedRemoteEntry.setInterfaceName(INTERFACE_NAME);
         cachedRemoteEntry.setDomain(cachedDomain);
         cachedRemoteEntry.setAddress(globalAddress1Serialized);
-        doReturn(Arrays.asList(cachedLocalEntry,
-                               cachedRemoteEntry)).when(globalDiscoveryEntryCacheMock)
+        doReturn(Arrays.asList(cachedRemoteEntry)).when(globalDiscoveryEntryCacheMock)
                                                   .lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)),
                                                           eq(INTERFACE_NAME),
                                                           eq(discoveryQos.getCacheMaxAge()));
@@ -2281,7 +2296,7 @@ public class LocalCapabilitiesDirectoryTest {
         lookupByParticipantIdGbids_globalOnly_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate(0L);
     }
 
-    public void lookupByParticipantIdGbids_globalOnly_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate(long cacheMaxAge) throws Exception {
+    private void lookupByParticipantIdGbids_globalOnly_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate(long cacheMaxAge) throws Exception {
         final long discoveryTimeout = 5000L;
 
         DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, DiscoveryScope.GLOBAL_ONLY, false);
@@ -2291,8 +2306,19 @@ public class LocalCapabilitiesDirectoryTest {
                                                                   anyLong(),
                                                                   any());
 
-        doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
-                                             .lookup(eq(discoveryEntry.getParticipantId()), anyLong());
+        doAnswer(new Answer<Optional<DiscoveryEntry>>() {
+            // simulate provider registration after remote lookup has been triggered
+            boolean firstCall = true;
+
+            @Override
+            public Optional<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
+                if (firstCall) {
+                    firstCall = false;
+                    return Optional.empty();
+                }
+                return Optional.of(discoveryEntry);
+            }
+        }).when(localDiscoveryEntryStoreMock).lookup(eq(discoveryEntry.getParticipantId()), anyLong());
 
         Promise<Lookup4Deferred> lookupPromise = localCapabilitiesDirectory.lookup(discoveryEntry.getParticipantId(),
                                                                                    discoveryQos,
@@ -2368,7 +2394,7 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupMultipleDomains_localThenGlobal_oneLocalAllCachedDomains_returnsCachedEntriesForAllDomains() throws InterruptedException {
+    public void lookupMultipleDomains_localThenGlobal_oneLocalAllCachedDomains_returnsLocalAndCachedEntries() throws InterruptedException {
         String[] domains = new String[]{ "domain1", "domain2" };
         String interfaceName = "interface1";
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -2525,7 +2551,7 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupByParticipantIdWithGbids_localOnly_localEntry_doesNotInvokeGcd_returnsLocalEntry() throws Exception {
+    public void lookupByParticipantIdWithGbids_localOnly_localGlobalEntry_doesNotInvokeGcd_returnsLocalEntry() throws Exception {
         DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_ONLY;
         boolean localEntryAvailable = true;
         boolean invokesGcd = false;
@@ -2543,7 +2569,7 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupByParticipantIdWithGbids_localThenGlobal_localEntry_doesNotInvokeGcd_returnsLocalEntry() throws Exception {
+    public void lookupByParticipantIdWithGbids_localThenGlobal_localGlobalEntry_doesNotInvokeGcd_returnsLocalEntry() throws Exception {
         DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_THEN_GLOBAL;
         boolean localEntryAvailable = true;
         boolean invokesGcd = false;
@@ -2561,7 +2587,7 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupByParticipantIdWithGbids_localAndGlobal_localEntry_doesNotInvokeGcd_returnsLocalEntry() throws Exception {
+    public void lookupByParticipantIdWithGbids_localAndGlobal_localGlobalEntry_doesNotInvokeGcd_returnsLocalEntry() throws Exception {
         DiscoveryScope discoveryScope = DiscoveryScope.LOCAL_AND_GLOBAL;
         boolean localEntryAvailable = true;
         boolean invokesGcd = false;
@@ -2570,11 +2596,20 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupByParticipantIdWithGbids_globalOnly_localEntry_invokesGcd_returnsLocalResult() throws Exception {
+    public void lookupByParticipantIdWithGbids_globalOnly_localGlobalEntry_doesNotInvokeGcd_returnsLocalResult() throws Exception {
         DiscoveryScope discoveryScope = DiscoveryScope.GLOBAL_ONLY;
         boolean localEntryAvailable = true;
-        boolean invokesGcd = true;
+        boolean invokesGcd = false;
         boolean returnsLocalEntry = true;
+        lookupByParticipantIdDiscoveryScopeTest(discoveryScope, localEntryAvailable, invokesGcd, returnsLocalEntry);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByParticipantIdWithGbids_globalOnly_noLocalEntry_invokesGcd_returnsRemoteResult() throws Exception {
+        DiscoveryScope discoveryScope = DiscoveryScope.GLOBAL_ONLY;
+        boolean localEntryAvailable = false;
+        boolean invokesGcd = true;
+        boolean returnsLocalEntry = false;
         lookupByParticipantIdDiscoveryScopeTest(discoveryScope, localEntryAvailable, invokesGcd, returnsLocalEntry);
     }
 
@@ -2588,8 +2623,12 @@ public class LocalCapabilitiesDirectoryTest {
 
         DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, discoveryScope, false);
         if (localEntryAvalaible) {
-            when(localDiscoveryEntryStoreMock.lookup(eq(participantId),
-                                                     eq(Long.MAX_VALUE))).thenReturn(Optional.of(discoveryEntry));
+            // register in all gbids
+            Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(discoveryEntry, true, knownGbids);
+            checkPromiseSuccess(promiseAdd, "add failed");
+
+            doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
+                                                 .lookup(eq(participantId), eq(Long.MAX_VALUE));
         }
         doAnswer(createLookupAnswer(globalDiscoveryEntry)).when(globalCapabilitiesDirectoryClient)
                                                           .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
@@ -2617,6 +2656,33 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                                           globalDiscoveryEntry);
             assertEquals(expectedGlobalDiscoveryEntry, capturedDiscoveryEntry);
         }
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByParticipantIdWithGbids_globalOnly_localOnlyEntry_doesNotInvokeGcd_noEntryForParticipant() throws Exception {
+        DiscoveryScope discoveryScope = DiscoveryScope.GLOBAL_ONLY;
+
+        String participantId = discoveryEntry.getParticipantId();
+        final long cacheMaxAge = 10000L;
+        final long discoveryTimeout = 5000L;
+
+        DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, discoveryScope, false);
+        // register local only
+        discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(discoveryEntry, true, knownGbids);
+        checkPromiseSuccess(promiseAdd, "add failed");
+        reset(localDiscoveryEntryStoreMock, globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+
+        doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
+                                             .lookup(eq(participantId), eq(Long.MAX_VALUE));
+
+        Promise<Lookup4Deferred> lookupPromise = localCapabilitiesDirectory.lookup(participantId,
+                                                                                   discoveryQos,
+                                                                                   new String[0]);
+
+        checkPromiseError(lookupPromise, DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+        verify(localDiscoveryEntryStoreMock).lookup(eq(participantId), eq(Long.MAX_VALUE));
+        verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -3354,7 +3420,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalDiscoveryEntryCacheMock, times(0)).remove(any(String.class));
         assertTrue(cdlDone.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(discoveryEntry.getParticipantId()));
-        verify(globalDiscoveryEntryCacheMock, times(1)).remove(eq(discoveryEntry.getParticipantId()));
+        verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -3419,7 +3485,7 @@ public class LocalCapabilitiesDirectoryTest {
                                 eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
                                 any(String[].class));
         verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(provisionedGlobalDiscoveryEntry.getParticipantId()));
-        verify(globalDiscoveryEntryCacheMock, times(1)).remove(eq(provisionedGlobalDiscoveryEntry.getParticipantId()));
+        verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -3479,7 +3545,7 @@ public class LocalCapabilitiesDirectoryTest {
                times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                 eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
                                 any(String[].class));
-        verify(globalDiscoveryEntryCacheMock, times(1)).remove(eq(provisionedGlobalDiscoveryEntry.getParticipantId()));
+        verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
         verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(provisionedGlobalDiscoveryEntry.getParticipantId()));
     }
 
