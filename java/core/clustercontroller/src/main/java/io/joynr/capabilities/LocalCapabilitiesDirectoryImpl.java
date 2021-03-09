@@ -402,17 +402,31 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         discoveryEntry.setLastSeenDateMs(System.currentTimeMillis());
 
-        if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
-            Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(discoveryEntry.getParticipantId(),
-                                                                                              Long.MAX_VALUE);
-            if (optionalDiscoveryEntry.isPresent() && discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
-                    && optionalDiscoveryEntry.get().equals(discoveryEntry)) {
-                // in this case, no further need for global registration is required. Registration completed.
-                deferred.resolve();
-                return new Promise<>(deferred);
+        synchronized (globalDiscoveryEntryCache) {
+            if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {
+                Optional<DiscoveryEntry> optionalDiscoveryEntry = localDiscoveryEntryStore.lookup(discoveryEntry.getParticipantId(),
+                                                                                                  Long.MAX_VALUE);
+                if (optionalDiscoveryEntry.isPresent() && discoveryEntry.getQos().getScope().equals(ProviderScope.LOCAL)
+                        && optionalDiscoveryEntry.get().equals(discoveryEntry)) {
+                    // in this case, no further need for global registration is required. Registration completed.
+                    deferred.resolve();
+                    return new Promise<>(deferred);
+                }
             }
+            // check for duplicate participantId
+            Optional<GlobalDiscoveryEntry> cachedEntry = globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
+                                                                                          Long.MAX_VALUE);
+            if (cachedEntry.isPresent()) {
+                logger.warn("Add participantId {} removes cached entry with the same participantId: {}",
+                            discoveryEntry.getParticipantId(),
+                            cachedEntry.get());
+                globalDiscoveryEntryCache.remove(discoveryEntry.getParticipantId());
+            }
+            if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
+                mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
+            }
+            localDiscoveryEntryStore.add(discoveryEntry);
         }
-        localDiscoveryEntryStore.add(discoveryEntry);
 
         /*
          * In case awaitGlobalRegistration is true, a result for this 'add' call will not be returned before the call to
@@ -500,7 +514,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                 globalDiscoveryEntry.getInterfaceName(),
                                 globalDiscoveryEntry.getProviderVersion());
                     synchronized (globalDiscoveryEntryCache) {
-                        mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
                         globalDiscoveryEntryCache.add(globalDiscoveryEntry);
                     }
                     gcdTaskSequencer.taskFinished();
@@ -572,7 +585,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 @Override
                 public void onSuccess(Void result) {
                     synchronized (globalDiscoveryEntryCache) {
-                        globalDiscoveryEntryCache.remove(participantId);
                         globalProviderParticipantIdToGbidListMap.remove(participantId);
                         localDiscoveryEntryStore.remove(participantId);
                         // Remove endpoint addresses
@@ -606,7 +618,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                     participantId,
                                     errorEnum);
                         synchronized (globalDiscoveryEntryCache) {
-                            globalDiscoveryEntryCache.remove(participantId);
                             globalProviderParticipantIdToGbidListMap.remove(participantId);
                             localDiscoveryEntryStore.remove(participantId);
                             // Remove endpoint addresses
