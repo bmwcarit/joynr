@@ -70,6 +70,7 @@ public class RoutingTableImplTest {
     @Before
     public void setup() {
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
+        doReturn(false).when(addressValidatorMock).allowUpdate(any(RoutingEntry.class), any(RoutingEntry.class));
         subject = getRoutingTable(gbidsArray);
         subject.setGcdParticipantId(gcdParticipantId);
     }
@@ -231,6 +232,9 @@ public class RoutingTableImplTest {
         assertEquals(expectedAddress, address);
 
         // cleanup
+        subject.remove(participantId);
+        subject.remove(participantId);
+        subject.remove(participantId);
         subject.remove(participantId);
     }
 
@@ -500,6 +504,7 @@ public class RoutingTableImplTest {
 
     @Test
     public void allAddressTypesAreValidatedBeforePut() {
+        doReturn(true).when(addressValidatorMock).allowUpdate(any(RoutingEntry.class), any(RoutingEntry.class));
         final MqttAddress mqttAddress = new MqttAddress();
         final WebSocketAddress webSocketAddress = new WebSocketAddress();
         final WebSocketClientAddress webSocketClientAddress = new WebSocketClientAddress();
@@ -536,6 +541,23 @@ public class RoutingTableImplTest {
 
         verify(addressValidatorMock, times(0)).allowUpdate(any(RoutingEntry.class), any(RoutingEntry.class));
         assertFalse(subject.containsKey(participantId));
+        assertNull(subject.get(participantId));
+    }
+
+    @Test
+    public void entriesRemovedOnZeroRefCount() {
+        final String participantId = "testParticipantId";
+        final boolean isGloballyVisible = true;
+        final long expiryDateMs = Long.MAX_VALUE;
+        final MqttAddress oldAddress = new MqttAddress("testBrokerUri", "testTopic");
+
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
+        assertEquals(oldAddress, subject.get(participantId));
+
+        subject.remove(participantId);
+        assertEquals(oldAddress, subject.get(participantId));
+        subject.remove(participantId);
         assertNull(subject.get(participantId));
     }
 
