@@ -513,9 +513,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                 globalDiscoveryEntry.getDomain(),
                                 globalDiscoveryEntry.getInterfaceName(),
                                 globalDiscoveryEntry.getProviderVersion());
-                    synchronized (globalDiscoveryEntryCache) {
-                        globalDiscoveryEntryCache.add(globalDiscoveryEntry);
-                    }
                     gcdTaskSequencer.taskFinished();
                     deferred.resolve();
                 }
@@ -529,6 +526,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                  globalDiscoveryEntry.getProviderVersion(),
                                  exception);
                     if (awaitGlobalRegistration == true) {
+                        globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
                     gcdTaskSequencer.taskFinished();
@@ -543,6 +541,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                  globalDiscoveryEntry.getInterfaceName(),
                                  globalDiscoveryEntry.getProviderVersion());
                     if (awaitGlobalRegistration == true) {
+                        globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
                         localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
                     }
                     gcdTaskSequencer.taskFinished();
@@ -713,21 +712,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private boolean isEntryForGbids(GlobalDiscoveryEntry entry, Set<String> gbidSet) {
-        if (entry == null) {
-            return false;
-        }
-        List<String> entryBackends;
-        synchronized (globalDiscoveryEntryCache) {
-            entryBackends = globalProviderParticipantIdToGbidListMap.get(entry.getParticipantId());
-        }
-        if (entryBackends != null) {
-            // local provider which is globally registered
-            if (gbidSet.stream().anyMatch(gbid -> entryBackends.contains(gbid))) {
-                return true;
-            }
-            return false;
-        }
-
         // globally looked up provider
         Address entryAddress;
         try {
@@ -774,7 +758,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                        String[] gbids,
                        final CapabilitiesCallback capabilitiesCallback) {
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
-        Set<DiscoveryEntryWithMetaInfo> localEntries = getLocalEntries(discoveryScope, domains, interfaceName);
+        Set<DiscoveryEntryWithMetaInfo> localEntries = getLocalEntries(discoveryScope, gbids, domains, interfaceName);
         Set<DiscoveryEntryWithMetaInfo> cachedEntries = getCachedEntriesIfRequired(discoveryScope,
                                                                                    gbids,
                                                                                    domains,
@@ -939,15 +923,50 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         return null;
     }
 
+    private boolean isRegisteredForGbids(DiscoveryEntry entry, Collection<String> gbidSet) {
+        List<String> entryBackends;
+        synchronized (globalDiscoveryEntryCache) {
+            entryBackends = globalProviderParticipantIdToGbidListMap.get(entry.getParticipantId());
+        }
+        if (entryBackends == null) {
+            return false;
+        }
+        // local provider which is globally registered
+        if (gbidSet.stream().anyMatch(gbid -> entryBackends.contains(gbid))) {
+            return true;
+        }
+        return false;
+    }
+
+    private Collection<DiscoveryEntry> filterLocalEntriesByGbids(Collection<DiscoveryEntry> localEntries,
+                                                                 String[] gbids) {
+        Set<DiscoveryEntry> result = new HashSet<>();
+        Set<String> gbidSet = new HashSet<>(Arrays.asList(gbids));
+        for (DiscoveryEntry entry : localEntries) {
+            if (!isRegisteredForGbids(entry, gbidSet)) {
+                continue;
+            }
+            result.add(entry);
+        }
+        return result;
+    }
+
     private Set<DiscoveryEntryWithMetaInfo> getLocalEntries(DiscoveryScope discoveryScope,
+                                                            String[] gbids,
                                                             String[] domains,
                                                             String interfaceName) {
         if (INCLUDE_LOCAL_SCOPES.contains(discoveryScope)) {
+            // return all local entries (locally and globally registered) if DiscoveryScope includes local entries
             return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
-                                                                          new HashSet<DiscoveryEntry>(localDiscoveryEntryStore.lookup(domains,
-                                                                                                                                      interfaceName)));
+                                                                          localDiscoveryEntryStore.lookup(domains,
+                                                                                                          interfaceName));
+        } else {
+            // return only globally registered local providers for selected GBIDs if DiscoveryScope does not include local entries
+            Collection<DiscoveryEntry> localEntries = filterLocalEntriesByGbids(localDiscoveryEntryStore.lookupGlobalEntries(domains,
+                                                                                                                             interfaceName),
+                                                                                gbids);
+            return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localEntries);
         }
-        return null;
     }
 
     @Override
