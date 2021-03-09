@@ -825,8 +825,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
         if (!missingDomains.isEmpty()) {
             for (DiscoveryEntryWithMetaInfo globalEntry : globalDiscoveryEntries) {
-                if (!addedParticipantIds.contains(globalEntry.getParticipantId())
-                        && missingDomains.contains(globalEntry.getDomain())) {
+                if (!addedParticipantIds.contains(globalEntry.getParticipantId())) {
                     result.add(globalEntry);
                     missingDomains.remove(globalEntry.getDomain());
                 }

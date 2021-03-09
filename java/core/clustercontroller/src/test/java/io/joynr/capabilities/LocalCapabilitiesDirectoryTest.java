@@ -2332,6 +2332,96 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
+    public void lookupMultipleDomains_localThenGlobal_oneLocalAllCachedDomains_returnsCachedEntriesForAllDomains() throws InterruptedException {
+        String[] domains = new String[]{ "domain1", "domain2" };
+        String interfaceName = "interface1";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_THEN_GLOBAL);
+        discoveryQos.setCacheMaxAge(ONE_DAY_IN_MS);
+
+        DiscoveryEntry localEntry = new DiscoveryEntry();
+        localEntry.setParticipantId("participantIdLocal");
+        localEntry.setDomain(domains[0]);
+        when(localDiscoveryEntryStoreMock.lookup(eq(domains), eq(interfaceName))).thenReturn(Arrays.asList(localEntry));
+
+        GlobalDiscoveryEntry globalCachedEntry1 = new GlobalDiscoveryEntry();
+        globalCachedEntry1.setParticipantId("participantIdCached1");
+        globalCachedEntry1.setInterfaceName(interfaceName);
+        globalCachedEntry1.setDomain(domains[0]);
+        globalCachedEntry1.setAddress(globalAddress1Serialized);
+
+        GlobalDiscoveryEntry globalCachedEntry2 = new GlobalDiscoveryEntry();
+        globalCachedEntry2.setParticipantId("participantIdCached2");
+        globalCachedEntry2.setInterfaceName(interfaceName);
+        globalCachedEntry2.setDomain(domains[1]);
+        globalCachedEntry2.setAddress(globalAddress1Serialized);
+
+        Set<GlobalDiscoveryEntry> globalCachedEntries = new HashSet<GlobalDiscoveryEntry>(Arrays.asList(globalCachedEntry1,
+                                                                                                        globalCachedEntry2));
+
+        doReturn(globalCachedEntries).when(globalDiscoveryEntryCacheMock)
+                                     .lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAge()));
+
+        Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
+        Object[] values = checkPromiseSuccess(promise, "lookup failed");
+
+        verify(localDiscoveryEntryStoreMock).lookup(eq(domains), eq(interfaceName));
+        verify(globalDiscoveryEntryCacheMock).lookup(eq(domains), eq(interfaceName), eq(ONE_DAY_IN_MS));
+        verify(globalCapabilitiesDirectoryClient, never()).lookup(any(), anyString(), anyLong(), any());
+
+        Collection<DiscoveryEntry> captured = CapabilityUtils.convertToDiscoveryEntrySet(Arrays.asList((DiscoveryEntryWithMetaInfo[]) values[0]));
+        assertEquals(3, captured.size());
+        assertTrue(captured.contains(localEntry));
+        assertTrue(captured.contains(new DiscoveryEntry(globalCachedEntry1)));
+        assertTrue(captured.contains(new DiscoveryEntry(globalCachedEntry2)));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupMultipleDomains_localThenGlobal_allDomainsLocal_returnsOnlyLocalEntries() throws InterruptedException {
+        String[] domains = new String[]{ "domain1", "domain2" };
+        String interfaceName = "interface1";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_THEN_GLOBAL);
+        discoveryQos.setCacheMaxAge(ONE_DAY_IN_MS);
+
+        DiscoveryEntry localEntry1 = new DiscoveryEntry();
+        localEntry1.setParticipantId("participantIdLocal1");
+        localEntry1.setDomain(domains[0]);
+
+        DiscoveryEntry localEntry2 = new DiscoveryEntry();
+        localEntry2.setParticipantId("participantIdLocal2");
+        localEntry2.setDomain(domains[1]);
+
+        when(localDiscoveryEntryStoreMock.lookup(eq(domains),
+                                                 eq(interfaceName))).thenReturn(Arrays.asList(localEntry1,
+                                                                                              localEntry2));
+
+        GlobalDiscoveryEntry globalCachedEntry = new GlobalDiscoveryEntry();
+        globalCachedEntry.setParticipantId("participantIdCached1");
+        globalCachedEntry.setInterfaceName(interfaceName);
+        globalCachedEntry.setDomain(domains[0]);
+        globalCachedEntry.setAddress(globalAddress1Serialized);
+
+        doReturn(Arrays.asList(globalCachedEntry)).when(globalDiscoveryEntryCacheMock)
+                                                  .lookup(eq(domains),
+                                                          eq(interfaceName),
+                                                          eq(discoveryQos.getCacheMaxAge()));
+
+        Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
+        Object[] values = checkPromiseSuccess(promise, "lookup failed");
+
+        verify(localDiscoveryEntryStoreMock).lookup(eq(domains), eq(interfaceName));
+        verify(globalDiscoveryEntryCacheMock).lookup(eq(domains), eq(interfaceName), eq(ONE_DAY_IN_MS));
+        verify(globalCapabilitiesDirectoryClient, never()).lookup(any(), anyString(), anyLong(), any());
+
+        Collection<DiscoveryEntry> captured = CapabilityUtils.convertToDiscoveryEntrySet(Arrays.asList((DiscoveryEntryWithMetaInfo[]) values[0]));
+        assertEquals(2, captured.size());
+        assertTrue(captured.contains(localEntry1));
+        assertTrue(captured.contains(localEntry2));
+        assertFalse(captured.contains(new DiscoveryEntry(globalCachedEntry)));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByParticipantId_DiscoveryEntryWithMetaInfoContainsExpectedIsLocalValue_localEntry() throws Exception {
         String participantId = "participantId";
         String interfaceName = "interfaceName";
