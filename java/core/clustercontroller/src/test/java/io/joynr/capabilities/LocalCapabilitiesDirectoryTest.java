@@ -802,6 +802,42 @@ public class LocalCapabilitiesDirectoryTest {
                                 Matchers.<String[]> any());
     }
 
+    void checkAddRemovesCachedEntryWithSameParticipantId(ProviderScope scope) throws InterruptedException {
+        discoveryEntry.getQos().setScope(scope);
+        expectedDiscoveryEntry.getQos().setScope(scope);
+
+        doReturn(false).when(localDiscoveryEntryStoreMock)
+                       .hasDiscoveryEntry(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+
+        doReturn(Optional.of(globalDiscoveryEntry)).when(globalDiscoveryEntryCacheMock)
+                                                   .lookup(eq(expectedDiscoveryEntry.getParticipantId()),
+                                                           eq(Long.MAX_VALUE));
+
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, true, knownGbids);
+
+        checkPromiseSuccess(promise, "add failed");
+        verify(localDiscoveryEntryStoreMock).hasDiscoveryEntry(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        verify(localDiscoveryEntryStoreMock, never()).lookup(any(), any());
+
+        verify(globalDiscoveryEntryCacheMock, times(1)).lookup(eq(expectedGlobalDiscoveryEntry.getParticipantId()),
+                                                               eq(Long.MAX_VALUE));
+        verify(globalDiscoveryEntryCacheMock, times(1)).remove(eq(expectedGlobalDiscoveryEntry.getParticipantId()));
+
+        int calls = (scope == ProviderScope.GLOBAL ? 1 : 0);
+        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
+        verify(globalCapabilitiesDirectoryClient, times(calls)).add(any(), any(), anyLong(), any());
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void add_removesCachedEntryWithSameParticipantId_ProviderScope_LOCAL() throws InterruptedException {
+        checkAddRemovesCachedEntryWithSameParticipantId(ProviderScope.LOCAL);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void add_removesCachedEntryWithSameParticipantId_ProviderScope_GLOBAL() throws InterruptedException {
+        checkAddRemovesCachedEntryWithSameParticipantId(ProviderScope.GLOBAL);
+    }
+
     @Test(timeout = TEST_TIMEOUT)
     public void testAddKnownLocalEntryDoesNothing() throws InterruptedException {
         discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
