@@ -416,7 +416,13 @@ public class Arbitrator {
 
                 logger.trace("Selected capabilities: {}", selectedCapabilities);
                 if (selectedCapabilities != null && !selectedCapabilities.isEmpty()) {
+                    // Get non-selected discovery entries from arbitration
+                    Set<DiscoveryEntryWithMetaInfo> otherDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntries));
+                    otherDiscoveryEntries.removeAll(selectedCapabilities);
+                    logger.trace("Other capabilities: {}", otherDiscoveryEntries);
+
                     arbitrationResult.setDiscoveryEntries(selectedCapabilities);
+                    arbitrationResult.setOtherDiscoveryEntries(otherDiscoveryEntries);
                     arbitrationFinished(ArbitrationStatus.ArbitrationSuccessful, arbitrationResult);
                 } else {
                     arbitrationFailed();

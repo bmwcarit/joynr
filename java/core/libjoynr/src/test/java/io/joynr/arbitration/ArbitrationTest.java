@@ -227,6 +227,12 @@ public class ArbitrationTest {
         }
     }
 
+    private ArbitrationResult captureArbitrationResultByArbitrationCallbackOnSuccess() {
+        ArgumentCaptor<ArbitrationResult> arbitrationResultCaptor = ArgumentCaptor.forClass(ArbitrationResult.class);
+        verify(arbitrationCallback).onSuccess(arbitrationResultCaptor.capture());
+        return arbitrationResultCaptor.getValue();
+    }
+
     @Test
     public void callsLocalDiscoveryAggregatorWithCorrectParameters_nullGbidArray() throws InterruptedException {
         final String[] nullGbidArray = null;
@@ -327,31 +333,35 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
-        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
-
         capabilitiesList.add(expectedDiscoveryEntry);
+
         ProviderQos providerQos2 = new ProviderQos();
         CustomParameter[] qosParameters2 = {
                 new CustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, "otherKeyword") };
         providerQos2.setCustomParameters(qosParameters2);
 
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "wrongParticipantId",
-                                                            providerQos2,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                        domain,
+                                                                                        TestInterface.INTERFACE_NAME,
+                                                                                        "wrongParticipantId",
+                                                                                        providerQos2,
+                                                                                        System.currentTimeMillis(),
+                                                                                        NO_EXPIRY,
+                                                                                        publicKeyId,
+                                                                                        true);
+        capabilitiesList.add(otherDiscoveryEntry);
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
         discoveryQos.addCustomParameter(ArbitrationConstants.KEYWORD_PARAMETER, testKeyword);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
+        ArbitrationResult capturedArbitrationResult = captureArbitrationResultByArbitrationCallbackOnSuccess();
 
-        verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        Set<DiscoveryEntryWithMetaInfo> expectedOtherDiscoveryEntries = new HashSet<>(Arrays.asList(otherDiscoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries,
+                                                                            expectedOtherDiscoveryEntries);
+        assertEquals(expectedArbitrationResult, capturedArbitrationResult);
     }
 
     @Test
@@ -407,15 +417,16 @@ public class ArbitrationTest {
         // Create a capability entry for a provider with the correct keyword but that does not support onChange subscriptions
         providerQos.setCustomParameters(qosParameters);
         providerQos.setSupportsOnChangeSubscriptions(false);
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "wrongParticipantId",
-                                                            providerQos,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                        domain,
+                                                                                        TestInterface.INTERFACE_NAME,
+                                                                                        "wrongParticipantId",
+                                                                                        providerQos,
+                                                                                        System.currentTimeMillis(),
+                                                                                        NO_EXPIRY,
+                                                                                        publicKeyId,
+                                                                                        true);
+        capabilitiesList.add(otherDiscoveryEntry);
 
         // Create a capability entry for a provider with the correct keyword and that also supports onChange subscriptions
         ProviderQos providerQos2 = new ProviderQos();
@@ -433,9 +444,6 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
-        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
-
         capabilitiesList.add(expectedDiscoveryEntry);
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.Keyword, Long.MAX_VALUE);
@@ -443,23 +451,18 @@ public class ArbitrationTest {
         discoveryQos.setProviderMustSupportOnChange(true);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
+        ArbitrationResult capturedArbitrationResult = captureArbitrationResultByArbitrationCallbackOnSuccess();
 
-        verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        Set<DiscoveryEntryWithMetaInfo> expectedOtherDiscoveryEntries = new HashSet<>(Arrays.asList(otherDiscoveryEntry));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries,
+                                                                            expectedOtherDiscoveryEntries);
+        assertEquals(expectedArbitrationResult, capturedArbitrationResult);
     }
 
     @Test
     public void testLastSeenArbitrator() throws InterruptedException {
         ProviderQos providerQos = new ProviderQos();
-
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "wrongParticipantId",
-                                                            providerQos,
-                                                            222L,
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
 
         DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                                                            domain,
@@ -470,25 +473,40 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
-        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry1 = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                         domain,
+                                                                                         TestInterface.INTERFACE_NAME,
+                                                                                         "wrongParticipantId1",
+                                                                                         providerQos,
+                                                                                         111L,
+                                                                                         NO_EXPIRY,
+                                                                                         publicKeyId,
+                                                                                         true);
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry2 = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                         domain,
+                                                                                         TestInterface.INTERFACE_NAME,
+                                                                                         "wrongParticipantId2",
+                                                                                         providerQos,
+                                                                                         222L,
+                                                                                         NO_EXPIRY,
+                                                                                         publicKeyId,
+                                                                                         true);
 
         capabilitiesList.add(expectedDiscoveryEntry);
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "thirdParticipantId",
-                                                            providerQos,
-                                                            111L,
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        capabilitiesList.add(otherDiscoveryEntry1);
+        capabilitiesList.add(otherDiscoveryEntry2);
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.LastSeen, Long.MAX_VALUE);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
+        ArbitrationResult capturedArbitrationResult = captureArbitrationResultByArbitrationCallbackOnSuccess();
 
-        verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        Set<DiscoveryEntryWithMetaInfo> expectedOtherDiscoveryEntries = new HashSet<>(Arrays.asList(otherDiscoveryEntry1,
+                                                                                                    otherDiscoveryEntry2));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries,
+                                                                            expectedOtherDiscoveryEntries);
+        assertEquals(expectedArbitrationResult, capturedArbitrationResult);
     }
 
     @Test
@@ -506,24 +524,22 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
-        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
-
         capabilitiesList.add(expectedDiscoveryEntry);
 
         long lessPrior = 1;
         ProviderQos providerQos2 = new ProviderQos();
         providerQos2.setPriority(lessPrior);
 
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "wrongParticipantId",
-                                                            providerQos2,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo otherDiscoverEntry1 = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                        domain,
+                                                                                        TestInterface.INTERFACE_NAME,
+                                                                                        "wrongParticipantId",
+                                                                                        providerQos2,
+                                                                                        System.currentTimeMillis(),
+                                                                                        NO_EXPIRY,
+                                                                                        publicKeyId,
+                                                                                        true);
+        capabilitiesList.add(otherDiscoverEntry1);
         long negativePriority = -10;
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(negativePriority);
@@ -531,21 +547,28 @@ public class ArbitrationTest {
         Address thirdEndpointAddress = new MqttAddress(testAddress.getBrokerUri(), "topic1");
         ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "thirdParticipantId",
-                                                            providerQos3,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo otherDiscoverEntry2 = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                        domain,
+                                                                                        TestInterface.INTERFACE_NAME,
+                                                                                        "thirdParticipantId",
+                                                                                        providerQos3,
+                                                                                        System.currentTimeMillis(),
+                                                                                        NO_EXPIRY,
+                                                                                        publicKeyId,
+                                                                                        true);
+        capabilitiesList.add(otherDiscoverEntry2);
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
+        ArbitrationResult capturedArbitrationResult = captureArbitrationResultByArbitrationCallbackOnSuccess();
 
-        verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        Set<DiscoveryEntryWithMetaInfo> expectedOtherDiscoveryEntries = new HashSet<>(Arrays.asList(otherDiscoverEntry1,
+                                                                                                    otherDiscoverEntry2));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries,
+                                                                            expectedOtherDiscoveryEntries);
+        assertEquals(expectedArbitrationResult, capturedArbitrationResult);
     }
 
     @Test
@@ -616,9 +639,6 @@ public class ArbitrationTest {
                                                                                            NO_EXPIRY,
                                                                                            publicKeyId,
                                                                                            true);
-        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
-
         capabilitiesList.add(expectedDiscoveryEntry);
 
         // A provider with a higher priority that does not support onChangeSubscriptions
@@ -629,16 +649,16 @@ public class ArbitrationTest {
         Address otherEndpointAddress = new MqttAddress(testAddress.getBrokerUri(), "topic1");
         ArrayList<Address> otherEndpointAddresses = new ArrayList<Address>();
         otherEndpointAddresses.add(otherEndpointAddress);
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "wrongParticipantId",
-                                                            providerQos2,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
-
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry1 = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                         domain,
+                                                                                         TestInterface.INTERFACE_NAME,
+                                                                                         "wrongParticipantId",
+                                                                                         providerQos2,
+                                                                                         System.currentTimeMillis(),
+                                                                                         NO_EXPIRY,
+                                                                                         publicKeyId,
+                                                                                         true);
+        capabilitiesList.add(otherDiscoveryEntry1);
         // A provider with a higher priority that does not support onChangeSubscriptions
         ProviderQos providerQos3 = new ProviderQos();
         providerQos3.setPriority(testPriority + 2);
@@ -647,22 +667,29 @@ public class ArbitrationTest {
         Address thirdEndpointAddress = new MqttAddress(testAddress.getBrokerUri(), "topic2");
         ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
         thirdEndpointAddresses.add(thirdEndpointAddress);
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(new Version(47, 11),
-                                                            domain,
-                                                            TestInterface.INTERFACE_NAME,
-                                                            "thirdParticipantId",
-                                                            providerQos3,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry2 = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                         domain,
+                                                                                         TestInterface.INTERFACE_NAME,
+                                                                                         "thirdParticipantId",
+                                                                                         providerQos3,
+                                                                                         System.currentTimeMillis(),
+                                                                                         NO_EXPIRY,
+                                                                                         publicKeyId,
+                                                                                         true);
+        capabilitiesList.add(otherDiscoveryEntry2);
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         discoveryQos.setProviderMustSupportOnChange(true);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
+        ArbitrationResult capturedArbitrationResult = captureArbitrationResultByArbitrationCallbackOnSuccess();
 
-        verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        Set<DiscoveryEntryWithMetaInfo> expectedOtherDiscoveryEntries = new HashSet<>(Arrays.asList(otherDiscoveryEntry1,
+                                                                                                    otherDiscoveryEntry2));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries,
+                                                                            expectedOtherDiscoveryEntries);
+        assertEquals(expectedArbitrationResult, capturedArbitrationResult);
     }
 
     @Test
@@ -670,25 +697,24 @@ public class ArbitrationTest {
         ProviderQos providerQos = new ProviderQos();
 
         // Adding two dummy entries and one entry with "fixedParticipantId"
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(interfaceVersion,
-                                                            domain,
-                                                            interfaceName,
-                                                            "dummyParticipantId1",
-                                                            providerQos,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
-
-        capabilitiesList.add(new DiscoveryEntryWithMetaInfo(interfaceVersion,
-                                                            domain,
-                                                            interfaceName,
-                                                            "dummyParticipantId2",
-                                                            providerQos,
-                                                            System.currentTimeMillis(),
-                                                            NO_EXPIRY,
-                                                            publicKeyId,
-                                                            true));
+        DiscoveryEntryWithMetaInfo dummyEntry1 = new DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                                                                domain,
+                                                                                interfaceName,
+                                                                                "dummyParticipantId1",
+                                                                                providerQos,
+                                                                                System.currentTimeMillis(),
+                                                                                NO_EXPIRY,
+                                                                                publicKeyId,
+                                                                                true);
+        DiscoveryEntryWithMetaInfo dummyEntry2 = new DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                                                                domain,
+                                                                                interfaceName,
+                                                                                "dummyParticipantId2",
+                                                                                providerQos,
+                                                                                System.currentTimeMillis(),
+                                                                                NO_EXPIRY,
+                                                                                publicKeyId,
+                                                                                true);
 
         DiscoveryEntryWithMetaInfo anotherDiscoveryEntry = new DiscoveryEntryWithMetaInfo(interfaceVersion,
                                                                                           domain,
@@ -700,10 +726,8 @@ public class ArbitrationTest {
                                                                                           publicKeyId,
                                                                                           true);
 
-        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(anotherDiscoveryEntry);
-        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
-        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries, null);
-
+        capabilitiesList.add(dummyEntry1);
+        capabilitiesList.add(dummyEntry2);
         capabilitiesList.add(anotherDiscoveryEntry);
 
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.FixedChannel, Long.MAX_VALUE);
@@ -711,8 +735,14 @@ public class ArbitrationTest {
         discoveryQos.addCustomParameter(ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD, expectedFixedParticipantId);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
+        ArbitrationResult capturedArbitrationResult = captureArbitrationResultByArbitrationCallbackOnSuccess();
 
-        verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(anotherDiscoveryEntry));
+        Set<DiscoveryEntryWithMetaInfo> expectedOtherDiscoveryEntries = new HashSet<>(Arrays.asList(dummyEntry1,
+                                                                                                    dummyEntry2));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries,
+                                                                            expectedOtherDiscoveryEntries);
+        assertEquals(expectedArbitrationResult, capturedArbitrationResult);
     }
 
     @Test
@@ -747,7 +777,6 @@ public class ArbitrationTest {
                                 eq(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList)));
 
         verify(arbitrationCallback, times(1)).onSuccess(eq(expectedArbitrationResult));
-
     }
 
     @Test
@@ -817,6 +846,60 @@ public class ArbitrationTest {
         verify(discoveryEntryVersionFilter).filter(interfaceVersion,
                                                    new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList),
                                                    new HashMap<String, Set<Version>>());
+    }
+
+    @Test
+    public void testArbitrationResultStoresAllNonSelectedEntries() throws InterruptedException {
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setSupportsOnChangeSubscriptions(true);
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                                                                           domain,
+                                                                                           TestInterface.INTERFACE_NAME,
+                                                                                           expectedParticipantId,
+                                                                                           providerQos,
+                                                                                           333L,
+                                                                                           NO_EXPIRY,
+                                                                                           publicKeyId,
+                                                                                           true);
+
+        // Add two other entries that do not support onChangeSubscription and will be filtered
+        ProviderQos providerQos2 = new ProviderQos();
+        providerQos2.setSupportsOnChangeSubscriptions(false);
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry1 = new DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                                                                         domain,
+                                                                                         TestInterface.INTERFACE_NAME,
+                                                                                         "otherParticipantId1",
+                                                                                         providerQos2,
+                                                                                         111L,
+                                                                                         NO_EXPIRY,
+                                                                                         publicKeyId,
+                                                                                         true);
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry2 = new DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                                                                         domain,
+                                                                                         TestInterface.INTERFACE_NAME,
+                                                                                         "otherParticipantId2",
+                                                                                         providerQos2,
+                                                                                         222L,
+                                                                                         NO_EXPIRY,
+                                                                                         publicKeyId,
+                                                                                         true);
+
+        capabilitiesList.add(expectedDiscoveryEntry);
+        capabilitiesList.add(otherDiscoveryEntry1);
+        capabilitiesList.add(otherDiscoveryEntry2);
+
+        discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, ArbitrationStrategy.LastSeen, Long.MAX_VALUE);
+        discoveryQos.setProviderMustSupportOnChange(true);
+
+        createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
+        ArbitrationResult capturedArbitrationResult = captureArbitrationResultByArbitrationCallbackOnSuccess();
+
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry));
+        Set<DiscoveryEntryWithMetaInfo> expectedOtherDiscoveryEntries = new HashSet<>(Arrays.asList(otherDiscoveryEntry1,
+                                                                                                    otherDiscoveryEntry2));
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries,
+                                                                            expectedOtherDiscoveryEntries);
+        assertEquals(expectedArbitrationResult, capturedArbitrationResult);
     }
 
     @Test
