@@ -40,6 +40,8 @@ public interface DiscoveryEntryStore<T extends DiscoveryEntry> {
 
     public abstract Optional<T> lookup(String participantId, long cacheMaxAge);
 
+    public abstract Collection<T> lookupGlobalEntries(final String[] domains, final String interfaceName);
+
     public abstract Set<T> getAllDiscoveryEntries();
 
     public abstract Set<T> getAllGlobalEntries();

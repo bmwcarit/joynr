@@ -304,6 +304,18 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     }
 
     @Override
+    public Collection<T> lookupGlobalEntries(final String[] domains, final String interfaceName) {
+        Collection<T> capabilitiesList = lookup(domains, interfaceName);
+        Collection<T> result = new HashSet<>();
+        for (T cap : capabilitiesList) {
+            if (cap.getQos().getScope().equals(ProviderScope.GLOBAL)) {
+                result.add(cap);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public HashSet<T> getAllDiscoveryEntries() {
         HashSet<T> allDiscoveryEntries = new HashSet<T>();
 

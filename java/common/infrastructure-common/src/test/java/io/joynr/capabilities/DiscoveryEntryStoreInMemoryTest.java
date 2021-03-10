@@ -22,6 +22,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,7 +60,7 @@ public class DiscoveryEntryStoreInMemoryTest {
 
         localEntry = new DiscoveryEntry(new Version(),
                                         "TEST_DOMAIN",
-                                        "",
+                                        "interfaceName",
                                         localParticipantId,
                                         localProviderQos,
                                         LAST_SEEN_DATE_MS,
@@ -64,7 +68,7 @@ public class DiscoveryEntryStoreInMemoryTest {
                                         "Public");
         globalEntry = new DiscoveryEntry(new Version(),
                                          "TEST_DOMAIN",
-                                         "",
+                                         "interfaceName",
                                          globalParticipantId,
                                          globalProviderQos,
                                          LAST_SEEN_DATE_MS,
@@ -106,6 +110,19 @@ public class DiscoveryEntryStoreInMemoryTest {
 
         assertEquals(1, actualParticipantIds.length);
         assertEquals(globalParticipantId, actualParticipantIds[0]);
+    }
+
+    @Test
+    public void lookupGlobalEntries() {
+        String[] domains = { "TEST_DOMAIN" };
+        final String interfaceName = "interfaceName";
+        Set<DiscoveryEntry> expectedEntries = new HashSet<DiscoveryEntry>();
+        expectedEntries.add(globalEntry);
+        discoveryEntryStore.add(localEntry);
+        discoveryEntryStore.add(globalEntry);
+        Collection<DiscoveryEntry> actualEntries = discoveryEntryStore.lookupGlobalEntries(domains, interfaceName);
+        assertEquals(1, actualEntries.size());
+        assertEquals(expectedEntries, actualEntries);
     }
 
     @Test
