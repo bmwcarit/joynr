@@ -128,6 +128,13 @@ void GlobalCapabilitiesDirectoryClient::add(
             }
             future->onError(std::make_shared<exceptions::JoynrRuntimeException>(e));
         };
+        JOYNR_LOG_DEBUG(logger(),
+                        "Global provider registration started: participantId {}, domain {}, "
+                        "interface {}, {}",
+                        entry.getParticipantId(),
+                        entry.getDomain(),
+                        entry.getInterfaceName(),
+                        entry.getProviderVersion().toString());
         _capabilitiesProxy->addAsync(entry,
                                      move(gbids),
                                      move(onSuccess),

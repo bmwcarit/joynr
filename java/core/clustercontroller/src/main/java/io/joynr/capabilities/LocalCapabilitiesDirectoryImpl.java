@@ -1309,6 +1309,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         Runnable command = new Runnable() {
             @Override
             public void run() {
+                logger.debug("Re-Add scheduled.");
                 gcdTaskSequencer.addTask(reAddTask);
             }
         };
