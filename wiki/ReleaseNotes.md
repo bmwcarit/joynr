@@ -14,6 +14,19 @@ None.
  properties are ignored.
 * **[Java]** HTTP messaging has been removed. `joynr.bounceproxy`, `joynr.messaging` and
  `joynr.servlet` and related properties are ignored.
+* **[ALL]** Improved documentation (API and Markdown) of provider unregistration to better explain
+  what happens internally and what the user can expect.
+* **[Java,C++]** Additional logs to log scheduling and start of global add and remove operations
+  (`LocalCapabilitiesDirectoryImpl.java` / `LocalCapabilitiesDirectoryImpl.GcdTaskSequencer` and
+  `GlobalCapabilitiesDirectoryClient.cpp`):
+  * `Global provider registration scheduled...`
+  * `Global provider registration started...`
+  * `Global remove scheduled...`
+  * `Re-Add scheduled.`
+  * `Re-Add started.`
+* **[Java]** Provider discovery (lookup) for multiple domains now performs a global lookup for all
+  domains if there are no local entries for some domains. Before, the global lookup only included
+  the missing domains.
 
 ## Configuration Property Changes
 * **[Java]** Removed settings:
@@ -35,6 +48,16 @@ None.
 
 ## Bug Fixes
 * **[C++]** Fix message/memory corruption when UDS sending-queue-size is reached.
+* **[JEE]** Delay MQTT shared subscription until providers are registered in order to prevent a
+  potential deadlock during application deployment in an environment with high load. It could occur
+  if the MQTT Broker had a lot of request messages for a provider in the starting application. The
+  incoming messages then blocked all joynr message worker threads because they tried to invoke the
+  not yet fully registered and initialized provider bean which required a synchronized block that
+  was already locked by another thread that tried to register the provider. The provider
+  registration (and the deployment) subsequently failed because all message worker threads were
+  blocked and the registration message could not be delivered to the global capabilities directory.
+* **[C++]** Fixed a problem that could lead to starvation of global add operations (global provider
+  registration) causing high memory consumption and timeouts without reporting the actual reason.
 
 # joynr 1.15.9
 
@@ -49,6 +72,8 @@ None.
   has no chance to retry in case of failure.
 * **[Java]** Removed the dependency net.sourceforge.htmlunit:htmlunit
 * **[Java]** Improved logging of Access Control Entries for better readability.
+* **[Java]** Fixed cleanup of queued subscription requests in PublicationManager to free
+  unnecessary memory.
 
 ## Configuration Property Changes
 None.
@@ -397,6 +422,35 @@ None.
 * **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 * **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
   occurs after connection has been established
+
+# joynr 1.14.6
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Updated jackson to version 2.11.3
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++]** Provider registration without awaitGlobalRegistration now uses an extended
+  timeout of 90 minutes towards GlobalCapabilitiesDirectory. Note this registration is
+  still unreliable since the application will not get informed about the result and thus
+  has no chance to retry in case of failure.
+* **[C++]** MosquittoConnection attempts to reconnect when client was not authorized to connect
+* **[Java]** ObjectMapper is now protected by ReentrantReadWriteLock
+  to avoid potential occurrence of ConcurrentModificationException
+* **[JEE]** Delay MQTT shared subscription until providers are registered in order to prevent a
+  potential deadlock during application deployment in an environment with high load. It could occur
+  if the MQTT Broker had a lot of request messages for a provider in the starting application. The
+  incoming messages then blocked all joynr message worker threads because they tried to invoke the
+  not yet fully registered and initialized provider bean which required a synchronized block that
+  was already locked by another thread that tried to register the provider. The provider
+  registration (and the deployment) subsequently failed because all message worker threads were
+  blocked and the registration message could not be delivered to the global capabilities directory.
+* **[Docker]** Fixed docker image joynr-backend-jee
 
 # joynr 1.14.5
 
