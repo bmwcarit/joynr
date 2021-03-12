@@ -788,7 +788,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             break;
         case GLOBAL_ONLY:
             // localEntries only contains globally registered providers, already filtered by gbids, in case of DiscoveryScope.GLOBAL_ONLY
-            handleGlobalOnly(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, cachedEntries);
+            handleGlobalOnly(domains,
+                             interfaceName,
+                             discoveryQos,
+                             gbids,
+                             capabilitiesCallback,
+                             localEntries,
+                             cachedEntries);
             break;
         default:
             throw new IllegalStateException("Unknown or illegal DiscoveryScope value: " + discoveryScope);
@@ -809,20 +815,21 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                        Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
         boolean isDomainMissing = false;
         Set<String> missingDomains = new HashSet<String>(Arrays.asList(domains));
-        Set<String> addedParticipantIds = new HashSet<String>();
+
         Set<DiscoveryEntryWithMetaInfo> result = localDiscoveryEntries;
 
-        for (DiscoveryEntryWithMetaInfo localEntry : localDiscoveryEntries) {
-            missingDomains.remove(localEntry.getDomain());
-            addedParticipantIds.add(localEntry.getParticipantId());
+        // look for the domains in the local entries first
+        for (DiscoveryEntryWithMetaInfo entry : result) {
+            missingDomains.remove(entry.getDomain());
         }
 
+        // If there still some missing domains, search in the globalCache
         if (!missingDomains.isEmpty()) {
             for (DiscoveryEntryWithMetaInfo globalEntry : globalDiscoveryEntries) {
-                if (!addedParticipantIds.contains(globalEntry.getParticipantId())) {
-                    result.add(globalEntry);
-                    missingDomains.remove(globalEntry.getDomain());
-                }
+                // ParticipantIds are unique across the local store and the global cache
+                // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapabilitity
+                result.add(globalEntry);
+                missingDomains.remove(globalEntry.getDomain());
             }
         }
 
@@ -845,17 +852,13 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                       Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
         boolean isDomainMissing = false;
         Set<String> missingDomains = new HashSet<String>(Arrays.asList(domains));
-        Set<String> addedParticipantIds = new HashSet<String>();
         Set<DiscoveryEntryWithMetaInfo> result = localDiscoveryEntries;
 
-        for (DiscoveryEntryWithMetaInfo localEntry : localDiscoveryEntries) {
-            addedParticipantIds.add(localEntry.getParticipantId());
-        }
+        // ParticipantIds are unique across the local store and the global cache
+        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapabilitity
+        result.addAll(globalDiscoveryEntries);
 
         for (DiscoveryEntryWithMetaInfo globalEntry : globalDiscoveryEntries) {
-            if (!addedParticipantIds.contains(globalEntry.getParticipantId())) {
-                result.add(globalEntry);
-            }
             missingDomains.remove(globalEntry.getDomain());
         }
 
@@ -874,10 +877,15 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                   DiscoveryQos discoveryQos,
                                   String[] gbids,
                                   CapabilitiesCallback capabilitiesCallback,
+                                  Set<DiscoveryEntryWithMetaInfo> localEntries,
                                   Set<DiscoveryEntryWithMetaInfo> globalDiscoveryEntries) {
         Set<String> missingDomains = new HashSet<>(Arrays.asList(domains));
-        for (DiscoveryEntryWithMetaInfo discoveryEntry : globalDiscoveryEntries) {
-            missingDomains.remove(discoveryEntry.getDomain());
+        Set<DiscoveryEntryWithMetaInfo> result = localEntries;
+        // ParticipantIds are unique across the local store and the global cache
+        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapabilitity
+        result.addAll(globalDiscoveryEntries);
+        for (DiscoveryEntryWithMetaInfo entry : result) {
+            missingDomains.remove(entry.getDomain());
         }
 
         boolean isDomainMissing = !missingDomains.isEmpty();
@@ -886,7 +894,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                    discoveryQos,
                                    gbids,
                                    capabilitiesCallback,
-                                   globalDiscoveryEntries,
+                                   result,
                                    isDomainMissing);
     }
 
