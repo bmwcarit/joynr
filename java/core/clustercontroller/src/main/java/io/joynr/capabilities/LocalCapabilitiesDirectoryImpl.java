@@ -1063,7 +1063,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 capabilityCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                              localEntry.get())));
             } else {
-                logger.debug("Local only lookup for participantId {} failed with DiscoveryError: {}",
+                logger.debug("Lookup for participantId {} with DiscoveryScope.LOCAL_ONLY failed with DiscoveryError: {}",
                              participantId,
                              DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
                 capabilityCallback.onError(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
@@ -1079,7 +1079,23 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
             break;
         case GLOBAL_ONLY:
-            asyncGetGlobalCapability(gbids, participantId, discoveryQos, capabilityCallback);
+            if (localEntry.isPresent()) {
+                Set<String> gbidsSet = new HashSet<>(Arrays.asList(gbids));
+                if (ProviderScope.GLOBAL.equals(localEntry.get().getQos().getScope())
+                        && isRegisteredForGbids(localEntry.get(), gbidsSet)) {
+                    capabilityCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                                 localEntry.get())));
+                } else if (ProviderScope.GLOBAL.equals(localEntry.get().getQos().getScope())) {
+                    capabilityCallback.onError(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
+                } else {
+                    // not globally registered
+                    logger.warn("Lookup for participantId {} with DiscoveryScope.GLOBAL_ONLY found matching provider with ProviderScope.LOCAL, returning DiscoveryError.NO_ENTRY_FOR_PARTICIPANT.",
+                                participantId);
+                    capabilityCallback.onError(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                }
+            } else {
+                asyncGetGlobalCapability(gbids, participantId, discoveryQos, capabilityCallback);
+            }
             break;
         default:
             break;
