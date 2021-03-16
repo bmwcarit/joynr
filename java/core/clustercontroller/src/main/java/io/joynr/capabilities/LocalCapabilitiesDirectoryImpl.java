@@ -827,7 +827,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (!missingDomains.isEmpty()) {
             for (DiscoveryEntryWithMetaInfo globalEntry : globalDiscoveryEntries) {
                 // ParticipantIds are unique across the local store and the global cache
-                // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapabilitity
+                // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
                 result.add(globalEntry);
                 missingDomains.remove(globalEntry.getDomain());
             }
@@ -855,7 +855,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         Set<DiscoveryEntryWithMetaInfo> result = localDiscoveryEntries;
 
         // ParticipantIds are unique across the local store and the global cache
-        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapabilitity
+        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
         result.addAll(globalDiscoveryEntries);
 
         for (DiscoveryEntryWithMetaInfo globalEntry : globalDiscoveryEntries) {
@@ -882,7 +882,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         Set<String> missingDomains = new HashSet<>(Arrays.asList(domains));
         Set<DiscoveryEntryWithMetaInfo> result = localEntries;
         // ParticipantIds are unique across the local store and the global cache
-        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapabilitity
+        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
         result.addAll(globalDiscoveryEntries);
         for (DiscoveryEntryWithMetaInfo entry : result) {
             missingDomains.remove(entry.getDomain());
@@ -1075,11 +1075,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 capabilityCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                              localEntry.get())));
             } else {
-                asyncGetGlobalCapabilitity(gbids, participantId, discoveryQos, capabilityCallback);
+                asyncGetGlobalCapability(gbids, participantId, discoveryQos, capabilityCallback);
             }
             break;
         case GLOBAL_ONLY:
-            asyncGetGlobalCapabilitity(gbids, participantId, discoveryQos, capabilityCallback);
+            asyncGetGlobalCapability(gbids, participantId, discoveryQos, capabilityCallback);
             break;
         default:
             break;
@@ -1099,10 +1099,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         }
     }
 
-    private void asyncGetGlobalCapabilitity(final String[] gbids,
-                                            final String participantId,
-                                            DiscoveryQos discoveryQos,
-                                            final CapabilityCallback capabilitiesCallback) {
+    private void asyncGetGlobalCapability(final String[] gbids,
+                                          final String participantId,
+                                          DiscoveryQos discoveryQos,
+                                          final CapabilityCallback capabilitiesCallback) {
         Optional<GlobalDiscoveryEntry> cachedGlobalCapability = globalDiscoveryEntryCache.lookup(participantId,
                                                                                                  discoveryQos.getCacheMaxAge());
 
