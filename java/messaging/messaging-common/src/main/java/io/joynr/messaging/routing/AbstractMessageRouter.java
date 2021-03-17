@@ -480,6 +480,34 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         }
     }
 
+    @Override
+    public void registerProxyProviderParticipantIds(String proxyParticipantId, Set<String> providerParticipantIds) {
+        if (proxyParticipantId == null || proxyParticipantId.isEmpty()) {
+            throw new JoynrIllegalStateException("Proxy participant id is null or has an empty value."
+                    + "Registration of proxy's provider participant ids failed.");
+        }
+
+        if (providerParticipantIds == null || providerParticipantIds.isEmpty()) {
+            throw new JoynrIllegalStateException("Set of the provider participant ids is null or empty."
+                    + "Registration of proxy's provider participant ids failed.");
+        } else {
+            if (providerParticipantIds.contains(null) || providerParticipantIds.contains("")) {
+                throw new JoynrIllegalStateException("Set of the provider participant ids has an entry with an empty or null value."
+                        + "Registration of proxy's provider participant ids failed.");
+            }
+        }
+
+        proxyParticipantIdToProxyInformationMap.computeIfPresent(proxyParticipantId, (key, oldVal) -> {
+            if (oldVal.providerParticipantIds.isEmpty()) {
+                oldVal.providerParticipantIds.addAll(providerParticipantIds);
+                return oldVal;
+            } else {
+                throw new JoynrIllegalStateException("The proxy with " + proxyParticipantId
+                        + " already has registered providers. Registration of proxy's provider participant ids failed.");
+            }
+        });
+    }
+
     private long createDelayWithExponentialBackoff(long sendMsgRetryIntervalMs, int retries) {
         long millis = sendMsgRetryIntervalMs + (long) ((2 ^ (retries)) * sendMsgRetryIntervalMs * Math.random());
         if (maxDelayMs >= sendMsgRetryIntervalMs && millis > maxDelayMs) {
