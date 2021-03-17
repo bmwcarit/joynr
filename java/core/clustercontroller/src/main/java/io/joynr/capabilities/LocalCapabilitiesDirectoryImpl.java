@@ -758,7 +758,11 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                        String[] gbids,
                        final CapabilitiesCallback capabilitiesCallback) {
         DiscoveryScope discoveryScope = discoveryQos.getDiscoveryScope();
-        Set<DiscoveryEntryWithMetaInfo> localEntries = getLocalEntries(discoveryScope, gbids, domains, interfaceName);
+        Set<DiscoveryEntryWithMetaInfo> localEntries = getLocalEntries(discoveryScope,
+                                                                       gbids,
+                                                                       domains,
+                                                                       interfaceName,
+                                                                       discoveryQos.getCacheMaxAge());
         Set<DiscoveryEntryWithMetaInfo> cachedEntries = getCachedEntriesIfRequired(discoveryScope,
                                                                                    gbids,
                                                                                    domains,
@@ -962,19 +966,21 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private Set<DiscoveryEntryWithMetaInfo> getLocalEntries(DiscoveryScope discoveryScope,
                                                             String[] gbids,
                                                             String[] domains,
-                                                            String interfaceName) {
+                                                            String interfaceName,
+                                                            long cacheMaxAge) {
         if (INCLUDE_LOCAL_SCOPES.contains(discoveryScope)) {
             // return all local entries (locally and globally registered) if DiscoveryScope includes local entries
             return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true,
                                                                           localDiscoveryEntryStore.lookup(domains,
                                                                                                           interfaceName));
-        } else {
+        } else if (cacheMaxAge > 0) {
+            Collection<DiscoveryEntry> localEntries = localDiscoveryEntryStore.lookupGlobalEntries(domains,
+                                                                                                   interfaceName);
             // return only globally registered local providers for selected GBIDs if DiscoveryScope does not include local entries
-            Collection<DiscoveryEntry> localEntries = filterLocalEntriesByGbids(localDiscoveryEntryStore.lookupGlobalEntries(domains,
-                                                                                                                             interfaceName),
-                                                                                gbids);
-            return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, localEntries);
+            Collection<DiscoveryEntry> filteredLocalEntries = filterLocalEntriesByGbids(localEntries, gbids);
+            return CapabilityUtils.convertToDiscoveryEntryWithMetaInfoSet(true, filteredLocalEntries);
         }
+        return new HashSet<>();
     }
 
     @Override
@@ -1081,17 +1087,17 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         case GLOBAL_ONLY:
             if (localEntry.isPresent()) {
                 Set<String> gbidsSet = new HashSet<>(Arrays.asList(gbids));
-                if (ProviderScope.GLOBAL.equals(localEntry.get().getQos().getScope())
-                        && isRegisteredForGbids(localEntry.get(), gbidsSet)) {
-                    capabilityCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
-                                                                                                                                 localEntry.get())));
-                } else if (ProviderScope.GLOBAL.equals(localEntry.get().getQos().getScope())) {
-                    capabilityCallback.onError(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
-                } else {
+                if (!ProviderScope.GLOBAL.equals(localEntry.get().getQos().getScope())) {
                     // not globally registered
                     logger.warn("Lookup for participantId {} with DiscoveryScope.GLOBAL_ONLY found matching provider with ProviderScope.LOCAL, returning DiscoveryError.NO_ENTRY_FOR_PARTICIPANT.",
                                 participantId);
                     capabilityCallback.onError(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                } else if (isRegisteredForGbids(localEntry.get(), gbidsSet)) {
+                    // filter by selected GBIDs
+                    capabilityCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                                                 localEntry.get())));
+                } else {
+                    capabilityCallback.onError(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS);
                 }
             } else {
                 asyncGetGlobalCapability(gbids, participantId, discoveryQos, capabilityCallback);

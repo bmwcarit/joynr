@@ -2029,6 +2029,7 @@ public class LocalCapabilitiesDirectoryTest {
         String interfaceName = "interface1";
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+        discoveryQos.setCacheMaxAge(ONE_DAY_IN_MS);
 
         List<DiscoveryEntry> entries = new ArrayList<>();
         List<Promise<Add1Deferred>> promises = new ArrayList<>();
@@ -2202,6 +2203,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Test(timeout = TEST_TIMEOUT)
     public void lookupByDomainInterfaceGbids_localAndGlobal_localGlobalEntry_invokesGcd_filtersCombinedResult() throws Exception {
+        // test assumes that the local entry is registered after the global lookup has been triggered
         String[] domains = { discoveryEntry.getDomain() };
         List<DiscoveryEntry> localDiscoveryEntries = Arrays.asList(discoveryEntry);
         List<GlobalDiscoveryEntry> globalDiscoveryEntries = Arrays.asList(globalDiscoveryEntry);
@@ -2246,7 +2248,8 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupByDomainInterfaceGbids_globalOnly_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate() throws Exception {
+    public void lookupByDomainInterfaceGbids_globalOnly_invokesGcd_ignoresGlobalDuplicateOfLocalGlobalEntry() throws Exception {
+        // test assumes that the local entry is registered after the global lookup has been triggered
         String[] domains = { discoveryEntry.getDomain() };
         List<GlobalDiscoveryEntry> globalDiscoveryEntries = Arrays.asList(globalDiscoveryEntry);
         final long cacheMaxAge = 10000L;
@@ -2286,17 +2289,81 @@ public class LocalCapabilitiesDirectoryTest {
         verify(localDiscoveryEntryStoreMock).lookup(eq(discoveryEntry.getParticipantId()), anyLong());
     }
 
-    @Test(timeout = TEST_TIMEOUT)
-    public void lookupByParticipantIdGbids_globalOnlyWithCache_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate() throws Exception {
-        lookupByParticipantIdGbids_globalOnly_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate(10000L);
+    @Test
+    public void lookupDomIntf_globalOnlyWithCache_localGlobalEntryNoCachedEntry_doesNotInvokeGcd() throws Exception {
+        final long cacheMaxAge = 1L;
+        final long discoveryTimeout = 5000L;
+        final String[] domains = new String[]{ discoveryEntry.getDomain() };
+        final String interfaceName = discoveryEntry.getInterfaceName();
+        DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, DiscoveryScope.GLOBAL_ONLY, false);
+
+        // register in all gbids
+        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(discoveryEntry, true, knownGbids);
+        checkPromiseSuccess(promiseAdd, "add failed");
+        reset(localDiscoveryEntryStoreMock, globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+
+        doReturn(new HashSet<>(Arrays.asList(discoveryEntry))).when(localDiscoveryEntryStoreMock)
+                                                              .lookupGlobalEntries(eq(domains), eq(interfaceName));
+
+        Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
+
+        DiscoveryEntryWithMetaInfo[] values = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promise,
+                                                                                                 "lookup failed")[0];
+        assertEquals(1, values.length);
+        assertEquals(true, values[0].getIsLocal());
+
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient);
+    }
+
+    @Test
+    public void lookupDomIntf_globalOnlyNoCache_localGlobalEntryNoCachedEntry_invokesGcd() throws Exception {
+        final long cacheMaxAge = 0L;
+        final long discoveryTimeout = 5000L;
+        final String[] domains = new String[]{ discoveryEntry.getDomain() };
+        final String interfaceName = discoveryEntry.getInterfaceName();
+        DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, DiscoveryScope.GLOBAL_ONLY, false);
+
+        // register in all gbids
+        Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(discoveryEntry, true, knownGbids);
+        checkPromiseSuccess(promiseAdd, "add failed");
+        reset(localDiscoveryEntryStoreMock, globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+
+        doReturn(new HashSet<>(Arrays.asList(discoveryEntry))).when(localDiscoveryEntryStoreMock)
+                                                              .lookupGlobalEntries(eq(domains), eq(interfaceName));
+        doAnswer(createLookupAnswer(new ArrayList<GlobalDiscoveryEntry>())).when(globalCapabilitiesDirectoryClient)
+                                                                           .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                                                   Mockito.<String[]> any(),
+                                                                                   anyString(),
+                                                                                   anyLong(),
+                                                                                   any());
+
+        Promise<Lookup1Deferred> promise = localCapabilitiesDirectory.lookup(domains, interfaceName, discoveryQos);
+
+        DiscoveryEntryWithMetaInfo[] values = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promise,
+                                                                                                 "lookup failed")[0];
+        assertEquals(0, values.length);
+
+        verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                         eq(domains),
+                                                         eq(interfaceName),
+                                                         eq(discoveryQos.getDiscoveryTimeout()),
+                                                         eq(knownGbids));
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void lookupByParticipantIdGbids_globalOnlyNoCache_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate() throws Exception {
-        lookupByParticipantIdGbids_globalOnly_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate(0L);
+    public void lookupByParticipantIdGbids_globalOnlyWithCache_invokesGcd_ignoresGlobalDuplicateOfLocalGlobalEntry() throws Exception {
+        // test assumes that the local entry is registered after the global lookup has been triggered
+        lookupByParticipantIdGbids_globalOnly_invokesGcd_ignoresGlobalDuplicateOfLocalGlobalEntry(10000L);
     }
 
-    private void lookupByParticipantIdGbids_globalOnly_localGlobalEntry_invokesGcd_ignoresGlobalDuplicate(long cacheMaxAge) throws Exception {
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByParticipantIdGbids_globalOnlyNoCache_invokesGcd_ignoresGlobalDuplicateOfLocalGlobalEntry() throws Exception {
+        // test assumes that the local entry is registered after the global lookup has been triggered
+        lookupByParticipantIdGbids_globalOnly_invokesGcd_ignoresGlobalDuplicateOfLocalGlobalEntry(0L);
+    }
+
+    private void lookupByParticipantIdGbids_globalOnly_invokesGcd_ignoresGlobalDuplicateOfLocalGlobalEntry(long cacheMaxAge) throws Exception {
+        // test assumes that the local entry is registered after the global lookup has been triggered
         final long discoveryTimeout = 5000L;
 
         DiscoveryQos discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, DiscoveryScope.GLOBAL_ONLY, false);
