@@ -101,6 +101,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     private final ConcurrentHashMap<WeakReference<Object>, ProxyInformation> proxyMap;
     private final ReferenceQueue<Object> garbageCollectedProxiesQueue;
     private final ShutdownNotifier shutdownNotifier;
+    private final ConcurrentHashMap<String, ProxyInformation> proxyParticipantIdToProxyInformationMap;
 
     @Inject
     @Singleton
@@ -128,6 +129,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         this.proxyMap = new ConcurrentHashMap<WeakReference<Object>, ProxyInformation>();
+        this.proxyParticipantIdToProxyInformationMap = new ConcurrentHashMap<String, ProxyInformation>();
         this.garbageCollectedProxiesQueue = new ReferenceQueue<Object>();
         this.shutdownNotifier = shutdownNotifier;
         shutdownNotifier.registerForShutdown(this);
@@ -162,6 +164,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     removeNextHop(proxyInformation.participantId);
                     shutdownNotifier.unregister(proxyInformation.shutdownListener);
                     proxyMap.remove(r);
+                    proxyParticipantIdToProxyInformationMap.remove(proxyInformation.participantId);
                     synchronized (garbageCollectedProxiesQueue) {
                         r = garbageCollectedProxiesQueue.poll();
                     }
@@ -467,8 +470,13 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     @Override
     public void registerProxy(Object proxy, String proxyParticipantId, ShutdownListener shutdownListener) {
         synchronized (garbageCollectedProxiesQueue) {
-            proxyMap.putIfAbsent(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue),
-                                 new ProxyInformation(proxyParticipantId, shutdownListener));
+            ProxyInformation proxyInformation = new ProxyInformation(proxyParticipantId, shutdownListener);
+            if (proxyParticipantIdToProxyInformationMap.putIfAbsent(proxyParticipantId, proxyInformation) == null) {
+                proxyMap.put(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue), proxyInformation);
+            } else {
+                throw new JoynrIllegalStateException("The proxy with " + proxyParticipantId
+                        + " has already been registered.");
+            }
         }
     }
 
