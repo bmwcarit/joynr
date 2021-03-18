@@ -204,6 +204,14 @@ public class JoynrIntegrationBean {
             if (!GlobalCapabilitiesDirectoryProvider.class.equals(providerInterface)) {
                 // Do not use awaitGlobalregistration for interface GlobalCapabilitiesDirectory to avoid potential deadlock
                 // in case its implementation depends on a Singleton that might not have been created before JoynrIntegrationBean
+                //
+                // GlobalCapabilitiesDirectory should not be combined with other globally registered providers in the same
+                // runtime because successful deployment (registration of the other providers) cannot be guaranteed.
+                // The registration of other providers will fail if:
+                // - the GlobalCapabilitiesDirectory depends on a Singleton that has not yet been created.
+                //   The provider registration will be blocked in a dead lock in this case.
+                // - the GlobalCapabilitiesDirectory is not the first provider to be registered which only happens by chance.
+                //   (there is no order for the provider registration)
                 logger.debug("Provider registration: awaitGlobalRegistration, bean {}", bean);
                 registrar.awaitGlobalRegistration();
             }
