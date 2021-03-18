@@ -81,6 +81,7 @@ public class RequestReplyManagerImpl
     private RequestInterpreter requestInterpreter;
     private MessageSender messageSender;
     private MutableMessageFactory messageFactory;
+    // requestQueueLock protects requestQueue/oneWayRequestQueue, providerDirectory and replyCallbacks
     private Object requestQueueLock;
 
     private ConcurrentMap<String, List<ScheduledFuture<?>>> cleanupSchedulerFuturesMap;
@@ -236,17 +237,17 @@ public class RequestReplyManagerImpl
 
     @Override
     public void entryAdded(String participantId, ProviderContainer providerContainer) {
+        RequestCaller requestCaller = providerContainer.getRequestCaller();
         List<ScheduledFuture<?>> futuresList;
+        ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> requestList;
+        LinkedList<ProviderCallback<Reply>> requestListCallbacks = new LinkedList<ProviderCallback<Reply>>();
         ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>> oneWayRequestList;
         synchronized (requestQueueLock) {
-            ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> requestList = requestQueue.remove(participantId);
+            requestList = requestQueue.remove(participantId);
             if (requestList != null) {
                 for (ContentWithExpiryDate<Request> requestItem : requestList) {
-                    if (!requestItem.isExpired()) {
-                        Request request = requestItem.getContent();
-                        // we have to synchronize here because of replyCallbacks.remove
-                        handleRequest(replyCallbacks.remove(request), providerContainer.getRequestCaller(), request);
-                    }
+                    Request request = requestItem.getContent();
+                    requestListCallbacks.addLast(replyCallbacks.remove(request));
                 }
             }
 
@@ -254,11 +255,23 @@ public class RequestReplyManagerImpl
             futuresList = cleanupSchedulerFuturesMap.remove(participantId);
         }
 
+        if (requestList != null) {
+            for (ContentWithExpiryDate<Request> requestItem : requestList) {
+                ProviderCallback<Reply> callback = requestListCallbacks.removeFirst();
+                if (!requestItem.isExpired()) {
+                    Request request = requestItem.getContent();
+                    handleRequest(callback, requestCaller, request);
+                } else {
+                    logger.warn("Request {} is expired. Not executing.", requestItem.getContent().getRequestReplyId());
+                }
+            }
+        }
+
         if (oneWayRequestList != null) {
             for (ContentWithExpiryDate<OneWayRequest> requestItem : oneWayRequestList) {
                 OneWayRequest request = requestItem.getContent();
                 if (!requestItem.isExpired()) {
-                    handleOneWayRequest(providerContainer.getRequestCaller(), request);
+                    handleOneWayRequest(requestCaller, request);
                 } else {
                     logger.warn("One-way request {} is expired. Not executing.", String.valueOf(request));
                 }
@@ -279,19 +292,22 @@ public class RequestReplyManagerImpl
 
     @Override
     public void handleOneWayRequest(final String providerParticipantId, final OneWayRequest request, long expiryDate) {
-        synchronized (requestQueueLock) {
-            ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
-            if (providerContainer != null) {
-                handleOneWayRequest(providerContainer.getRequestCaller(), request);
-            } else {
-                logger.info("Provider participantId: {} not found, queuing one-way request message.",
-                            providerParticipantId);
-                queueOneWayRequest(providerParticipantId,
-                                   request,
-                                   request.getMethodName(),
-                                   ExpiryDate.fromAbsolute(expiryDate));
+        ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+        if (providerContainer == null) {
+            synchronized (requestQueueLock) {
+                providerContainer = providerDirectory.get(providerParticipantId);
+                if (providerContainer == null) {
+                    logger.info("Provider participantId: {} not found, queuing one-way request message.",
+                                providerParticipantId);
+                    queueOneWayRequest(providerParticipantId,
+                                       request,
+                                       request.getMethodName(),
+                                       ExpiryDate.fromAbsolute(expiryDate));
+                    return;
+                }
             }
         }
+        handleOneWayRequest(providerContainer.getRequestCaller(), request);
     }
 
     private void handleOneWayRequest(RequestCaller requestCaller, OneWayRequest request) {
@@ -302,6 +318,7 @@ public class RequestReplyManagerImpl
         }
     }
 
+    // requires requestQueueLock
     private void queueOneWayRequest(final String providerParticipantId,
                                     OneWayRequest oneWayRequest,
                                     String methodName,
@@ -319,10 +336,15 @@ public class RequestReplyManagerImpl
 
             @Override
             public void run() {
-                // no need to synchronize queue as it is ConcurrentLinkedQueue
-                ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>> queue = oneWayRequestQueue.get(providerParticipantId);
-                if (queue != null && queue.remove(requestItem)) {
-                    logger.warn("One-way request {} is expired. Not executing.", String.valueOf(oneWayRequest));
+                synchronized (requestQueueLock) {
+                    ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>> queue = oneWayRequestQueue.get(providerParticipantId);
+                    if (queue != null && queue.remove(requestItem)) {
+                        logger.warn("One-way request {} is expired. Not executing.", String.valueOf(oneWayRequest));
+                        if (queue.isEmpty()) {
+                            // cleanup
+                            oneWayRequestQueue.remove(providerParticipantId);
+                        }
+                    }
                 }
             }
         };
@@ -345,15 +367,19 @@ public class RequestReplyManagerImpl
                               String providerParticipantId,
                               Request request,
                               long expiryDate) {
-        synchronized (requestQueueLock) {
-            ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
-            if (providerContainer != null) {
-                handleRequest(replyCallback, providerContainer.getRequestCaller(), request);
-            } else {
-                logger.info("Provider participantId: {} not found, queuing request message.", providerParticipantId);
-                queueRequest(replyCallback, providerParticipantId, request, ExpiryDate.fromAbsolute(expiryDate));
+        ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+        if (providerContainer == null) {
+            synchronized (requestQueueLock) {
+                providerContainer = providerDirectory.get(providerParticipantId);
+                if (providerContainer == null) {
+                    logger.info("Provider participantId: {} not found, queuing request message.",
+                                providerParticipantId);
+                    queueRequest(replyCallback, providerParticipantId, request, ExpiryDate.fromAbsolute(expiryDate));
+                    return;
+                }
             }
         }
+        handleRequest(replyCallback, providerContainer.getRequestCaller(), request);
     }
 
     private void handleRequest(ProviderCallback<Reply> replyCallback, RequestCaller requestCaller, Request request) {
@@ -361,6 +387,7 @@ public class RequestReplyManagerImpl
         requestInterpreter.execute(replyCallback, requestCaller, request);
     }
 
+    // requires requestQueueLock
     private void queueRequest(final ProviderCallback<Reply> replyCallback,
                               final String providerParticipantId,
                               Request request,
@@ -377,11 +404,15 @@ public class RequestReplyManagerImpl
         Runnable cleanupRunnable = new Runnable() {
             @Override
             public void run() {
-                ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> queue = requestQueue.get(providerParticipantId);
-                if (queue != null) {
-                    queue.remove(requestItem);
-                }
                 synchronized (requestQueueLock) {
+                    ConcurrentLinkedQueue<ContentWithExpiryDate<Request>> queue = requestQueue.get(providerParticipantId);
+                    if (queue != null) {
+                        queue.remove(requestItem);
+                        if (queue.isEmpty()) {
+                            // cleanup
+                            oneWayRequestQueue.remove(providerParticipantId);
+                        }
+                    }
                     replyCallbacks.remove(requestItem.getContent());
                 }
                 Request request = requestItem.getContent();
