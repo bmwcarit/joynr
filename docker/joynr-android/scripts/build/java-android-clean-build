@@ -52,7 +52,7 @@ keytool -importkeystore -deststorepass $KEYSTORE_PASSWORD -destkeypass $KEYSTORE
 keytool -list -keystore clientkeystore.jks -storepass $KEYSTORE_PASSWORD
 
 echo '####################################################'
-echo '# start tests'
+echo '# prepare services'
 echo '####################################################'
 
 cd /data/src
@@ -77,10 +77,34 @@ fi
 mosquitto -c /home/joynr/mosquitto.conf &
 MOSQUITTO_PID=$!
 
+function stopservices
+{
+    echo "stop payara"
+    /data/src/docker/joynr-base/scripts/stop-payara.sh
+
+    echo "stop mosquitto"
+    kill -TERM $MOSQUITTO_PID
+    wait $MOSQUITTO_PID
+}
+
 # Use the default discovery-directory-jee with embedded db. Its name is e.g. discovery-directory-jee-1.10.0-SNAPSHOT.war
 DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-[0-9].*war")
 
+set +e # stop services even if there are failing tests or the deployment fails
 /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
+SUCCESS=$?
+if [ "$SUCCESS" != "0" ]; then
+    echo '########################################################'
+    echo '# Start Payara failed with exit code:' $SUCCESS
+    echo '########################################################'
+
+    stopservices
+    exit $SUCCESS
+fi
+
+echo '####################################################'
+echo '# start tests'
+echo '####################################################'
 
 # Assume that mosquitto and payara have sufficient time to startup before reaching
 # any test code that requires it;
@@ -89,7 +113,6 @@ DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-di
 
 # 2nd run; now including test execution which requires mosquitto / payara and
 # generate site report
-set +e # stop services even if there are failing tests
 mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests=false \
@@ -106,10 +129,7 @@ echo '####################################################'
 echo '# stop services'
 echo '####################################################'
 
-/data/src/docker/joynr-base/scripts/stop-payara.sh
-
-kill -TERM $MOSQUITTO_PID
-wait $MOSQUITTO_PID
+stopservices
 
 exit $EXIT_CODE
 
