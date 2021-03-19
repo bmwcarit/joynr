@@ -561,4 +561,27 @@ public class RoutingTableImplTest {
         assertNull(subject.get(participantId));
     }
 
+    @Test
+    public void incrementRefCountWithoutPut() {
+        final String participantId = "testParticipantId";
+        final boolean isGloballyVisible = true;
+        final long expiryDateMs = Long.MAX_VALUE;
+        final MqttAddress oldAddress = new MqttAddress("testBrokerUri", "testTopic");
+
+        subject.put(participantId, oldAddress, isGloballyVisible, expiryDateMs);
+        subject.incrementReferenceCount(participantId);
+        assertEquals(oldAddress, subject.get(participantId));
+
+        subject.remove(participantId);
+        assertEquals(oldAddress, subject.get(participantId));
+        subject.remove(participantId);
+        assertNull(subject.get(participantId));
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void incrementRefCountThrowsOnNoEntry() {
+        final String participantId = "testParticipantId";
+        subject.incrementReferenceCount(participantId);
+    }
+
 }

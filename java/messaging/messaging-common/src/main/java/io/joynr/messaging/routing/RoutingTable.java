@@ -110,4 +110,11 @@ public interface RoutingTable {
      * Purge all expired routing entries from the table
      */
     void purge();
+
+    /**
+     * Increment the reference count of the entry with the given participantId.
+     * If no such enbtry is available, a JoynrIllegalstateException is thrown.
+     * @param participantId
+     */
+    void incrementReferenceCount(String participantId);
 }

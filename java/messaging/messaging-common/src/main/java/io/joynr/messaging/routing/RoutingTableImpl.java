@@ -374,4 +374,14 @@ public class RoutingTableImpl implements RoutingTable {
             }
         }
     }
+
+    public void incrementReferenceCount(String participantId) {
+        synchronized (this) {
+            RoutingEntry routingEntry = hashMap.get(participantId);
+            if (routingEntry == null) {
+                throw new JoynrIllegalStateException("No routing entry with participantId " + participantId + "found!");
+            }
+            routingEntry.incRefCount();
+        }
+    }
 }
