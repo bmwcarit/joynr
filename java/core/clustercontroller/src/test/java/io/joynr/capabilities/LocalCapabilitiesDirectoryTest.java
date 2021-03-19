@@ -80,6 +80,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.DeferredVoid;
@@ -153,7 +154,7 @@ public class LocalCapabilitiesDirectoryTest {
     @Mock
     private ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner;
     @Mock
-    private MessageRouter messageRouter;
+    private RoutingTable routingTable;
     @Mock
     private Dispatcher dispatcher;
     @Mock
@@ -317,7 +318,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         globalAddressProvider,
                                                                         localDiscoveryEntryStoreMock,
                                                                         globalDiscoveryEntryCacheMock,
-                                                                        messageRouter,
+                                                                        routingTable,
                                                                         globalCapabilitiesDirectoryClient,
                                                                         expiredDiscoveryEntryCacheCleaner,
                                                                         freshnessUpdateIntervalMs,
@@ -2186,18 +2187,18 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalDiscoveryEntryCacheMock, never()).add(remoteEntry1);
         verify(globalDiscoveryEntryCacheMock).add(remoteEntry2);
         verify(globalDiscoveryEntryCacheMock).add(remoteEntry3);
-        verify(messageRouter, never()).addToRoutingTable(eq(remoteEntry1.getParticipantId()),
-                                                         eq(globalAddressWithoutGbid),
-                                                         eq(true),
-                                                         anyLong());
-        verify(messageRouter).addToRoutingTable(eq(remoteEntry2.getParticipantId()),
-                                                eq(globalAddressWithoutGbid),
-                                                eq(true),
-                                                anyLong());
-        verify(messageRouter).addToRoutingTable(eq(remoteEntry3.getParticipantId()),
-                                                eq(globalAddressWithoutGbid),
-                                                eq(true),
-                                                anyLong());
+        verify(routingTable, never()).put(eq(remoteEntry1.getParticipantId()),
+                                          eq(globalAddressWithoutGbid),
+                                          eq(true),
+                                          anyLong());
+        verify(routingTable).put(eq(remoteEntry2.getParticipantId()),
+                                 eq(globalAddressWithoutGbid),
+                                 eq(true),
+                                 anyLong());
+        verify(routingTable).put(eq(remoteEntry3.getParticipantId()),
+                                 eq(globalAddressWithoutGbid),
+                                 eq(true),
+                                 anyLong());
         assertTrue(discoveryEntryFound && remoteEntry2Found && remoteEntry3Found);
     }
 
@@ -2240,10 +2241,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                          eq(discoveryTimeout),
                                                          any());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
-        verify(messageRouter, never()).addToRoutingTable(anyString(),
-                                                         any(Address.class),
-                                                         any(Boolean.class),
-                                                         anyLong());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
         verify(localDiscoveryEntryStoreMock).lookup(eq(domains), eq(INTERFACE_NAME));
     }
 
@@ -2282,10 +2280,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                          eq(discoveryTimeout),
                                                          any());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
-        verify(messageRouter, never()).addToRoutingTable(anyString(),
-                                                         any(Address.class),
-                                                         any(Boolean.class),
-                                                         anyLong());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
         verify(localDiscoveryEntryStoreMock).lookup(eq(discoveryEntry.getParticipantId()), anyLong());
     }
 
@@ -2400,10 +2395,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                          any());
         verify(localDiscoveryEntryStoreMock, times(2)).lookup(eq(discoveryEntry.getParticipantId()), anyLong());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
-        verify(messageRouter, never()).addToRoutingTable(anyString(),
-                                                         any(Address.class),
-                                                         any(Boolean.class),
-                                                         anyLong());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)

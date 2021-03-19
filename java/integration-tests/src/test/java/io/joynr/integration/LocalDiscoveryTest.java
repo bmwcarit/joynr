@@ -78,6 +78,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
@@ -188,7 +189,7 @@ public class LocalDiscoveryTest {
     @Mock
     private CapabilitiesProvisioning capabilitiesProvisioningMock;
     @Mock
-    private MessageRouter messageRouterMock;
+    private RoutingTable routingTableMock;
     @Mock
     private ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleanerMock;
     @Mock
@@ -216,7 +217,7 @@ public class LocalDiscoveryTest {
                                                                                                              globalAddressProviderMock,
                                                                                                              localDiscoveryEntryStoreMock,
                                                                                                              globalDiscoveryEntryCacheMock,
-                                                                                                             messageRouterMock,
+                                                                                                             routingTableMock,
                                                                                                              globalCapabilitiesDirectoryClientMock,
                                                                                                              expiredDiscoveryEntryCacheCleanerMock,
                                                                                                              3600000,

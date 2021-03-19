@@ -56,7 +56,7 @@ import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -110,7 +110,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     private final Map<String, List<String>> globalProviderParticipantIdToGbidListMap;
     private GcdTaskSequencer gcdTaskSequencer;
 
-    private MessageRouter messageRouter;
+    private RoutingTable routingTable;
 
     private GlobalAddressProvider globalAddressProvider;
 
@@ -165,7 +165,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                                           GlobalAddressProvider globalAddressProvider,
                                           DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStore,
                                           DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache,
-                                          MessageRouter messageRouter,
+                                          RoutingTable routingTable,
                                           GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClient,
                                           ExpiredDiscoveryEntryCacheCleaner expiredDiscoveryEntryCacheCleaner,
                                           @Named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS) long freshnessUpdateIntervalMs,
@@ -179,7 +179,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         gcdTaskSequencer = new GcdTaskSequencer();
         this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
-        this.messageRouter = messageRouter;
+        this.routingTable = routingTable;
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
         this.globalDiscoveryEntryCache = globalDiscoveryEntryCache;
         this.globalCapabilitiesDirectoryClient = globalCapabilitiesDirectoryClient;
@@ -587,7 +587,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         globalProviderParticipantIdToGbidListMap.remove(participantId);
                         localDiscoveryEntryStore.remove(participantId);
                         // Remove endpoint addresses
-                        messageRouter.removeNextHop(participantId);
+                        routingTable.remove(participantId);
                     }
                     logger.info("Removed globally registered participantId {}", participantId);
                     gcdTaskSequencer.taskFinished();
@@ -620,7 +620,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                             globalProviderParticipantIdToGbidListMap.remove(participantId);
                             localDiscoveryEntryStore.remove(participantId);
                             // Remove endpoint addresses
-                            messageRouter.removeNextHop(participantId);
+                            routingTable.remove(participantId);
                         }
                         break;
                     case INVALID_GBID:
@@ -1116,7 +1116,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 final boolean isGloballyVisible = (ce.getQos().getScope() == ProviderScope.GLOBAL);
                 final long expiryDateMs = Long.MAX_VALUE;
 
-                messageRouter.addToRoutingTable(ce.getParticipantId(), address, isGloballyVisible, expiryDateMs);
+                routingTable.put(ce.getParticipantId(), address, isGloballyVisible, expiryDateMs);
             }
         }
     }
