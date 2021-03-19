@@ -43,12 +43,15 @@
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockTransportStatus.h"
 
+#include "tests/utils/PtrUtils.h"
+
 using ::testing::_;
 using ::testing::A;
 using ::testing::Action;
 using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::InvokeArgument;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
 using ::testing::Pointee;
 using ::testing::Return;
@@ -453,4 +456,39 @@ TYPED_TEST(MessageRouterTest, addressValidation_stickyEntriesAreNotReplaced)
     this->_messageRouter->route(immutableMessage);
 
     ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+}
+
+TYPED_TEST(MessageRouterTest, messageRunnable_onFailureScope)
+{
+    // Create MessageRunnable manually
+    MutableMessage mutableMessageDoesNotExpire{this->_mutableMessage};
+    mutableMessageDoesNotExpire.setExpiryDate(joynr::TimePoint::max());
+    auto immutableMessage =
+            std::shared_ptr<ImmutableMessage>(mutableMessageDoesNotExpire.getImmutableMessage());
+    auto messagingStub = std::make_shared<MockMessagingStub>();
+    auto destAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
+    auto messageRunnable = std::make_shared<MessageRunnable>(
+            immutableMessage, messagingStub, destAddress, this->_messageRouter, 0);
+
+    // Test 1st run with MessageRunnable created manually
+    std::function<void(const exceptions::JoynrRuntimeException&)> onFailure;
+    EXPECT_CALL(*messagingStub, transmit(Eq(immutableMessage), _)).WillOnce(SaveArg<1>(&onFailure));
+    messageRunnable->run();
+    Mock::VerifyAndClearExpectations(messagingStub.get());
+
+    // onFailure scope shall be independent from MessageRunnable
+    // std::weak_ptr<MessageRunnable> messageRunnableWeakPtr(messageRunnable);
+    // messageRunnable.reset();
+    // ASSERT_TRUE(messageRunnableWeakPtr.expired()) << "MessageRunnable should not be shared";
+
+    // Test 2nd run with MessageRunnable created by AbstractMessageRouter::scheduleMessage
+    Semaphore semaphore;
+    EXPECT_CALL(*this->_messagingStubFactory, create(Eq(destAddress)))
+            .WillOnce(Return(messagingStub));
+    EXPECT_CALL(*messagingStub, transmit(Eq(immutableMessage), _))
+            .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    std::chrono::milliseconds delay(10);
+    ASSERT_TRUE(onFailure) << "onFailure callback not stored. Check test setup.";
+    onFailure(exceptions::JoynrDelayMessageException(delay, ""));
+    EXPECT_TRUE(semaphore.waitFor(2 * delay)) << "No transmit executed by the 2nd MessageRunnable.";
 }
