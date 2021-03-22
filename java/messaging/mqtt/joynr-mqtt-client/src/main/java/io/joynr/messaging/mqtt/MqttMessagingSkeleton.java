@@ -184,7 +184,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                 registerGlobalRoutingEntry(message, ownGbid);
                 messageRouter.route(message);
             } catch (Exception e) {
-                logger.error("Error processing incoming message. Message will be dropped: {} ", e.getMessage());
                 messageProcessed(message.getId());
                 failureAction.execute(e);
             }
