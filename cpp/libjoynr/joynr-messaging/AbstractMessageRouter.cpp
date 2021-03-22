@@ -635,45 +635,39 @@ void MessageRunnable::shutdown()
 void MessageRunnable::run()
 {
     if (!isExpired()) {
-        // TODO is it safe to capture (this) here? rather capture members by value!
-        auto onFailure = [thisWeakPtr = joynr::util::as_weak_ptr(
-                                  std::dynamic_pointer_cast<MessageRunnable>(shared_from_this()))](
-                const exceptions::JoynrRuntimeException& e)
+        auto onFailure = [
+            messageRouter = _messageRouter,
+            message = _message,
+            destAddress = _destAddress,
+            tryCount = _tryCount
+        ](const exceptions::JoynrRuntimeException& e)
         {
-            if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                try {
-                    exceptions::JoynrDelayMessageException& delayException =
-                            dynamic_cast<exceptions::JoynrDelayMessageException&>(
-                                    const_cast<exceptions::JoynrRuntimeException&>(e));
-                    std::chrono::milliseconds delay = delayException.getDelayMs();
+            try {
+                exceptions::JoynrDelayMessageException& delayException =
+                        dynamic_cast<exceptions::JoynrDelayMessageException&>(
+                                const_cast<exceptions::JoynrRuntimeException&>(e));
+                std::chrono::milliseconds delay = delayException.getDelayMs();
 
-                    if (auto messageRouterSharedPtr = thisSharedPtr->_messageRouter.lock()) {
-                        JOYNR_LOG_TRACE(
-                                logger(),
-                                "Rescheduling message after error: message {}, new delay {}ms, "
-                                "reason: {}",
-                                thisSharedPtr->_message->getTrackingInfo(),
-                                delay.count(),
-                                e.getMessage());
-                        messageRouterSharedPtr->scheduleMessage(thisSharedPtr->_message,
-                                                                thisSharedPtr->_destAddress,
-                                                                thisSharedPtr->_tryCount + 1,
-                                                                delay);
-                    } else {
-                        JOYNR_LOG_ERROR(logger(),
-                                        "Message {} could not be sent! reason: messageRouter "
-                                        "not available",
-                                        thisSharedPtr->_message->getTrackingInfo());
-                    }
-                } catch (const std::bad_cast&) {
-                    JOYNR_LOG_ERROR(logger(),
-                                    "Message {} could not be sent! reason: {}",
-                                    thisSharedPtr->_message->getTrackingInfo(),
+                if (auto messageRouterSharedPtr = messageRouter.lock()) {
+                    JOYNR_LOG_TRACE(logger(),
+                                    "Rescheduling message after error: message {}, new delay {}ms, "
+                                    "reason: {}",
+                                    message->getTrackingInfo(),
+                                    delay.count(),
                                     e.getMessage());
+                    messageRouterSharedPtr->scheduleMessage(
+                            message, destAddress, tryCount + 1, delay);
+                } else {
+                    JOYNR_LOG_ERROR(logger(),
+                                    "Message {} could not be sent! reason: messageRouter "
+                                    "not available",
+                                    message->getTrackingInfo());
                 }
-            } else {
+            } catch (const std::bad_cast&) {
                 JOYNR_LOG_ERROR(logger(),
-                                "Message could not be sent! reason: MessageRunnable not available");
+                                "Message {} could not be sent! reason: {}",
+                                message->getTrackingInfo(),
+                                e.getMessage());
             }
         };
 

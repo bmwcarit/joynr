@@ -477,9 +477,9 @@ TYPED_TEST(MessageRouterTest, messageRunnable_onFailureScope)
     Mock::VerifyAndClearExpectations(messagingStub.get());
 
     // onFailure scope shall be independent from MessageRunnable
-    // std::weak_ptr<MessageRunnable> messageRunnableWeakPtr(messageRunnable);
-    // messageRunnable.reset();
-    // ASSERT_TRUE(messageRunnableWeakPtr.expired()) << "MessageRunnable should not be shared";
+    std::weak_ptr<MessageRunnable> messageRunnableWeakPtr(messageRunnable);
+    messageRunnable.reset();
+    ASSERT_TRUE(messageRunnableWeakPtr.expired()) << "MessageRunnable should not be shared";
 
     // Test 2nd run with MessageRunnable created by AbstractMessageRouter::scheduleMessage
     Semaphore semaphore;
@@ -490,5 +490,5 @@ TYPED_TEST(MessageRouterTest, messageRunnable_onFailureScope)
     std::chrono::milliseconds delay(10);
     ASSERT_TRUE(onFailure) << "onFailure callback not stored. Check test setup.";
     onFailure(exceptions::JoynrDelayMessageException(delay, ""));
-    EXPECT_TRUE(semaphore.waitFor(2 * delay)) << "No transmit executed by the 2nd MessageRunnable.";
+    EXPECT_TRUE(semaphore.waitFor(1000 * delay)) << "No transmit executed by the 2nd MessageRunnable.";
 }

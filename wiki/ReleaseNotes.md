@@ -17,6 +17,7 @@ None.
 None.
 
 ## Bug Fixes
+* **[C++]** Fix asynchronous message drop on rescheduling when UDS sending-queue-size is reached.
 * **[C++]** Fix UDS server SEGV in case of client disconnection.
 
 # joynr 1.15.10
