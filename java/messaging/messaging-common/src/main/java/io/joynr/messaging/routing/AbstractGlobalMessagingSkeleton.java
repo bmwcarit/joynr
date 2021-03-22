@@ -57,13 +57,12 @@ public abstract class AbstractGlobalMessagingSkeleton implements IMessagingSkele
         if (replyTo != null && !replyTo.isEmpty()) {
             Address address = RoutingTypesUtil.fromAddressString(replyTo);
             if (address instanceof MqttAddress) {
-                MqttAddress mqttAddress = new MqttAddress((MqttAddress) address);
+                MqttAddress mqttAddress = (MqttAddress) address;
                 mqttAddress.setBrokerUri(gbid);
                 logger.trace("Register Global Routing Entry of incoming request message {} for MqttAddress with topic: {} for gbid: {}",
                              message.getId(),
                              mqttAddress.getTopic(),
                              mqttAddress.getBrokerUri());
-                address = mqttAddress;
             }
             // As the message was received from global, the sender is globally visible by definition.
             final boolean isGloballyVisible = true;
