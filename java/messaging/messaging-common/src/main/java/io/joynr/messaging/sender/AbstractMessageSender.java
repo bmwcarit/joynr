@@ -21,6 +21,9 @@ package io.joynr.messaging.sender;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.smrf.EncodingException;
@@ -30,6 +33,8 @@ import joynr.Message;
 import joynr.MutableMessage;
 
 public abstract class AbstractMessageSender implements MessageSender {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractMessageSender.class);
+
     private MessageRouter messageRouter;
     private String replyToAddress = null;
     private List<MutableMessage> noReplyToAddressQueue = new ArrayList<MutableMessage>();
@@ -74,7 +79,12 @@ public abstract class AbstractMessageSender implements MessageSender {
 
         for (MutableMessage queuedMessage : noReplyToAddressQueue) {
             queuedMessage.setReplyTo(queuedMessage.isStatelessAsync() ? globalAddress : replyToAddress);
-            routeMutableMessage(queuedMessage);
+            try {
+                routeMutableMessage(queuedMessage);
+            } catch (Exception e) {
+                logger.error("Discarding unroutable message (queued earlier because of temporary unavailability of replyToAddress): ",
+                             e);
+            }
         }
         noReplyToAddressQueue.clear();
     }
