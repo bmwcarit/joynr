@@ -350,13 +350,10 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         if (isExpired(message)) {
             long currentTimeMillis = System.currentTimeMillis();
             long ttlExpirationDateMs = message.getTtlMs();
-            String errorMessage = MessageFormat.format("ttl must be greater than 0 / ttl timestamp must be in the future: now: {0} ({1}) abs_ttl: {2} ({3}) msg_id: {4}",
+            String errorMessage = MessageFormat.format("Received expired message: (now ={0}). Dropping the message {1}",
                                                        currentTimeMillis,
-                                                       dateFormatter.format(currentTimeMillis),
-                                                       ttlExpirationDateMs,
-                                                       dateFormatter.format(ttlExpirationDateMs),
-                                                       message.getId());
-            logger.error(errorMessage);
+                                                       message.getTrackingInfo());
+            logger.trace(errorMessage);
             callMessageProcessedListeners(message.getId());
             throw new JoynrMessageNotSentException(errorMessage);
         }
