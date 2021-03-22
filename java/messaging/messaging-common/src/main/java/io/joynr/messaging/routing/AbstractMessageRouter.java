@@ -367,24 +367,28 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
 
     private FailureAction createFailureAction(final DelayableImmutableMessage delayableMessage) {
         final FailureAction failureAction = new FailureAction() {
-            final String messageId = delayableMessage.getMessage().getId();
             private final AtomicBoolean failureActionExecutedOnce = new AtomicBoolean(false);
 
             @Override
             public void execute(Throwable error) {
+                ImmutableMessage messageNotSent = delayableMessage.getMessage();
+
                 if (!failureActionExecutedOnce.compareAndSet(false, true)) {
-                    logger.trace("Failure action for message with id {} already executed once. Ignoring further call.",
-                                 messageId);
+                    logger.trace("Failure action for message {} already executed once. Ignoring further call.",
+                                 messageNotSent.getTrackingInfo());
                     return;
                 }
                 if (error instanceof JoynrShutdownException) {
-                    logger.warn("Caught an exception:", error);
+                    logger.warn("Caught JoynrShutdownException while handling message {}:",
+                                messageNotSent.getTrackingInfo(),
+                                error);
                     return;
                 } else if (error instanceof JoynrMessageNotSentException) {
-                    logger.error("ERROR SENDING: Aborting send of messageId: {}. Error:", messageId, error);
-                    callMessageProcessedListeners(messageId);
+                    logger.error("ERROR SENDING: Aborting send of message {}, Error:",
+                                 messageNotSent.getTrackingInfo(),
+                                 error);
+                    callMessageProcessedListeners(messageNotSent.getId());
 
-                    ImmutableMessage messageNotSent = delayableMessage.getMessage();
                     if (!isExpired(messageNotSent)
                             && messageNotSent.getType().equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
                         ImmutableMessage replyMessage = createReplyMessageWithError(messageNotSent,
@@ -395,7 +399,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     }
                     return;
                 }
-                logger.warn("PROBLEM SENDING, will retry. messageId: {}. Error:", messageId, error);
+                logger.warn("PROBLEM SENDING, will retry. message: {}, Error:",
+                            messageNotSent.getTrackingInfo(),
+                            error);
 
                 long delayMs;
                 if (error instanceof JoynrDelayMessageException) {
@@ -406,16 +412,16 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                 }
                 delayableMessage.setDelay(delayMs);
                 delayableMessage.setRetriesCount(delayableMessage.getRetriesCount() + 1);
-                logger.error("Rescheduling messageId: {} with delay {} ms, TTL: {}, retries: {}",
-                             messageId,
+                logger.error("Rescheduling message {} with delay {} ms, TTL: {}, retries: {}",
+                             messageNotSent.getTrackingInfo(),
                              delayMs,
                              dateFormatter.format(delayableMessage.getMessage().getTtlMs()),
                              delayableMessage.getRetriesCount());
                 try {
                     scheduleMessage(delayableMessage);
                 } catch (Exception e) {
-                    logger.warn("Rescheduling of message failed (messageId {})", messageId);
-                    callMessageProcessedListeners(messageId);
+                    logger.warn("Rescheduling of message {} failed", messageNotSent.getTrackingInfo());
+                    callMessageProcessedListeners(messageNotSent.getId());
                 }
             }
         };
