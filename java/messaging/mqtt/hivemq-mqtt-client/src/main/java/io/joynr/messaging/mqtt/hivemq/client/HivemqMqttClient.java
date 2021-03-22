@@ -440,7 +440,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         }
         connectionStatusMetrics.increaseReceivedMessages();
         messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(),
-                                   throwable -> logger.error("{}: Unable to transmit {}",
+                                   throwable -> logger.error("{}: Unable to handle incoming {}",
                                                              clientInformation,
                                                              mqtt5Publish,
                                                              throwable));
