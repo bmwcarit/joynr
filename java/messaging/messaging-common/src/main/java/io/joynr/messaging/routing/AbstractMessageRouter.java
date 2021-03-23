@@ -279,19 +279,16 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         if (!foundAddress.isPresent()) {
             if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
                 // discard msg
-                throw new JoynrMessageNotSentException("Failed to route multicast publication: No address found for given message: "
-                        + message);
+                throw new JoynrMessageNotSentException("Failed to route multicast publication: No address found for given message.");
             } else if (Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION.equals(message.getType())) {
                 // discard msg
-                throw new JoynrMessageNotSentException("Failed to route publication: No address found for given message: "
-                        + message);
+                throw new JoynrMessageNotSentException("Failed to route publication: No address found for given message.");
             } else if (message.isReply()) {
                 // discard msg
-                throw new JoynrMessageNotSentException("Failed to route reply: No address found for given message: "
-                        + message);
+                throw new JoynrMessageNotSentException("Failed to route reply: No address found for given message.");
             } else {
                 // any kind of request; retry routing
-                throw new JoynrIllegalStateException("Unable to find addresses for message with ID " + message.getId());
+                throw new JoynrIllegalStateException("Unable to find addresses for message.");
             }
         }
     }
@@ -303,8 +300,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         if (recipients.isEmpty()) {
             //This can only happen in case of a multicast. Otherwise the participantId is taken directly from the ImmutableMessage.
             String errormessage = "Failed to route multicast publication: No recipient found for given message: "
-                    + message;
-            logger.error("ERROR SENDING: aborting send of messageId: {}. Error:", message.getId(), errormessage);
+                    + message.getTrackingInfo();
+            logger.error("ERROR SENDING: aborting send. Error:", errormessage);
             callMessageProcessedListeners(message.getId());
         }
 
@@ -318,17 +315,21 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     }
 
     private void scheduleMessage(final DelayableImmutableMessage delayableMessage) {
-        final String messageId = delayableMessage.getMessage().getId();
+        final int retriesCount = delayableMessage.getRetriesCount();
         if (maxRetryCount > -1) {
-            final int retriesCount = delayableMessage.getRetriesCount();
             if (retriesCount > maxRetryCount) {
-                logger.error("Max-retry-count ({}) reached. Dropping message {}", maxRetryCount, messageId);
-                callMessageProcessedListeners(messageId);
+                logger.error("Max-retry-count ({}) reached. Dropping message {}",
+                             maxRetryCount,
+                             delayableMessage.getMessage().getTrackingInfo());
+                callMessageProcessedListeners(delayableMessage.getMessage().getId());
                 return;
             }
-            if (retriesCount > 0) {
-                logger.debug("Retry {}/{} sending message {}", retriesCount, maxRetryCount, messageId);
-            }
+        }
+        if (retriesCount > 0) {
+            logger.debug("Retry {}/{} sending message {}",
+                         retriesCount,
+                         maxRetryCount,
+                         delayableMessage.getMessage().getTrackingInfo());
         }
         messageQueue.put(delayableMessage);
     }
@@ -349,7 +350,6 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
 
         if (isExpired(message)) {
             long currentTimeMillis = System.currentTimeMillis();
-            long ttlExpirationDateMs = message.getTtlMs();
             String errorMessage = MessageFormat.format("Received expired message: (now ={0}). Dropping the message {1}",
                                                        currentTimeMillis,
                                                        message.getTrackingInfo());
@@ -412,11 +412,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                 }
                 delayableMessage.setDelay(delayMs);
                 delayableMessage.setRetriesCount(delayableMessage.getRetriesCount() + 1);
-                logger.error("Rescheduling message {} with delay {} ms, TTL: {}, retries: {}",
-                             messageNotSent.getTrackingInfo(),
-                             delayMs,
-                             dateFormatter.format(delayableMessage.getMessage().getTtlMs()),
-                             delayableMessage.getRetriesCount());
+                logger.warn("Rescheduling message {} with delay {} ms, TTL: {}, retries: {}",
+                            messageNotSent.getTrackingInfo(),
+                            delayMs,
+                            dateFormatter.format(delayableMessage.getMessage().getTtlMs()),
+                            delayableMessage.getRetriesCount());
                 try {
                     scheduleMessage(delayableMessage);
                 } catch (Exception e) {
@@ -560,10 +560,13 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     try {
                         checkFoundAddress(optionalAddress, message);
                     } catch (JoynrMessageNotSentException error) {
-                        logger.error("ERROR SENDING: aborting send of messageId: {}. Error:", message.getId(), error);
+                        logger.error("ERROR SENDING: aborting send of message: {}. Error:",
+                                     message.getTrackingInfo(),
+                                     error);
                         callMessageProcessedListeners(message.getId());
                         continue;
                     } catch (Exception error) {
+                        logger.debug("ERROR SENDING: retrying send of message. Error:", error);
                         final long delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs,
                                                                                delayableMessage.getRetriesCount() + 1);
                         delayableMessage.setDelay(delayMs);
