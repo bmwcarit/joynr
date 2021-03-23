@@ -499,6 +499,10 @@ public class LocalDiscoveryTest {
                                                                                                    .lookup(eq(testDomains.toArray(new String[0])),
                                                                                                            eq(interfaceName),
                                                                                                            eq(discoveryQos.getCacheMaxAgeMs()));
+        doReturn(Optional.of(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(cachedDiscoveryEntry,
+                                                                                 globalAddress))).when(globalDiscoveryEntryCacheMock)
+                                                                                                 .lookup(eq(cachedDiscoveryEntry.getParticipantId()),
+                                                                                                         eq(Long.MAX_VALUE));
         doAnswer(createLookupAnswer(remoteDiscoveryEntries)).when(globalCapabilitiesDirectoryClientMock)
                                                             .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                                     any(String[].class),

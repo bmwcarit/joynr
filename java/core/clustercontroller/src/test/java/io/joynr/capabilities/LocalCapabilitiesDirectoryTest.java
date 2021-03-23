@@ -1149,6 +1149,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              0);
+        verify(routingTable, never()).incrementReferenceCount(any());
 
         // add local entry
         ProviderQos providerQos = new ProviderQos();
@@ -1172,6 +1173,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise2,
                                              0);
+        verify(routingTable, never()).incrementReferenceCount(any());
 
         // even deleting local cap entries shall have no effect, the global cap dir shall be invoked
         when(localDiscoveryEntryStoreMock.lookup(discoveryEntry.getParticipantId(),
@@ -1186,12 +1188,14 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise3,
                                              0);
+        verify(routingTable, never()).incrementReferenceCount(any());
 
         // add global entry
+        String globalParticipantId = "globalParticipant";
         GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
                                                                 domain1,
                                                                 interfaceName1,
-                                                                "globalParticipant",
+                                                                globalParticipantId,
                                                                 new ProviderQos(),
                                                                 System.currentTimeMillis(),
                                                                 expiryDateMs,
@@ -1212,10 +1216,13 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise4,
                                              1); // 1 global entry
+        verify(routingTable, times(1)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
+        verify(routingTable, never()).incrementReferenceCount(any());
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
         reset((Object) globalDiscoveryEntryCacheMock);
+        reset((Object) routingTable);
 
         when(globalDiscoveryEntryCacheMock.lookup(eq(domains),
                                                   eq(interfaceName1),
@@ -1229,6 +1236,9 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise5,
                                              1); // 1 cached entry
+        verify(routingTable, times(1)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
+        verify(routingTable, never()).incrementReferenceCount(any());
+        reset((Object) routingTable);
 
         // and now, invalidate the existing cached global values, resulting in another call to globalcapclient
         discoveryQos.setCacheMaxAge(0L);
@@ -1243,6 +1253,8 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise6,
                                              1); // 1 global entry
+        verify(routingTable, times(1)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
+        verify(routingTable, never()).incrementReferenceCount(any());
         reset(globalCapabilitiesDirectoryClient);
     }
 
@@ -1288,15 +1300,17 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              0);
+        verify(routingTable, never()).incrementReferenceCount(any());
 
         // add local entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
 
+        String localParticipantId = "localParticipant";
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
                                                            domain1,
                                                            interfaceName1,
-                                                           "localParticipant",
+                                                           localParticipantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),
                                                            expiryDateMs,
@@ -1312,12 +1326,14 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              1); // 1 local entry
+        verify(routingTable, times(1)).incrementReferenceCount(eq(localParticipantId));
 
         // add global entry
+        String globalParticipantId = "globalParticipant";
         GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
                                                                 domain1,
                                                                 interfaceName1,
-                                                                "globalParticipant",
+                                                                globalParticipantId,
                                                                 new ProviderQos(),
                                                                 System.currentTimeMillis(),
                                                                 expiryDateMs,
@@ -1338,6 +1354,8 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              1); // 1 local entry
+        verify(routingTable, times(2)).incrementReferenceCount(eq(localParticipantId));
+        verify(routingTable, never()).put(anyString(), any(Address.class), eq(true), anyLong());
 
         // without local entry, the global cap dir is called
         reset((Object) localDiscoveryEntryStoreMock);
@@ -1350,6 +1368,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              1); // 1 global entry
+        verify(routingTable, times(1)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
@@ -1364,13 +1383,12 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              1); // 1 cached entry
+        verify(routingTable, times(2)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
 
         // and now, invalidate the existing cached global values, resulting in another call to globalcapclient
         discoveryQos.setCacheMaxAge(0L);
         Thread.sleep(1);
 
-        // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
-        // (as long as the cache is not expired)
         promise = localCapabilitiesDirectory.lookup(domains, interfaceName1, discoveryQos);
         verifyGcdLookupAndPromiseFulfillment(3,
                                              domains,
@@ -1379,6 +1397,7 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              1); // 1 global entry
+        verify(routingTable, times(3)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -1406,6 +1425,11 @@ public class LocalCapabilitiesDirectoryTest {
 
         verify(localDiscoveryEntryStoreMock).lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
         verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+        verify(routingTable, times(1)).incrementReferenceCount(eq(discoveryEntry.getParticipantId()));
+        verify(routingTable, never()).put(eq(discoveryEntry.getParticipantId()),
+                                          any(Address.class),
+                                          any(Boolean.class),
+                                          anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -1430,14 +1454,17 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              0);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
 
         // add local entry
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
+        String localParticipantId = "localParticipant";
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(new Version(47, 11),
                                                            domain1,
                                                            interfaceName1,
-                                                           "localParticipant",
+                                                           localParticipantId,
                                                            providerQos,
                                                            System.currentTimeMillis(),
                                                            expiryDateMs,
@@ -1452,12 +1479,15 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              1); // 1 local entry
+        verify(routingTable, times(1)).incrementReferenceCount(eq(localParticipantId));
+        verify(routingTable, never()).put(anyString(), any(Address.class), eq(true), anyLong());
 
         // add global entry
+        String globalParticipantId = "globalParticipant";
         GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
                                                                 domain1,
                                                                 interfaceName1,
-                                                                "globalParticipant",
+                                                                globalParticipantId,
                                                                 new ProviderQos(),
                                                                 System.currentTimeMillis(),
                                                                 expiryDateMs,
@@ -1478,6 +1508,8 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              2); // 1 local, 1 global entry
+        verify(routingTable, times(2)).incrementReferenceCount(eq(localParticipantId));
+        verify(routingTable, times(1)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
 
         // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
         // (as long as the cache is not expired)
@@ -1492,13 +1524,13 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              2); // 1 local, 1 cached entry
+        verify(routingTable, times(3)).incrementReferenceCount(eq(localParticipantId));
+        verify(routingTable, times(2)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
 
         // and now, invalidate the existing cached global values, resulting in another call to glocalcapclient
         discoveryQos.setCacheMaxAge(0L);
         Thread.sleep(1);
 
-        // now, another lookup call shall take the cached for the global cap call, and no longer call the global cap dir
-        // (as long as the cache is not expired)
         promise = localCapabilitiesDirectory.lookup(domains, interfaceName1, discoveryQos);
         verifyGcdLookupAndPromiseFulfillment(4,
                                              domains,
@@ -1507,6 +1539,8 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              2); // 1 local, 1 global entry
+        verify(routingTable, times(4)).incrementReferenceCount(eq(localParticipantId));
+        verify(routingTable, times(3)).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -1545,8 +1579,19 @@ public class LocalCapabilitiesDirectoryTest {
 
         DiscoveryEntryWithMetaInfo[] result1 = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promise1,
                                                                                                   "lookup failed")[0];
+        verify(routingTable, times(1)).put(eq(expectedEntry2.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
+        verify(routingTable, never()).put(eq(expectedEntry1.getParticipantId()),
+                                          any(Address.class),
+                                          eq(true),
+                                          anyLong());
+        verify(routingTable, never()).incrementReferenceCount(anyString());
         assertEquals(1, result1.length);
         assertEquals(expectedEntry2, result1[0]);
+
+        reset((Object) routingTable);
 
         Promise<Lookup2Deferred> promise2 = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                               interfaceName,
@@ -1555,6 +1600,15 @@ public class LocalCapabilitiesDirectoryTest {
 
         DiscoveryEntryWithMetaInfo[] result2 = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promise2,
                                                                                                   "lookup failed")[0];
+        verify(routingTable, times(1)).put(eq(expectedEntry1.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
+        verify(routingTable, never()).put(eq(expectedEntry2.getParticipantId()),
+                                          any(Address.class),
+                                          eq(true),
+                                          anyLong());
+        verify(routingTable, never()).incrementReferenceCount(anyString());
         assertEquals(1, result2.length);
         assertEquals(expectedEntry1, result2[0]);
     }
@@ -1606,6 +1660,8 @@ public class LocalCapabilitiesDirectoryTest {
         int actualEntry2 = (actualEntry1 + 1) % 2;
         assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry1, result1[actualEntry1]));
         assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry2, result1[actualEntry2]));
+        verify(routingTable, times(1)).incrementReferenceCount(eq(expectedEntry1.getParticipantId()));
+        verify(routingTable, times(1)).incrementReferenceCount(eq(expectedEntry2.getParticipantId()));
 
         Promise<Lookup2Deferred> promiseLookup2 = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                                     interfaceName,
@@ -1616,6 +1672,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                   "lookup failed")[0];
         assertEquals(1, result2.length);
         assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry1, result2[0]));
+        verify(routingTable, times(2)).incrementReferenceCount(eq(expectedEntry1.getParticipantId()));
 
         Promise<Lookup2Deferred> promiseLookup3 = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                                     interfaceName,
@@ -1629,6 +1686,9 @@ public class LocalCapabilitiesDirectoryTest {
         actualEntry2 = (actualEntry1 + 1) % 2;
         assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry1, result3[actualEntry1]));
         assertTrue(discoveryEntriesWithMetaInfoMatchWithUpdatedLastSeenDate(expectedEntry2, result3[actualEntry2]));
+        verify(routingTable, times(3)).incrementReferenceCount(eq(expectedEntry1.getParticipantId()));
+        verify(routingTable, times(2)).incrementReferenceCount(eq(expectedEntry2.getParticipantId()));
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -1670,6 +1730,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                               eq(Long.MAX_VALUE));
         verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
         assertEquals(expectedLocalEntry, result1);
+        verify(routingTable, times(1)).incrementReferenceCount(eq(expectedLocalEntry.getParticipantId()));
 
         // lookup knownGbids[0], expect DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
         Promise<Lookup4Deferred> promiseLookup2 = localCapabilitiesDirectory.lookup(expectedLocalEntry.getParticipantId(),
@@ -1680,6 +1741,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(localDiscoveryEntryStoreMock, times(2)).lookup(eq(expectedLocalEntry.getParticipantId()),
                                                               eq(Long.MAX_VALUE));
         verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+        verify(routingTable, times(1)).incrementReferenceCount(eq(expectedLocalEntry.getParticipantId()));
 
         // lookup all gbids, expect local entry
         Promise<Lookup4Deferred> promiseLookup3 = localCapabilitiesDirectory.lookup(expectedLocalEntry.getParticipantId(),
@@ -1692,6 +1754,11 @@ public class LocalCapabilitiesDirectoryTest {
                                                               eq(Long.MAX_VALUE));
         verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
         assertEquals(expectedLocalEntry, result3);
+        verify(routingTable, times(2)).incrementReferenceCount(eq(expectedLocalEntry.getParticipantId()));
+        verify(routingTable, never()).put(eq(expectedLocalEntry.getParticipantId()),
+                                          any(Address.class),
+                                          any(Boolean.class),
+                                          anyLong());
     }
 
     private void testLookupByDomainInterfaceWithGbids_globalOnly_allLocal(String[] gbidsForLookup,
@@ -1741,6 +1808,11 @@ public class LocalCapabilitiesDirectoryTest {
             foundParticipantIds.add(foundEntry.getParticipantId());
         }
         assertEquals(expectedParticipantIds, foundParticipantIds);
+        expectedParticipantIds.forEach((participantId) -> {
+            verify(routingTable, times(1)).incrementReferenceCount(eq(participantId));
+            verify(routingTable, never()).put(eq(participantId), any(Address.class), any(Boolean.class), anyLong());
+        });
+        reset((Object) routingTable);
 
         verify(globalCapabilitiesDirectoryClient,
                times(0)).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
@@ -1756,7 +1828,7 @@ public class LocalCapabilitiesDirectoryTest {
         String[] expectedDomains = domainsForLookup.clone();
         DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.GLOBAL_ONLY, false);
 
-        List<GlobalDiscoveryEntry> globalEntries = new ArrayList<>(4);
+        List<GlobalDiscoveryEntry> globalEntries = new ArrayList<>();
         globalEntries.add(globalDiscoveryEntry);
         DiscoveryEntry entry2 = new DiscoveryEntry(discoveryEntry);
         entry2.setParticipantId("participantId2");
@@ -1784,6 +1856,13 @@ public class LocalCapabilitiesDirectoryTest {
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
         DiscoveryEntryWithMetaInfo[] foundEntries = (DiscoveryEntryWithMetaInfo[]) values[0];
         assertEquals(2, foundEntries.length);
+        Arrays.asList(foundEntries)
+              .forEach((entry) -> verify(routingTable, times(1)).put(eq(entry.getParticipantId()),
+                                                                     any(Address.class),
+                                                                     eq(true),
+                                                                     anyLong()));
+        verify(routingTable, never()).incrementReferenceCount(anyString());
+        reset((Object) routingTable);
     }
 
     @Test
@@ -1869,6 +1948,12 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryEntryWithMetaInfo foundEntry = (DiscoveryEntryWithMetaInfo) values[0];
 
         assertEquals(participantId, foundEntry.getParticipantId());
+        verify(routingTable, never()).incrementReferenceCount(eq(globalDiscoveryEntry.getParticipantId()));
+        verify(routingTable, times(1)).put(eq(globalDiscoveryEntry.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
+        reset((Object) routingTable);
 
         verify(globalCapabilitiesDirectoryClient,
                times(0)).lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
@@ -1900,6 +1985,9 @@ public class LocalCapabilitiesDirectoryTest {
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
         DiscoveryEntryWithMetaInfo foundEntry = (DiscoveryEntryWithMetaInfo) values[0];
         assertEquals(participantId, foundEntry.getParticipantId());
+        verify(routingTable, times(1)).put(eq(foundEntry.getParticipantId()), any(Address.class), eq(true), anyLong());
+        verify(routingTable, never()).incrementReferenceCount(anyString());
+        reset((Object) routingTable);
     }
 
     @Test
@@ -1963,6 +2051,13 @@ public class LocalCapabilitiesDirectoryTest {
 
         Object[] values = checkPromiseSuccess(promise, "lookup failed");
         assertEquals(2, ((DiscoveryEntryWithMetaInfo[]) values[0]).length);
+        entries.forEach((entry) -> {
+            verify(routingTable, times(1)).incrementReferenceCount(eq(entry.getParticipantId()));
+            verify(routingTable, never()).put(eq(entry.getParticipantId()),
+                                              any(Address.class),
+                                              any(Boolean.class),
+                                              anyLong());
+        });
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -1991,6 +2086,8 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              0);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2022,6 +2119,10 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              2); // 2 cached entries
+        entries.forEach((entry) -> {
+            verify(routingTable, never()).incrementReferenceCount(eq(entry.getParticipantId()));
+            verify(routingTable, times(1)).put(eq(entry.getParticipantId()), any(Address.class), eq(true), anyLong());
+        });
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2060,6 +2161,13 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              2); // 2 cached entries
+        entries.forEach((entry) -> {
+            verify(routingTable, times(1)).incrementReferenceCount(eq(entry.getParticipantId()));
+            verify(routingTable, never()).put(eq(entry.getParticipantId()),
+                                              any(Address.class),
+                                              any(Boolean.class),
+                                              anyLong());
+        });
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2077,6 +2185,8 @@ public class LocalCapabilitiesDirectoryTest {
         entry.setAddress(globalAddress1Serialized);
         doReturn(Arrays.asList(entry)).when(globalDiscoveryEntryCacheMock)
                                       .lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAge()));
+        doReturn(Optional.of(entry)).when(globalDiscoveryEntryCacheMock)
+                                    .lookup(eq(entry.getParticipantId()), eq(Long.MAX_VALUE));
         doAnswer(createLookupAnswer(new ArrayList<GlobalDiscoveryEntry>())).when(globalCapabilitiesDirectoryClient)
                                                                            .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                                                    eq(domains),
@@ -2093,6 +2203,8 @@ public class LocalCapabilitiesDirectoryTest {
                                              knownGbids,
                                              promise,
                                              1);
+        verify(routingTable, never()).incrementReferenceCount(anyString());
+        verify(routingTable, times(1)).put(eq(entry.getParticipantId()), any(Address.class), eq(true), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2191,6 +2303,9 @@ public class LocalCapabilitiesDirectoryTest {
                                           eq(globalAddressWithoutGbid),
                                           eq(true),
                                           anyLong());
+        verify(routingTable, times(1)).incrementReferenceCount(eq(remoteEntry1.getParticipantId()));
+        verify(routingTable, never()).incrementReferenceCount(eq(remoteEntry2.getParticipantId()));
+        verify(routingTable, never()).incrementReferenceCount(eq(remoteEntry3.getParticipantId()));
         verify(routingTable).put(eq(remoteEntry2.getParticipantId()),
                                  eq(globalAddressWithoutGbid),
                                  eq(true),
@@ -2204,7 +2319,6 @@ public class LocalCapabilitiesDirectoryTest {
 
     @Test(timeout = TEST_TIMEOUT)
     public void lookupByDomainInterfaceGbids_localAndGlobal_localGlobalEntry_invokesGcd_filtersCombinedResult() throws Exception {
-        // test assumes that the local entry is registered after the global lookup has been triggered
         String[] domains = { discoveryEntry.getDomain() };
         List<DiscoveryEntry> localDiscoveryEntries = Arrays.asList(discoveryEntry);
         List<GlobalDiscoveryEntry> globalDiscoveryEntries = Arrays.asList(globalDiscoveryEntry);
@@ -2241,6 +2355,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                          eq(discoveryTimeout),
                                                          any());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
+        verify(routingTable, times(1)).incrementReferenceCount(eq(capturedDiscoveryEntries[0].getParticipantId()));
         verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
         verify(localDiscoveryEntryStoreMock).lookup(eq(domains), eq(INTERFACE_NAME));
     }
@@ -2280,6 +2395,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                          eq(discoveryTimeout),
                                                          any());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
+        verify(routingTable, times(1)).incrementReferenceCount(eq(capturedDiscoveryEntries[0].getParticipantId()));
         verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
         verify(localDiscoveryEntryStoreMock).lookup(eq(discoveryEntry.getParticipantId()), anyLong());
     }
@@ -2306,6 +2422,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                  "lookup failed")[0];
         assertEquals(1, values.length);
         assertEquals(true, values[0].getIsLocal());
+        verify(routingTable, times(1)).incrementReferenceCount(eq(discoveryEntry.getParticipantId()));
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
 
         verifyNoMoreInteractions(globalCapabilitiesDirectoryClient);
     }
@@ -2337,6 +2455,8 @@ public class LocalCapabilitiesDirectoryTest {
         DiscoveryEntryWithMetaInfo[] values = (DiscoveryEntryWithMetaInfo[]) checkPromiseSuccess(promise,
                                                                                                  "lookup failed")[0];
         assertEquals(0, values.length);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
 
         verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                          eq(domains),
@@ -2395,6 +2515,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                          any());
         verify(localDiscoveryEntryStoreMock, times(2)).lookup(eq(discoveryEntry.getParticipantId()), anyLong());
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
+        verify(routingTable, times(1)).incrementReferenceCount(eq(discoveryEntry.getParticipantId()));
         verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
@@ -2418,6 +2539,8 @@ public class LocalCapabilitiesDirectoryTest {
         globalEntry.setAddress(globalAddress1Serialized);
         doReturn(Arrays.asList(globalEntry)).when(globalDiscoveryEntryCacheMock)
                                             .lookup(eq(domains), eq(interfaceName), eq(discoveryQos.getCacheMaxAge()));
+        doReturn(Optional.of(globalEntry)).when(globalDiscoveryEntryCacheMock)
+                                          .lookup(eq(globalEntry.getParticipantId()), eq(Long.MAX_VALUE));
 
         final GlobalDiscoveryEntry remoteGlobalEntry = new GlobalDiscoveryEntry(new Version(0, 0),
                                                                                 domains[2],
@@ -2450,6 +2573,18 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(captured.contains(localEntry));
         assertTrue(captured.contains(new DiscoveryEntry(globalEntry)));
         assertTrue(captured.contains(new DiscoveryEntry(remoteGlobalEntry)));
+        verify(routingTable, times(1)).incrementReferenceCount(eq(localEntry.getParticipantId()));
+        verify(routingTable, never()).incrementReferenceCount(eq(globalEntry.getParticipantId()));
+        verify(routingTable, never()).incrementReferenceCount(eq(remoteGlobalEntry.getParticipantId()));
+        verify(routingTable, never()).put(eq(localEntry.getParticipantId()),
+                                          any(Address.class),
+                                          any(Boolean.class),
+                                          anyLong());
+        verify(routingTable, times(1)).put(eq(globalEntry.getParticipantId()), any(Address.class), eq(true), anyLong());
+        verify(routingTable, times(1)).put(eq(remoteGlobalEntry.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2495,6 +2630,21 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(captured.contains(localEntry));
         assertTrue(captured.contains(new DiscoveryEntry(globalCachedEntry1)));
         assertTrue(captured.contains(new DiscoveryEntry(globalCachedEntry2)));
+        verify(routingTable, times(1)).incrementReferenceCount(eq(localEntry.getParticipantId()));
+        verify(routingTable, never()).incrementReferenceCount(eq(globalCachedEntry1.getParticipantId()));
+        verify(routingTable, never()).incrementReferenceCount(eq(globalCachedEntry2.getParticipantId()));
+        verify(routingTable, never()).put(eq(localEntry.getParticipantId()),
+                                          any(Address.class),
+                                          any(Boolean.class),
+                                          anyLong());
+        verify(routingTable, times(1)).put(eq(globalCachedEntry1.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
+        verify(routingTable, times(1)).put(eq(globalCachedEntry2.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2540,6 +2690,17 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(captured.contains(localEntry1));
         assertTrue(captured.contains(localEntry2));
         assertFalse(captured.contains(new DiscoveryEntry(globalCachedEntry)));
+        captured.forEach((entry) -> {
+            verify(routingTable, times(1)).incrementReferenceCount(eq(entry.getParticipantId()));
+            verify(routingTable, never()).put(eq(entry.getParticipantId()),
+                                              any(Address.class),
+                                              any(Boolean.class),
+                                              anyLong());
+        });
+        verify(routingTable, never()).put(eq(globalCachedEntry.getParticipantId()),
+                                          any(Address.class),
+                                          any(Boolean.class),
+                                          anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2564,6 +2725,11 @@ public class LocalCapabilitiesDirectoryTest {
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
         DiscoveryEntryWithMetaInfo capturedLocalEntry = (DiscoveryEntryWithMetaInfo) values[0];
         assertEquals(localEntryWithMetaInfo, capturedLocalEntry);
+        verify(routingTable, times(1)).incrementReferenceCount(eq(capturedLocalEntry.getParticipantId()));
+        verify(routingTable, never()).put(eq(capturedLocalEntry.getParticipantId()),
+                                          any(Address.class),
+                                          any(Boolean.class),
+                                          anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2587,6 +2753,11 @@ public class LocalCapabilitiesDirectoryTest {
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
         DiscoveryEntryWithMetaInfo capturedCachedGlobalEntry = (DiscoveryEntryWithMetaInfo) values[0];
         assertEquals(cachedGlobalEntryWithMetaInfo, capturedCachedGlobalEntry);
+        verify(routingTable, never()).incrementReferenceCount(eq(capturedCachedGlobalEntry.getParticipantId()));
+        verify(routingTable, times(1)).put(eq(capturedCachedGlobalEntry.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2607,6 +2778,8 @@ public class LocalCapabilitiesDirectoryTest {
                                anyString(),
                                anyLong(),
                                any());
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2710,10 +2883,20 @@ public class LocalCapabilitiesDirectoryTest {
             DiscoveryEntryWithMetaInfo expectedLocalDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                          discoveryEntry);
             assertEquals(expectedLocalDiscoveryEntry, capturedDiscoveryEntry);
+            verify(routingTable, times(1)).incrementReferenceCount(eq(expectedLocalDiscoveryEntry.getParticipantId()));
+            verify(routingTable, never()).put(eq(expectedLocalDiscoveryEntry.getParticipantId()),
+                                              any(Address.class),
+                                              any(Boolean.class),
+                                              anyLong());
         } else {
             DiscoveryEntryWithMetaInfo expectedGlobalDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                           globalDiscoveryEntry);
             assertEquals(expectedGlobalDiscoveryEntry, capturedDiscoveryEntry);
+            verify(routingTable, never()).incrementReferenceCount(any());
+            verify(routingTable, times(1)).put(eq(expectedGlobalDiscoveryEntry.getParticipantId()),
+                                               any(Address.class),
+                                               eq(true),
+                                               anyLong());
         }
     }
 
@@ -2742,6 +2925,8 @@ public class LocalCapabilitiesDirectoryTest {
         checkPromiseError(lookupPromise, DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
         verify(localDiscoveryEntryStoreMock).lookup(eq(participantId), eq(Long.MAX_VALUE));
         verifyNoMoreInteractions(globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2762,6 +2947,8 @@ public class LocalCapabilitiesDirectoryTest {
         assertEquals(0, capturedDiscoveryEntries.length);
         verify(globalCapabilitiesDirectoryClient,
                never()).lookup(any(), any(String[].class), anyString(), anyLong(), any());
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2842,10 +3029,17 @@ public class LocalCapabilitiesDirectoryTest {
             DiscoveryEntryWithMetaInfo expectedLocalDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                          discoveryEntry);
             assertEquals(expectedLocalDiscoveryEntry, capturedDiscoveryEntries[0]);
+            verify(routingTable, times(1)).incrementReferenceCount(eq(expectedLocalDiscoveryEntry.getParticipantId()));
+            verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
         } else {
             DiscoveryEntryWithMetaInfo expectedGlobalDiscoveryEntry = CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                           globalDiscoveryEntry);
             assertEquals(expectedGlobalDiscoveryEntry, capturedDiscoveryEntries[0]);
+            verify(routingTable, never()).incrementReferenceCount(any());
+            verify(routingTable, times(1)).put(eq(expectedGlobalDiscoveryEntry.getParticipantId()),
+                                               any(Address.class),
+                                               any(Boolean.class),
+                                               anyLong());
         }
     }
 
@@ -2920,6 +3114,11 @@ public class LocalCapabilitiesDirectoryTest {
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
         DiscoveryEntryWithMetaInfo capturedRemoteGlobalEntry = (DiscoveryEntryWithMetaInfo) values[0];
         assertEquals(remoteGlobalEntryWithMetaInfo, capturedRemoteGlobalEntry);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, times(1)).put(eq(remoteGlobalEntryWithMetaInfo.getParticipantId()),
+                                           any(Address.class),
+                                           any(Boolean.class),
+                                           anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2962,6 +3161,8 @@ public class LocalCapabilitiesDirectoryTest {
 
         checkPromiseSuccess(lookupPromise, "lookup failed");
         verify(globalCapabilitiesDirectoryClient).lookup(any(), eq(participantId), eq(discoveryTimeout), any());
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, times(1)).put(eq(participantId), any(Address.class), any(Boolean.class), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -2993,6 +3194,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                   .lookup(eq(domains),
                                                           eq(interfaceName),
                                                           eq(discoveryQos.getCacheMaxAge()));
+        doReturn(Optional.of(cachedGlobalEntry)).when(globalDiscoveryEntryCacheMock)
+                                                .lookup(eq(cachedGlobalEntry.getParticipantId()), eq(Long.MAX_VALUE));
 
         // remote global DiscoveryEntry
         final GlobalDiscoveryEntry remoteGlobalEntry = new GlobalDiscoveryEntry(new Version(0, 0),
@@ -3019,8 +3222,23 @@ public class LocalCapabilitiesDirectoryTest {
         List<DiscoveryEntryWithMetaInfo> capabilities = Arrays.asList((DiscoveryEntryWithMetaInfo[]) values[0]);
         assertEquals(3, capabilities.size());
         assertTrue(capabilities.contains(localEntryWithMetaInfo));
+        verify(routingTable, times(1)).incrementReferenceCount(eq(localEntryWithMetaInfo.getParticipantId()));
+        verify(routingTable, never()).put(eq(localEntryWithMetaInfo.getParticipantId()),
+                                          any(Address.class),
+                                          any(Boolean.class),
+                                          anyLong());
         assertTrue(capabilities.contains(cachedGlobalEntryWithMetaInfo));
+        verify(routingTable, never()).incrementReferenceCount(eq(cachedGlobalEntryWithMetaInfo.getParticipantId()));
+        verify(routingTable, times(1)).put(eq(cachedGlobalEntryWithMetaInfo.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
         assertTrue(capabilities.contains(remoteGlobalEntryWithMetaInfo));
+        verify(routingTable, never()).incrementReferenceCount(eq(remoteGlobalEntryWithMetaInfo.getParticipantId()));
+        verify(routingTable, times(1)).put(eq(remoteGlobalEntryWithMetaInfo.getParticipantId()),
+                                           any(Address.class),
+                                           eq(true),
+                                           anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -3050,6 +3268,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                          eq(interfaceName),
                                                          anyLong(),
                                                          Matchers.<String[]> any());
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
 
         checkPromiseException(promise, expectedException);
     }
@@ -3078,6 +3298,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                          eq(interfaceName),
                                                          anyLong(),
                                                          Matchers.<String[]> any());
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
 
         checkPromiseError(promise, expectedError);
     }
@@ -3103,6 +3325,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                          eq(interfaceName),
                                                          anyLong(),
                                                          Matchers.<String[]> any());
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
 
         checkPromiseErrorInProviderRuntimeException(promise, expectedError);
     }
@@ -3164,6 +3388,8 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids);
 
         checkPromiseException(promise, expectedException);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     private void testLookupByParticipantIdWithGbidsIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
@@ -3179,6 +3405,8 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<Lookup4Deferred> promise = localCapabilitiesDirectory.lookup(participantId, discoveryQos, knownGbids);
 
         checkPromiseError(promise, expectedError);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     private void testLookupByParticipantIdIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
@@ -3193,6 +3421,8 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<Lookup3Deferred> promise = localCapabilitiesDirectory.lookup(participantId);
 
         checkPromiseErrorInProviderRuntimeException(promise, expectedError);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -3322,6 +3552,8 @@ public class LocalCapabilitiesDirectoryTest {
                                anyString(),
                                anyLong(),
                                any(String[].class));
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
 
         checkPromiseError(promise, expectedError);
     }
@@ -3337,6 +3569,8 @@ public class LocalCapabilitiesDirectoryTest {
                                anyLong(),
                                any(String[].class));
         checkPromiseError(promise, expectedError);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
     private static void checkPromiseException(Promise<?> promise,
