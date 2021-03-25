@@ -3,8 +3,8 @@
 for app in `asadmin list-applications | grep 'ejb' | cut -d" " -f1`;
 do
     echo "undeploy $app";
-    asadmin undeploy --droptables=true $app;
+    asadmin --user admin undeploy --droptables=true $app;
 done
 
-asadmin stop-domain --kill=true
-asadmin stop-database
+asadmin --user admin stop-domain --kill=true
+asadmin --user admin stop-database

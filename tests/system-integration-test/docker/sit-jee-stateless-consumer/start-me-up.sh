@@ -1,7 +1,7 @@
 #!/bin/bash
 sleep 30
 
-asadmin --interactive=false start-domain --debug --verbose &
+asadmin --user admin --passwordfile=/opt/payara41/pwdfile --interactive=false start-domain --debug --verbose &
 PID=$!
 
 # Give the JEE Discovery Directory a chance to start ...

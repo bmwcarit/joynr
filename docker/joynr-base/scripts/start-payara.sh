@@ -19,22 +19,22 @@ echo "PARAM is: $1"
     shift
 done
 
-asadmin start-domain
-asadmin start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true"
+asadmin --user admin start-domain
+asadmin --user admin start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true"
 
 if [ -d "/data/logs" ]
 then
-    asadmin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.file=/data/logs/payara.log
+    asadmin --user admin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.file=/data/logs/payara.log
 fi
-asadmin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes=512000000
+asadmin --user admin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes=512000000
 
 echo '####################################################'
 echo '# PAYARA list-log-levels'
 echo '####################################################'
-asadmin list-log-levels
+asadmin --user admin list-log-levels
 
 for warFile in $(echo $warFileList | tr "," "\n")
 do
-    asadmin deploy --force=true $warFile
+    asadmin --user admin deploy --force=true $warFile
 done
 
