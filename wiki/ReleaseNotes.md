@@ -8,7 +8,15 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
-None.
+* **[Java]** Logging improvements for expired or non routable messages:
+  * Logs for dropped messages now contain the tracking info (e.g. requestReplyId) instead of
+    just the messageId.
+  * Log for unroutable incoming MQTT message now contains the keyword `incoming` to prevent
+    misunderstanding.
+  * Error for expired messages is now only logged once: removed unncecessary log in
+    `MqttMessagingSkeleton` and reduced log level to `trace` in MessageRouter
+  * Expired messages are now logged like in C++: `Received expired message: ...` instead of
+    `ttl must be greater than 0 ...`.
 
 ## Configuration Property Changes
 None.
