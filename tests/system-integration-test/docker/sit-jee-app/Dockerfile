@@ -14,6 +14,10 @@ RUN asadmin start-domain && \
 	asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.systemintegrationtest.jee=FINE && \
 	asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.messaging=FINEST && \
 	asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.dispatching=FINEST && \
+	asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.discovery=FINEST && \
+	asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.capabilities=FINEST && \
+	asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.arbitration=FINEST && \
+	asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.proxy=FINE && \
 	asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.jeeintegration=FINEST || \
 	true
 
