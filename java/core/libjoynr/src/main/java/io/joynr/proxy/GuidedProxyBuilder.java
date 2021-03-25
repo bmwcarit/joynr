@@ -75,6 +75,7 @@ public class GuidedProxyBuilder {
     private static final Logger logger = LoggerFactory.getLogger(GuidedProxyBuilder.class);
 
     private boolean discoveryCompletedOnce;
+    private boolean proxyBuiltOnce;
 
     private String[] gbids;
     private String statelessAsyncCallbackUseCase;
@@ -208,9 +209,13 @@ public class GuidedProxyBuilder {
     /**
      * Triggers a synchronous discovery with the previously set parameters
      * and returns as soon as the discovery is finished. This is a blocking call.
+     * After one of discover() or discoverAsync() was called on an instance of the
+     * GuidedProxyBuilder, no further discovery is possible with that instance.
+     * A second discovery attempt will cause an IllegalStateException.
      *
      * @return Returns a DiscoveryResult containing the discovered DiscoveryEntries.
      * @throws DiscoveryException if the discovery fails.
+     * @throws An IllegalStateException if a discovery has already been completed by this instance of the GuidedProxyBuilder.
      */
     public DiscoveryResult discover() {
         try {
@@ -234,8 +239,12 @@ public class GuidedProxyBuilder {
      * in which case it will contain the accumulated DiscoveryResult, or it can be completed
      * exceptionally. In the latter case, the ComplatableFuture contains an exception with
      * the cause of the error.
+     * After one of discover() or discoverAsync() was called on an instance of the
+     * GuidedProxyBuilder, no further discovery is possible with that instance.
+     * A second discovery attempt will cause an IllegalStateException.
      *
      * @return Returns a CompletableFuture that will contain the result of the discovery as soon as it is completed.
+     * @throws An IllegalStateException if a discovery has already been completed by this instance of the GuidedProxyBuilder.
      */
     public CompletableFuture<DiscoveryResult> discoverAsync() {
         return discoverAsyncInternal().thenCompose(this::createDiscoveryResultFromArbitrationResult);
@@ -256,6 +265,9 @@ public class GuidedProxyBuilder {
     }
 
     private CompletableFuture<ArbitrationResult> discoverAsyncInternal() {
+        if (discoveryCompletedOnce) {
+            throw new IllegalStateException("This GuidedProxyBuilder already performed a discovery!");
+        }
         if (arbitrator == null) {
             if (discoveryQos == null) {
                 discoveryQos = new DiscoveryQos();
@@ -292,7 +304,6 @@ public class GuidedProxyBuilder {
         });
         savedArbitrationResult = new ArbitrationResult();
         discoveryInProgress = true;
-        discoveryCompletedOnce = false;
         arbitrator.lookup();
         return resultFuture;
     }
@@ -302,14 +313,21 @@ public class GuidedProxyBuilder {
      * The version of the interface class must fit the version of the discovered provider (the DiscoverEntry
      * containing the participantId also contains a version). Also, the provider must have been discovered by the
      * same GuidedProxyBuilder that the proxy is built with.
+     * A proxy can be built via the GuidedProxyBuilder only once. An attempt to build further proxies
+     * will cause an IllegalStateException.
      *
      * @param <T> Class of the required proxy.
      * @param interfaceClass Class of the required proxy.
      * @param participantId ParticipantId of the target provider.
      * @return A proxy implementing all methods of the interfaceClass that is connected to the provider with the given
      * participantId.
+     * @throws IllegalStateException if no discovery was completed yet, or if a proxy has been already built
+     * with this instance of the GuidedProxyBuilder.
      */
     public <T> T buildProxy(Class<T> interfaceClass, String participantId) {
+        if (proxyBuiltOnce) {
+            throw new IllegalStateException("This GuidedProxyBuilder already has been used to build a proxy!");
+        }
         if (!discoveryCompletedOnce) {
             throw new IllegalStateException("Discovery has to be completed before building a proxy!");
         }
@@ -353,6 +371,7 @@ public class GuidedProxyBuilder {
         if (!(gbids == null) && gbids.length > 0) {
             proxyBuilder.setGbids(gbids);
         }
+        proxyBuiltOnce = true;
         return proxyBuilder.build(arbitrationResultForProxy);
     }
 

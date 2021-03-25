@@ -52,6 +52,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyTest.TestInterface;
@@ -235,6 +236,43 @@ public class GuidedProxyBuilderTest {
         assertNotNull(result);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testSecondLookupThrows() throws Exception {
+        setup();
+
+        ArbitrationCallback[] callbacks = new ArbitrationCallback[1];
+        Mockito.doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                ArbitrationCallback cb = (ArbitrationCallback) invocation.getArguments()[0];
+                callbacks[0] = cb;
+                return null;
+            }
+        }).when(arbitrator).setArbitrationListener(Mockito.<ArbitrationCallback> any());
+
+        Mockito.doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                assertTrue(callbacks.length == 1 && callbacks[0] != null);
+
+                DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+                String testParticipantId = "test";
+                mockedDiscoveryEntry.setParticipantId(testParticipantId);
+                Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
+                ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries, null);
+
+                callbacks[0].onSuccess(mockedArbitrationResult);
+                return null;
+            }
+        }).when(arbitrator).lookup();
+
+        DiscoveryResult result = subject.discover();
+
+        verify(arbitrator).lookup();
+        assertNotNull(result);
+        subject.discover();
+    }
+
     @Test
     public void testArbitratorIsProperlyBuilt() throws Exception {
         initializeSubject();
@@ -270,6 +308,29 @@ public class GuidedProxyBuilderTest {
         DiscoveryQos internalDiscoveryQos = (DiscoveryQos) discoveryQosField.get(subject);
         assert (internalDiscoveryQos.getDiscoveryTimeoutMs() != DiscoveryQos.NO_VALUE);
         assert (internalDiscoveryQos.getRetryIntervalMs() != DiscoveryQos.NO_VALUE);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testBuildThrowsOnSecondCall() throws Exception {
+        setup();
+        String testParticipantId = "test";
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        mockedDiscoveryEntry.setParticipantId(testParticipantId);
+        mockedDiscoveryEntry.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+        mockSuccessfulDiscovery(mockedDiscoveryEntry);
+
+        subject.setDiscoveryQos(discoveryQos);
+        subject.buildProxy(testProxy.class, testParticipantId);
+        verify(proxyBuilderFactory).get(Mockito.<Set<String>> any(), eq(testProxy.class));
+        verify(proxyBuilder).build(Mockito.<ArbitrationResult> any());
+
+        Field discoveryQosField = GuidedProxyBuilder.class.getDeclaredField("discoveryQos");
+        discoveryQosField.setAccessible(true);
+        DiscoveryQos internalDiscoveryQos = (DiscoveryQos) discoveryQosField.get(subject);
+        assert (internalDiscoveryQos.getDiscoveryTimeoutMs() != DiscoveryQos.NO_VALUE);
+        assert (internalDiscoveryQos.getRetryIntervalMs() != DiscoveryQos.NO_VALUE);
+        subject.buildProxy(testProxy.class, testParticipantId);
     }
 
     @Test
