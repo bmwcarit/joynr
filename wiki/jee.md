@@ -546,6 +546,9 @@ See also [Generator documentation](generator.md) for versioning of the generated
 interface code.  
 The `buildProxy` and the corresponding `discover` methods must be called on the
 same instance of GuidedProxyBuilder.
+An instance of a GuidedProxybuilder can only be used for performing one discovery
+and building one proxy afterwards. Any attempt to do a second `discover` or
+`build` call will result in an exception being thrown.
 
 Note: The GuidedProxyBuilder can be be configured with DiscoveryQos except for the
 arbitration strategy settings. Arbitation strategy from DiscoveryQos will be ignored as
