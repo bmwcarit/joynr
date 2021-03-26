@@ -2,6 +2,23 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.15.12
+
+## API-relevant Changes
+* **[Java,JEE]** A GuidedProxyBuilder can now only be used to run one discovery and
+  build one proxy. A second attempt at one of those actions will cause an exception
+  to be thrown.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+
 # joynr 1.15.11
 
 ## API-relevant Changes
