@@ -3,7 +3,7 @@ FROM fedora:30
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2020-09-21-08-00
+ENV REFRESHED_AT 2021-04-06-10-30
 
 ###################################################
 # create data directories and volumes
