@@ -66,6 +66,7 @@ import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
@@ -109,6 +110,8 @@ public class PublicationManagerTest {
     @Mock
     private ProviderDirectory providerDirectory;
     @Mock
+    private RoutingTable routingTable;
+    @Mock
     private DispatcherImpl dispatcher;
     @Mock
     private testProvider provider;
@@ -136,6 +139,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -174,6 +178,7 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            requestCallerDirectory,
+                                                                           Mockito.mock(RoutingTable.class),
                                                                            cleanupScheduler,
                                                                            Mockito.mock(SubscriptionRequestStorage.class),
                                                                            shutdownNotifier,
@@ -230,6 +235,7 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            providerDirectory,
+                                                                           Mockito.mock(RoutingTable.class),
                                                                            cleanupScheduler,
                                                                            Mockito.mock(SubscriptionRequestStorage.class),
                                                                            shutdownNotifier,
@@ -284,6 +290,7 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            providerDirectory,
+                                                                           Mockito.mock(RoutingTable.class),
                                                                            cleanupScheduler,
                                                                            Mockito.mock(SubscriptionRequestStorage.class),
                                                                            shutdownNotifier,
@@ -631,6 +638,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -682,6 +690,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -742,6 +751,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -795,6 +805,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -844,6 +855,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -927,6 +939,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -943,6 +956,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -967,6 +981,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -1004,6 +1019,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -1020,6 +1036,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -1058,6 +1075,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,

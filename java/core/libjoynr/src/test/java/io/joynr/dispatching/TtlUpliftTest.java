@@ -71,6 +71,8 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.RoutingTableImpl;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
@@ -173,6 +175,7 @@ public class TtlUpliftTest {
                                               bind(AttributePollInterpreter.class).toInstance(attributePollInterpreter);
                                               bind(Dispatcher.class).toInstance(dispatcher);
                                               bind(ProviderDirectory.class).toInstance(providerDirectory);
+                                              bind(RoutingTable.class).toInstance(Mockito.mock(RoutingTable.class));
                                               bind(ScheduledExecutorService.class).annotatedWith(Names.named(JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP))
                                                                                   .toInstance(cleanupSchedulerSpy);
                                           }

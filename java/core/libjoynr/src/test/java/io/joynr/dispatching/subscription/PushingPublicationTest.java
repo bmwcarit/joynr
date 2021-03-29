@@ -57,6 +57,7 @@ import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.Promise;
 import io.joynr.provider.ProviderContainer;
@@ -110,6 +111,7 @@ public class PushingPublicationTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
+                                                        Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,

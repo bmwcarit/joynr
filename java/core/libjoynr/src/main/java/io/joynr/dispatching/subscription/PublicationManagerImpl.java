@@ -54,6 +54,7 @@ import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.provider.ProviderContainer;
@@ -102,6 +103,7 @@ public class PublicationManagerImpl
     private ScheduledExecutorService cleanupScheduler;
     private Dispatcher dispatcher;
     private ProviderDirectory providerDirectory;
+    private RoutingTable routingTable;
 
     // protect the maps (see members above) and providerDirectory during add and remove of subscriptions or providers
     // to avoid race conditions, e.g. race conditions between providerDirectory and queuedSubscriptionRequests
@@ -189,10 +191,12 @@ public class PublicationManagerImpl
         }
     }
 
+    // CHECKSTYLE:OFF
     @Inject
     public PublicationManagerImpl(AttributePollInterpreter attributePollInterpreter,
                                   Dispatcher dispatcher,
                                   ProviderDirectory providerDirectory,
+                                  RoutingTable routingTable,
                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
                                   SubscriptionRequestStorage subscriptionRequestStorage,
                                   ShutdownNotifier shutdownNotifier,
@@ -200,6 +204,7 @@ public class PublicationManagerImpl
         super();
         this.dispatcher = dispatcher;
         this.providerDirectory = providerDirectory;
+        this.routingTable = routingTable;
         this.addRemoveLock = new Object();
         this.cleanupScheduler = cleanupScheduler;
         this.subscriptionRequestStorage = subscriptionRequestStorage;
@@ -218,6 +223,7 @@ public class PublicationManagerImpl
         }
         shutdownNotifier.registerForShutdown(this);
     }
+    // CHECKSTYLE:ON
 
     private void queueSavedSubscriptionRequests() {
 
