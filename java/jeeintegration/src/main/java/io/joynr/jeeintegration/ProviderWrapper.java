@@ -18,8 +18,6 @@
  */
 package io.joynr.jeeintegration;
 
-import static java.lang.String.format;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -137,8 +135,11 @@ public class ProviderWrapper implements InvocationHandler {
             }
             JoynrException joynrException = null;
             try {
+                logger.debug("Invoke provider method {}({}) on {}", method.getName(), args, delegate);
                 result = delegateToMethod.invoke(delegate, args);
+                logger.debug("Invoke provider method {} returned {}", method.getName(), result);
             } catch (InvocationTargetException e) {
+                logger.warn("Invoke provider method {} ERROR: {}", method.getName(), e);
                 joynrException = getJoynrExceptionFromInvocationException(e);
             }
             if (isProviderMethod) {
@@ -287,12 +288,11 @@ public class ProviderWrapper implements InvocationHandler {
             for (Class<?> interfaceClass : beanClass.getInterfaces()) {
                 try {
                     if ((result = interfaceClass.getMethod(name, parameterTypes)) != null) {
+                        logger.trace("Method {} found on interface {}, bean {}", name, interfaceClass, beanClass);
                         break;
                     }
                 } catch (NoSuchMethodException | SecurityException e) {
-                    if (logger.isTraceEnabled()) {
-                        logger.trace(format("Method %s not found on interface %s", name, interfaceClass));
-                    }
+                    logger.trace("Method {} not found on interface {}", name, interfaceClass);
                 }
             }
         }
