@@ -2,6 +2,17 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.8.12.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java,JEE]** Improved logging in RequestInterpreter and ProviderWrapper.
+
+## Configuration property changes
+None.
+
 # joynr 1.8.12
 
 ## API relevant changes
