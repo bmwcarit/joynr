@@ -127,9 +127,10 @@ public class ProviderWrapper implements InvocationHandler {
         boolean isJoynrProviderInterfaceMethod = matchesJoynrProviderInterfaceMethod(method);
         Method delegateToMethod = getMethodFromInterfaces(bean.getBeanClass(), method, isJoynrProviderInterfaceMethod);
         Object delegate = createDelegateForMethod(method, isJoynrProviderInterfaceMethod);
+        boolean isProviderMethod = isProviderMethod(method, delegateToMethod);
         Object result = null;
         try {
-            if (isProviderMethod(method, delegateToMethod)) {
+            if (isProviderMethod) {
                 JoynrJeeMessageContext.getInstance().activate();
                 copyMessageCreatorInfo();
                 copyMessageContext();
@@ -140,13 +141,14 @@ public class ProviderWrapper implements InvocationHandler {
             } catch (InvocationTargetException e) {
                 joynrException = getJoynrExceptionFromInvocationException(e);
             }
-            if (delegate != this) {
+            if (isProviderMethod) {
+                // wrap result in promise in case of method from Franca interface
                 AbstractDeferred deferred = createAndResolveOrRejectDeferred(delegateToMethod, result, joynrException);
                 Promise<AbstractDeferred> promiseResult = new Promise<>(deferred);
                 return promiseResult;
             }
         } finally {
-            if (isProviderMethod(method, delegateToMethod)) {
+            if (isProviderMethod) {
                 JoynrJeeMessageContext.getInstance().deactivate();
             }
         }
