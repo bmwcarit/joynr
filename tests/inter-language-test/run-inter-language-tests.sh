@@ -72,7 +72,7 @@ fi
 
 if [ -z "$ILT_RESULTS_DIR" ]
 then
-	ILT_RESULTS_DIR=$ILT_DIR/ilt-results-$(date "+%Y-%m-%d-%H:%M:%S")
+	ILT_RESULTS_DIR=$ILT_DIR/ilt-results-$(date "+%Y_%m_%d_%H_%M_%S")
 fi
 
 # process ids for background stuff
@@ -93,6 +93,7 @@ trap stopall INT
 
 SUCCESS=0
 FAILED_TESTS=0
+PAYARA_FAILED=0
 DOMAIN="joynr-inter-language-test-domain"
 
 function killProcessHierarchy {
@@ -159,6 +160,14 @@ function prechecks {
 
 }
 
+PAYARA_LOG=$ILT_RESULTS_DIR/payara.log
+function prepare_payara {
+	asadmin --user admin start-domain
+	asadmin --user admin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes=512000000
+	asadmin --user admin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.file="${PAYARA_LOG}"
+	asadmin --user admin stop-domain
+}
+
 function start_payara {
 	DISCOVERY_WAR_FILE=$ILT_DIR/target/discovery-jee.war
 
@@ -169,12 +178,19 @@ function start_payara {
 	# It is already added in inter-language-test/docker/joynr-backend-jee/start-me-up.sh
 	# Otherwise CI reports an error:
 	# Repeats not allowed for option: jvmoptions
-	asadmin start-database
-	asadmin start-domain
+	asadmin --user admin start-database
+	asadmin --user admin start-domain
 
-	asadmin deploy --force=true $DISCOVERY_WAR_FILE
+	asadmin --user admin deploy --force=true $DISCOVERY_WAR_FILE
 
-    echo "payara started"
+	SUCCESS=$?
+	if [ "$SUCCESS" != 0 ]
+	then
+		log 'Payara deployment FAILED.'
+		PAYARA_FAILED=1
+	else
+		echo "payara started"
+	fi
 }
 
 function stop_payara {
@@ -182,11 +198,14 @@ function stop_payara {
 	for app in `asadmin list-applications | egrep '(discovery)' | cut -d" " -f1`;
 	do
 		echo "undeploy $app";
-		asadmin undeploy --droptables=true $app;
+		asadmin --user admin undeploy --droptables=true $app;
 	done
 
-	asadmin stop-domain
-	asadmin stop-database
+	asadmin --user admin stop-domain
+	asadmin --user admin stop-database
+
+	# save payara log for a particular provider
+	mv $PAYARA_LOG $ILT_RESULTS_DIR/payara-$1.log
 }
 
 function start_services {
@@ -202,13 +221,12 @@ function start_services {
 	sleep 2
 
 	start_payara
-	sleep 10
 }
 
 function stop_services {
 	log '# stopping services'
 
-	stop_payara
+	stop_payara $1
 
 	if [ -n "$MOSQUITTO_PID" ]
 	then
@@ -375,6 +393,13 @@ function start_javascript_provider_bundle_uds {
 }
 
 function start_java_consumer_cc {
+	if [ "$PAYARA_FAILED" != 0 ]
+	then
+		log 'SKIPPING Java consumer CC (with in process clustercontroller) because Payara deployment FAILED.'
+		PAYARA_FAILED=0
+		let FAILED_TESTS+=1
+		return
+	fi
 	log 'Starting Java consumer CC (with in process clustercontroller).'
 	cd $ILT_DIR
 	rm -f java-consumer.persistence_file
@@ -574,6 +599,9 @@ npm run build
 # continues to return data for the already stopped provider
 # since it currently assumes that it will be restarted.
 
+# prepare payara
+prepare_payara
+
 # run checks with Java provider cc
 clean_up
 log 'RUN CHECKS WITH JAVA PROVIDER CC (with in process clustercontroller).'
@@ -584,7 +612,7 @@ start_java_provider_cc
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
-stop_services
+stop_services $PROVIDER
 
 # run checks with Java provider ws
 clean_up
@@ -596,7 +624,7 @@ start_java_provider_ws
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
-stop_services
+stop_services $PROVIDER
 
 # run checks with C++ provider
 clean_up
@@ -608,7 +636,7 @@ start_cpp_provider_ws
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
-stop_services
+stop_services $PROVIDER
 
 # run checks with C++ provider UDS
 clean_up
@@ -620,7 +648,7 @@ start_cpp_provider_uds
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
-stop_services
+stop_services $PROVIDER
 
 # run checks with Javascript provider WS
 clean_up
@@ -632,7 +660,7 @@ start_javascript_provider_ws
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
-stop_services
+stop_services $PROVIDER
 
 # run checks with Javascript provider UDS
 clean_up
@@ -644,7 +672,7 @@ start_javascript_provider_uds
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
-stop_services
+stop_services $PROVIDER
 
 # run checks with Javascript bundle provider WS
 clean_up
@@ -656,7 +684,7 @@ start_javascript_provider_bundle_ws
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
-stop_services
+stop_services $PROVIDER
 
 # run checks with Javascript bundle provider UDS
 clean_up
@@ -668,7 +696,7 @@ start_javascript_provider_bundle_uds
 start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
-stop_services
+stop_services $PROVIDER
 
 # check for failed tests
 if [ "$FAILED_TESTS" -gt 0 ]
