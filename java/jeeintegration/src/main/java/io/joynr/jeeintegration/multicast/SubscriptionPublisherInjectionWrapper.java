@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.inject.spi.Bean;
@@ -52,6 +53,7 @@ public class SubscriptionPublisherInjectionWrapper implements InvocationHandler 
 
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionPublisherInjectionWrapper.class);
 
+    private static final List<Method> OBJECT_METHODS = Arrays.asList(Object.class.getMethods());
     private static final AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher> SUBSCRIPTION_PUBLISHER_ANNOTATION_LITERAL = new AnnotationLiteral<io.joynr.jeeintegration.api.SubscriptionPublisher>() {
     };
 
@@ -111,7 +113,11 @@ public class SubscriptionPublisherInjectionWrapper implements InvocationHandler 
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (args.length == 0 || args[0] == null || !subscriptionPublisherClass.isAssignableFrom(args[0].getClass())) {
+        if (OBJECT_METHODS.contains(method)) {
+            return method.invoke(this, args);
+        }
+        if (args == null || args.length == 0 || args[0] == null
+                || !subscriptionPublisherClass.isAssignableFrom(args[0].getClass())) {
             throw new JoynrIllegalStateException(String.format("Cannot set the subscription publisher with args %s. First argument must be a non-null instance of a %s.",
                                                                Arrays.toString(args),
                                                                subscriptionPublisherClass));
