@@ -124,9 +124,9 @@ public class ProviderWrapper implements InvocationHandler {
      */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        boolean isProviderMethod = matchesJoynrProviderMethod(method);
-        Method delegateToMethod = getMethodFromInterfaces(bean.getBeanClass(), method, isProviderMethod);
-        Object delegate = createDelegateForMethod(method, isProviderMethod);
+        boolean isJoynrProviderInterfaceMethod = matchesJoynrProviderInterfaceMethod(method);
+        Method delegateToMethod = getMethodFromInterfaces(bean.getBeanClass(), method, isJoynrProviderInterfaceMethod);
+        Object delegate = createDelegateForMethod(method, isJoynrProviderInterfaceMethod);
         Object result = null;
         try {
             if (isProviderMethod(method, delegateToMethod)) {
@@ -266,8 +266,8 @@ public class ProviderWrapper implements InvocationHandler {
         return reference;
     }
 
-    private Object createDelegateForMethod(Method method, boolean isProviderMethod) {
-        if (OBJECT_METHODS.contains(method) || isProviderMethod) {
+    private Object createDelegateForMethod(Method method, boolean isJoynrProviderInterfaceMethod) {
+        if (OBJECT_METHODS.contains(method) || isJoynrProviderInterfaceMethod) {
             return this;
         }
         if (SET_SUBSCRIPTION_PUBLISHER_METHOD_NAME.equals(method.getName())
@@ -279,11 +279,11 @@ public class ProviderWrapper implements InvocationHandler {
 
     private Method getMethodFromInterfaces(Class<?> beanClass,
                                            Method method,
-                                           boolean isProviderMethod) throws NoSuchMethodException {
+                                           boolean isJoynrProviderInterfaceMethod) throws NoSuchMethodException {
         String name = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         Method result = method;
-        if (!isProviderMethod) {
+        if (!isJoynrProviderInterfaceMethod) {
             result = null;
             for (Class<?> interfaceClass : beanClass.getInterfaces()) {
                 try {
@@ -300,7 +300,7 @@ public class ProviderWrapper implements InvocationHandler {
         return result == null ? method : result;
     }
 
-    private boolean matchesJoynrProviderMethod(Method method) {
+    private boolean matchesJoynrProviderInterfaceMethod(Method method) {
         boolean result = false;
         for (Method joynrProviderMethod : JoynrProvider.class.getMethods()) {
             if (joynrProviderMethod.getName().equals(method.getName())
