@@ -135,7 +135,7 @@ public class GuidedProxyBuilder {
      * @throws JoynrIllegalStateException in case the setter gets called after a discovery has been started
      * @see DiscoveryQos
      */
-    public GuidedProxyBuilder setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
+    public synchronized GuidedProxyBuilder setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         if (discoveryInProgress) {
             throw new JoynrIllegalStateException("setDiscoveryQos called while discovery in progress");
         }
@@ -152,7 +152,7 @@ public class GuidedProxyBuilder {
      * @throws JoynrIllegalStateException in case the setter gets called after a discovery has been started
      * @see MessagingQos
      */
-    public GuidedProxyBuilder setMessagingQos(final MessagingQos messagingQos) throws DiscoveryException {
+    public synchronized GuidedProxyBuilder setMessagingQos(final MessagingQos messagingQos) throws DiscoveryException {
         if (discoveryInProgress) {
             throw new JoynrIllegalStateException("setMessagingQos called while discovery in progress");
         }
@@ -179,7 +179,7 @@ public class GuidedProxyBuilder {
      * @return Returns the GuidedProxyBuilder instance.
      * @throws JoynrIllegalStateException in case the setter gets called after a discovery has been started
      */
-    public GuidedProxyBuilder setStatelessAsyncCallbackUseCase(String statelessAsyncCallbackUseCase) {
+    public synchronized GuidedProxyBuilder setStatelessAsyncCallbackUseCase(String statelessAsyncCallbackUseCase) {
         if (discoveryInProgress) {
             throw new JoynrIllegalStateException("setStatelessAsyncCallbackUseCase called while discovery in progress");
         }
@@ -199,7 +199,7 @@ public class GuidedProxyBuilder {
      * @throws IllegalArgumentException if provided gbids array is null or empty
      * @throws JoynrIllegalStateException in case the setter gets called after a discovery has been started
      */
-    public GuidedProxyBuilder setGbids(final String[] gbids) {
+    public synchronized GuidedProxyBuilder setGbids(final String[] gbids) {
         if (discoveryInProgress) {
             throw new JoynrIllegalStateException("setGbids called while discovery in progress");
         }
@@ -221,7 +221,7 @@ public class GuidedProxyBuilder {
      * @throws DiscoveryException if the discovery fails.
      * @throws JoynrIllegalStateException if a discovery has already been completed by this instance of the GuidedProxyBuilder.
      */
-    public DiscoveryResult discover() {
+    public synchronized DiscoveryResult discover() {
         try {
             return discoverAsync().get();
         } catch (InterruptedException e) {
@@ -250,7 +250,7 @@ public class GuidedProxyBuilder {
      * @return Returns a CompletableFuture that will contain the result of the discovery as soon as it is completed.
      * @throws JoynrIllegalStateException if a discovery has already been completed by this instance of the GuidedProxyBuilder.
      */
-    public CompletableFuture<DiscoveryResult> discoverAsync() {
+    public synchronized CompletableFuture<DiscoveryResult> discoverAsync() {
         return discoverAsyncInternal().thenCompose(this::createDiscoveryResultFromArbitrationResult);
     }
 
@@ -328,7 +328,7 @@ public class GuidedProxyBuilder {
      * @throws JoynrIllegalStateException if no discovery was completed yet, or if a proxy has been already built
      * with this instance of the GuidedProxyBuilder.
      */
-    public <T> T buildProxy(Class<T> interfaceClass, String participantId) {
+    public synchronized <T> T buildProxy(Class<T> interfaceClass, String participantId) {
         if (proxyBuiltOnce) {
             throw new JoynrIllegalStateException("This GuidedProxyBuilder already has been used to build a proxy!");
         }
