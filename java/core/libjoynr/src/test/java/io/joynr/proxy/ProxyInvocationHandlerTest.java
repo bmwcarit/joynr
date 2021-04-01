@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -308,4 +309,40 @@ public class ProxyInvocationHandlerTest {
         verify(connectorInvocationHandler).executeOneWayMethod(eq(method), any());
     }
 
+    @Test
+    public void testHandlingReceivedSelectedAndNonSelectedProviderParticipantIds() throws Throwable {
+        ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
+        final String proxyParticipantId = "proxyParticipantId";
+        final String expectedProxyParticipantId = proxyParticipantId;
+        when(connectorFactory.create(eq(proxyParticipantId),
+                                     Mockito.<ArbitrationResult> any(),
+                                     Mockito.eq(messagingQos),
+                                     Mockito.eq(null))).thenReturn(Optional.of(connectorInvocationHandler));
+
+        DiscoveryEntryWithMetaInfo selectedDiscoveryEntry1 = new DiscoveryEntryWithMetaInfo();
+        selectedDiscoveryEntry1.setParticipantId("participantId1");
+
+        DiscoveryEntryWithMetaInfo selectedDiscoveryEntry2 = new DiscoveryEntryWithMetaInfo();
+        selectedDiscoveryEntry2.setParticipantId("participantId2");
+
+        Set<String> expectedProviderParticipantIds = new HashSet<>();
+        expectedProviderParticipantIds.add("participantId1");
+        expectedProviderParticipantIds.add("participantId2");
+
+        DiscoveryEntryWithMetaInfo nonSelectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        final String nonSelectedParticipantId = "nonSelectedParticipantId";
+        final String expectedNonSelectedParticipantId = nonSelectedParticipantId;
+        nonSelectedDiscoveryEntry.setParticipantId(nonSelectedParticipantId);
+
+        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        arbitrationResult.setDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(selectedDiscoveryEntry1,
+                                                                                                    selectedDiscoveryEntry2)));
+        arbitrationResult.setOtherDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(nonSelectedDiscoveryEntry)));
+
+        proxyInvocationHandler.createConnector(arbitrationResult);
+
+        verify(mockMessageRouter).registerProxyProviderParticipantIds(eq(expectedProxyParticipantId),
+                                                                      eq(expectedProviderParticipantIds));
+        verify(mockMessageRouter).removeNextHop(expectedNonSelectedParticipantId);
+    }
 }
