@@ -18,6 +18,7 @@
  */
 package io.joynr.proxy;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.ShutdownNotifier;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 
 public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConnectorFactory connectorFactory;
@@ -73,6 +75,18 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                                                                                          statelessAsyncParticipantId);
         connector = connectorOptional.isPresent() ? connectorOptional.get() : null;
         setConnectorStatusSuccessAndSendQueuedRequests();
+
+        // call registerProxyProviderParticipantIds for selected providers
+        Set<String> providerParticipantIds = new HashSet<>();
+        for (DiscoveryEntryWithMetaInfo selectedEntry : result.getDiscoveryEntries()) {
+            providerParticipantIds.add(selectedEntry.getParticipantId());
+        }
+        messageRouter.registerProxyProviderParticipantIds(proxyParticipantId, providerParticipantIds);
+
+        // decrease the RoutingEntry reference count for non-selected providers
+        for (DiscoveryEntryWithMetaInfo nonSelectedEntry : result.getOtherDiscoveryEntries()) {
+            messageRouter.removeNextHop(nonSelectedEntry.getParticipantId());
+        }
     }
 
     @Override
