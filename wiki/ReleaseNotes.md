@@ -7,7 +7,9 @@ the versioning scheme [here](JoynrVersioning.md).
 ## API-relevant Changes
 * **[Java,JEE]** A GuidedProxyBuilder can now only be used to run one discovery and
   build one proxy. A second attempt at one of those actions will cause an exception
-  to be thrown.
+  to be thrown. 
+  The GuidedProxyBuilder now throws JoynrIllegalStateException instead of
+  IllegalStateException.
 
 ## Other Changes
 None.

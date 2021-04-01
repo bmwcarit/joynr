@@ -149,28 +149,28 @@ public class GuidedProxyBuilderTest {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = JoynrIllegalStateException.class)
     public void testSetDiscoveryQosThrowsDuringLookup() throws Exception {
         setup();
         subject.discoverAsync();
         subject.setDiscoveryQos(new DiscoveryQos());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = JoynrIllegalStateException.class)
     public void testSetMessagingQosThrowsDuringLookup() throws Exception {
         setup();
         subject.discoverAsync();
         subject.setMessagingQos(new MessagingQos());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = JoynrIllegalStateException.class)
     public void testSetStatelessAsyncCallbackUseCaseThrowsDuringLookup() throws Exception {
         setup();
         subject.discoverAsync();
         subject.setStatelessAsyncCallbackUseCase("Test");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = JoynrIllegalStateException.class)
     public void testSetGbidsThrowsDuringLookup() throws Exception {
         setup();
         subject.discoverAsync();
@@ -236,7 +236,7 @@ public class GuidedProxyBuilderTest {
         assertNotNull(result);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = JoynrIllegalStateException.class)
     public void testSecondLookupThrows() throws Exception {
         setup();
 
@@ -310,7 +310,7 @@ public class GuidedProxyBuilderTest {
         assert (internalDiscoveryQos.getRetryIntervalMs() != DiscoveryQos.NO_VALUE);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = JoynrIllegalStateException.class)
     public void testBuildThrowsOnSecondCall() throws Exception {
         setup();
         String testParticipantId = "test";

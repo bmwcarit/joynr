@@ -20,6 +20,7 @@ package io.joynr.proxy;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,6 +36,7 @@ import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.util.ObjectMapper;
@@ -101,9 +103,9 @@ public class GuidedProxyBuilder {
      * Use the {@link io.joynr.runtime.JoynrRuntime#getGuidedProxyBuilder(Set, Class)} method (Java) or the
      * <code>getGuidedProxyBuilder</code> method of <code>ServiceLocator</code> (JEE) instead.
      *
-     * @param discoverySettingsStorage
-     * @param domains
-     * @param interfaceClass
+     * @param discoverySettingsStorage the discoverySettingsStorage
+     * @param domains the set of domains to be considered when searching the providers
+     * @param interfaceClass Interface the provider offers
      */
     public GuidedProxyBuilder(DiscoverySettingsStorage discoverySettingsStorage,
                               Set<String> domains,
@@ -118,8 +120,10 @@ public class GuidedProxyBuilder {
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
         } catch (Exception e) {
-            logger.error("INTERFACE_NAME needs to be set in the interface class {}", interfaceClass);
-            throw new IllegalStateException(e);
+            String errorMessage = MessageFormat.format("INTERFACE_NAME needs to be set in the interface class {0}",
+                                                       interfaceClass);
+            logger.error(errorMessage);
+            throw new JoynrIllegalStateException(errorMessage, e);
         }
     }
 
@@ -128,12 +132,12 @@ public class GuidedProxyBuilder {
      *
      * @param discoveryQos discovery quality of service
      * @return Returns the GuidedProxyBuilder instance.
-     * @throws IllegalStateException in case the setter gets called after a discovery has been started
+     * @throws JoynrIllegalStateException in case the setter gets called after a discovery has been started
      * @see DiscoveryQos
      */
     public GuidedProxyBuilder setDiscoveryQos(final DiscoveryQos discoveryQos) throws DiscoveryException {
         if (discoveryInProgress) {
-            throw new IllegalStateException("setDiscoveryQos called while discovery in progress");
+            throw new JoynrIllegalStateException("setDiscoveryQos called while discovery in progress");
         }
         this.discoveryQos = new DiscoveryQos(discoveryQos);
         applyDefaultValues(this.discoveryQos);
@@ -145,12 +149,12 @@ public class GuidedProxyBuilder {
      *
      * @param messagingQos messaging quality of service
      * @return Returns the GuidedProxyBuilder instance.
-     * @throws IllegalStateException in case the setter gets called after a discovery has been started
+     * @throws JoynrIllegalStateException in case the setter gets called after a discovery has been started
      * @see MessagingQos
      */
     public GuidedProxyBuilder setMessagingQos(final MessagingQos messagingQos) throws DiscoveryException {
         if (discoveryInProgress) {
-            throw new IllegalStateException("setMessagingQos called while discovery in progress");
+            throw new JoynrIllegalStateException("setMessagingQos called while discovery in progress");
         }
         if (messagingQos.getRoundTripTtl_ms() > maxMessagingTtl) {
             logger.warn("Error in MessageQos. domains: {} interface: {} Max allowed ttl: {}. Passed ttl: {}",
@@ -173,11 +177,11 @@ public class GuidedProxyBuilder {
      * @param statelessAsyncCallbackUseCase the use case for which the proxy is being used, in order to construct
      * stateless async callback IDs mapping to the correct callback handler.
      * @return Returns the GuidedProxyBuilder instance.
-     * @throws IllegalStateException in case the setter gets called after a discovery has been started
+     * @throws JoynrIllegalStateException in case the setter gets called after a discovery has been started
      */
     public GuidedProxyBuilder setStatelessAsyncCallbackUseCase(String statelessAsyncCallbackUseCase) {
         if (discoveryInProgress) {
-            throw new IllegalStateException("setStatelessAsyncCallbackUseCase called while discovery in progress");
+            throw new JoynrIllegalStateException("setStatelessAsyncCallbackUseCase called while discovery in progress");
         }
         this.statelessAsyncCallbackUseCase = statelessAsyncCallbackUseCase;
         return this;
@@ -193,11 +197,11 @@ public class GuidedProxyBuilder {
      * @param gbids an array of GBIDs
      * @return Returns the GuidedProxyBuilder instance.
      * @throws IllegalArgumentException if provided gbids array is null or empty
-     * @throws IllegalStateException in case the setter gets called after a discovery has been started
+     * @throws JoynrIllegalStateException in case the setter gets called after a discovery has been started
      */
     public GuidedProxyBuilder setGbids(final String[] gbids) {
         if (discoveryInProgress) {
-            throw new IllegalStateException("setGbids called while discovery in progress");
+            throw new JoynrIllegalStateException("setGbids called while discovery in progress");
         }
         if (gbids == null || gbids.length == 0) {
             throw new IllegalArgumentException("GBIDs array must not be null or empty.");
@@ -211,11 +215,11 @@ public class GuidedProxyBuilder {
      * and returns as soon as the discovery is finished. This is a blocking call.
      * After one of discover() or discoverAsync() was called on an instance of the
      * GuidedProxyBuilder, no further discovery is possible with that instance.
-     * A second discovery attempt will cause an IllegalStateException.
+     * A second discovery attempt will cause an JoynrIllegalStateException.
      *
      * @return Returns a DiscoveryResult containing the discovered DiscoveryEntries.
      * @throws DiscoveryException if the discovery fails.
-     * @throws An IllegalStateException if a discovery has already been completed by this instance of the GuidedProxyBuilder.
+     * @throws JoynrIllegalStateException if a discovery has already been completed by this instance of the GuidedProxyBuilder.
      */
     public DiscoveryResult discover() {
         try {
@@ -241,10 +245,10 @@ public class GuidedProxyBuilder {
      * the cause of the error.
      * After one of discover() or discoverAsync() was called on an instance of the
      * GuidedProxyBuilder, no further discovery is possible with that instance.
-     * A second discovery attempt will cause an IllegalStateException.
+     * A second discovery attempt will cause an JoynrIllegalStateException.
      *
      * @return Returns a CompletableFuture that will contain the result of the discovery as soon as it is completed.
-     * @throws An IllegalStateException if a discovery has already been completed by this instance of the GuidedProxyBuilder.
+     * @throws JoynrIllegalStateException if a discovery has already been completed by this instance of the GuidedProxyBuilder.
      */
     public CompletableFuture<DiscoveryResult> discoverAsync() {
         return discoverAsyncInternal().thenCompose(this::createDiscoveryResultFromArbitrationResult);
@@ -266,7 +270,7 @@ public class GuidedProxyBuilder {
 
     private CompletableFuture<ArbitrationResult> discoverAsyncInternal() {
         if (discoveryCompletedOnce) {
-            throw new IllegalStateException("This GuidedProxyBuilder already performed a discovery!");
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already performed a discovery!");
         }
         if (arbitrator == null) {
             if (discoveryQos == null) {
@@ -314,22 +318,22 @@ public class GuidedProxyBuilder {
      * containing the participantId also contains a version). Also, the provider must have been discovered by the
      * same GuidedProxyBuilder that the proxy is built with.
      * A proxy can be built via the GuidedProxyBuilder only once. An attempt to build further proxies
-     * will cause an IllegalStateException.
+     * will cause an JoynrIllegalStateException.
      *
      * @param <T> Class of the required proxy.
      * @param interfaceClass Class of the required proxy.
      * @param participantId ParticipantId of the target provider.
      * @return A proxy implementing all methods of the interfaceClass that is connected to the provider with the given
      * participantId.
-     * @throws IllegalStateException if no discovery was completed yet, or if a proxy has been already built
+     * @throws JoynrIllegalStateException if no discovery was completed yet, or if a proxy has been already built
      * with this instance of the GuidedProxyBuilder.
      */
     public <T> T buildProxy(Class<T> interfaceClass, String participantId) {
         if (proxyBuiltOnce) {
-            throw new IllegalStateException("This GuidedProxyBuilder already has been used to build a proxy!");
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already has been used to build a proxy!");
         }
         if (!discoveryCompletedOnce) {
-            throw new IllegalStateException("Discovery has to be completed before building a proxy!");
+            throw new JoynrIllegalStateException("Discovery has to be completed before building a proxy!");
         }
         DiscoveryEntryWithMetaInfo discoveryEntryForProxy = null;
         for (DiscoveryEntryWithMetaInfo entry : savedArbitrationResult.getDiscoveryEntries()) {
@@ -355,7 +359,7 @@ public class GuidedProxyBuilder {
             // discoveryQos should be already set, since this is done latest in
             // discoverAsyncInternal() which must have been called already since
             // discoveryCompletedOnce is true
-            throw new IllegalStateException("DiscoveryQos not set, internal error!");
+            throw new JoynrIllegalStateException("DiscoveryQos not set, internal error!");
         }
         proxyBuilder.setDiscoveryQos(discoveryQos);
 
