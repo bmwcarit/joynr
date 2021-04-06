@@ -22,6 +22,9 @@ typeCollection RoutingTypes {
 	<** @description: Generic Address **>
 	struct Address polymorphic {}
 
+	<** @description: Local Address **>
+	struct LocalAddress extends Address {}
+
 	<** @description: Channel Address **>
 	struct ChannelAddress extends Address {
 		<** @description: Url of HTTP-based message receiver **>
@@ -54,7 +57,7 @@ typeCollection RoutingTypes {
 	}
 
 	<** @description: Websocket address **>
-	struct WebSocketAddress extends Address {
+	struct WebSocketAddress extends LocalAddress {
 		<** @description: Websocket protocol type **>
 		WebSocketProtocol protocol
 
@@ -69,7 +72,7 @@ typeCollection RoutingTypes {
 	}
 
 	<** @description: Unix domain socket server address **>
-	struct UdsAddress extends Address {
+	struct UdsAddress extends LocalAddress {
 		<** @description: Unix domain socket server path **>
 		String path
 	}
@@ -87,19 +90,19 @@ typeCollection RoutingTypes {
 	}
 
 	<** @description: Unix domain socket client address **>
-	struct UdsClientAddress extends Address {
+	struct UdsClientAddress extends LocalAddress {
 		<** @description: Unix domain socket client ID **>
 		String id
 	}
 
 	<** @description: Websocket client address **>
-	struct WebSocketClientAddress extends Address {
+	struct WebSocketClientAddress extends LocalAddress {
 		<** @description: Websocket client ID **>
 		String id
 	}
 
 	<** @description: BinderAddress client address **>
-	struct BinderAddress extends Address {
+	struct BinderAddress extends LocalAddress {
 		<** @description: BinderAddress package name **>
 		String packageName
 		<** @description: BinderAddress process user ID **>

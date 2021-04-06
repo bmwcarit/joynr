@@ -943,6 +943,7 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/Address.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/BrowserAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/ChannelAddress.cpp \
+                         libjoynr/communication-model/generated/datatypes/system/RoutingTypes/LocalAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/WebSocketAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/WebSocketClientAddress.cpp \
                          libjoynr/communication-model/generated/datatypes/system/RoutingTypes/WebSocketProtocol.cpp \
