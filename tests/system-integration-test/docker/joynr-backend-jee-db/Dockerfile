@@ -14,6 +14,7 @@ RUN asadmin --user admin --passwordfile=/opt/payara41/pwdfile start-domain && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile create-jdbc-connection-pool --datasourceclassname org.apache.derby.jdbc.ClientDataSource --restype javax.sql.XADataSource --property portNumber=1527:password=APP:user=APP:serverName=joynrbackend-db:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true" && \
+    asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.multiLineMode=false && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile stop-domain && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile stop-database || \
     true

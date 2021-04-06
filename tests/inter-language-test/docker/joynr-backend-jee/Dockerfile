@@ -31,6 +31,7 @@ RUN asadmin --user admin --passwordfile=/opt/payara41/pwdfile start-domain && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.arbitration=FINEST && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.proxy=FINE && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr.jeeintegration=FINEST && \
+    asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.multiLineMode=false && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile deploy /discovery-directory-jee.war && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile stop-domain && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile stop-database || \

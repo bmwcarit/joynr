@@ -21,6 +21,7 @@ RUN asadmin --user admin --passwordfile=/opt/payara41/pwdfile start-domain && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr=SEVERE && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels com.hivemq=SEVERE && \
+    asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.multiLineMode=false && \
     asadmin --user admin --passwordfile=/opt/payara41/pwdfile stop-domain && \
     true
 
