@@ -23,8 +23,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -38,17 +40,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -63,6 +71,7 @@ import io.joynr.common.ExpiryDate;
 import io.joynr.context.JoynrMessageScopeModule;
 import io.joynr.dispatching.rpc.ReplyCaller;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
+import io.joynr.dispatching.rpc.RequestInterpreter;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -78,6 +87,7 @@ import io.joynr.provider.ProviderContainer;
 import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.JoynrMessagingConnectorFactory;
 import io.joynr.proxy.StatelessAsyncIdCalculator;
+import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
 import io.joynr.util.ObjectMapper;
 import joynr.MutableMessage;
@@ -127,6 +137,11 @@ public class RequestReplyManagerTest {
     @Mock
     private ProviderContainer providerContainer;
     private RequestCallerFactory requestCallerFactory;
+
+    @Mock
+    private RequestInterpreter mockRequestInterpreter;
+    @Mock
+    private ShutdownNotifier mockShutdownNotifier;
 
     @Before
     public void setUp() throws NoSuchMethodException, SecurityException, JsonGenerationException, IOException {
@@ -372,6 +387,233 @@ public class RequestReplyManagerTest {
                                                 ExpiryDate.fromRelativeTtl(forTtl).getValue());
 
         oneWayRecipient.assertAllPayloadsReceived(TIME_TO_LIVE);
+    }
+
+    private Set<Thread> prepareParallelRequests(int numRequests,
+                                                CountDownLatch callCount,
+                                                CountDownLatch replyCount,
+                                                Semaphore semaphore,
+                                                RequestCaller requestCallerMock,
+                                                ReplyCallback replyCallbackMock,
+                                                Request request) {
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                callCount.countDown();
+                if (!semaphore.tryAcquire(5000, TimeUnit.MILLISECONDS)) {
+                    fail("wait time expired for semaphore");
+                }
+                @SuppressWarnings("unchecked")
+                ProviderCallback<Reply> cb = (ProviderCallback<Reply>) invocation.getArguments()[0];
+                cb.onSuccess(new Reply());
+                replyCount.countDown();
+                return null;
+            }
+        }).when(mockRequestInterpreter)
+          .execute(Matchers.<ProviderCallback<Reply>> any(), any(RequestCaller.class), any(Request.class));
+
+        when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
+        providerDirectory.add(testMessageResponderParticipantId, providerContainer);
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                requestReplyManager.handleRequest(replyCallbackMock,
+                                                  testMessageResponderParticipantId,
+                                                  request,
+                                                  Long.MAX_VALUE);
+            }
+        };
+        Set<Thread> threads = new HashSet<Thread>();
+        for (int i = 0; i < numRequests; i++) {
+            threads.add(new Thread(runnable));
+        }
+        return threads;
+    }
+
+    @Test
+    public void parallelRequestHandling() throws NoSuchMethodException, SecurityException, InterruptedException {
+        int numRequests = 42;
+        CountDownLatch callCount = new CountDownLatch(numRequests);
+        CountDownLatch replyCount = new CountDownLatch(numRequests);
+        Semaphore semaphore = new Semaphore(0);
+        requestReplyManager = new RequestReplyManagerImpl(null,
+                                                          null,
+                                                          providerDirectory,
+                                                          null,
+                                                          mockRequestInterpreter,
+                                                          null,
+                                                          mockShutdownNotifier,
+                                                          null);
+        RequestCaller requestCallerMock = mock(RequestCaller.class);
+        ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
+
+        Method method = TestProvider.class.getMethod("voidOperation", new Class[0]);
+        Request request = new Request(method.getName(), new Object[0], method.getParameterTypes());
+
+        Set<Thread> threads = prepareParallelRequests(numRequests,
+                                                      callCount,
+                                                      replyCount,
+                                                      semaphore,
+                                                      requestCallerMock,
+                                                      replyCallbackMock,
+                                                      request);
+        threads.stream().forEach(t -> t.start());
+
+        assertTrue(callCount.await(5000, TimeUnit.MILLISECONDS));
+        verify(mockRequestInterpreter, times(numRequests)).execute(replyCallbackMock, requestCallerMock, request);
+
+        verify(replyCallbackMock, never()).onSuccess(any(Reply.class));
+        assertEquals(numRequests, replyCount.getCount());
+        semaphore.release(numRequests);
+        assertTrue(replyCount.await(5000, TimeUnit.MILLISECONDS));
+        verify(replyCallbackMock, times(numRequests)).onSuccess(any(Reply.class));
+
+        threads.stream().forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                fail("t.join() interrupted: " + e);
+            }
+        });
+    }
+
+    private Set<Thread> prepareParallelOneWayRequests(int numRequests,
+                                                      CountDownLatch callCount,
+                                                      CountDownLatch replyCount,
+                                                      Semaphore semaphore,
+                                                      RequestCaller requestCallerMock,
+                                                      OneWayRequest request) {
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                callCount.countDown();
+                if (!semaphore.tryAcquire(5000, TimeUnit.MILLISECONDS)) {
+                    fail("wait time expired for semaphore");
+                }
+                replyCount.countDown();
+                return null;
+            }
+        }).when(mockRequestInterpreter).invokeMethod(any(RequestCaller.class), any(Request.class));
+
+        when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
+        providerDirectory.add(testMessageResponderParticipantId, providerContainer);
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                requestReplyManager.handleOneWayRequest(testMessageResponderParticipantId, request, Long.MAX_VALUE);
+            }
+        };
+        Set<Thread> threads = new HashSet<Thread>();
+        for (int i = 0; i < numRequests; i++) {
+            threads.add(new Thread(runnable));
+        }
+        return threads;
+    }
+
+    @Test
+    public void parallelOnyWayRequestHandling() throws NoSuchMethodException, SecurityException, InterruptedException {
+        int numRequests = 42;
+        CountDownLatch callCount = new CountDownLatch(numRequests);
+        CountDownLatch replyCount = new CountDownLatch(numRequests);
+        Semaphore semaphore = new Semaphore(0);
+        requestReplyManager = new RequestReplyManagerImpl(null,
+                                                          null,
+                                                          providerDirectory,
+                                                          null,
+                                                          mockRequestInterpreter,
+                                                          null,
+                                                          mockShutdownNotifier,
+                                                          null);
+        RequestCaller requestCallerMock = mock(RequestCaller.class);
+
+        Method method = TestProvider.class.getMethod("voidOperation", new Class[0]);
+        OneWayRequest oneWayRequest = new OneWayRequest(method.getName(), new Object[0], method.getParameterTypes());
+
+        Set<Thread> threads = prepareParallelOneWayRequests(numRequests,
+                                                            callCount,
+                                                            replyCount,
+                                                            semaphore,
+                                                            requestCallerMock,
+                                                            oneWayRequest);
+        threads.stream().forEach(t -> t.start());
+
+        assertTrue(callCount.await(5000, TimeUnit.MILLISECONDS));
+        verify(mockRequestInterpreter, times(numRequests)).invokeMethod(requestCallerMock, oneWayRequest);
+
+        assertEquals(numRequests, replyCount.getCount());
+        semaphore.release(numRequests);
+        assertTrue(replyCount.await(5000, TimeUnit.MILLISECONDS));
+
+        threads.stream().forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                fail("t.join() interrupted: " + e);
+            }
+        });
+    }
+
+    @Test
+    public void parallelRequestAndOneWayRequestHandling() throws NoSuchMethodException, SecurityException,
+                                                          InterruptedException {
+        int numRequests = 31;
+        int numOneWayRequests = 32;
+        CountDownLatch callCount = new CountDownLatch(numRequests + numOneWayRequests);
+        CountDownLatch replyCount = new CountDownLatch(numRequests + numOneWayRequests);
+        Semaphore semaphore = new Semaphore(0);
+        requestReplyManager = new RequestReplyManagerImpl(null,
+                                                          null,
+                                                          providerDirectory,
+                                                          null,
+                                                          mockRequestInterpreter,
+                                                          null,
+                                                          mockShutdownNotifier,
+                                                          null);
+        RequestCaller requestCallerMock = mock(RequestCaller.class);
+        ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
+
+        Method method = TestProvider.class.getMethod("voidOperation", new Class[0]);
+        Request request = new Request(method.getName(), new Object[0], method.getParameterTypes());
+        Set<Thread> requestThreads = prepareParallelRequests(numRequests,
+                                                             callCount,
+                                                             replyCount,
+                                                             semaphore,
+                                                             requestCallerMock,
+                                                             replyCallbackMock,
+                                                             request);
+
+        OneWayRequest oneWayRequest = new OneWayRequest(method.getName(), new Object[0], method.getParameterTypes());
+        Set<Thread> oneWayRequestThreads = prepareParallelOneWayRequests(numOneWayRequests,
+                                                                         callCount,
+                                                                         replyCount,
+                                                                         semaphore,
+                                                                         requestCallerMock,
+                                                                         oneWayRequest);
+
+        Set<Thread> threads = new HashSet<Thread>(requestThreads);
+        threads.addAll(oneWayRequestThreads);
+
+        threads.stream().forEach(t -> t.start());
+
+        assertTrue(callCount.await(5000, TimeUnit.MILLISECONDS));
+        verify(mockRequestInterpreter, times(numRequests)).execute(replyCallbackMock, requestCallerMock, request);
+        verify(mockRequestInterpreter, times(numOneWayRequests)).invokeMethod(requestCallerMock, oneWayRequest);
+
+        verify(replyCallbackMock, never()).onSuccess(any(Reply.class));
+        assertEquals(numRequests + numOneWayRequests, replyCount.getCount());
+        semaphore.release(numRequests + numOneWayRequests);
+        assertTrue(replyCount.await(5000, TimeUnit.MILLISECONDS));
+        verify(replyCallbackMock, times(numRequests)).onSuccess(any(Reply.class));
+
+        threads.stream().forEach(t -> {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                fail("t.join() interrupted: " + e);
+            }
+        });
     }
 
 }
