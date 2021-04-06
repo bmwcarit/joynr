@@ -63,11 +63,6 @@ public:
       */
     void updateSettings() override;
 
-    /**
-      * Deletes the channel on the broker. Will only try once
-      */
-    bool tryToDeleteChannel() override;
-
     bool isConnected() override;
 
     void startReceiveQueue() override;

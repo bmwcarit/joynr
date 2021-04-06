@@ -62,11 +62,6 @@ const system::RoutingTypes::MqttAddress& MqttReceiver::getGlobalClusterControlle
     return _globalClusterControllerAddress;
 }
 
-bool MqttReceiver::tryToDeleteChannel()
-{
-    return true;
-}
-
 bool MqttReceiver::isConnected()
 {
     return _mosquittoConnection->isSubscribedToChannelTopic();

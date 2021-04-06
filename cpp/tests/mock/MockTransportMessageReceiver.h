@@ -33,7 +33,6 @@ public:
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());
     MOCK_METHOD0(updateSettings, void());
-    MOCK_METHOD0(tryToDeleteChannel, bool());
     MOCK_METHOD1(registerReceiveCallback, void(std::function<void(smrf::ByteVector&&)> onMessageReceived));
     MOCK_METHOD0(isConnected, bool());
 };
