@@ -27,11 +27,11 @@ import java.util.Set;
 import org.slf4j.Logger;
 
 public abstract class Directory<T> {
-    protected Set<DirectoryListener<T>> listeners = new HashSet<>();
-    protected Map<String, T> entryMap = new HashMap<>();
+    private Set<DirectoryListener<T>> listeners = new HashSet<>();
+    private Map<String, T> entryMap = new HashMap<>();
 
     public void addListener(DirectoryListener<T> listener) {
-        synchronized (entryMap) {
+        synchronized (this) {
             listeners.add(listener);
             for (Entry<String, T> entry : entryMap.entrySet()) {
                 listener.entryAdded(entry.getKey(), entry.getValue());
@@ -40,13 +40,13 @@ public abstract class Directory<T> {
     }
 
     public void removeListener(DirectoryListener<T> listener) {
-        synchronized (entryMap) {
+        synchronized (this) {
             listeners.remove(listener);
         }
     }
 
     public void add(String id, T entry) {
-        synchronized (entryMap) {
+        synchronized (this) {
             entryMap.put(id, entry);
             for (DirectoryListener<T> listener : listeners) {
                 listener.entryAdded(id, entry);
@@ -55,7 +55,7 @@ public abstract class Directory<T> {
     }
 
     public T remove(String id) {
-        synchronized (entryMap) {
+        synchronized (this) {
             getLogger().trace("remove: {}", id);
             T result = entryMap.remove(id);
             if (result == null) {
@@ -70,11 +70,15 @@ public abstract class Directory<T> {
     }
 
     public T get(String id) {
-        return entryMap.get(id);
+        synchronized (this) {
+            return entryMap.get(id);
+        }
     }
 
     public boolean isEmpty() {
-        return entryMap.isEmpty();
+        synchronized (this) {
+            return entryMap.isEmpty();
+        }
     }
 
     protected abstract Logger getLogger();

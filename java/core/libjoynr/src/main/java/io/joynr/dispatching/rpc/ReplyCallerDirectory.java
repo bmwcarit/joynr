@@ -68,32 +68,37 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
                                final ReplyCaller replyCaller,
                                final ExpiryDate roundTripTtlExpirationDate) {
         logger.trace("AddReplyCaller: requestReplyId: {}, expiryDate: {}", requestReplyId, roundTripTtlExpirationDate);
-        if (super.get(requestReplyId) != null) {
-            logger.error("RequestReplyId should not be replicated: {}", requestReplyId);
-        } else {
-            super.add(requestReplyId, replyCaller);
-            try {
-                ScheduledFuture<?> cleanupSchedulerFuture = cleanupScheduler.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        removeExpiredReplyCaller(requestReplyId);
+        synchronized (this) {
+            if (super.get(requestReplyId) != null) {
+                logger.error("RequestReplyId should not be replicated: {}", requestReplyId);
+            } else {
+                super.add(requestReplyId, replyCaller);
+                try {
+                    ScheduledFuture<?> cleanupSchedulerFuture = cleanupScheduler.schedule(new Runnable() {
+                        @Override
+                        public void run() {
+                            removeExpiredReplyCaller(requestReplyId);
+                        }
+                    }, roundTripTtlExpirationDate.getRelativeTtl(), TimeUnit.MILLISECONDS);
+                    cleanupSchedulerFuturesMap.put(requestReplyId, cleanupSchedulerFuture);
+                } catch (RejectedExecutionException e) {
+                    if (shutdown) {
+                        throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
                     }
-                }, roundTripTtlExpirationDate.getRelativeTtl(), TimeUnit.MILLISECONDS);
-                cleanupSchedulerFuturesMap.put(requestReplyId, cleanupSchedulerFuture);
-            } catch (RejectedExecutionException e) {
-                if (shutdown) {
-                    throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
+                    throw new JoynrRuntimeException(e);
                 }
-                throw new JoynrRuntimeException(e);
             }
         }
-
     }
 
     @Override
     public ReplyCaller remove(String id) {
-        ReplyCaller replyCaller = super.remove(id);
-        ScheduledFuture<?> future = cleanupSchedulerFuturesMap.remove(id);
+        ReplyCaller replyCaller;
+        ScheduledFuture<?> future;
+        synchronized (this) {
+            replyCaller = super.remove(id);
+            future = cleanupSchedulerFuturesMap.remove(id);
+        }
         if (future != null) {
             future.cancel(false);
         }
@@ -115,11 +120,12 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
 
     @Override
     public void shutdown() {
-        for (ScheduledFuture<?> cleanupSchedulerFuture : cleanupSchedulerFuturesMap.values()) {
-            cleanupSchedulerFuture.cancel(false);
+        synchronized (this) {
+            for (ScheduledFuture<?> cleanupSchedulerFuture : cleanupSchedulerFuturesMap.values()) {
+                cleanupSchedulerFuture.cancel(false);
+            }
+            shutdown = true;
         }
-
-        shutdown = true;
     }
 
     @Override
