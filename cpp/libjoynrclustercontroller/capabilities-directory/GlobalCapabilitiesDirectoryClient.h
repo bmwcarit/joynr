@@ -175,6 +175,40 @@ private:
         MessagingQos _qos;
     };
 
+    class AddOperation
+            : public Future<void>,
+              public std::enable_shared_from_this<GlobalCapabilitiesDirectoryClient::AddOperation>
+    {
+    public:
+        AddOperation(
+                const std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>&
+                        capabilitiesProxy,
+                const types::GlobalDiscoveryEntry& entry,
+                bool awaitGlobalRegistration,
+                const std::vector<std::string>& gbids,
+                std::function<void()>&& onSuccessFunc,
+                std::function<void(const types::DiscoveryError::Enum&)>&& onApplicationErrorFunc,
+                std::function<void(const exceptions::JoynrRuntimeException&)>&& onRuntimeErrorFunc,
+                MessagingQos qos,
+                const TimePoint& taskExpiryDate);
+        ~AddOperation() override = default;
+        void execute();
+
+    private:
+        void forwardSuccess();
+        void forwardApplicationError(const types::DiscoveryError::Enum& e);
+        void retryOrForwardRuntimeError(const exceptions::JoynrRuntimeException& e);
+        std::weak_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> _capabilitiesProxy;
+        types::GlobalDiscoveryEntry _globalDiscoveryEntry;
+        bool _awaitGlobalRegistration;
+        std::vector<std::string> _gbids;
+        std::function<void()> _onSuccess;
+        std::function<void(const types::DiscoveryError::Enum&)> _onApplicationError;
+        std::function<void(const exceptions::JoynrRuntimeException&)> _onRuntimeError;
+        MessagingQos _qos;
+        TimePoint _taskExpiryDate;
+    };
+
     DISALLOW_COPY_AND_ASSIGN(GlobalCapabilitiesDirectoryClient);
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> _capabilitiesProxy;
     MessagingQos _messagingQos;

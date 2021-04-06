@@ -69,79 +69,35 @@ void GlobalCapabilitiesDirectoryClient::add(
         std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
 {
     MessagingQos addMessagingQos = _messagingQos;
-    if (!awaitGlobalRegistration) {
-        // extended lifetime 90 minutes
-        addMessagingQos.setTtl(90 * 60000);
-    }
     addMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
     using std::move;
     TaskSequencer<void>::TaskWithExpiryDate addTask;
-    addTask._expiryDate =
-            TimePoint::fromRelativeMs(static_cast<std::int64_t>(addMessagingQos.getTtl()));
-    addTask._timeout = [onRuntimeError]() {
-        onRuntimeError(exceptions::JoynrRuntimeException(
-                "Failed to process global registration in time, please try again"));
-    };
-    addTask._task = [
-        this,
-        entry,
-        gbids,
-        onSuccess{move(onSuccess)},
-        onError{move(onError)},
-        onRuntimeError{move(onRuntimeError)},
-        addMessagingQos{move(addMessagingQos)},
-        timeoutTaskExpiryDate = addTask._expiryDate
-    ]() mutable
-    {
-        auto future = std::make_shared<Future<void>>();
-        std::int64_t remainingAddTtl = timeoutTaskExpiryDate.relativeFromNow().count();
 
-        if (timeoutTaskExpiryDate.toMilliseconds() <= TimePoint::now().toMilliseconds()) {
+    if (!awaitGlobalRegistration) {
+        addTask._expiryDate = TimePoint::max();
+        addTask._timeout = []() {};
+    } else {
+        addTask._expiryDate =
+                TimePoint::fromRelativeMs(static_cast<std::int64_t>(addMessagingQos.getTtl()));
+        addTask._timeout = [onRuntimeError]() {
             onRuntimeError(exceptions::JoynrRuntimeException(
                     "Failed to process global registration in time, please try again"));
-            future->onSuccess();
-            return future;
-        }
+        };
+    }
 
-        addMessagingQos.setTtl(static_cast<std::uint64_t>(remainingAddTtl));
+    auto addOperation = std::make_shared<AddOperation>(_capabilitiesProxy,
+                                                       entry,
+                                                       awaitGlobalRegistration,
+                                                       gbids,
+                                                       std::move(onSuccess),
+                                                       std::move(onError),
+                                                       std::move(onRuntimeError),
+                                                       std::move(addMessagingQos),
+                                                       addTask._expiryDate);
 
-        onSuccess = [ future, onSuccess{move(onSuccess)} ]()
-        {
-            if (onSuccess) {
-                onSuccess();
-            }
-            future->onSuccess();
-        };
-        onError = [ future, onError{move(onError)} ](const joynr::types::DiscoveryError::Enum& e)
-        {
-            if (onError) {
-                onError(e);
-            }
-            future->onError(std::make_shared<exceptions::JoynrRuntimeException>(
-                    "Stop add operation due to ApplicationException."));
-        };
-        onRuntimeError = [ future, onRuntimeError{move(onRuntimeError)} ](
-                const exceptions::JoynrRuntimeException& e)
-        {
-            if (onRuntimeError) {
-                onRuntimeError(e);
-            }
-            future->onError(std::make_shared<exceptions::JoynrRuntimeException>(e));
-        };
-        JOYNR_LOG_DEBUG(logger(),
-                        "Global provider registration started: participantId {}, domain {}, "
-                        "interface {}, {}",
-                        entry.getParticipantId(),
-                        entry.getDomain(),
-                        entry.getInterfaceName(),
-                        entry.getProviderVersion().toString());
-        _capabilitiesProxy->addAsync(entry,
-                                     move(gbids),
-                                     move(onSuccess),
-                                     move(onError),
-                                     move(onRuntimeError),
-                                     addMessagingQos);
-        return future;
+    addTask._task = [addOperation]() {
+        addOperation->execute();
+        return addOperation;
     };
 
     JOYNR_LOG_DEBUG(logger(),
@@ -460,6 +416,112 @@ void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::retryOrForwardRunt
         const exceptions::JoynrRuntimeException& e)
 {
     if (typeid(exceptions::JoynrTimeOutException) == typeid(e)) {
+        execute();
+    } else {
+        if (_onRuntimeError) {
+            _onRuntimeError(e);
+        }
+        onError(std::make_shared<exceptions::JoynrRuntimeException>(e));
+    }
+}
+
+GlobalCapabilitiesDirectoryClient::AddOperation::AddOperation(
+        const std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>& capabilitiesProxy,
+        const types::GlobalDiscoveryEntry& entry,
+        bool awaitGlobalRegistration,
+        const std::vector<std::string>& gbids,
+        std::function<void()>&& onSuccessFunc,
+        std::function<void(const types::DiscoveryError::Enum&)>&& onApplicationErrorFunc,
+        std::function<void(const exceptions::JoynrRuntimeException&)>&& onRuntimeErrorFunc,
+        MessagingQos qos,
+        const TimePoint& taskExpiryDate)
+        : Future<void>(),
+          _capabilitiesProxy{capabilitiesProxy},
+          _globalDiscoveryEntry{entry},
+          _awaitGlobalRegistration{awaitGlobalRegistration},
+          _gbids{gbids},
+          _onSuccess{onSuccessFunc},
+          _onApplicationError{onApplicationErrorFunc},
+          _onRuntimeError{onRuntimeErrorFunc},
+          _qos{qos},
+          _taskExpiryDate{taskExpiryDate}
+{
+    // Do nothing
+}
+
+void GlobalCapabilitiesDirectoryClient::AddOperation::execute()
+{
+    if (StatusCodeEnum::IN_PROGRESS == getStatus()) {
+        if (_awaitGlobalRegistration) {
+            std::int64_t remainingAddTtl = _taskExpiryDate.relativeFromNow().count();
+            if (_taskExpiryDate.toMilliseconds() <= TimePoint::now().toMilliseconds()) {
+                const exceptions::JoynrRuntimeException globalRegistrationFailed(
+                        "Failed to process global registration in time, please try again");
+                if (_onRuntimeError) {
+                    _onRuntimeError(globalRegistrationFailed);
+                }
+                onSuccess();
+                return;
+            }
+            _qos.setTtl(static_cast<std::uint64_t>(remainingAddTtl));
+        }
+
+        std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy =
+                _capabilitiesProxy.lock();
+        if (capabilitiesProxy) {
+            using std::placeholders::_1;
+            JOYNR_LOG_DEBUG(logger(),
+                            "Global provider registration started: participantId {}, domain {}, "
+                            "interface {}, {}, awaitGlobalRegistration {}",
+                            _globalDiscoveryEntry.getParticipantId(),
+                            _globalDiscoveryEntry.getDomain(),
+                            _globalDiscoveryEntry.getInterfaceName(),
+                            _globalDiscoveryEntry.getProviderVersion().toString(),
+                            _awaitGlobalRegistration);
+            capabilitiesProxy->addAsync(
+                    _globalDiscoveryEntry,
+                    _gbids,
+                    std::bind(&AddOperation::forwardSuccess, shared_from_this()),
+                    std::bind(&AddOperation::forwardApplicationError, shared_from_this(), _1),
+                    std::bind(&AddOperation::retryOrForwardRuntimeError, shared_from_this(), _1),
+                    _qos);
+        } else {
+            const exceptions::JoynrRuntimeException proxyNotAvailable(
+                    "Add operation retry aborted since proxy not available.");
+            if (_onRuntimeError) {
+                _onRuntimeError(proxyNotAvailable);
+            }
+            onError(std::make_shared<exceptions::JoynrRuntimeException>(proxyNotAvailable));
+        }
+    } else {
+        if (_onRuntimeError) {
+            _onRuntimeError(exceptions::JoynrRuntimeException("Add operation retry canceled."));
+        }
+    }
+}
+
+void GlobalCapabilitiesDirectoryClient::AddOperation::forwardSuccess()
+{
+    if (_onSuccess) {
+        _onSuccess();
+    }
+    onSuccess();
+}
+
+void GlobalCapabilitiesDirectoryClient::AddOperation::forwardApplicationError(
+        const types::DiscoveryError::Enum& e)
+{
+    if (_onApplicationError) {
+        _onApplicationError(e);
+    }
+    onError(std::make_shared<exceptions::JoynrRuntimeException>(
+            "Stop add operation due to ApplicationException."));
+}
+
+void GlobalCapabilitiesDirectoryClient::AddOperation::retryOrForwardRuntimeError(
+        const exceptions::JoynrRuntimeException& e)
+{
+    if (!_awaitGlobalRegistration && typeid(exceptions::JoynrTimeOutException) == typeid(e)) {
         execute();
     } else {
         if (_onRuntimeError) {
