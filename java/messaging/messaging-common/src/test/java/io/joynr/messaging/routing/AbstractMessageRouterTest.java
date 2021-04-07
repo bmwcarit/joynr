@@ -23,23 +23,33 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap.KeySetView;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.routing.AbstractMessageRouter.ProxyInformation;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 
@@ -96,7 +106,8 @@ public class AbstractMessageRouterTest {
     @Mock
     private Object mockObject;
 
-    private final ScheduledExecutorService schedular = new ScheduledThreadPoolExecutor(42);
+    private final ScheduledExecutorService scheduler = Mockito.spy(new ScheduledThreadPoolExecutor(42));
+
     private final long sendMsgRetryIntervalMs = 100;
     private final int maxParallelSends = 1;
     private final long routingTableCleanupIntervalMs = 1000;
@@ -106,7 +117,7 @@ public class AbstractMessageRouterTest {
     @Before
     public void setup() {
         subject = new DummyMessageRouter(mockRoutingTable,
-                                         schedular,
+                                         scheduler,
                                          sendMsgRetryIntervalMs,
                                          maxParallelSends,
                                          routingTableCleanupIntervalMs,
@@ -274,6 +285,85 @@ public class AbstractMessageRouterTest {
         } catch (Exception exception) {
             fail(exception.getMessage());
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void cleanupJobRemovesProxyParticipantIdAndAssociatedProviderParticipantIds() throws IllegalAccessException,
+                                                                                         IllegalArgumentException,
+                                                                                         InvocationTargetException {
+        Field proxyParticipantIdToProxyInformationMapField = getPrivateField(subject.getClass().getSuperclass(),
+                                                                             "proxyParticipantIdToProxyInformationMap");
+        assertNotNull(proxyParticipantIdToProxyInformationMapField);
+        proxyParticipantIdToProxyInformationMapField.setAccessible(true);
+
+        ConcurrentHashMap<String, Object> proxyParticipantIdToProxyInformationMap = null;
+        try {
+            proxyParticipantIdToProxyInformationMap = (ConcurrentHashMap<String, Object>) proxyParticipantIdToProxyInformationMapField.get(subject);
+        } catch (Exception exception) {
+            fail(exception.getMessage());
+        }
+
+        Field proxyMapField = getPrivateField(subject.getClass().getSuperclass(), "proxyMap");
+        assertNotNull(proxyMapField);
+        proxyMapField.setAccessible(true);
+
+        ConcurrentHashMap<WeakReference<Object>, ProxyInformation> proxyMap = null;
+        try {
+            proxyMap = (ConcurrentHashMap<WeakReference<Object>, ProxyInformation>) proxyMapField.get(subject);
+        } catch (Exception exception) {
+            fail(exception.getMessage());
+        }
+
+        String proxyParticipantId = "participantId";
+        String expectedProxyParticipantId = proxyParticipantId;
+
+        assertTrue(proxyMap.isEmpty());
+        assertTrue(proxyParticipantIdToProxyInformationMap.isEmpty());
+
+        // register proxy first. This call will add an entry to this map: proxyParticipantIdToProxyInformationMap
+        subject.registerProxy(mockObject, proxyParticipantId, mockShutdownListener);
+
+        assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
+        assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
+
+        // Register providerParticipantIds for proxyInformation
+        String providerParticipantId1 = "providerParticipantId1";
+        String providerParticipantId2 = "providerParticipantId2";
+        String expectedProviderParticipantId1 = providerParticipantId1;
+        String expectedProviderParticipantId2 = providerParticipantId2;
+        Set<String> providerParticipantIds = new HashSet<String>(Arrays.asList(providerParticipantId1,
+                                                                               providerParticipantId2));
+
+        subject.registerProxyProviderParticipantIds(proxyParticipantId, providerParticipantIds);
+
+        KeySetView<WeakReference<Object>, ProxyInformation> keySet = proxyMap.keySet();
+
+        assertEquals(1, keySet.size());
+
+        // Simulate garbage collection. Enqueue the weak ref in garbage collected proxy queue
+        keySet.forEach(r -> r.enqueue());
+
+        // Capture Runnable when cleanup job is invoked
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(scheduler, times(1)).scheduleWithFixedDelay(runnableCaptor.capture(),
+                                                           eq(routingTableCleanupIntervalMs),
+                                                           eq(routingTableCleanupIntervalMs),
+                                                           eq(TimeUnit.MILLISECONDS));
+
+        runnableCaptor.getValue().run();
+
+        verify(mockRoutingTable).purge();
+
+        verify(mockShutdownNotifier).unregister(eq(mockShutdownListener));
+
+        // verify that removeNextHop is called for proxyInformation.proxyParticipantId and for providerParticipantIds
+        verify(mockRoutingTable).remove(eq(expectedProxyParticipantId));
+        verify(mockRoutingTable).remove(eq(expectedProviderParticipantId1));
+        verify(mockRoutingTable).remove(eq(expectedProviderParticipantId2));
+
+        assertTrue(proxyMap.isEmpty());
+        assertTrue(proxyParticipantIdToProxyInformationMap.isEmpty());
     }
 
     @SuppressWarnings("unchecked")
