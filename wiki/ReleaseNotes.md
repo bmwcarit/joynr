@@ -12,7 +12,15 @@ the versioning scheme [here](JoynrVersioning.md).
   IllegalStateException.
 
 ## Other Changes
-None.
+* **[C++]** Global provider registration without awaitGlobalRegistration is now retried
+  automatically after timeouts until it succeeds or an unrecoverable error occurs. A single try
+  used the default ttl of 60 seconds towards GlobalCapabilitiesDirectory instead of the extended
+  timeout of 90 minutes introduced in joynr 1.15.9.  
+  Note that the application still does not get informed about the result (success or unrecoverable
+  error) of the global registration at GlobalCapabilitiesDirectory.  
+  Examples for unrecoverable errors: all types of `DiscoveryError` (e.g. `INVALID_GBID`).
+* **[Java,JEE]** Improved logging in ProviderWrapper (log actual provider method invocation):
+  `Invoke provider method...` (log level debug)
 
 ## Configuration Property Changes
 None.
@@ -20,6 +28,11 @@ None.
 ## Security Fixes
 None.
 
+## Bug Fixes
+* **[Java]** Fixed a bug that prevented concurrent request execution (concurrent provider method
+  invocations) in joynr 1.15.4 or later.
+* **[JEE,Docker]** Fixed sporadic deployment problem of discovery-directory-jee standalone and in
+  docker image `joynr-backend-jee` (caused by concurrent request execution bug, see above).
 
 # joynr 1.15.11
 
@@ -970,6 +983,17 @@ None.
   `joynr.messaging.mqtt.connectiontimeoutssec` changed to `joynr.messaging.mqtt.connectiontimeoutssec`.
   Now, multiple connection timeouts can be configured.  
   See [Java Configuration Reference](JavaSettings.md) for more details.
+
+# joynr 1.8.12.1
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java,JEE]** Improved logging in RequestInterpreter and ProviderWrapper.
+
+## Configuration property changes
+None.
 
 # joynr 1.8.12
 
