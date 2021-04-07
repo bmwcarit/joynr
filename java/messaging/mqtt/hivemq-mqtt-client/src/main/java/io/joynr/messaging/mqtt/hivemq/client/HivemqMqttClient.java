@@ -45,6 +45,7 @@ import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
 import com.hivemq.client.mqtt.mqtt5.message.unsubscribe.Mqtt5Unsubscribe;
 
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
@@ -439,11 +440,13 @@ public class HivemqMqttClient implements JoynrMqttClient {
                          mqtt5Publish.getMessageExpiryInterval().orElse(0));
         }
         connectionStatusMetrics.increaseReceivedMessages();
-        messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(),
-                                   throwable -> logger.error("{}: Unable to handle incoming {}",
-                                                             clientInformation,
-                                                             mqtt5Publish,
-                                                             throwable));
+        messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(), (throwable) -> {
+            if (throwable instanceof JoynrMessageExpiredException) {
+                logger.warn("{}: Unable to handle incoming {}", clientInformation, mqtt5Publish, throwable);
+            } else {
+                logger.error("{}: Unable to handle incoming {}", clientInformation, mqtt5Publish, throwable);
+            }
+        });
     }
 
     // for testing

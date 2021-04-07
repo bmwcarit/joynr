@@ -38,7 +38,7 @@ import com.google.inject.name.Named;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
-import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
@@ -244,7 +244,7 @@ public class DispatcherImpl implements Dispatcher {
             } else {
                 logger.debug("TTL expired, discarding message : {}", message.getTrackingInfo());
             }
-            throw new JoynrMessageNotSentException("Reply message " + message + " expired!");
+            throw new JoynrMessageExpiredException("Reply message " + message + " expired!");
         }
 
         String payload;

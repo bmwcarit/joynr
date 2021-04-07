@@ -86,6 +86,7 @@ import io.joynr.accesscontrol.HasConsumerPermissionCallback;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
@@ -311,7 +312,7 @@ public class CcMessageRouterTest {
         Thread.sleep(5);
         try {
             messageRouter.route(immutableMessage);
-        } catch (JoynrMessageNotSentException e) {
+        } catch (JoynrMessageExpiredException e) {
             verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
             verify(mqttMessagingStubFactoryMock, never()).create(any(MqttAddress.class));
             verify(routingTable).remove(immutableMessage.getSender());
@@ -780,7 +781,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
         joynrMessage.setTtlAbsolute(true);
 
-        testMessageProcessedListenerCalledOnError(messageRouter, JoynrMessageNotSentException.class);
+        testMessageProcessedListenerCalledOnError(messageRouter, JoynrMessageExpiredException.class);
     }
 
     @Test
@@ -790,7 +791,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
         joynrMessage.setTtlAbsolute(true);
 
-        testMessageProcessedListenerCalledOnError(messageRouter, JoynrMessageNotSentException.class);
+        testMessageProcessedListenerCalledOnError(messageRouter, JoynrMessageExpiredException.class);
     }
 
     @Test

@@ -70,6 +70,7 @@ import com.google.inject.name.Names;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
@@ -505,7 +506,7 @@ public class DispatcherImplTest {
         assertEquals(null, immutableMessage.getEffort());
     }
 
-    @Test(expected = JoynrMessageNotSentException.class)
+    @Test(expected = JoynrMessageExpiredException.class)
     public void testExpiredMessageCausesException() throws Exception {
         MessagingQos messagingQos = new MessagingQos(1000L);
 

@@ -48,10 +48,13 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.AbstractMessageRouter.ProxyInformation;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
+
+import joynr.MutableMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractMessageRouterTest {
@@ -561,5 +564,18 @@ public class AbstractMessageRouterTest {
         // Register providerParticipantIds for proxyInformation
         Set<String> providerParticipantIds = new HashSet<String>(Arrays.asList("providerParticipantId1", ""));
         subject.registerProxyProviderParticipantIds(proxyParticipantId, providerParticipantIds);
+    }
+
+    @Test(expected = JoynrMessageExpiredException.class)
+    public void routeExpiredMessage_throwsException() throws Exception {
+        // create expired message
+        MutableMessage message = new MutableMessage();
+        message.setSender("someSender");
+        message.setRecipient("someRecipient");
+        message.setTtlAbsolute(true);
+        message.setTtlMs(System.currentTimeMillis() - 1000);
+        message.setPayload(new byte[]{ 0, 1, 2 });
+
+        subject.route(message.getImmutableMessage());
     }
 }

@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.accesscontrol.HasConsumerPermissionCallback;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
@@ -98,6 +99,11 @@ public class CcMessageRouter extends AbstractMessageRouter {
                     if (hasPermission) {
                         try {
                             CcMessageRouter.super.route(message);
+                        } catch (JoynrMessageExpiredException e) {
+                            logger.warn("Problem processing message. Message {} is dropped: {}",
+                                        message.getId(),
+                                        e.getMessage());
+                            CcMessageRouter.super.finalizeMessageProcessing(message, false);
                         } catch (Exception e) {
                             logger.error("Error processing message. Message {} is dropped: {}",
                                          message.getId(),

@@ -43,6 +43,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
@@ -214,7 +215,11 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
             @Override
             public void execute(Throwable error) {
-                logger.error("WebSocket message not processed: ", error);
+                if (error instanceof JoynrMessageExpiredException) {
+                    logger.warn("WebSocket message not processed: ", error);
+                } else {
+                    logger.error("WebSocket message not processed: ", error);
+                }
             }
         });
     }

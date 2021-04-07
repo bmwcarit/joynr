@@ -46,6 +46,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
@@ -370,7 +371,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                                        message.getTrackingInfo());
             logger.trace(errorMessage);
             finalizeMessageProcessing(message, false);
-            throw new JoynrMessageNotSentException(errorMessage);
+            throw new JoynrMessageExpiredException(errorMessage);
         }
     }
 
