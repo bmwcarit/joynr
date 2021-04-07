@@ -85,7 +85,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
 
-    private static class ProxyInformation {
+    protected static class ProxyInformation {
         public String participantId;
         public ShutdownListener shutdownListener;
         public final Set<String> providerParticipantIds;
@@ -162,6 +162,9 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     ProxyInformation proxyInformation = proxyMap.get(r);
                     logger.debug("Removing garbage collected proxy participantId {}", proxyInformation.participantId);
                     removeNextHop(proxyInformation.participantId);
+                    for (String providerParticipantId : proxyInformation.providerParticipantIds) {
+                        removeNextHop(providerParticipantId);
+                    }
                     shutdownNotifier.unregister(proxyInformation.shutdownListener);
                     proxyMap.remove(r);
                     proxyParticipantIdToProxyInformationMap.remove(proxyInformation.participantId);
