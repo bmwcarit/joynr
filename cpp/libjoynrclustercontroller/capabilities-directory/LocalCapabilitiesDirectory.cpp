@@ -386,18 +386,18 @@ void LocalCapabilitiesDirectory::addInternal(
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::recursive_mutex> cacheInsertionLock(
                         thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
-                JOYNR_LOG_INFO(
-                        logger(),
-                        "Global capability '{}' added successfully for GBIDs >{}<, "
-                        "#registeredGlobalCapabilities {}",
-                        globalDiscoveryEntry.toString(),
-                        boost::algorithm::join(gbids, ", "),
-                        thisSharedPtr->_localCapabilitiesDirectoryStore->countGlobalCapabilities());
                 if (awaitGlobalRegistration) {
                     thisSharedPtr->_localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
                             globalDiscoveryEntry, gbids);
                     thisSharedPtr->_localCapabilitiesDirectoryStore
                             ->insertInLocalCapabilitiesStorage(globalDiscoveryEntry);
+                    JOYNR_LOG_INFO(logger(),
+                                   "Global capability '{}' added successfully for GBIDs >{}<, "
+                                   "#registeredGlobalCapabilities {}",
+                                   globalDiscoveryEntry.toString(),
+                                   boost::algorithm::join(gbids, ", "),
+                                   thisSharedPtr->_localCapabilitiesDirectoryStore
+                                           ->countGlobalCapabilities());
                     if (onSuccess) {
                         onSuccess();
                     }
@@ -412,6 +412,14 @@ void LocalCapabilitiesDirectory::addInternal(
                                 thisSharedPtr->_localCapabilitiesDirectoryStore->searchLocalCache(
                                         {interfaceAddress}));
                     }
+                } else {
+                    JOYNR_LOG_INFO(logger(),
+                                   "Global capability '{}' added successfully for GBIDs >{}<, "
+                                   "#registeredGlobalCapabilities {}",
+                                   globalDiscoveryEntry.toString(),
+                                   boost::algorithm::join(gbids, ", "),
+                                   thisSharedPtr->_localCapabilitiesDirectoryStore
+                                           ->countGlobalCapabilities());
                 }
             }
         };
