@@ -14,7 +14,7 @@ the versioning scheme [here](JoynrVersioning.md).
 ## Other Changes
 * **[C++]** Global provider registration without awaitGlobalRegistration is now retried
   automatically after timeouts until it succeeds or an unrecoverable error occurs. A single try
-  used the default ttl of 60 seconds towards GlobalCapabilitiesDirectory instead of the extended
+  uses the default ttl of 60 seconds towards GlobalCapabilitiesDirectory instead of the extended
   timeout of 90 minutes introduced in joynr 1.15.9.  
   Note that the application still does not get informed about the result (success or unrecoverable
   error) of the global registration at GlobalCapabilitiesDirectory.  
