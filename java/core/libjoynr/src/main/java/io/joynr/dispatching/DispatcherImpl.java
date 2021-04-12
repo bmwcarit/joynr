@@ -38,6 +38,7 @@ import com.google.inject.name.Named;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
@@ -235,11 +236,6 @@ public class DispatcherImpl implements Dispatcher {
             return;
         }
 
-        if (!message.isTtlAbsolute()) {
-            logger.error("Received message with relative ttl (not supported): {}", message.getTrackingInfo());
-            return;
-        }
-
         final long expiryDate = message.getTtlMs();
         final Map<String, String> customHeaders = message.getCustomHeaders();
         if (DispatcherUtils.isExpired(expiryDate)) {
@@ -248,7 +244,7 @@ public class DispatcherImpl implements Dispatcher {
             } else {
                 logger.debug("TTL expired, discarding message : {}", message.getTrackingInfo());
             }
-            return;
+            throw new JoynrMessageNotSentException("Reply message " + message + " expired!");
         }
 
         String payload;

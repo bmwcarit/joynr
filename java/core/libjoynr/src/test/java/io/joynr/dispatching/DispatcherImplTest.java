@@ -31,6 +31,7 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -69,6 +70,7 @@ import com.google.inject.name.Names;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessageReceiver;
@@ -77,7 +79,6 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.ReceiverStatusListener;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.provider.AbstractSubscriptionPublisher;
 import io.joynr.provider.ProviderCallback;
@@ -502,6 +503,25 @@ public class DispatcherImplTest {
         verify(messageSenderMock).sendMessage(captor.capture());
         ImmutableMessage immutableMessage = captor.getValue().getImmutableMessage();
         assertEquals(null, immutableMessage.getEffort());
+    }
+
+    @Test(expected = JoynrMessageNotSentException.class)
+    public void testExpiredMessageCausesException() throws Exception {
+        MessagingQos messagingQos = new MessagingQos(1000L);
+
+        String requestReplyId = createUuidString();
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
+        final String providerParticipantId = "toParticipantId";
+
+        MutableMessage joynrMessage = messageFactory.createRequest("fromParticipantId",
+                                                                   providerParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+        joynrMessage.setTtlMs(0);
+
+        ImmutableMessage outgoingMessage = joynrMessage.getImmutableMessage();
+
+        fixture.messageArrived(outgoingMessage);
     }
 
     @Test
