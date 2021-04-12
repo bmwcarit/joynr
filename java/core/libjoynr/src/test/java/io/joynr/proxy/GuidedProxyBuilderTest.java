@@ -51,7 +51,6 @@ import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
@@ -433,6 +432,84 @@ public class GuidedProxyBuilderTest {
 
         subject.setDiscoveryQos(discoveryQos);
         subject.buildProxy(testProxy.class, "unavailableParticipantId");
+    }
+
+    @Test
+    public void testDiscoverMethodPreservesOtherProviderParticipantIdsInArbitrationResult() throws Exception {
+        setup();
+        final String participantId1 = "participantId1";
+        final String participantId2 = "participantId2";
+        final String participantId3 = "participantId3";
+
+        final String otherParticipantId4 = "otherParticipantId4";
+        final String otherParticipantId5 = "otherParticipantId5";
+
+        // selectedDiscoveryEntries
+        DiscoveryEntryWithMetaInfo selectedDiscoveryEntry1 = new DiscoveryEntryWithMetaInfo();
+        selectedDiscoveryEntry1.setParticipantId(participantId1);
+        selectedDiscoveryEntry1.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+
+        DiscoveryEntryWithMetaInfo selectedDiscoveryEntry2 = new DiscoveryEntryWithMetaInfo();
+        selectedDiscoveryEntry2.setParticipantId(participantId2);
+        selectedDiscoveryEntry2.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+
+        DiscoveryEntryWithMetaInfo selectedDiscoveryEntry3 = new DiscoveryEntryWithMetaInfo();
+        selectedDiscoveryEntry3.setParticipantId(participantId3);
+        selectedDiscoveryEntry3.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+
+        Set<DiscoveryEntryWithMetaInfo> selectedDiscoveryEntries = new HashSet<>(Arrays.asList(selectedDiscoveryEntry1,
+                                                                                               selectedDiscoveryEntry2,
+                                                                                               selectedDiscoveryEntry3));
+
+        // otherDiscoveryEntries
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry4 = new DiscoveryEntryWithMetaInfo();
+        otherDiscoveryEntry4.setParticipantId(otherParticipantId4);
+        otherDiscoveryEntry4.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+
+        DiscoveryEntryWithMetaInfo otherDiscoveryEntry5 = new DiscoveryEntryWithMetaInfo();
+        otherDiscoveryEntry5.setParticipantId(otherParticipantId5);
+        otherDiscoveryEntry5.setProviderVersion(VersionUtil.getVersionFromAnnotation(testProxy.class));
+
+        Set<DiscoveryEntryWithMetaInfo> otherDiscoveryEntries = new HashSet<>(Arrays.asList(otherDiscoveryEntry4,
+                                                                                            otherDiscoveryEntry5));
+
+        ArbitrationResult arbitrationResult = new ArbitrationResult(selectedDiscoveryEntries, otherDiscoveryEntries);
+
+        subject.discoverAsync();
+
+        ArgumentCaptor<ArbitrationCallback> callbackCaptor = ArgumentCaptor.forClass(ArbitrationCallback.class);
+        verify(arbitrator).setArbitrationListener(callbackCaptor.capture());
+
+        callbackCaptor.getValue().onSuccess(arbitrationResult);
+
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        subject.setDiscoveryQos(discoveryQos);
+
+        subject.buildProxy(testProxy.class, participantId1);
+
+        ArgumentCaptor<ArbitrationResult> arbitrationResultCaptor = ArgumentCaptor.forClass(ArbitrationResult.class);
+
+        verify(proxyBuilder).build(arbitrationResultCaptor.capture());
+
+        assertEquals(1, arbitrationResultCaptor.getValue().getDiscoveryEntries().size());
+        assertTrue(arbitrationResultCaptor.getValue().getDiscoveryEntries().contains(selectedDiscoveryEntry1));
+
+        assertEquals(4, arbitrationResultCaptor.getValue().getOtherDiscoveryEntries().size());
+        assertTrue(arbitrationResultCaptor.getValue().getOtherDiscoveryEntries().contains(otherDiscoveryEntry4));
+        assertTrue(arbitrationResultCaptor.getValue().getOtherDiscoveryEntries().contains(otherDiscoveryEntry5));
+        assertTrue(arbitrationResultCaptor.getValue().getOtherDiscoveryEntries().contains(selectedDiscoveryEntry2));
+        assertTrue(arbitrationResultCaptor.getValue().getOtherDiscoveryEntries().contains(selectedDiscoveryEntry3));
+
+        // check that the original arbitrationResult still contains the original values of selectedDiscoveryEntries, 3 entries
+        assertEquals(3, arbitrationResult.getDiscoveryEntries().size());
+        assertTrue(arbitrationResult.getDiscoveryEntries().contains(selectedDiscoveryEntry1));
+        assertTrue(arbitrationResult.getDiscoveryEntries().contains(selectedDiscoveryEntry2));
+        assertTrue(arbitrationResult.getDiscoveryEntries().contains(selectedDiscoveryEntry3));
+
+        // check that the original arbitrationResult still contains the original values of otherDiscoveryEntries, 2 entries
+        assertEquals(2, arbitrationResult.getOtherDiscoveryEntries().size());
+        assertTrue(arbitrationResult.getOtherDiscoveryEntries().contains(otherDiscoveryEntry4));
+        assertTrue(arbitrationResult.getOtherDiscoveryEntries().contains(otherDiscoveryEntry5));
     }
 
 }
