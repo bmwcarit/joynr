@@ -20,15 +20,25 @@ package io.joynr.integration;
 
 import static com.google.inject.util.Modules.override;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -36,21 +46,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
 
+import io.joynr.arbitration.ArbitrationStrategyFunction;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
@@ -63,9 +75,18 @@ import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingStub;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
+import io.joynr.provider.JoynrProvider;
+import io.joynr.provider.ProviderAnnotations;
+import io.joynr.proxy.Future;
+import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
-import joynr.system.RoutingTypes.MqttAddress;
+import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.ShutdownNotifier;
+import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProxy;
+import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
@@ -77,6 +98,16 @@ public class RoutingTableCleanupTest {
     private final String[] gbids = new String[]{ TESTGBID1, TESTGBID2 };
     private final String TESTDOMAIN = "testDomain";
 
+    private final String TESTCUSTOMDOMAIN1 = "testCustomDomain1";
+    private final String TESTCUSTOMDOMAIN2 = "testCustomDomain2";
+    private final String TESTCUSTOMDOMAIN3 = "testCustomDomain3";
+
+    private final String FIXEDPARTICIPANTID1 = "fixedParticipantId1";
+    private final String FIXEDPARTICIPANTID2 = "fixedParticipantId2";
+    private final String FIXEDPARTICIPANTID3 = "fixedParticipantId3";
+
+    private final long ROUTINGTABLE_CLEANUP_INTERVAL_MS = 100l;
+
     private Properties properties;
     private Injector injector;
     // JoynrRuntime to simulate user operations
@@ -87,8 +118,13 @@ public class RoutingTableCleanupTest {
     // RoutingTable for verification, use the apply() method to count entries and get info about stored addresses
     private RoutingTable routingTable;
 
-    private DiscoveryQos discoveryQos;
-    private ProviderQos providerQos;
+    private DiscoveryQos discoveryQosGlobal;
+    private DiscoveryQos discoveryQosLocal;
+    private ProviderQos providerQosGlobal;
+    private ProviderQos providerQosLocal;
+    private MessagingQos defaultMessagingQos;
+
+    private ConcurrentMap<String, Object> routingTableHashMap;
 
     @Mock
     private MqttMessagingStubFactory mqttMessagingStubFactoryMock;
@@ -113,6 +149,9 @@ public class RoutingTableCleanupTest {
     @Mock
     private JoynrMqttClient joynrMqttClient2;
 
+    @Spy
+    ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+
     @Before
     public void setUp() throws InterruptedException {
         doReturn(joynrMqttClient1).when(hiveMqMqttClientFactory).createReceiver(TESTGBID1);
@@ -126,15 +165,29 @@ public class RoutingTableCleanupTest {
 
         properties = createProperties(TESTGBID1 + ", " + TESTGBID2, "tcp://localhost:1883, tcp://otherhost:1883");
 
-        discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryTimeoutMs(30000);
-        discoveryQos.setRetryIntervalMs(discoveryQos.getDiscoveryTimeoutMs() + 1); // no retry
-        discoveryQos.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
+        discoveryQosGlobal = new DiscoveryQos();
+        discoveryQosGlobal.setDiscoveryTimeoutMs(30000);
+        discoveryQosGlobal.setRetryIntervalMs(discoveryQosGlobal.getDiscoveryTimeoutMs() + 1); // no retry
+        discoveryQosGlobal.setDiscoveryScope(DiscoveryScope.GLOBAL_ONLY);
 
-        providerQos = new ProviderQos();
-        providerQos.setScope(ProviderScope.GLOBAL);
+        discoveryQosLocal = new DiscoveryQos();
+        discoveryQosLocal.setDiscoveryTimeoutMs(30000);
+        discoveryQosLocal.setRetryIntervalMs(discoveryQosLocal.getDiscoveryTimeoutMs() + 1); // no retry
+        discoveryQosLocal.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
 
-        createJoynrRuntime();
+        providerQosGlobal = new ProviderQos();
+        providerQosGlobal.setScope(ProviderScope.GLOBAL);
+
+        providerQosLocal = new ProviderQos();
+        providerQosLocal.setScope(ProviderScope.LOCAL);
+
+        defaultMessagingQos = new MessagingQos();
+
+        joynrRuntime = createJoynrRuntime();
+
+        // Get routingTable.hashMap
+        routingTableHashMap = getFieldValue(routingTable, "hashMap");
+        assertFalse(routingTableHashMap.isEmpty());
     }
 
     @After
@@ -154,6 +207,15 @@ public class RoutingTableCleanupTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "60,30");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,30");
         properties.put(ConfigurableMessagingSettings.PROPERTY_GBIDS, gbids);
+        // Put properties for fixed participantIds
+        String interfaceName = ProviderAnnotations.getInterfaceName(DefaulttestProvider.class);
+        int majorVersion = ProviderAnnotations.getMajorVersion(DefaulttestProvider.class);
+        properties.put(ParticipantIdKeyUtil.getProviderParticipantIdKey(TESTCUSTOMDOMAIN1, interfaceName, majorVersion),
+                       FIXEDPARTICIPANTID1);
+        properties.put(ParticipantIdKeyUtil.getProviderParticipantIdKey(TESTCUSTOMDOMAIN2, interfaceName, majorVersion),
+                       FIXEDPARTICIPANTID2);
+        properties.put(ParticipantIdKeyUtil.getProviderParticipantIdKey(TESTCUSTOMDOMAIN3, interfaceName, majorVersion),
+                       FIXEDPARTICIPANTID3);
         return properties;
     }
 
@@ -167,9 +229,73 @@ public class RoutingTableCleanupTest {
         return cdl;
     }
 
-    protected void createJoynrRuntime() throws InterruptedException {
-        shutdownRuntime();
+    private Field getPrivateField(Class<?> privateClass, String fieldName) {
+        Field result = null;
+        try {
+            result = privateClass.getDeclaredField(fieldName);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        return result;
+    }
 
+    private <T> T getFieldValue(Object object, String fieldName) {
+        Field objectField = getPrivateField(object.getClass(), fieldName);
+        assertNotNull(objectField);
+        objectField.setAccessible(true);
+        T result = null;
+        try {
+            result = (T) objectField.get(object);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        return result;
+    }
+
+    private void registerProvider(JoynrProvider provider, String domain, ProviderQos providerQos) {
+        try {
+            // wait for successful registration
+            joynrRuntime.getProviderRegistrar(domain, provider)
+                        .withProviderQos(providerQos)
+                        .awaitGlobalRegistration()
+                        .register()
+                        .get();
+        } catch (Exception e) {
+            fail("Provider registration failed: " + e.toString());
+        }
+    }
+
+    private void checkRefCnt(String participantId, long expectedRefCnt) {
+        assertTrue(routingTable.containsKey(participantId));
+        Object routingEntry = routingTableHashMap.get(participantId);
+        long actualRefCnt = getFieldValue(routingEntry, "refCount");
+        assertEquals(expectedRefCnt, actualRefCnt);
+    }
+
+    private <T> T createProxy(ProxyBuilder<T> proxyBuilder, MessagingQos messagingQos, DiscoveryQos discoveryQos) {
+        T proxy = null;
+        Future<T> proxyFuture = new Future<>();
+        proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build(new ProxyCreatedCallback<T>() {
+
+            @Override
+            public void onProxyCreationFinished(T result) {
+                proxyFuture.resolve(result);
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                proxyFuture.onFailure(error);
+            }
+        });
+        try {
+            proxy = proxyFuture.get();
+        } catch (Exception e) {
+            fail("Proxy creation failed: " + e.toString());
+        }
+        return proxy;
+    }
+
+    protected JoynrRuntime createJoynrRuntime() throws InterruptedException {
         AbstractModule testBindingsModule = new AbstractModule() {
             @Override
             protected void configure() {
@@ -180,7 +306,9 @@ public class RoutingTableCleanupTest {
                 bind(WebSocketClientMessagingStubFactory.class).toInstance(websocketClientMessagingStubFactoryMock);
                 bind(WebSocketMessagingStubFactory.class).toInstance(webSocketMessagingStubFactoryMock);
                 bind(MqttMessagingStubFactory.class).toInstance(mqttMessagingStubFactoryMock);
-                //bind(InProcessMessagingStubFactory.class).toInstance(inProcessMessagingStubFactory);
+                bind(ShutdownNotifier.class).toInstance(shutdownNotifier);
+                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
+                                .toInstance(ROUTINGTABLE_CLEANUP_INTERVAL_MS);
             }
         };
 
@@ -189,20 +317,185 @@ public class RoutingTableCleanupTest {
                                                                                     testBindingsModule));
         CountDownLatch cdl = waitForRemoveStale(mqttMessagingStubMock);
 
-        joynrRuntime = injector.getInstance(JoynrRuntime.class);
+        JoynrRuntime joynrRuntime = injector.getInstance(JoynrRuntime.class);
         routingTable = injector.getInstance(RoutingTable.class);
         mqttMessagingSkeletonProvider = injector.getInstance(MqttMessagingSkeletonProvider.class);
 
         assertTrue(cdl.await(10, TimeUnit.SECONDS));
         reset(mqttMessagingStubMock);
+        return joynrRuntime;
     }
 
     @Test
-    public void dummyTest() {
-        assertEquals(2, 1 + 1);
-        IMessagingSkeleton skeleton = mqttMessagingSkeletonProvider.get()
-                                                                   .getSkeleton(new MqttAddress("testgbid1", "test"));
-        assertNotNull(skeleton);
+    public void createAndDestroyProxy_routingEntryAddedAndRemoved() throws InterruptedException {
+        // register provider
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTDOMAIN, providerQosLocal);
+
+        ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(TESTDOMAIN, testProxy.class);
+
+        // Save proxy's participant id
+        String proxyParticipantId = proxyBuilder.getParticipantId();
+
+        // create proxy
+        testProxy proxy = createProxy(proxyBuilder, defaultMessagingQos, discoveryQosLocal);
+        assertNotNull(proxy);
+
+        // Check if proxy is contained in routing table
+        checkRefCnt(proxyParticipantId, 1l);
+
+        Semaphore gcSemaphore = new Semaphore(0);
+        doAnswer((invocation) -> {
+            invocation.callRealMethod();
+            gcSemaphore.release();
+            return null;
+        }).when(shutdownNotifier).unregister(any(ShutdownListener.class));
+
+        // set proxy and proxyBuilder to null
+        proxy = null;
+        proxyBuilder = null;
+
+        // wait until unregister of shutdownNotifier
+        for (int i = 0; i < 120; i++) { // try for 1 minute
+            System.gc();
+            if (gcSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS)) {
+                System.out.println("Garbage collector has been called to remove proxy at " + i + " iteration!");
+                break;
+            }
+        }
+        assertFalse(routingTable.containsKey(proxyParticipantId));
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTDOMAIN, testProvider);
     }
 
+    @Test
+    public void registerAndUnregisterProviders_routingEntriesAddedAdnRemoved() {
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+
+        // Check reference count values of providers
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+
+        // Wait for a while until providers are unregistered
+        try {
+            Thread.sleep(200);
+        } catch (Exception e) {
+            fail("Sleeping failed: " + e.toString());
+        }
+
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+    }
+
+    @Test
+    public void registerProviders_createProxy_refCountForSelectedProviderIncremented() {
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2));
+        ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(domains, testProxy.class);
+
+        // create proxy
+        createProxy(proxyBuilder, defaultMessagingQos, discoveryQosLocal);
+
+        // Check refCount values of routing entries for fixed providers
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 2l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+    }
+
+    @Test
+    public void registerProviders_createMultiProxy_refCountForSelectedProviderIncremented() {
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN3, providerQosLocal);
+        
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
+
+        // Define custom arbitration strategy function to get multiple providers
+        ArbitrationStrategyFunction arbitrationStrategyFunction = new ArbitrationStrategyFunction() {
+            @Override
+            public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                          Collection<DiscoveryEntryWithMetaInfo> capabilities) {
+                Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
+                for (DiscoveryEntryWithMetaInfo entry : capabilities) {
+                    if (entry.getParticipantId().equals(FIXEDPARTICIPANTID1)
+                            || entry.getParticipantId().equals(FIXEDPARTICIPANTID2)) {
+                        result.add(entry);
+                    }
+                }
+                return result;
+            }
+        };
+
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2, TESTCUSTOMDOMAIN3));
+        ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(domains, testProxy.class);
+
+        // create proxy
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000,
+                                                     arbitrationStrategyFunction,
+                                                     Long.MAX_VALUE,
+                                                     DiscoveryScope.LOCAL_ONLY);
+        createProxy(proxyBuilder, defaultMessagingQos, discoveryQos);
+
+        // Check refCount values of routing entries of fixed providers        
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+    }
+
+    @Test
+    public void callProxyOperation_refCountOfProviderAndProxyIsTheSame() {
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+
+        ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(TESTCUSTOMDOMAIN1, testProxy.class);
+
+        // Save proxy's participant id
+        String proxyParticipantId = proxyBuilder.getParticipantId();
+
+        // create proxy
+        testProxy proxy = createProxy(proxyBuilder, defaultMessagingQos, discoveryQosLocal);
+
+        // Check if proxy is contained in routing table
+        checkRefCnt(proxyParticipantId, 1l);
+        // Check refCount value of routing entries for fixed provider
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+
+        // Perform any proxy operation
+        proxy.addNumbers(10, 20, 30);
+
+        // Check if the refCount values of proxy and provider are the same
+        checkRefCnt(proxyParticipantId, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+    }
 }
