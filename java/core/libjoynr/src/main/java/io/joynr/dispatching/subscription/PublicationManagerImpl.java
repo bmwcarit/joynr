@@ -356,39 +356,27 @@ public class PublicationManagerImpl
 
     // requires addRemoveLock: handleSubscriptionRequest, handleBroadcastSubscriptionRequest,
     // subscriptionId2PublicationInformation, addSubscriptionCleanupIfNecessary
-    private void addSubscriptionRequestInternal(String proxyParticipantId,
-                                                String providerParticipantId,
-                                                SubscriptionRequest subscriptionRequest,
+    private void addSubscriptionRequestInternal(PublicationInformation publicationInformation,
                                                 ProviderContainer providerContainer) {
+        final SubscriptionRequest subscriptionRequest = publicationInformation.subscriptionRequest;
+        if (cancelQueuedAndOngoingPublication(subscriptionRequest.getSubscriptionId())) {
+            logger.trace("Updating publication: {}", subscriptionRequest);
+        } else {
+            logger.trace("Adding publication: {}", subscriptionRequest);
+        }
 
-        PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
-                                                                                   proxyParticipantId,
-                                                                                   subscriptionRequest);
-        try {
-            long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
-            removePublicationIfItExists(subscriptionRequest);
-
-            if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
-                handleBroadcastSubscriptionRequest(proxyParticipantId,
-                                                   providerParticipantId,
-                                                   (BroadcastSubscriptionRequest) subscriptionRequest,
-                                                   providerContainer);
-            } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
-                handleMulticastSubscriptionRequest(proxyParticipantId,
-                                                   providerParticipantId,
-                                                   (MulticastSubscriptionRequest) subscriptionRequest,
-                                                   providerContainer);
-            } else {
-                handleSubscriptionRequest(publicationInformation, subscriptionRequest, providerContainer);
-            }
-
-            final String subscriptionId = subscriptionRequest.getSubscriptionId();
-            subscriptionId2PublicationInformation.put(subscriptionId, publicationInformation);
-
-            addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
-            logger.trace("Publication added: {}", subscriptionRequest.toString());
-        } catch (SubscriptionException e) {
-            sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
+        if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
+            handleBroadcastSubscriptionRequest(publicationInformation.getProxyParticipantId(),
+                                               publicationInformation.getProviderParticipantId(),
+                                               (BroadcastSubscriptionRequest) subscriptionRequest,
+                                               providerContainer);
+        } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
+            handleMulticastSubscriptionRequest(publicationInformation.getProxyParticipantId(),
+                                               publicationInformation.getProviderParticipantId(),
+                                               (MulticastSubscriptionRequest) subscriptionRequest,
+                                               providerContainer);
+        } else {
+            handleSubscriptionRequest(publicationInformation, subscriptionRequest, providerContainer);
         }
     }
 
@@ -406,7 +394,12 @@ public class PublicationManagerImpl
     }
 
     // requires addRemoveLock: subscriptionEndFutures
-    private void addSubscriptionCleanupIfNecessary(SubscriptionRequest subscriptionRequest, long subscriptionEndDelay) {
+    private void updateSubscriptionCleanupIfNecessary(SubscriptionRequest subscriptionRequest,
+                                                      long subscriptionEndDelay) {
+        ScheduledFuture<?> future = subscriptionEndFutures.remove(subscriptionRequest.getSubscriptionId());
+        if (future != null) {
+            future.cancel(true);
+        }
         if (subscriptionRequest.getQos().getExpiryDateMs() != SubscriptionQos.NO_EXPIRY_DATE) {
             final String subscriptionId = subscriptionRequest.getSubscriptionId();
             ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
@@ -421,21 +414,6 @@ public class PublicationManagerImpl
 
             }, subscriptionEndDelay, TimeUnit.MILLISECONDS);
             subscriptionEndFutures.put(subscriptionId, subscriptionEndFuture);
-        }
-    }
-
-    private boolean publicationExists(String subscriptionId) {
-        return subscriptionId2PublicationInformation.containsKey(subscriptionId);
-    }
-
-    // requires addRemoveLock: publicationExists, removePublication
-    private void removePublicationIfItExists(SubscriptionRequest subscriptionRequest) {
-        String subscriptionId = subscriptionRequest.getSubscriptionId();
-        if (publicationExists(subscriptionId)) {
-            logger.trace("Updating publication: {}", subscriptionRequest);
-            removePublication(subscriptionId);
-        } else {
-            logger.trace("Adding publication: {}", subscriptionRequest);
         }
     }
 
@@ -473,42 +451,47 @@ public class PublicationManagerImpl
         }
 
         synchronized (addRemoveLock) {
-            ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
-            if (providerContainer != null) {
-                addSubscriptionRequestInternal(proxyParticipantId,
-                                               providerParticipantId,
-                                               subscriptionRequest,
-                                               providerContainer);
-            } else {
-                queueSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
+            PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
+                                                                                       proxyParticipantId,
+                                                                                       subscriptionRequest);
+            try {
+                long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
+                ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+                if (providerContainer != null) {
+                    addSubscriptionRequestInternal(publicationInformation, providerContainer);
+                    logger.trace("Publication added: {}", subscriptionRequest.toString());
+                } else {
+                    queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
+                    logger.trace("Added subscription request for non existing provider to queue.");
+                }
 
+                subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
+                                                          publicationInformation);
+                updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
+            } catch (SubscriptionException e) {
+                sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
             }
-        }
-    }
-
-    private void queueSubscriptionRequest(String proxyParticipantId,
-                                          String providerParticipantId,
-                                          SubscriptionRequest subscriptionRequest) {
-        PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
-                                                                                   proxyParticipantId,
-                                                                                   subscriptionRequest);
-        try {
-            long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
-            queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
-            subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(), publicationInformation);
-            addSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
-            logger.trace("Added subscription request for non existing provider to queue.");
-        } catch (SubscriptionException e) {
-            sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
         }
     }
 
     // requires requestQueueLock: subscriptionId2PublicationInformation, queuedSubscriptionRequests, publicationTimers,
     // subscriptionEndFutures, unregisterAttributeListeners, unregisterBroadcastListeners
     private void removePublication(String subscriptionId) {
-        PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
-        if (publicationInformation == null) {
+        if (!cancelQueuedAndOngoingPublication(subscriptionId)) {
             return;
+        }
+        subscriptionId2PublicationInformation.remove(subscriptionId);
+        ScheduledFuture<?> future = subscriptionEndFutures.remove(subscriptionId);
+        if (future != null) {
+            future.cancel(true);
+        }
+    }
+
+    // requires addRemoveLock
+    private boolean cancelQueuedAndOngoingPublication(String subscriptionId) {
+        PublicationInformation publicationInformation = subscriptionId2PublicationInformation.get(subscriptionId);
+        if (publicationInformation == null) {
+            return false;
         }
 
         // Remove (eventually) queued subcriptionRequest
@@ -519,11 +502,6 @@ public class PublicationManagerImpl
             publicationTimer.cancel();
         }
 
-        ScheduledFuture<?> future = subscriptionEndFutures.remove(subscriptionId);
-        if (future != null) {
-            future.cancel(true);
-        }
-
         UnregisterAttributeListener unregisterAttributeListener = unregisterAttributeListeners.remove(subscriptionId);
         if (unregisterAttributeListener != null) {
             unregisterAttributeListener.unregister();
@@ -532,6 +510,8 @@ public class PublicationManagerImpl
         if (unregisterBroadcastListener != null) {
             unregisterBroadcastListener.unregister();
         }
+
+        return true;
     }
 
     // Class that holds information needed to unregister attribute listener
@@ -629,10 +609,14 @@ public class PublicationManagerImpl
             while (queuedRequestsIterator.hasNext()) {
                 PublicationInformation publicationInformation = queuedRequestsIterator.next();
                 if (!isExpired(publicationInformation)) {
-                    addSubscriptionRequestInternal(publicationInformation.getProxyParticipantId(),
-                                                   publicationInformation.getProviderParticipantId(),
-                                                   publicationInformation.subscriptionRequest,
-                                                   providerContainer);
+                    try {
+                        addSubscriptionRequestInternal(publicationInformation, providerContainer);
+                    } catch (SubscriptionException e) {
+                        sendSubscriptionReplyWithError(e,
+                                                       publicationInformation,
+                                                       publicationInformation.subscriptionRequest);
+                    }
+
                 }
             }
         }
