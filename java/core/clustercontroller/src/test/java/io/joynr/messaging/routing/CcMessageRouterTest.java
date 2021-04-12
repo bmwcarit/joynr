@@ -115,9 +115,12 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
+import joynr.Message.MessageType;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.BinderAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
+import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
@@ -311,6 +314,7 @@ public class CcMessageRouterTest {
         } catch (JoynrMessageNotSentException e) {
             verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
             verify(mqttMessagingStubFactoryMock, never()).create(any(MqttAddress.class));
+            verify(routingTable).remove(immutableMessage.getSender());
             return;
         }
         fail("scheduling an expired message should throw");
@@ -576,7 +580,7 @@ public class CcMessageRouterTest {
     }
 
     @Test
-    public void testMessageProcessedListenerCalledOnSuccess() throws Exception {
+    public void testMessageProcessedListenerCalledOnSuccessForRequest() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
@@ -601,12 +605,143 @@ public class CcMessageRouterTest {
 
         semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
+        verify(routingTable, never()).remove(anyString());
+    }
+
+    @Test
+    public void testMessageProcessedListenerCalledOnSuccessForReply() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+
+        final Reply reply = new Reply("requestReplyId", new JoynrRuntimeException("TestException"));
+        joynrMessage = messageFactory.createReply(fromParticipantId, toParticipantId, reply, new MessagingQos());
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
+        messageRouter.registerMessageProcessedListener(mockMessageProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
+                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                semaphore.release();
+                return null;
+            }
+        }).when(messagingStubMock)
+          .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+
+        semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
+        verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
+        verify(routingTable, times(1)).remove(eq(joynrMessage.getRecipient()));
+    }
+
+    @Test
+    public void testReferenceCountDecreasedOnSubscriptionReplyOfInProcessProvider() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+
+        InProcessAddress providerAddress = new InProcessAddress();
+        routingTable.put(fromParticipantId, providerAddress, true, Long.MAX_VALUE, true);
+
+        SubscriptionReply subscriptionReply = new SubscriptionReply("subscriptionId");
+
+        joynrMessage = messageFactory.createSubscriptionReply(fromParticipantId,
+                                                              toParticipantId,
+                                                              subscriptionReply,
+                                                              new MessagingQos());
+
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
+        final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
+        messageRouter.registerMessageProcessedListener(mockMessageProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
+                verify(routingTable, times(0)).remove(toParticipantId);
+                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                semaphore.release();
+                return null;
+            }
+        }).when(messagingStubMock)
+          .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+
+        semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
+        verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
+        verify(routingTable).remove(toParticipantId);
+    }
+
+    private void testReferenceCountNotDecreasedOnSubscriptionReplyOfNotInProcessProvider(Address address) throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+
+        routingTable.put(fromParticipantId, address, true, Long.MAX_VALUE, true);
+
+        SubscriptionReply subscriptionReply = new SubscriptionReply("subscriptionId");
+
+        joynrMessage = messageFactory.createSubscriptionReply(fromParticipantId,
+                                                              toParticipantId,
+                                                              subscriptionReply,
+                                                              new MessagingQos());
+
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
+        final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
+        messageRouter.registerMessageProcessedListener(mockMessageProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
+                verify(routingTable, times(0)).remove(toParticipantId);
+                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                semaphore.release();
+                return null;
+            }
+        }).when(messagingStubMock)
+          .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
+
+        messageRouter.route(immutableMessage);
+
+        semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
+        verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
+        verify(routingTable, never()).remove(toParticipantId);
+    }
+
+    @Test
+    public void testReferenceCountDecreasedOnSubscriptionReplyOfBinderProvider() throws Exception {
+        testReferenceCountNotDecreasedOnSubscriptionReplyOfNotInProcessProvider(new BinderAddress());
+    }
+
+    @Test
+    public void testReferenceCountDecreasedOnSubscriptionReplyOfMqttProvider() throws Exception {
+        testReferenceCountNotDecreasedOnSubscriptionReplyOfNotInProcessProvider(new MqttAddress());
+    }
+
+    @Test
+    public void testReferenceCountDecreasedOnSubscriptionReplyOfUdsClientProvider() throws Exception {
+        testReferenceCountNotDecreasedOnSubscriptionReplyOfNotInProcessProvider(new UdsClientAddress());
+    }
+
+    @Test
+    public void testReferenceCountDecreasedOnSubscriptionReplyOfWebsocketClientProvider() throws Exception {
+        testReferenceCountNotDecreasedOnSubscriptionReplyOfNotInProcessProvider(new WebSocketClientAddress());
     }
 
     private void testMessageProcessedListenerCalledOnError(MessageRouter messageRouter,
                                                            Class<? extends Exception> expectedException) throws Exception {
         final Semaphore semaphore = new Semaphore(0);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        MqttAddress proxyAddress = new MqttAddress();
+        routingTable.put(fromParticipantId, proxyAddress, true, Long.MAX_VALUE, true);
 
         final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
         doAnswer(new Answer<Void>() {
@@ -631,10 +766,27 @@ public class CcMessageRouterTest {
 
         semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
+
+        MessageType type = immutableMessage.getType();
+        if (AbstractMessageRouter.MESSAGE_TYPE_REQUESTS.contains(type)) {
+            verify(routingTable, times(1)).remove(eq(immutableMessage.getSender()));
+        } else if (AbstractMessageRouter.MESSAGE_TYPE_REPLIES.contains(type)) {
+            verify(routingTable, times(1)).remove(eq(immutableMessage.getRecipient()));
+        }
     }
 
     @Test
-    public void testMessageProcessedListenerCalledForExpiredMessage() throws Exception {
+    public void testMessageProcessedListenerCalledForExpiredRequestMessage() throws Exception {
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
+        joynrMessage.setTtlAbsolute(true);
+
+        testMessageProcessedListenerCalledOnError(messageRouter, JoynrMessageNotSentException.class);
+    }
+
+    @Test
+    public void testMessageProcessedListenerCalledForExpiredReplyMessage() throws Exception {
+        final Reply reply = new Reply("requestReplyId", new JoynrRuntimeException("TestException"));
+        joynrMessage = messageFactory.createReply(fromParticipantId, toParticipantId, reply, new MessagingQos());
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
         joynrMessage.setTtlAbsolute(true);
 
@@ -659,6 +811,8 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
 
+        // If an aborted message is not expired, a reply will be sent to the sender.
+        // The decrease of the reference count happens after that
         testMessageProcessedListenerCalledOnError(messageRouter, null);
     }
 
@@ -1186,5 +1340,6 @@ public class CcMessageRouterTest {
         verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
                                                                      any(HasConsumerPermissionCallback.class));
         verify(mockMessageProcessedListener, times(1)).messageProcessed(eq(immutableMessage.getId()));
+        verify(routingTable).remove(eq(immutableMessage.getSender()));
     }
 }

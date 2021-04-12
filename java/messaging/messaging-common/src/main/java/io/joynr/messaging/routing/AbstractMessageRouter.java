@@ -60,7 +60,9 @@ import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.Message.MessageType;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.LocalAddress;
 
 abstract public class AbstractMessageRouter implements MessageRouter, MulticastReceiverRegistrar, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
@@ -324,6 +326,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                 logger.error("Max-retry-count ({}) reached. Dropping message {}",
                              maxRetryCount,
                              delayableMessage.getMessage().getTrackingInfo());
+                decreaseReferenceCountsForMessage(delayableMessage.getMessage(), false);
                 callMessageProcessedListeners(delayableMessage.getMessage().getId());
                 return;
             }
@@ -347,6 +350,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
 
     private void checkExpiry(final ImmutableMessage message) {
         if (!message.isTtlAbsolute()) {
+            decreaseReferenceCountsForMessage(message, false);
             callMessageProcessedListeners(message.getId());
             throw new JoynrRuntimeException("Relative ttl not supported");
         }
@@ -357,6 +361,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                                        currentTimeMillis,
                                                        message.getTrackingInfo());
             logger.trace(errorMessage);
+            decreaseReferenceCountsForMessage(message, false);
             callMessageProcessedListeners(message.getId());
             throw new JoynrMessageNotSentException(errorMessage);
         }
@@ -390,6 +395,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     logger.error("ERROR SENDING: Aborting send of message {}, Error:",
                                  messageNotSent.getTrackingInfo(),
                                  error);
+
                     callMessageProcessedListeners(messageNotSent.getId());
 
                     if (!isExpired(messageNotSent)
@@ -398,7 +404,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                                                                     (JoynrMessageNotSentException) error);
                         if (replyMessage != null) {
                             routeInternal(replyMessage, 0, 0);
+                        } else {
+                            decreaseReferenceCountsForMessage(messageNotSent, false);
                         }
+                    } else {
+                        decreaseReferenceCountsForMessage(messageNotSent, false);
                     }
                     return;
                 }
@@ -424,6 +434,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     scheduleMessage(delayableMessage);
                 } catch (Exception e) {
                     logger.warn("Rescheduling of message {} failed", messageNotSent.getTrackingInfo());
+                    decreaseReferenceCountsForMessage(messageNotSent, false);
                     callMessageProcessedListeners(messageNotSent.getId());
                 }
             }
@@ -439,7 +450,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         }
     }
 
-    private SuccessAction createMessageProcessedAction(final String messageId) {
+    private SuccessAction createMessageProcessedAction(final ImmutableMessage message) {
         final SuccessAction successAction = new SuccessAction() {
 
             @Override
@@ -449,7 +460,8 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                  * This is not a problem because the MessageProcessedListener is part of the backpressure mechanism
                  * which ignores multicast messages (only request messages are counted), see
                  * MqttMessagingSkeleton.transmit and SharedSubscriptionsMqttMessagingSkeleton.requestAccepted. */
-                callMessageProcessedListeners(messageId);
+                decreaseReferenceCountsForMessage(message, true);
+                callMessageProcessedListeners(message.getId());
             }
         };
         return successAction;
@@ -478,6 +490,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         synchronized (garbageCollectedProxiesQueue) {
             ProxyInformation proxyInformation = new ProxyInformation(proxyParticipantId, shutdownListener);
             if (proxyParticipantIdToProxyInformationMap.putIfAbsent(proxyParticipantId, proxyInformation) == null) {
+                logger.debug("registerProxy called for {}", proxyParticipantId);
                 proxyMap.put(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue), proxyInformation);
             } else {
                 throw new JoynrIllegalStateException("The proxy with " + proxyParticipantId
@@ -523,6 +536,26 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         return millis;
     }
 
+    protected void decreaseReferenceCountsForMessage(final ImmutableMessage message,
+                                                     boolean isMessageRoutingSuccessful) {
+        MessageType type = message.getType();
+        if ((!isMessageRoutingSuccessful) && (type == MessageType.VALUE_MESSAGE_TYPE_REQUEST
+                || type == MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST
+                || type == MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
+                || type == MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+            if ((!proxyParticipantIdToProxyInformationMap.containsKey(message.getSender()))
+                    && !(routingTable.get(message.getSender()) instanceof LocalAddress)) {
+                routingTable.remove(message.getSender());
+            }
+        } else if (type == MessageType.VALUE_MESSAGE_TYPE_REPLY
+                || type == MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
+            if ((!proxyParticipantIdToProxyInformationMap.containsKey(message.getRecipient()))
+                    && !(routingTable.get(message.getRecipient()) instanceof LocalAddress)) {
+                routingTable.remove(message.getRecipient());
+            }
+        }
+    }
+
     class MessageWorker implements Runnable {
         private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
@@ -566,6 +599,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                         logger.error("ERROR SENDING: aborting send of message: {}. Error:",
                                      message.getTrackingInfo(),
                                      error);
+                        decreaseReferenceCountsForMessage(message, false);
                         callMessageProcessedListeners(message.getId());
                         continue;
                     } catch (Exception error) {
@@ -578,7 +612,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                         continue;
                     }
 
-                    SuccessAction messageProcessedAction = createMessageProcessedAction(message.getId());
+                    SuccessAction messageProcessedAction = createMessageProcessedAction(message);
                     failureAction = createFailureAction(delayableMessage);
                     Address address = optionalAddress.get();
                     logger.trace(">>>>> SEND message {} to address {}", message.getId(), address);

@@ -109,6 +109,7 @@ public class CcMessageRouter extends AbstractMessageRouter {
                                     message.getId(),
                                     message.getSender(),
                                     message.getRecipient());
+                        CcMessageRouter.super.decreaseReferenceCountsForMessage(message, false);
                         CcMessageRouter.super.callMessageProcessedListeners(message.getId());
                     }
                 }
