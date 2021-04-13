@@ -1,15 +1,17 @@
 #!/bin/bash
-if [ -n "$http_proxy" ]; then 
+if [ -n "$http_proxy" ]; then
     if [[ "$http_proxy" =~ .*"@" ]]; then
         read protocol proxy_user proxy_password proxy_host proxy_port <<< $( echo ${http_proxy} | awk -F '://|:|@' '{ print $1, $2, $3, $4, $5 }')
     else
         read protocol proxy_host proxy_port <<< $( echo ${http_proxy} | awk -F'://|:' '{ print $1, $2, $3 }')
     fi
-    echo "protocol = $protocol" 
+    echo "protocol = $protocol"
     echo "proxy_host = $proxy_host"
     echo "proxy_port = $proxy_port"
     echo "proxy_user = $proxy_user"
     echo "proxy_password = $proxy_password"
+
+    proxy_url=${protocol}://${proxy_host}:${proxy_port}
 fi
 
 if [ -z "$proxy_host" ]
@@ -36,24 +38,40 @@ else
 fi
 echo "Setting up proxy configuration in /etc/dnf/dnf.conf"
 cat >> /etc/dnf/dnf.conf <<EOF
-[main]
 zchunk=false
 gpgcheck=1
 installonly_limit=3
 clean_requirements_on_remove=false
-proxy=$http_proxy
 sslverify=false
 EOF
+# add dnf proxy configuration if available
+if [ -n "${http_proxy}" ]; then
+  cat >> /etc/dnf/dnf.conf <<EOF
+proxy=${proxy_url}
+EOF
+  # add user/password for proxy if available
+  if [ -n "${proxy_user}" ]; then
+    cat >> /etc/dnf/dnf.conf <<EOF
+proxy_username=${proxy_user}
+proxy_password=${proxy_password}
+EOF
+  fi
+fi
 echo "Final Configuration /etc/dnf/dnf.conf:"
 cat /etc/dnf/dnf.conf
 echo "Setting up proxy configuration in /etc/wgetrc"
 cat > /etc/wgetrc <<EOF
-use_proxy=on
-http_proxy=$http_proxy
-https_proxy=$http_proxy
-ftp_proxy=$http_proxy
 check_certificate=off
 EOF
+# add wget proxy configuration if available
+if [ -n "${http_proxy}" ]; then
+  cat >> /etc/wgetrc <<EOF
+use_proxy=on
+http_proxy=${http_proxy}
+https_proxy=${http_proxy}
+ftp_proxy=${http_proxy}
+EOF
+fi
 echo "Final Configuration /etc/wgetrc:"
 cat /etc/wgetrc
 echo "Setting up insecure curl configuration in /etc/.curlrc"
