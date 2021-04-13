@@ -531,7 +531,7 @@ class TypeUtil {
 	def boolean isPolymorphic(FCompoundType datatype) {
 		if (datatype instanceof FStructType) {
 			if (hasExtendsDeclaration(datatype)) {
-				return getExtendedType(datatype).polymorphic
+				return isPolymorphic(getExtendedType(datatype));
 			}
 			return datatype.polymorphic;
 		}

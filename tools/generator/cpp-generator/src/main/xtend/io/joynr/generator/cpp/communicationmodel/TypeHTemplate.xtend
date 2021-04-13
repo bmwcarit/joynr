@@ -250,10 +250,10 @@ protected:
 	«IF hasExtendsDeclaration(type)»
 		bool equalsInternal(const «IF isPolymorphic(type)»«getRootType(type).getTypeName(generateVersion)»& otherBase«ELSE»«typeName»& other«ENDIF», std::size_t maxUlps) const«IF isPolymorphic(type)» override«ENDIF»
 		{
+			«IF isPolymorphic(type)»
+			const «typeName»& other = static_cast<const «typeName»&>(otherBase);
+			«ENDIF»
 			«IF getMembers(type).size > 0»
-				«IF isPolymorphic(type)»
-				const «typeName»& other = static_cast<const «typeName»&>(otherBase);
-				«ENDIF»
 				return
 				«FOR member: getMembers(type) SEPARATOR '&&'»
 					joynr::util::compareValues(this->«member.joynrName», other.«member.joynrName», maxUlps)

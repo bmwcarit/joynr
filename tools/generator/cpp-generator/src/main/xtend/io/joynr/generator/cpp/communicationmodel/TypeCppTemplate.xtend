@@ -59,7 +59,7 @@ class TypeCppTemplate extends CompoundTypeTemplate {
 const std::int32_t «typeName»::MAJOR_VERSION = «majorVersion»;
 const std::int32_t «typeName»::MINOR_VERSION = «minorVersion»;
 
-«typeName»::«typeName»()«IF !getMembersRecursive(type).empty»:«ENDIF»
+«typeName»::«typeName»()«IF !getMembersRecursive(type).empty || hasExtendsDeclaration(type)»:«ENDIF»
 	«IF hasExtendsDeclaration(type)»
 		«getExtendedType(type).getTypeName(generateVersion)»()«IF !getMembers(type).empty»,«ENDIF»
 	«ENDIF»
