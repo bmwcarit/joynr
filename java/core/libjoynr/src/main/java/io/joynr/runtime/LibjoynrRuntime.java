@@ -32,9 +32,9 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
-import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.util.ObjectMapper;
@@ -69,6 +69,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
               messagingSkeletonFactory,
               localDiscoveryAggregator,
               routingTable,
+              messageRouter,
               statelessAsyncCallbackDirectory,
               discoverySettingsStorage,
               participantIdStorage,

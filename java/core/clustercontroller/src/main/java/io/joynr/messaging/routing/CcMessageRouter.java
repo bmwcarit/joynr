@@ -19,9 +19,9 @@
 package io.joynr.messaging.routing;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,7 +38,6 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
-
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MutableMessage;

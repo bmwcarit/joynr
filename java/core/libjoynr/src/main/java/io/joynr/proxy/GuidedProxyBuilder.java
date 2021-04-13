@@ -39,6 +39,7 @@ import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.ObjectMapper;
 import io.joynr.util.ReflectionUtils;
 import io.joynr.util.VersionUtil;
@@ -61,12 +62,16 @@ import joynr.types.Version;
  * <li> Select domains and interface of the provider, set optional additional parameters
  * ({@link #setDiscoveryQos(DiscoveryQos)}, {@link #setGbids(String[])}, {@link #setMessagingQos(MessagingQos)},
  * {@link #setStatelessAsyncCallbackUseCase(String)}) and call {@link #discover()} or {@link #discoverAsync()} to receive
- * either the {@link DiscoveryResult} or a CompletableFuture thereof.
+ * either the {@link DiscoveryResult} or a CompletableFuture thereof.<br>
+ * NOTE: make sure to call either {@link #buildNone()} or {@link #buildProxy(Class, String)} after a
+ * successful discovery.
  * <li> From the discoveryResult, select the entry with the provider that you are looking for and pass its participantId
  * together with the matching Proxy interface class (same interface and same or compatible version as the selected
- * provder) to the {@link #buildProxy(Class, String)} method. In contrast to the ProxyBuilder, this proxy interface class
+ * provider) to the {@link #buildProxy(Class, String)} method. In contrast to the ProxyBuilder, this proxy interface class
  * does not necessarily have to be the same as the one used to create the GuidedProxyBuilder and configure the interface
  * for the discovery.<br>
+ * Call {@link #buildNone()} instead of {@link #buildProxy(Class, String)} if you do not want to build a proxy
+ * for any of the discovered providers.
  * Note that only providers that have been discovered with the most recent discovery will be accepted.
  * </ol>
  *
@@ -96,6 +101,8 @@ public class GuidedProxyBuilder {
     private ObjectMapper objectMapper;
     private boolean discoveryInProgress;
 
+    private final MessageRouter messageRouter;
+
     /**
      * Constructor for internal use only.
      * <p>
@@ -109,7 +116,8 @@ public class GuidedProxyBuilder {
      */
     public GuidedProxyBuilder(DiscoverySettingsStorage discoverySettingsStorage,
                               Set<String> domains,
-                              Class<?> interfaceClass) {
+                              Class<?> interfaceClass,
+                              MessageRouter messageRouter) {
         this.proxyBuilderFactory = discoverySettingsStorage.getProxyBuilderFactory();
         this.objectMapper = discoverySettingsStorage.getObjectMapper();
         this.localDiscoveryAggregator = discoverySettingsStorage.getLocalDiscoveryAggregator();
@@ -117,6 +125,7 @@ public class GuidedProxyBuilder {
         this.defaultDiscoveryTimeoutMs = discoverySettingsStorage.getDefaultDiscoveryTimeoutMs();
         this.defaultDiscoveryRetryIntervalMs = discoverySettingsStorage.getDefaultDiscoveryRetryIntervalMs();
         this.domains = domains;
+        this.messageRouter = messageRouter;
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
         } catch (Exception e) {
@@ -139,6 +148,9 @@ public class GuidedProxyBuilder {
         if (discoveryInProgress) {
             throw new JoynrIllegalStateException("setDiscoveryQos called while discovery in progress");
         }
+        if (discoveryCompletedOnce) {
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already performed a successful discovery! setDiscoveryQos cannot be called anymore.");
+        }
         this.discoveryQos = new DiscoveryQos(discoveryQos);
         applyDefaultValues(this.discoveryQos);
         return this;
@@ -155,6 +167,9 @@ public class GuidedProxyBuilder {
     public synchronized GuidedProxyBuilder setMessagingQos(final MessagingQos messagingQos) throws DiscoveryException {
         if (discoveryInProgress) {
             throw new JoynrIllegalStateException("setMessagingQos called while discovery in progress");
+        }
+        if (discoveryCompletedOnce) {
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already performed a successful discovery! setMessagingQos cannot be called anymore.");
         }
         if (messagingQos.getRoundTripTtl_ms() > maxMessagingTtl) {
             logger.warn("Error in MessageQos. domains: {} interface: {} Max allowed ttl: {}. Passed ttl: {}",
@@ -183,6 +198,9 @@ public class GuidedProxyBuilder {
         if (discoveryInProgress) {
             throw new JoynrIllegalStateException("setStatelessAsyncCallbackUseCase called while discovery in progress");
         }
+        if (discoveryCompletedOnce) {
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already performed a successful discovery! setStatelessAsyncCallbackUseCase cannot be called anymore.");
+        }
         this.statelessAsyncCallbackUseCase = statelessAsyncCallbackUseCase;
         return this;
     }
@@ -202,6 +220,9 @@ public class GuidedProxyBuilder {
     public synchronized GuidedProxyBuilder setGbids(final String[] gbids) {
         if (discoveryInProgress) {
             throw new JoynrIllegalStateException("setGbids called while discovery in progress");
+        }
+        if (discoveryCompletedOnce) {
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already performed a successful discovery! setGbids cannot be called anymore.");
         }
         if (gbids == null || gbids.length == 0) {
             throw new IllegalArgumentException("GBIDs array must not be null or empty.");
@@ -270,7 +291,10 @@ public class GuidedProxyBuilder {
 
     private CompletableFuture<ArbitrationResult> discoverAsyncInternal() {
         if (discoveryCompletedOnce) {
-            throw new JoynrIllegalStateException("This GuidedProxyBuilder already performed a discovery!");
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already performed a successful discovery!");
+        }
+        if (discoveryInProgress) {
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder can not perform another discovery while a discovery is in progress!");
         }
         if (arbitrator == null) {
             if (discoveryQos == null) {
@@ -313,6 +337,33 @@ public class GuidedProxyBuilder {
     }
 
     /**
+     * Do the necessary cleanup after successful discovery if no proxy shall be built for any
+     * of the discovered providers.
+     * <p>
+     * This method indicates that the customer does not intend to build a proxy to any of the
+     *  discovered providers. It releases previously allocated resources to avoid unnecessary
+     *  memory usage: it decrements the reference counts of the routing entries of all the
+     *  discovered providers because none of them is required anymore for this GuidedProxyBuilder
+     *  instance.
+     * @throws JoynrIllegalStateException if no discovery was completed yet, or if a proxy has
+     *  been already built with this instance of the GuidedProxyBuilder.
+    */
+    public synchronized void buildNone() {
+        if (proxyBuiltOnce) {
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already has been used by calling buildProxy or buildNone");
+        }
+        if (!discoveryCompletedOnce) {
+            throw new JoynrIllegalStateException("Discovery has to be completed before calling buildNone");
+        }
+        proxyBuiltOnce = true;
+        // decrease all the reference counts for the associated routing entries.
+        for (DiscoveryEntryWithMetaInfo selectedDiscoveryEntry : savedArbitrationResult.getDiscoveryEntries()) {
+            messageRouter.setToKnown(selectedDiscoveryEntry.getParticipantId());
+            messageRouter.removeNextHop(selectedDiscoveryEntry.getParticipantId());
+        }
+    }
+
+    /**
      * Builds a proxy for the given interface class that connects to the provider with the given participantId.
      * The version of the interface class must fit the version of the discovered provider (the DiscoverEntry
      * containing the participantId also contains a version). Also, the provider must have been discovered by the
@@ -330,11 +381,12 @@ public class GuidedProxyBuilder {
      */
     public synchronized <T> T buildProxy(Class<T> interfaceClass, String participantId) {
         if (proxyBuiltOnce) {
-            throw new JoynrIllegalStateException("This GuidedProxyBuilder already has been used to build a proxy!");
+            throw new JoynrIllegalStateException("This GuidedProxyBuilder already has been used by calling buildProxy or buildNone!");
         }
         if (!discoveryCompletedOnce) {
             throw new JoynrIllegalStateException("Discovery has to be completed before building a proxy!");
         }
+
         DiscoveryEntryWithMetaInfo discoveryEntryForProxy = null;
         for (DiscoveryEntryWithMetaInfo entry : savedArbitrationResult.getDiscoveryEntries()) {
             if (entry.getParticipantId().equals(participantId)) {

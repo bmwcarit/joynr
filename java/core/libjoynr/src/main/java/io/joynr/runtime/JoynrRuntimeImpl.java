@@ -44,6 +44,7 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
 import io.joynr.messaging.routing.AddressOperation;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
@@ -83,6 +84,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     @Inject
     public ObjectMapper objectMapper;
 
+    private final MessageRouter messageRouter;
+
     @Inject
     ShutdownNotifier shutdownNotifier;
 
@@ -100,6 +103,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             RoutingTable routingTable,
+                            MessageRouter messageRouter,
                             StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                             DiscoverySettingsStorage discoverySettingsStorage,
                             ParticipantIdStorage participantIdStorage,
@@ -108,6 +112,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress) {
         // CHECKSTYLE:ON
         this.dispatcher = dispatcher;
+        this.messageRouter = messageRouter;
         this.objectMapper = objectMapper;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
         this.discoverySettingsStorage = discoverySettingsStorage;
@@ -306,7 +311,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     public GuidedProxyBuilder getGuidedProxyBuilder(final Set<String> domains, final Class<?> interfaceClass) {
         GuidedProxyBuilder guidedProxyBuilder = new GuidedProxyBuilder(discoverySettingsStorage,
                                                                        domains,
-                                                                       interfaceClass);
+                                                                       interfaceClass,
+                                                                       messageRouter);
         return guidedProxyBuilder;
     }
 

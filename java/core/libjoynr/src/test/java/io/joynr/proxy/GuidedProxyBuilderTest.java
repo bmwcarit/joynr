@@ -54,6 +54,7 @@ import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.ProxyTest.TestInterface;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
@@ -86,6 +87,9 @@ public class GuidedProxyBuilderTest {
 
     @Mock
     private ProxyBuilder proxyBuilder;
+
+    @Mock
+    private MessageRouter messageRouter;
 
     @Mock
     private ShutdownNotifier shutdownNotifier;
@@ -125,7 +129,7 @@ public class GuidedProxyBuilderTest {
                                                                                          MAX_MESSAGE_TTL,
                                                                                          DEFAULT_DISCOVERY_TIMEOUT_MS,
                                                                                          DEFAULT_RETRY_INTERVAL_MS);
-        subject = new GuidedProxyBuilder(discoverySettingsStorage, domains, testProxy.class);
+        subject = new GuidedProxyBuilder(discoverySettingsStorage, domains, testProxy.class, messageRouter);
     }
 
     @Test
