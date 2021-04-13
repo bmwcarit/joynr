@@ -28,6 +28,7 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -54,6 +55,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -65,6 +68,7 @@ import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.AbstractSubscriptionPublisher;
@@ -178,7 +182,7 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            requestCallerDirectory,
-                                                                           Mockito.mock(RoutingTable.class),
+                                                                           routingTable,
                                                                            cleanupScheduler,
                                                                            Mockito.mock(SubscriptionRequestStorage.class),
                                                                            shutdownNotifier,
@@ -235,11 +239,12 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            providerDirectory,
-                                                                           Mockito.mock(RoutingTable.class),
+                                                                           routingTable,
                                                                            cleanupScheduler,
                                                                            Mockito.mock(SubscriptionRequestStorage.class),
                                                                            shutdownNotifier,
                                                                            SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+        verifyNoMoreInteractions(routingTable);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
 
@@ -290,11 +295,12 @@ public class PublicationManagerTest {
         PublicationManager publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                                            dispatcher,
                                                                            providerDirectory,
-                                                                           Mockito.mock(RoutingTable.class),
+                                                                           routingTable,
                                                                            cleanupScheduler,
                                                                            Mockito.mock(SubscriptionRequestStorage.class),
                                                                            shutdownNotifier,
                                                                            SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+        verifyNoMoreInteractions(routingTable);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
 
@@ -338,6 +344,7 @@ public class PublicationManagerTest {
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
 
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
@@ -351,6 +358,7 @@ public class PublicationManagerTest {
         reset(dispatcher);
 
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
@@ -372,6 +380,7 @@ public class PublicationManagerTest {
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
 
         verify(dispatcher,
                timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
@@ -380,7 +389,9 @@ public class PublicationManagerTest {
                                                                          any(MessagingQos.class));
 
         reset(dispatcher);
+        verify(routingTable, times(0)).remove(any());
         publicationManager.stopPublication(SUBSCRIPTION_ID);
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
@@ -401,16 +412,17 @@ public class PublicationManagerTest {
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
-
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(0)).remove(any());
         verify(dispatcher,
                timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                          (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                          any(SubscriptionPublication.class),
                                                                          any(MessagingQos.class));
 
-        reset(dispatcher);
+        reset(routingTable, dispatcher);
         publicationManager.stopPublication(SUBSCRIPTION_ID);
-
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
         verify(dispatcher,
                timeout(testLengthMax).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                             (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
@@ -431,8 +443,10 @@ public class PublicationManagerTest {
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
-
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest2);
+        verify(routingTable, times(0)).remove(any()); //The reference count is bound do the subscription ID. 
+        verify(routingTable, times(2)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
 
         publicationManager.attributeValueChanged(subscriptionId1, valueToPublish);
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
@@ -445,6 +459,8 @@ public class PublicationManagerTest {
 
         reset(dispatcher);
         publicationManager.entryRemoved(PROVIDER_PARTICIPANT_ID);
+        verify(routingTable, times(2)).remove(PROXY_PARTICIPANT_ID);
+        verifyNoMoreInteractions(routingTable);
 
         publicationManager.attributeValueChanged(subscriptionId1, valueToPublish);
         publicationManager.attributeValueChanged(subscriptionId2, valueToPublish);
@@ -458,7 +474,7 @@ public class PublicationManagerTest {
 
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
-    public void restorePublications() throws Exception {
+    public void restoreQueuedPublications() throws Exception {
         int period = 200;
         String subscriptionId1 = "subscriptionid1";
         String subscriptionId2 = "subscriptionid2";
@@ -475,8 +491,9 @@ public class PublicationManagerTest {
         SubscriptionRequest subscriptionRequest2 = new SubscriptionRequest(subscriptionId2, "location", qosExpires);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
-
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest2);
+        verify(routingTable, times(2)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verifyNoMoreInteractions(routingTable); //validityMs no checked by this test case
 
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
@@ -491,6 +508,73 @@ public class PublicationManagerTest {
                                                                           (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                           any(SubscriptionPublication.class),
                                                                           any(MessagingQos.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test(timeout = 3000)
+    public void restoreQueuedPublicationsForUnknownAttribute() throws Exception {
+        int period = 200;
+        String subscriptionId1 = "subscriptionid1";
+        String subscriptionId2 = "subscriptionid2";
+        long validityMs = 3000;
+        SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setAlertAfterIntervalMs(500)
+                                                                   .setPublicationTtlMs(1000);
+        SubscriptionQos qosExpires = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                  .setValidityMs(validityMs)
+                                                                  .setAlertAfterIntervalMs(500)
+                                                                  .setPublicationTtlMs(1000);
+        SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1,
+                                                                           "unknownAttribute",
+                                                                           qosNoExpiry);
+        SubscriptionRequest subscriptionRequest2 = new SubscriptionRequest(subscriptionId2, "location", qosExpires);
+
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest2);
+        verify(routingTable, times(2)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+
+        Thread.sleep(period);
+        verifyNoMoreInteractions(routingTable);
+        verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 any(SubscriptionPublication.class),
+                                                                 any(MessagingQos.class));
+
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+        verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                 eq(PROXY_PARTICIPANT_ID),
+                                                 argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                     @Override
+                                                     public boolean matches(Object argument) {
+                                                         SubscriptionReply reply = (SubscriptionReply) argument;
+                                                         String subscriptionId = reply.getSubscriptionId();
+                                                         return null != reply.getError()
+                                                                 && subscriptionId1.equals(subscriptionId);
+                                                     }
+                                                 }),
+                                                 any(MessagingQos.class));
+        verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                 eq(PROXY_PARTICIPANT_ID),
+                                                 argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                     @Override
+                                                     public boolean matches(Object argument) {
+                                                         SubscriptionReply reply = (SubscriptionReply) argument;
+                                                         String subscriptionId = reply.getSubscriptionId();
+                                                         return null == reply.getError()
+                                                                 && subscriptionId2.equals(subscriptionId);
+                                                     }
+                                                 }),
+                                                 any(MessagingQos.class));
+        verify(dispatcher,
+               timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                         any(SubscriptionPublication.class),
+                                                                         any(MessagingQos.class));
+        verifyNoMoreInteractions(routingTable);
     }
 
     @SuppressWarnings("unchecked")
@@ -540,6 +624,9 @@ public class PublicationManagerTest {
                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
+
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
     }
 
     @Test(timeout = 3000)
@@ -557,6 +644,9 @@ public class PublicationManagerTest {
         publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
 
         assertEquals(0, getQueuedSubscriptionRequests().size());
+
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(0)).remove(any());
     }
 
     @SuppressWarnings("unchecked")
@@ -603,13 +693,18 @@ public class PublicationManagerTest {
                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
-        reset(dispatcher);
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(0)).remove(any());
+
+        reset(routingTable, dispatcher);
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
         assertEquals(0, getQueuedSubscriptionRequests().size());
+        verify(routingTable, times(0)).incrementReferenceCount(any());
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
     }
 
     @Test(timeout = 3000)
@@ -629,6 +724,8 @@ public class PublicationManagerTest {
 
         Thread.sleep(period);
         assertEquals(0, getQueuedSubscriptionRequests().size());
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
     }
 
     @SuppressWarnings("unchecked")
@@ -638,7 +735,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -690,7 +787,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -751,7 +848,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -805,7 +902,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -855,7 +952,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         providerDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         Mockito.mock(SubscriptionRequestStorage.class),
                                                         shutdownNotifier,
@@ -872,6 +969,10 @@ public class PublicationManagerTest {
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        //Routing entry added
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(0)).remove(any());
+        reset(routingTable);
 
         verify(dispatcher,
                timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
@@ -887,8 +988,12 @@ public class PublicationManagerTest {
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
 
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        InOrder incrementBeforeDecrement = Mockito.inOrder(routingTable);
+        incrementBeforeDecrement.verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        incrementBeforeDecrement.verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
 
         reset(dispatcher);
+        verifyNoMoreInteractions(routingTable);
         publicationManager.attributeValueChanged(SUBSCRIPTION_ID, valueToPublish);
 
         verify(dispatcher,
@@ -939,7 +1044,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -947,6 +1052,7 @@ public class PublicationManagerTest {
 
         publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
         assertEquals(1, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
 
         publicationManager.shutdown();
 
@@ -956,7 +1062,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -970,7 +1076,6 @@ public class PublicationManagerTest {
                                                                                any(Set.class),
                                                                                any(SubscriptionPublication.class),
                                                                                any(MessagingQos.class));
-        ;
 
         Thread.sleep(validityMs + 1000);
         publicationManager.shutdown();
@@ -981,7 +1086,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -1019,7 +1124,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -1036,7 +1141,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -1075,7 +1180,7 @@ public class PublicationManagerTest {
         publicationManager = new PublicationManagerImpl(attributePollInterpreter,
                                                         dispatcher,
                                                         myProviderDirectory,
-                                                        Mockito.mock(RoutingTable.class),
+                                                        routingTable,
                                                         cleanupScheduler,
                                                         fileSubscriptionRequestStorage,
                                                         shutdownNotifier,
@@ -1086,4 +1191,26 @@ public class PublicationManagerTest {
 
         publicationManager.shutdown();
     }
+
+    @Test
+    public void subscriptionRequestsWithoutRoutingTableEntry() throws Exception {
+        doThrow(JoynrIllegalStateException.class).when(routingTable).incrementReferenceCount(anyString());
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID,
+                                                                          "location",
+                                                                          new OnChangeSubscriptionQos());
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+        verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                 eq(PROXY_PARTICIPANT_ID),
+                                                 argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                     @Override
+                                                     public boolean matches(Object argument) {
+                                                         SubscriptionReply reply = (SubscriptionReply) argument;
+                                                         return null != reply.getError();
+                                                     }
+                                                 }),
+                                                 any(MessagingQos.class));
+
+    }
+
 }

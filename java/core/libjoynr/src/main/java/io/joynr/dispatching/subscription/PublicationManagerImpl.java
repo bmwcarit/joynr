@@ -48,6 +48,7 @@ import io.joynr.dispatching.DirectoryListener;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -455,6 +456,8 @@ public class PublicationManagerImpl
                                                                                        proxyParticipantId,
                                                                                        subscriptionRequest);
             try {
+                routingTable.incrementReferenceCount(proxyParticipantId);
+
                 long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
                 ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
                 if (providerContainer != null) {
@@ -465,11 +468,19 @@ public class PublicationManagerImpl
                     logger.trace("Added subscription request for non existing provider to queue.");
                 }
 
-                subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
-                                                          publicationInformation);
+                if (null != subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
+                                                                      publicationInformation)) {
+                    routingTable.remove(proxyParticipantId);
+                }
                 updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
             } catch (SubscriptionException e) {
                 sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
+            } catch (JoynrIllegalStateException e) {
+                logger.error("Proxy participant ID {} unknown to routing table.", proxyParticipantId);
+                sendSubscriptionReplyWithError(new SubscriptionException(subscriptionRequest.getSubscriptionId(),
+                                                                         e.getMessage()),
+                                               publicationInformation,
+                                               subscriptionRequest);
             }
         }
     }
@@ -480,11 +491,12 @@ public class PublicationManagerImpl
         if (!cancelQueuedAndOngoingPublication(subscriptionId)) {
             return;
         }
-        subscriptionId2PublicationInformation.remove(subscriptionId);
         ScheduledFuture<?> future = subscriptionEndFutures.remove(subscriptionId);
         if (future != null) {
             future.cancel(true);
         }
+        PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
+        routingTable.remove(publicationInformation.getProxyParticipantId());
     }
 
     // requires addRemoveLock
@@ -612,6 +624,7 @@ public class PublicationManagerImpl
                     try {
                         addSubscriptionRequestInternal(publicationInformation, providerContainer);
                     } catch (SubscriptionException e) {
+                        removePublication(publicationInformation.getSubscriptionId());
                         sendSubscriptionReplyWithError(e,
                                                        publicationInformation,
                                                        publicationInformation.subscriptionRequest);
