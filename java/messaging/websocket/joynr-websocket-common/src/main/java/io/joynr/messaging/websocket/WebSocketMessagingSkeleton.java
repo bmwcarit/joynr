@@ -18,6 +18,9 @@
  */
 package io.joynr.messaging.websocket;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
@@ -38,6 +41,10 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
 
     public final static String WEBSOCKET_IS_MAIN_TRANSPORT = "io.joynr.websocket.is.main.transport";
+    public final static List<Message.MessageType> MESSAGE_TYPE_REQUESTS = Collections.unmodifiableList(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
+                                                                                                                     Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+                                                                                                                     Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
+                                                                                                                     Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST));
 
     private MessageRouter messageRouter;
     private JoynrWebSocketEndpoint webSocketEndpoint;
@@ -103,7 +110,10 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
 
             if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
                 message.setReceivedFromGlobal(true);
+            } else if (MESSAGE_TYPE_REQUESTS.contains(message.getType())) {
+                messageRouter.setToKnown(message.getSender());
             }
+
             messageRouter.route(message);
         } catch (Exception error) {
             failureAction.execute(error);
