@@ -18,6 +18,9 @@
  */
 package io.joynr.messaging;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -84,6 +87,22 @@ public class MessagingQosTest {
         assertEquals(false, messagingQos.getCompress());
         boolean compress = true;
         messagingQos.setCompress(compress);
+        assertEquals(compress, messagingQos.getCompress());
+    }
+
+    @Test
+    public void testCustomHeaderConstructor() {
+        final long ttl = 12345;
+        final boolean compress = true;
+        MessagingQosEffort effort = MessagingQosEffort.BEST_EFFORT;
+        Map<String, String> customHeaders = new HashMap<>();
+        customHeaders.put("key1", "value1");
+        customHeaders.put("key2", "value2");
+
+        MessagingQos messagingQos = new MessagingQos(ttl, effort, customHeaders, compress);
+        assertEquals(ttl, messagingQos.getRoundTripTtl_ms());
+        assertEquals(effort, messagingQos.getEffort());
+        assertEquals(customHeaders, messagingQos.getCustomMessageHeaders());
         assertEquals(compress, messagingQos.getCompress());
     }
 

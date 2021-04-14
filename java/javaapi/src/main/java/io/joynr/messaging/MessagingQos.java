@@ -102,6 +102,22 @@ public class MessagingQos {
         this.encrypt = encrypt;
     }
 
+    /**
+     * @param ttl_ms Roundtrip timeout for rpc requests.
+     * @param effort the effort to expend in ensuring message delivery.
+     * @param customHeaders map containing custom headers. <br>
+     *                      Keys may contain ascii alphanumeric or hyphen. <br>
+     *                      Values may contain alphanumeric, space, semi-colon, colon, comma, plus, ampersand, question
+     *                      mark, hyphen, dot, star, forward slash and back slash.
+     * @param compress specifies, whether messages will be sent compressed
+     */
+    public MessagingQos(long ttl_ms, MessagingQosEffort effort, Map<String, String> customHeaders, boolean compress) {
+        this.ttl_ms = ttl_ms;
+        this.effort = effort;
+        this.customHeaders = customHeaders;
+        this.compress = compress;
+    }
+
     public long getRoundTripTtl_ms() {
         return ttl_ms;
     }
