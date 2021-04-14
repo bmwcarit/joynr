@@ -72,7 +72,7 @@ static std::string getExceptionMsgUnableToLookup(
     const std::string params = participantId.empty() ? "domain: [" + _domain + "], interface: " + _interfaceName
                                                      : "participantId: " + participantId;
     const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + boost::algorithm::join(gbids, ", ");
-    return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + exception.getMessage() + ", continuing.";
+    return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + exception.getMessage();
 }
 static std::string getErrorMsgUnableToLookup(
         const types::DiscoveryError::Enum& error,
@@ -84,21 +84,8 @@ static std::string getErrorMsgUnableToLookup(
                                                      : "participantId: " + participantId;
     const std::string gbidString = gbids.empty() ? "" : ", GBIDs: " + boost::algorithm::join(gbids, ", ");
     const std::string errorString = types::DiscoveryError::getLiteral(error);
-    std::string suffix;
-    switch (error) {
-    case types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT:
-    case types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS: {
-        suffix = ", continuing.";
-        break;
-    }
-    case types::DiscoveryError::UNKNOWN_GBID:
-    case types::DiscoveryError::INVALID_GBID:
-    case types::DiscoveryError::INTERNAL_ERROR:
-    default:
-        suffix =  ", giving up.";
-        break;
-    }
-    return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + errorString + suffix;
+
+    return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + errorString;
 }
 
 class MockArbitrator : public Arbitrator
@@ -1763,4 +1750,66 @@ TEST_F(ArbitratorTest, arbitrationStopsOnShutdown_withRetry)
 {
     const bool testRetry(true);
     testArbitrationStopsOnShutdown(testRetry);
+}
+
+TEST_F(ArbitratorTest, discoveryExceptionOnIncompatibleInterface)
+{
+    const std::string participantId("unittests-participantId");
+    const std::string wrongInterfaceName("wrongInterfaceName");
+
+    // build a generic arbitrator with FIXED_PARTICIPANT strategy
+    DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
+    discoveryQos.setDiscoveryTimeoutMs(199);
+    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.addCustomParameter("fixedParticipantId", participantId);
+    joynr::types::Version expectedVersion(47, 11);
+    auto fixedParticipantArbitrator =
+            std::make_shared<Arbitrator>(_domain,
+                                         _interfaceName,
+                                         expectedVersion,
+                                         _mockDiscovery,
+                                         discoveryQos,
+                                         _emptyGbidsVector,
+                                         std::move(_fixedParticipantArbitrationStrategyFunction));
+
+    // generate DiscoveryEntry containing a wrong interfaceName
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry(expectedVersion,
+                                                            _domain,
+                                                            wrongInterfaceName,
+                                                            participantId,
+                                                            types::ProviderQos{},
+                                                            _lastSeenDateMs,
+                                                            _expiryDateMs,
+                                                            _publicKeyId,
+                                                            true);
+
+    auto mockFuture = std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+    mockFuture->onSuccess(discoveryEntry);
+
+    // When this is called a second time, the test is aborted with a SEGV
+    // because GMOCK will return an invalid future
+    EXPECT_CALL(*_mockDiscovery, lookupAsyncMock(Matcher<const std::string&>(_), _, _, _, _, _, _))
+            .WillOnce(Return(mockFuture));
+
+    auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
+        types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
+        FAIL() << "Got result: " << result.toString();
+    };
+
+    auto onError = [this, &participantId, &wrongInterfaceName](
+                           const exceptions::DiscoveryException& error) {
+        const std::string expectedErrorMsg(
+                "Unable to lookup provider (participantId: " + participantId +
+                ") from discovery. JoynrException: incompatible interface returned, "
+                "expected: " +
+                _interfaceName + " actual: " + wrongInterfaceName);
+        EXPECT_EQ(expectedErrorMsg, error.getMessage());
+        _semaphore.notify();
+    };
+
+    fixedParticipantArbitrator->startArbitration(onSuccess, onError);
+    EXPECT_TRUE(
+            _semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
+    fixedParticipantArbitrator->stopArbitration();
 }

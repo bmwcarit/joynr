@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -304,6 +304,16 @@ void Arbitrator::attemptArbitration()
 
             future->get(waitTimeMs, fixedParticipantResult);
             validatePendingFuture();
+            // _filterByVersionAndArbitrationStrategy allows to determine whether the
+            // GuidedProxyBuilder is used. false => GuidedProxyBuilder
+            if (_filterByVersionAndArbitrationStrategy &&
+                fixedParticipantResult.getInterfaceName() != _interfaceName) {
+                _arbitrationFailedForever = true;
+                std::stringstream msg;
+                msg << "incompatible interface returned, expected: " << _interfaceName
+                    << " actual: " << fixedParticipantResult.getInterfaceName();
+                throw exceptions::DiscoveryException(msg.str());
+            }
             result.push_back(fixedParticipantResult);
         } else {
             auto future = discoveryProxySharedPtr->lookupAsync(
@@ -341,9 +351,8 @@ void Arbitrator::attemptArbitration()
             // fall through
             case types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS: {
                 _discoveredIncompatibleVersions.clear();
-                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error) +
-                            ", continuing.";
-                JOYNR_LOG_INFO(logger(), errorMsg);
+                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error);
+                JOYNR_LOG_INFO(logger(), errorMsg + ", continuing.");
                 break;
             }
             case types::DiscoveryError::UNKNOWN_GBID:
@@ -354,15 +363,16 @@ void Arbitrator::attemptArbitration()
             // fall through to default
             default:
                 _discoveredIncompatibleVersions.clear();
-                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error) +
-                            ", giving up.";
-                JOYNR_LOG_ERROR(logger(), errorMsg);
+                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error);
+                JOYNR_LOG_ERROR(logger(), errorMsg + ", giving up.");
                 _arbitrationFailedForever = true;
                 break;
             }
         } else {
-            errorMsg += "JoynrException: " + e.getMessage() + ", continuing.";
-            JOYNR_LOG_ERROR(logger(), errorMsg);
+            errorMsg += "JoynrException: " + e.getMessage();
+            JOYNR_LOG_ERROR(logger(),
+                            _arbitrationFailedForever ? errorMsg + ", giving up."
+                                                      : errorMsg + ", continuing.");
         }
         _arbitrationError.setMessage(errorMsg);
         validatePendingFuture();
