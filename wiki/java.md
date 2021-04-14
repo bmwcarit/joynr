@@ -429,6 +429,14 @@ arbitration strategy settings. Arbitation strategy from DiscoveryQos will be ign
 the provider selection is a manual step in GuidedProxyBuilder between `discover()` and
 `buildProxy()`.
 
+Note: make sure to call either `buildNone()` or `buildProxy()` after a successful
+discovery.
+Call `buildNone()` instead of `buildProxy()` if you do not want to build a proxy for any of the
+discovered providers. `buildNone()` will trigger the necessary cleanup after a successful discovery
+and release previously allocated resources to avoid unnecessary memory usage (it decrements the
+reference counts of the routing entries of all the discovered providers because none of them is
+required anymore for this `GuidedProxyBuilder` instance).
+
 Example for the usage of a GuidedProxyBuilder:
 
 ```java
@@ -452,6 +460,11 @@ try {
 } catch (DiscoveryException e) {
     //handle errors
 }
+// Call buildNone() if you do not want to create a proxy for any of the discovered providers after successful discovery
+// to do the necessary cleanup to avoid unnecessary memory usage
+guidedProxyBuilder.buildNone();
+
+// Select a DiscoveryEntry to build a proxy for the corresponding provider:
 DiscoveryEntry lastSeenEntry = discoveryResult.getLastSeen();
 /* Other possibilities to retrieve DiscoveryEntries from DiscoveryResult:
     DiscoveryEntry highestPriorityEntry = discoveryResult.getHighestPriority();

@@ -2,6 +2,27 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.16.0
+
+## API-relevant Changes
+* **[Java,JEE]** Added `buildNone` method to `GuidedProxyBuilder`. Make sure to call this method
+  after a successful discovery with the `GuidedProxyBuilder` if you do not want to create a proxy
+  for any of the discovered providers. This will trigger the necessary cleanup to avoid unnecessary
+  memory usage, see our documentation for [Java](java.md#the-guided-proxy-builder) or
+  [JEE](jee.md#the-guided-proxy-builder)
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.15.12
 
 ## API-relevant Changes
