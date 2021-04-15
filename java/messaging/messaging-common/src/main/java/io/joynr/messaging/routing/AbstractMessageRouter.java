@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,7 @@ import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
@@ -65,6 +67,14 @@ import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.LocalAddress;
 
 abstract public class AbstractMessageRouter implements MessageRouter, MulticastReceiverRegistrar, ShutdownListener {
+    final static Set<Message.MessageType> MESSAGE_TYPE_REQUESTS = new HashSet<MessageType>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
+                                                                                                         Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+                                                                                                         Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
+                                                                                                         Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST));
+
+    final static Set<Message.MessageType> MESSAGE_TYPE_REPLIES = new HashSet<MessageType>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY,
+                                                                                                        Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY));
+
     private static final Logger logger = LoggerFactory.getLogger(AbstractMessageRouter.class);
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss z");
     protected final RoutingTable routingTable;
@@ -539,20 +549,21 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     protected void decreaseReferenceCountsForMessage(final ImmutableMessage message,
                                                      boolean isMessageRoutingSuccessful) {
         MessageType type = message.getType();
-        if ((!isMessageRoutingSuccessful) && (type == MessageType.VALUE_MESSAGE_TYPE_REQUEST
-                || type == MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST
-                || type == MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST
-                || type == MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
-            if ((!proxyParticipantIdToProxyInformationMap.containsKey(message.getSender()))
+        if (!isMessageRoutingSuccessful && MESSAGE_TYPE_REQUESTS.contains(type)) {
+            if (!proxyParticipantIdToProxyInformationMap.containsKey(message.getSender())
                     && !(routingTable.get(message.getSender()) instanceof LocalAddress)) {
+                // Sender (global / remote proxy) address is not required anymore to send a reply message
                 routingTable.remove(message.getSender());
             }
-        } else if (type == MessageType.VALUE_MESSAGE_TYPE_REPLY
-                || type == MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY) {
-            if ((!proxyParticipantIdToProxyInformationMap.containsKey(message.getRecipient()))
-                    && !(routingTable.get(message.getRecipient()) instanceof LocalAddress)) {
-                routingTable.remove(message.getRecipient());
+        } else if (MESSAGE_TYPE_REPLIES.contains(type)
+                && !proxyParticipantIdToProxyInformationMap.containsKey(message.getRecipient())
+                && !(routingTable.get(message.getRecipient()) instanceof LocalAddress)) {
+            if (type == MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY
+                    && !(routingTable.get(message.getSender()) instanceof InProcessAddress)) {
+                return;
             }
+            // Recipient (global / remote proxy) address is not required anymore after the reply message has been sent
+            routingTable.remove(message.getRecipient());
         }
     }
 
