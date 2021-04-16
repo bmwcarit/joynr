@@ -525,6 +525,33 @@ public class DispatcherImplTest {
     }
 
     @Test
+    public void exceptionFromSendReplyIsCaughtAndNotThrownToProvider() throws Exception {
+        MessagingQos messagingQos = new MessagingQos(1000L);
+
+        String requestReplyId = createUuidString();
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, requestReplyId);
+        final String providerParticipantId = "toParticipantId";
+
+        MutableMessage joynrMessage = messageFactory.createRequest("fromParticipantId",
+                                                                   providerParticipantId,
+                                                                   request,
+                                                                   messagingQos);
+
+        ImmutableMessage outgoingMessage = joynrMessage.getImmutableMessage();
+
+        fixture.messageArrived(outgoingMessage);
+        verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
+                                                      eq(providerParticipantId),
+                                                      eq(request),
+                                                      eq(joynrMessage.getTtlMs()));
+
+        doThrow(new JoynrMessageNotSentException("test exception from message router / sender")).when(messageSenderMock)
+                                                                                                .sendMessage(any(MutableMessage.class));
+        providerCallbackReply.getValue().onSuccess(new Reply(requestReplyId));
+        verify(messageSenderMock).sendMessage(any(MutableMessage.class));
+    }
+
+    @Test
     public void testStatelessAsyncReplyInformationExtracted() throws Exception {
         String methodId = "456";
         String requestReplyId = String.format("123%s%s", REQUEST_REPLY_ID_SEPARATOR, methodId);

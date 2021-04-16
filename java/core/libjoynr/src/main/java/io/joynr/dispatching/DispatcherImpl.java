@@ -346,19 +346,7 @@ public class DispatcherImpl implements Dispatcher {
             @Override
             public void onSuccess(Reply reply) {
                 try {
-                    if (!DispatcherUtils.isExpired(expiryDate)) {
-                        sendReply(toParticipantId,
-                                  fromParticipantId,
-                                  reply,
-                                  expiryDate,
-                                  customHeaders,
-                                  effort,
-                                  compress);
-                    } else {
-                        logger.error("Error: reply {} is not send to caller, as the expiryDate of the reply message {} has been reached.",
-                                     reply,
-                                     expiryDate);
-                    }
+                    sendReply(toParticipantId, fromParticipantId, reply, expiryDate, customHeaders, effort, compress);
                 } catch (Exception error) {
                     logger.error("Error processing reply {}: error:", reply, error);
                 }
