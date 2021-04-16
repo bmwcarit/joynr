@@ -41,6 +41,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +54,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import io.joynr.arbitration.ArbitrationStrategyFunction;
@@ -78,15 +81,23 @@ import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Future;
+import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
+import io.joynr.proxy.ProxyBuilderFactory;
+import io.joynr.proxy.ProxyBuilderFactoryImpl;
+import io.joynr.proxy.ProxyInvocationHandlerFactory;
+import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
+import io.joynr.runtime.SystemServicesSettings;
+import joynr.system.DiscoveryAsync;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 import joynr.types.DiscoveryEntryWithMetaInfo;
+import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
@@ -152,6 +163,48 @@ public class RoutingTableCleanupTest {
     @Spy
     ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
 
+    private static String sProxyParticipantId;
+
+    private static class TestProxyBuilderFactory extends ProxyBuilderFactoryImpl {
+        private final Set<String> internalProxyParticipantIds;
+
+        @Inject
+        public TestProxyBuilderFactory(DiscoveryAsync localDiscoveryAggregator,
+                                       ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
+                                       ShutdownNotifier shutdownNotifier,
+                                       StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
+                                       @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl,
+                                       @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS) long defaultDiscoveryTimeoutMs,
+                                       @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS) long defaultDiscoveryRetryIntervalMs,
+                                       @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS) long minimumArbitrationRetryDelay,
+                                       @Named(SystemServicesSettings.PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID) String discoveryProviderParticipantId,
+                                       @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) String routingProviderParticipantId,
+                                       @Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry) {
+            super(localDiscoveryAggregator,
+                  proxyInvocationHandlerFactory,
+                  shutdownNotifier,
+                  statelessAsyncCallbackDirectory,
+                  maxMessagingTtl,
+                  defaultDiscoveryTimeoutMs,
+                  defaultDiscoveryRetryIntervalMs,
+                  minimumArbitrationRetryDelay);
+            internalProxyParticipantIds = new HashSet<String>(Arrays.asList(discoveryProviderParticipantId,
+                                                                            routingProviderParticipantId,
+                                                                            capabilitiesDirectoryEntry.getParticipantId()));
+        }
+
+        @Override
+        public <T> ProxyBuilder<T> get(Set<String> domains, Class<T> interfaceClass) {
+            ProxyBuilder<T> proxyBuilder = super.get(domains, interfaceClass);
+            String proxyParticipantId = proxyBuilder.getParticipantId();
+            if (!internalProxyParticipantIds.contains(proxyParticipantId)) {
+                RoutingTableCleanupTest.sProxyParticipantId = proxyParticipantId;
+            }
+            System.out.println("##### TestProxyBuilderFactory.get() called!");
+            return proxyBuilder;
+        }
+    }
+
     @Before
     public void setUp() throws InterruptedException {
         doReturn(joynrMqttClient1).when(hiveMqMqttClientFactory).createReceiver(TESTGBID1);
@@ -188,6 +241,8 @@ public class RoutingTableCleanupTest {
         // Get routingTable.hashMap
         routingTableHashMap = getFieldValue(routingTable, "hashMap");
         assertFalse(routingTableHashMap.isEmpty());
+
+        sProxyParticipantId = "";
     }
 
     @After
@@ -309,6 +364,7 @@ public class RoutingTableCleanupTest {
                 bind(ShutdownNotifier.class).toInstance(shutdownNotifier);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
                                 .toInstance(ROUTINGTABLE_CLEANUP_INTERVAL_MS);
+                bind(ProxyBuilderFactory.class).to(TestProxyBuilderFactory.class);
             }
         };
 
@@ -427,7 +483,7 @@ public class RoutingTableCleanupTest {
         registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
         registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
         registerProvider(testProvider, TESTCUSTOMDOMAIN3, providerQosLocal);
-        
+
         checkRefCnt(FIXEDPARTICIPANTID1, 1l);
         checkRefCnt(FIXEDPARTICIPANTID2, 1l);
         checkRefCnt(FIXEDPARTICIPANTID3, 1l);
@@ -494,6 +550,114 @@ public class RoutingTableCleanupTest {
         // Check if the refCount values of proxy and provider are the same
         checkRefCnt(proxyParticipantId, 1l);
         checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+    }
+
+    @Test
+    public void useGuidedProxyBuilder_createAndDestroyProxy_routingEntryAddedAndRemoved() throws InterruptedException {
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+
+        Set<String> domains = new HashSet<String>(Arrays.asList(TESTCUSTOMDOMAIN1));
+        GuidedProxyBuilder guidedProxyBuilder = joynrRuntime.getGuidedProxyBuilder(domains, testProxy.class);
+
+        // create proxy
+        guidedProxyBuilder.setDiscoveryQos(discoveryQosLocal).setMessagingQos(defaultMessagingQos).discover();
+        testProxy proxy = guidedProxyBuilder.buildProxy(testProxy.class, FIXEDPARTICIPANTID1);
+        assertNotNull(proxy);
+
+        // Check whether routing entry for built proxy has been created
+        assertFalse(sProxyParticipantId.isEmpty());
+        assertTrue(routingTable.containsKey(sProxyParticipantId));
+
+        Semaphore gcSemaphore = new Semaphore(0);
+        doAnswer((invocation) -> {
+            invocation.callRealMethod();
+            gcSemaphore.release();
+            return null;
+        }).when(shutdownNotifier).unregister(any(ShutdownListener.class));
+
+        // set proxy and proxyBuilder to null
+        proxy = null;
+        guidedProxyBuilder = null;
+
+        // wait until unregister of shutdownNotifier
+        for (int i = 0; i < 120; i++) { // try for 1 minute
+            System.gc();
+            if (gcSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS)) {
+                System.out.println("Garbage collector has been called to remove proxy at " + i + " iteration!");
+                break;
+            }
+        }
+
+        // routing entry for proxy should be removed
+        assertFalse(routingTable.containsKey(sProxyParticipantId));
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+    }
+
+    @Test
+    public void useGuidedProxyBuilder_callProxyOperation_refCountOfProviderAndProxyIsTheSame() {
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1));
+        GuidedProxyBuilder guidedProxyBuilder = joynrRuntime.getGuidedProxyBuilder(domains, testProxy.class);
+
+        // create proxy
+        guidedProxyBuilder.setDiscoveryQos(discoveryQosLocal).setMessagingQos(defaultMessagingQos).discover();
+        testProxy proxy = guidedProxyBuilder.buildProxy(testProxy.class, FIXEDPARTICIPANTID1);
+
+        // Check whether routing entry for built proxy has been created
+        assertFalse(sProxyParticipantId.isEmpty());
+        checkRefCnt(sProxyParticipantId, 1l);
+
+        // Get refCount values of routing entries for fixed providers
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+
+        // Perform any proxy operation
+        proxy.addNumbers(10, 20, 30);
+
+        // Check if the refCount values of proxy and provider are the same
+        checkRefCnt(sProxyParticipantId, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+    }
+
+    @Test
+    public void useGuidedProxyBuilder_discoverAndBuildNone_routingEntryOfProxyNotCreated() {
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+
+        // Check whether routing entry for built proxy has been created
+        assertTrue(sProxyParticipantId.isEmpty());
+        assertFalse(routingTable.containsKey(sProxyParticipantId));
+
+        // Get refCount values of routing entries for fixed provider
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1));
+        GuidedProxyBuilder guidedProxyBuilder = joynrRuntime.getGuidedProxyBuilder(domains, testProxy.class);
+
+        // perform discovery
+        guidedProxyBuilder.setDiscoveryQos(discoveryQosLocal).setMessagingQos(defaultMessagingQos).discover();
+
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+
+        // build none
+        guidedProxyBuilder.buildNone();
+
+        // Check whether number of routing entries has not been changed
+        assertFalse(routingTable.containsKey(sProxyParticipantId));
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
 
         // unregister provider
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
