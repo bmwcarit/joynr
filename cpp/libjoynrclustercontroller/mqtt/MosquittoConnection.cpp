@@ -256,7 +256,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
                 break;
             }
 
-            std::this_thread::sleep_for(_mqttReconnectDelayTimeSeconds);
+            std::this_thread::sleep_for(std::chrono::seconds(10));
 
             if (_restartThreadShutdown) {
                 break;
