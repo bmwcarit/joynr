@@ -94,13 +94,14 @@ public class GeneratorVersioningTest extends AbstractJoynrJavaGeneratorTest {
         expectVersioning(result, "PackageVersionedTypeCollection");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void generateWithNoVersionComment_withAddVersion() throws Exception {
         final boolean generateProxy = true;
         final boolean generateProvider = true;
         final boolean packageVersioning = true;
         super.setup(generateProxy, generateProvider, packageVersioning);
 
-        generate("test-with-noversiongeneration-comment.fidl", true);
+        Map<String, String> result = generate("test-with-noversiongeneration-comment.fidl", true);
+        expectNoVersioning(result, "NoVersionGenerationTypeCollection");
     }
 }

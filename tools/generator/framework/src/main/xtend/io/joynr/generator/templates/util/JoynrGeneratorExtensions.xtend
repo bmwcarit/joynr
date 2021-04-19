@@ -350,7 +350,6 @@ class JoynrGeneratorExtensions {
 				+ fInterface.name + ". Please decide whether you want to generate versioning and " +
 				" adjust your settings accordingly (Only package versioning is supported)."
 			)
-			throw new IllegalArgumentException("--addVersionTo is not 'none' despite #noVersionGeneration being set in the fidl.");
 		}
 	}
 }
