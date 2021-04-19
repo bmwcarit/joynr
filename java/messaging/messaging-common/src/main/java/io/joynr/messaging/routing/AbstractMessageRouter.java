@@ -317,7 +317,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
             String errormessage = "Failed to route multicast publication: No recipient found for given message: "
                     + message.getTrackingInfo();
             logger.error("ERROR SENDING: aborting send. Error:", errormessage);
-            callMessageProcessedListeners(message.getId());
+            finalizeMessageProcessing(message, false);
         }
 
         for (String recipient : recipients) {
@@ -336,8 +336,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                 logger.error("Max-retry-count ({}) reached. Dropping message {}",
                              maxRetryCount,
                              delayableMessage.getMessage().getTrackingInfo());
-                decreaseReferenceCountsForMessage(delayableMessage.getMessage(), false);
-                callMessageProcessedListeners(delayableMessage.getMessage().getId());
+                finalizeMessageProcessing(delayableMessage.getMessage(), false);
                 return;
             }
         }
@@ -360,8 +359,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
 
     private void checkExpiry(final ImmutableMessage message) {
         if (!message.isTtlAbsolute()) {
-            decreaseReferenceCountsForMessage(message, false);
-            callMessageProcessedListeners(message.getId());
+            finalizeMessageProcessing(message, false);
             throw new JoynrRuntimeException("Relative ttl not supported");
         }
 
@@ -371,8 +369,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                                        currentTimeMillis,
                                                        message.getTrackingInfo());
             logger.trace(errorMessage);
-            decreaseReferenceCountsForMessage(message, false);
-            callMessageProcessedListeners(message.getId());
+            finalizeMessageProcessing(message, false);
             throw new JoynrMessageNotSentException(errorMessage);
         }
     }
@@ -406,20 +403,18 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                                  messageNotSent.getTrackingInfo(),
                                  error);
 
-                    callMessageProcessedListeners(messageNotSent.getId());
-
                     if (!isExpired(messageNotSent)
                             && messageNotSent.getType().equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
                         ImmutableMessage replyMessage = createReplyMessageWithError(messageNotSent,
                                                                                     (JoynrMessageNotSentException) error);
                         if (replyMessage != null) {
                             routeInternal(replyMessage, 0, 0);
-                        } else {
-                            decreaseReferenceCountsForMessage(messageNotSent, false);
+                            // pretend success to not decrease the routing entry refCnt before the reply message is processed
+                            finalizeMessageProcessing(messageNotSent, true);
+                            return;
                         }
-                    } else {
-                        decreaseReferenceCountsForMessage(messageNotSent, false);
                     }
+                    finalizeMessageProcessing(messageNotSent, false);
                     return;
                 }
                 logger.warn("PROBLEM SENDING, will retry. message: {}, Error:",
@@ -444,18 +439,22 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                     scheduleMessage(delayableMessage);
                 } catch (Exception e) {
                     logger.warn("Rescheduling of message {} failed", messageNotSent.getTrackingInfo());
-                    decreaseReferenceCountsForMessage(messageNotSent, false);
-                    callMessageProcessedListeners(messageNotSent.getId());
+                    finalizeMessageProcessing(messageNotSent, false);
                 }
             }
         };
         return failureAction;
     }
 
-    protected void callMessageProcessedListeners(final String messageId) {
+    protected void finalizeMessageProcessing(final ImmutableMessage message, boolean isMessageRoutingsuccessful) {
+        if (message.isMessageProcessed()) {
+            return;
+        }
+        message.messageProcessed();
+        decreaseReferenceCountsForMessage(message, isMessageRoutingsuccessful);
         synchronized (messageProcessedListeners) {
             for (MessageProcessedListener messageProcessedListener : messageProcessedListeners) {
-                messageProcessedListener.messageProcessed(messageId);
+                messageProcessedListener.messageProcessed(message.getId());
             }
         }
     }
@@ -469,9 +468,11 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                  * i.e. the message is not fully processed if it has multiple recipients.
                  * This is not a problem because the MessageProcessedListener is part of the backpressure mechanism
                  * which ignores multicast messages (only request messages are counted), see
-                 * MqttMessagingSkeleton.transmit and SharedSubscriptionsMqttMessagingSkeleton.requestAccepted. */
-                decreaseReferenceCountsForMessage(message, true);
-                callMessageProcessedListeners(message.getId());
+                 * MqttMessagingSkeleton.transmit and SharedSubscriptionsMqttMessagingSkeleton.requestAccepted.
+                 *
+                 * Also, since a multicast does not lead to a decrease of the reference count, calling this multiple times
+                 * won't be an issue there.*/
+                finalizeMessageProcessing(message, true);
             }
         };
         return successAction;
@@ -546,8 +547,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         return millis;
     }
 
-    protected void decreaseReferenceCountsForMessage(final ImmutableMessage message,
-                                                     boolean isMessageRoutingSuccessful) {
+    private void decreaseReferenceCountsForMessage(final ImmutableMessage message, boolean isMessageRoutingSuccessful) {
         MessageType type = message.getType();
         if (!isMessageRoutingSuccessful && MESSAGE_TYPE_REQUESTS.contains(type)) {
             if (!proxyParticipantIdToProxyInformationMap.containsKey(message.getSender())
@@ -610,8 +610,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
                         logger.error("ERROR SENDING: aborting send of message: {}. Error:",
                                      message.getTrackingInfo(),
                                      error);
-                        decreaseReferenceCountsForMessage(message, false);
-                        callMessageProcessedListeners(message.getId());
+                        finalizeMessageProcessing(message, false);
                         continue;
                     } catch (Exception error) {
                         logger.debug("ERROR SENDING: retrying send of message. Error:", error);

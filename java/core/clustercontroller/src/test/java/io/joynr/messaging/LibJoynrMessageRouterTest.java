@@ -104,6 +104,7 @@ public class LibJoynrMessageRouterTest {
     private LibJoynrMessageRouter messageRouter;
     private LibJoynrMessageRouter messageRouterForUdsAddresses;
     private String unknownParticipantId = "unknownParticipantId";
+    private String unknownSenderParticipantId = "unknownSenderParticipantId";
     private Long sendMsgRetryIntervalMs = 10L;
     private int maxParallelSends = 10;
     private long routingTableCleanupIntervalMs = 60000L;
@@ -115,6 +116,7 @@ public class LibJoynrMessageRouterTest {
         when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000000).getValue());
         when(message.isTtlAbsolute()).thenReturn(true);
         when(message.getRecipient()).thenReturn(unknownParticipantId);
+        when(message.getSender()).thenReturn(unknownSenderParticipantId);
         when(message.isLocalMessage()).thenReturn(false);
         when(message.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
 

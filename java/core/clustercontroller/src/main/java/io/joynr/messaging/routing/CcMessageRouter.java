@@ -102,15 +102,14 @@ public class CcMessageRouter extends AbstractMessageRouter {
                             logger.error("Error processing message. Message {} is dropped: {}",
                                          message.getId(),
                                          e.getMessage());
-                            CcMessageRouter.super.callMessageProcessedListeners(message.getId());
+                            CcMessageRouter.super.finalizeMessageProcessing(message, false);
                         }
                     } else {
                         logger.warn("Dropping message {} from {} to {} because of insufficient access rights",
                                     message.getId(),
                                     message.getSender(),
                                     message.getRecipient());
-                        CcMessageRouter.super.decreaseReferenceCountsForMessage(message, false);
-                        CcMessageRouter.super.callMessageProcessedListeners(message.getId());
+                        CcMessageRouter.super.finalizeMessageProcessing(message, false);
                     }
                 }
             });
