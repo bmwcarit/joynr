@@ -46,6 +46,7 @@ import io.joynr.util.ObjectMapper;
  */
 public class ImmutableMessage extends Message {
     private transient boolean receivedFromGlobal;
+    private transient boolean isMessageProcessed = false;
     private final MessageDeserializer messageDeserializer;
     private final byte[] serializedMessage;
     private transient Map<String, Serializable> context = new HashMap<String, Serializable>();
@@ -127,6 +128,14 @@ public class ImmutableMessage extends Message {
 
     public boolean isReceivedFromGlobal() {
         return receivedFromGlobal;
+    }
+
+    public void messageProcessed() {
+        isMessageProcessed = true;
+    }
+
+    public boolean isMessageProcessed() {
+        return isMessageProcessed;
     }
 
     public String getId() {
