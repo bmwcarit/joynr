@@ -18,16 +18,21 @@
  */
 package io.joynr.messaging.routing;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,24 +40,30 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import io.joynr.messaging.FailureAction;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.Message.MessageType;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractGlobalMessagingSkeletonTest {
+    public static final Set<MessageType> MESSAGE_TYPE_REQUESTS = new HashSet<>(Arrays.asList(MessageType.VALUE_MESSAGE_TYPE_REQUEST,
+                                                                                             MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+                                                                                             MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
+                                                                                             MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST));
+    public static final Set<MessageType> MESSAGE_TYPE_OTHER = new HashSet<>(Arrays.asList(MessageType.VALUE_MESSAGE_TYPE_MULTICAST,
+                                                                                          MessageType.VALUE_MESSAGE_TYPE_ONE_WAY,
+                                                                                          MessageType.VALUE_MESSAGE_TYPE_PUBLICATION,
+                                                                                          MessageType.VALUE_MESSAGE_TYPE_REPLY,
+                                                                                          MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY,
+                                                                                          MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP));
 
     private class DummyGlobalMessagingSkeleton extends AbstractGlobalMessagingSkeleton {
         public DummyGlobalMessagingSkeleton(RoutingTable routingTable) {
             super(routingTable);
-        }
-
-        public void dummyRegisterGlobalRoutingEntry(ImmutableMessage message, String gbid) {
-            registerGlobalRoutingEntry(message, gbid);
         }
 
         @Override
@@ -140,7 +151,7 @@ public class AbstractGlobalMessagingSkeletonTest {
         when(immutableMessage.getSender()).thenReturn("fromParticipantId");
         when(immutableMessage.getTtlMs()).thenReturn(ttlMs);
 
-        subject.dummyRegisterGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
+        subject.registerGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
 
         verify(routingTable).put(immutableMessage.getSender(), expectedAddress, isGloballyVisible, ttlMs);
         reset(routingTable);
@@ -159,7 +170,7 @@ public class AbstractGlobalMessagingSkeletonTest {
     private void testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType nonRequestType) {
         when(immutableMessage.getType()).thenReturn(nonRequestType);
 
-        subject.dummyRegisterGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
+        subject.registerGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
 
         verify(immutableMessage, times(0)).getReplyTo();
         verify(immutableMessage, times(0)).getSender();
@@ -167,4 +178,53 @@ public class AbstractGlobalMessagingSkeletonTest {
         verify(routingTable, times(0)).put(anyString(), anyObject(), anyBoolean(), anyLong());
     }
 
+    private void testUnregisterGlobalRoutingEntry(MessageType msgType, boolean alreadyProcessed) {
+        when(immutableMessage.getType()).thenReturn(msgType);
+        when(immutableMessage.isMessageProcessed()).thenReturn(alreadyProcessed);
+
+        subject.removeGlobalRoutingEntry(immutableMessage);
+
+        verify(immutableMessage).isMessageProcessed();
+
+        if (alreadyProcessed) {
+            verify(immutableMessage, times(0)).messageProcessed();
+            verify(routingTable, times(0)).remove(any(String.class));
+        } else if (MESSAGE_TYPE_REQUESTS.contains(msgType)) {
+            verify(immutableMessage, times(1)).messageProcessed();
+            verify(routingTable, times(1)).remove(eq(immutableMessage.getSender()));
+        } else {
+            verify(immutableMessage, times(1)).messageProcessed();
+            verify(routingTable, times(0)).remove(any(String.class));
+        }
+
+        reset(routingTable, immutableMessage);
+    }
+
+    @Test
+    public void unregisterGlobalRoutingEntryForRequests() {
+        for (MessageType msgType : MESSAGE_TYPE_REQUESTS) {
+            testUnregisterGlobalRoutingEntry(msgType, false);
+        }
+    }
+
+    @Test
+    public void unregisterGlobalRoutingEntryForRequests_alreadyProcessed() {
+        for (MessageType msgType : MESSAGE_TYPE_REQUESTS) {
+            testUnregisterGlobalRoutingEntry(msgType, true);
+        }
+    }
+
+    @Test
+    public void unregisterGlobalRoutingEntryForNonRequests() {
+        for (MessageType msgType : MESSAGE_TYPE_OTHER) {
+            testUnregisterGlobalRoutingEntry(msgType, false);
+        }
+    }
+
+    @Test
+    public void unregisterGlobalRoutingEntryForNonRequests_alreadyProcessed() {
+        for (MessageType msgType : MESSAGE_TYPE_OTHER) {
+            testUnregisterGlobalRoutingEntry(msgType, true);
+        }
+    }
 }

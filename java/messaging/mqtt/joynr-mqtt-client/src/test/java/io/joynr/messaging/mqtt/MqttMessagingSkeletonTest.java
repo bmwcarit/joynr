@@ -282,6 +282,7 @@ public class MqttMessagingSkeletonTest {
         subject.transmit(rqMessage.getSerializedMessage(), getExpectToBeCalledAction(semaphore));
 
         assertTrue(semaphore.tryAcquire());
+        verify(routingTable, times(1)).remove(rqMessage.getSender());
     }
 
     @Test

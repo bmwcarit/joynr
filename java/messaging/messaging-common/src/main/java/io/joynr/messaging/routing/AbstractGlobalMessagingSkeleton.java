@@ -18,6 +18,10 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +31,17 @@ import io.joynr.messaging.IMessagingMulticastSubscriber;
 import io.joynr.messaging.IMessagingSkeleton;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.Message.MessageType;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 public abstract class AbstractGlobalMessagingSkeleton implements IMessagingSkeleton, IMessagingMulticastSubscriber {
+
+    private final static Set<Message.MessageType> MESSAGE_TYPE_REQUESTS = new HashSet<MessageType>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
+                                                                                                                 Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST,
+                                                                                                                 Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
+                                                                                                                 Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST));
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractGlobalMessagingSkeleton.class);
 
@@ -44,10 +54,7 @@ public abstract class AbstractGlobalMessagingSkeleton implements IMessagingSkele
 
     protected void registerGlobalRoutingEntry(final ImmutableMessage message, String gbid) {
         final Message.MessageType messageType = message.getType();
-        if (!messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)
-                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)
-                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)
-                && !messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)) {
+        if (!MESSAGE_TYPE_REQUESTS.contains(messageType)) {
             logger.trace("Message type is: {}, no global routing entry added to the routing table for it ",
                          messageType);
             return;
@@ -68,6 +75,16 @@ public abstract class AbstractGlobalMessagingSkeleton implements IMessagingSkele
             final boolean isGloballyVisible = true;
             final long expiryDateMs = message.getTtlMs();
             routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs);
+        }
+    }
+
+    protected void removeGlobalRoutingEntry(final ImmutableMessage message) {
+        if (message.isMessageProcessed()) {
+            return;
+        }
+        message.messageProcessed();
+        if (MESSAGE_TYPE_REQUESTS.contains(message.getType())) {
+            routingTable.remove(message.getSender());
         }
     }
 }
