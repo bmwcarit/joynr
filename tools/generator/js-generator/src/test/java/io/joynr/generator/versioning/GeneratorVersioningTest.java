@@ -80,7 +80,7 @@ public class GeneratorVersioningTest extends AbstractJoynrTSGeneratorTest {
         super.setup(generateProxy, generateProvider, packageVersioning);
 
         Map<String, String> result = generate("test-without-noversiongeneration-comment.fidl", true);
-        expectVersioning(result, "PackageVersionedTypeCollection");
+        expectNoVersioning(result, "PackageVersionedTypeCollection");
     }
 
     @Test
@@ -102,6 +102,6 @@ public class GeneratorVersioningTest extends AbstractJoynrTSGeneratorTest {
         super.setup(generateProxy, generateProvider, packageVersioning);
 
         Map<String, String> result = generate("test-with-noversiongeneration-comment.fidl", true);
-        expectNoVersioning(result, "NoVersionGenerationTypeCollection");
+        expectVersioning(result, "NoVersionGenerationTypeCollection");
     }
 }

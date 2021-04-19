@@ -84,7 +84,7 @@ class JoynrJSGenerator implements IJoynrGenerator {
 		}
 		for (fInterface : fModel.interfaces) {
 			checkVersioningOption(fInterface, packageWithVersion)
-			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			val generateVersioning = packageWithVersion
 			if (generateVersioning) {
 				generateVersionedCommunicationModel = true
 			} else {
@@ -104,7 +104,7 @@ class JoynrJSGenerator implements IJoynrGenerator {
 
 		for (francaIntf : fModel.interfaces) {
 			checkVersioningOption(francaIntf, packageWithVersion)
-			val generateVersioning = !commentContainsNoVersionGeneration(francaIntf)
+			val generateVersioning = packageWithVersion
 
 			// since the proxy code at the moment contains exported interfaces
 			// required to implement a provider, we have to create the proxy code
