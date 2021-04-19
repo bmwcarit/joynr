@@ -24,6 +24,7 @@ import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FModel
+import com.google.inject.name.Named
 
 class FilterGenerator {
 
@@ -32,6 +33,10 @@ class FilterGenerator {
 
 	@Inject
 	extension NamingUtil
+
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
+	public boolean packageWithVersion;
 
 	@Inject
 	FilterParameterTemplate filterParameterTemplate;
@@ -46,7 +51,7 @@ class FilterGenerator {
 		String headerContainerPath
 	) {
 		for(fInterface: model.interfaces){
-			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			val generateVersioning = packageWithVersion
 			val headerPath = headerContainerPath + 
 				getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersioning) + File::separator
 			var serviceName = fInterface.joynrName

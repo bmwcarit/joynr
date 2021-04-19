@@ -18,13 +18,14 @@ package io.joynr.generator.cpp.proxy
  */
 
 import com.google.inject.Inject
+import com.google.inject.name.Named
+import io.joynr.generator.cpp.util.CppTemplateFactory
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
+import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
-import io.joynr.generator.cpp.util.CppTemplateFactory
-import io.joynr.generator.templates.util.InterfaceUtil
 
 class ProxyGenerator {
 
@@ -32,6 +33,10 @@ class ProxyGenerator {
 	@Inject extension NamingUtil
 	@Inject CppTemplateFactory templateFactory;
 	@Inject extension InterfaceUtil
+
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
+	public boolean packageWithVersion;
 
 	def doGenerate(FModel model,
 		IFileSystemAccess sourceFileSystem,
@@ -41,7 +46,7 @@ class ProxyGenerator {
 	) {
 
 		for(fInterface: model.interfaces){
-			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			val generateVersioning = packageWithVersion
 			val sourcePath = sourceContainerPath + getPackageSourceDirectory(fInterface, generateVersioning) + File::separator
 			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersioning) + File::separator
 			var serviceName = fInterface.joynrName

@@ -18,6 +18,7 @@ package io.joynr.generator.cpp.interfaces
  */
 
 import com.google.inject.Inject
+import com.google.inject.name.Named
 import io.joynr.generator.cpp.util.CppStdTypeUtil
 import io.joynr.generator.cpp.util.CppTemplateFactory
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
@@ -36,6 +37,10 @@ class InterfaceGenerator {
 	@Inject extension NamingUtil
 	@Inject extension InterfaceUtil
 
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
+	public boolean packageWithVersion;
+
 	@Inject CppTemplateFactory templateFactory;
 
 	def doGenerate(FModel fModel,
@@ -53,7 +58,7 @@ class InterfaceGenerator {
 				headerContainerPath
 
 		for(serviceInterface: fModel.interfaces){
-			val generateVersioning = !commentContainsNoVersionGeneration(serviceInterface)
+			val generateVersioning = packageWithVersion
 			val sourcepath = interfacePath + getPackageSourceDirectory(serviceInterface, generateVersioning) + File::separator 
 			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersioning) + File::separator 
 

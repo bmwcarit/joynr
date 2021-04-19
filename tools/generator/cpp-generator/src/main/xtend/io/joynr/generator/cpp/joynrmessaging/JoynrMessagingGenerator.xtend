@@ -18,18 +18,23 @@ package io.joynr.generator.cpp.joynrmessaging
  */
 
 import com.google.inject.Inject
+import com.google.inject.name.Named
+import io.joynr.generator.cpp.util.CppTemplateFactory
 import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.templates.util.NamingUtil
 import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FModel
-import io.joynr.generator.cpp.util.CppTemplateFactory
 
 class JoynrMessagingGenerator {
 
 	@Inject extension JoynrCppGeneratorExtensions
 	@Inject extension NamingUtil
 	@Inject CppTemplateFactory templateFactory;
+
+	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
+	public boolean packageWithVersion;
 
 	def doGenerate(FModel model,
 		IFileSystemAccess sourceFileSystem,
@@ -39,7 +44,7 @@ class JoynrMessagingGenerator {
 	){
 
 		for(serviceInterface: model.interfaces){
-			val generateVersioning = !commentContainsNoVersionGeneration(serviceInterface)
+			val generateVersioning = packageWithVersion
 			val sourcePath = sourceContainerPath + getPackageSourceDirectory(serviceInterface, generateVersioning) + File::separator
 			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersioning) + File::separator
 			val serviceName = serviceInterface.joynrName

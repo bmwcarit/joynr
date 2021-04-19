@@ -105,7 +105,7 @@ class JoynrCppGenerator implements IJoynrGenerator{
 		}
 		for (fInterface : fModel.interfaces) {
 			checkVersioningOption(fInterface, packageWithVersion)
-			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			val generateVersioning = packageWithVersion
 			if (generateVersioning) {
 				generateVersionedCommunicationModel = true
 			} else {
