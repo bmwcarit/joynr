@@ -97,7 +97,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		}
 		for (fInterface : fModel.interfaces) {
 			checkVersioningOption(fInterface, packageWithVersion)
-			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			val generateVersioning = packageWithVersion
 			if (generateVersioning) {
 				generateVersionedCommunicationModel = true
 			} else {
@@ -119,7 +119,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
 		for (fInterface : fModel.interfaces) {
-			val generateVersioning = !commentContainsNoVersionGeneration(fInterface)
+			val generateVersioning = packageWithVersion
 			checkVersioningOption(fInterface, packageWithVersion)
 			interfacesGenerator.doGenerate(fInterface, fsa, generateVersioning)
 			if (generateProxyCode) {
