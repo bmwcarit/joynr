@@ -28,6 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -327,6 +328,42 @@ public class RoutingTableCleanupTest {
         assertEquals(expectedRefCnt, actualRefCnt);
     }
 
+    private ArbitrationStrategyFunction customArbitrationStrategyFor(Set<String> participantIds) {
+        return new ArbitrationStrategyFunction() {
+            @Override
+            public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
+                                                          Collection<DiscoveryEntryWithMetaInfo> capabilities) {
+                Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
+                for (String selectedDomain : participantIds) {
+                    for (DiscoveryEntryWithMetaInfo entry : capabilities) {
+                        if (entry.getParticipantId().equals(selectedDomain)) {
+                            result.add(entry);
+                        }
+                    }
+                }
+                return result;
+            }
+        };
+    }
+
+    private void waitForGarbageCollection(String proxyParticipantId) throws InterruptedException {
+        Semaphore gcSemaphore = new Semaphore(0);
+        doAnswer((invocation) -> {
+            invocation.callRealMethod();
+            gcSemaphore.release();
+            return null;
+        }).when(shutdownNotifier).unregister(any(ShutdownListener.class));
+        // wait until unregister of shutdownNotifier
+        for (int i = 0; i < 120; i++) { // try for 1 minute
+            System.gc();
+            if (gcSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS)) {
+                System.out.println("Garbage collector has been called to remove proxy at " + i + " iteration!");
+                break;
+            }
+        }
+        assertFalse(routingTable.containsKey(proxyParticipantId));
+    }
+
     private <T> T createProxy(ProxyBuilder<T> proxyBuilder, MessagingQos messagingQos, DiscoveryQos discoveryQos) {
         T proxy = null;
         Future<T> proxyFuture = new Future<>();
@@ -386,9 +423,14 @@ public class RoutingTableCleanupTest {
     public void createAndDestroyProxy_routingEntryAddedAndRemoved() throws InterruptedException {
         // register provider
         DefaulttestProvider testProvider = new DefaulttestProvider();
-        registerProvider(testProvider, TESTDOMAIN, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        Thread.sleep(1l);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
 
-        ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(TESTDOMAIN, testProxy.class);
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2));
+        ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(domains, testProxy.class);
 
         // Save proxy's participant id
         String proxyParticipantId = proxyBuilder.getParticipantId();
@@ -399,34 +441,86 @@ public class RoutingTableCleanupTest {
 
         // Check if proxy is contained in routing table
         checkRefCnt(proxyParticipantId, 1l);
-
-        Semaphore gcSemaphore = new Semaphore(0);
-        doAnswer((invocation) -> {
-            invocation.callRealMethod();
-            gcSemaphore.release();
-            return null;
-        }).when(shutdownNotifier).unregister(any(ShutdownListener.class));
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 2l);
 
         // set proxy and proxyBuilder to null
         proxy = null;
         proxyBuilder = null;
 
-        // wait until unregister of shutdownNotifier
-        for (int i = 0; i < 120; i++) { // try for 1 minute
-            System.gc();
-            if (gcSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS)) {
-                System.out.println("Garbage collector has been called to remove proxy at " + i + " iteration!");
-                break;
-            }
-        }
-        assertFalse(routingTable.containsKey(proxyParticipantId));
+        waitForGarbageCollection(proxyParticipantId);
+
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
 
         // unregister provider
-        joynrRuntime.unregisterProvider(TESTDOMAIN, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+    }
+
+    @Test
+    public void createAndDestroyMultiProxy_routingEntryAddedAndRemoved() throws InterruptedException {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID3));
+
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN3, providerQosLocal);
+
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
+
+        // Define custom arbitration strategy function to get multiple providers
+        ArbitrationStrategyFunction arbitrationStrategyFunction = customArbitrationStrategyFor(new HashSet<>(Arrays.asList(FIXEDPARTICIPANTID1,
+                                                                                                                           FIXEDPARTICIPANTID2)));
+
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2, TESTCUSTOMDOMAIN3));
+        ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(domains, testProxy.class);
+
+        // Save proxy's participant id
+        String proxyParticipantId = proxyBuilder.getParticipantId();
+
+        // create proxy
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000,
+                                                     arbitrationStrategyFunction,
+                                                     Long.MAX_VALUE,
+                                                     DiscoveryScope.LOCAL_ONLY);
+        testProxy proxy = createProxy(proxyBuilder, defaultMessagingQos, discoveryQos);
+        assertNotNull(proxy);
+
+        // Check if proxy is contained in routing table
+        checkRefCnt(proxyParticipantId, 1l);
+
+        // Check refCount values of routing entries of fixed providers
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
+
+        // set proxy and proxyBuilder to null
+        proxy = null;
+        proxyBuilder = null;
+
+        waitForGarbageCollection(proxyParticipantId);
+
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
     }
 
     @Test
     public void registerAndUnregisterProviders_routingEntriesAddedAdnRemoved() {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+
         // register providers
         DefaulttestProvider testProvider = new DefaulttestProvider();
         registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
@@ -452,10 +546,14 @@ public class RoutingTableCleanupTest {
     }
 
     @Test
-    public void registerProviders_createProxy_refCountForSelectedProviderIncremented() {
+    public void registerProviders_createProxy_refCountForSelectedProviderIncremented() throws InterruptedException {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+
         // register providers
         DefaulttestProvider testProvider = new DefaulttestProvider();
         registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        Thread.sleep(1l);
         registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
 
         checkRefCnt(FIXEDPARTICIPANTID1, 1l);
@@ -465,7 +563,8 @@ public class RoutingTableCleanupTest {
         ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(domains, testProxy.class);
 
         // create proxy
-        createProxy(proxyBuilder, defaultMessagingQos, discoveryQosLocal);
+        testProxy proxy = createProxy(proxyBuilder, defaultMessagingQos, discoveryQosLocal);
+        assertNotNull(proxy);
 
         // Check refCount values of routing entries for fixed providers
         checkRefCnt(FIXEDPARTICIPANTID1, 1l);
@@ -478,31 +577,24 @@ public class RoutingTableCleanupTest {
 
     @Test
     public void registerProviders_createMultiProxy_refCountForSelectedProviderIncremented() {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID3));
+
         // register providers
         DefaulttestProvider testProvider = new DefaulttestProvider();
         registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
         registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
         registerProvider(testProvider, TESTCUSTOMDOMAIN3, providerQosLocal);
 
+        // Check refCount values of routing entries of fixed providers
         checkRefCnt(FIXEDPARTICIPANTID1, 1l);
         checkRefCnt(FIXEDPARTICIPANTID2, 1l);
         checkRefCnt(FIXEDPARTICIPANTID3, 1l);
 
         // Define custom arbitration strategy function to get multiple providers
-        ArbitrationStrategyFunction arbitrationStrategyFunction = new ArbitrationStrategyFunction() {
-            @Override
-            public Set<DiscoveryEntryWithMetaInfo> select(Map<String, String> parameters,
-                                                          Collection<DiscoveryEntryWithMetaInfo> capabilities) {
-                Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
-                for (DiscoveryEntryWithMetaInfo entry : capabilities) {
-                    if (entry.getParticipantId().equals(FIXEDPARTICIPANTID1)
-                            || entry.getParticipantId().equals(FIXEDPARTICIPANTID2)) {
-                        result.add(entry);
-                    }
-                }
-                return result;
-            }
-        };
+        ArbitrationStrategyFunction arbitrationStrategyFunction = customArbitrationStrategyFor(new HashSet<>(Arrays.asList(FIXEDPARTICIPANTID1,
+                                                                                                                           FIXEDPARTICIPANTID2)));
 
         Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2, TESTCUSTOMDOMAIN3));
         ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(domains, testProxy.class);
@@ -512,9 +604,10 @@ public class RoutingTableCleanupTest {
                                                      arbitrationStrategyFunction,
                                                      Long.MAX_VALUE,
                                                      DiscoveryScope.LOCAL_ONLY);
-        createProxy(proxyBuilder, defaultMessagingQos, discoveryQos);
+        testProxy proxy = createProxy(proxyBuilder, defaultMessagingQos, discoveryQos);
+        assertNotNull(proxy);
 
-        // Check refCount values of routing entries of fixed providers        
+        // Check refCount values of routing entries of fixed providers
         checkRefCnt(FIXEDPARTICIPANTID1, 2l);
         checkRefCnt(FIXEDPARTICIPANTID2, 2l);
         checkRefCnt(FIXEDPARTICIPANTID3, 1l);
@@ -527,6 +620,8 @@ public class RoutingTableCleanupTest {
 
     @Test
     public void callProxyOperation_refCountOfProviderAndProxyIsTheSame() {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+
         // register providers
         DefaulttestProvider testProvider = new DefaulttestProvider();
         registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
@@ -556,52 +651,154 @@ public class RoutingTableCleanupTest {
     }
 
     @Test
+    public void callMultiProxyOperation_refCountOfProviderAndProxyIsTheSame() {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID3));
+
+        // register providers
+        DefaulttestProvider testProvider = spy(new DefaulttestProvider());
+
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN3, providerQosLocal);
+
+        // Check refCount values of routing entries of fixed providers
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
+
+        // Define custom arbitration strategy function to get multiple providers
+        ArbitrationStrategyFunction arbitrationStrategyFunction = customArbitrationStrategyFor(new HashSet<>(Arrays.asList(FIXEDPARTICIPANTID1,
+                                                                                                                           FIXEDPARTICIPANTID2)));
+
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2, TESTCUSTOMDOMAIN3));
+        ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(domains, testProxy.class);
+
+        // Save proxy's participant id
+        String proxyParticipantId = proxyBuilder.getParticipantId();
+
+        // create proxy
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000,
+                                                     arbitrationStrategyFunction,
+                                                     Long.MAX_VALUE,
+                                                     DiscoveryScope.LOCAL_ONLY);
+        testProxy proxy = createProxy(proxyBuilder, defaultMessagingQos, discoveryQos);
+
+        // Check if proxy is contained in routing table
+        checkRefCnt(proxyParticipantId, 1l);
+        // Check refCount values of routing entries of fixed providers
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer((invocation) -> {
+            checkRefCnt(proxyParticipantId, 1l);
+            checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+            checkRefCnt(FIXEDPARTICIPANTID2, 2l);
+            checkRefCnt(FIXEDPARTICIPANTID3, 1l);
+            Void result = (Void) invocation.callRealMethod();
+            cdl.countDown();
+            return result;
+        }).when(testProvider).methodFireAndForgetWithoutParams();
+
+        // Perform any proxy operation
+        proxy.methodFireAndForgetWithoutParams();
+        try {
+            assertTrue(cdl.await(10000, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+            fail(e.toString());
+        }
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+    }
+
+    @Test
     public void useGuidedProxyBuilder_createAndDestroyProxy_routingEntryAddedAndRemoved() throws InterruptedException {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+
         // register providers
         DefaulttestProvider testProvider = new DefaulttestProvider();
         registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
 
-        Set<String> domains = new HashSet<String>(Arrays.asList(TESTCUSTOMDOMAIN1));
+        Set<String> domains = new HashSet<String>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2));
         GuidedProxyBuilder guidedProxyBuilder = joynrRuntime.getGuidedProxyBuilder(domains, testProxy.class);
 
         // create proxy
         guidedProxyBuilder.setDiscoveryQos(discoveryQosLocal).setMessagingQos(defaultMessagingQos).discover();
+
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 2l);
+
         testProxy proxy = guidedProxyBuilder.buildProxy(testProxy.class, FIXEDPARTICIPANTID1);
         assertNotNull(proxy);
 
         // Check whether routing entry for built proxy has been created
         assertFalse(sProxyParticipantId.isEmpty());
-        assertTrue(routingTable.containsKey(sProxyParticipantId));
-
-        Semaphore gcSemaphore = new Semaphore(0);
-        doAnswer((invocation) -> {
-            invocation.callRealMethod();
-            gcSemaphore.release();
-            return null;
-        }).when(shutdownNotifier).unregister(any(ShutdownListener.class));
+        checkRefCnt(sProxyParticipantId, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
 
         // set proxy and proxyBuilder to null
         proxy = null;
         guidedProxyBuilder = null;
 
-        // wait until unregister of shutdownNotifier
-        for (int i = 0; i < 120; i++) { // try for 1 minute
-            System.gc();
-            if (gcSemaphore.tryAcquire(500, TimeUnit.MILLISECONDS)) {
-                System.out.println("Garbage collector has been called to remove proxy at " + i + " iteration!");
-                break;
-            }
-        }
+        waitForGarbageCollection(sProxyParticipantId);
 
-        // routing entry for proxy should be removed
-        assertFalse(routingTable.containsKey(sProxyParticipantId));
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
 
         // unregister provider
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+    }
+
+    @Test
+    public void useGuidedProxyBuilder_registerProviders_createProxy_refCountForSelectedProviderIncremented() {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2));
+        GuidedProxyBuilder guidedProxyBuilder = joynrRuntime.getGuidedProxyBuilder(domains, testProxy.class);
+
+        // create proxy
+        guidedProxyBuilder.setDiscoveryQos(discoveryQosLocal).setMessagingQos(defaultMessagingQos).discover();
+
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 2l);
+
+        testProxy proxy = guidedProxyBuilder.buildProxy(testProxy.class, FIXEDPARTICIPANTID1);
+        assertNotNull(proxy);
+
+        // Check refCount values of routing entries for fixed providers
+        checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
     }
 
     @Test
     public void useGuidedProxyBuilder_callProxyOperation_refCountOfProviderAndProxyIsTheSame() {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+
         // register providers
         DefaulttestProvider testProvider = new DefaulttestProvider();
         registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
@@ -633,33 +830,46 @@ public class RoutingTableCleanupTest {
 
     @Test
     public void useGuidedProxyBuilder_discoverAndBuildNone_routingEntryOfProxyNotCreated() {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID3));
+
         // register providers
         DefaulttestProvider testProvider = new DefaulttestProvider();
         registerProvider(testProvider, TESTCUSTOMDOMAIN1, providerQosLocal);
-
-        // Check whether routing entry for built proxy has been created
-        assertTrue(sProxyParticipantId.isEmpty());
-        assertFalse(routingTable.containsKey(sProxyParticipantId));
+        registerProvider(testProvider, TESTCUSTOMDOMAIN2, providerQosLocal);
+        registerProvider(testProvider, TESTCUSTOMDOMAIN3, providerQosLocal);
 
         // Get refCount values of routing entries for fixed provider
         checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
 
-        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1));
+        Set<String> domains = new HashSet<>(Arrays.asList(TESTCUSTOMDOMAIN1, TESTCUSTOMDOMAIN2, TESTCUSTOMDOMAIN3));
         GuidedProxyBuilder guidedProxyBuilder = joynrRuntime.getGuidedProxyBuilder(domains, testProxy.class);
 
         // perform discovery
         guidedProxyBuilder.setDiscoveryQos(discoveryQosLocal).setMessagingQos(defaultMessagingQos).discover();
 
+        // Check whether routing entry for proxy has not been created
+        assertTrue(sProxyParticipantId.isEmpty());
+
         checkRefCnt(FIXEDPARTICIPANTID1, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 2l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 2l);
 
         // build none
         guidedProxyBuilder.buildNone();
 
         // Check whether number of routing entries has not been changed
-        assertFalse(routingTable.containsKey(sProxyParticipantId));
+        assertTrue(sProxyParticipantId.isEmpty());
         checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID3, 1l);
 
         // unregister provider
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN3, testProvider);
     }
 }
