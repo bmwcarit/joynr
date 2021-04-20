@@ -29,38 +29,8 @@ import io.joynr.generator.AbstractJoynrJavaGeneratorTest;
 
 public class GeneratorVersioningTest extends AbstractJoynrJavaGeneratorTest {
 
-    @Test
-    public void testGeneratesWithoutVersion() throws Exception {
-        final boolean generateProxy = true;
-        final boolean generateProvider = true;
-        final boolean generateVersion = false;
-        super.setup(generateProxy, generateProvider, generateVersion);
-
+    private void expectVersioning(Map<String, String> result, String typeCollection) {
         boolean versionedStructOfTypeCollectionGenerated = false;
-        Map<String, String> result = generate("test-with-noversiongeneration-comment.fidl", true);
-        for (Map.Entry<String, String> entry : result.entrySet()) {
-            if (!entry.getKey().contains("/joynr/tests/")) {
-                fail("File generated in wrong package: " + entry.getKey());
-            }
-            if (entry.getKey().contains("/v2/")) {
-                fail("File with package version found: " + entry.getKey());
-            }
-            if (entry.getKey().contains("NoVersionGenerationTypeCollection/VersionedStruct")) {
-                versionedStructOfTypeCollectionGenerated = true;
-            }
-        }
-        assertTrue(versionedStructOfTypeCollectionGenerated);
-    }
-
-    @Test
-    public void testGeneratesWithVersion() throws Exception {
-        final boolean generateProxy = true;
-        final boolean generateProvider = true;
-        final boolean generateVersion = true;
-        super.setup(generateProxy, generateProvider, generateVersion);
-
-        boolean versionedStructOfTypeCollectionGenerated = false;
-        Map<String, String> result = generate("test-without-noversiongeneration-comment.fidl", true);
         for (Map.Entry<String, String> entry : result.entrySet()) {
             if (!entry.getKey().contains("/v2/")) {
                 fail("File without package version found: " + entry.getKey());
@@ -68,10 +38,69 @@ public class GeneratorVersioningTest extends AbstractJoynrJavaGeneratorTest {
             if (!entry.getKey().contains("/joynr/tests/v2/")) {
                 fail("File generated in wrong package: " + entry.getKey());
             }
-            if (entry.getKey().contains("PackageVersionedTypeCollection/VersionedStruct")) {
+            if (entry.getKey().contains(typeCollection + "/VersionedStruct")) {
                 versionedStructOfTypeCollectionGenerated = true;
             }
         }
         assertTrue(versionedStructOfTypeCollectionGenerated);
+    }
+
+    private void expectNoVersioning(Map<String, String> result, String typeCollection) {
+        boolean versionedStructOfTypeCollectionGenerated = false;
+        for (Map.Entry<String, String> entry : result.entrySet()) {
+            if (!entry.getKey().contains("/joynr/tests/")) {
+                fail("File generated in wrong package: " + entry.getKey());
+            }
+            if (entry.getKey().contains("/v2/")) {
+                fail("File with package version found: " + entry.getKey());
+            }
+            if (entry.getKey().contains(typeCollection + "/VersionedStruct")) {
+                versionedStructOfTypeCollectionGenerated = true;
+            }
+        }
+        assertTrue(versionedStructOfTypeCollectionGenerated);
+    }
+
+    @Test
+    public void generateWithNoVersionComment_withoutAddVersion() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        final boolean packageVersioning = false;
+        super.setup(generateProxy, generateProvider, packageVersioning);
+
+        Map<String, String> result = generate("test-with-noversiongeneration-comment.fidl", true);
+        expectNoVersioning(result, "NoVersionGenerationTypeCollection");
+    }
+
+    @Test
+    public void generateWithoutNoVersionComment_withoutAddVersion() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        final boolean packageVersioning = false;
+        super.setup(generateProxy, generateProvider, packageVersioning);
+
+        Map<String, String> result = generate("test-without-noversiongeneration-comment.fidl", true);
+        expectVersioning(result, "PackageVersionedTypeCollection");
+    }
+
+    @Test
+    public void generateWithoutNoVersionComment_withAddVersion() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        final boolean packageVersioning = true;
+        super.setup(generateProxy, generateProvider, packageVersioning);
+
+        Map<String, String> result = generate("test-without-noversiongeneration-comment.fidl", true);
+        expectVersioning(result, "PackageVersionedTypeCollection");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void generateWithNoVersionComment_withAddVersion() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        final boolean packageVersioning = true;
+        super.setup(generateProxy, generateProvider, packageVersioning);
+
+        generate("test-with-noversiongeneration-comment.fidl", true);
     }
 }
