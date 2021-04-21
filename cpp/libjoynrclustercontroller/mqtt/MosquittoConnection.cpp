@@ -245,6 +245,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
                 if (_isActive) {
                     JOYNR_LOG_INFO(logger(), "[{}] restartThread: calling stopInternal()", _gbid);
                     stopInternal();
+                    JOYNR_LOG_INFO(logger(), "[{}] restartThread: stopInternal() done", _gbid);
                 } else {
                     JOYNR_LOG_INFO(logger(),
                                    "[{}] restartThread: external comms disabled - skipping stop",
@@ -257,6 +258,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
                 break;
             }
 
+            JOYNR_LOG_INFO(logger(), "[{}] restartThread: waiting 10 secs", _gbid);
             std::this_thread::sleep_for(std::chrono::seconds(10));
 
             if (_restartThreadShutdown) {
@@ -268,6 +270,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
                 if (_isActive) {
                     JOYNR_LOG_INFO(logger(), "[{}] restartThread: calling startInternal()", _gbid);
                     startInternal();
+                    JOYNR_LOG_INFO(logger(), "[{}] restartThread: startInternal() done", _gbid);
                 } else {
                     JOYNR_LOG_INFO(logger(),
                                    "[{}] restartThread: external comms disabled - skipping restart",
@@ -583,6 +586,7 @@ void MosquittoConnection::start()
     std::lock_guard<std::mutex> stopStartLocker(_stopStartMutex);
     startInternal();
     _isActive = true;
+    JOYNR_LOG_INFO(logger(), "[{}] MosquittoConnection external start() done", _gbid);
 }
 
 void MosquittoConnection::startInternal()
@@ -655,6 +659,7 @@ void MosquittoConnection::stop()
     std::lock_guard<std::mutex> stopStartLocker(_stopStartMutex);
     stopInternal();
     _isActive = false;
+    JOYNR_LOG_INFO(logger(), "[{}] MosquittoConnection external stop() done", _gbid);
 }
 
 void MosquittoConnection::stopInternal()
