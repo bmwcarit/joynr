@@ -11,6 +11,12 @@ the versioning scheme [here](JoynrVersioning.md).
   memory usage, see our documentation for [Java](java.md#the-guided-proxy-builder) or
   [JEE](jee.md#the-guided-proxy-builder)
 
+* **[Generator]** The `--addVersionTo` setting is being temporarily reactived again and it overrules
+  the `#noVersionGeneration` comment in fidl files. The option `name` for the  `--addVersionTo`
+  setting is still no longer supported. See [Generator documentation](generator.md) for more
+  information about the generator versioning
+  settings.
+
 ## Other Changes
 None.
 
