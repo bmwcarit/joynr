@@ -33,14 +33,11 @@ have to be provided in the Maven configuration:
                 <!-- optional parameters -->
                 <!-- specify how the major version of Franca interfaces and typecollections shall
                         affect the generated name and package of interfaces and types:
-                    DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead,
-                    see section "Disable versioning of generated files" below.
-                    If this parameter defines a different behaviour than the #noVersionGeneration
-                    comment, an exception is thrown and code generation is aborted.
-                    package (default): interface/typecollection major versions (if existing) are added as an
-                        additional package segment
-                    none: interface/typecollection versions do not affect the generated
-                        name and package of interfaces and types
+                    DEPRECATED! will be replaced by #noVersionGeneration comment soon.
+                    Package (default): interface/typecollection major versions (if existing) are
+                    added as an additional package segment
+                    none: interface/typecollection versions do not affect the generated name and
+                    package of interfaces and types
                     NOTE:
                         - Consumer and provider applications of one interface have to use the same
                           versioning scheme to be able to communicate with each other!
@@ -143,11 +140,12 @@ configuration](#maven-configuration) for details):
 * `rootGenerator`
 * `generationId`
 * `skip`
-* `addVersionTo` / DEPRECATED. The addVersionTo option will be removed
-  in a future version of the generator. Its functionality has been replaced by the
-  #noVersionGeneration comment in the .fidl file, see [Disable versioning of generated files](#disable-versioning-of-generated-files).
-  If the parameter defines a different behaviour than the comment, then an exception is thrown and
-  code generation is aborted.
+* `addVersionTo` / DEPRECATED. The addVersionTo option will be removed in a future version of the
+  generator. Its functionality has been replaced by the #noVersionGeneration comment in the .fidl
+  file, see [Disable versioning of generated files](#disable-versioning-of-generated-files).
+  If the parameter defines a different behaviour than the comment, then an error mesage will be
+  logged.
+
 * `extraParameters`
 * `target`: Whether the code generation shall be restricted to `proxy` or `provider` related code or
   create `both` parts. For Jee code generation use value `both` or omit parameter.
@@ -277,9 +275,9 @@ It is recommended to place any local model files into the project's subdirectory
 
 
 ## Disable versioning of generated files
-The generator generates package version information for interfaces and the
-types used by an interface by default. Interface/typecollection major versions (defaults to
-0 if not defined in the Franca file) are added as an additional package/namespace segment.
+The generator generates package version information for interfaces and the types used by an
+interface by default. Interface/typecollection major versions (defaults to 0 if not defined in the
+Franca file) are added as an additional package/namespace segment.
 To disable version generation, add a line containing #noVersionGeneration to the description
 (Franca @description comment) of the interface:
 
@@ -294,9 +292,9 @@ interface MyInterface {
 ```
 
 NOTE:
-> The #noVersionGeneration comment should now be used to define versioning behaviour,
-> rather than the `-addVersionTo` parameter. The latter one is deprecated and will
-> be removed very soon.
+> Normally the #noVersionGeneration comment should be used to define versioning behaviour. However,
+this functionality has been suspended for now, and the `addVersionTo` option should be temporarily
+used again. It will be removed very soon.
 
 ## joynr Generator Standalone
 The joynr Code Generator also exists as standalone version which can be used to manually
@@ -332,15 +330,12 @@ to *gen*.
       -templatesEncoding <encoding of templates>
       -generationId <name of what is being generated>
       -addVersionTo <package, none>
-        DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead,
-        see section "Disable versioning of generated files" above.
-        If this parameter would define a different behaviour than the #noVersionGeneration
-        comment. An exception is thrown and code generation is aborted.
+        DEPRECATED! will be replaced by #noVersionGeneration comment soon.
         package: interface/typecollection major versions (if existing) are added as an additional
             package segment
         none: interface/typecollection versions do not affect the generated name and package of
             interfaces and types
-        default: package
+        default: none
         NOTE:
             - Consumer and provider applications of one interface have to use the same versioning
               scheme to be able to communicate with each other!
