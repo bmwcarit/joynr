@@ -72,6 +72,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
           _stopStartMutex(),
           _isStopped(true),
           _isActive(false),
+          _isStopping(false),
           _restartThreadShutdown(false),
           _restartSemaphore(0),
           _restartThread(),
@@ -363,6 +364,11 @@ void MosquittoConnection::on_disconnect_v5(struct mosquitto* mosq,
                             storedErrno,
                             errorString);
         }
+    }
+
+    if (mosquittoConnection->_isStopping.load(std::memory_order_acquire)) {
+        JOYNR_LOG_INFO(logger(), "[{}] Stop is intentional, returning", mosquittoConnection->_gbid);
+        return;
     }
 
     // trigger restart for all known fatal cases where Mosquitto leaves the loop
@@ -663,6 +669,8 @@ void MosquittoConnection::stopInternal()
         return;
     }
 
+    std::atomic_exchange_explicit(&_isStopping, true, std::memory_order_acquire);
+
     // disconnect() must be called prior to stopLoop() since
     // otherwise the loop in the mosquitto background thread
     // continues forever and thus the join in stopLoop()
@@ -691,6 +699,7 @@ void MosquittoConnection::stopInternal()
     }
     setReadyToSend(false);
     _isStopped = true;
+    std::atomic_exchange_explicit(&_isStopping, false, std::memory_order_acquire);
 }
 
 void MosquittoConnection::stopLoop(bool force)
