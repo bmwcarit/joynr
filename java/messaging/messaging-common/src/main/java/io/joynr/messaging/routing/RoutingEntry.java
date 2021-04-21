@@ -20,7 +20,7 @@ package io.joynr.messaging.routing;
 
 import joynr.system.RoutingTypes.Address;
 
-class RoutingEntry {
+public class RoutingEntry {
     RoutingEntry(Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky) {
         setAddress(address);
         setIsGloballyVisible(isGloballyVisible);

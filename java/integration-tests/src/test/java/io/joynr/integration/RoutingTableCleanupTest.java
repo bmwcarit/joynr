@@ -75,6 +75,7 @@ import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
+import io.joynr.messaging.routing.RoutingEntry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingStub;
@@ -108,7 +109,6 @@ public class RoutingTableCleanupTest {
     private final String TESTGBID1 = "testgbid1";
     private final String TESTGBID2 = "testgbid2";
     private final String[] gbids = new String[]{ TESTGBID1, TESTGBID2 };
-    private final String TESTDOMAIN = "testDomain";
 
     private final String TESTCUSTOMDOMAIN1 = "testCustomDomain1";
     private final String TESTCUSTOMDOMAIN2 = "testCustomDomain2";
@@ -136,7 +136,7 @@ public class RoutingTableCleanupTest {
     private ProviderQos providerQosLocal;
     private MessagingQos defaultMessagingQos;
 
-    private ConcurrentMap<String, Object> routingTableHashMap;
+    private ConcurrentMap<String, RoutingEntry> routingTableHashMap;
 
     @Mock
     private MqttMessagingStubFactory mqttMessagingStubFactoryMock;
@@ -323,8 +323,8 @@ public class RoutingTableCleanupTest {
 
     private void checkRefCnt(String participantId, long expectedRefCnt) {
         assertTrue(routingTable.containsKey(participantId));
-        Object routingEntry = routingTableHashMap.get(participantId);
-        long actualRefCnt = getFieldValue(routingEntry, "refCount");
+        RoutingEntry routingEntry = routingTableHashMap.get(participantId);
+        long actualRefCnt = routingEntry.getRefCount();
         assertEquals(expectedRefCnt, actualRefCnt);
     }
 
