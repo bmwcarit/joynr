@@ -185,6 +185,7 @@ private:
     std::mutex _stopStartMutex;
     bool _isStopped;
     bool _isActive;
+    std::atomic<bool> _isStopping;
     std::atomic<bool> _restartThreadShutdown;
     Semaphore _restartSemaphore;
     std::thread _restartThread;
