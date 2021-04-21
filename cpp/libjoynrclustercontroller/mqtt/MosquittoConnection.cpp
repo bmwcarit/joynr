@@ -245,6 +245,12 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
                 if (_isActive) {
                     JOYNR_LOG_INFO(logger(), "[{}] restartThread: calling stopInternal()", _gbid);
                     stopInternal();
+                    std::size_t status;
+                    while ((status = _restartSemaphore.getStatus()) > 0) {
+                        JOYNR_LOG_INFO(
+                                logger(), "[{}] restartThread: clearing semaphore", _gbid, status);
+                        _restartSemaphore.wait();
+                    }
                     JOYNR_LOG_INFO(logger(), "[{}] restartThread: stopInternal() done", _gbid);
                 } else {
                     JOYNR_LOG_INFO(logger(),
