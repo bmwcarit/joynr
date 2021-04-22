@@ -36,6 +36,7 @@ None.
 * **[C++]** Fixed a bug where intentionally stopping the Mosquitto loop
   caused an invocation of the restartThread which could result in a
   stop/start loop in special cases.
+* **[Java]** Fixed a bug that prevented publication deliveries after proxy was garbage collected.
 
 # joynr 1.15.12
 

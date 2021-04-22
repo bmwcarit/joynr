@@ -77,7 +77,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     private ConcurrentMap<String, Class<?>> subscriptionTypes;
     private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes;
     private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes;
-    private ConcurrentMap<String, PubSubState> subscriptionStates;
+    private ConcurrentMap<String, SubscriptionState> subscriptionStates;
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers;
     private ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures; // These futures will be needed if a
     // subscription
@@ -119,7 +119,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
                             ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory,
                             ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory,
-                            ConcurrentMap<String, PubSubState> subscriptionStates,
+                            ConcurrentMap<String, SubscriptionState> subscriptionStates,
                             ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
                             ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
                             ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
@@ -156,11 +156,11 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         }
     }
 
-    private void registerSubscription(final SubscriptionQos qos, String subscriptionId) {
+    private void registerSubscription(Object proxy, final SubscriptionQos qos, String subscriptionId) {
 
         cancelExistingSubscriptionEndRunnable(subscriptionId);
 
-        PubSubState subState = new PubSubState();
+        SubscriptionState subState = new SubscriptionState(proxy);
         subState.updateTimeOfLastPublication();
         subscriptionStates.put(subscriptionId, subState);
 
@@ -314,7 +314,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         }
         String subscriptionId = subscriptionInvocation.getSubscriptionId();
         subscriptionFutureMap.put(subscriptionId, subscriptionInvocation.getFuture());
-        registerSubscription(subscriptionInvocation.getQos(), subscriptionId);
+        registerSubscription(subscriptionInvocation.getProxy(), subscriptionInvocation.getQos(), subscriptionId);
 
         SubscriptionRequest subscriptionRequest = registerDataAndCreateSubscriptionRequest.execute();
 
@@ -593,5 +593,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             removeSubscription(subscriptionId);
         }
 
+    }
+
+    static class SubscriptionState extends PubSubState {
+        @SuppressWarnings("unused")
+        private final Object proxy;
+
+        public SubscriptionState(Object proxy) {
+            this.proxy = proxy;
+        }
     }
 }

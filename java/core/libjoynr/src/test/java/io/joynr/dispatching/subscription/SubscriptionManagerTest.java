@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +51,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -59,6 +62,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.subscription.SubscriptionManagerImpl.SubscriptionState;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.SubscriptionException;
@@ -100,7 +104,7 @@ public class SubscriptionManagerTest {
     private ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory = spy(new ConcurrentHashMap<String, AttributeSubscriptionListener<?>>());
     private ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory = spy(new ConcurrentHashMap<String, BroadcastSubscriptionListener>());
     private ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory = spy(new ConcurrentHashMap<Pattern, Set<String>>());
-    private ConcurrentMap<String, PubSubState> subscriptionStates = spy(new ConcurrentHashMap<String, PubSubState>());
+    private ConcurrentMap<String, SubscriptionState> subscriptionStates = spy(new ConcurrentHashMap<String, SubscriptionState>());
     private ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers = spy(new ConcurrentHashMap<String, MissedPublicationTimer>());
     private ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes = spy(new ConcurrentHashMap<String, Class<?>[]>());
     private ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes = spy(new ConcurrentHashMap<Pattern, Class<?>[]>());
@@ -108,7 +112,7 @@ public class SubscriptionManagerTest {
     private ConcurrentMap<String, List<MulticastInformation>> subscriptionIdToMulticastInformationMap = spy(new ConcurrentHashMap<String, List<MulticastInformation>>());
 
     @Mock
-    private PubSubState subscriptionState;
+    private SubscriptionState subscriptionState;
 
     private SubscriptionManager subscriptionManager;
     private String subscriptionId;
@@ -133,6 +137,8 @@ public class SubscriptionManagerTest {
 
     @Mock
     private MulticastReceiverRegistrar mockMulticastReceiverRegistrar;
+
+    private ArgumentMatcher<SubscriptionState> matchesSubscriptionStateContainingProxy;
 
     @Before
     public void setUp() {
@@ -191,6 +197,25 @@ public class SubscriptionManagerTest {
         toDiscoveryEntry.setParticipantId(toParticipantId);
         future = new Future<String>();
         proxy = new Object();
+
+        Field proxyField;
+        try {
+            proxyField = SubscriptionState.class.getDeclaredField("proxy");
+        } catch (NoSuchFieldException | SecurityException e) {
+            throw new RuntimeException(e);
+        }
+        proxyField.setAccessible(true);
+        matchesSubscriptionStateContainingProxy = new ArgumentMatcher<SubscriptionState>() {
+            @Override
+            public boolean matches(Object argument) {
+                SubscriptionState state = (SubscriptionState) argument;
+                try {
+                    return proxyField.get(state) == proxy;
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
     }
 
     @SuppressWarnings("unchecked")
@@ -213,7 +238,7 @@ public class SubscriptionManagerTest {
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
-        verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
+        verify(subscriptionStates).put(Mockito.anyString(), argThat(matchesSubscriptionStateContainingProxy));
 
         ArgumentCaptor<Long> capturedExpiryInterval = ArgumentCaptor.forClass(Long.class);
         long remainingExpiryDateMs = onChangeQos.getExpiryDateMs() - System.currentTimeMillis();
@@ -247,7 +272,7 @@ public class SubscriptionManagerTest {
         subscriptionId = subscriptionRequest.getSubscriptionId();
 
         verify(broadcastSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(broadcastSubscriptionListener));
-        verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
+        verify(subscriptionStates).put(Mockito.anyString(), argThat(matchesSubscriptionStateContainingProxy));
 
         ArgumentCaptor<Long> capturedExpiryInterval = ArgumentCaptor.forClass(Long.class);
         long remainingExpiryDateMs = onChangeQos.getExpiryDateMs() - System.currentTimeMillis();
@@ -284,7 +309,7 @@ public class SubscriptionManagerTest {
                                                           request);
 
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
-        verify(subscriptionStates).put(Mockito.anyString(), Mockito.any(PubSubState.class));
+        verify(subscriptionStates).put(Mockito.anyString(), argThat(matchesSubscriptionStateContainingProxy));
 
         verify(cleanupScheduler, never()).schedule(Mockito.any(Runnable.class),
                                                    Mockito.anyLong(),
@@ -354,6 +379,8 @@ public class SubscriptionManagerTest {
                                                           new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           invocation);
 
+        verify(subscriptionStates).put(eq(invocation.getSubscriptionId()),
+                                       argThat(matchesSubscriptionStateContainingProxy));
         verify(multicastSubscribersDirectory).put(any(Pattern.class), anySet());
         assertEquals(1, subscriptionIdSet.size());
         if (subscriptionId != null) {
@@ -382,7 +409,7 @@ public class SubscriptionManagerTest {
                                                    subscriptionId,
                                                    qosSettings);
 
-        verify(subscriptionStates).get(Mockito.eq(subscriptionId));
+        verify(subscriptionStates).remove(eq(subscriptionId));
         verify(subscriptionState).stop();
 
         verify(dispatcher,
@@ -430,7 +457,7 @@ public class SubscriptionManagerTest {
                                                    subscriptionId,
                                                    qosSettings);
 
-        verify(subscriptionStates).get(Mockito.eq(subscriptionId));
+        verify(subscriptionStates).remove(eq(subscriptionId));
         verify(subscriptionState).stop();
 
         verify(dispatcher,
