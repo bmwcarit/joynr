@@ -109,6 +109,7 @@ public class SubscriptionTimersTest {
     private String toParticipantId;
     private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Future<String> future;
+    private Object proxy;
 
     class IntegerReference extends TypeReference<Integer> {
     }
@@ -127,6 +128,7 @@ public class SubscriptionTimersTest {
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
         future = new Future<String>();
+        proxy = new Object();
     }
 
     @Test(timeout = 3000)
@@ -145,7 +147,8 @@ public class SubscriptionTimersTest {
                                                                                             IntegerReference.class,
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
-                                                                                            future);
+                                                                                            future,
+                                                                                            proxy);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
                                                           new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
@@ -187,7 +190,8 @@ public class SubscriptionTimersTest {
         Object[] args = new Object[]{ subscriptionId, listener, multicastSubscriptionQos, new Object[]{ "abc" } };
         MulticastSubscribeInvocation multicastSubscribeInvocation = new MulticastSubscribeInvocation(method,
                                                                                                      args,
-                                                                                                     future);
+                                                                                                     future,
+                                                                                                     proxy);
         Mockito.when(multicastWildcardRegexFactory.createIdPattern(Mockito.anyString()))
                .thenReturn(Pattern.compile("."));
         subscriptionManager.registerMulticastSubscription(fromParticipantId,
@@ -228,7 +232,8 @@ public class SubscriptionTimersTest {
                                                                                             IntegerReference.class,
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
-                                                                                            future);
+                                                                                            future,
+                                                                                            proxy);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
                                                           new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);

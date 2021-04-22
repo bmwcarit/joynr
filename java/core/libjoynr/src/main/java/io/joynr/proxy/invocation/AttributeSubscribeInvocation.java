@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
      * without a subscriptionId in position 0.
      * @param future result future for the subscribe invocation
      */
-    public AttributeSubscribeInvocation(Method method, Object[] args, Future<String> future) {
-        super(future, getAttributeNameFromAnnotation(method), getQosParameter(args));
+    public AttributeSubscribeInvocation(Method method, Object[] args, Future<String> future, Object proxy) {
+        super(future, getAttributeNameFromAnnotation(method), getQosParameter(args), proxy);
         attributeTypeReference = getAnnotationFromMethod(method).attributeType();
         attributeSubscriptionListener = getSubscriptionListener(args);
 
@@ -68,8 +68,9 @@ public class AttributeSubscribeInvocation extends SubscriptionInvocation {
                                         Class<? extends TypeReference<?>> attributeTypeReference,
                                         AttributeSubscriptionListener<?> attributeSubscriptionListener,
                                         SubscriptionQos qos,
-                                        Future<String> future) {
-        super(future, attributeName, qos);
+                                        Future<String> future,
+                                        Object proxy) {
+        super(future, attributeName, qos, proxy);
         this.attributeTypeReference = attributeTypeReference;
         this.attributeSubscriptionListener = attributeSubscriptionListener;
     }

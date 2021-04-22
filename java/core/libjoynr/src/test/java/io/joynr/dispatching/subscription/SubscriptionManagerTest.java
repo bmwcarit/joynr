@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,6 +118,7 @@ public class SubscriptionManagerTest {
     private String toParticipantId;
     private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Future<String> future;
+    private Object proxy;
 
     @Mock
     private ConcurrentMap<String, Class<?>> subscriptionAttributeTypes;
@@ -189,6 +190,7 @@ public class SubscriptionManagerTest {
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
         future = new Future<String>();
+        proxy = new Object();
     }
 
     @SuppressWarnings("unchecked")
@@ -203,7 +205,8 @@ public class SubscriptionManagerTest {
                                                                                             IntegerReference.class,
                                                                                             attributeSubscriptionCallback,
                                                                                             qos,
-                                                                                            future);
+                                                                                            future,
+                                                                                            proxy);
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
                                                           new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
@@ -236,7 +239,8 @@ public class SubscriptionManagerTest {
         BroadcastSubscribeInvocation subscriptionRequest = new BroadcastSubscribeInvocation(broadcastName,
                                                                                             broadcastSubscriptionListener,
                                                                                             onChangeQos,
-                                                                                            future);
+                                                                                            future,
+                                                                                            proxy);
         subscriptionManager.registerBroadcastSubscription(fromParticipantId,
                                                           new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
@@ -272,7 +276,8 @@ public class SubscriptionManagerTest {
                                                                                 IntegerReference.class,
                                                                                 attributeSubscriptionCallback,
                                                                                 qosWithoutExpiryDate,
-                                                                                future);
+                                                                                future,
+                                                                                proxy);
         subscriptionId = request.getSubscriptionId();
         subscriptionManager.registerAttributeSubscription(fromParticipantId,
                                                           new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
@@ -341,7 +346,7 @@ public class SubscriptionManagerTest {
         multicastSubscribersDirectory.put(multicastIdPattern, subscriptionIdSet);
         when(multicastWildcardRegexFactory.createIdPattern(multicastId)).thenReturn(multicastIdPattern);
 
-        MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, args, future);
+        MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method, args, future, proxy);
 
         DiscoveryEntryWithMetaInfo toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);

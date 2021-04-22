@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ public abstract class SubscriptionInvocation extends Invocation<String> {
     private String subscriptionId = "";
     private final String subscriptionName;
     private final SubscriptionQos qos;
+    private final Object proxy;
 
     protected static boolean argsHasSubscriptionId(Object[] args) {
         return args[0] instanceof String;
@@ -56,11 +57,12 @@ public abstract class SubscriptionInvocation extends Invocation<String> {
         }
     }
 
-    public SubscriptionInvocation(Future<String> future, String subscriptionName, SubscriptionQos qos) {
+    public SubscriptionInvocation(Future<String> future, String subscriptionName, SubscriptionQos qos, Object proxy) {
         super(future);
         this.subscriptionName = subscriptionName;
         this.subscriptionId = null;
         this.qos = qos;
+        this.proxy = proxy;
     }
 
     public boolean hasSubscriptionId() {
@@ -81,6 +83,10 @@ public abstract class SubscriptionInvocation extends Invocation<String> {
 
     public SubscriptionQos getQos() {
         return qos;
+    }
+
+    public Object getProxy() {
+        return proxy;
     }
 
 }

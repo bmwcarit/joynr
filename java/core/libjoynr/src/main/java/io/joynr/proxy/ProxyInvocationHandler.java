@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -334,18 +334,18 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         }
     }
 
-    private Optional<Object> executeSubscriptionMethod(Method method, Object[] args) {
+    private Optional<Object> executeSubscriptionMethod(Object proxy, Method method, Object[] args) {
         if (preparingForShutdown.get()) {
             throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
         }
         Future<String> future = new Future<String>();
         if (method.getName().startsWith("subscribeTo")) {
             if (JoynrSubscriptionInterface.class.isAssignableFrom(method.getDeclaringClass())) {
-                executeAttributeSubscriptionMethod(method, args, future);
+                executeAttributeSubscriptionMethod(proxy, method, args, future);
             } else if (method.getAnnotation(JoynrRpcBroadcast.class) != null) {
-                executeBroadcastSubscriptionMethod(method, args, future);
+                executeBroadcastSubscriptionMethod(proxy, method, args, future);
             } else if (method.getAnnotation(JoynrMulticast.class) != null) {
-                executeMulticastSubscriptionMethod(method, args, future);
+                executeMulticastSubscriptionMethod(proxy, method, args, future);
             } else {
                 throw new JoynrRuntimeException("Method " + method
                         + " not declared in JoynrSubscriptionInterface or annotated with either @JoynrRpcBroadcast or @JoynrMulticast.");
@@ -374,10 +374,11 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         }
     }
 
-    private void executeAttributeSubscriptionMethod(Method method, Object[] args, Future<String> future) {
+    private void executeAttributeSubscriptionMethod(Object proxy, Method method, Object[] args, Future<String> future) {
         final AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method,
                                                                                                     args,
-                                                                                                    future);
+                                                                                                    future,
+                                                                                                    proxy);
         queueOrExecuteSubscriptionInvocation(attributeSubscription, new SubscriptionAction(future) {
             @Override
             public void subscribe() {
@@ -387,10 +388,11 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
 
     }
 
-    private void executeBroadcastSubscriptionMethod(Method method, Object[] args, Future<String> future) {
+    private void executeBroadcastSubscriptionMethod(Object proxy, Method method, Object[] args, Future<String> future) {
         final BroadcastSubscribeInvocation broadcastSubscription = new BroadcastSubscribeInvocation(method,
                                                                                                     args,
-                                                                                                    future);
+                                                                                                    future,
+                                                                                                    proxy);
         queueOrExecuteSubscriptionInvocation(broadcastSubscription, new SubscriptionAction(future) {
             @Override
             public void subscribe() {
@@ -399,10 +401,11 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         });
     }
 
-    private void executeMulticastSubscriptionMethod(Method method, Object[] args, Future<String> future) {
+    private void executeMulticastSubscriptionMethod(Object proxy, Method method, Object[] args, Future<String> future) {
         final MulticastSubscribeInvocation multicastSubscription = new MulticastSubscribeInvocation(method,
                                                                                                     args,
-                                                                                                    future);
+                                                                                                    future,
+                                                                                                    proxy);
         queueOrExecuteSubscriptionInvocation(multicastSubscription, new SubscriptionAction(future) {
             @Override
             public void subscribe() {
@@ -503,7 +506,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         try {
             if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)
                     || JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
-                Optional<Object> result = executeSubscriptionMethod(method, args);
+                Optional<Object> result = executeSubscriptionMethod(proxy, method, args);
                 return result.isPresent() ? result.get() : null;
             } else if (methodInterfaceClass.getAnnotation(FireAndForget.class) != null) {
                 Optional<Object> result = executeOneWayMethod(method, args);

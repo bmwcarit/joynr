@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,18 @@
 package io.joynr.proxy.invocation;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import io.joynr.proxy.Future;
+import io.joynr.pubsub.SubscriptionQos;
+import joynr.UnicastSubscriptionQos;
 
 public class SubscriptionInvocationTest {
     SubscriptionInvocation fixture;
@@ -55,4 +61,27 @@ public class SubscriptionInvocationTest {
 
         assertFalse(fixture.hasSubscriptionId());
     }
+
+    @Test
+    public void ctor() {
+        Future<String> future = new Future<String>();
+        String subscriptionName = new String();
+        SubscriptionQos qos = new UnicastSubscriptionQos();
+        Object proxy = new Object();
+        SubscriptionInvocation subject = new SubscriptionInvocationStub(future, subscriptionName, qos, proxy);
+        assertSame(future, subject.getFuture());
+        assertSame(subscriptionName, subject.getSubscriptionName());
+        assertSame(qos, subject.getQos());
+        assertSame(proxy, subject.getProxy());
+        assertNull(subject.getSubscriptionId());
+    }
+
+    private class SubscriptionInvocationStub extends SubscriptionInvocation {
+        public SubscriptionInvocationStub(Future<String> future,
+                                          String subscriptionName,
+                                          SubscriptionQos qos,
+                                          Object proxy) {
+            super(future, subscriptionName, qos, proxy);
+        }
+    };
 }

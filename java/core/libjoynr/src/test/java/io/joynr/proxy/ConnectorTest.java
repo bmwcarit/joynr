@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -227,7 +227,10 @@ public class ConnectorTest {
                                                                                       String.class,
                                                                                       AttributeSubscriptionListener.class,
                                                                                       SubscriptionQos.class);
-            AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method, args, future);
+            AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method,
+                                                                                                  args,
+                                                                                                  future,
+                                                                                                  proxy);
             connector.executeSubscriptionMethod(attributeSubscription);
             verify(subscriptionManager,
                    times(1)).registerAttributeSubscription(eq(fromParticipantId),
@@ -377,7 +380,8 @@ public class ConnectorTest {
             AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method,
                                                                                        new Object[]{ listener,
                                                                                                subscriptionQos },
-                                                                                       null);
+                                                                                       null,
+                                                                                       proxy);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerAttributeSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,
@@ -403,7 +407,8 @@ public class ConnectorTest {
                                                                                        new Object[]{ listener,
                                                                                                subscriptionQos,
                                                                                                new BroadcastFilterParameters() },
-                                                                                       null);
+                                                                                       null,
+                                                                                       proxy);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerBroadcastSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,
@@ -430,7 +435,8 @@ public class ConnectorTest {
                                                                                        new Object[]{ listener,
                                                                                                subscriptionQos,
                                                                                                partitions },
-                                                                                       null);
+                                                                                       null,
+                                                                                       proxy);
             connector.executeSubscriptionMethod(invocation);
             verify(subscriptionManager, times(1)).registerMulticastSubscription(fromParticipantId,
                                                                                 toDiscoveryEntries,

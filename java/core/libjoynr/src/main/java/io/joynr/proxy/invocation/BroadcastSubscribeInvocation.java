@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
         }
     }
 
-    public BroadcastSubscribeInvocation(Method method, Object[] args, Future<String> future) {
-        super(future, getSubscriptionNameFromAnnotation(method), getQosParameter(args));
+    public BroadcastSubscribeInvocation(Method method, Object[] args, Future<String> future, Object proxy) {
+        super(future, getSubscriptionNameFromAnnotation(method), getQosParameter(args), proxy);
         boolean isSelectiveBroadcast = method.getAnnotation(JoynrRpcBroadcast.class) != null;
 
         // For broadcast subscriptions the args array contains the following entries:
@@ -83,8 +83,9 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     public BroadcastSubscribeInvocation(String broadcastName,
                                         BroadcastSubscriptionListener broadcastSubscriptionListener,
                                         OnChangeSubscriptionQos qos,
-                                        Future<String> future) {
-        super(future, broadcastName, qos);
+                                        Future<String> future,
+                                        Object proxy) {
+        super(future, broadcastName, qos, proxy);
         this.filterParameters = null;
         this.broadcastSubscriptionListener = broadcastSubscriptionListener;
         outParameterTypes = extractOutParameterTypes(broadcastSubscriptionListener);

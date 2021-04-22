@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ public class MulticastSubscribeInvocation extends SubscriptionInvocation {
     private Class<?>[] outParameterTypes;
     private String[] partitions;
 
-    public MulticastSubscribeInvocation(Method method, Object[] args, Future<String> future) {
-        super(future, getMulticastNameFromAnnotation(method), getQosParameter(args));
+    public MulticastSubscribeInvocation(Method method, Object[] args, Future<String> future, Object proxy) {
+        super(future, getMulticastNameFromAnnotation(method), getQosParameter(args), proxy);
         listener = getSubscriptionListener(args);
         outParameterTypes = extractOutParameterTypes(listener);
         partitions = extractPartitions(args);
