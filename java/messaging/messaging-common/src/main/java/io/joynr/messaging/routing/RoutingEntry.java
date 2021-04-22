@@ -21,7 +21,7 @@ package io.joynr.messaging.routing;
 import joynr.system.RoutingTypes.Address;
 
 public class RoutingEntry {
-    RoutingEntry(Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky) {
+    public RoutingEntry(Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky) {
         setAddress(address);
         setIsGloballyVisible(isGloballyVisible);
         this.expiryDateMs = expiryDateMs;
@@ -80,6 +80,43 @@ public class RoutingEntry {
             throw new IllegalStateException(exceptionMessage);
         }
         return --refCount;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((address == null) ? 0 : address.hashCode());
+        result = prime * result + (int) (expiryDateMs ^ (expiryDateMs >>> 32));
+        result = prime * result + (isGloballyVisible ? 1231 : 1237);
+        result = prime * result + (isSticky ? 1231 : 1237);
+        result = prime * result + (int) (refCount ^ (refCount >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RoutingEntry other = (RoutingEntry) obj;
+        if (address == null) {
+            if (other.address != null)
+                return false;
+        } else if (!address.equals(other.address))
+            return false;
+        if (expiryDateMs != other.expiryDateMs)
+            return false;
+        if (isGloballyVisible != other.isGloballyVisible)
+            return false;
+        if (isSticky != other.isSticky)
+            return false;
+        if (refCount != other.refCount)
+            return false;
+        return true;
     }
 
     Address address;
