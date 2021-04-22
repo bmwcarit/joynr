@@ -174,7 +174,7 @@ public class AbstractRoutingTableCleanupTest {
     protected ProviderQos providerQosLocal;
     protected MessagingQos defaultMessagingQos;
 
-    private ConcurrentMap<String, RoutingEntry> routingTableHashMap;
+    protected ConcurrentMap<String, RoutingEntry> routingTableHashMap;
 
     @Mock
     private MqttMessagingStubFactory mqttMessagingStubFactoryMock;
