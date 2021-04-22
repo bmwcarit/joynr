@@ -3706,6 +3706,8 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.remove(globalDiscoveryEntry.getParticipantId());
 
         assertTrue(cdlStart.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verifyNoMoreInteractions(routingTable);
         verify(globalCapabilitiesDirectoryClient).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                          eq(discoveryEntry.getParticipantId()),
                                                          any(String[].class));
@@ -3729,6 +3731,8 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
 
         Thread.sleep(500);
+
+        verifyNoMoreInteractions(routingTable);
         verify(globalCapabilitiesDirectoryClient,
                times(0)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                 anyString(),
@@ -3751,6 +3755,7 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.remove(participantId);
 
         assertFalse(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verifyNoMoreInteractions(routingTable);
         verify(globalCapabilitiesDirectoryClient,
                never()).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                any(String.class),
@@ -3773,6 +3778,7 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
 
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verifyNoMoreInteractions(routingTable);
         verify(globalCapabilitiesDirectoryClient,
                times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                 eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
@@ -3793,6 +3799,7 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
 
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verifyNoMoreInteractions(routingTable);
         verify(globalCapabilitiesDirectoryClient,
                atLeast(2)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                   eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
@@ -3812,6 +3819,7 @@ public class LocalCapabilitiesDirectoryTest {
         localCapabilitiesDirectory.remove(provisionedGlobalDiscoveryEntry.getParticipantId());
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
+        verifyNoMoreInteractions(routingTable);
         verify(globalCapabilitiesDirectoryClient,
                times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                 eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
@@ -3834,6 +3842,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
+        verifyNoMoreInteractions(routingTable);
         verify(globalCapabilitiesDirectoryClient,
                times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                 eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
@@ -3856,6 +3865,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
+        verifyNoMoreInteractions(routingTable);
         verify(globalCapabilitiesDirectoryClient,
                times(1)).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                 eq(provisionedGlobalDiscoveryEntry.getParticipantId()),
@@ -3903,6 +3913,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalCapabilitiesDirectoryClient).remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                                          any(String.class),
                                                          eq(expectedGbids));
+        verifyNoMoreInteractions(routingTable);
     }
 
     @Test(timeout = TEST_TIMEOUT)

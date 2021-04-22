@@ -586,8 +586,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     synchronized (globalDiscoveryEntryCache) {
                         globalProviderParticipantIdToGbidListMap.remove(participantId);
                         localDiscoveryEntryStore.remove(participantId);
-                        // Remove endpoint addresses
-                        routingTable.remove(participantId);
                     }
                     logger.info("Removed globally registered participantId {}", participantId);
                     gcdTaskSequencer.taskFinished();
@@ -619,8 +617,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                         synchronized (globalDiscoveryEntryCache) {
                             globalProviderParticipantIdToGbidListMap.remove(participantId);
                             localDiscoveryEntryStore.remove(participantId);
-                            // Remove endpoint addresses
-                            routingTable.remove(participantId);
                         }
                         break;
                     case INVALID_GBID:
