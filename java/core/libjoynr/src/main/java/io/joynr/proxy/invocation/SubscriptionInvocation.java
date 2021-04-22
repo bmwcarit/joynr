@@ -57,16 +57,9 @@ public abstract class SubscriptionInvocation extends Invocation<String> {
     }
 
     public SubscriptionInvocation(Future<String> future, String subscriptionName, SubscriptionQos qos) {
-        this(future, subscriptionName, qos, null);
-    }
-
-    public SubscriptionInvocation(Future<String> future,
-                                  String subscriptionName,
-                                  SubscriptionQos qos,
-                                  String subscriptionId) {
         super(future);
         this.subscriptionName = subscriptionName;
-        this.subscriptionId = subscriptionId;
+        this.subscriptionId = null;
         this.qos = qos;
     }
 
