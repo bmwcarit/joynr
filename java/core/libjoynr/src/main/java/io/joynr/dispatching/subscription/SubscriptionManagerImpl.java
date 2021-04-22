@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020 - 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,21 +116,21 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     }
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
-                                   ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory,
-                                   ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory,
-                                   ConcurrentMap<String, PubSubState> subscriptionStates,
-                                   ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
-                                   ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
-                                   ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
-                                   ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes,
-                                   ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes,
-                                   ConcurrentMap<String, Future<String>> subscriptionFutureMap,
-                                   ConcurrentMap<String, List<MulticastInformation>> subscriptionIdToMulticastInformationMap,
-                                   ScheduledExecutorService cleanupScheduler,
-                                   Dispatcher dispatcher,
-                                   MulticastWildcardRegexFactory multicastWildcardRegexFactory,
-                                   MulticastReceiverRegistrar multicastReceiverRegistrar) {
+    SubscriptionManagerImpl(ConcurrentMap<String, AttributeSubscriptionListener<?>> attributeSubscriptionDirectory,
+                            ConcurrentMap<String, BroadcastSubscriptionListener> broadcastSubscriptionDirectory,
+                            ConcurrentMap<Pattern, Set<String>> multicastSubscribersDirectory,
+                            ConcurrentMap<String, PubSubState> subscriptionStates,
+                            ConcurrentMap<String, MissedPublicationTimer> missedPublicationTimers,
+                            ConcurrentMap<String, ScheduledFuture<?>> subscriptionEndFutures,
+                            ConcurrentMap<String, Class<?>> subscriptionAttributeTypes,
+                            ConcurrentMap<String, Class<?>[]> unicastBroadcastTypes,
+                            ConcurrentMap<Pattern, Class<?>[]> multicastBroadcastTypes,
+                            ConcurrentMap<String, Future<String>> subscriptionFutureMap,
+                            ConcurrentMap<String, List<MulticastInformation>> subscriptionIdToMulticastInformationMap,
+                            ScheduledExecutorService cleanupScheduler,
+                            Dispatcher dispatcher,
+                            MulticastWildcardRegexFactory multicastWildcardRegexFactory,
+                            MulticastReceiverRegistrar multicastReceiverRegistrar) {
         super();
         this.subscriptionListenerDirectory = attributeSubscriptionDirectory;
         this.broadcastSubscriptionListenerDirectory = broadcastSubscriptionDirectory;
