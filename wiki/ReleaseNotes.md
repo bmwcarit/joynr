@@ -2,6 +2,28 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.14.7
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed a bug where a too short delay between stopping and 
+  starting the Mosquitto loop by the restartThread could lead to a
+  situation where the MQTT broker repeatedely denied connect attempts
+  with CONNACK with RC 135 (client not authorized to connect) due to
+  exceeding the maximum connection rate configured at the broker.
+  Now a fixed delay of 10 seconds is used within the restartThread.
+* **[C++]** Fixed a bug where intentionally stopping the Mosquitto loop
+  caused an invocation of the restartThread which could result in a
+  stop/start loop in special cases.
+
 # joynr 1.14.6
 
 ## API-relevant Changes
