@@ -40,6 +40,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -68,6 +70,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
@@ -118,6 +121,8 @@ public class ArbitrationTest {
     private DiscoveryEntryVersionFilter discoveryEntryVersionFilter;
     @Captor
     private ArgumentCaptor<joynr.types.DiscoveryQos> discoveryQosCaptor;
+    @Mock
+    private MessageRouter messageRouter;
 
     public interface TestInterface {
         public static final String INTERFACE_NAME = interfaceName;
@@ -175,8 +180,49 @@ public class ArbitrationTest {
         shutdownNotifierField.setAccessible(true);
         shutdownNotifierField.set(ArbitratorFactory.class, shutdownNotifier);
 
+        Field messageRouterField = ArbitratorFactory.class.getDeclaredField("messageRouter");
+        messageRouterField.setAccessible(true);
+        messageRouterField.set(ArbitratorFactory.class, messageRouter);
+
         ArbitratorFactory.start();
         verify(shutdownNotifier).registerForShutdown(any(ShutdownListener.class));
+    }
+
+    private Set<String> setUpProviderCapabilitiesForMultipleDomains(Set<String> domains) {
+        Set<String> participantIds = new HashSet<String>(domains.size());
+        ProviderQos qos = new ProviderQos();
+        for (String domain : domains) {
+            String participantId = "participantId-" + domain;
+            participantIds.add(participantId);
+            DiscoveryEntryWithMetaInfo entry = new DiscoveryEntryWithMetaInfo(new Version(),
+                                                                              domain,
+                                                                              TestInterface.INTERFACE_NAME,
+                                                                              participantId,
+                                                                              qos,
+                                                                              System.currentTimeMillis(),
+                                                                              NO_EXPIRY,
+                                                                              publicKeyId,
+                                                                              true);
+            capabilitiesList.add(entry);
+        }
+
+        doAnswer((invocation) -> {
+            Object[] arguments = invocation.getArguments();
+            assert (arguments[0] instanceof Callback);
+            assert (arguments[0] instanceof CallbackWithModeledError);
+            @SuppressWarnings("unchecked")
+            CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callback = (CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>) arguments[0];
+            callback.resolve((Object) capabilitiesList.toArray(new DiscoveryEntryWithMetaInfo[0]));
+            localDiscoveryAggregatorSemaphore.release();
+            return null;
+        }).when(localDiscoveryAggregator)
+          .lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                  any(String[].class),
+                  eq(interfaceName),
+                  any(joynr.types.DiscoveryQos.class),
+                  Mockito.<String[]> any());
+
+        return participantIds;
     }
 
     @After
@@ -1297,6 +1343,8 @@ public class ArbitrationTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(arbitrationCallback, times(1)).onError(throwableCaptor.capture());
+        verify(messageRouter, never()).setToKnown(any());
+        verify(messageRouter, never()).removeNextHop(any());
         assertTrue(throwableCaptor.getValue() instanceof DiscoveryException);
         assertNotNull(throwableCaptor.getValue().getMessage());
         assertTrue((throwableCaptor.getValue().getMessage()).contains(interfaceName));
@@ -1347,9 +1395,53 @@ public class ArbitrationTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(arbitrationCallback, times(1)).onError(throwableCaptor.capture());
+        verify(messageRouter, never()).setToKnown(any());
+        verify(messageRouter, never()).removeNextHop(any());
 
         assertNotNull(throwableCaptor.getValue().getMessage());
         assertEquals(throwableCaptor.getValue(), expectedException);
+    }
+
+    @Test
+    public void testDecRemoteRoutingEntryRefCountNotRequired() throws Exception {
+        Set<String> domains = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("a", "b", "c")));
+        setUpProviderCapabilitiesForMultipleDomains(domains);
+        createArbitratorWithCallbackAndAwaitArbitration(new DiscoveryQos(), domains.toArray(new String[0]));
+        verify(arbitrationCallback).onSuccess(any());
+        verify(messageRouter, never()).setToKnown(any());
+        verify(messageRouter, never()).removeNextHop(any());
+    }
+
+    @Test
+    public void testDecRemoteRoutingEntryRefCountIfDomainsIncomplete() throws Exception {
+        Set<String> domains = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("a", "b", "c")));
+        Set<String> incompletDomains = new HashSet<>(domains);
+        incompletDomains.remove(domains.iterator().next());
+        Set<String> participantIDs = setUpProviderCapabilitiesForMultipleDomains(incompletDomains);
+        createArbitratorWithCallbackAndAwaitArbitration(new DiscoveryQos(), domains.toArray(new String[0]));
+        verify(arbitrationCallback, never()).onSuccess(any());
+        for (String participantId : participantIDs) {
+            InOrder incrementBeforeDecrement = Mockito.inOrder(messageRouter);
+            incrementBeforeDecrement.verify(messageRouter, times(1)).setToKnown(participantId);
+            incrementBeforeDecrement.verify(messageRouter, times(1)).removeNextHop(participantId);
+        }
+    }
+
+    @Test
+    public void testDecRemoteRoutingEntryRefCountIfStrategyNotMet() throws Exception {
+        Set<String> domains = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("a", "b", "c")));
+        Set<String> participantIDs = setUpProviderCapabilitiesForMultipleDomains(domains);
+        ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
+        when(arbitrationStrategyFunction.select(Matchers.<Map<String, String>> any(),
+                                                Matchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(null);
+        discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
+        createArbitratorWithCallbackAndAwaitArbitration(discoveryQos, domains.toArray(new String[0]));
+        verify(arbitrationCallback, never()).onSuccess(any());
+        for (String participantId : participantIDs) {
+            InOrder incrementBeforeDecrement = Mockito.inOrder(messageRouter);
+            incrementBeforeDecrement.verify(messageRouter, times(1)).setToKnown(participantId);
+            incrementBeforeDecrement.verify(messageRouter, times(1)).removeNextHop(participantId);
+        }
     }
 
 }

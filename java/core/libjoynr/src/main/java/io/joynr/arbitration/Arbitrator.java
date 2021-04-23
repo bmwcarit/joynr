@@ -34,6 +34,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.CallbackWithModeledError;
 import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
@@ -72,6 +73,7 @@ public class Arbitrator {
     private final Map<String, Set<Version>> discoveredVersionsByDomainMap = new HashMap<>();
     private String[] gbids;
     private int arbitrationCnt = 0;
+    private final MessageRouter messageRouter;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public Arbitrator(final Set<String> domains,
@@ -81,7 +83,8 @@ public class Arbitrator {
                       DiscoveryAsync localDiscoveryAggregator,
                       ArbitrationStrategyFunction arbitrationStrategyFunction,
                       DiscoveryEntryVersionFilter discoveryEntryVersionFilter,
-                      String[] gbids) {
+                      String[] gbids,
+                      MessageRouter messageRouter) {
         this.domains = domains;
         this.interfaceName = interfaceName;
         this.interfaceVersion = interfaceVersion;
@@ -95,6 +98,7 @@ public class Arbitrator {
         } else {
             this.gbids = gbids.clone();
         }
+        this.messageRouter = messageRouter;
     }
 
     protected void onError(Throwable exception) {
@@ -425,9 +429,11 @@ public class Arbitrator {
                     arbitrationResult.setOtherDiscoveryEntries(otherDiscoveryEntries);
                     arbitrationFinished(ArbitrationStatus.ArbitrationSuccessful, arbitrationResult);
                 } else {
+                    decRemoteRoutingEntryRefCount(discoveryEntries);
                     arbitrationFailed();
                 }
             } else {
+                decRemoteRoutingEntryRefCount(discoveryEntries);
                 if (isArbitrationInTime()) {
                     restartArbitration();
                 } else {
@@ -479,6 +485,18 @@ public class Arbitrator {
                 }
             }
             return discoveryEntriesSet;
+        }
+
+        private void decRemoteRoutingEntryRefCount(DiscoveryEntryWithMetaInfo[] discoveryEntries) {
+            for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
+                String participantId = discoveryEntry.getParticipantId();
+
+                //Increment local RoutingEntry.refCount
+                messageRouter.setToKnown(participantId);
+
+                //Decrement local and remote RoutingEntry.refCount
+                messageRouter.removeNextHop(participantId);
+            }
         }
     }
 }

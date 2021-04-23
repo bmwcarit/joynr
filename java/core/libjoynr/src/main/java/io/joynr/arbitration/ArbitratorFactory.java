@@ -31,6 +31,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.DiscoveryException;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.DiscoveryAsync;
@@ -43,6 +44,9 @@ public final class ArbitratorFactory {
 
     @Inject
     private static ShutdownNotifier shutdownNotifier;
+
+    @Inject
+    private static MessageRouter messageRouter;
 
     @Inject
     @Named(SCHEDULEDTHREADPOOL)
@@ -108,7 +112,8 @@ public final class ArbitratorFactory {
                               localDiscoveryAggregator,
                               arbitrationStrategyFunction,
                               discoveryEntryVersionFilter,
-                              gbids);
+                              gbids,
+                              messageRouter);
     }
 
     public static synchronized void start() {
