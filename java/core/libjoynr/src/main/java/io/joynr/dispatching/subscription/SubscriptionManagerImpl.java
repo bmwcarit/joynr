@@ -160,9 +160,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
 
         cancelExistingSubscriptionEndRunnable(subscriptionId);
 
-        SubscriptionState subState = new SubscriptionState(proxy);
-        subState.updateTimeOfLastPublication();
-        subscriptionStates.put(subscriptionId, subState);
+        SubscriptionState subscriptionState = new SubscriptionState(proxy);
+        subscriptionState.updateTimeOfLastPublication();
+        subscriptionStates.put(subscriptionId, subscriptionState);
 
         long expiryDate = qos.getExpiryDateMs();
         logger.trace("SubscriptionId: {} expiryDate: {}", subscriptionId, expiryDate);
