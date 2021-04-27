@@ -488,6 +488,7 @@ public class SubscriptionManagerTest {
         subscriptionFutureMap.put(subscriptionId, futureMock);
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
         verify(futureMock).onFailure(eq(subscriptionError));
+        verify(subscriptionStates).remove(eq(subscriptionId));
     }
 
     @Test
@@ -502,6 +503,7 @@ public class SubscriptionManagerTest {
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
         verify(futureMock).onFailure(eq(subscriptionError));
         verify(subscriptionListener).onError(eq(subscriptionError));
+        verify(subscriptionStates).remove(eq(subscriptionId));
     }
 
     @Test
@@ -516,6 +518,7 @@ public class SubscriptionManagerTest {
         subscriptionManager.handleSubscriptionReply(subscriptionReply);
         verify(futureMock).onFailure(eq(subscriptionError));
         verify(broadcastListener).onError(eq(subscriptionError));
+        verify(subscriptionStates).remove(eq(subscriptionId));
     }
 
     @Test

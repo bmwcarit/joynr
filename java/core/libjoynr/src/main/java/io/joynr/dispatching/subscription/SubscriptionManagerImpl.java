@@ -463,7 +463,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                             subscriptionId,
                             subscriptionReply.getError().getMessage());
             }
-            subscriptionTypes.remove(subscriptionId);
+            removeSubscription(subscriptionId);
         }
     }
 
