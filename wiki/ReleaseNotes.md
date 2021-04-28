@@ -10,15 +10,30 @@ the versioning scheme [here](JoynrVersioning.md).
   for any of the discovered providers. This will trigger the necessary cleanup to avoid unnecessary
   memory usage, see our documentation for [Java](java.md#the-guided-proxy-builder) or
   [JEE](jee.md#the-guided-proxy-builder)
-
 * **[Generator]** The `--addVersionTo` setting is being temporarily reactived again and it overrules
   the `#noVersionGeneration` comment in fidl files. The option `name` for the  `--addVersionTo`
   setting is still no longer supported. See [Generator documentation](generator.md) for more
-  information about the generator versioning
-  settings.
+  information about the generator versioning settings.
+* **[Java]** Added additional contructor to `MessagingQos`:
+  `MessagingQos(ttl_ms, effort, customHeaders, compress)`
+* **[C++]** ProxyBuilder now throws a `DiscoveryException` if the interface the provider discovered
+  with arbitration strategy `FIXED_PARTICIPANT` does not match the expected interface.
 
 ## Other Changes
-None.
+* **[Java]** Reduced memory usage by improved handling of discovery and routing entries to prevent
+  out of memory problems:  
+  * routing entries are now removed when they are not required anymore, independently of their
+    expiry date, e.g. after a proxy is garbage collected or when a request is answered.
+  * discovery entries of globally registered providers are stored only in the local store of
+    LocalCapabilitiesDirectory in the cluster controller. A second entry in the global cache is not
+    required anymore.
+* **[Java]** Expired incoming messages are now logged as warning instead of error.
+* **[C++]** Additional logs for MosquittoConnection start, stop and restart:
+  * `...external start() done`
+  * `...external stop() done`
+  * `...restartThread: stopInternal() done`
+  * `...restartThread: waiting 10 secs`
+  * `...restartThread: startInternal() done`
 
 ## Configuration Property Changes
 None.
@@ -27,27 +42,25 @@ None.
 None.
 
 ## Bug Fixes
-* **[C++]** Fixed a bug where a too short delay between stopping and
-  starting the Mosquitto loop by the restartThread could lead to a
-  situation where the MQTT broker repeatedely denied connect attempts
-  with CONNACK with RC 135 (client not authorized to connect) due to
-  exceeding the maximum connection rate configured at the broker.
-  Now a fixed delay of 10 seconds is used within the restartThread.
-* **[C++]** Fixed a bug where intentionally stopping the Mosquitto loop
-  caused an invocation of the restartThread which could result in a
-  stop/start loop in special cases.
+* **[C++]** Fixed a bug where a too short delay between stopping and starting the Mosquitto loop by
+  the restartThread could lead to a situation where the MQTT broker repeatedely denied connect
+  attempts with CONNACK with RC 135 (client not authorized to connect) due to exceeding the maximum
+  connection rate configured at the broker. Now a fixed delay of 10 seconds is used within the
+  restartThread.
+* **[C++]** Fixed a bug where intentionally stopping the Mosquitto loop caused an invocation of the
+  restartThread which could result in a stop/start loop in special cases.
 * **[Java]** Fixed a bug that prevented publication deliveries after proxy was garbage collected.
 * **[Java]** Fixed memory leak in SubscriptionManager in case PublicationManager signals
-subscription error.
+  subscription error.
+* **[Generator,C++]** Fixed generation of polymorphic subtypes without members or multiple stages
+  of inheritance.
 
 # joynr 1.15.12
 
 ## API-relevant Changes
-* **[Java,JEE]** A GuidedProxyBuilder can now only be used to run one discovery and
-  build one proxy. A second attempt at one of those actions will cause an exception
-  to be thrown. 
-  The GuidedProxyBuilder now throws JoynrIllegalStateException instead of
-  IllegalStateException.
+* **[Java,JEE]** A GuidedProxyBuilder can now only be used to run one discovery and build one proxy.
+  A second attempt at one of those actions will cause an exception to be thrown.
+  The GuidedProxyBuilder now throws `JoynrIllegalStateException` instead of `IllegalStateException`.
 
 ## Other Changes
 * **[C++]** Global provider registration without awaitGlobalRegistration is now retried
@@ -518,6 +531,28 @@ None.
 * **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 * **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
   occurs after connection has been established
+
+# joynr 1.14.7
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed a bug where a too short delay between stopping and
+  starting the Mosquitto loop by the restartThread could lead to a
+  situation where the MQTT broker repeatedely denied connect attempts
+  with CONNACK with RC 135 (client not authorized to connect) due to
+  exceeding the maximum connection rate configured at the broker.
+  Now a fixed delay of 10 seconds is used within the restartThread.
+* **[C++]** Fixed a bug where intentionally stopping the Mosquitto loop
+  caused an invocation of the restartThread which could result in a
+  stop/start loop in special cases.
 
 # joynr 1.14.6
 
