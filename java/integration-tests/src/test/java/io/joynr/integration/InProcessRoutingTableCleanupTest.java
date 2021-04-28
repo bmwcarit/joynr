@@ -148,7 +148,7 @@ public class InProcessRoutingTableCleanupTest extends AbstractRoutingTableCleanu
     }
 
     @Test
-    public void registerAndUnregisterProviders_routingEntriesAddedAdnRemoved() {
+    public void registerAndUnregisterProviders_local() {
         assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
         assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
 
@@ -166,6 +166,37 @@ public class InProcessRoutingTableCleanupTest extends AbstractRoutingTableCleanu
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
 
         // Wait for a while until providers are unregistered
+        try {
+            Thread.sleep(200);
+        } catch (Exception e) {
+            fail("Sleeping failed: " + e.toString());
+        }
+
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+    }
+
+    @Test
+    public void registerAndUnregisterProviders_global() {
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID1));
+        assertFalse(routingTable.containsKey(FIXEDPARTICIPANTID2));
+
+        // register providers
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerGlobal(testProvider, TESTCUSTOMDOMAIN1, providerQosGlobal);
+        registerGlobal(testProvider, TESTCUSTOMDOMAIN2, providerQosGlobal);
+
+        // Check reference count values of providers
+        checkRefCnt(FIXEDPARTICIPANTID1, 1l);
+        checkRefCnt(FIXEDPARTICIPANTID2, 1l);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
+        waitForGlobalRemove();
+        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
+        waitForGlobalRemove();
+
+        // Wait for a while until global remove has finished (reply processed at LCD)
         try {
             Thread.sleep(200);
         } catch (Exception e) {
