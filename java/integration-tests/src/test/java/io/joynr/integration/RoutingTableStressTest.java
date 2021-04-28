@@ -22,6 +22,7 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
@@ -53,10 +54,24 @@ import org.mockito.runners.MockitoJUnitRunner;
 import io.joynr.arbitration.ArbitrationStrategyFunction;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.SuccessAction;
+import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.routing.RoutingEntry;
+import io.joynr.provider.Promise;
 import io.joynr.proxy.DiscoveryResult;
 import io.joynr.proxy.GuidedProxyBuilder;
 import io.joynr.proxy.ProxyBuilder;
+import joynr.BroadcastFilterParameters;
+import joynr.BroadcastSubscriptionRequest;
+import joynr.ImmutableMessage;
+import joynr.MutableMessage;
+import joynr.OnChangeSubscriptionQos;
+import joynr.Request;
+import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.tests.DefaulttestProvider;
 import joynr.tests.testProxy;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -65,18 +80,37 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
     private final String TEST_DOMAIN = "stressTestDomain";
     private final int THREAD_POOL_SIZE = 20;
+    private static final String FROM_PARTICIPANTID_PREFIX = "fromParticipantId_";
 
     private final ExecutorService threadPoolExecutor = new ScheduledThreadPoolExecutor(THREAD_POOL_SIZE);
 
     private static final long CONST_DEFAULT_TEST_TIMEOUT_MS = 60000;
+    private static final int TTL_REPLY_EXPIRED = 512;
 
-    private DefaulttestProvider testProvider1;
+    private ConcurrentHashMap<String, CountDownLatch> rpCdlMap;
+    private ConcurrentHashMap<String, CountDownLatch> srpCdlMap;
+    private ConcurrentHashMap<String, CountDownLatch> pubCdlMap;
+
+    private class MyTestProvider extends DefaulttestProvider {
+        @Override
+        public Promise<SayHelloDeferred> sayHello() {
+            SayHelloDeferred deferred = new SayHelloDeferred();
+            Promise<SayHelloDeferred> promise = new Promise<>(deferred);
+            new Thread(() -> {
+                sleep(TTL_REPLY_EXPIRED);
+                deferred.resolve("");
+            }).start();
+            return promise;
+        }
+    }
+
+    private MyTestProvider testProvider1;
     private DefaulttestProvider testProvider2;
     private DefaulttestProvider testProvider3;
 
     private class TestCaseCallable implements Callable<Void> {
 
-        private final int NUMBER_OF_TEST_CASES = 4;
+        private final int NUMBER_OF_TEST_CASES = 9;
 
         @Override
         public Void call() throws Exception {
@@ -105,6 +139,21 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
             case 3:
                 useGuidedProxyBuilder_discover_buildNone();
                 break;
+            case 4:
+                registerAndUnregisterProviders_local();
+                break;
+            case 5:
+                mqttRequestReply_success();
+                break;
+            case 6:
+                mqttRequestReply_error_replyExpired(FIXEDPARTICIPANTID1);
+                break;
+            case 7:
+                mqttRequestReply_error_requestExpired(FIXEDPARTICIPANTID2);
+                break;
+            case 8:
+                mqttSubRequestSubReply_success_stoppedByExpiration(testProvider3, FIXEDPARTICIPANTID3);
+                break;
             default:
                 break;
             }
@@ -114,9 +163,37 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
     @Before
     public void setUp() throws InterruptedException, IOException {
         super.setUp();
-        testProvider1 = setupGlobalProvider(TESTCUSTOMDOMAIN1);
-        testProvider2 = setupGlobalProvider(TESTCUSTOMDOMAIN2);
-        testProvider3 = setupGlobalProvider(TESTCUSTOMDOMAIN3);
+        testProvider1 = spy(new MyTestProvider());
+        registerGlobal(testProvider1, TESTCUSTOMDOMAIN1, providerQosGlobal);
+        testProvider2 = spy(new DefaulttestProvider());
+        registerGlobal(testProvider2, TESTCUSTOMDOMAIN2, providerQosGlobal);
+        testProvider3 = spy(new DefaulttestProvider());
+        registerGlobal(testProvider3, TESTCUSTOMDOMAIN3, providerQosGlobal);
+
+        rpCdlMap = new ConcurrentHashMap<>();
+        srpCdlMap = new ConcurrentHashMap<>();
+        pubCdlMap = new ConcurrentHashMap<>();
+        doAnswer(invocation -> {
+            ImmutableMessage msg = (ImmutableMessage) invocation.getArguments()[0];
+            SuccessAction action = (SuccessAction) invocation.getArguments()[1];
+            action.execute();
+            final String to = msg.getRecipient();
+            switch (msg.getType()) {
+            case VALUE_MESSAGE_TYPE_REPLY:
+                rpCdlMap.get(to).countDown();
+                break;
+            case VALUE_MESSAGE_TYPE_PUBLICATION:
+                pubCdlMap.get(to).countDown();
+                break;
+            case VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY:
+                srpCdlMap.get(to).countDown();
+                break;
+            default:
+                break;
+            }
+            return null;
+        }).when(mqttMessagingStubMock)
+          .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
     }
 
     @After
@@ -125,12 +202,6 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
         unregisterGlobal(TESTCUSTOMDOMAIN2, testProvider2);
         unregisterGlobal(TESTCUSTOMDOMAIN3, testProvider3);
         super.tearDown();
-    }
-
-    private DefaulttestProvider setupGlobalProvider(final String domain) {
-        DefaulttestProvider testProvider = spy(new DefaulttestProvider());
-        registerGlobal(testProvider, domain, providerQosGlobal);
-        return testProvider;
     }
 
     private ArbitrationStrategyFunction customArbitrationStrategyFunction() {
@@ -162,7 +233,8 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
             }
         }
         if (!garbageCollected) {
-            fail("Stress test failed! Garbage collector was not called!");
+            fail("Stress test failed! Garbage collector was not called! Number of routing entries in table: "
+                    + routingTableHashMap.size());
         }
     }
 
@@ -280,6 +352,134 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
         guidedProxyBuilder.buildNone();
     }
 
+    private void registerAndUnregisterProviders_local() {
+        // register providers
+        String domain1 = TEST_DOMAIN + createUuidString();
+        String domain2 = TEST_DOMAIN + createUuidString();
+        DefaulttestProvider testProvider = new DefaulttestProvider();
+        registerProvider(testProvider, domain1, providerQosLocal);
+        registerProvider(testProvider, domain2, providerQosLocal);
+
+        // unregister provider
+        joynrRuntime.unregisterProvider(domain1, testProvider);
+        joynrRuntime.unregisterProvider(domain2, testProvider);
+    }
+
+    private void mqttRequestReply_success() {
+        final String fromParticipantId = FROM_PARTICIPANTID_PREFIX + "mqttRequestReply_success" + createUuidString();
+
+        CountDownLatch rpCdl = new CountDownLatch(1);
+        rpCdlMap.put(fromParticipantId, rpCdl);
+
+        MutableMessage requestMsg = createRequestMsg(fromParticipantId, FIXEDPARTICIPANTID1);
+        try {
+            fakeIncomingMqttMessage(gbids[1], requestMsg);
+        } catch (Exception e) {
+            fail("fake incoming request failed: " + e);
+        }
+
+        waitFor(rpCdl, 10000);
+        rpCdlMap.remove(fromParticipantId);
+    }
+
+    private void mqttRequestReply_error_replyExpired(final String providerParticipantId) {
+        final String from = FROM_PARTICIPANTID_PREFIX + createUuidString();
+
+        Request request = new Request("sayHello", new Object[0], new Class[0]);
+        MessagingQos testMessagingQos = new MessagingQos(defaultMessagingQos);
+        testMessagingQos.setTtl_ms(TTL_REPLY_EXPIRED);
+        MutableMessage requestMsg = messageFactory.createRequest(from,
+                                                                 providerParticipantId,
+                                                                 request,
+                                                                 testMessagingQos);
+        String replyTo = RoutingTypesUtil.toAddressString(new MqttAddress(gbids[1], ""));
+        requestMsg.setReplyTo(replyTo);
+        try {
+            fakeIncomingMqttMessage(gbids[1], requestMsg);
+        } catch (Exception e) {
+            fail("fake incoming request failed: " + e);
+        }
+
+        // delay reply until it is expired
+        sleep(testMessagingQos.getRoundTripTtl_ms() * 2);
+    }
+
+    private void mqttRequestReply_error_requestExpired(final String providerParticipantId) {
+        final String from = FROM_PARTICIPANTID_PREFIX + createUuidString();
+
+        // fake incoming expired request and check refCounts
+        Request request = new Request("echoCallingPrincipal", new Object[0], new Class[0]);
+        MessagingQos testMessagingQos = new MessagingQos(defaultMessagingQos);
+        testMessagingQos.setTtl_ms(0);
+        MutableMessage requestMsg = messageFactory.createRequest(from,
+                                                                 providerParticipantId,
+                                                                 request,
+                                                                 testMessagingQos);
+        String replyTo = RoutingTypesUtil.toAddressString(new MqttAddress(gbids[1], ""));
+        requestMsg.setReplyTo(replyTo);
+        CountDownLatch cdl = new CountDownLatch(1);
+        try {
+            // make sure that the message is expired
+            Thread.sleep(1);
+
+            IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(new MqttAddress(gbids[1],
+                                                                                                                       ""));
+            skeleton.transmit(requestMsg.getImmutableMessage().getSerializedMessage(), new FailureAction() {
+                @Override
+                public void execute(Throwable error) {
+                    assertTrue(JoynrMessageNotSentException.class.isInstance(error));
+                    assertTrue(error.getMessage().contains("expired"));
+                    cdl.countDown();
+                }
+            });
+        } catch (Exception e) {
+            fail("fake incoming request failed: " + e);
+        }
+
+        waitFor(cdl, 10000);
+    }
+
+    private synchronized void mqttSubRequestSubReply_success_stoppedByExpiration(DefaulttestProvider testProvider,
+                                                                                 final String providerParticipantId) {
+        final String from = FROM_PARTICIPANTID_PREFIX + "mqttSubRequestSubReply_stoppedByExpiration"
+                + createUuidString();
+
+        CountDownLatch srpCdl = new CountDownLatch(1);
+        CountDownLatch pubCdl = new CountDownLatch(2);
+        srpCdlMap.put(from, srpCdl);
+        pubCdlMap.put(from, pubCdl);
+
+        // fake incoming subscription request and wait for subscription reply
+        String subscriptionId = createUuidString();
+        final long validityMs = 500;
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(0).setValidityMs(validityMs);
+        BroadcastSubscriptionRequest request = new BroadcastSubscriptionRequest(subscriptionId,
+                                                                                "intBroadcast",
+                                                                                new BroadcastFilterParameters(),
+                                                                                qos);
+        MutableMessage requestMsg = messageFactory.createSubscriptionRequest(from,
+                                                                             providerParticipantId,
+                                                                             request,
+                                                                             defaultMessagingQos);
+        String replyTo = RoutingTypesUtil.toAddressString(new MqttAddress(gbids[1], ""));
+        requestMsg.setReplyTo(replyTo);
+        try {
+            fakeIncomingMqttMessage(gbids[1], requestMsg);
+            assertTrue(srpCdl.await(10000, TimeUnit.MILLISECONDS));
+        } catch (Exception e) {
+            fail(e.toString());
+        }
+
+        // trigger publications
+        testProvider.fireIntBroadcast(42);
+        testProvider.fireIntBroadcast(43);
+        // wait for publications
+        waitFor(pubCdl, 10000);
+        sleep(validityMs + 100);
+        srpCdlMap.remove(from);
+        pubCdlMap.remove(from);
+    }
+
     @Test
     public void dummyTest_syncExecution_numberOfRoutingEntriesStaysTheSame() throws InterruptedException {
         // Get number of routing entries before starting the stress test
@@ -292,6 +492,11 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
         useProxyBuilder_createMultiProxy_sendMessage_discardProxy();
         useGuidedProxyBuilder_createProxy_sendMessage_discardProxy();
         useGuidedProxyBuilder_discover_buildNone();
+        registerAndUnregisterProviders_local();
+        mqttRequestReply_success();
+        mqttRequestReply_error_replyExpired(FIXEDPARTICIPANTID1);
+        mqttRequestReply_error_requestExpired(FIXEDPARTICIPANTID2);
+        mqttSubRequestSubReply_success_stoppedByExpiration(testProvider3, FIXEDPARTICIPANTID3);
 
         waitForGarbageCollection(startingNumberOfRoutingEntries);
 
