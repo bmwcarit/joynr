@@ -46,10 +46,13 @@ import javax.inject.Inject;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -106,12 +109,18 @@ import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
+import joynr.BroadcastFilterParameters;
+import joynr.BroadcastSubscriptionRequest;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MutableMessage;
+import joynr.OnChangeSubscriptionQos;
 import joynr.Reply;
+import joynr.Request;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
+import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.GlobalDiscoveryEntry;
@@ -124,17 +133,22 @@ import joynr.types.ProviderScope;
  */
 public class AbstractRoutingTableCleanupTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractRoutingTableCleanupTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
+
     private final String TESTGBID1 = "testgbid1";
     private final String TESTGBID2 = "testgbid2";
     protected final String[] gbids = new String[]{ TESTGBID1, TESTGBID2 };
+    protected final MqttAddress replyToAddress = new MqttAddress(gbids[1], "");
 
     protected final String TESTCUSTOMDOMAIN1 = "testCustomDomain1";
     protected final String TESTCUSTOMDOMAIN2 = "testCustomDomain2";
     protected final String TESTCUSTOMDOMAIN3 = "testCustomDomain3";
 
-    protected final String FIXEDPARTICIPANTID1 = "fixedParticipantId1";
-    protected final String FIXEDPARTICIPANTID2 = "fixedParticipantId2";
-    protected final String FIXEDPARTICIPANTID3 = "fixedParticipantId3";
+    protected final String FIXEDPARTICIPANTID1 = "provider-1";
+    protected final String FIXEDPARTICIPANTID2 = "provider-2";
+    protected final String FIXEDPARTICIPANTID3 = "provider-3";
 
     private final long ROUTINGTABLE_CLEANUP_INTERVAL_MS = 100l;
     private final long ROUTING_MAX_RETRY_COUNT = 2;
@@ -384,6 +398,26 @@ public class AbstractRoutingTableCleanupTest {
                                           new MessagingQos());
     }
 
+    protected MutableMessage createRequestMsg(final String from, final String to) {
+        Request request = new Request("voidOperation", new Object[0], new Class[0]);
+        MutableMessage requestMsg = messageFactory.createRequest(from, to, request, defaultMessagingQos);
+        String replyTo = RoutingTypesUtil.toAddressString(replyToAddress);
+        requestMsg.setReplyTo(replyTo);
+        return requestMsg;
+    }
+
+    protected MutableMessage createSrqMsg(final String from, final String to, String subscriptionId, long validityMs) {
+        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(0).setValidityMs(validityMs);
+        BroadcastSubscriptionRequest request = new BroadcastSubscriptionRequest(subscriptionId,
+                                                                                "intBroadcast",
+                                                                                new BroadcastFilterParameters(),
+                                                                                qos);
+        MutableMessage requestMsg = messageFactory.createSubscriptionRequest(from, to, request, defaultMessagingQos);
+        String replyTo = RoutingTypesUtil.toAddressString(replyToAddress);
+        requestMsg.setReplyTo(replyTo);
+        return requestMsg;
+    }
+
     protected void fakeIncomingMqttMessage(String targetGbid, MutableMessage msg) throws EncodingException,
                                                                                   UnsuppportedVersionException {
         IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(new MqttAddress(targetGbid,
@@ -397,6 +431,10 @@ public class AbstractRoutingTableCleanupTest {
     }
 
     protected void checkRefCnt(String participantId, long expectedRefCnt) {
+        if (expectedRefCnt == 0) {
+            assertFalse(routingTable.containsKey(participantId));
+            return;
+        }
         assertTrue(routingTable.containsKey(participantId));
         RoutingEntry routingEntry = routingTableHashMap.get(participantId);
         long actualRefCnt = routingEntry.getRefCount();
@@ -419,6 +457,22 @@ public class AbstractRoutingTableCleanupTest {
                 return result;
             }
         };
+    }
+
+    protected void waitFor(CountDownLatch cdl, long timeout) {
+        try {
+            assertTrue(cdl.await(timeout, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+            fail("wait failed: " + e);
+        }
+    }
+
+    protected void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (Exception e) {
+            fail("Sleep failed: " + e);
+        }
     }
 
     protected void waitForGarbageCollection(String proxyParticipantId) throws InterruptedException {
