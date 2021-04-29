@@ -595,9 +595,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 public void onFailure(JoynrRuntimeException error) {
                     //check for instance of JoynrTimeoutException for retrying
                     if (error instanceof JoynrTimeoutException) {
-                        logger.warn("Failed to remove participantId {} due to timeout, retrying: {}",
-                                    participantId,
-                                    error);
+                        logger.warn("Failed to remove participantId {} due to timeout, retrying", participantId, error);
                         gcdTaskSequencer.retryTask();
                     } else {
                         logger.warn("Failed to remove participantId {}: {}", participantId, error);
