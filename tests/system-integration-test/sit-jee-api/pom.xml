@@ -67,9 +67,6 @@
 						<configuration>
 							<model>${basedir}/../src/main/model</model>
 							<generationLanguage>java</generationLanguage>
-							<parameter>
-								<jee>true</jee>
-							</parameter>
 							<outputPath>${basedir}/src/main/generated</outputPath>
 						</configuration>
 					</execution>

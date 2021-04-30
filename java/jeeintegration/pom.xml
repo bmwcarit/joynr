@@ -84,9 +84,6 @@
 							<model>${basedir}/src/main/model</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/test/generated</outputPath>
-							<parameter>
-								<jee>true</jee>
-							</parameter>
 						</configuration>
 					</execution>
 				</executions>

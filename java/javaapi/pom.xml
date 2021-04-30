@@ -102,9 +102,6 @@
 							<model>${basedir}/../../basemodel/src/main/franca</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/main/generated</outputPath>
-							<parameter>
-								<jee>true</jee>
-							</parameter>
 						</configuration>
 					</execution>
 					<execution>

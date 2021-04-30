@@ -175,7 +175,6 @@
 								<argument>${project.build.directory}/model/joynr/Routing.fidl</argument>
 								<argument>-generationLanguage</argument>
 								<argument>java</argument>
-								<argument>-jee</argument>
 								<argument>true</argument>
 							</arguments>
 	    				</configuration>

@@ -50,9 +50,6 @@
 							<model>${basedir}/src/main/model/pingservice.fidl</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/main/generated</outputPath>
-							<parameter>
-								<jee>true</jee>
-							</parameter>
 						</configuration>
 					</execution>
 				</executions>
