@@ -36,12 +36,6 @@ target_compile_features(${PROJECT_NAME}
     PUBLIC cxx_std_14
 )
 
-AddClangFormat(${PROJECT_NAME})
-
-AddIncludeWhatYouUse(${PROJECT_NAME})
-
-AddClangTidy(${PROJECT_NAME})
-
 set_target_properties(
     ${PROJECT_NAME} PROPERTIES
     OUTPUT_NAME "Joynr"
