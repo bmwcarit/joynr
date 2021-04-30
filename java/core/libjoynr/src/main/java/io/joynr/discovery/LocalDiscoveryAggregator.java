@@ -56,6 +56,12 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
     private static final Logger logger = LoggerFactory.getLogger(LocalDiscoveryAggregator.class);
 
     private static final long NO_EXPIRY = Long.MAX_VALUE;
+
+    // Epsilon is added to be sure that the proxy call `lookup` gets results, whatever it is rather than timing out with
+    // JoynrTimeoutException. By adding this epsilon, we avoid race condition between local expiration timer and the delivery 
+    // of the reply.
+    final private long epsilonMs = 10000;
+
     private HashMap<String, DiscoveryEntryWithMetaInfo> provisionedDiscoveryEntries = new HashMap<>();
     private DiscoveryProxy discoveryProxy;
     private ProxyBuilderFactory proxyBuilderFactory;
@@ -202,7 +208,7 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
             String[] missingDomainsArray = new String[missingDomains.size()];
             missingDomains.toArray(missingDomainsArray);
 
-            MessagingQos messagingQos = new MessagingQos(discoveryQos.getDiscoveryTimeout());
+            MessagingQos messagingQos = new MessagingQos(discoveryQos.getDiscoveryTimeout() + epsilonMs);
             getDefaultDiscoveryProxy().lookup(newCallback,
                                               missingDomainsArray,
                                               interfaceName,
@@ -242,7 +248,8 @@ public class LocalDiscoveryAggregator implements DiscoveryAsync {
                                                      String participantId,
                                                      DiscoveryQos discoveryQos,
                                                      String[] gbids) {
-        return getDefaultDiscoveryProxy().lookup(callback, participantId, new DiscoveryQos(), gbids);
+        MessagingQos messagingQos = new MessagingQos(discoveryQos.getDiscoveryTimeout() + epsilonMs);
+        return getDefaultDiscoveryProxy().lookup(callback, participantId, discoveryQos, gbids, messagingQos);
     }
 
     @Override
