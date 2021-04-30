@@ -175,9 +175,6 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 	}
 
 	override setParameters(Map<String, String> parameter) {
-		if (parameter.keySet.contains("jee")) {
-			System.out.println("warning: The jeeExtension flag is not necessary anymore (deprecated).");
-		}
 		if (parameter.get("ignoreInvalidNullClassMembers") !== null &&
 			parameter.get("ignoreInvalidNullClassMembers").equals("true")) {
 			activateIgnoreInvalidNullClassMembersExtension
