@@ -46,12 +46,6 @@ have to be provided in the Maven configuration:
                           is expected to work as well. -->
                 <addVersionTo>package|none</addVersionTo>
                 <parameter>
-                    <!-- For Jee code generation use generation language "java".
-                         The additional 'jee' parameter is deprecated because it is not necessary
-                         anymore. The generated code for Java and Jee is identical now.
-                         Deprecated parameter:
-                         <jee>true</jee>
-                    -->
                     <!-- For Java/Jee code generation with null values in
                          complex types use generation language "java"
                          and set the following parameter -->
