@@ -166,8 +166,9 @@ public class InvocationArguments {
                 setGenerate(args[i + 1].equalsIgnoreCase("true"));
                 i++;
             } else if (args[i].equalsIgnoreCase("-addVersionTo")) {
-                logger.warn("DEPRECATION WARNING: Usage of outdated -addVersionTo option detected."
-                        + " Set the #noVersionGeneration comment in fidl files instead.");
+                // Warning temporarily disabled as --addVersionTo is supposed to be set again
+                // logger.warn("DEPRECATION WARNING: Usage of outdated -addVersionTo option detected."
+                //        + " Set the #noVersionGeneration comment in fidl files instead.");
                 setAddVersionTo(args[i + 1]);
                 i++;
             } else if (args[i].equalsIgnoreCase("-generationId")) {
