@@ -2,6 +2,24 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.0
+
+## API-relevant Changes
+* **[Generator]** Setting the `jee` flag does not lead to a warning anymore.
+  It is now completely removed from the generator.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug fixes
+None.
+
 # joynr 1.16.0
 
 ## API-relevant Changes
