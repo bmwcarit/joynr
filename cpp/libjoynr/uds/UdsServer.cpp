@@ -106,7 +106,8 @@ void UdsServer::run()
         }
         isRetry = true;
         try {
-            mode_t oldMask = umask(S_IROTH | S_IWOTH); // do not allow access to others
+            // no access to others and no permission to execute
+            mode_t oldMask = umask(S_IXUSR | S_IXGRP | S_IRWXO);
             _acceptor.open(_endpoint.protocol());
             _acceptor.bind(_endpoint);
             umask(oldMask); // restore original umask
