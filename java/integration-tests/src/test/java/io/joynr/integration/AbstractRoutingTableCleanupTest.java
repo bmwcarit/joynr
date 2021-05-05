@@ -30,6 +30,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,11 +72,13 @@ import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.integration.util.TestSetup;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
@@ -93,6 +96,7 @@ import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;
 import io.joynr.messaging.websocket.WebSocketMessagingStub;
 import io.joynr.messaging.websocket.WebSocketMessagingStubFactory;
+import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Future;
@@ -102,7 +106,7 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
-import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
@@ -129,7 +133,6 @@ import joynr.types.ProviderScope;
 
 /**
  * Integration tests for RoutingTable reference count handling.
- *
  */
 public class AbstractRoutingTableCleanupTest {
 
@@ -154,11 +157,12 @@ public class AbstractRoutingTableCleanupTest {
     private final long ROUTING_MAX_RETRY_COUNT = 2;
 
     private Properties properties;
-    private Injector injector;
+    protected Injector injector;
     // JoynrRuntime to simulate user operations
     protected JoynrRuntime joynrRuntime;
     // MessagingSkeletonFactory to simulate incoming messages through messaging skeletons
     protected MqttMessagingSkeletonFactory mqttSkeletonFactory;
+    protected MessagingSkeletonFactory messagingSkeletonFactory;
     protected MutableMessageFactory messageFactory;
 
     // RoutingTable for verification, use the apply() method to count entries and get info about stored addresses
@@ -184,7 +188,7 @@ public class AbstractRoutingTableCleanupTest {
     @Mock
     protected MqttMessagingStub mqttMessagingStubMock;
     @Mock
-    private WebSocketMessagingStub webSocketClientMessagingStubMock;
+    protected WebSocketMessagingStub webSocketClientMessagingStubMock;
     @Mock
     private WebSocketMessagingStub webSocketMessagingStubMock;
 
@@ -244,7 +248,7 @@ public class AbstractRoutingTableCleanupTest {
     }
 
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() throws InterruptedException, IOException {
         doReturn(joynrMqttClient1).when(hiveMqMqttClientFactory).createReceiver(TESTGBID1);
         doReturn(joynrMqttClient1).when(hiveMqMqttClientFactory).createSender(TESTGBID1);
         doReturn(joynrMqttClient2).when(hiveMqMqttClientFactory).createReceiver(TESTGBID2);
@@ -286,6 +290,7 @@ public class AbstractRoutingTableCleanupTest {
         routingTable = injector.getInstance(RoutingTable.class);
         MqttMessagingSkeletonProvider mqttMessagingSkeletonProvider = injector.getInstance(MqttMessagingSkeletonProvider.class);
         mqttSkeletonFactory = (MqttMessagingSkeletonFactory) mqttMessagingSkeletonProvider.get();
+        messagingSkeletonFactory = injector.getInstance(MessagingSkeletonFactory.class);
         messageFactory = injector.getInstance(MutableMessageFactory.class);
 
         // Get routingTable.hashMap
@@ -306,8 +311,11 @@ public class AbstractRoutingTableCleanupTest {
         }
     }
 
-    private Properties createProperties(String gbids, String brokerUris) {
+    private Properties createProperties(String gbids, String brokerUris) throws IOException {
         Properties properties = new Properties();
+        properties.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
+        properties.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + TestSetup.findFreePort());
+
         properties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, gbids);
         properties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, brokerUris);
         properties.setProperty(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "60,30");
@@ -538,7 +546,7 @@ public class AbstractRoutingTableCleanupTest {
             }
         };
 
-        injector = Guice.createInjector(override(new CCInProcessRuntimeModule(),
+        injector = Guice.createInjector(override(new CCWebSocketRuntimeModule(),
                                                  new HivemqMqttClientModule()).with(new JoynrPropertiesModule(properties),
                                                                                     testBindingsModule));
         CountDownLatch cdl = waitForRemoveStale(mqttMessagingStubMock);
