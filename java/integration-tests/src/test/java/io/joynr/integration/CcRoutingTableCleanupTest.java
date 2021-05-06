@@ -229,7 +229,9 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
         }
     }
 
-    private CountDownLatch fakeIncomingSst(ThrowingConsumer<MutableMessage> fakeIncomingMsg, String subscriptionId) {
+    private CountDownLatch fakeIncomingSst(ThrowingConsumer<MutableMessage> fakeIncomingMsg,
+                                           String subscriptionId,
+                                           boolean increment) {
         CountDownLatch sstCdl = new CountDownLatch(1);
         doAnswer(factory -> {
             InProcessMessagingStub inProcessMessagingStubSpy = spy((InProcessMessagingStub) factory.callRealMethod());
@@ -239,7 +241,7 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
                 assertEquals(MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP, msg.getType());
                 assertEquals(FIXEDPARTICIPANTID1, msg.getRecipient());
                 checkRefCnt(FIXEDPARTICIPANTID1, 1);
-                checkRefCnt(proxyParticipantId, 2);
+                checkRefCnt(proxyParticipantId, increment ? 2 : 1);
 
                 SuccessAction onSuccess = (SuccessAction) invocation.getArguments()[1];
                 invocation.callRealMethod();
@@ -716,7 +718,7 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
         checkRefCnt(proxyParticipantId, 2);
 
         // fake incoming subscription stop
-        CountDownLatch sstCdl = fakeIncomingSst(fakeIncomingMsg, subscriptionId);
+        CountDownLatch sstCdl = fakeIncomingSst(fakeIncomingMsg, subscriptionId, true);
         waitFor(sstCdl, DEFAULT_WAIT_TIME);
         // expect no more publication
         testProvider.fireIntBroadcast(44);
@@ -988,7 +990,7 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
                 invocation.callRealMethod();
                 onSuccess.execute();
                 checkRefCnt(FIXEDPARTICIPANTID1, 1);
-                checkRefCnt(proxyParticipantId, increment ? 3 : 2);
+                checkRefCnt(proxyParticipantId, increment ? 2 : 1);
 
                 rqCdl.countDown();
                 return null;
@@ -1007,19 +1009,19 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
             if (MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(msg.getType())) {
                 assertEquals(multicastId, msg.getRecipient());
                 checkRefCnt(FIXEDPARTICIPANTID1, 1);
-                checkRefCnt(proxyParticipantId, 2);
+                checkRefCnt(proxyParticipantId, 1);
                 pubCdl.countDown();
                 return null;
             }
             assertEquals(proxyParticipantId, msg.getRecipient());
             assertEquals(MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY, msg.getType());
             checkRefCnt(FIXEDPARTICIPANTID1, 1);
-            checkRefCnt(proxyParticipantId, increment ? 3 : 2);
+            checkRefCnt(proxyParticipantId, increment ? 2 : 1);
 
             SuccessAction action = (SuccessAction) invocation.getArguments()[1];
             action.execute();
             checkRefCnt(FIXEDPARTICIPANTID1, 1);
-            checkRefCnt(proxyParticipantId, 2);
+            checkRefCnt(proxyParticipantId, 1);
 
             rpCdl.countDown();
             return null;
@@ -1066,10 +1068,10 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
         // multicast is published to all GBIDs in case of mqtt
         verifyOutgoing(stub, MessageType.VALUE_MESSAGE_TYPE_MULTICAST, 2 * (increment ? gbids.length : 1));
         checkRefCnt(FIXEDPARTICIPANTID1, 1);
-        checkRefCnt(proxyParticipantId, 2);
+        checkRefCnt(proxyParticipantId, 1);
 
         // fake incoming subscription stop
-        CountDownLatch sstCdl = fakeIncomingSst(fakeIncomingMsg, subscriptionId);
+        CountDownLatch sstCdl = fakeIncomingSst(fakeIncomingMsg, subscriptionId, false);
         waitFor(sstCdl, DEFAULT_WAIT_TIME);
         checkRefCnt(FIXEDPARTICIPANTID1, 1);
         checkRefCnt(proxyParticipantId, 1);
@@ -1181,7 +1183,7 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
         checkRefCnt(proxyParticipantId, 2);
 
         // fake incoming subscription stop
-        CountDownLatch sstCdl = fakeIncomingSst(fakeIncomingMsg, subscriptionId);
+        CountDownLatch sstCdl = fakeIncomingSst(fakeIncomingMsg, subscriptionId, true);
         waitFor(sstCdl, DEFAULT_WAIT_TIME);
         // expect no more publication
         testProvider.enumAttributeChanged(TestEnum.ZERO);

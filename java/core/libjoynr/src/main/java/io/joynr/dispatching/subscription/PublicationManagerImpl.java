@@ -166,6 +166,10 @@ public class PublicationManagerImpl
             }
         }
 
+        public SubscriptionRequest getSubscriptionRequest() {
+            return subscriptionRequest;
+        }
+
         @Override
         public boolean equals(Object arg0) {
             if (!(arg0 instanceof PublicationInformation)) {
@@ -402,7 +406,10 @@ public class PublicationManagerImpl
         if (future != null) {
             future.cancel(true);
         }
-        if (subscriptionRequest.getQos().getExpiryDateMs() != SubscriptionQos.NO_EXPIRY_DATE) {
+        // cleanup is only necessary if publication information is stored and the subscription expires
+        // no information is stored for non queued multicast subscriptions
+        if (subscriptionId2PublicationInformation.containsKey(subscriptionRequest.getSubscriptionId())
+                && subscriptionRequest.getQos().getExpiryDateMs() != SubscriptionQos.NO_EXPIRY_DATE) {
             final String subscriptionId = subscriptionRequest.getSubscriptionId();
             ScheduledFuture<?> subscriptionEndFuture = cleanupScheduler.schedule(new Runnable() {
 
@@ -458,7 +465,11 @@ public class PublicationManagerImpl
                                                                                            proxyParticipantId,
                                                                                            subscriptionRequest);
                 try {
-                    routingTable.incrementReferenceCount(proxyParticipantId);
+                    final boolean isMulticastSubscriptionRequest = subscriptionRequest instanceof MulticastSubscriptionRequest;
+                    boolean isMulticastQueued = false;
+                    if (!isMulticastSubscriptionRequest) {
+                        routingTable.incrementReferenceCount(proxyParticipantId);
+                    }
 
                     long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
                     ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
@@ -467,14 +478,23 @@ public class PublicationManagerImpl
                         logger.trace("Publication added: {}", subscriptionRequest.toString());
                     } else {
                         queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
+                        if (isMulticastSubscriptionRequest) {
+                            isMulticastQueued = true;
+                        }
                         logger.trace("Added subscription request for non existing provider to queue.");
                     }
 
-                    if (null != subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
-                                                                          publicationInformation)) {
+                    PublicationInformation oldEntry = subscriptionId2PublicationInformation.remove(subscriptionRequest.getSubscriptionId());
+                    if (oldEntry != null && !(oldEntry.subscriptionRequest instanceof MulticastSubscriptionRequest)) {
                         routingTable.remove(proxyParticipantId);
                     }
+
+                    if (!isMulticastSubscriptionRequest || isMulticastQueued) {
+                        subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
+                                                                  publicationInformation);
+                    }
                     updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
+
                 } catch (SubscriptionException e) {
                     sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
                 } catch (JoynrIllegalStateException e) {
@@ -499,7 +519,9 @@ public class PublicationManagerImpl
             future.cancel(true);
         }
         PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
-        routingTable.remove(publicationInformation.getProxyParticipantId());
+        if (!(publicationInformation.getSubscriptionRequest() instanceof MulticastSubscriptionRequest)) {
+            routingTable.remove(publicationInformation.getProxyParticipantId());
+        }
     }
 
     // requires addRemoveLock
@@ -626,6 +648,9 @@ public class PublicationManagerImpl
                 if (!isExpired(publicationInformation)) {
                     try {
                         addSubscriptionRequestInternal(publicationInformation, providerContainer);
+                        if (publicationInformation.getSubscriptionRequest() instanceof MulticastSubscriptionRequest) {
+                            subscriptionId2PublicationInformation.remove(publicationInformation.getSubscriptionId());
+                        }
                     } catch (SubscriptionException e) {
                         removePublication(publicationInformation.getSubscriptionId());
                         sendSubscriptionReplyWithError(e,
