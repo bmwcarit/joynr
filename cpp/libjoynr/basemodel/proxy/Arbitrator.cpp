@@ -261,11 +261,11 @@ void Arbitrator::attemptArbitration()
 {
     assertNoPendingFuture();
     std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
-    const bool isArbitrationStrateggyFixedParticipant =
+    const bool isArbitrationStrategyFixedParticipant =
             _discoveryQos.getArbitrationStrategy() ==
             DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT;
     const std::string fixedParticipantId =
-            isArbitrationStrateggyFixedParticipant
+            isArbitrationStrategyFixedParticipant
                     // custom parameter is present in this case, checked in ArbitratorFactory
                     ? _discoveryQos.getCustomParameter("fixedParticipantId").getValue()
                     : "";
@@ -282,13 +282,15 @@ void Arbitrator::attemptArbitration()
             throw exceptions::JoynrRuntimeException("discoveryProxy not available");
         }
         const std::int64_t durationMs = getDurationMs();
-        const std::int64_t waitTimeMs = _discoveryQos.getDiscoveryTimeoutMs() - durationMs;
+        const std::int64_t remainingTtlMs = _discoveryQos.getDiscoveryTimeoutMs() - durationMs;
 
-        if (waitTimeMs <= 0) {
+        if (remainingTtlMs <= 0) {
             throw exceptions::JoynrTimeOutException("arbitration timed out");
         }
 
-        if (isArbitrationStrateggyFixedParticipant) {
+        _systemDiscoveryQos.setDiscoveryTimeout(remainingTtlMs);
+
+        if (isArbitrationStrategyFixedParticipant) {
             types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
 
             auto future = discoveryProxySharedPtr->lookupAsync(
@@ -302,7 +304,7 @@ void Arbitrator::attemptArbitration()
                 }
             }
 
-            future->get(waitTimeMs, fixedParticipantResult);
+            future->get(remainingTtlMs, fixedParticipantResult);
             validatePendingFuture();
             // _filterByVersionAndArbitrationStrategy allows to determine whether the
             // GuidedProxyBuilder is used. false => GuidedProxyBuilder
@@ -327,7 +329,7 @@ void Arbitrator::attemptArbitration()
                 }
             }
 
-            future->get(waitTimeMs, result);
+            future->get(remainingTtlMs, result);
             validatePendingFuture();
         }
 
@@ -336,7 +338,7 @@ void Arbitrator::attemptArbitration()
     } catch (const exceptions::JoynrException& e) {
         std::string errorMsg =
                 "Unable to lookup provider (" +
-                (isArbitrationStrateggyFixedParticipant
+                (isArbitrationStrategyFixedParticipant
                          ? ("participantId: " + fixedParticipantId)
                          : ("domain: [" +
                             (_domains.empty() ? std::string("EMPTY") : _serializedDomainsList) +

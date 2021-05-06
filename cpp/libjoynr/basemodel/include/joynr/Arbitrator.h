@@ -120,7 +120,7 @@ private:
     const std::vector<std::string> _gbids;
     const std::string _gbidString;
     const DiscoveryQos _discoveryQos;
-    const joynr::types::DiscoveryQos _systemDiscoveryQos;
+    joynr::types::DiscoveryQos _systemDiscoveryQos;
     const std::vector<std::string> _domains;
     const std::string _serializedDomainsList;
     const std::string _interfaceName;
