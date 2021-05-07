@@ -67,7 +67,7 @@ const spies: Record<string, any> = {};
 
 mocks.MessageRouter.setRoutingProxy = jest.fn().mockReturnValue(Promise.resolve());
 mocks.MessageRouter.configureReplyToAddressFromRoutingProxy = jest.fn().mockReturnValue(Promise.resolve());
-mocks.ProxyBuilder.build.mockReturnValue(Promise.resolve());
+mocks.ProxyBuilder.build.mockReturnValue(Promise.resolve(jest.fn()));
 
 mocks.SubscriptionManager.terminateSubscriptions.mockReturnValue(Promise.resolve());
 

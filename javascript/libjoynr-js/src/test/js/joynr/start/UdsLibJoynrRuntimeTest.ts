@@ -120,7 +120,7 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         constructors.DiscoveryQos.setDefaultSettings = jest.fn();
         mocks.MessageRouter.setRoutingProxy = jest.fn().mockReturnValue(Promise.resolve());
         mocks.MessageRouter.getReplyToAddressFromRoutingProxy = jest.fn().mockReturnValue(Promise.resolve());
-        mocks.ProxyBuilder.build.mockReturnValue(Promise.resolve());
+        mocks.ProxyBuilder.build.mockReturnValue(Promise.resolve(jest.fn()));
 
         mocks.SubscriptionManager.terminateSubscriptions.mockReturnValue(Promise.resolve());
 

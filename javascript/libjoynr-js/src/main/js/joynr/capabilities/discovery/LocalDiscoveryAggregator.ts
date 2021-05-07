@@ -22,13 +22,30 @@ import * as DiscoveryEntry from "../../../generated/joynr/types/DiscoveryEntry";
 import * as DiscoveryEntryWithMetaInfo from "../../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
 import * as DiscoveryQos from "../../../generated/joynr/types/DiscoveryQos";
 import { DiscoveryStub } from "../interface/DiscoveryStub";
+import MessagingQos from "../../messaging/MessagingQos";
 
 class LocalDiscoveryAggregator implements DiscoveryStub {
     private discoveryProxy!: DiscoveryProxy;
+    private defaultMessagingQos!: MessagingQos;
+    // Epsilon is added to be sure that the proxy call `lookup` gets results, whatever it is rather than timing out with
+    // JoynrTimeoutException. By adding this epsilon, we avoid race condition between local expiration timer and the
+    // delivery of the reply.
+    private epsilonMs: number = 10000;
     public constructor() {}
 
     public setDiscoveryProxy(discoveryProxy: DiscoveryProxy): void {
         this.discoveryProxy = discoveryProxy;
+        this.defaultMessagingQos = this.discoveryProxy.messagingQos;
+    }
+
+    private setDiscoveryProxyTtl(ttl: number): void {
+        const qos = new MessagingQos(this.defaultMessagingQos);
+        qos.ttl = ttl;
+        this.discoveryProxy.messagingQos = qos;
+    }
+
+    private restoreDefaultMessagingQos(): void {
+        this.discoveryProxy.messagingQos = this.defaultMessagingQos;
     }
 
     public lookupByParticipantId(
@@ -36,7 +53,10 @@ class LocalDiscoveryAggregator implements DiscoveryStub {
         discoveryQos: DiscoveryQos,
         gbids: string[]
     ): Promise<DiscoveryEntryWithMetaInfo> {
-        return this.discoveryProxy
+        // remaining discovery time + epsilon
+        const ttl = discoveryQos.discoveryTimeout + this.epsilonMs;
+        this.setDiscoveryProxyTtl(ttl);
+        const promise: Promise<DiscoveryEntryWithMetaInfo> = this.discoveryProxy
             .lookup({
                 participantId,
                 discoveryQos,
@@ -45,6 +65,8 @@ class LocalDiscoveryAggregator implements DiscoveryStub {
             .then(opArgs => {
                 return opArgs.result;
             });
+        this.restoreDefaultMessagingQos();
+        return promise;
     }
 
     public lookup(
@@ -53,8 +75,10 @@ class LocalDiscoveryAggregator implements DiscoveryStub {
         discoveryQos: DiscoveryQos,
         gbids: string[]
     ): Promise<DiscoveryEntryWithMetaInfo[]> {
-        // eslint-disable-next-line promise/no-nesting
-        return this.discoveryProxy
+        // remaining discovery time + epsilon
+        const ttl = discoveryQos.discoveryTimeout + this.epsilonMs;
+        this.setDiscoveryProxyTtl(ttl);
+        const promise: Promise<DiscoveryEntryWithMetaInfo[]> = this.discoveryProxy
             .lookup({
                 domains,
                 interfaceName,
@@ -64,6 +88,8 @@ class LocalDiscoveryAggregator implements DiscoveryStub {
             .then(opArgs => {
                 return opArgs.result;
             });
+        this.restoreDefaultMessagingQos();
+        return promise;
     }
 
     public add(discoveryEntry: DiscoveryEntry, awaitGlobalRegistration: boolean, gbids: string[]): Promise<void> {

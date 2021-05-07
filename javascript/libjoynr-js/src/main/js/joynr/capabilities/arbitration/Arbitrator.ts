@@ -232,7 +232,7 @@ class Arbitrator {
                             new DiscoveryQosGen({
                                 discoveryScope: discoveryQos.discoveryScope,
                                 cacheMaxAge: discoveryQos.cacheMaxAgeMs,
-                                discoveryTimeout: discoveryQos.discoveryTimeoutMs,
+                                discoveryTimeout: arbitrationDeadline - Date.now(),
                                 providerMustSupportOnChange: discoveryQos.providerMustSupportOnChange
                             }),
                             gbids
@@ -254,7 +254,7 @@ class Arbitrator {
                         new DiscoveryQosGen({
                             discoveryScope: discoveryQos.discoveryScope,
                             cacheMaxAge: discoveryQos.cacheMaxAgeMs,
-                            discoveryTimeout: discoveryQos.discoveryTimeoutMs,
+                            discoveryTimeout: arbitrationDeadline - Date.now(),
                             providerMustSupportOnChange: discoveryQos.providerMustSupportOnChange
                         }),
                         gbids
