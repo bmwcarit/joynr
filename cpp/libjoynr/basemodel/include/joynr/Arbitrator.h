@@ -36,6 +36,7 @@
 #include "joynr/Future.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -131,6 +132,15 @@ private:
     std::function<void(const joynr::ArbitrationResult& arbitrationResult)> _onSuccessCallback;
     std::function<void(const exceptions::DiscoveryException& exception)> _onErrorCallback;
 
+    /*
+     * _epsilonMs represents a grace period (epsilon) for the ttl of the lookup
+     * operation performed by _discoveryProxy in Arbitrator. This epsilon shall
+     * only make sure that the reply from the lookup call is not lost because
+     * of a race condition between the local timer for the expiration of the
+     * proxy call and the delivery of the result.
+     */
+    static constexpr std::uint64_t _epsilonMs{10000};
+
     DISALLOW_COPY_AND_ASSIGN(Arbitrator);
     Semaphore _semaphore;
     std::atomic<bool> _arbitrationFinished;
@@ -141,6 +151,7 @@ private:
     std::chrono::steady_clock::time_point _startTimePoint;
     std::once_flag _onceFlag;
     bool _filterByVersionAndArbitrationStrategy;
+    MessagingQos _messagingQos;
     ADD_LOGGER(Arbitrator)
 };
 

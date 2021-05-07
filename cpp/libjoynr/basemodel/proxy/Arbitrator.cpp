@@ -68,7 +68,9 @@ Arbitrator::Arbitrator(
           _arbitrationThread(),
           _startTimePoint(),
           _onceFlag(),
-          _filterByVersionAndArbitrationStrategy(true)
+          _filterByVersionAndArbitrationStrategy(true),
+          _messagingQos(static_cast<std::uint64_t>(_discoveryQos.getDiscoveryTimeoutMs()) +
+                        _epsilonMs)
 {
 }
 
@@ -289,12 +291,18 @@ void Arbitrator::attemptArbitration()
         }
 
         _systemDiscoveryQos.setDiscoveryTimeout(remainingTtlMs);
+        _messagingQos.setTtl(static_cast<std::uint64_t>(remainingTtlMs) + _epsilonMs);
 
         if (isArbitrationStrategyFixedParticipant) {
             types::DiscoveryEntryWithMetaInfo fixedParticipantResult;
 
-            auto future = discoveryProxySharedPtr->lookupAsync(
-                    fixedParticipantId, _systemDiscoveryQos, _gbids);
+            auto future = discoveryProxySharedPtr->lookupAsync(fixedParticipantId,
+                                                               _systemDiscoveryQos,
+                                                               _gbids,
+                                                               nullptr,
+                                                               nullptr,
+                                                               nullptr,
+                                                               _messagingQos);
             {
                 std::unique_lock<std::mutex> lock(_pendingFutureMutex);
                 if (_arbitrationStopped) {
@@ -318,8 +326,14 @@ void Arbitrator::attemptArbitration()
             }
             result.push_back(fixedParticipantResult);
         } else {
-            auto future = discoveryProxySharedPtr->lookupAsync(
-                    _domains, _interfaceName, _systemDiscoveryQos, _gbids);
+            auto future = discoveryProxySharedPtr->lookupAsync(_domains,
+                                                               _interfaceName,
+                                                               _systemDiscoveryQos,
+                                                               _gbids,
+                                                               nullptr,
+                                                               nullptr,
+                                                               nullptr,
+                                                               _messagingQos);
             {
                 std::unique_lock<std::mutex> lock(_pendingFutureMutex);
                 if (_arbitrationStopped) {
