@@ -337,18 +337,20 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         PubSubState subscriptionState = subscriptionStates.get(subscriptionId);
         if (subscriptionState != null) {
             logger.trace("Called unregister / unsubscribe on subscriptionId {}", subscriptionId);
-            removeSubscription(subscriptionId);
+
+            if (removeSubscription(subscriptionId)) {
+                // SubscriptionStop is only sent for unicast subscriptions
+                SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
+
+                dispatcher.sendSubscriptionStop(fromParticipantId,
+                                                toDiscoveryEntries,
+                                                subscriptionStop,
+                                                new MessagingQos(qosSettings));
+            }
         } else {
             logger.trace("Called unregister on a non/no longer existent subscription, used subscriptionId was {}",
                          subscriptionId);
         }
-
-        SubscriptionStop subscriptionStop = new SubscriptionStop(subscriptionId);
-
-        dispatcher.sendSubscriptionStop(fromParticipantId,
-                                        toDiscoveryEntries,
-                                        subscriptionStop,
-                                        new MessagingQos(qosSettings));
     }
 
     @Override
@@ -528,7 +530,18 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         return outParamterTypes;
     }
 
-    private void removeSubscription(String subscriptionId) {
+    /**
+     * Removes a subscription from SubscriptionManager
+     *
+     * Deletes internal data required for handling subscription depending on type of
+     * subscription (Attribute, Unicast, Multicast) and cancels associated timers, if any.
+     *
+     * @param subscriptionId
+     *           The id of the subscription to be removed.
+     * @return Returns true if further action is required (i.e. sending of SubscriptionStop
+     *         in case of UnicastBroadcast), false otherwise (in case of Multicast)
+     */
+    private boolean removeSubscription(String subscriptionId) {
         if (missedPublicationTimers.containsKey(subscriptionId)) {
             missedPublicationTimers.get(subscriptionId).cancel();
             missedPublicationTimers.remove(subscriptionId);
@@ -557,8 +570,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                                                    multicastInformation.getFromParticipantId(),
                                                                    multicastInformation.getToParticipantId());
             }
+            subscriptionIdToMulticastInformationMap.remove(subscriptionId);
+            return false;
         }
-        subscriptionIdToMulticastInformationMap.remove(subscriptionId);
+        return true;
     }
 
     private Class<?>[] getParameterTypesForBroadcastPublication(Object[] broadcastValues) {

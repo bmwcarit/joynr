@@ -421,6 +421,29 @@ public class SubscriptionManagerTest {
     }
 
     @Test
+    public void unregisterNonExistentSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
+                                                    JsonGenerationException, JsonMappingException, IOException {
+
+        when(subscriptionStates.get(subscriptionId)).thenReturn(null);
+        when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
+        when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
+        subscriptionManager.unregisterSubscription(fromParticipantId,
+                                                   new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
+                                                   subscriptionId,
+                                                   qosSettings);
+
+        verify(subscriptionStates, times(0)).remove(eq(subscriptionId));
+        verify(subscriptionState, times(0)).stop();
+
+        verify(dispatcher,
+               times(0)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
+                                              eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
+                                              Mockito.eq(new SubscriptionStop(subscriptionId)),
+                                              Mockito.any(MessagingQos.class));
+
+    }
+
+    @Test
     public void unregisterMulticastSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                                   JsonGenerationException, JsonMappingException, IOException {
 
@@ -461,7 +484,7 @@ public class SubscriptionManagerTest {
         verify(subscriptionState).stop();
 
         verify(dispatcher,
-               times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
+               times(0)).sendSubscriptionStop(Mockito.eq(fromParticipantId),
                                               eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry,
                                                                                                        secondToDiscoveryEntry))),
                                               Mockito.eq(new SubscriptionStop(subscriptionId)),
