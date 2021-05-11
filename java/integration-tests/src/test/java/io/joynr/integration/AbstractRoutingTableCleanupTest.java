@@ -28,10 +28,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -52,7 +49,6 @@ import org.junit.Before;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.google.inject.AbstractModule;
@@ -72,16 +68,12 @@ import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.SuccessAction;
-import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessMessagingStub;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
@@ -118,12 +110,10 @@ import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MutableMessage;
 import joynr.Reply;
-import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.tests.DefaulttestProvider;
 import joynr.types.DiscoveryEntryWithMetaInfo;
-import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -405,106 +395,6 @@ public class AbstractRoutingTableCleanupTest {
                                           requestMessage.getSender(),
                                           new Reply(requestReplyId, error),
                                           new MessagingQos());
-    }
-
-    protected void unregisterGlobalProvider_DiscoveryError_decreaseRefCountOnlyOnce(DiscoveryError error) {
-        // register provider globally
-        DefaulttestProvider testProvider = new DefaulttestProvider();
-        registerGlobal(testProvider, TESTCUSTOMDOMAIN1, providerQosGlobal);
-
-        // increment the refCount of the provider routing entry so that unregisterProvider does not remove the entry
-        routingTable.incrementReferenceCount(FIXEDPARTICIPANTID1);
-        checkRefCnt(FIXEDPARTICIPANTID1, 2);
-
-        CountDownLatch rqCdl1 = new CountDownLatch(1);
-        ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        doAnswer(createVoidCountDownAnswer(rqCdl1)).when(mqttMessagingStubMock)
-                                                   .transmit(messageCaptor.capture(),
-                                                             any(SuccessAction.class),
-                                                             any(FailureAction.class));
-
-        // unregister the provider
-        joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
-
-        try {
-            // Wait for a while until providers are unregistered (locally)
-            Thread.sleep(200);
-            assertTrue(rqCdl1.await(1500, TimeUnit.MILLISECONDS));
-            checkRefCnt(FIXEDPARTICIPANTID1, 1);
-        } catch (InterruptedException e) {
-            fail(e.toString());
-        }
-
-        verify(mqttMessagingStubMock).transmit(any(ImmutableMessage.class),
-                                               any(SuccessAction.class),
-                                               any(FailureAction.class));
-
-        ImmutableMessage rq1 = messageCaptor.getValue();
-        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, rq1.getType());
-        assertEquals(getGcdParticipantId(), rq1.getRecipient());
-
-        // fake failed reply because of an exception contained in the message
-        Semaphore rpSemaphore = new Semaphore(0);
-        doAnswer(new Answer<IMessagingStub>() {
-            String gcdProxyParticipantId = rq1.getSender();
-
-            @Override
-            public IMessagingStub answer(InvocationOnMock invocation) throws Throwable {
-                InProcessMessagingStub inProcessMessagingStubSpy = spy((InProcessMessagingStub) invocation.callRealMethod());
-                doAnswer(new Answer<Void>() {
-                    @Override
-                    public Void answer(InvocationOnMock invocation) throws Throwable {
-                        ImmutableMessage msg = (ImmutableMessage) invocation.getArguments()[0];
-                        assertEquals(getGcdParticipantId(), msg.getSender());
-                        assertEquals(gcdProxyParticipantId, msg.getRecipient());
-                        invocation.callRealMethod();
-                        SuccessAction action = (SuccessAction) invocation.getArguments()[1];
-                        action.execute();
-                        checkRefCnt(FIXEDPARTICIPANTID1, 1);
-                        rpSemaphore.release();
-                        return null;
-                    }
-                }).when(inProcessMessagingStubSpy)
-                  .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
-                return inProcessMessagingStubSpy;
-            }
-        }).when(inProcessMessagingStubFactorySpy).create(any(InProcessAddress.class));
-
-        // for the second try
-        CountDownLatch rqCdl2 = new CountDownLatch(1);
-        doAnswer(createVoidCountDownAnswer(rqCdl2)).when(mqttMessagingStubMock)
-                                                   .transmit(messageCaptor.capture(),
-                                                             any(SuccessAction.class),
-                                                             any(FailureAction.class));
-
-        try {
-            MutableMessage rpMsg1 = createReplyWithException(rq1,
-                                                             new JoynrTimeoutException(System.currentTimeMillis()));
-            fakeIncomingMqttMessage(gbids[0], rpMsg1);
-
-            assertTrue(rpSemaphore.tryAcquire(10000, TimeUnit.MILLISECONDS));
-
-            // second request
-            assertTrue(rqCdl2.await(1500, TimeUnit.MILLISECONDS));
-
-            verify(mqttMessagingStubMock, times(2)).transmit(any(ImmutableMessage.class),
-                                                             any(SuccessAction.class),
-                                                             any(FailureAction.class));
-
-            // second reply
-            ImmutableMessage rq2 = messageCaptor.getValue();
-            MutableMessage rpMsg2 = createReplyWithException(rq2, new ApplicationException(error));
-            fakeIncomingMqttMessage(gbids[0], rpMsg2);
-
-            assertTrue(rpSemaphore.tryAcquire(10000, TimeUnit.MILLISECONDS));
-        } catch (Exception e) {
-            fail("Provider unregistration failed: " + e.toString());
-        }
-
-        verifyNoMoreInteractions(mqttMessagingStubMock);
-        checkRefCnt(FIXEDPARTICIPANTID1, 1);
-        routingTable.remove(FIXEDPARTICIPANTID1);
-        reset(inProcessMessagingStubFactorySpy);
     }
 
     protected void fakeIncomingMqttMessage(String targetGbid, MutableMessage msg) throws EncodingException,
