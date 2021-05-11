@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ package io.joynr.provider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +38,13 @@ public abstract class AbstractSubscriptionPublisher implements SubscriptionPubli
 
     ConcurrentHashMap<String, List<AttributeListener>> attributeListeners;
     ConcurrentHashMap<String, List<BroadcastListener>> broadcastListeners;
-    List<MulticastListener> multicastListeners;
+    private final HashSet<MulticastListener> multicastListeners;
     protected ConcurrentHashMap<String, List<BroadcastFilter>> broadcastFilters;
 
     public AbstractSubscriptionPublisher() {
         attributeListeners = new ConcurrentHashMap<>();
         broadcastListeners = new ConcurrentHashMap<>();
-        multicastListeners = new ArrayList<>();
+        multicastListeners = new HashSet<>();
         broadcastFilters = new ConcurrentHashMap<>();
     }
 
