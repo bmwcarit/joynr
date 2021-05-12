@@ -71,6 +71,9 @@ public class LocalDiscoveryAggregatorTest {
 
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
     private Long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
+
+    final private long epsilonMs = 10000;
+
     private String systemServicesDomain;
     private String anotherDomain;
     private String[] allDomains;
@@ -260,7 +263,25 @@ public class LocalDiscoveryAggregatorTest {
                                 eq(Discovery.INTERFACE_NAME),
                                 eq(expectedDiscoveryQos),
                                 eq(gbids),
-                                eq(new MessagingQos(expectedDiscoveryQos.getDiscoveryTimeout())));
+                                eq(new MessagingQos(expectedDiscoveryQos.getDiscoveryTimeout() + epsilonMs)));
+    }
+
+    @Test
+    public void lookupByDomainInterface_callsProxyForNonProvisionedEntries() {
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        DiscoveryQos expectedDiscoveryQos = new DiscoveryQos(discoveryQos);
+        localDiscoveryAggregator.lookup(lookupCallbackWithModeledError,
+                                        new String[]{ anotherDomain },
+                                        Discovery.INTERFACE_NAME,
+                                        discoveryQos);
+
+        verify(discoveryProxyMock,
+               times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                                eq(new String[]{ anotherDomain }),
+                                eq(Discovery.INTERFACE_NAME),
+                                eq(expectedDiscoveryQos),
+                                eq(new String[0]),
+                                eq(new MessagingQos(expectedDiscoveryQos.getDiscoveryTimeout() + epsilonMs)));
     }
 
     @Test
@@ -351,7 +372,7 @@ public class LocalDiscoveryAggregatorTest {
                                           eq(Discovery.INTERFACE_NAME),
                                           eq(discoveryQos),
                                           Mockito.<String[]> any(),
-                                          any(MessagingQos.class));
+                                          eq(new MessagingQos(discoveryQos.getDiscoveryTimeout() + epsilonMs)));
     }
 
     private boolean containsByInterfaceDomain(DiscoveryEntry[] discoveryEntries, String interfaceName, String domain) {
@@ -396,13 +417,12 @@ public class LocalDiscoveryAggregatorTest {
                times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>> any(),
                                 eq(discoveryProviderParticipantId),
                                 eq(expectedDiscoveryQos),
-                                eq(gbids));
+                                eq(gbids),
+                                eq(new MessagingQos(expectedDiscoveryQos.getDiscoveryTimeout() + epsilonMs)));
     }
 
     @Test
     public void lookupByParticipantId() {
-        DiscoveryQos discoveryQos = new DiscoveryQos();
-        discoveryQos.setDiscoveryScope(DiscoveryScope.LOCAL_ONLY);
         gbids = new String[0];
 
         localDiscoveryAggregator.lookup(lookupByParticipantIdCallbackWithModeledError, discoveryProviderParticipantId);
@@ -411,7 +431,8 @@ public class LocalDiscoveryAggregatorTest {
                times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>> any(),
                                 eq(discoveryProviderParticipantId),
                                 any(DiscoveryQos.class),
-                                eq(gbids));
+                                eq(gbids),
+                                eq(new MessagingQos(new DiscoveryQos().getDiscoveryTimeout() + epsilonMs)));
     }
 
     @Test

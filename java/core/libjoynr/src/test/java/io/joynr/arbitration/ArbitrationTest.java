@@ -1083,7 +1083,7 @@ public class ArbitrationTest {
     }
 
     @Test
-    public void useRemainingDiscoveryTimeoutAsTtlForLookupRetries() throws InterruptedException {
+    public void useRemainingDiscoveryTimeoutForLookupRetries() throws InterruptedException {
         String[] gbids = null;
         discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryTimeoutMs(ARBITRATION_TIMEOUT);
@@ -1114,7 +1114,11 @@ public class ArbitrationTest {
                                 Mockito.<String[]> any());
 
         List<joynr.types.DiscoveryQos> dQosList = discoveryQosCaptor.getAllValues();
+        //initial timeout
         assertTrue(dQosList.get(0).getDiscoveryTimeout() > retryInterval);
+        assertTrue(dQosList.get(0).getDiscoveryTimeout() <= ARBITRATION_TIMEOUT);
+        //remaining timeout
+        assertTrue(dQosList.get(1).getDiscoveryTimeout() > 0);
         assertTrue(dQosList.get(1).getDiscoveryTimeout() <= (ARBITRATION_TIMEOUT - retryInterval));
     }
 
@@ -1285,7 +1289,7 @@ public class ArbitrationTest {
     }
 
     @Test
-    public void testLookupForGuidedProxyBuilder() {
+    public void lookupForGuidedProxyBuilder() {
         Set<String> domainsSet = new HashSet<String>(Arrays.asList(domain));
         Arbitrator arbitrator = ArbitratorFactory.create(domainsSet,
                                                          interfaceName,
@@ -1300,6 +1304,45 @@ public class ArbitrationTest {
                                                 any(String.class),
                                                 any(joynr.types.DiscoveryQos.class),
                                                 any(String[].class));
+    }
+
+    @Test
+    public void lookupForGuidedProxyBuilderWithRetry() throws InterruptedException {
+        discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryTimeoutMs(ARBITRATION_TIMEOUT);
+        final long retryInterval = ARBITRATION_TIMEOUT / 3 * 2;
+        discoveryQos.setRetryIntervalMs(retryInterval);
+
+        Set<String> domainsSet = new HashSet<String>(Arrays.asList(domain));
+        Arbitrator arbitrator = ArbitratorFactory.create(domainsSet,
+                                                         interfaceName,
+                                                         interfaceVersion,
+                                                         discoveryQos,
+                                                         localDiscoveryAggregator,
+                                                         new String[]{});
+        arbitrator.setArbitrationListener(arbitrationCallback);
+        arbitrator.lookup();
+
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
+        assertFalse(localDiscoveryAggregatorSemaphore.tryAcquire(ARBITRATION_TIMEOUT / 2, TimeUnit.MILLISECONDS));
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(ARBITRATION_TIMEOUT, TimeUnit.MILLISECONDS));
+
+        verify(arbitrationCallback, times(1)).onError((isA(DiscoveryException.class)));
+
+        verify(localDiscoveryAggregator,
+               times(2)).lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                                any(String[].class),
+                                any(String.class),
+                                discoveryQosCaptor.capture(),
+                                any(String[].class));
+
+        List<joynr.types.DiscoveryQos> dQosList = discoveryQosCaptor.getAllValues();
+        //initial timeout
+        assertTrue(dQosList.get(0).getDiscoveryTimeout() > retryInterval);
+        assertTrue(dQosList.get(0).getDiscoveryTimeout() <= ARBITRATION_TIMEOUT);
+        //remaining timeout
+        assertTrue(dQosList.get(1).getDiscoveryTimeout() > 0);
+        assertTrue(dQosList.get(1).getDiscoveryTimeout() <= (ARBITRATION_TIMEOUT - retryInterval));
     }
 
     private void testErrorFromLocalDiscoveryAggregatorToArbitrationCallbackReported(String[] gbids,
