@@ -30,7 +30,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import io.joynr.capabilities.CapabilityUtils;
@@ -47,7 +46,6 @@ import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 import joynr.types.Version;
 
-@Ignore
 public class CapabilitiesDirectoryIntegrationTest {
 
     private static final CustomParameter[] CUSTOM_PARAMETERS = {};

@@ -667,7 +667,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithTtlExpiring() throws DiscoveryException, JoynrIllegalStateException,
                                                  InterruptedException, ApplicationException {
@@ -839,7 +838,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         broadcastReceived.acquire();
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void testBroadcastWithMapParameter() throws DiscoveryException, JoynrIllegalStateException,
                                                 InterruptedException {
@@ -849,7 +847,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         final TStringKeyMap mapParam = new TStringKeyMap();
         mapParam.put("key", "value");
-        proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastAdapter() {
+        Future<String> subscriptionIdFuture = proxy.subscribeToBroadcastWithMapParametersBroadcast(new BroadcastWithMapParametersBroadcastAdapter() {
             @Override
             public void onReceive(TStringKeyMap receivedMapParam) {
                 assertEquals(mapParam, receivedMapParam);
@@ -857,15 +855,16 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             }
         }, new MulticastSubscriptionQos());
 
-        // wait to allow the subscription request to arrive at the provider
-        getSubscriptionTestsPublisher().waitForBroadcastSubscription();
+        try {
+            subscriptionIdFuture.get();
+        } catch (Exception e) {
+            fail("Failed to establish subscription.");
+        }
         provider.fireBroadcastWithMapParameters(mapParam);
         broadcastReceived.acquire();
 
     }
 
-
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithCallbackAndParameter() throws DiscoveryException, JoynrIllegalStateException,
                                                           InterruptedException, JoynrWaitExpiredException,
@@ -922,7 +921,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void asyncMethodCallWithEnumListReturned() throws DiscoveryException, JoynrIllegalStateException,
                                                       InterruptedException {
@@ -1214,7 +1212,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         verify(callbackVoid).onFailure(expected);
     }
 
-    @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
     public void overloadedMethodWithInheritance() throws DiscoveryException, JoynrIllegalStateException,
                                                   InterruptedException {
