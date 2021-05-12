@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2019 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -63,25 +63,25 @@
 
 					<useUberJar>true</useUberJar>
 
-                    <javaCommandLineOptions>
-                        <option>
-                            <value>-Xdebug</value>
-                        </option>
-                        <option>
-                            <key>-Xrunjdwp:transport</key>
-                            <value>dt_socket,server=y,suspend=n,address=9009</value>
-                        </option>
-                    </javaCommandLineOptions>
+					<javaCommandLineOptions>
+						<option>
+							<value>-Xdebug</value>
+						</option>
+						<option>
+							<key>-Xrunjdwp:transport</key>
+							<value>dt_socket,server=y,suspend=n,address=9009</value>
+						</option>
+					</javaCommandLineOptions>
 
 					<commandLineOptions>
 						<option>
 							<key>--postbootcommandfile</key>
 							<value>${basedir}/src/main/payara/post-boot.txt</value>
 						</option>
-                        <option>
-                            <key>--port</key>
-                            <value>8181</value>
-                        </option>
+						<option>
+							<key>--port</key>
+							<value>8181</value>
+						</option>
 					</commandLineOptions>
 
 				</configuration>
