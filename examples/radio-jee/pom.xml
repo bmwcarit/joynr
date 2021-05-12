@@ -36,7 +36,6 @@
 		<module>radio-jee-api</module>
 		<module>radio-jee-consumer</module>
 		<module>radio-jee-provider</module>
-		<module>radio-jee-backend-services</module>
 	</modules>
 
 	<dependencyManagement>

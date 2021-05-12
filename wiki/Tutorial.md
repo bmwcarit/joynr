@@ -459,56 +459,8 @@ You will also need to install an MQTT broker, e.g. [Mosquitto](http://mosquitto.
 
 ### Starting the Backend
 
-The following section describes how to run the joynr MQTT backend service on
-(Payara 4.1](http://www.payara.fish).
-First, install the application server. It has to be configured once before the first start:
-
-***Payara configuration***
-```
-Start up the Payara server by changing to the Payara install directory and executing
-
-    bin/asadmin start-domain
-
-Configure your JEE application server with a `ManagedScheduledExecutorService`
-resource which has the name `'concurrent/joynrMessagingScheduledExecutor'`:
-
-    bin/asadmin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor
-
-Note the `--corepoolsize=100` option. The default will only create one thread,
-which can lead to blocking.
-
-You also need a connection pool for the database which shall be used by the backend service
-to persist data.
-For this example, we'll create a database on the JavaDB (based on Derby) database which is
-installed as part of Payara:
-
-    bin/asadmin create-jdbc-connection-pool \
-        --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
-        --restype javax.sql.XADataSource \
-        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
-
-Next, create a datasource resource pointing to that database connection. Here's an
-example of what that would look like when using the connection pool created above:
-
-    bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS
-
-Afterwards you can stop the Payara server by executing
-
-    bin/asadmin stop-domain
-```
-
-Start the MQTT broker, and make sure it's accepting traffic on `1883`.
-
-Start the database and the Payara server by changing to the Payara install directory and executing:
-```bash
-bin/asadmin start-database
-bin/asadmin start-domain
-```
-
-Finally, fire up the joynr backend service:
-```bash
-bin/asadmin deploy <RADIO_HOME>/target/discovery-jee.war
-```
+Please refer to the
+[deployment instructions](../java/backend-services/discovery-directory-jee/README.md)
 
 ### Java
 

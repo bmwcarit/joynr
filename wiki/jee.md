@@ -1040,7 +1040,8 @@ Then start up the Payara server by changing to the Payara install directory and 
 managed executor service and databse.
 
 Next, fire up the joynr backend service:
-- `bin/asadmin deploy <joynr home>/asadmin deploy <JOYNR_REPO>/examples/radio-jee/radio-jee-backend-services/target/discovery-jee.war`
+- Deploy the following projects as wars to a local payara instance, being sure to follow the
+[deployment instructions](../java/backend-services/discovery-directory-jee/README.md)
 
 Finally, deploy the provider and consumer applications:
 
