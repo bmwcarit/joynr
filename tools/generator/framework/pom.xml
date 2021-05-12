@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2017 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -45,24 +45,6 @@
 			<artifactId>org.franca.core.dsl</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.franca</groupId>
-			<artifactId>org.franca.deploymodel.dsl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.xtend</groupId>
-			<artifactId>org.eclipse.xtend.core</artifactId>
-			<exclusions>
-				<!--
-					icu4j is not needed in our case, thus avoiding unnecessary
-					license checks (uses proprietary ICU license)
-				-->
-				<exclusion>
-					<groupId>com.ibm.icu</groupId>
-					<artifactId>icu4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
 		</dependency>
@@ -73,6 +55,11 @@
 		<dependency>
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -109,10 +96,6 @@
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
 			<version>0.9.10</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
 		</dependency>
 	</dependencies>
 

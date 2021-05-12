@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2018 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -114,11 +114,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
+			<artifactId>slf4j-jdk14</artifactId>
 		</dependency>
 	</dependencies>
 

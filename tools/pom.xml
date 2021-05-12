@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2017 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -36,6 +36,27 @@
 	</modules>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<!-- Enforce failure is dependency check fails -->
+				<!-- Can optionally be moved up to parent pom -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>analyze</id>
+							<goals>
+								<goal>analyze-only</goal>
+							</goals>
+							<configuration>
+								<failOnWarning>true</failOnWarning>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
@@ -48,6 +69,12 @@
 				<configuration>
 					<archiveSite>true</archiveSite>
 				</configuration>
+			</plugin>
+			<!-- enforce dependency check -->
+			<!-- optionally this can be moved up, together with pluginManagement for this plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

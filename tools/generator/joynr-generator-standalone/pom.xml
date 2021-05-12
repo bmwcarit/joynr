@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2017 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -51,6 +51,27 @@
 				<targetPath>${project.build.directory}/scripts</targetPath>
 			</resource>
 		</resources>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>analyze</id>
+							<goals>
+								<goal>analyze-only</goal>
+							</goals>
+							<configuration>
+								<ignoredUnusedDeclaredDependencies>
+									<ignoredUnusedDeclaredDependency>io.joynr:basemodel</ignoredUnusedDeclaredDependency>
+								</ignoredUnusedDeclaredDependencies>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -453,6 +474,10 @@
 		<dependency>
 			<groupId>org.franca</groupId>
 			<artifactId>org.franca.deploymodel.dsl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.javassist</groupId>

@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2018 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -21,62 +21,62 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <modelVersion>4.0.0</modelVersion>
+	 <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>io.joynr.examples</groupId>
-        <artifactId>stateless-async</artifactId>
-        <version>1.17.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+	 <parent>
+		 <groupId>io.joynr.examples</groupId>
+		 <artifactId>stateless-async</artifactId>
+		 <version>1.17.0-SNAPSHOT</version>
+		 <relativePath>../pom.xml</relativePath>
+	 </parent>
 
-    <artifactId>stateless-async-car-sim</artifactId>
-    <packaging>jar</packaging>
-    <name>${project.groupId}:${project.artifactId}</name>
+	 <artifactId>stateless-async-car-sim</artifactId>
+	 <packaging>jar</packaging>
+	 <name>${project.groupId}:${project.artifactId}</name>
 
-    <build>
+	 <build>
 
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
-                <configuration>
-                    <mainClass>io.joynr.examples.statelessasync.carsim.Bootstrap</mainClass>
-                </configuration>
-            </plugin>
+		 <plugins>
+			 <plugin>
+				 <groupId>org.codehaus.mojo</groupId>
+				 <artifactId>exec-maven-plugin</artifactId>
+				 <version>1.6.0</version>
+				 <configuration>
+					 <mainClass>io.joynr.examples.statelessasync.carsim.Bootstrap</mainClass>
+				 </configuration>
+			 </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.1</version>
-                <configuration>
-                    <!-- put your configurations here -->
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			 <plugin>
+				 <groupId>org.apache.maven.plugins</groupId>
+				 <artifactId>maven-shade-plugin</artifactId>
+				 <version>3.1.1</version>
+				 <configuration>
+					 <!-- put your configurations here -->
+				 </configuration>
+				 <executions>
+					 <execution>
+						 <phase>package</phase>
+						 <goals>
+							 <goal>shade</goal>
+						 </goals>
+					 </execution>
+				 </executions>
+			 </plugin>
 
-        </plugins>
+		 </plugins>
 
-    </build>
+	 </build>
 
-    <dependencies>
+	 <dependencies>
 
-        <!-- Own dependencies -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>stateless-async-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+		 <!-- Own dependencies -->
+		 <dependency>
+			 <groupId>${project.groupId}</groupId>
+			 <artifactId>stateless-async-api</artifactId>
+			 <version>${project.version}</version>
+		 </dependency>
 
-        <!-- Libraries -->
+		 <!-- Libraries -->
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
@@ -97,24 +97,22 @@
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>io.joynr.java.messaging.mqtt</groupId>
-            <artifactId>hivemq-mqtt-client</artifactId>
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>hivemq-mqtt-client</artifactId>
 			<version>${project.version}</version>
-        </dependency>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
 		</dependency>
-
-    </dependencies>
-
+	</dependencies>
 </project>

@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2017 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -41,17 +41,7 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
-			<artifactId>clustercontroller</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.core</groupId>
 			<artifactId>clustercontroller-inprocess-runtime</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.core</groupId>
-			<artifactId>clustercontroller-websocket-runtime</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -117,6 +107,11 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

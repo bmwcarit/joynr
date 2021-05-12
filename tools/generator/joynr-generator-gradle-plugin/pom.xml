@@ -43,6 +43,31 @@
 	</repositories>		
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>analyze</id>
+							<goals>
+								<goal>analyze-only</goal>
+							</goals>
+							<configuration>
+								<ignoredUnusedDeclaredDependencies>
+									<ignoredUnusedDeclaredDependency>org.jetbrains.kotlin:kotlin-stdlib-jdk8</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.tools.generator:generator-framework</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.tools.generator:java-generator</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>com.android.tools.build:gradle</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.antlr:antlr-runtime</ignoredUnusedDeclaredDependency>
+								</ignoredUnusedDeclaredDependencies>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<!-- The Gradle plugin must be built by Gradle; therefore the compilation is skipped. -->
 			<plugin>

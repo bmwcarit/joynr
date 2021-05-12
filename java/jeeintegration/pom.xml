@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2017 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -35,6 +35,33 @@
 	</parent>
 
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>analyze</id>
+							<goals>
+								<goal>analyze-only</goal>
+							</goals>
+							<configuration>
+								<ignoredUnusedDeclaredDependencies>
+									<ignoredUnusedDeclaredDependency>javax.inject:javax.inject</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-log4j12</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.jboss.arquillian.test:arquillian-test-api</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.jboss.arquillian.junit:arquillian-junit-container</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.jboss.arquillian.container:arquillian-glassfish-embedded-3.1</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.glassfish.main.extras:glassfish-embedded-all</ignoredUnusedDeclaredDependency>
+								</ignoredUnusedDeclaredDependencies>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
 		<plugins>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -183,13 +210,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.messaging</groupId>
-			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
 			<artifactId>joynr-mqtt-client</artifactId>
 			<version>${project.version}</version>
@@ -206,15 +226,6 @@
 			<artifactId>hivemq-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>io.joynr.smrf.java</groupId>
-			<artifactId>smrf</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.smrf.java</groupId>
-			<artifactId>smrf-api</artifactId>
-		</dependency>
-
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
@@ -239,10 +250,6 @@
 		<dependency>
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>jsr311-api</artifactId>
 		</dependency>
 
 		<!-- Test dependencies -->
@@ -275,14 +282,17 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.glassfish.jersey.core</groupId>
-			<artifactId>jersey-server</artifactId>
-			<version>2.26-b02</version>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

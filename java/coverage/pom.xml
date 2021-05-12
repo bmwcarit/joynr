@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2019 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -137,6 +137,42 @@
 		-->
 	</dependencies>
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>analyze</id>
+							<goals>
+								<goal>analyze-only</goal>
+							</goals>
+							<configuration>
+								<ignoredUnusedDeclaredDependencies>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.core:libjoynr</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.core:libjoynr-websocket-runtime</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.core:clustercontroller</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.core:clustercontroller-inprocess-runtime</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.core:clustercontroller-websocket-runtime</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java:javaapi</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging:messaging-common</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.mqtt:joynr-mqtt-client</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.websocket:joynr-websocket-client</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.websocket:joynr-websocket-server</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.websocket:joynr-websocket-common</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.common:infrastructure-common</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.common:access-control-common</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.common:discovery-common</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.common:guice-integration</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java:jeeintegration</ignoredUnusedDeclaredDependency>
+								</ignoredUnusedDeclaredDependencies>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.jacoco</groupId>

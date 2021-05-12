@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2017 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -65,11 +65,6 @@
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>status-metrics</artifactId>
-			<version>${joynr.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.core</groupId>
-			<artifactId>clustercontroller</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
 		<dependency>
@@ -145,18 +140,6 @@
 			<artifactId>commons-cli</artifactId>
 			<version>1.4</version>
 		</dependency>
-		<!--
-			The following dependency is only required for convenience.
-			It is not required for the demo app itself.
-			It allows to run a JEE application server (e.g. Payara)
-			that contains the minimum backend.
-		-->
-		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discovery-directory-jee</artifactId>
-			<version>${joynr.version}</version>
-			<type>war</type>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -175,6 +158,29 @@
 		</resources>
 
 		<finalName>${project.artifactId}</finalName>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>analyze</id>
+							<goals>
+								<goal>analyze-only</goal>
+							</goals>
+							<configuration>
+								<ignoredUnusedDeclaredDependencies>
+									<ignoredUnusedDeclaredDependency>javax.inject:javax.inject</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-log4j12</ignoredUnusedDeclaredDependency>
+								</ignoredUnusedDeclaredDependencies>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 
 		<plugins>
 			<!-- The following section makes sure that Java 7
@@ -314,39 +320,6 @@
 						</fileset>
 					</filesets>
 				</configuration>
-			</plugin>
-			<!--
-				The following plugin is only required for convenience
-				and is not required for the demo app itself.
-				It allows to run a  JEE application server (e.g. Payara)
-				that contains the minimum backend.
-			-->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-backend-services-jee</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.backend-services</groupId>
-									<artifactId>discovery-directory-jee</artifactId>
-									<version>${joynr.version}</version>
-									<type>war</type>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<destFileName>discovery-jee.war</destFileName>
-								</artifactItem>
-							</artifactItems>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>true</overWriteSnapshots>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
