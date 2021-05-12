@@ -864,12 +864,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     }
 
-    @Ignore
-    // methods that return enums are not working at the moment - see JOYN-1027
-    @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
-    public void testMethodWithEnumOutput() {
-        // TODO write this test, once JOYN-1027 is solved
-    }
 
     @Ignore
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

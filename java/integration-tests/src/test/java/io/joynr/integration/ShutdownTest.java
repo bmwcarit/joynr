@@ -148,19 +148,4 @@ public class ShutdownTest {
 
         proxy.getFirstPrime();
     }
-
-    @Ignore
-    @Test(expected = JoynrShutdownException.class)
-    public void testProxyCreationAfterShutdown() throws DiscoveryException, JoynrIllegalStateException,
-                                                 InterruptedException {
-        // TODO
-        // Arbitration does not check if the runtime is already shutting down. A test like this would fail.
-        ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime()
-                                                               .getProxyBuilder("ShutdownTestdomain", testProxy.class);
-        testProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))
-                                      .build();
-        dummyApplication.shutdown();
-
-        proxy.getFirstPrime();
-    }
 }

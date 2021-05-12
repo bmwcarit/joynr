@@ -218,30 +218,6 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     }
 
     @Test
-    @Ignore
-    public void testLookupDomainInterfaceWithMaxCacheAge() {
-        fail("Not yet implemented");
-    }
-
-    @Test
-    @Ignore
-    public void testLookupParticipantIdWithMaxCacheAge() {
-        fail("Not yet implemented");
-    }
-
-    @Test
-    @Ignore
-    public void testGetAllDiscoveryEntries() {
-        fail("Not yet implemented");
-    }
-
-    @Test
-    @Ignore
-    public void testHasDiscoveryEntry() {
-        fail("Not yet implemented");
-    }
-
-    @Test
     public void touch_updatesEntries() throws Exception {
         long toleranceMs = 100;
         assertTrue(DEFAULT_EXPIRY_INTERVAL_MS > 10 * toleranceMs);
