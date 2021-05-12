@@ -556,6 +556,104 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         expect(onRejectedSpy.mock.calls.slice(-1)[0][0] instanceof DiscoveryException).toBeTruthy();
     });
 
+    it("use remaining discovery timeout in discoveryQos for lookupByParticipantId retries", async () => {
+        const expectedFixedParticipantId = "expectedFixedParticipantId";
+        const ARBITRATION_TIMEOUT = 1000;
+        const retryInterval: number = (ARBITRATION_TIMEOUT / 3) * 2;
+        discoveryQos.discoveryTimeoutMs = ARBITRATION_TIMEOUT;
+        discoveryQos.discoveryRetryDelayMs = retryInterval;
+        discoveryQos.arbitrationStrategy = ArbitrationStrategyCollection.FixedParticipant;
+        discoveryQos.additionalParameters = { [FIXED_PARTICIPANT_PARAMETER]: expectedFixedParticipantId };
+
+        // error could be DiscoveryError.NO_ENTRY_FOR_PARTICIPANT or DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
+        const fakeError = new ApplicationException({
+            detailMessage: "test",
+            error: DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
+        });
+
+        capDiscoverySpy.lookupByParticipantId.mockReturnValue(Promise.reject(fakeError));
+
+        const onRejectedSpy = jest.fn();
+        arbitrator
+            .startArbitration({
+                domains: [domain],
+                interfaceName,
+                discoveryQos,
+                proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
+            })
+            .catch(onRejectedSpy);
+
+        await testUtil.multipleSetImmediate();
+
+        // increase fake time to trigger retry
+        await increaseFakeTime(700);
+        // increase fake time for remaining time to reach the arbitration deadline
+        await increaseFakeTime(300);
+        expect(capDiscoverySpy.lookupByParticipantId).toHaveBeenCalledTimes(2);
+        expect(onRejectedSpy).toHaveBeenCalled();
+        expect(onRejectedSpy.mock.calls.slice(-1)[0][0] instanceof DiscoveryException).toBeTruthy();
+
+        // Args of first call
+        const capturedLookupArgs1: any = capDiscoverySpy.lookupByParticipantId.mock.calls[0];
+        expect(capturedLookupArgs1[0]).toEqual(expectedFixedParticipantId);
+        const capturedDiscoveryQos1 = capturedLookupArgs1[1];
+        expect(capturedDiscoveryQos1.cacheMaxAge).toEqual(discoveryQos.cacheMaxAgeMs);
+        expect(capturedDiscoveryQos1.discoveryTimeout).toEqual(1000); // initial timeout
+
+        // Args of second call
+        const capturedLookupArgs2: any = capDiscoverySpy.lookupByParticipantId.mock.calls[1];
+        expect(capturedLookupArgs2[0]).toEqual(expectedFixedParticipantId);
+        const capturedDiscoveryQos2 = capturedLookupArgs2[1];
+        expect(capturedDiscoveryQos2.cacheMaxAge).toEqual(discoveryQos.cacheMaxAgeMs);
+        expect(capturedDiscoveryQos2.discoveryTimeout).toEqual(300); // remaining timeout
+    });
+
+    it("use remaining discovery timeout in discoveryQos for lookup retries", async () => {
+        const ARBITRATION_TIMEOUT = 1000;
+        const retryInterval: number = (ARBITRATION_TIMEOUT / 3) * 2;
+        discoveryQos.discoveryTimeoutMs = ARBITRATION_TIMEOUT;
+        discoveryQos.discoveryRetryDelayMs = retryInterval;
+
+        capDiscoverySpy.lookup.mockReturnValue(Promise.resolve([]));
+
+        const onRejectedSpy = jest.fn();
+        arbitrator
+            .startArbitration({
+                domains: [domain],
+                interfaceName,
+                discoveryQos,
+                proxyVersion: new Version({ majorVersion: 47, minorVersion: 11 })
+            })
+            .catch(onRejectedSpy);
+
+        await testUtil.multipleSetImmediate();
+        // increase fake time to trigger retry
+        await increaseFakeTime(700);
+        // increase fake time for remaining time to reach the arbitration deadline
+        await increaseFakeTime(300);
+        expect(capDiscoverySpy.lookup).toHaveBeenCalledTimes(2);
+        expect(onRejectedSpy).toHaveBeenCalled();
+        expect(onRejectedSpy.mock.calls.slice(-1)[0][0] instanceof DiscoveryException).toBeTruthy();
+
+        // Args of first call
+        const capturedLookupArgs1: any = capDiscoverySpy.lookup.mock.calls[0];
+        expect(capturedLookupArgs1[0]).toEqual([domain]);
+        expect(capturedLookupArgs1[1]).toEqual(interfaceName);
+        const capturedDiscoveryQos1 = capturedLookupArgs1[2];
+        expect(capturedDiscoveryQos1.cacheMaxAge).toEqual(discoveryQos.cacheMaxAgeMs);
+        expect(capturedDiscoveryQos1.discoveryTimeout).toEqual(1000); // initial timeout
+
+        // Args of second call
+        const capturedLookupArgs2: any = capDiscoverySpy.lookup.mock.calls[1];
+
+        expect(capturedLookupArgs2[0]).toEqual([domain]);
+        expect(capturedLookupArgs2[1]).toEqual(interfaceName);
+
+        const capturedDiscoveryQos2 = capturedLookupArgs2[2];
+        expect(capturedDiscoveryQos2.cacheMaxAge).toEqual(discoveryQos.cacheMaxAgeMs);
+        expect(capturedDiscoveryQos2.discoveryTimeout).toEqual(300); // remaining timeout
+    });
+
     it("timeouts after the given discoveryTimeoutMs when capabilityDiscoveryStub throws exceptions", async () => {
         const onRejectedSpy = jest.fn();
         const fakeError = new Error("simulate discovery exception");
