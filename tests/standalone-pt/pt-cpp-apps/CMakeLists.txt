@@ -34,10 +34,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/main/resources/performancetest-co
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/libjoynrclustercontroller/resources/default-messaging.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-messaging.settings)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/libjoynr/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings)
 
-######## Add Curl ########
-find_package(CURL REQUIRED)
-include(CheckCurlImportTargets)
-
 ######## Add Boost ########
 find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
