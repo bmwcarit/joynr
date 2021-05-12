@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2011 - 2017 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-    <properties>
+	<properties>
 		<version.plugin.antrun>1.8</version.plugin.antrun>
 		<version.plugin.compiler>3.8.1</version.plugin.compiler>
 		<version.gradle>5.4.1</version.gradle>
@@ -40,7 +40,7 @@
 
 	<build>
 		<plugins>
-        <!-- The libjoynr android must be built by Gradle; therefore the compilation is skipped. -->
+			<!-- The libjoynr android must be built by Gradle; therefore the compilation is skipped. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -52,7 +52,7 @@
 			</plugin>
 
 			<!-- At the moment, deployment is skipped for the android projects, but as we actually want to make this library
-				available to the developers, we don't want to skip the deploy phase -->
+			  available to the developers, we don't want to skip the deploy phase -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
@@ -98,7 +98,7 @@
 					</execution>
 
 					<!-- When maven install to the local repo, trigger the gradle to have the
-					correct configurations  -->
+					  correct configurations  -->
 					<execution>
 						<id>gradle-publish-local</id>
 						<phase>install</phase>
@@ -131,8 +131,8 @@
 						<configuration>
 							<target>
 								<copy
-									file="${project.basedir}/build/libs/${project.artifactId}-${project.version}.jar"
-									overwrite="true" todir="${project.build.directory}" />
+										file="${project.basedir}/build/libs/${project.artifactId}-${project.version}.jar"
+										overwrite="true" todir="${project.build.directory}" />
 							</target>
 						</configuration>
 					</execution>
@@ -152,7 +152,7 @@
 		</plugins>
 	</build>
 
-    <dependencies>
+	<dependencies>
 		<dependency>
 			<groupId>com.android.support</groupId>
 			<artifactId>support-annotations</artifactId>

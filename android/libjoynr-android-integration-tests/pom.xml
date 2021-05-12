@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2019 BMW Car IT GmbH
+  Copyright (C) 2021 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -33,27 +33,27 @@
 	<dependencies>
 	</dependencies>
 	<build>
-	<plugins>
-		 <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <executions>
+		<plugins>
+			<plugin>
+				<artifactId>exec-maven-plugin</artifactId>
+				<groupId>org.codehaus.mojo</groupId>
+				<executions>
 
-                    <execution>
-                        <id>gradle-test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>bash</executable>				
-				<commandlineArgs>${basedir}/test_android_libjoynr.sh</commandlineArgs>
-                        </configuration>
-                    </execution>
+					<execution>
+						<id>gradle-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>bash</executable>
+							<commandlineArgs>${basedir}/test_android_libjoynr.sh</commandlineArgs>
+						</configuration>
+					</execution>
 
-                 </executions>
-            </plugin>
+				</executions>
+			</plugin>
 
-	</plugins>
+		</plugins>
 	</build>
 </project>
