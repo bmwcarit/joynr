@@ -47,24 +47,6 @@ import joynr.tests.testProvider;
 public class JoynrEnd2EndTest {
 
     protected final SubscriptionPublisherFactory subscriptionPublisherFactory = Mockito.spy(new SubscriptionPublisherFactory());
-    private final SubscriptionTestsPublisher testSubscriptionPublisher = new SubscriptionTestsPublisher();
-
-    public JoynrEnd2EndTest() {
-        Answer<AbstractSubscriptionPublisher> answer = new Answer<AbstractSubscriptionPublisher>() {
-
-            @Override
-            public AbstractSubscriptionPublisher answer(InvocationOnMock invocation) throws Throwable {
-                Object provider = invocation.getArguments()[0];
-                if (provider instanceof testProvider) {
-                    ((testProvider) provider).setSubscriptionPublisher(testSubscriptionPublisher);
-                }
-                return testSubscriptionPublisher;
-            }
-        };
-        Mockito.doAnswer(answer)
-               .when(subscriptionPublisherFactory)
-               .create((JoynrProvider) Mockito.argThat(new InstanceOf(testProvider.class)));
-    }
 
     protected Module getSubscriptionPublisherFactoryModule() {
         return new AbstractModule() {
@@ -73,10 +55,6 @@ public class JoynrEnd2EndTest {
                 bind(SubscriptionPublisherFactory.class).toInstance(subscriptionPublisherFactory);
             }
         };
-    }
-
-    protected SubscriptionTestsPublisher getSubscriptionTestsPublisher() {
-        return testSubscriptionPublisher;
     }
 
     protected static void provisionPermissiveAccessControlEntry(String domain, String interfaceName) throws Exception {
