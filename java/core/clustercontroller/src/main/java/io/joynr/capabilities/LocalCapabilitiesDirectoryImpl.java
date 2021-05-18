@@ -503,7 +503,9 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         final GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
                                                                                                               globalAddress);
         if (globalDiscoveryEntry != null) {
-            long expiryDateMs = System.currentTimeMillis() + defaultTtlAddAndRemove;
+            boolean doRetry = !awaitGlobalRegistration;
+            long expiryDateMs = doRetry ? Long.MAX_VALUE : System.currentTimeMillis() + defaultTtlAddAndRemove;
+
             CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
 
                 @Override
@@ -519,18 +521,28 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 @Override
                 public void onFailure(JoynrRuntimeException exception) {
-                    logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
-                                 globalDiscoveryEntry.getParticipantId(),
-                                 globalDiscoveryEntry.getDomain(),
-                                 globalDiscoveryEntry.getInterfaceName(),
-                                 globalDiscoveryEntry.getProviderVersion(),
-                                 exception);
-                    if (awaitGlobalRegistration == true) {
-                        globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
-                        localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
+                    if (doRetry && exception instanceof JoynrTimeoutException) {
+                        logger.warn("Global provider registration failed due to timeout, retrying: participantId {}, domain {}, interface {}, {}",
+                                    globalDiscoveryEntry.getParticipantId(),
+                                    globalDiscoveryEntry.getDomain(),
+                                    globalDiscoveryEntry.getInterfaceName(),
+                                    globalDiscoveryEntry.getProviderVersion(),
+                                    exception);
+                        gcdTaskSequencer.retryTask();
+                    } else {
+                        logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
+                                     globalDiscoveryEntry.getParticipantId(),
+                                     globalDiscoveryEntry.getDomain(),
+                                     globalDiscoveryEntry.getInterfaceName(),
+                                     globalDiscoveryEntry.getProviderVersion(),
+                                     exception);
+                        if (awaitGlobalRegistration == true) {
+                            globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
+                            localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
+                        }
+                        gcdTaskSequencer.taskFinished();
+                        deferred.reject(new ProviderRuntimeException(exception.toString()));
                     }
-                    gcdTaskSequencer.taskFinished();
-                    deferred.reject(new ProviderRuntimeException(exception.toString()));
                 }
 
                 @Override
@@ -548,7 +560,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                     deferred.reject(errorEnum);
                 }
             };
-            GcdTask addTask = GcdTask.createAddTask(callback, globalDiscoveryEntry, expiryDateMs, gbids);
+            GcdTask addTask = GcdTask.createAddTask(callback, globalDiscoveryEntry, expiryDateMs, gbids, doRetry);
             logger.debug("Global provider registration scheduled: participantId {}, domain {}, interface {}, {}, awaitGlobalRegistration {}",
                          globalDiscoveryEntry.getParticipantId(),
                          globalDiscoveryEntry.getDomain(),
@@ -1472,6 +1484,10 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
 
                 switch (task.mode) {
                 case ADD:
+                    if (task.doRetry) {
+                        performAdd(defaultTtlAddAndRemove);
+                        break;
+                    }
                     long remainingTtl = task.expiryDateMs - System.currentTimeMillis();
                     if (task.expiryDateMs < System.currentTimeMillis()) {
                         task.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
@@ -1492,17 +1508,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
             }
         }
 
-        private void performAdd(long remainingTtl) {
+        private void performAdd(long ttlMs) {
             logger.debug("Global provider registration started: participantId {}, domain {}, interface {}, {}",
                          task.globalDiscoveryEntry.getParticipantId(),
                          task.globalDiscoveryEntry.getDomain(),
                          task.globalDiscoveryEntry.getInterfaceName(),
                          task.globalDiscoveryEntry.getProviderVersion());
             try {
-                globalCapabilitiesDirectoryClient.add(task.callback,
-                                                      task.globalDiscoveryEntry,
-                                                      remainingTtl,
-                                                      task.gbids);
+                globalCapabilitiesDirectoryClient.add(task.callback, task.globalDiscoveryEntry, ttlMs, task.gbids);
             } catch (Exception exception) {
                 if (exception instanceof JoynrRuntimeException) {
                     task.callback.onFailure((JoynrRuntimeException) exception);

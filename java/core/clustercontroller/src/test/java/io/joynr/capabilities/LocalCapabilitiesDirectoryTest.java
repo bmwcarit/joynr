@@ -79,7 +79,6 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.AbstractDeferred;
@@ -675,6 +674,182 @@ public class LocalCapabilitiesDirectoryTest {
     public void testAddWithGbids_invalidGbid_nullGbidArray() throws InterruptedException {
         String[] gbids = null;
         testAddReturnsDiscoveryError(gbids, DiscoveryError.INVALID_GBID);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void globalAdd_withoutAwaitGlobalRegistration_retryAfterTimeout() throws InterruptedException {
+        CountDownLatch cdl = new CountDownLatch(2);
+        doAnswer(createVoidAnswerWithException(cdl,
+                                               new JoynrTimeoutException(0))).when(globalCapabilitiesDirectoryClient)
+                                                                             .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                                  argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                                                  anyLong(),
+                                                                                  Matchers.<String[]> any());
+
+        final boolean awaitGlobalRegistration = false;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verify(globalCapabilitiesDirectoryClient,
+               atLeast(2)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                               argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                               anyLong(),
+                               any());
+        checkPromiseSuccess(promise, "add failed");
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void globalAdd_withAwaitGlobalRegistration_noRetryAfterTimeout() throws InterruptedException {
+        JoynrTimeoutException timeoutException = new JoynrTimeoutException(0);
+        ProviderRuntimeException expectedException = new ProviderRuntimeException(timeoutException.toString());
+
+        doAnswer(createVoidAnswerWithException(timeoutException)).when(globalCapabilitiesDirectoryClient)
+                                                                 .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                      argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                                      anyLong(),
+                                                                      Matchers.<String[]> any());
+
+        final boolean awaitGlobalRegistration = true;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+        checkPromiseException(promise, expectedException);
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                             anyLong(),
+                             any());
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(globalDiscoveryEntry.getParticipantId()));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void globalAdd_withoutAwaitGlobalRegistration_noRetryAfterRuntimeException() throws InterruptedException {
+        JoynrRuntimeException runtimeException = new JoynrRuntimeException("custom runtime exception");
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(createVoidAnswerWithException(cdl,
+                                               runtimeException)).when(globalCapabilitiesDirectoryClient)
+                                                                 .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                      argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                                      anyLong(),
+                                                                      Matchers.<String[]> any());
+
+        final boolean awaitGlobalRegistration = false;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                             anyLong(),
+                             any());
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(eq(globalDiscoveryEntry.getParticipantId()));
+        checkPromiseSuccess(promise, "add failed");
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void globalAdd_withoutAwaitGlobalRegistration_noRetryAfterDiscoveryError() throws InterruptedException {
+        DiscoveryError expectedError = DiscoveryError.UNKNOWN_GBID;
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(createVoidAnswerWithDiscoveryError(cdl,
+                                                    expectedError)).when(globalCapabilitiesDirectoryClient)
+                                                                   .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                        argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                                        anyLong(),
+                                                                        Matchers.<String[]> any());
+
+        final boolean awaitGlobalRegistration = false;
+        Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration);
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                             anyLong(),
+                             any());
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(eq(globalDiscoveryEntry.getParticipantId()));
+        checkPromiseSuccess(promise, "add failed");
+    }
+
+    private void globalAddUsesCorrectRemainingTtl(boolean awaitGlobalRegistration) throws InterruptedException {
+        int defaultTtl = MessagingQos.DEFAULT_TTL;
+
+        DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(discoveryEntry);
+        discoveryEntry1.setParticipantId("participantId1");
+        DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(discoveryEntry);
+        discoveryEntry2.setParticipantId("participantId2");
+
+        GlobalDiscoveryEntry globalDiscoveryEntry1 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry1,
+                                                                                                         globalAddress1);
+        GlobalDiscoveryEntry globalDiscoveryEntry2 = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry2,
+                                                                                                         globalAddress1);
+
+        ArgumentCaptor<Long> remainingTtlCapture = ArgumentCaptor.forClass(Long.class);
+
+        CountDownLatch startOfFirstAddCdl = new CountDownLatch(1);
+        CountDownLatch endOfFirstAddCdl = new CountDownLatch(1);
+        long sleepTime = 1000l;
+        doAnswer(createAnswerWithDelayedSuccess(startOfFirstAddCdl,
+                                                endOfFirstAddCdl,
+                                                sleepTime)).when(globalCapabilitiesDirectoryClient)
+                                                           .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                                argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry1)),
+                                                                anyLong(),
+                                                                Matchers.<String[]> any());
+
+        CountDownLatch secondAddCdl = new CountDownLatch(1);
+        doAnswer(createAnswerWithSuccess(secondAddCdl)).when(globalCapabilitiesDirectoryClient)
+                                                       .add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                            argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry2)),
+                                                            anyLong(),
+                                                            Matchers.<String[]> any());
+
+        localCapabilitiesDirectory.add(discoveryEntry1, awaitGlobalRegistration);
+        localCapabilitiesDirectory.add(discoveryEntry2, awaitGlobalRegistration);
+        assertTrue(startOfFirstAddCdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry1)),
+                             remainingTtlCapture.capture(),
+                             any());
+
+        long firstNow = System.currentTimeMillis();
+        long capturedFirstAddRemainingTtl = remainingTtlCapture.getValue();
+
+        assertTrue(endOfFirstAddCdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        assertTrue(secondAddCdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry2)),
+                             remainingTtlCapture.capture(),
+                             any());
+
+        long secondNow = System.currentTimeMillis();
+        long delta = secondNow - firstNow;
+        long capturedSecondAddRemainingTtl = remainingTtlCapture.getValue();
+        long epsilon = 300;
+        if (awaitGlobalRegistration) {
+            assertTrue(capturedFirstAddRemainingTtl <= defaultTtl);
+            assertTrue(capturedFirstAddRemainingTtl > defaultTtl - epsilon);
+            assertTrue(capturedSecondAddRemainingTtl <= defaultTtl - delta + epsilon);
+            assertTrue(capturedSecondAddRemainingTtl > defaultTtl - delta - epsilon);
+        } else {
+            assertEquals(capturedFirstAddRemainingTtl, defaultTtl);
+            assertEquals(capturedSecondAddRemainingTtl, defaultTtl);
+        }
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void globalAdd_withAwaitGlobalRegistration_usesCorrectRemainingTtl() throws InterruptedException {
+        globalAddUsesCorrectRemainingTtl(true);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void globalAdd_withoutAwaitGlobalRegistration_usesCorrectRemainingTtl() throws InterruptedException {
+        globalAddUsesCorrectRemainingTtl(false);
     }
 
     @Test(timeout = TEST_TIMEOUT)
