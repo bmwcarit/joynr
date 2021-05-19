@@ -23,12 +23,11 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.provider.ProviderContainer;
 
 @Singleton
 public class ProviderDirectory extends Directory<ProviderContainer> {
-    private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProviderDirectory.class);
 
     @Override
     protected Logger getLogger() {
