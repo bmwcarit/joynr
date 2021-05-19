@@ -638,20 +638,21 @@ request.setParams(
 	}
 
 	«produceUnsubscribeFromBroadcastSignature(broadcast, className)» {
-		joynr::SubscriptionStop subscriptionStop;
-		subscriptionStop.setSubscriptionId(subscriptionId);
-
 		if (auto ptr = _subscriptionManager.lock()) {
-		  ptr->unregisterSubscription(subscriptionId);
+			ptr->unregisterSubscription(subscriptionId);
 		}
-		if (auto ptr = _messageSender.lock()) {
-			ptr->sendSubscriptionStop(
-					_proxyParticipantId,
-					_providerParticipantId,
-					_qosSettings,
-					subscriptionStop
-					);
-		}
+		«IF broadcast.selective»
+			joynr::SubscriptionStop subscriptionStop;
+			subscriptionStop.setSubscriptionId(subscriptionId);
+			if (auto msgSenderPtr = _messageSender.lock()) {
+				msgSenderPtr->sendSubscriptionStop(
+						_proxyParticipantId,
+						_providerParticipantId,
+						_qosSettings,
+						subscriptionStop
+						);
+			}
+		«ENDIF»
 	}
 
 «ENDFOR»
