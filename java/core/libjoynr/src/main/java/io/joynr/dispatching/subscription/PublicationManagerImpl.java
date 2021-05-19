@@ -451,36 +451,38 @@ public class PublicationManagerImpl
                                                                   subscriptionRequest);
         }
 
-        synchronized (addRemoveLock) {
-            PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
-                                                                                       proxyParticipantId,
-                                                                                       subscriptionRequest);
-            try {
-                routingTable.incrementReferenceCount(proxyParticipantId);
+        synchronized (providerDirectory) {
+            synchronized (addRemoveLock) {
+                PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
+                                                                                           proxyParticipantId,
+                                                                                           subscriptionRequest);
+                try {
+                    routingTable.incrementReferenceCount(proxyParticipantId);
 
-                long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
-                ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
-                if (providerContainer != null) {
-                    addSubscriptionRequestInternal(publicationInformation, providerContainer);
-                    logger.trace("Publication added: {}", subscriptionRequest.toString());
-                } else {
-                    queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
-                    logger.trace("Added subscription request for non existing provider to queue.");
-                }
+                    long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
+                    ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+                    if (providerContainer != null) {
+                        addSubscriptionRequestInternal(publicationInformation, providerContainer);
+                        logger.trace("Publication added: {}", subscriptionRequest.toString());
+                    } else {
+                        queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
+                        logger.trace("Added subscription request for non existing provider to queue.");
+                    }
 
-                if (null != subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
-                                                                      publicationInformation)) {
-                    routingTable.remove(proxyParticipantId);
+                    if (null != subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
+                                                                          publicationInformation)) {
+                        routingTable.remove(proxyParticipantId);
+                    }
+                    updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
+                } catch (SubscriptionException e) {
+                    sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
+                } catch (JoynrIllegalStateException e) {
+                    logger.error("Proxy participant ID {} unknown to routing table.", proxyParticipantId);
+                    sendSubscriptionReplyWithError(new SubscriptionException(subscriptionRequest.getSubscriptionId(),
+                                                                             e.getMessage()),
+                                                   publicationInformation,
+                                                   subscriptionRequest);
                 }
-                updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
-            } catch (SubscriptionException e) {
-                sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
-            } catch (JoynrIllegalStateException e) {
-                logger.error("Proxy participant ID {} unknown to routing table.", proxyParticipantId);
-                sendSubscriptionReplyWithError(new SubscriptionException(subscriptionRequest.getSubscriptionId(),
-                                                                         e.getMessage()),
-                                               publicationInformation,
-                                               subscriptionRequest);
             }
         }
     }
