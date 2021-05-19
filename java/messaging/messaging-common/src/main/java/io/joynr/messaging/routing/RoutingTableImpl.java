@@ -382,6 +382,9 @@ public class RoutingTableImpl implements RoutingTable {
                 throw new JoynrIllegalStateException("No routing entry with participantId " + participantId + "found!");
             }
             routingEntry.incRefCount();
+            logger.debug("Increased reference count for routing entry participantId {}, new reference count: {}",
+                         participantId,
+                         routingEntry.getRefCount());
         }
     }
 }
