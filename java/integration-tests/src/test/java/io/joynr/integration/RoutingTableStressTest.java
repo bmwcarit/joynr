@@ -451,7 +451,7 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
 
         // fake incoming subscription request and wait for subscription reply
         String subscriptionId = createUuidString();
-        final long validityMs = 500;
+        final long validityMs = 753;
         OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(0).setValidityMs(validityMs);
         BroadcastSubscriptionRequest request = new BroadcastSubscriptionRequest(subscriptionId,
                                                                                 "intBroadcast",
@@ -470,6 +470,11 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
             fail(e.toString());
         }
 
+        // sleep some time to make sure that the subscription at the provider's PublicationManager is fully established
+        // (The SubscriptionReply is sent before the publicationInformation is stored in PublicationManager
+        // .subscriptionId2PublicationInformation. A fired broadcast is dropped if this information is missing because
+        // the recipient is unknown (race condition between fire*Broadcast and addSubscriptionRequest).
+        sleep(256);
         // trigger publications
         testProvider.fireIntBroadcast(42);
         testProvider.fireIntBroadcast(43);
