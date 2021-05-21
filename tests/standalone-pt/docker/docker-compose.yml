@@ -1,10 +1,12 @@
-version: '2.0'
+version: '3.3'
 
 services:
 
   mqttbroker:
     image: 'joynr-hivemq'
     container_name: mqttbroker
+    depends_on:
+      - "tc"
     environment:
       - HIVEMQ_DISABLE_AUTH_PLUGIN=true
     ports:
@@ -13,11 +15,14 @@ services:
   infra-db:
     image: "joynr-infra-db:latest"
     container_name: infra-db
+    depends_on:
+      - "tc"
 
   infra:
     image: "joynr-infra:latest"
     container_name: joynr-infra
     depends_on:
+      - "tc"
       - "mqttbroker"
       - "infra-db"
 
@@ -25,18 +30,24 @@ services:
     image: "joynr-jee-provider:latest"
     container_name: jee-provider
     depends_on:
+      - "tc"
       - "mqttbroker"
       - "infra"
     environment:
+      - JOYNR_LOG_LEVEL=ERROR
       - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
       - PT_LOGGING_INTERVAL_MS=500
       - PT_RESULTS=/home/joynr/build/results_backend.csv
     volumes:
       - ./results:/home/joynr/build
+    labels:
+      - "com.docker-tc.enabled=${TC_ENABLED}"
+      - "com.docker-tc.delay=${TC_DELAY}"
 
   consumer:
     image: "joynr-consumer:latest"
     depends_on:
+      - "tc"
       - "mqttbroker"
       - "jee-provider"
     environment:
@@ -47,10 +58,19 @@ services:
      sh -c "cd /home/joynr; \
             ./start-me-up.sh \
             --calls 500 \
-            --maxInflightCalls 100; \
-           "
+            --maxInflightCalls ${MAX_IN_FLIGHT};"
 
-  # # jee consumer container
+  tc:
+    image: "lukaszlach/docker-tc"
+    container_name: tc
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/docker-tc:/var/docker-tc
+    network_mode: host
+
+  # jee consumer container
   # jeeapp-1:
   #   image: "joynr-pt-jee-app:latest"
   #   container_name: joynr-pt-jee-app-1
@@ -66,5 +86,3 @@ services:
   #     - PT_KEEP_ALIVE_TIMERS=60
   #     - PT_NUMBER_OF_CALLS=5
   #     - PT_NUMBER_OF_REPETITIONS=
-
-  # cpp consumer containers

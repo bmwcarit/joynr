@@ -39,7 +39,7 @@ fi
 mkdir results
 
 echo "Starting the orchestra"
-docker-compose up -d --scale consumer=5
+docker-compose up -d --scale consumer=10
 
 if [ $? -ne 0 ]
 then
