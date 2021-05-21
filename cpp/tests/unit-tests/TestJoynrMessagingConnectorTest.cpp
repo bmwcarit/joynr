@@ -22,11 +22,11 @@
 
 #include <gmock/gmock.h>
 
-#include "joynr/tests/testJoynrMessagingConnector.h"
 #include "joynr/IReplyCaller.h"
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionQos.h"
-#include "joynr/SingleThreadedIOService.h"
+#include "joynr/tests/Itest.h"
+#include "joynr/tests/ItestConnector.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 #include "tests/JoynrTest.h"
@@ -52,11 +52,7 @@ class TestJoynrMessagingConnectorTest : public AbstractSyncAsyncTest
 {
 public:
     TestJoynrMessagingConnectorTest()
-            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(
-                      singleThreadedIOService->getIOService(),
-                      nullptr)),
-              gpsLocation(types::Localisation::GpsLocation(9.0,
+            : gpsLocation(types::Localisation::GpsLocation(9.0,
                                                            51.0,
                                                            508.0,
                                                            types::Localisation::GpsFixEnum::MODE2D,
@@ -70,12 +66,10 @@ public:
               floatValue(123.45),
               semaphore(0)
     {
-        singleThreadedIOService->start();
     }
 
     ~TestJoynrMessagingConnectorTest()
     {
-        singleThreadedIOService->stop();
     }
 
     // sets the expectations on the call expected on the MessageSender from the connector
@@ -101,8 +95,6 @@ public:
                         ));
     }
 
-    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
-    std::shared_ptr<MockSubscriptionManager> mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation gpsLocation;
     float floatValue;
     Semaphore semaphore;
@@ -122,9 +114,14 @@ public:
                                                                     discoveryEntry);
     }
 
-    std::shared_ptr<tests::Itest> createFixture() override
+    std::shared_ptr<tests::Itest> createItestFixture() override
     {
         return std::dynamic_pointer_cast<tests::Itest>(createConnector());
+    }
+
+    std::shared_ptr<tests::ItestSubscription> createItestSubscriptionFixture() override
+    {
+        return std::dynamic_pointer_cast<tests::ItestSubscription>(createConnector());
     }
 
     void invokeMulticastSubscriptionCallback(
@@ -280,6 +277,17 @@ TEST_F(TestJoynrMessagingConnectorTest, sync_OperationWithNoArguments)
 TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute)
 {
     testSubscribeToAttribute();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest,
+       doNotSendSubscriptionStopForMulticastSubscription)
+{
+    doNotSendSubscriptionStopForMulticastSubscription();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, sendSubscriptionStopForSelectiveSubscription)
+{
+    sendSubscriptionStopForSelectiveSubscription();
 }
 
 TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper)

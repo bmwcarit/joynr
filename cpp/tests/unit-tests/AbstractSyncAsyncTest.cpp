@@ -21,38 +21,42 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "joynr/Request.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/IReplyCaller.h"
+#include "joynr/ISubscriptionListener.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Reply.h"
+#include "joynr/ReplyCaller.h"
+#include "joynr/Request.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/SingleThreadedIOService.h"
+#include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/types/Localisation/GpsLocation.h"
-#include "joynr/ReplyCaller.h"
-#include "joynr/IReplyCaller.h"
-#include "joynr/exceptions/MethodInvocationException.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/tests/Itest.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/ISubscriptionListener.h"
+#include "joynr/tests/testJoynrMessagingConnector.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockDispatcher.h"
-#include "tests/mock/MockMessagingStub.h"
 #include "tests/mock/MockMessageSender.h"
+#include "tests/mock/MockMessagingStub.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/MockSubscriptionManager.h"
 
-using ::testing::A;
 using ::testing::_;
-using ::testing::Return;
-using ::testing::Eq;
-using ::testing::NotNull;
+using ::testing::A;
 using ::testing::AllOf;
-using ::testing::Property;
+using ::testing::Eq;
 using ::testing::Invoke;
-using ::testing::Unused;
+using ::testing::NotNull;
 using ::testing::Pointee;
+using ::testing::Property;
+using ::testing::Return;
+using ::testing::SaveArg;
+using ::testing::Unused;
 using namespace joynr;
 
 /**
@@ -117,7 +121,11 @@ class AbstractSyncAsyncTest : public ::testing::Test
 {
 public:
     AbstractSyncAsyncTest()
-            : expectedGpsLocation(1.1,
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(
+                      singleThreadedIOService->getIOService(),
+                      nullptr)),
+              expectedGpsLocation(1.1,
                                   1.2,
                                   1.3,
                                   types::Localisation::GpsFixEnum::MODE3D,
@@ -140,8 +148,14 @@ public:
               asyncTestFixture(),
               error(nullptr)
     {
+        singleThreadedIOService->start();
     }
-    virtual ~AbstractSyncAsyncTest() = default;
+
+    virtual ~AbstractSyncAsyncTest()
+    {
+        singleThreadedIOService->stop();
+    }
+
     void SetUp()
     {
         qosSettings = MessagingQos(456000);
@@ -202,11 +216,12 @@ public:
         EXPECT_EQ(expectedEnum, actual.getError<T>());
     }
 
-    virtual std::shared_ptr<tests::Itest> createFixture() = 0;
+    virtual std::shared_ptr<tests::Itest> createItestFixture() = 0;
+    virtual std::shared_ptr<tests::ItestSubscription> createItestSubscriptionFixture() = 0;
 
     void testAsync_getAttributeNotCached()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>* callback =
                 new MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>();
@@ -222,7 +237,7 @@ public:
 
     void testSync_setAttributeNotCached()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         EXPECT_CALL(
                 *mockMessageSender,
@@ -244,7 +259,7 @@ public:
 
     void testSync_getAttributeNotCached()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
         setExpectationsForSendRequestCall("getLocation").WillOnce(
                 Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
@@ -259,7 +274,7 @@ public:
 
     void testAsync_getterCallReturnsProviderRuntimeException()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         MockCallback<std::int32_t>* callback = new MockCallback<std::int32_t>();
 
@@ -283,7 +298,7 @@ public:
 
     void testSync_getterCallReturnsProviderRuntimeException()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         exceptions::ProviderRuntimeException expected(
                 "getterCallReturnsProviderRuntimeExceptionError");
@@ -305,7 +320,7 @@ public:
 
     void testAsync_getterCallReturnsMethodInvocationException()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         MockCallback<std::int32_t>* callback = new MockCallback<std::int32_t>();
 
@@ -329,7 +344,7 @@ public:
 
     void testSync_getterCallReturnsMethodInvocationException()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         exceptions::MethodInvocationException expected(
                 "getterCallReturnsMethodInvocationExceptionError");
@@ -351,7 +366,7 @@ public:
 
     void testAsync_setterCallReturnsProviderRuntimeException()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -377,7 +392,7 @@ public:
 
     void testSync_setterCallReturnsProviderRuntimeException()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         exceptions::ProviderRuntimeException expected(
                 "setterCallReturnsProviderRuntimeExceptionError");
@@ -399,7 +414,7 @@ public:
 
     void testAsync_setterCallReturnsMethodInvocationException()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -425,7 +440,7 @@ public:
 
     void testSync_setterCallReturnsMethodInvocationException()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         exceptions::MethodInvocationException expected(
                 "setterCallReturnsMethodInvocationExceptionError");
@@ -447,7 +462,7 @@ public:
 
     void testAsync_methodCallReturnsProviderRuntimeException()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -471,7 +486,7 @@ public:
 
     void testSync_methodCallReturnsProviderRuntimeException()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         exceptions::ProviderRuntimeException expected(
                 "testSync_methodCallReturnsProviderRuntimeException-ERROR");
@@ -492,7 +507,7 @@ public:
 
     void testAsync_methodCallReturnsMethodInvocationException()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         MockCallback<void>* callback = new MockCallback<void>();
 
@@ -516,7 +531,7 @@ public:
 
     void testSync_methodCallReturnsMethodInvocationException()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         exceptions::MethodInvocationException expected(
                 "testSync_methodCallReturnsMethodInvocationException-ERROR");
@@ -537,7 +552,7 @@ public:
 
     void testAsync_methodCallReturnsErrorEnum()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         using tests::testTypes::ErrorEnumBase;
         auto callback =
@@ -566,7 +581,7 @@ public:
 
     void testSync_methodCallReturnsErrorEnum()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         using tests::testTypes::ErrorEnumBase;
 
@@ -593,7 +608,7 @@ public:
 
     void testAsync_methodCallReturnsExtendedErrorEnum()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
         using tests::test::MethodWithErrorEnumExtendedErrorEnum;
 
         auto callback = std::make_shared<
@@ -626,7 +641,7 @@ public:
 
     void testSync_methodCallReturnsExtendedErrorEnum()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         using tests::test::MethodWithErrorEnumExtendedErrorEnum;
         MethodWithErrorEnumExtendedErrorEnum::Enum error =
@@ -654,7 +669,7 @@ public:
 
     void testAsync_methodCallReturnsInlineErrorEnum()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         using tests::test::MethodWithImplicitErrorEnumErrorEnum;
 
@@ -688,7 +703,7 @@ public:
 
     void testSync_methodCallReturnsInlineErrorEnum()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
 
         using tests::test::MethodWithImplicitErrorEnumErrorEnum;
 
@@ -717,7 +732,7 @@ public:
 
     void testAsync_OperationWithNoArguments()
     {
-        asyncTestFixture = createFixture();
+        asyncTestFixture = createItestFixture();
 
         MockCallbackWithJoynrException<int>* callback = new MockCallbackWithJoynrException<int>();
 
@@ -730,7 +745,7 @@ public:
 
     void testSync_OperationWithNoArguments()
     {
-        auto testFixture = createFixture();
+        auto testFixture = createItestFixture();
         setExpectationsForSendRequestCall("methodWithNoInputParameters")
                 .WillOnce(Invoke(&callBackActions, &CallBackActions::executeCallBackIntResult));
 
@@ -756,7 +771,50 @@ public:
         // gpsFixture->subscribeToLocation(subscriptionListener, subscriptionQos);
     }
 
+    void doNotSendSubscriptionStopForMulticastSubscription()
+    {
+        const std::string subscriptionId = "multicast";
+        const std::string expectedSubscriptionId = subscriptionId;
+
+        auto testFixture = createItestSubscriptionFixture();
+
+        EXPECT_CALL(*mockSubscriptionManager, unregisterSubscription(Eq(expectedSubscriptionId)));
+
+        // sendSubscriptionStop should NOT be called on MessageSender
+        EXPECT_CALL(*mockMessageSender, sendSubscriptionStop(_,_,_,_)).Times(0);
+
+        testFixture->unsubscribeFromEmptyBroadcastBroadcast(subscriptionId);
+    }
+
+    void sendSubscriptionStopForSelectiveSubscription()
+    {
+        const std::string subscriptionId = "selectiveBroadcast";
+        const std::string expectedSubscriptionId = subscriptionId;
+
+        auto testFixture = createItestSubscriptionFixture();
+
+        EXPECT_CALL(*mockSubscriptionManager, unregisterSubscription(Eq(expectedSubscriptionId)));
+
+        // sendSubscriptionStop SHOULD be called on MessageSender
+        joynr::SubscriptionStop capturedSubscriptionStop;
+        EXPECT_CALL(*mockMessageSender,
+                    sendSubscriptionStop(Eq(proxyParticipantId),
+                                         Eq(providerParticipantId),
+                                         _,
+                                         _)).Times(1)
+                .WillOnce(SaveArg<3>(&capturedSubscriptionStop));
+
+        testFixture->unsubscribeFromBooleanBroadcastBroadcast(subscriptionId);
+
+        EXPECT_EQ(subscriptionId, capturedSubscriptionStop.getSubscriptionId());
+    }
+
+private:
+    std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
+    DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);
+
 protected:
+    std::shared_ptr<MockSubscriptionManager> mockSubscriptionManager;
     joynr::types::Localisation::GpsLocation expectedGpsLocation;
     int expectedInt;
     CallBackActions callBackActions;
@@ -770,6 +828,4 @@ protected:
     std::shared_ptr<tests::Itest> asyncTestFixture;
     std::shared_ptr<exceptions::JoynrException> error;
 
-private:
-    DISALLOW_COPY_AND_ASSIGN(AbstractSyncAsyncTest);
 };

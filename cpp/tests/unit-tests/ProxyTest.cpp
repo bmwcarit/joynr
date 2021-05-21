@@ -16,15 +16,19 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/JoynrRuntimeImpl.h"
-#include "joynr/PrivateCopyAssign.h"
+
+#include "AbstractSyncAsyncTest.cpp"
+
 #include "joynr/JoynrMessagingConnectorFactory.h"
+#include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/MulticastSubscriptionQos.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
+#include "joynr/tests/Itest.h"
+#include "joynr/tests/ItestConnector.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/tests/TestWithoutVersionProxy.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-#include "AbstractSyncAsyncTest.cpp"
-#include "joynr/Settings.h"
 
 #include "tests/mock/MockJoynrRuntime.h"
 
@@ -57,7 +61,7 @@ public:
     {
         AbstractSyncAsyncTest::SetUp();
         joynrMessagingConnectorFactory =
-                std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, nullptr);
+                std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, mockSubscriptionManager);
         auto settings = std::make_unique<Settings>();
         runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
     }
@@ -91,15 +95,16 @@ public:
                         ));
     }
 
-    std::shared_ptr<tests::Itest> createFixture() override
+    std::shared_ptr<tests::Itest> createItestFixture() override
     {
-        std::shared_ptr<tests::testProxy> proxy = std::make_shared<tests::testProxy>(
-                runtime, std::move(joynrMessagingConnectorFactory), "myDomain", MessagingQos());
-        types::DiscoveryEntryWithMetaInfo discoveryEntry;
-        discoveryEntry.setParticipantId(providerParticipantId);
-        discoveryEntry.setIsLocal(true);
-        proxy->handleArbitrationFinished(discoveryEntry);
+        std::shared_ptr<tests::testProxy> proxy = createProxy();
         return std::dynamic_pointer_cast<tests::Itest>(proxy);
+    }
+
+    std::shared_ptr<tests::ItestSubscription> createItestSubscriptionFixture() override
+    {
+        std::shared_ptr<tests::testProxy> proxy = createProxy();
+        return std::dynamic_pointer_cast<tests::ItestSubscription>(proxy);
     }
 
 protected:
@@ -107,6 +112,19 @@ protected:
     std::shared_ptr<JoynrRuntimeImpl> runtime;
 
 private:
+    std::shared_ptr<tests::testProxy> createProxy()
+    {
+        std::shared_ptr<tests::testProxy> proxy = std::make_shared<tests::testProxy>(
+                runtime, std::move(joynrMessagingConnectorFactory), "myDomain", MessagingQos());
+        types::DiscoveryEntryWithMetaInfo discoveryEntry;
+        discoveryEntry.setParticipantId(providerParticipantId);
+        discoveryEntry.setIsLocal(true);
+        proxyParticipantId = proxy->getProxyParticipantId();
+        proxy->handleArbitrationFinished(discoveryEntry);
+
+        return proxy;
+    }
+
     DISALLOW_COPY_AND_ASSIGN(ProxyTest);
 };
 
@@ -247,4 +265,15 @@ TEST_F(ProxyTest, defaultVersionIsSetCorrectly)
     std::uint32_t expectedDefaultMinorVersion = 0;
     EXPECT_EQ(expectedDefaultMajorVersion, tests::TestWithoutVersionProxy::MAJOR_VERSION);
     EXPECT_EQ(expectedDefaultMinorVersion, tests::TestWithoutVersionProxy::MINOR_VERSION);
+}
+
+TEST_F(ProxyTest,
+       doNotSendSubscriptionStopForMulticastSubscription)
+{
+    doNotSendSubscriptionStopForMulticastSubscription();
+}
+
+TEST_F(ProxyTest, sendSubscriptionStopForSelectiveSubscription)
+{
+    sendSubscriptionStopForSelectiveSubscription();
 }
