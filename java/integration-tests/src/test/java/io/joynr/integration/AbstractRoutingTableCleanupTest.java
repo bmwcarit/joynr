@@ -611,16 +611,19 @@ public class AbstractRoutingTableCleanupTest {
         }
     }
 
-    protected void waitForGlobalRemove() {
-        CountDownLatch publishCountDownLatch = new CountDownLatch(1);
+    protected ArgumentCaptor<ImmutableMessage> prepareGlobalRemove(CountDownLatch removeCdl) {
         ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(mqttMessagingStubMock)
-                                                                  .transmit(messageCaptor.capture(),
-                                                                            any(SuccessAction.class),
-                                                                            any(FailureAction.class));
+        doAnswer(createVoidCountDownAnswer(removeCdl)).when(mqttMessagingStubMock)
+                                                      .transmit(messageCaptor.capture(),
+                                                                any(SuccessAction.class),
+                                                                any(FailureAction.class));
+        return messageCaptor;
+    }
+
+    protected void waitForGlobalRemove(CountDownLatch removeCdl, ArgumentCaptor<ImmutableMessage> msgCaptor) {
 
         try {
-            assertTrue(publishCountDownLatch.await(1500, TimeUnit.MILLISECONDS));
+            assertTrue(removeCdl.await(10000, TimeUnit.MILLISECONDS));
         } catch (InterruptedException e) {
             fail(e.toString());
         }
@@ -628,11 +631,9 @@ public class AbstractRoutingTableCleanupTest {
         verify(mqttMessagingStubMock).transmit(any(ImmutableMessage.class),
                                                any(SuccessAction.class),
                                                any(FailureAction.class));
-        ImmutableMessage capturedMessage = messageCaptor.getValue();
+        ImmutableMessage capturedMessage = msgCaptor.getValue();
         assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, capturedMessage.getType());
         assertEquals(getGcdParticipantId(), capturedMessage.getRecipient());
-
-        reset(mqttMessagingStubMock);
 
         try {
             MutableMessage replyMessage = createVoidReply(capturedMessage);
@@ -640,12 +641,16 @@ public class AbstractRoutingTableCleanupTest {
         } catch (Exception e) {
             fail("Provider unregistration failed: " + e.toString());
         }
+
+        reset(mqttMessagingStubMock);
     }
 
     protected void unregisterGlobal(String domain, Object provider) {
         reset(mqttMessagingStubMock);
+        CountDownLatch removeCdl = new CountDownLatch(1);
+        ArgumentCaptor<ImmutableMessage> msgCaptor = prepareGlobalRemove(removeCdl);
         joynrRuntime.unregisterProvider(domain, provider);
-        waitForGlobalRemove();
+        waitForGlobalRemove(removeCdl, msgCaptor);
         // Wait for a while until global remove has finished (reply processed at LCD)
         try {
             Thread.sleep(200);
