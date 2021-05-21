@@ -511,10 +511,14 @@ public class InProcessRoutingTableCleanupTest extends AbstractRoutingTableCleanu
         checkRefCnt(FIXEDPARTICIPANTID2, 1l);
 
         // unregister provider
+        CountDownLatch removeCdl1 = new CountDownLatch(1);
+        ArgumentCaptor<ImmutableMessage> msgCaptor = prepareGlobalRemove(removeCdl1);
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
-        waitForGlobalRemove();
+        waitForGlobalRemove(removeCdl1, msgCaptor);
+        CountDownLatch removeCdl2 = new CountDownLatch(1);
+        msgCaptor = prepareGlobalRemove(removeCdl2);
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN2, testProvider);
-        waitForGlobalRemove();
+        waitForGlobalRemove(removeCdl2, msgCaptor);
 
         // Wait for a while until global remove has finished (reply processed at LCD)
         try {
