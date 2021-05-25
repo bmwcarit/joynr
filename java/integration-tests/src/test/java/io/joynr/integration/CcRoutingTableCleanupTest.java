@@ -1049,6 +1049,11 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
 
         verifyOutgoing(stub, MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY, 1);
 
+        // sleep some time to make sure that the subscription at the provider's PublicationManager is fully established
+        // (The SubscriptionReply is sent before the publicationInformation is stored in PublicationManager
+        // .subscriptionId2PublicationInformation. A fired broadcast is dropped if this information is missing because
+        // the recipient is unknown (race condition between fire*Broadcast and addSubscriptionRequest).
+        sleep(256);
         // trigger publications
         testProvider.fireEmptyBroadcast();
         testProvider.fireEmptyBroadcast();
