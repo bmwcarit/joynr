@@ -50,6 +50,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.joynr.arbitration.ArbitrationStrategyFunction;
 import io.joynr.arbitration.DiscoveryQos;
@@ -78,6 +80,8 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(RoutingTableStressTest.class);
     private final String TEST_DOMAIN = "stressTestDomain";
     private final int THREAD_POOL_SIZE = 20;
     private static final String FROM_PARTICIPANTID_PREFIX = "fromParticipantId_";
@@ -115,8 +119,7 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
         @Override
         public Void call() throws Exception {
             int numberOfMethod = getRandomNumber(0, NUMBER_OF_TEST_CASES);
-            System.out.println("Name of the Thread: " + Thread.currentThread().getName() + ", random number: "
-                    + numberOfMethod);
+            logger.info("Name of the Thread: {}, random number: {}", Thread.currentThread().getName(), numberOfMethod);
             callTestCase(numberOfMethod);
             return null;
         }
@@ -126,36 +129,52 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
         }
 
         private void callTestCase(int numberOfTestCase) {
-            switch (numberOfTestCase) {
-            case 0:
-                useProxyBuilder_createProxy_sendMessage_discardProxy();
-                break;
-            case 1:
-                useProxyBuilder_createMultiProxy_sendMessage_discardProxy();
-                break;
-            case 2:
-                useGuidedProxyBuilder_createProxy_sendMessage_discardProxy();
-                break;
-            case 3:
-                useGuidedProxyBuilder_discover_buildNone();
-                break;
-            case 4:
-                registerAndUnregisterProviders_local();
-                break;
-            case 5:
-                mqttRequestReply_success();
-                break;
-            case 6:
-                mqttRequestReply_error_replyExpired(FIXEDPARTICIPANTID1);
-                break;
-            case 7:
-                mqttRequestReply_error_requestExpired(FIXEDPARTICIPANTID2);
-                break;
-            case 8:
-                mqttSubRequestSubReply_success_stoppedByExpiration(testProvider3, FIXEDPARTICIPANTID3);
-                break;
-            default:
-                break;
+            String name = null;
+            try {
+                switch (numberOfTestCase) {
+                case 0:
+                    name = "useProxyBuilder_createProxy_sendMessage_discardProxy";
+                    useProxyBuilder_createProxy_sendMessage_discardProxy();
+                    break;
+                case 1:
+                    name = "useProxyBuilder_createMultiProxy_sendMessage_discardProxy";
+                    useProxyBuilder_createMultiProxy_sendMessage_discardProxy();
+                    break;
+                case 2:
+                    name = "useGuidedProxyBuilder_createProxy_sendMessage_discardProxy";
+                    useGuidedProxyBuilder_createProxy_sendMessage_discardProxy();
+                    break;
+                case 3:
+                    name = "useGuidedProxyBuilder_discover_buildNone";
+                    useGuidedProxyBuilder_discover_buildNone();
+                    break;
+                case 4:
+                    name = "registerAndUnregisterProviders_local";
+                    registerAndUnregisterProviders_local();
+                    break;
+                case 5:
+                    name = "mqttRequestReply_success";
+                    mqttRequestReply_success();
+                    break;
+                case 6:
+                    name = "mqttRequestReply_error_replyExpired";
+                    mqttRequestReply_error_replyExpired(FIXEDPARTICIPANTID1);
+                    break;
+                case 7:
+                    name = "mqttRequestReply_error_requestExpired";
+                    mqttRequestReply_error_requestExpired(FIXEDPARTICIPANTID2);
+                    break;
+                case 8:
+                    name = "mqttSubRequestSubReply_success_stoppedByExpiration";
+                    mqttSubRequestSubReply_success_stoppedByExpiration(testProvider3, FIXEDPARTICIPANTID3);
+                    break;
+                default:
+                    break;
+                }
+                logger.info("Test case {}: {} SUCCEEDED.", numberOfTestCase, name);
+            } catch (Throwable e) {
+                logger.error("FAILED in {}.", name, e);
+                throw e;
             }
         }
     }
@@ -224,8 +243,8 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
         for (int i = 0; i < 100; i++) { // try for 10 seconds
             System.gc();
             if (routingTableHashMap.size() == expectedNumberOfRoutingEntries) {
-                System.out.println("Garbage collector has removed the expected number ("
-                        + expectedNumberOfRoutingEntries + ") of routing entries!");
+                logger.info("Garbage collector has removed the expected number ({}) of routing entries!",
+                            expectedNumberOfRoutingEntries);
                 garbageCollected = true;
                 break;
             } else {
@@ -528,7 +547,8 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {
-                fail(e.toString());
+                fail(e.toString() + Arrays.toString(e.getStackTrace()) + "\n cause: " + e.getCause()
+                        + Arrays.toString(e.getCause().getStackTrace()));
             }
         }
 
