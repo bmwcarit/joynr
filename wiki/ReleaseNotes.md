@@ -2,6 +2,26 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.16.1
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Fixed logger name in `ProviderDirectory`. Logger name was `ReplyCallerDirectory`
+  before.
+* **[Java]** Added missing log to `RoutingTableImpl.incrementReferenceCount`.
+* **[Java]** Finalized integration tests for improved handling of routing entries.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed a potential deadlock on provider side in `PublicationManagerImpl`.
+
 # joynr 1.16.0
 
 ## API-relevant Changes
