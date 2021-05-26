@@ -23,7 +23,7 @@ and thus it's necessary to configure joynr libraries to use the provided **no_ao
 Add this line to build.gradle file and verify if you have mavenLocal() under your maven
 repositories list.
 
-`implementation 'io.joynr.android:libjoynr-android-websocket-runtime:1.16.1-SNAPSHOT'`
+`implementation 'io.joynr.android:libjoynr-android-websocket-runtime:1.16.1'`
 
 ## Logging
 
