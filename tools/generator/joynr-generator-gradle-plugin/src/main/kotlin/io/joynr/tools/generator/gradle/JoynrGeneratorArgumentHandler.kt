@@ -69,24 +69,40 @@ class JoynrGeneratorArgumentHandler(
         val invocationArguments = InvocationArguments()
         val defaultLanguage =
             if (generationLanguage.orNull == null) DEFAULT_LANGUAGE else generationLanguage.get()
+        val projectPath = project.projectDir.absolutePath
 
         var defaultModelPath: String?
         if (!modelPath.isPresent) {
-            defaultModelPath = "${project.projectDir.absolutePath}/$ANDROID_DEFAULT_MODEL_PATH_SRC"
+            defaultModelPath = "$projectPath/$ANDROID_DEFAULT_MODEL_PATH_SRC"
             val modelDir = File(defaultModelPath)
             if (!modelDir.exists() || !modelDir.isDirectory) {
                 defaultModelPath =
-                    "${project.projectDir.absolutePath}/$ANDROID_DEFAULT_MODEL_PATH_APP"
+                    "$projectPath/$ANDROID_DEFAULT_MODEL_PATH_APP"
             }
         } else {
-            defaultModelPath = modelPath.get()
+            val userModelPath = modelPath.get()
+            defaultModelPath = if(userModelPath.contains(projectPath)) {
+                userModelPath
+            } else {
+                "$projectPath/$userModelPath"
+            }
+            logger.quiet("$defaultModelPath")
+        }
+        var defaultOutputPath = ""
+        if(outputPath.isPresent) {
+            defaultOutputPath = if (!outputPath.get().contains(projectPath)) {
+                "$projectPath/${outputPath.get()}"
+            } else {
+                outputPath.get()
+            }
+            logger.quiet("$defaultOutputPath")
         }
 
         invocationArguments.let {
             it.setClean(doClean)
             it.setGenerate(!doClean)
             it.modelPath = defaultModelPath
-            it.outputPath = outputPath.orNull
+            it.outputPath = defaultOutputPath
             it.rootGenerator = rootGenerator.orNull
             try {
                 it.setGenerationLanguage(defaultLanguage)
