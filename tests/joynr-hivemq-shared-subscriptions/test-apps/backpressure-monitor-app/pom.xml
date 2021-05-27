@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions</groupId>
 		<artifactId>test-apps</artifactId>
-		<version>1.17.0</version>
+		<version>1.17.1-SNAPSHOT</version>
 	</parent>
 
 	<build>
