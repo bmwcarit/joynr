@@ -380,6 +380,17 @@ void MosquittoConnection::on_disconnect_v5(struct mosquitto* mosq,
         return;
     }
 
+    // All Mosquitto internal reason codes are defined by MOSQ_ERR_* defines and have values
+    // smaller than 0x80. In some cases the mosquitto library just copies the reason code which is
+    // part of the MQTT protocol into the rc field seen here. The MQTT v5 spec defines that a
+    // reason code >= 0x80 signals a failure. In that case, we always trigger a restart via the
+    // restart thread.
+    if (rc >= 0x80) {
+        JOYNR_LOG_INFO(logger(), "[{}] Triggering loop restart", mosquittoConnection->_gbid);
+        mosquittoConnection->_restartSemaphore.notify();
+        return;
+    }
+
     // trigger restart for all known fatal cases where Mosquitto leaves the loop
     // and thus does not attempt the reconnect itself
     switch (rc) {
@@ -409,11 +420,12 @@ void MosquittoConnection::on_disconnect_v5(struct mosquitto* mosq,
     case MOSQ_ERR_NO_CONN:
     case MOSQ_ERR_CONN_REFUSED:
     case MOSQ_ERR_CONN_LOST:
+    case MOSQ_ERR_KEEPALIVE:
     case MOSQ_ERR_TLS:
     default:
         break;
     }
-    mosquitto_reconnect(mosq);
+    JOYNR_LOG_INFO(logger(), "[{}] Keeping the loop", mosquittoConnection->_gbid);
 }
 
 void MosquittoConnection::on_publish_v5(struct mosquitto* mosq,
