@@ -44,7 +44,7 @@ GlobalCapabilitiesDirectoryClient::GlobalCapabilitiesDirectoryClient(
           _messagingQos(),
           _touchTtl(static_cast<std::uint64_t>(
                   clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs().count())),
-          _removeStaleTtl(3600000),
+          _removeStaleTtl(60000),
           _sequentialTasks(std::move(taskSequencer))
 {
 }
