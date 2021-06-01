@@ -982,7 +982,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveStale)
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     std::string clusterControllerId = "dummyClustercontrollerId";
     const std::int64_t maxLastSeenMs = 100000.0;
-    const std::int64_t expectedTtl = 3600000.0;
+    const std::int64_t expectedTtl = 60000.0;
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeStaleAsyncMock(Eq(clusterControllerId), Eq(maxLastSeenMs), _, _, _))
