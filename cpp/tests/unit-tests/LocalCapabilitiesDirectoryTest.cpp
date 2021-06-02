@@ -5090,12 +5090,23 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControll
 
 TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControllerRetry)
 {
-    std::int64_t maxLastSeenMs = 100000;
+    std::int64_t maxLastSeenMs = TimePoint::now().toMilliseconds() - 10000;
     for (const auto gbid : _KNOWN_GBIDS) {
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                     removeStale(Eq(_clusterControllerId), Eq(maxLastSeenMs), Eq(gbid), _, _))
                 .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientRemoveStaleWithException))
                 .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientRemoveStaleSuccess));
+    }
+    _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControllerNoRetry)
+{
+    std::int64_t maxLastSeenMs = TimePoint::now().toMilliseconds() - 3600100;
+    for (const auto gbid : _KNOWN_GBIDS) {
+        EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                    removeStale(Eq(_clusterControllerId), Eq(maxLastSeenMs), Eq(gbid), _, _))
+                .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientRemoveStaleWithException));
     }
     _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
 }
