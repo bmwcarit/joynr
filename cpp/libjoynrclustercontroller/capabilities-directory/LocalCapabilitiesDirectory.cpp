@@ -1493,14 +1493,26 @@ void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
     ](const joynr::exceptions::JoynrRuntimeException& error)
     {
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
+            std::int64_t durationForRetryCallMs = 3600000;
             JOYNR_LOG_ERROR(logger(),
                             "RemoveStale(ccId={}, gbid={}, maxLastSeenDateMs={}) failed: {}",
                             ccId,
                             gbid,
                             clusterControllerStartDateMs,
                             error.getMessage());
-            thisSharedPtr->removeStaleProvidersOfClusterController(
-                    clusterControllerStartDateMs, gbid);
+            if (TimePoint::now().toMilliseconds() - clusterControllerStartDateMs <=
+                durationForRetryCallMs) {
+                thisSharedPtr->removeStaleProvidersOfClusterController(
+                        clusterControllerStartDateMs, gbid);
+            } else {
+                JOYNR_LOG_ERROR(logger(),
+                                "RemoveStale(ccId={}, gbid={}, maxLastSeenDateMs={}) was not "
+                                "retried because a duration to retry (60 minutes) after a start of "
+                                "cluster controller was exceeded.",
+                                ccId,
+                                gbid,
+                                clusterControllerStartDateMs);
+            }
         }
     };
     _globalCapabilitiesDirectoryClient->removeStale(_clusterControllerId,
