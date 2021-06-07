@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,6 +108,7 @@ public class RequestReplyManagerImpl
         this.cleanupScheduler = cleanupScheduler;
         this.cleanupSchedulerFuturesMap = new ConcurrentHashMap<>();
         providerDirectory.addListener(this);
+        providerDirectory.forEach(this::entryAdded);
         shutdownNotifier.registerForShutdown(this);
         this.statelessAsyncRequestReplyIdManager = statelessAsyncRequestReplyIdManager;
     }
@@ -287,7 +288,7 @@ public class RequestReplyManagerImpl
 
     @Override
     public void entryRemoved(String participantId) {
-        //TODO cleanup requestQueue?
+        // Cleanup not necessary
     }
 
     @Override

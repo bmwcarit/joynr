@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
  */
 package io.joynr.dispatching;
 
+import java.util.function.BiConsumer;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,55 +30,73 @@ public abstract class Directory<T> {
     private Set<DirectoryListener<T>> listeners = new HashSet<>();
     private Map<String, T> entryMap = new HashMap<>();
 
-    public void addListener(DirectoryListener<T> listener) {
-        synchronized (this) {
-            listeners.add(listener);
-            for (Entry<String, T> entry : entryMap.entrySet()) {
-                listener.entryAdded(entry.getKey(), entry.getValue());
-            }
+    /**
+     * Adds a listener to the directory. The Directory will notify the listeners when an entry is
+     * either added or removed by calling their respective entryAdded(...) or entryRemoved(...)
+     * callbacks.
+     *
+     * @param listener the listener to be added
+     */
+    public synchronized void addListener(DirectoryListener<T> listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Removes a listener from the directory.
+     *
+     * @param listener the listener to be removed
+     */
+    public synchronized void removeListener(DirectoryListener<T> listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Adds the specified entry and participantId into the directory.
+     *
+     * @param participantId the entry's participantId
+     * @param entry the entry to be added
+     */
+    public synchronized void add(String participantId, T entry) {
+        entryMap.put(participantId, entry);
+        for (DirectoryListener<T> listener : listeners) {
+            listener.entryAdded(participantId, entry);
         }
     }
 
-    public void removeListener(DirectoryListener<T> listener) {
-        synchronized (this) {
-            listeners.remove(listener);
-        }
-    }
-
-    public void add(String id, T entry) {
-        synchronized (this) {
-            entryMap.put(id, entry);
+    /**
+     * Removes the entry with the specified participantId and notifies the listeners via calling their
+     * respective entryRemoved methods.
+     *
+     * @param participantId participantId of the entry supposed to be removed
+     * @return the previous entry associated with the participantId or null if the participantId was not present
+     */
+    public synchronized T remove(String participantId) {
+        getLogger().trace("remove: {}", participantId);
+        T result = entryMap.remove(participantId);
+        if (result == null) {
+            getLogger().trace("remove: {} not found", participantId);
+        } else {
             for (DirectoryListener<T> listener : listeners) {
-                listener.entryAdded(id, entry);
+                listener.entryRemoved(participantId);
             }
         }
+        return result;
     }
 
-    public T remove(String id) {
-        synchronized (this) {
-            getLogger().trace("remove: {}", id);
-            T result = entryMap.remove(id);
-            if (result == null) {
-                getLogger().trace("remove: {} not found", id);
-            } else {
-                for (DirectoryListener<T> listener : listeners) {
-                    listener.entryRemoved(id);
-                }
-            }
-            return result;
-        }
+    public synchronized T get(String participantId) {
+        return entryMap.get(participantId);
     }
 
-    public T get(String id) {
-        synchronized (this) {
-            return entryMap.get(id);
-        }
+    /**
+     * Executes the specified consumer on each entry.
+     * @param consumer consumer to be executed
+     */
+    public synchronized void forEach(BiConsumer<String, T> consumer) {
+        entryMap.forEach(consumer);
     }
 
-    public boolean isEmpty() {
-        synchronized (this) {
-            return entryMap.isEmpty();
-        }
+    public synchronized boolean isEmpty() {
+        return entryMap.isEmpty();
     }
 
     protected abstract Logger getLogger();
