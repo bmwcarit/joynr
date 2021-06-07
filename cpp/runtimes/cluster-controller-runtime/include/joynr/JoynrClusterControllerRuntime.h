@@ -104,7 +104,8 @@ public:
             std::unique_ptr<Settings> settings,
             std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
             std::shared_ptr<IKeychain> _keyChain = nullptr,
-            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
+            std::int64_t removeStaleDelayMs = _defaultRemoveStaleDelayMs);
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
 
@@ -216,6 +217,8 @@ private:
     void startLocalCommunication();
     std::string getSerializedGlobalClusterControllerAddress() const;
     const system::RoutingTypes::Address& getGlobalClusterControllerAddress() const;
+    void scheduleRemoveStaleTimer();
+    void sendScheduledRemoveStale(const boost::system::error_code& timerError);
 
     std::shared_ptr<MulticastMessagingSkeletonDirectory> _multicastMessagingSkeletonDirectory;
 
@@ -242,6 +245,10 @@ private:
 
     std::vector<std::string> _availableGbids;
     void fillAvailableGbidsVector();
+
+    static constexpr std::int64_t _defaultRemoveStaleDelayMs{300000};
+    const std::int64_t _removeStaleDelay;
+    boost::asio::steady_timer _removeStaleTimer;
 };
 
 } // namespace joynr

@@ -193,9 +193,10 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
  * Expected behavior: testProxyBuilder->build() throws an exception after the second start of
  * cluster controller, because stale provider has been removed at the start of cluster controller.
  */
-TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
+TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
 {
     // Setup
+    std::int64_t removeStaleDelayMs = 0;
     std::string domain = "cppTestRsDomain";
     auto mockProvider = std::make_shared<MockTestProvider>();
 
@@ -214,7 +215,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
 
     // Start cluster controller runtime first time
     auto testRuntimeFirst = std::make_shared<JoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError);
+            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
     testRuntimeFirst->init();
     testRuntimeFirst->start();
 
@@ -231,11 +232,11 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
 
     // Start cluster controller runtime second time
     auto testRuntimeSecond = std::make_shared<JoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError);
+            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
     testRuntimeSecond->init();
     testRuntimeSecond->start();
     // wait some time to make sure that removeStale has been published and processed
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
 
     testProxyBuilder = testRuntimeSecond->createProxyBuilder<tests::testProxy>(domain);
 
@@ -256,6 +257,90 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStale)
     test::util::resetAndWaitUntilDestroyed(testRuntimeSecond);
 }
 
+/**
+ * Test removing stale providers functionality of cluster controller with the delay after CC start
+ *
+ * Pre-conditions: start cluster controller first time, register two providers, shutdown cluster controller
+ * without calling of unregisterProvider() method. Start cluster controller second time.
+ *
+ * Expected behavior: after the second start of cluster controller, first call of testProxyBuilder->build() will
+ * be successful (because it is called before the call of removeStale) and it will throw an exception at the
+ * second call because stale providers have been removed after waiting for a delay.
+ */
+TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
+{
+    // Setup
+    std::int64_t removeStaleDelayMs = 2000;
+    std::string domainFirst = "cppTestRsDomainFirst";
+    std::string domainSecond = "cppTestRsDomainSecond";
+    auto mockProvider = std::make_shared<MockTestProvider>();
+
+    types::ProviderQos providerQosFirst;
+    auto millisSinceEpoch = TimePoint::now().toMilliseconds();
+    providerQosFirst.setPriority(millisSinceEpoch);
+    providerQosFirst.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQosFirst.setSupportsOnChangeSubscriptions(true);
+
+    types::ProviderQos providerQosSecond {providerQosFirst};
+    providerQosSecond.setPriority(millisSinceEpoch + 10);
+
+    const std::int64_t discoveryTimeoutMs = 3000;
+    joynr::DiscoveryQos discoveryQos;
+    discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+    discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
+    discoveryQos.setCacheMaxAgeMs(0.0);
+    discoveryQos.setRetryIntervalMs(discoveryTimeoutMs + 50);
+
+    // Start cluster controller runtime first time
+    auto testRuntimeFirst = std::make_shared<JoynrClusterControllerRuntime>(
+            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
+    testRuntimeFirst->init();
+    testRuntimeFirst->start();
+
+    testRuntimeFirst->registerProvider<tests::testProvider>(domainFirst, mockProvider, providerQosFirst, true, true);
+    testRuntimeFirst->registerProvider<tests::testProvider>(domainSecond, mockProvider, providerQosSecond, true, true);
+
+    testRuntimeFirst->shutdown();
+    test::util::resetAndWaitUntilDestroyed(testRuntimeFirst);
+
+    // Start cluster controller runtime second time
+    auto testRuntimeSecond = std::make_shared<JoynrClusterControllerRuntime>(
+            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
+    testRuntimeSecond->init();
+    testRuntimeSecond->start();
+    // wait some time to make sure that cluster controller runtime has been started
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    // Check if proxy is built before removeStale is called
+    auto testProxyBuilder = testRuntimeSecond->createProxyBuilder<tests::testProxy>(domainFirst);
+    try {
+        auto testProxy = testProxyBuilder->setMessagingQos(MessagingQos())
+                ->setDiscoveryQos(discoveryQos)
+                ->build();
+        ASSERT_NE(nullptr, testProxy);
+    } catch (const exceptions::JoynrException& e) {
+        FAIL() << "Proxy creation failed unexpectedly: " << e.getMessage();
+    }
+
+    // wait some time to make sure that removeStale has been published and processed
+    std::this_thread::sleep_for(std::chrono::milliseconds(removeStaleDelayMs + 200));
+
+    testProxyBuilder = testRuntimeSecond->createProxyBuilder<tests::testProxy>(domainSecond);
+    try {
+        testProxyBuilder->setMessagingQos(MessagingQos())
+                ->setDiscoveryQos(discoveryQos)
+                ->build();
+        FAIL() << "Proxy creation succeeded unexpectedly";
+    } catch (const exceptions::JoynrException& e) {
+        std::string exceptionMessage = e.getMessage();
+        std::string expectedSubstring = "No entries found for domain";
+        bool messageFound = exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
+        ASSERT_TRUE(messageFound);
+    }
+
+    testRuntimeSecond->shutdown();
+    test::util::resetAndWaitUntilDestroyed(testRuntimeSecond);
+}
 
 /**
  * Test touching only the providers actually registered in the clustercontroller

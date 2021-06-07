@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -123,7 +123,8 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
         std::unique_ptr<Settings> settings,
         std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
         std::shared_ptr<IKeychain> keyChain,
-        MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory)
+        MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory,
+        int64_t removeStaleDelayMs)
         : JoynrRuntimeImpl(*settings, std::move(onFatalRuntimeError), std::move(keyChain)),
           _joynrDispatcher(),
           _subscriptionManager(),
@@ -159,7 +160,9 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _accessControlListEditorProviderParticipantId(),
           _isShuttingDown(false),
           _dummyGlobalAddress(),
-          _clusterControllerStartDateMs(TimePoint::now().toMilliseconds())
+          _clusterControllerStartDateMs(TimePoint::now().toMilliseconds()),
+          _removeStaleDelay(removeStaleDelayMs),
+          _removeStaleTimer(_singleThreadIOService->getIOService())
 {
 }
 
@@ -931,6 +934,8 @@ void JoynrClusterControllerRuntime::shutdown()
         _joynrDispatcher->shutdown();
         _joynrDispatcher.reset();
     }
+
+    _removeStaleTimer.cancel();
 }
 
 void JoynrClusterControllerRuntime::shutdownClusterController()
@@ -980,8 +985,43 @@ void JoynrClusterControllerRuntime::start()
     _singleThreadIOService->start();
     startExternalCommunication();
     startLocalCommunication();
-    _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(
-            _clusterControllerStartDateMs);
+    scheduleRemoveStaleTimer();
+}
+
+void JoynrClusterControllerRuntime::scheduleRemoveStaleTimer()
+{
+    boost::system::error_code timerError = boost::system::error_code();
+    _removeStaleTimer.expires_from_now(std::chrono::milliseconds(_removeStaleDelay), timerError);
+    if (timerError) {
+        JOYNR_LOG_ERROR(logger(),
+                        "Error from remove stale timer in cluster controller: {}: {}",
+                        timerError.value(),
+                        timerError.message());
+    } else {
+        _removeStaleTimer.async_wait([
+            lcdWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectory),
+            ccStartTimeMs = _clusterControllerStartDateMs
+        ](const boost::system::error_code& localTimerError) {
+            if (localTimerError == boost::asio::error::operation_aborted) {
+                JOYNR_LOG_ERROR(
+                        logger(),
+                        "scheduled remove stale call aborted after shutdown, error code from "
+                        "remove stale timer: {}",
+                        localTimerError.message());
+                return;
+            } else if (localTimerError) {
+                JOYNR_LOG_ERROR(logger(),
+                                "send scheduled remove stale aborted because of error from remove "
+                                "stale timer: {}",
+                                localTimerError.message());
+                return;
+            }
+
+            if (auto lcdSharedPtr = lcdWeakPtr.lock()) {
+                lcdSharedPtr->removeStaleProvidersOfClusterController(ccStartTimeMs);
+            }
+        });
+    }
 }
 
 void JoynrClusterControllerRuntime::stop()
