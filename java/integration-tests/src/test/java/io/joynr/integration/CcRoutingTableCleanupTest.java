@@ -784,6 +784,10 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
             checkRefCnt(FIXEDPARTICIPANTID1, 1);
             checkRefCnt(proxyParticipantId, increment ? 3 : 2);
 
+            // do not execute the SuccessAction before the srq checks above are done (SuccessAction decrements the refCnt)
+            if (!rqCdl.await(DEFAULT_WAIT_TIME, TimeUnit.MILLISECONDS)) {
+                logger.error("FAILURE: waiting for srq timed out");
+            }
             SuccessAction action = (SuccessAction) invocation.getArguments()[1];
             action.execute();
             checkRefCnt(FIXEDPARTICIPANTID1, 1);
