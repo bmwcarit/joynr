@@ -36,8 +36,6 @@ public interface MessageRouter {
 
     public void addToRoutingTable(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs);
 
-    public void shutdown();
-
     public void removeNextHop(String participantId);
 
     public boolean resolveNextHop(String participantId);
