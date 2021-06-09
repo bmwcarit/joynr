@@ -2,6 +2,33 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.1
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Android]** Gradle generator now uses absolute paths for model and output paths.
+* **[Android]** Removed unused dependency to `org.apache.httpcomponents:httpclient`.
+* **[Java]** Reduced memory consumption by storing multicast subscriptions on provider side only
+  if required, i.e. if they have to be queued.
+* **[C++]** Changed behavior of 'removeStale`:
+  * cluster controller now delays `removeStale` for 5 minutes instead of sending it immediately
+    after boot.
+  * Retry of `removeStale` is now limited to 1 hour.
+  * TTl for a single try of `removeStale` is now 1 minute instead of 1 hour.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug fixes
+* **[C++]** Fixed the UID determination of UDS clients for access control in the cluster controller.
+* **[C++]** Delay reconnect when MQTT disconnect with failure occurs instead of attempting to
+  reconnect immediately.
+
 # joynr 1.17.0
 
 ## API-relevant Changes
