@@ -465,12 +465,6 @@
 				<version>3.0.7</version>
 			</dependency>
 			<dependency>
-				<groupId>com.sun.mail</groupId>
-				<artifactId>javax.mail</artifactId>
-				<type>jar</type>
-				<version>1.5.0</version>
-			</dependency>
-			<dependency>
 				<groupId>com.sun.xml.fastinfoset</groupId>
 				<artifactId>FastInfoset</artifactId>
 				<type>jar</type>
@@ -510,7 +504,7 @@
 				<groupId>fish.payara.extras</groupId>
 				<artifactId>payara-embedded-all</artifactId>
 				<type>jar</type>
-				<version>4.1.2.181</version>
+				<version>5.194</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -573,16 +567,10 @@
 				<version>7.2.0</version>
 			</dependency>
 			<dependency>
-				<groupId>javax</groupId>
-				<artifactId>javaee-api</artifactId>
+				<groupId>jakarta.platform</groupId>
+				<artifactId>jakarta.jakartaee-api</artifactId>
 				<type>jar</type>
-				<version>7.0</version>
-			</dependency>
-			<dependency>
-				<groupId>javax.activation</groupId>
-				<artifactId>activation</artifactId>
-				<type>jar</type>
-				<version>1.1</version>
+				<version>8.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.activation</groupId>
@@ -1566,7 +1554,7 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<type>jar</type>
-				<version>1.7.28</version>
+				<version>1.7.25</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
