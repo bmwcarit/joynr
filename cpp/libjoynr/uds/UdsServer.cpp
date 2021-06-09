@@ -148,11 +148,10 @@ UdsServer::Connection::Connection(std::shared_ptr<boost::asio::io_service>& ioCo
           _disconnectedCallback{config._disconnectedCallback},
           _receivedCallback{config._receivedCallback},
           _isClosed{false},
+          _username("connection not established"),
           _sendQueue(std::make_unique<UdsSendQueue<UdsFrameBufferV1>>(config._maxSendQueueSize)),
           _readBuffer(std::make_unique<UdsFrameBufferV1>())
 {
-    _username = getUserName();
-    JOYNR_LOG_DEBUG(logger(), "Established new connection with username '{}'", _username);
 }
 
 std::string UdsServerUtil::getUserNameByUid(uid_t uid)
@@ -274,9 +273,11 @@ void UdsServer::Connection::doReadInitBody() noexcept
                                                             std::size_t /*length*/) {
             if (self->doCheck(readFailure)) {
                 try {
+                    self->_username = self->getUserName();
                     self->_address = self->_readBuffer->readInit();
                     JOYNR_LOG_INFO(logger(),
-                                   "Initialize connection for client with ID: {}",
+                                   "Initialize connection for client with User / ID: {} / {}",
+                                   self->_username,
                                    self->_address.getId());
                     self->_connectedCallback(self->_address,
                                              std::make_unique<UdsServer::UdsSender>(
