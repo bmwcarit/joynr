@@ -511,6 +511,7 @@ public class PublicationManagerImpl
                     updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
 
                 } catch (SubscriptionException e) {
+                    routingTable.remove(proxyParticipantId);
                     sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
                 }
             }
