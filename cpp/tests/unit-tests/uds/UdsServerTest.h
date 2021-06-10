@@ -21,11 +21,14 @@
 #include <cstdio>
 #include <memory>
 #include <mutex>
+#include <pwd.h>
 #include <thread>
 #include <vector>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include <sys/types.h>
 
 #include "joynr/Settings.h"
 #include "joynr/UdsClient.h"
@@ -244,6 +247,25 @@ protected:
         sendToClient(user, msg, [&mock](const joynr::exceptions::JoynrRuntimeException& exception) {
             mock.sendFailed(exception);
         });
+    }
+
+    static std::string getUserName() {
+        std::string username;
+        struct passwd passwd;
+        struct passwd* result;
+        char buf[1024];
+
+        uid_t uid = getuid();
+        if (!(getpwuid_r(uid, &passwd, buf, sizeof(buf), &result))) {
+            if (result) {
+                username = std::string(passwd.pw_name, strnlen(passwd.pw_name, 256UL));
+            }
+        }
+
+        if (username.empty()) {
+            username = std::to_string(uid);
+        }
+        return username;
     }
 
 public:

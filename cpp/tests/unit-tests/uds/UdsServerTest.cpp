@@ -512,3 +512,31 @@ TEST_F(UdsServerTest, getUserName)
     username = UdsServerUtil::getUserNameByUid(3000);
     ASSERT_EQ(username, "3000");
 }
+
+TEST_F(UdsServerTest, getCorrectUsernameAfterConnection)
+{
+    Semaphore semaphore;
+    MockUdsServerCallbacks mockUdsServerCallbacks;
+    joynr::system::RoutingTypes::UdsClientAddress clientAddress;
+    std::shared_ptr<joynr::IUdsSender> sender;
+    std::string capturedUsername;
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).WillOnce(
+            DoAll(SaveArg<0>(&clientAddress),
+                  SaveArg<1>(&sender),
+                  InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+    auto server = createServer(mockUdsServerCallbacks);
+    server->start();
+    ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive connection callback.";
+
+    const smrf::Byte message = 42;
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(clientAddress, ElementsAre(message), _))
+            .WillOnce(DoAll(SaveArg<2>(&capturedUsername), InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+
+    sendFromClient(message);
+    EXPECT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to receive frame from client.";
+
+    std::string expectedUsername = getUserName();
+    ASSERT_EQ(capturedUsername, expectedUsername);
+}
