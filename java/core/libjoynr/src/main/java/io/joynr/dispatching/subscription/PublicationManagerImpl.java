@@ -474,7 +474,16 @@ public class PublicationManagerImpl
                     final boolean isMulticastSubscriptionRequest = subscriptionRequest instanceof MulticastSubscriptionRequest;
                     boolean isMulticastQueued = false;
                     if (!isMulticastSubscriptionRequest) {
-                        routingTable.incrementReferenceCount(proxyParticipantId);
+                        try {
+                            routingTable.incrementReferenceCount(proxyParticipantId);
+                        } catch (JoynrIllegalStateException e) {
+                            logger.error("Proxy participant ID {} unknown to routing table.", proxyParticipantId);
+                            sendSubscriptionReplyWithError(new SubscriptionException(subscriptionRequest.getSubscriptionId(),
+                                                                                     e.getMessage()),
+                                                           publicationInformation,
+                                                           subscriptionRequest);
+                            return;
+                        }
                     }
 
                     long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
@@ -503,12 +512,6 @@ public class PublicationManagerImpl
 
                 } catch (SubscriptionException e) {
                     sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
-                } catch (JoynrIllegalStateException e) {
-                    logger.error("Proxy participant ID {} unknown to routing table.", proxyParticipantId);
-                    sendSubscriptionReplyWithError(new SubscriptionException(subscriptionRequest.getSubscriptionId(),
-                                                                             e.getMessage()),
-                                                   publicationInformation,
-                                                   subscriptionRequest);
                 }
             }
         }
