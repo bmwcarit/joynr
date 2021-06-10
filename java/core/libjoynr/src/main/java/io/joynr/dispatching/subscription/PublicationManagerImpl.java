@@ -663,9 +663,15 @@ public class PublicationManagerImpl
                         }
                     } catch (SubscriptionException e) {
                         removePublication(publicationInformation.getSubscriptionId());
-                        sendSubscriptionReplyWithError(e,
-                                                       publicationInformation,
-                                                       publicationInformation.subscriptionRequest);
+                        try {
+                            sendSubscriptionReplyWithError(e,
+                                                           publicationInformation,
+                                                           publicationInformation.subscriptionRequest);
+                        } catch (Exception innerException) {
+                            //We want to continue iterating, no matter what happens
+                            logger.error("Exception occured while restoring queued subscription: ",
+                                         innerException.getMessage());
+                        }
                     }
 
                 }
