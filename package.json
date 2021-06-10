@@ -21,7 +21,7 @@
     "jest-circus": "24.8.0",
     "jest-diff": "24.8.0",
     "jest-junit": "6.3.0",
-    "prettier": "1.17.2-SNAPSHOT",
+    "prettier": "1.17.1",
     "ts-jest": "24.0.1",
     "ts-node": "8.3.0",
     "typescript": "3.5.3"
