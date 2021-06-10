@@ -29,6 +29,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -42,6 +43,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +71,8 @@ import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.dispatching.subscription.PublicationManagerImpl.PublicationInformation;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrMessageExpiredException;
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.AbstractSubscriptionPublisher;
@@ -705,6 +709,92 @@ public class PublicationManagerTest {
         verify(routingTable, times(0)).remove(any());
     }
 
+    @Test(timeout = 3000)
+    public void removePendingQueuedSubscriptionsAfterProviderRegistered_continuesOnException() throws Exception {
+        String subscriptionId1 = "subscriptionid_subscriptionsDoesNotExpire";
+        SubscriptionQos qosNoExpiry = new PeriodicSubscriptionQos().setPeriodMs(100)
+                                                                   .setExpiryDateMs(SubscriptionQos.NO_EXPIRY_DATE)
+                                                                   .setAlertAfterIntervalMs(500)
+                                                                   .setPublicationTtlMs(1000);
+        SubscriptionRequest subscriptionRequest1 = new SubscriptionRequest(subscriptionId1, "location", qosNoExpiry);
+        String subscriptionId2 = "subscriptionId2";
+        SubscriptionRequest subscriptionRequest2 = new SubscriptionRequest(subscriptionId2, "location", qosNoExpiry);
+        String proxyParticipantId2 = "proxy2";
+
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest1);
+        publicationManager.addSubscriptionRequest(proxyParticipantId2, PROVIDER_PARTICIPANT_ID, subscriptionRequest2);
+
+        doThrow(new JoynrMessageExpiredException("message expired")).when(dispatcher)
+                                                                    .sendSubscriptionReply(any(), any(), any(), any());
+        verify(routingTable, times(0)).remove(any());
+
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(1)).incrementReferenceCount(proxyParticipantId2);
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(1)).remove(proxyParticipantId2);
+        InOrder inOrder1 = inOrder(dispatcher);
+        InOrder inOrder2 = inOrder(dispatcher);
+        inOrder1.verify(dispatcher)
+                .sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                             eq(Collections.singleton(PROXY_PARTICIPANT_ID)),
+                                             any(SubscriptionPublication.class),
+                                             any(MessagingQos.class));
+        inOrder1.verify(dispatcher)
+                .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                       eq(PROXY_PARTICIPANT_ID),
+                                       argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                           @Override
+                                           public boolean matches(Object argument) {
+                                               SubscriptionReply reply = (SubscriptionReply) argument;
+                                               return null == reply.getError();
+                                           }
+                                       }),
+                                       any(MessagingQos.class));
+        inOrder1.verify(dispatcher)
+                .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                       eq(PROXY_PARTICIPANT_ID),
+                                       argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                           @Override
+                                           public boolean matches(Object argument) {
+                                               SubscriptionReply reply = (SubscriptionReply) argument;
+                                               return null != reply.getError();
+                                           }
+                                       }),
+                                       any(MessagingQos.class));
+        inOrder2.verify(dispatcher)
+                .sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                             eq(Collections.singleton(proxyParticipantId2)),
+                                             any(SubscriptionPublication.class),
+                                             any(MessagingQos.class));
+        inOrder2.verify(dispatcher)
+                .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                       eq(proxyParticipantId2),
+                                       argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                           @Override
+                                           public boolean matches(Object argument) {
+                                               SubscriptionReply reply = (SubscriptionReply) argument;
+                                               return null == reply.getError();
+                                           }
+                                       }),
+                                       any(MessagingQos.class));
+        inOrder2.verify(dispatcher)
+                .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                       eq(proxyParticipantId2),
+                                       argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                           @Override
+                                           public boolean matches(Object argument) {
+                                               SubscriptionReply reply = (SubscriptionReply) argument;
+                                               return null != reply.getError();
+                                           }
+                                       }),
+                                       any(MessagingQos.class));
+        verifyNoMoreInteractions(routingTable, dispatcher);
+    }
+
     @SuppressWarnings("unchecked")
     @Test(timeout = 4000)
     public void removeExpiredQueuedSubscriptionsAfterProviderRegistered() throws Exception {
@@ -1249,7 +1339,7 @@ public class PublicationManagerTest {
     }
 
     @Test
-    public void subscriptionRequestsWithoutRoutingTableEntry() throws Exception {
+    public void subscriptionRequestWithoutRoutingTableEntry() throws Exception {
         doThrow(JoynrIllegalStateException.class).when(routingTable).incrementReferenceCount(anyString());
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID,
                                                                           "location",
@@ -1266,7 +1356,133 @@ public class PublicationManagerTest {
                                                      }
                                                  }),
                                                  any(MessagingQos.class));
+    }
 
+    @Test
+    public void multicastSubscriptionRequestWithoutRoutingTableEntry() throws Exception {
+        doThrow(JoynrIllegalStateException.class).when(routingTable).incrementReferenceCount(anyString());
+        MulticastSubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest("multicastId",
+                                                                                            SUBSCRIPTION_ID,
+                                                                                            "multicastName",
+                                                                                            new OnChangeSubscriptionQos());
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        assertEquals(1, getQueuedSubscriptionRequests().size());
+        verify(dispatcher, never()).sendSubscriptionReply(any(), any(), any(), any());
+        verify(routingTable, never()).incrementReferenceCount(any());
+        verify(routingTable, never()).remove(any());
+    }
+
+    @Test(expected = SubscriptionException.class)
+    public void addSubscriptionRequestExpired() throws Exception {
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID,
+                                                                          "location",
+                                                                          new OnChangeSubscriptionQos().setValidityMs(0));
+        Thread.sleep(5);
+        when(providerDirectory.get(PROVIDER_PARTICIPANT_ID)).thenReturn(providerContainer);
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+    }
+
+    @Test
+    public void addSubscriptionRequestExpiredAtReply() throws Exception {
+        doThrow(JoynrMessageExpiredException.class).doNothing()
+                                                   .when(dispatcher)
+                                                   .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                                          eq(PROXY_PARTICIPANT_ID),
+                                                                          any(),
+                                                                          any());
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID,
+                                                                          "location",
+                                                                          new OnChangeSubscriptionQos());
+        when(providerDirectory.get(PROVIDER_PARTICIPANT_ID)).thenReturn(providerContainer);
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+        verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                 eq(PROXY_PARTICIPANT_ID),
+                                                 argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                     @Override
+                                                     public boolean matches(Object argument) {
+                                                         SubscriptionReply reply = (SubscriptionReply) argument;
+                                                         return null != reply.getError();
+                                                     }
+                                                 }),
+                                                 any(MessagingQos.class));
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
+    }
+
+    @Test
+    public void addSubscriptionForUnknownAttribute() throws Exception {
+        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID,
+                                                                          "unknown",
+                                                                          new OnChangeSubscriptionQos());
+        when(providerDirectory.get(PROVIDER_PARTICIPANT_ID)).thenReturn(providerContainer);
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+        verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                 eq(PROXY_PARTICIPANT_ID),
+                                                 argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                     @Override
+                                                     public boolean matches(Object argument) {
+                                                         SubscriptionReply reply = (SubscriptionReply) argument;
+                                                         return null != reply.getError();
+                                                     }
+                                                 }),
+                                                 any(MessagingQos.class));
+        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
+        verifyNoMoreInteractions(dispatcher, routingTable);
+    }
+
+    @Test(expected = SubscriptionException.class)
+    public void addMulticastSubscriptionRequestExpired() throws Exception {
+        final String multicastId = "multicastId";
+        final String multicastName = "multicastName";
+        SubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest(multicastId,
+                                                                                   SUBSCRIPTION_ID,
+                                                                                   multicastName,
+                                                                                   new OnChangeSubscriptionQos().setValidityMs(0));
+        Thread.sleep(5);
+        when(providerDirectory.get(PROVIDER_PARTICIPANT_ID)).thenReturn(providerContainer);
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+        verify(routingTable, times(0)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(0)).remove(PROXY_PARTICIPANT_ID);
+    }
+
+    @Test
+    public void addMulticastSubscriptionRequestExpiredAtReply() throws Exception {
+        doThrow(JoynrMessageExpiredException.class).doNothing()
+                                                   .when(dispatcher)
+                                                   .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                                          eq(PROXY_PARTICIPANT_ID),
+                                                                          any(),
+                                                                          any());
+        final String multicastId = "multicastId";
+        final String multicastName = "multicastName";
+        SubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest(multicastId,
+                                                                                   SUBSCRIPTION_ID,
+                                                                                   multicastName,
+                                                                                   new OnChangeSubscriptionQos());
+        when(providerDirectory.get(PROVIDER_PARTICIPANT_ID)).thenReturn(providerContainer);
+        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
+        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
+        assertEquals(0, getQueuedSubscriptionRequests().size());
+        verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                 eq(PROXY_PARTICIPANT_ID),
+                                                 argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                     @Override
+                                                     public boolean matches(Object argument) {
+                                                         SubscriptionReply reply = (SubscriptionReply) argument;
+                                                         return null != reply.getError();
+                                                     }
+                                                 }),
+                                                 any(MessagingQos.class));
+        verify(routingTable, times(0)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
+        verify(routingTable, times(0)).remove(PROXY_PARTICIPANT_ID);
     }
 
 }
