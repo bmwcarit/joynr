@@ -1,6 +1,6 @@
 {
   "name": "radio-node",
-  "version": "1.17.1",
+  "version": "1.17.2-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "simple app to demonstrate usage of joynr",
   "main": "src/main/js/radioConsumer.js",
@@ -32,7 +32,7 @@
     "lint": "../../node_modules/.bin/eslint $npm_package_config_glob",
     "startconsumer": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime wshost=$npm_package_config_ws_host wsport=$npm_package_config_ws_port udspath=$npm_package_config_uds_path udsclientid=$npm_package_config_uds_consumerid udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri ts-node src/main/js/radioConsumer",
     "startprovider": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime wshost=$npm_package_config_ws_host wsport=$npm_package_config_ws_port udspath=$npm_package_config_uds_path udsclientid=$npm_package_config_uds_providerid udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems bounceProxyBaseUrl=$npm_package_config_bounceProxyBaseUrl brokerUri=$npm_package_config_brokerUri ts-node src/main/js/radioProvider",
-    "format:install": "npm i prettier@1.17.1 --no-save && npm run format",
+    "format:install": "npm i prettier@1.17.2-SNAPSHOT --no-save && npm run format",
     "format": "prettier --write $npm_package_config_glob"
   }
 }

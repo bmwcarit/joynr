@@ -22,7 +22,7 @@ plugins {
 //    id 'org.jetbrains.dokka' version '0.9.17'
 }
 
-ext.joynrVersion = "1.17.1"
+ext.joynrVersion = "1.17.2-SNAPSHOT"
 
 group 'io.joynr.tools.generator'
 version "$joynrVersion"
