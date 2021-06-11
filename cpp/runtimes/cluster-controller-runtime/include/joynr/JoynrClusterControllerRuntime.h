@@ -28,6 +28,9 @@
 #include <vector>
 #include <map>
 
+#include <boost/asio/steady_timer.hpp>
+#include <boost/system/error_code.hpp>
+
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/IClusterControllerSignalHandler.h"
 #include "joynr/JoynrClusterControllerRuntimeExport.h"
