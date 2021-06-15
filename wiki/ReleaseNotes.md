@@ -2,6 +2,27 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.16.2
+
+## API-relevant Changes
+
+## Other Changes
+* **[C++]** Changed behavior of 'removeStale`:
+  * cluster controller now delays `removeStale` for 5 minutes instead of sending it immediately
+    after boot.
+  * Retry of `removeStale` is now limited to 1 hour.
+  * TTL for a single try of `removeStale` is now 1 minute instead of 1 hour.
+* **[C++]** Added boost includes that were accidentally omitted.
+
+## Configuration Property Changes
+
+## Security Fixes
+
+## Bug Fixes
+* **[C++]** Fixed the UID determination of UDS clients for access control in the cluster controller.
+* **[C++]** Delay reconnect when MQTT disconnect with failure occurs instead of attempting to
+  reconnect immediately.
+
 # joynr 1.16.1
 
 ## API-relevant Changes
