@@ -19,7 +19,7 @@ echo "killing potentially existing containers"
 docker-compose stop
 docker-compose rm -f
 
-echo "starting the orchestra"
+echo -e "\nstarting the orchestra"
 docker-compose up -d
 if [ $? -ne 0 ]
 then
@@ -27,18 +27,18 @@ then
   exit 1
 fi
 
-echo "wait for containers to start up and for joynr provider to become available"
+echo -e "\nwait for containers to start up and for joynr provider to become available"
 sleep 40
 wait_for_endpoint "http://localhost:8080/control/ping"
 
-echo "trigger a joynr method call on the consumer"
+echo -e "\n\ntrigger a joynr method call on the consumer"
 curl http://localhost:8081/control/trigger
 sleep 5
 
 docker-compose logs -t > custom-headers-full.log
 
-echo "stop all containers"
+echo -e "\n\nstop all containers"
 docker-compose stop
 
-echo "remove all containers"
+echo -e "\nremove all containers"
 docker-compose rm -f
