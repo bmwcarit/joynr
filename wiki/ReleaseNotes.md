@@ -5,6 +5,7 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.16.2
 
 ## API-relevant Changes
+None.
 
 ## Other Changes
 * **[C++]** Changed behavior of 'removeStale`:
@@ -15,8 +16,10 @@ the versioning scheme [here](JoynrVersioning.md).
 * **[C++]** Added boost includes that were accidentally omitted.
 
 ## Configuration Property Changes
+None.
 
 ## Security Fixes
+None.
 
 ## Bug Fixes
 * **[C++]** Fixed the UID determination of UDS clients for access control in the cluster controller.
