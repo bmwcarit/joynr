@@ -34,7 +34,7 @@ in the sub-projects `custom-headers-jee-provider` and `custom-headers-jee-consum
 create the necessary docker images.
 
 The `joynr-backend-jee` image can be built from
-`${joynr_project_root}/tests/system-integration-test/docker/joynr-backend-jee/`.
+`${joynr_project_root}/tests/joynr-hivemq-shared-subscriptions/joynr-backend-jee/`.
 
 ## Running
 
