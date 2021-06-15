@@ -3,7 +3,7 @@ version: '3'
 services:
 
   hivemq:
-    image: 'hivemq/hivemq3'
+    image: 'hivemq/hivemq4'
     container_name: mqttbroker
     environment:
       - HIVEMQ_DISABLE_AUTH_PLUGIN=true
