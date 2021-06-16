@@ -111,22 +111,19 @@ main(int argc, char** argv)
 }
 ```
 
-## Creating the runtime and proxy builder
+## Creating the runtime
 
-The ```main()``` function must setup the configuration (provider domain etc.) and create the ```JoynrRuntime``` instance.
+The ```main()``` function must setup the configuration and create the ```JoynrRuntime``` instance.
 
-As a prerequisite, the **provider** and **consumer domain** need to be defined as shown below.
 
 ```cpp
     auto onFatalRuntimeError = [](const joynr::exceptions::JoynrRuntimeException& error) {
         // this lambda will be invoked in exceptional cases that render the runtime inoperable.
     };
 
-    // setup providerDomain, pathToMessagingSettings, and optionally pathToMessagingSettings
+    // setup pathToLibJoynrSettings and optionally pathToMessagingSettings
     std::shared_ptr<JoynrRuntime> runtime =
         JoynrRuntime::createRuntime(pathToLibJoynrSettings, onFatalRuntimeError[, pathToMessagingSettings]);
-    std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
-        runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
 ```
 
 Use the ```createRuntimeAsync``` static method of ```JoynrRuntime``` to create the runtime
@@ -318,8 +315,8 @@ messagingQos.putCustomMessageHeader(anotherKey, anotherValue);
 
 The consumer application instance must create one **proxy** per used Franca interface in order to be able to
 * call its **methods** (RPC) either **synchronously** or **asynchronously**
-* **subscribe** or **unsubscribe** to its **attributes** or **update** a subscription
-* **subscribe** or **unsubscribe** to its **broadcasts** or **update** a subscription
+* **subscribe** or **unsubscribe** to its **attributes** or **update** an existing subscription
+* **subscribe** or **unsubscribe** to its **broadcasts** or **update** an existing subscription
 
 The ProxyBuilder requires the provider's domain. Optionally, **messagingQos**, **discoveryQos** and
 **GBID** settings can be specified if the default settings are not suitable.
@@ -342,8 +339,14 @@ In case no suitable provider can be found during discovery, a ```DiscoveryExcept
 
     // setup optional discoveryQos, messagingQos, gbids attributes as required
 
-    std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
-        runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
+    try {
+        std::shared_ptr<ProxyBuilder<<Package>::<Interface>Proxy>> proxyBuilder =
+            runtime->createProxyBuilder<<Package>::<Interface>Proxy>(providerDomain);
+    } catch (const joynr::exceptions::JoynrRuntimeException& e) {
+        // An exception is only thrown when joynr is not used correctly:
+        // createProxyBuilder() must not be called before the runtime is fully initialized
+        // see createRuntimeAsync() above
+    }
 
     try {
         std::shared_ptr<<Package>::<Interface>Proxy> proxy = proxyBuilder
@@ -396,8 +399,14 @@ For a creation of `GuidedProxyBuilder`, similar to the [ProxyBuilder creation](#
 as a prerequisite, provider and consumer domain and also interface name should be defined as shown below.
 
 ```cpp
-    std::shared_ptr<GuildedProxyBuilder> guidedProxyBuilder =
-        runtime->createGuidedProxyBuilder<<Package>::v5::<Interface>Proxy>(providerDomain);
+    try {
+        std::shared_ptr<GuildedProxyBuilder> guidedProxyBuilder =
+            runtime->createGuidedProxyBuilder<<Package>::v5::<Interface>Proxy>(providerDomain);
+    } catch (const joynr::exceptions::JoynrRuntimeException& e) {
+        // An exception is only thrown when joynr is not used correctly:
+        // createGuidedProxyBuilder() must not be called before the runtime is fully initialized
+        // see createRuntimeAsync() above
+    }
 ```
 
 Example for the synchronous usage of a `GuidedProxyBuilder`:
