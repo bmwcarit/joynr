@@ -49,7 +49,6 @@ import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrSendBufferFullException;
@@ -463,49 +462,47 @@ public class PublicationManagerImpl
                 PublicationInformation publicationInformation = new PublicationInformation(providerParticipantId,
                                                                                            proxyParticipantId,
                                                                                            subscriptionRequest);
-                try {
-                    final boolean isMulticastSubscriptionRequest = subscriptionRequest instanceof MulticastSubscriptionRequest;
-                    boolean isMulticastQueued = false;
-                    if (!isMulticastSubscriptionRequest) {
-                        try {
-                            routingTable.incrementReferenceCount(proxyParticipantId);
-                        } catch (JoynrIllegalStateException e) {
-                            logger.error("Proxy participant ID {} unknown to routing table.", proxyParticipantId);
-                            sendSubscriptionReplyWithError(new SubscriptionException(subscriptionRequest.getSubscriptionId(),
-                                                                                     e.getMessage()),
-                                                           publicationInformation,
-                                                           subscriptionRequest);
-                            return;
-                        }
-                    }
+                long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
 
-                    long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
-                    ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
-                    if (providerContainer != null) {
-                        addSubscriptionRequestInternal(publicationInformation, providerContainer);
-                        logger.trace("Publication added: {}", subscriptionRequest.toString());
-                    } else {
-                        queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
-                        if (isMulticastSubscriptionRequest) {
-                            isMulticastQueued = true;
-                        }
-                        logger.trace("Added subscription request for non existing provider to queue.");
+                final boolean isMulticastSubscriptionRequest = subscriptionRequest instanceof MulticastSubscriptionRequest;
+                if (!isMulticastSubscriptionRequest) {
+                    try {
+                        routingTable.incrementReferenceCount(proxyParticipantId);
+                    } catch (JoynrIllegalStateException e) {
+                        logger.error("Error subscribing: {}. Failed to increment reference count of the Proxy's routing entry.",
+                                     subscriptionRequest,
+                                     e);
+                        sendSubscriptionReplyWithError(publicationInformation,
+                                                       new SubscriptionException(subscriptionRequest.getSubscriptionId(),
+                                                                                 e.getMessage()));
+                        return;
                     }
-
-                    PublicationInformation oldEntry = subscriptionId2PublicationInformation.remove(subscriptionRequest.getSubscriptionId());
-                    if (oldEntry != null && !(oldEntry.subscriptionRequest instanceof MulticastSubscriptionRequest)) {
-                        routingTable.remove(proxyParticipantId);
-                    }
-
-                    if (!isMulticastSubscriptionRequest || isMulticastQueued) {
-                        subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
-                                                                  publicationInformation);
-                    }
-                    updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
-
-                } catch (SubscriptionException e) {
+                }
+                ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
+                PublicationInformation oldEntry = subscriptionId2PublicationInformation.remove(subscriptionRequest.getSubscriptionId());
+                if (oldEntry != null && !(oldEntry.subscriptionRequest instanceof MulticastSubscriptionRequest)) {
                     routingTable.remove(proxyParticipantId);
-                    sendSubscriptionReplyWithError(e, publicationInformation, subscriptionRequest);
+                }
+
+                if (!isMulticastSubscriptionRequest || providerContainer == null) {
+                    subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
+                                                              publicationInformation);
+                }
+
+                updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
+                if (providerContainer == null) {
+                    queuedSubscriptionRequests.put(providerParticipantId, publicationInformation);
+                    logger.trace("Added subscription request for non existing provider to queue.");
+                    return;
+                }
+                try {
+                    addSubscriptionRequestInternal(publicationInformation, providerContainer);
+                    logger.trace("Publication added: {}", subscriptionRequest.toString());
+                } catch (SubscriptionException e) {
+                    // remove partial subscription and possible remnants of previous subscription that has been cancelled in addSubscriptionRequestInternal
+                    removePublication(subscriptionRequest.getSubscriptionId());
+                    sendSubscriptionReplyWithError(publicationInformation, e);
+                    return;
                 }
             }
         }
