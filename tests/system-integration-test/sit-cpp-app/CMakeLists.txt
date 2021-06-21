@@ -27,6 +27,16 @@ option(
     "Use the real keychain implementation?"
     OFF
 )
+option(
+    BUILD_WEBSOCKET
+    "Build the variant communicating via WebSockets"
+    ON
+)
+option(
+    BUILD_UDS
+    "Build the variant communicating via Unix Sockets"
+    ON
+)
 
 ##### Start of build ####################
 
@@ -158,11 +168,8 @@ set(jsit-tests_LIBRARIES
     ${Boost_LIBRARIES}
     ${KEYCHAIN_TARGET}
 )
-
-# Compile the provider application (requires: running cluster controller)
-# Communicates via WebSockets with cluster controller
-add_executable(
-    jsit-provider-ws
+# All the sources
+set(all-jsit-provider_SOURCES
     ${jsit-provider_HEADERS}
     ${jsit-provider_SOURCES}
     ${common_HEADERS}
@@ -170,18 +177,7 @@ add_executable(
     ${GENERATED_HEADERS}
     ${GENERATED_SOURCES}
 )
-
-# Link the provider application
-target_link_libraries(
-    jsit-provider-ws
-    ${jsit-tests_LIBRARIES}
-    Joynr::JoynrWsRuntime
-)
-
-# Compile the consumer application (requires: running cluster controller)
-# Communicates via WebSockets with cluster controller
-add_executable(
-    jsit-consumer-ws
+set(all-jsit-consumer_SOURCES
     ${jsit-consumer_HEADERS}
     ${jsit-consumer_SOURCES}
     ${common_HEADERS}
@@ -190,24 +186,60 @@ add_executable(
     ${GENERATED_SOURCES}
 )
 
-# Link the consumer application
-target_link_libraries(
-    jsit-consumer-ws
-    ${jsit-tests_LIBRARIES}
-    Joynr::JoynrWsRuntime
-)
-
-install(
-    TARGETS
-    jsit-provider-ws
-    jsit-consumer-ws
-    RUNTIME DESTINATION bin
-)
+# Compile the provider application (requires: running cluster controller)
+# Communicates via WebSockets with cluster controller
+if(${BUILD_WEBSOCKET})
+    add_executable(jsit-provider-ws ${all-jsit-provider_SOURCES})
+    target_link_libraries(
+        jsit-provider-ws
+        ${jsit-tests_LIBRARIES}
+        Joynr::JoynrWsRuntime
+    )
+    add_executable(jsit-consumer-ws ${all-jsit-consumer_SOURCES})
+    target_link_libraries(
+        jsit-consumer-ws
+        ${jsit-tests_LIBRARIES}
+        Joynr::JoynrWsRuntime
+    )
+    install(
+        TARGETS
+        jsit-provider-ws
+        jsit-consumer-ws
+        RUNTIME DESTINATION bin
+    )
+endif()
+# Communicates via Unix Sockets with cluster controller
+if(${BUILD_UDS})
+    add_executable(jsit-provider-uds ${all-jsit-provider_SOURCES})
+    target_link_libraries(
+        jsit-provider-uds
+        ${jsit-tests_LIBRARIES}
+        Joynr::JoynrUdsRuntime
+    )
+    add_executable(jsit-consumer-uds ${all-jsit-consumer_SOURCES})
+    target_link_libraries(
+        jsit-consumer-uds
+        ${jsit-tests_LIBRARIES}
+        Joynr::JoynrUdsRuntime
+    )
+    install(
+        TARGETS
+        jsit-provider-uds
+        jsit-consumer-uds
+        RUNTIME DESTINATION bin
+    )
+endif()
 
 include(AddClangFormat)
 if(ENABLE_CLANG_FORMATTER)
-    AddClangFormat(jsit-consumer-ws)
-    AddClangFormat(jsit-provider-ws)
+    if(${BUILD_WEBSOCKET})
+        AddClangFormat(jsit-consumer-ws)
+        AddClangFormat(jsit-provider-ws)
+    endif()
+    if(${BUILD_UDS})
+        AddClangFormat(jsit-consumer-uds)
+        AddClangFormat(jsit-provider-uds)
+    endif()
 endif(ENABLE_CLANG_FORMATTER)
 
 if(NOT INSTALL_TEST_DIR)
