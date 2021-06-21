@@ -285,10 +285,7 @@ public class PublicationManagerImpl
                 handleOnChangeSubscription(subscriptionRequest, providerContainer, subscriptionId);
             }
 
-            tryToSendSubscriptionReply(publicationInformation.providerParticipantId,
-                                       publicationInformation.proxyParticipantId,
-                                       new SubscriptionReply(subscriptionId),
-                                       createMessagingQos(subscriptionQos));
+            sendSubscriptionReply(publicationInformation, new SubscriptionReply(subscriptionId));
         } catch (NoSuchMethodException e) {
             logger.error("Error subscribing: {}. The provider does not have the requested attribute",
                          subscriptionRequest);
@@ -322,8 +319,7 @@ public class PublicationManagerImpl
     }
 
     // requires addRemoveLock: unregisterBroadcastListeners
-    private void handleBroadcastSubscriptionRequest(String proxyParticipantId,
-                                                    String providerParticipantId,
+    private void handleBroadcastSubscriptionRequest(PublicationInformation publicationInformation,
                                                     BroadcastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
         logger.trace("Adding broadcast publication: {}", subscriptionRequest);
@@ -338,25 +334,16 @@ public class PublicationManagerImpl
 
         final String subscriptionId = subscriptionRequest.getSubscriptionId();
 
-        SubscriptionQos subscriptionQos = subscriptionRequest.getQos();
-
-        tryToSendSubscriptionReply(providerParticipantId,
-                                   proxyParticipantId,
-                                   new SubscriptionReply(subscriptionId),
-                                   createMessagingQos(subscriptionQos));
+        sendSubscriptionReply(publicationInformation, new SubscriptionReply(subscriptionId));
     }
 
-    private void handleMulticastSubscriptionRequest(String proxyParticipantId,
-                                                    String providerParticipantId,
+    private void handleMulticastSubscriptionRequest(PublicationInformation publicationInformation,
                                                     MulticastSubscriptionRequest subscriptionRequest,
                                                     ProviderContainer providerContainer) {
         logger.trace("Received multicast subscription request {} for provider with participant ID {}",
                      subscriptionRequest,
-                     providerParticipantId);
-        tryToSendSubscriptionReply(providerParticipantId,
-                                   proxyParticipantId,
-                                   new SubscriptionReply(subscriptionRequest.getSubscriptionId()),
-                                   createMessagingQos(subscriptionRequest.getQos()));
+                     publicationInformation.getProviderParticipantId());
+        sendSubscriptionReply(publicationInformation, new SubscriptionReply(subscriptionRequest.getSubscriptionId()));
     }
 
     // requires addRemoveLock: handleSubscriptionRequest, handleBroadcastSubscriptionRequest,
@@ -371,13 +358,11 @@ public class PublicationManagerImpl
         }
 
         if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
-            handleBroadcastSubscriptionRequest(publicationInformation.getProxyParticipantId(),
-                                               publicationInformation.getProviderParticipantId(),
+            handleBroadcastSubscriptionRequest(publicationInformation,
                                                (BroadcastSubscriptionRequest) subscriptionRequest,
                                                providerContainer);
         } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
-            handleMulticastSubscriptionRequest(publicationInformation.getProxyParticipantId(),
-                                               publicationInformation.getProviderParticipantId(),
+            handleMulticastSubscriptionRequest(publicationInformation,
                                                (MulticastSubscriptionRequest) subscriptionRequest,
                                                providerContainer);
         } else {
@@ -385,22 +370,30 @@ public class PublicationManagerImpl
         }
     }
 
-    private void sendSubscriptionReplyWithError(SubscriptionException e,
-                                                PublicationInformation publicationInformation,
-                                                SubscriptionRequest subscriptionRequest) {
-        tryToSendSubscriptionReply(publicationInformation.providerParticipantId,
-                                   publicationInformation.proxyParticipantId,
-                                   new SubscriptionReply(publicationInformation.getSubscriptionId(), e),
-                                   createMessagingQos(subscriptionRequest.getQos()));
+    private void sendSubscriptionReplyWithError(PublicationInformation publicationInformation,
+                                                SubscriptionException subscriptionException) {
+        SubscriptionReply subscriptionReply = new SubscriptionReply(publicationInformation.getSubscriptionId(),
+                                                                    subscriptionException);
+        MessagingQos messagingQos = createMessagingQos(publicationInformation.getSubscriptionRequest().getQos());
+        try {
+            dispatcher.sendSubscriptionReply(publicationInformation.getProviderParticipantId(),
+                                             publicationInformation.getProxyParticipantId(),
+                                             subscriptionReply,
+                                             messagingQos);
+        } catch (Exception e) {
+            logger.error("Failed to send subscriptionReply with error {} ", subscriptionException, e.getMessage());
+        }
     }
 
-    private void tryToSendSubscriptionReply(String fromParticipantId,
-                                            String toParticipantId,
-                                            SubscriptionReply subscriptionReply,
-                                            MessagingQos messagingQos) {
+    private void sendSubscriptionReply(PublicationInformation publicationInformation,
+                                       SubscriptionReply subscriptionReply) {
         try {
-            dispatcher.sendSubscriptionReply(fromParticipantId, toParticipantId, subscriptionReply, messagingQos);
-        } catch (JoynrMessageExpiredException exception) {
+            MessagingQos messagingQos = createMessagingQos(publicationInformation.getSubscriptionRequest().getQos());
+            dispatcher.sendSubscriptionReply(publicationInformation.getProviderParticipantId(),
+                                             publicationInformation.getProxyParticipantId(),
+                                             subscriptionReply,
+                                             messagingQos);
+        } catch (Exception exception) {
             throw new SubscriptionException(subscriptionReply.getSubscriptionId(), exception.getMessage());
         }
     }
@@ -663,15 +656,7 @@ public class PublicationManagerImpl
                         }
                     } catch (SubscriptionException e) {
                         removePublication(publicationInformation.getSubscriptionId());
-                        try {
-                            sendSubscriptionReplyWithError(e,
-                                                           publicationInformation,
-                                                           publicationInformation.subscriptionRequest);
-                        } catch (Exception innerException) {
-                            //We want to continue iterating, no matter what happens
-                            logger.error("Exception occured while restoring queued subscription: ",
-                                         innerException.getMessage());
-                        }
+                        sendSubscriptionReplyWithError(publicationInformation, e);
                     }
 
                 }
