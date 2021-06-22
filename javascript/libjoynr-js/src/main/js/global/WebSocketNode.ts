@@ -32,10 +32,10 @@ interface KeyChain {
 }
 
 class WebSocketNode extends ws {
-    public static CONNECTING = ws.CONNECTING;
-    public static OPEN = ws.OPEN;
-    public static CLOSING = ws.CLOSING;
-    public static CLOSED = ws.CLOSED;
+    public static WSN_CONNECTING = ws.CONNECTING;
+    public static WSN_OPEN = ws.OPEN;
+    public static WSN_CLOSING = ws.CLOSING;
+    public static WSN_CLOSED = ws.CLOSED;
 
     public constructor(remoteUrl: string, keychain: KeyChain, useUnencryptedTls: boolean) {
         const clientOptions: ws.ClientOptions = {};

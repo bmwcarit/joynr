@@ -24,23 +24,23 @@ import WebSocketClientAddress from "../../../../../main/js/generated/joynr/syste
 import JoynrMessage = require("../../../../../main/js/joynr/messaging/JoynrMessage");
 
 const WebSocket = {
-    CONNECTING: 0,
-    OPEN: 1,
-    CLOSING: 2,
-    CLOSED: 3
+    WSN_CONNECTING: 0,
+    WSN_OPEN: 1,
+    WSN_CLOSING: 2,
+    WSN_CLOSED: 3
 };
 
 const webSocketMock = {
     send: jest.fn().mockImplementation((_value, _settings, cb) => {
         if (cb && typeof cb === "function") cb();
     }),
-    readyState: WebSocket.CONNECTING
+    readyState: WebSocket.WSN_CONNECTING
 };
 const webSocketConstructor: any = jest.fn().mockImplementation(() => webSocketMock);
-webSocketConstructor.CONNECTING = WebSocket.CONNECTING;
-webSocketConstructor.OPEN = WebSocket.OPEN;
-webSocketConstructor.CLOSING = WebSocket.CLOSING;
-webSocketConstructor.CLOSED = WebSocket.CLOSED;
+webSocketConstructor.WSN_CONNECTING = WebSocket.WSN_CONNECTING;
+webSocketConstructor.WSN_OPEN = WebSocket.WSN_OPEN;
+webSocketConstructor.WSN_CLOSING = WebSocket.WSN_CLOSING;
+webSocketConstructor.WSN_CLOSED = WebSocket.WSN_CLOSED;
 
 jest.doMock("../../../../../main/js/global/WebSocketNode", () => webSocketConstructor);
 
@@ -85,20 +85,20 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket-1", () => {
     });
 
     it("calls websocket.send correctly", async () => {
-        webSocketMock.readyState = WebSocket.OPEN;
+        webSocketMock.readyState = WebSocket.WSN_OPEN;
         await sharedWebSocket.send(joynrMessage);
         expect(webSocketMock.send).toHaveBeenCalledWith(MessageSerializer.stringify(joynrMessage), {
             binary: true
         });
 
         webSocketMock.send.mockClear();
-        webSocketMock.readyState = WebSocket.CLOSING;
+        webSocketMock.readyState = WebSocket.WSN_CLOSING;
         await sharedWebSocket.send(joynrMessage);
         expect(webSocketMock.send).not.toHaveBeenCalled();
     });
 
     it("uses callbacks after sharedWebSocket.send", async () => {
-        webSocketMock.readyState = WebSocket.OPEN;
+        webSocketMock.readyState = WebSocket.WSN_OPEN;
         sharedWebSocket.enableShutdownMode();
         await sharedWebSocket.send(joynrMessage);
         expect(webSocketMock.send).toHaveBeenCalledWith(
@@ -110,7 +110,7 @@ describe("libjoynr-js.joynr.messaging.webmessaging.SharedWebSocket-1", () => {
         );
 
         webSocketMock.send.mockClear();
-        webSocketMock.readyState = WebSocket.CLOSING;
+        webSocketMock.readyState = WebSocket.WSN_CLOSING;
         await sharedWebSocket.send(joynrMessage);
         expect(webSocketMock.send).not.toHaveBeenCalled();
     });

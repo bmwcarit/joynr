@@ -213,7 +213,7 @@ class SharedWebSocket {
             log.error(`could not marshal joynrMessage: ${joynrMessage.msgId} ${e}`);
             return Promise.resolve();
         }
-        if (this.websocket !== null && this.websocket!.readyState === WebSocketNode.OPEN) {
+        if (this.websocket !== null && this.websocket!.readyState === WebSocketNode.WSN_OPEN) {
             try {
                 await this.sendInternal(marshaledMessage);
                 // Error is thrown if the socket is no longer open, so requeue to the front

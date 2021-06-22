@@ -2,6 +2,23 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.2
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[JS]** Updated ws to version 7.5.0
+
+## Bug fixes
+None.
+
 # joynr 1.17.1
 
 ## API-relevant Changes

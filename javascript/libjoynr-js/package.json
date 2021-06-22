@@ -13,7 +13,7 @@
   "devDependencies": {
     "@types/jscodeshift": "0.6.0",
     "@types/nanoid": "1.2.1",
-    "@types/ws": "6.0.1",
+    "@types/ws": "7.4.5",
     "exit-hook": "1.1.1",
     "nanoid": "2.0.1",
     "typedoc": "0.14.2"
