@@ -8,16 +8,22 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
-None.
+* **[Wiki]** Documented error handling for createProxyBuilder methods in C++.
 
 ## Configuration Property Changes
 None.
 
 ## Security Fixes
-* **[JS]** Updated ws to version 7.5.0
+* **[JS]** Updated ws to version 7.5.0 and @types/ws to version 7.4.5, fixing `CVE-2021-32640`.
 
 ## Bug fixes
-None.
+* **[Java]** Fixed dependency problems in `joynr-generator-standalone`: Now the declared versions
+  for all dependencies of `joynr-generator-standalone` are used. The build failed because a newer
+  transitive dependency is not compatible with Java 8.
+* **[Java]** Fixed broken example `custom-headers`.
+* **[C++]** Added missing boost includes to JoynrClusterControllerRuntime.h.
+* **[Java]** Fixed error handling in `PublicationManager` (subscription handling on provider side):
+  Improved handling of proxy routing entries did not work in case of errors.
 
 # joynr 1.17.1
 
