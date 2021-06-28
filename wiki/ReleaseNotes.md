@@ -2,6 +2,24 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.3
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Generated classes and their dependencies are now checked for compatibility
+  with Java 8, the build fails in case of incompatibilities.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug fixes
+None.
+
 # joynr 1.17.2
 
 ## API-relevant Changes
