@@ -97,8 +97,6 @@ public class PublicationManagerImpl
     private final ConcurrentMap<String, UnregisterAttributeListener> unregisterAttributeListeners;
     // Map SubscriptionId -> UnregisterBroadcastListener
     private final ConcurrentMap<String, UnregisterBroadcastListener> unregisterBroadcastListeners;
-    // Map provider participant ID -> MulticastListener
-    private final ConcurrentMap<String, MulticastListener> multicastListeners;
 
     private AttributePollInterpreter attributePollInterpreter;
     private ScheduledExecutorService cleanupScheduler;
@@ -110,7 +108,7 @@ public class PublicationManagerImpl
     // to avoid race conditions, e.g. race conditions between providerDirectory and queuedSubscriptionRequests
     // protected members: subscriptionId2PublicationInformation, queuedSubscriptionRequests, publicationTimers,
     // subscriptionEndFutures, unregisterAttributeListeners, unregisterBroadcastListeners
-    private Object addRemoveLock;
+    private final Object addRemoveLock;
 
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
@@ -219,7 +217,6 @@ public class PublicationManagerImpl
         this.subscriptionEndFutures = new ConcurrentHashMap<>();
         this.unregisterAttributeListeners = new ConcurrentHashMap<>();
         this.unregisterBroadcastListeners = new ConcurrentHashMap<>();
-        this.multicastListeners = new ConcurrentHashMap<>();
         this.attributePollInterpreter = attributePollInterpreter;
         this.subscriptionRequestPersistency = subscriptionRequestPersistency;
         providerDirectory.addListener(this);
@@ -869,20 +866,13 @@ public class PublicationManagerImpl
                 PublicationManagerImpl.this.multicastOccurred(providerParticipantId, multicastName, partitions, values);
             }
         };
-        multicastListeners.putIfAbsent(providerParticipantId, multicastListener);
-        providerContainer.getSubscriptionPublisher()
-                         .registerMulticastListener(multicastListeners.get(providerParticipantId));
+        providerContainer.getSubscriptionPublisher().registerMulticastListener(multicastListener);
     }
 
     @Override
     public void entryRemoved(String providerParticipantId) {
         synchronized (addRemoveLock) {
             stopPublicationByProviderId(providerParticipantId);
-            ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
-            if (providerContainer != null) {
-                providerContainer.getSubscriptionPublisher()
-                                 .unregisterMulticastListener(multicastListeners.remove(providerParticipantId));
-            }
         }
     }
 
