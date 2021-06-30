@@ -226,13 +226,12 @@ public class MqttMessagingStubTest {
         when(joynrMessage.getEffort()).thenReturn(String.valueOf(MessagingQosEffort.NORMAL));
         JoynrRuntimeException exception = new JoynrRuntimeException("testException");
         JoynrRuntimeException expectedException = new JoynrRuntimeException(exception.getMessage());
-        doThrow(exception).when(mqttClient)
-                          .publishMessage(anyString(),
-                                          any(byte[].class),
-                                          anyInt(),
-                                          anyLong(),
-                                          any(SuccessAction.class),
-                                          any(FailureAction.class));
+        doThrow(exception).when(mqttClient).publishMessage(anyString(),
+                                                           any(byte[].class),
+                                                           anyInt(),
+                                                           anyLong(),
+                                                           any(SuccessAction.class),
+                                                           any(FailureAction.class));
 
         try {
             subject.transmit(joynrMessage, successAction, failureAction);

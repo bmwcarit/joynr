@@ -140,8 +140,8 @@ public class ShutdownTest {
                         .getProviderRegistrar("ShutdownTestdomain", provider)
                         .withProviderQos(providerQos)
                         .register();
-        ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime()
-                                                               .getProxyBuilder("ShutdownTestdomain", testProxy.class);
+        ProxyBuilder<testProxy> proxyBuilder = dummyApplication.getRuntime().getProxyBuilder("ShutdownTestdomain",
+                                                                                             testProxy.class);
         testProxy proxy = proxyBuilder.setDiscoveryQos(new DiscoveryQos(30000, ArbitrationStrategy.HighestPriority, 0))
                                       .build();
         dummyApplication.shutdown();

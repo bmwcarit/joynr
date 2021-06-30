@@ -171,11 +171,10 @@ public class PushingPublicationTest {
                 logger.trace(sb.toString());
                 return null;
             }
-        }).when(dispatcher)
-          .sendSubscriptionPublication(any(String.class),
-                                       any(Set.class),
-                                       any(SubscriptionPublication.class),
-                                       any(MessagingQos.class));
+        }).when(dispatcher).sendSubscriptionPublication(any(String.class),
+                                                        any(Set.class),
+                                                        any(SubscriptionPublication.class),
+                                                        any(MessagingQos.class));
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
 

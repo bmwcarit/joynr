@@ -585,9 +585,8 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
         assertTrue(returnedEntries.contains(expectedEntryFromOtherCc));
         // touch should not insert additional entries
         assertTrue(returnedEntries.size() == 2);
-        assertTrue(returnedEntries.stream()
-                                  .anyMatch((entry) -> expectedTouchedEntry.getParticipantId()
-                                                                           .equals(entry.getParticipantId())));
+        assertTrue(returnedEntries.stream().anyMatch((entry) -> expectedTouchedEntry.getParticipantId()
+                                                                                    .equals(entry.getParticipantId())));
     }
 
     @Test

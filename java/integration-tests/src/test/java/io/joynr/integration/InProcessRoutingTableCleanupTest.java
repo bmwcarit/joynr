@@ -129,10 +129,9 @@ public class InProcessRoutingTableCleanupTest extends AbstractRoutingTableCleanu
 
         CountDownLatch rqCdl = new CountDownLatch(1);
         ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        doAnswer(createVoidCountDownAnswer(rqCdl)).when(mqttMessagingStubMock)
-                                                  .transmit(messageCaptor.capture(),
-                                                            any(SuccessAction.class),
-                                                            any(FailureAction.class));
+        doAnswer(createVoidCountDownAnswer(rqCdl)).when(mqttMessagingStubMock).transmit(messageCaptor.capture(),
+                                                                                        any(SuccessAction.class),
+                                                                                        any(FailureAction.class));
 
         // unregister the provider
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
@@ -212,10 +211,9 @@ public class InProcessRoutingTableCleanupTest extends AbstractRoutingTableCleanu
 
         CountDownLatch rqCdl1 = new CountDownLatch(1);
         ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        doAnswer(createVoidCountDownAnswer(rqCdl1)).when(mqttMessagingStubMock)
-                                                   .transmit(messageCaptor.capture(),
-                                                             any(SuccessAction.class),
-                                                             any(FailureAction.class));
+        doAnswer(createVoidCountDownAnswer(rqCdl1)).when(mqttMessagingStubMock).transmit(messageCaptor.capture(),
+                                                                                         any(SuccessAction.class),
+                                                                                         any(FailureAction.class));
 
         // unregister the provider
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
@@ -266,10 +264,9 @@ public class InProcessRoutingTableCleanupTest extends AbstractRoutingTableCleanu
 
         // for the second try
         CountDownLatch rqCdl2 = new CountDownLatch(1);
-        doAnswer(createVoidCountDownAnswer(rqCdl2)).when(mqttMessagingStubMock)
-                                                   .transmit(messageCaptor.capture(),
-                                                             any(SuccessAction.class),
-                                                             any(FailureAction.class));
+        doAnswer(createVoidCountDownAnswer(rqCdl2)).when(mqttMessagingStubMock).transmit(messageCaptor.capture(),
+                                                                                         any(SuccessAction.class),
+                                                                                         any(FailureAction.class));
 
         try {
             MutableMessage rpMsg1 = createReplyWithException(rq1,
@@ -311,10 +308,9 @@ public class InProcessRoutingTableCleanupTest extends AbstractRoutingTableCleanu
 
         CountDownLatch rqCdl1 = new CountDownLatch(1);
         ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        doAnswer(createVoidCountDownAnswer(rqCdl1)).when(mqttMessagingStubMock)
-                                                   .transmit(messageCaptor.capture(),
-                                                             any(SuccessAction.class),
-                                                             any(FailureAction.class));
+        doAnswer(createVoidCountDownAnswer(rqCdl1)).when(mqttMessagingStubMock).transmit(messageCaptor.capture(),
+                                                                                         any(SuccessAction.class),
+                                                                                         any(FailureAction.class));
 
         // unregister the provider
         joynrRuntime.unregisterProvider(TESTCUSTOMDOMAIN1, testProvider);
@@ -365,10 +361,9 @@ public class InProcessRoutingTableCleanupTest extends AbstractRoutingTableCleanu
 
         // for the second try
         CountDownLatch rqCdl2 = new CountDownLatch(1);
-        doAnswer(createVoidCountDownAnswer(rqCdl2)).when(mqttMessagingStubMock)
-                                                   .transmit(messageCaptor.capture(),
-                                                             any(SuccessAction.class),
-                                                             any(FailureAction.class));
+        doAnswer(createVoidCountDownAnswer(rqCdl2)).when(mqttMessagingStubMock).transmit(messageCaptor.capture(),
+                                                                                         any(SuccessAction.class),
+                                                                                         any(FailureAction.class));
 
         try {
             MutableMessage rpMsg1 = createReplyWithException(rq1,

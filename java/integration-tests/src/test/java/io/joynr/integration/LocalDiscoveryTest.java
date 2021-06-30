@@ -226,20 +226,20 @@ public class LocalDiscoveryTest {
                                                                                                              defaultGbids,
                                                                                                              defaultExpiryTime);
 
-        Module testModule = Modules.override(new CCInProcessRuntimeModule())
-                                   .with(new TestGlobalAddressModule(), new AbstractModule() {
-                                       @Override
-                                       protected void configure() {
-                                           bind(JoynrMessagingConnectorFactory.class).annotatedWith(Names.named("connectorFactoryMock"))
-                                                                                     .toInstance(joynrMessagingConnectorFactoryMock);
-                                           bind(LocalCapabilitiesDirectory.class).toInstance(localCapabilitiesDirectory);
-                                           bind(LocalCapabilitiesDirectoryImpl.class).toInstance(localCapabilitiesDirectory);
-                                           bind(ProxyInvocationHandlerFactory.class).to(ProxyInvocationHandlerFactoryImpl.class);
-                                           bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
-                                           bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
-                                                               .toInstance(defaultGbids);
-                                       }
-                                   });
+        Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule(),
+                                                                                  new AbstractModule() {
+                                                                                      @Override
+                                                                                      protected void configure() {
+                                                                                          bind(JoynrMessagingConnectorFactory.class).annotatedWith(Names.named("connectorFactoryMock"))
+                                                                                                                                    .toInstance(joynrMessagingConnectorFactoryMock);
+                                                                                          bind(LocalCapabilitiesDirectory.class).toInstance(localCapabilitiesDirectory);
+                                                                                          bind(LocalCapabilitiesDirectoryImpl.class).toInstance(localCapabilitiesDirectory);
+                                                                                          bind(ProxyInvocationHandlerFactory.class).to(ProxyInvocationHandlerFactoryImpl.class);
+                                                                                          bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
+                                                                                          bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                                                                                              .toInstance(defaultGbids);
+                                                                                      }
+                                                                                  });
         Properties joynrProperties = new Properties();
         Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(joynrProperties, testModule)).getInjector();
 
@@ -491,8 +491,8 @@ public class LocalDiscoveryTest {
         discoveryEntriesWithMetaInfo.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                              remoteDiscoveryEntry));
 
-        doReturn(localDiscoveryEntries).when(localDiscoveryEntryStoreMock)
-                                       .lookup(any(String[].class), eq(interfaceName));
+        doReturn(localDiscoveryEntries).when(localDiscoveryEntryStoreMock).lookup(any(String[].class),
+                                                                                  eq(interfaceName));
         doReturn(Optional.empty()).when(localDiscoveryEntryStoreMock).lookup(anyString(), anyLong());
         doReturn(Arrays.asList(CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(cachedDiscoveryEntry,
                                                                                    globalAddress))).when(globalDiscoveryEntryCacheMock)

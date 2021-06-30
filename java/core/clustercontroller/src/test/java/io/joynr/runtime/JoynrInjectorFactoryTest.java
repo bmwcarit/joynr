@@ -140,9 +140,8 @@ public class JoynrInjectorFactoryTest {
     public void systemPropertiesOverrideJoynFactoryProperties() {
         long systemDiscoveryDefaultTimeoutValue = 24;
         assertFalse(systemDiscoveryDefaultTimeoutValue == factoryDiscoveryDefaultTimeoutValue);
-        System.getProperties()
-              .setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
-                           Long.toString(systemDiscoveryDefaultTimeoutValue));
+        System.getProperties().setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
+                                           Long.toString(systemDiscoveryDefaultTimeoutValue));
 
         Properties propertiesBeforeModification = new Properties(originalSystemproperties);
         setUp(); //Re-init JoynrFactory with new system

@@ -148,28 +148,24 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
                 assertTrue(entry.getValue()
                                 .contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "") + ".MyStruct"));
                 assertFalse(entry.getValue().contains("MyOtherStruct otherMessage"));
-                assertFalse(entry.getValue()
-                                 .contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
-                                         + ".MyOtherStruct"));
+                assertFalse(entry.getValue().contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
+                        + ".MyOtherStruct"));
                 fireAndForgetFound = true;
             } else if (entry.getKey().endsWith("Sync") || entry.getKey().endsWith("Async")) {
                 assertFalse(entry.getValue().contains("MyStruct message"));
-                assertFalse(entry.getValue()
-                                 .contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
-                                         + ".MyStruct"));
+                assertFalse(entry.getValue().contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
+                        + ".MyStruct"));
                 assertTrue(entry.getValue().contains("MyOtherStruct otherMessage"));
-                assertTrue(entry.getValue()
-                                .contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
-                                        + ".MyOtherStruct"));
+                assertTrue(entry.getValue().contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
+                        + ".MyOtherStruct"));
                 syncAsyncFound = true;
             } else if (entry.getKey().endsWith("FireAndForgetWithTypesTestProvider")) {
                 assertTrue(entry.getValue().contains("MyStruct message"));
                 assertTrue(entry.getValue()
                                 .contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "") + ".MyStruct"));
                 assertTrue(entry.getValue().contains("MyOtherStruct otherMessage"));
-                assertTrue(entry.getValue()
-                                .contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
-                                        + ".MyOtherStruct"));
+                assertTrue(entry.getValue().contains("import joynr.fireandforget" + (generateVersion ? ".v1" : "")
+                        + ".MyOtherStruct"));
                 providerFound = true;
             }
         }

@@ -300,13 +300,11 @@ public class ProxyTest {
                 ((Callback) args[0]).resolve((Object) fakeCapabilitiesResult);
                 return null;
             }
-        })
-               .when(localDiscoveryAggregator)
-               .lookup(Mockito.<CallbackWithModeledError> any(),
-                       Mockito.<String[]> any(),
-                       Mockito.<String> any(),
-                       Mockito.<joynr.types.DiscoveryQos> any(),
-                       Mockito.<String[]> any());
+        }).when(localDiscoveryAggregator).lookup(Mockito.<CallbackWithModeledError> any(),
+                                                 Mockito.<String[]> any(),
+                                                 Mockito.<String> any(),
+                                                 Mockito.<joynr.types.DiscoveryQos> any(),
+                                                 Mockito.<String[]> any());
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -319,11 +317,9 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        })
-               .when(subscriptionManager)
-               .registerAttributeSubscription(any(String.class),
-                                              eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
-                                              Mockito.any(AttributeSubscribeInvocation.class));
+        }).when(subscriptionManager).registerAttributeSubscription(any(String.class),
+                                                                   eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                                   Mockito.any(AttributeSubscribeInvocation.class));
 
         Mockito.doAnswer(new Answer<Object>() { //TODO simulate resolve here ! subscription reply bastern ... handle subscriptionreply ausführen.. 
             @Override
@@ -337,11 +333,9 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        })
-               .when(subscriptionManager)
-               .registerBroadcastSubscription(any(String.class),
-                                              eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
-                                              Mockito.any(BroadcastSubscribeInvocation.class));
+        }).when(subscriptionManager).registerBroadcastSubscription(any(String.class),
+                                                                   eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                                   Mockito.any(BroadcastSubscribeInvocation.class));
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
@@ -355,11 +349,9 @@ public class ProxyTest {
                 request.getFuture().resolve(request.getSubscriptionId());
                 return null;
             }
-        })
-               .when(subscriptionManager)
-               .registerMulticastSubscription(any(String.class),
-                                              eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
-                                              Mockito.any(MulticastSubscribeInvocation.class));
+        }).when(subscriptionManager).registerMulticastSubscription(any(String.class),
+                                                                   eq(new HashSet(Arrays.asList(toDiscoveryEntry))),
+                                                                   Mockito.any(MulticastSubscribeInvocation.class));
 
         discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
         messagingQos = new MessagingQos();
@@ -369,10 +361,9 @@ public class ProxyTest {
             public Set<DiscoveryEntryWithMetaInfo> answer(InvocationOnMock invocation) throws Throwable {
                 return (Set<DiscoveryEntryWithMetaInfo>) invocation.getArguments()[1];
             }
-        }).when(discoveryEntryVersionFilter)
-          .filter(Mockito.<Version> any(),
-                  Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
-                  Mockito.<Map<String, Set<Version>>> any());
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
 
         Field discoveryEntryVersionFilterField = ArbitratorFactory.class.getDeclaredField("discoveryEntryVersionFilter");
         discoveryEntryVersionFilterField.setAccessible(true);
@@ -383,10 +374,9 @@ public class ProxyTest {
             public Set<DiscoveryEntryWithMetaInfo> answer(InvocationOnMock invocation) throws Throwable {
                 return (Set<DiscoveryEntryWithMetaInfo>) invocation.getArguments()[1];
             }
-        }).when(discoveryEntryVersionFilter)
-          .filter(Mockito.<Version> any(),
-                  Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
-                  Mockito.<Map<String, Set<Version>>> any());
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
 
         Field schedulerField = ArbitratorFactory.class.getDeclaredField("scheduler");
         schedulerField.setAccessible(true);
@@ -568,12 +558,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, new TextNode(asyncReplyText)));
                 return null;
             }
-        })
-               .when(requestReplyManager)
-               .sendRequest(Mockito.<String> any(),
-                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
-                            Mockito.<Request> any(),
-                            Mockito.<MessagingQos> any());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.<MessagingQos> any());
 
         final Future<String> future;
         if (privateMessagingQos != null) {
@@ -636,12 +624,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
                 return null;
             }
-        })
-               .when(requestReplyManager)
-               .sendRequest(Mockito.<String> any(),
-                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
-                            Mockito.<Request> any(),
-                            Mockito.<MessagingQos> any());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.<MessagingQos> any());
 
         CallbackWithModeledError<String, Enum<?>> callbackWithApplicationException = Mockito.mock(CallbackWithModeledError.class);
         final Future<String> future = proxy.asyncMethodWithApplicationError(callbackWithApplicationException);
@@ -683,12 +669,10 @@ public class ProxyTest {
                 replyCallerCaptor.getValue().error(expectedException);
                 return null;
             }
-        })
-               .when(requestReplyManager)
-               .sendRequest(Mockito.<String> any(),
-                            Mockito.<DiscoveryEntryWithMetaInfo> any(),
-                            Mockito.<Request> any(),
-                            Mockito.<MessagingQos> any());
+        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
+                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
+                                                 Mockito.<Request> any(),
+                                                 Mockito.<MessagingQos> any());
 
         boolean exceptionThrown = false;
         String reply = "";

@@ -164,10 +164,9 @@ public class ArbitrationTest {
             public Set<DiscoveryEntry> answer(InvocationOnMock invocation) throws Throwable {
                 return (Set<DiscoveryEntry>) invocation.getArguments()[1];
             }
-        }).when(discoveryEntryVersionFilter)
-          .filter(Mockito.<Version> any(),
-                  Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
-                  Mockito.<Map<String, Set<Version>>> any());
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
 
         Field schedulerField = ArbitratorFactory.class.getDeclaredField("scheduler");
         schedulerField.setAccessible(true);
@@ -976,10 +975,9 @@ public class ArbitrationTest {
                 discoveryEntries.clear();
                 return new HashSet<>();
             }
-        }).when(discoveryEntryVersionFilter)
-          .filter(Mockito.<Version> any(),
-                  Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
-                  Mockito.<Map<String, Set<Version>>> any());
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
         DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
         reset(localDiscoveryAggregator);
         doAnswer(new Answer<Object>() {
@@ -1048,10 +1046,9 @@ public class ArbitrationTest {
                 discoveryEntries.clear();
                 return new HashSet<>();
             }
-        }).when(discoveryEntryVersionFilter)
-          .filter(Mockito.<Version> any(),
-                  Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
-                  Mockito.<Map<String, Set<Version>>> any());
+        }).when(discoveryEntryVersionFilter).filter(Mockito.<Version> any(),
+                                                    Mockito.<Set<DiscoveryEntryWithMetaInfo>> any(),
+                                                    Mockito.<Map<String, Set<Version>>> any());
         DiscoveryQos discoveryQos = new DiscoveryQos(10L, arbitrationStrategyFunction, 0L);
         reset(localDiscoveryAggregator);
         doAnswer(new Answer<Object>() {

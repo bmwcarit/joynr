@@ -613,10 +613,9 @@ public class AbstractRoutingTableCleanupTest {
 
     protected ArgumentCaptor<ImmutableMessage> prepareGlobalRemove(CountDownLatch removeCdl) {
         ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        doAnswer(createVoidCountDownAnswer(removeCdl)).when(mqttMessagingStubMock)
-                                                      .transmit(messageCaptor.capture(),
-                                                                any(SuccessAction.class),
-                                                                any(FailureAction.class));
+        doAnswer(createVoidCountDownAnswer(removeCdl)).when(mqttMessagingStubMock).transmit(messageCaptor.capture(),
+                                                                                            any(SuccessAction.class),
+                                                                                            any(FailureAction.class));
         return messageCaptor;
     }
 

@@ -130,12 +130,11 @@ public class AccessControllerTest {
                 return null;
             }
 
-        }).when(localDomainAccessController)
-          .getConsumerPermission(eq(DUMMY_USERID),
-                                 eq(testDomain),
-                                 eq(testInterface),
-                                 eq(TrustLevel.HIGH),
-                                 any(GetConsumerPermissionCallback.class));
+        }).when(localDomainAccessController).getConsumerPermission(eq(DUMMY_USERID),
+                                                                   eq(testDomain),
+                                                                   eq(testInterface),
+                                                                   eq(TrustLevel.HIGH),
+                                                                   any(GetConsumerPermissionCallback.class));
 
         accessController.hasConsumerPermission(messageMock, callback);
         verify(callback, Mockito.times(1)).hasConsumerPermission(true);

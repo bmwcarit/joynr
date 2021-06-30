@@ -315,11 +315,10 @@ public class PublicationManagerTest {
                 onReceiveSemaphore.release();
                 return null;
             }
-        }).when(dispatcher)
-          .sendSubscriptionPublication(eq(providerId),
-                                       (Set<String>) argThat(contains(proxyId)),
-                                       any(SubscriptionPublication.class),
-                                       any(MessagingQos.class));
+        }).when(dispatcher).sendSubscriptionPublication(eq(providerId),
+                                                        (Set<String>) argThat(contains(proxyId)),
+                                                        any(SubscriptionPublication.class),
+                                                        any(MessagingQos.class));
 
         publicationManager.addSubscriptionRequest(proxyId, providerId, subscriptionRequest);
 
@@ -738,60 +737,54 @@ public class PublicationManagerTest {
         verify(routingTable, times(1)).remove(proxyParticipantId2);
         InOrder inOrder1 = inOrder(dispatcher);
         InOrder inOrder2 = inOrder(dispatcher);
-        inOrder1.verify(dispatcher)
-                .sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                             eq(Collections.singleton(PROXY_PARTICIPANT_ID)),
-                                             any(SubscriptionPublication.class),
-                                             any(MessagingQos.class));
-        inOrder1.verify(dispatcher)
-                .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
-                                       eq(PROXY_PARTICIPANT_ID),
-                                       argThat(new ArgumentMatcher<SubscriptionReply>() {
-                                           @Override
-                                           public boolean matches(Object argument) {
-                                               SubscriptionReply reply = (SubscriptionReply) argument;
-                                               return null == reply.getError();
-                                           }
-                                       }),
-                                       any(MessagingQos.class));
-        inOrder1.verify(dispatcher)
-                .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
-                                       eq(PROXY_PARTICIPANT_ID),
-                                       argThat(new ArgumentMatcher<SubscriptionReply>() {
-                                           @Override
-                                           public boolean matches(Object argument) {
-                                               SubscriptionReply reply = (SubscriptionReply) argument;
-                                               return null != reply.getError();
-                                           }
-                                       }),
-                                       any(MessagingQos.class));
-        inOrder2.verify(dispatcher)
-                .sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                             eq(Collections.singleton(proxyParticipantId2)),
-                                             any(SubscriptionPublication.class),
-                                             any(MessagingQos.class));
-        inOrder2.verify(dispatcher)
-                .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
-                                       eq(proxyParticipantId2),
-                                       argThat(new ArgumentMatcher<SubscriptionReply>() {
-                                           @Override
-                                           public boolean matches(Object argument) {
-                                               SubscriptionReply reply = (SubscriptionReply) argument;
-                                               return null == reply.getError();
-                                           }
-                                       }),
-                                       any(MessagingQos.class));
-        inOrder2.verify(dispatcher)
-                .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
-                                       eq(proxyParticipantId2),
-                                       argThat(new ArgumentMatcher<SubscriptionReply>() {
-                                           @Override
-                                           public boolean matches(Object argument) {
-                                               SubscriptionReply reply = (SubscriptionReply) argument;
-                                               return null != reply.getError();
-                                           }
-                                       }),
-                                       any(MessagingQos.class));
+        inOrder1.verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                eq(Collections.singleton(PROXY_PARTICIPANT_ID)),
+                                                                any(SubscriptionPublication.class),
+                                                                any(MessagingQos.class));
+        inOrder1.verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                          eq(PROXY_PARTICIPANT_ID),
+                                                          argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                              @Override
+                                                              public boolean matches(Object argument) {
+                                                                  SubscriptionReply reply = (SubscriptionReply) argument;
+                                                                  return null == reply.getError();
+                                                              }
+                                                          }),
+                                                          any(MessagingQos.class));
+        inOrder1.verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                          eq(PROXY_PARTICIPANT_ID),
+                                                          argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                              @Override
+                                                              public boolean matches(Object argument) {
+                                                                  SubscriptionReply reply = (SubscriptionReply) argument;
+                                                                  return null != reply.getError();
+                                                              }
+                                                          }),
+                                                          any(MessagingQos.class));
+        inOrder2.verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                eq(Collections.singleton(proxyParticipantId2)),
+                                                                any(SubscriptionPublication.class),
+                                                                any(MessagingQos.class));
+        inOrder2.verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                          eq(proxyParticipantId2),
+                                                          argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                              @Override
+                                                              public boolean matches(Object argument) {
+                                                                  SubscriptionReply reply = (SubscriptionReply) argument;
+                                                                  return null == reply.getError();
+                                                              }
+                                                          }),
+                                                          any(MessagingQos.class));
+        inOrder2.verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
+                                                          eq(proxyParticipantId2),
+                                                          argThat(new ArgumentMatcher<SubscriptionReply>() {
+                                                              @Override
+                                                              public boolean matches(Object argument) {
+                                                                  SubscriptionReply reply = (SubscriptionReply) argument;
+                                                                  return null != reply.getError();
+                                                              }
+                                                          }),
+                                                          any(MessagingQos.class));
         verifyNoMoreInteractions(routingTable, dispatcher);
     }
 
@@ -818,11 +811,10 @@ public class PublicationManagerTest {
                 semaphore.release();
                 return null;
             }
-        }).when(dispatcher)
-          .sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                       (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                       any(SubscriptionPublication.class),
-                                       any(MessagingQos.class));
+        }).when(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                        (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                        any(SubscriptionPublication.class),
+                                                        any(MessagingQos.class));
 
         publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
         assertEquals(0, getQueuedSubscriptionRequests().size());
