@@ -39,7 +39,6 @@ import io.joynr.android.messaging.binder.JoynrBinder;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.ImmutableMessage;
-import joynr.Message;
 
 /**
  * Android service used by {@link AndroidBinderRuntime} to communicate between instances using joynr
@@ -95,9 +94,7 @@ public class BinderService extends Service {
             }
         }
 
-        if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-            message.setReceivedFromGlobal(true);
-        }
+        message.setReceivedFromGlobal(true);
 
         MessageRouter messageRouter = AndroidBinderRuntime.getInjector().getInstance(MessageRouter.class);
         messageRouter.route(message);

@@ -107,7 +107,7 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
         Set<String> result = super.getRecipients(message);
 
         if (parentRouter != null && message.getType() != Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST
-                && !routingTable.containsKey(message.getRecipient())) {
+                && !message.isReceivedFromGlobal() && !routingTable.containsKey(message.getRecipient())) {
             String toParticipantId = message.getRecipient();
             Boolean parentHasNextHop = parentRouter.resolveNextHop(toParticipantId);
             if (parentHasNextHop) {

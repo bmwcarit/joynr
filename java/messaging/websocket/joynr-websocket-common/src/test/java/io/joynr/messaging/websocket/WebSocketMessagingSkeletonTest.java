@@ -18,25 +18,32 @@
  */
 package io.joynr.messaging.websocket;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import com.google.inject.name.Names;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton.MainTransportFlagBearer;
+import joynr.ImmutableMessage;
 import joynr.Message.MessageType;
 import joynr.MutableMessage;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -65,6 +72,9 @@ public class WebSocketMessagingSkeletonTest {
     private WebSocketMessagingSkeleton subject;
 
     @Mock
+    private MainTransportFlagBearer mainTransportFlagBearer;
+
+    @Mock
     private MessageRouter messageRouter;
 
     @Before
@@ -73,7 +83,7 @@ public class WebSocketMessagingSkeletonTest {
         subject = new WebSocketMessagingSkeleton(Mockito.mock(WebSocketAddress.class),
                                                  Mockito.mock(WebSocketEndpointFactory.class),
                                                  messageRouter,
-                                                 Mockito.mock(MainTransportFlagBearer.class),
+                                                 mainTransportFlagBearer,
                                                  new HashSet<JoynrMessageProcessor>());
 
     }
@@ -108,6 +118,28 @@ public class WebSocketMessagingSkeletonTest {
 
         subject.transmit(createMessage(MessageType.VALUE_MESSAGE_TYPE_ONE_WAY), NO_FAILURE_EXPECTED);
         verify(messageRouter, times(0)).setToKnown(any());
+    }
+
+    private void verifyReceivedFromGlobal(boolean expected) throws Exception {
+        for (MessageType type : MessageType.values()) {
+            subject.transmit(createMessage(type), NO_FAILURE_EXPECTED);
+            ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
+            verify(messageRouter).route(messageCaptor.capture());
+            assertEquals(expected, messageCaptor.getValue().isReceivedFromGlobal());
+            reset(messageRouter);
+        }
+    }
+
+    @Test
+    public void doNotSetReceivedFromGlobalInCC() throws Exception {
+        verifyReceivedFromGlobal(false);
+    }
+
+    @Test
+    public void doSetReceivedFromGlobalInApp() throws Exception {
+        when(mainTransportFlagBearer.isMainTransport()).thenReturn(true);
+        setUp(); //Re-initialize subject
+        verifyReceivedFromGlobal(true);
     }
 
 }

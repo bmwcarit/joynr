@@ -108,9 +108,15 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
                 }
             }
 
-            if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType()) && this.isMainTransport()) {
+            if (this.isMainTransport()) {
+                /*
+                 * On LibJoynr side, prevent message loops by marking the messages as
+                 * received from global. The LibJoynrMessageRouter prevents sending
+                 * back the message to the CC.
+                 */
                 message.setReceivedFromGlobal(true);
-            } else if (MESSAGE_TYPE_REQUESTS.contains(message.getType())) {
+            }
+            if (MESSAGE_TYPE_REQUESTS.contains(message.getType())) {
                 messageRouter.setToKnown(message.getSender());
             }
 
