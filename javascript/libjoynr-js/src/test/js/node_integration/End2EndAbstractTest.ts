@@ -217,6 +217,21 @@ class End2EndAbstractTest {
         });
     }
 
+    public waitFor(condition: () => boolean, timeout: number): Promise<any> {
+        const checkIntervalMs = 100;
+        const start = Date.now();
+        const check = (resolve: any, reject: any) => {
+            if (condition()) {
+                resolve();
+            } else if (Date.now() > start + timeout) {
+                reject(`${condition.name} failed, even after getting ${timeout} ms to try`);
+            } else {
+                setTimeout(_ => check(resolve, reject), checkIntervalMs);
+            }
+        };
+        return new Promise(check);
+    }
+
     public setupSubscriptionAndReturnSpy(
         subscribingEntity: keyof RadioProxy,
         subscriptionQos: SubscriptionQos,

@@ -54,6 +54,7 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
     const unsubscribeSubscription = abstractTest.unsubscribeSubscription;
     const callOperation = abstractTest.callOperation;
     const expectPublication = abstractTest.expectPublication;
+    const waitFor = abstractTest.waitFor;
     const terminateAllSubscriptions = abstractTest.terminateAllSubscriptions;
     let subscriptionSettings: SubscribeSettings<any> &
         Spies & {
@@ -107,7 +108,10 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
 
     async function expectMultiplePublications(spy: Spies, expectedPublications: number): Promise<any[]> {
         await subScriptionDeferred.onReceive.promise;
-        await IntegrationUtils.waitALittle(100);
+        const condition = (): boolean => {
+            return spy.onReceive.mock.calls.length === expectedPublications;
+        };
+        await waitFor(condition, 1000);
         expect(spy.onReceive.mock.calls.length).toBe(expectedPublications);
         const calls = spy.onReceive.mock.calls;
         spy.onReceive.mockClear();
@@ -493,16 +497,14 @@ describe("libjoynr-js.integration.end2end.subscription", () => {
         const times = 100;
         subscriptionSettings.subscriptionQos = subscriptionQosOnChange;
         await radioProxy.broadcastWithEnum.subscribe(subscriptionSettings);
-        await IntegrationUtils.waitALittle(1000);
         await callOperation("triggerBroadcasts", {
             broadcastName: "broadcastWithEnum",
             times
         });
-        await IntegrationUtils.waitALittle(500);
         const calls = await expectMultiplePublications(subscriptionSettings, times);
         for (let i = 0; i < times; i++) {
-            expect(calls[0][0].enumOutput).toEqual(Country.CANADA);
-            expect(calls[0][0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
+            expect(calls[i][0].enumOutput).toEqual(Country.CANADA);
+            expect(calls[i][0].enumArrayOutput).toEqual([Country.GERMANY, Country.ITALY]);
         }
     });
 
