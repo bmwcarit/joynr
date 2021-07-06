@@ -861,6 +861,7 @@ void MosquittoConnection::publishMessage(
         const int qosLevel,
         const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
         const std::uint32_t msgTtlSec,
+        const std::unordered_map<std::string, std::string> prefixedCustomHeaders,
         const uint32_t payloadlen = 0,
         const void* payload = nullptr)
 {
@@ -890,6 +891,42 @@ void MosquittoConnection::publishMessage(
         mosquitto_property_free_all(&props);
         throw exceptions::JoynrRuntimeException(errorMsg);
     }
+
+    std::unordered_map<std::string, std::string>::const_iterator it;
+    for (it = prefixedCustomHeaders.cbegin(); it != prefixedCustomHeaders.cend(); it++) {
+        const std::string key = it->first;
+        const std::string value = it->second;
+        if (key.empty() || value.empty()) {
+            JOYNR_LOG_WARN(logger(),
+                           "[{}] Did not add MQTT empty user property {} / {}",
+                           _gbid,
+                           key,
+                           value);
+            // This is a workaround of mosquitto bug
+            continue;
+        }
+        ret = mosquitto_property_add_string_pair(
+                &props, MQTT_PROP_USER_PROPERTY, key.c_str(), value.c_str());
+        switch (ret) {
+        case MOSQ_ERR_SUCCESS:
+            JOYNR_LOG_TRACE(logger(), "[{}] Added MQTT user property {} / {}", _gbid, key, value);
+            break;
+        default:
+            // MOSQ_ERR_INVAL, MOSQ_ERR_NOMEM
+            const std::string errorString(getErrorString(ret));
+            std::string errorMsg =
+                    fmt::format("[{}] Adding MQTT user property {} / {} failed: error: {} ({})",
+                                _gbid,
+                                key,
+                                value,
+                                std::to_string(ret),
+                                errorString);
+            mosquitto_property_free_all(&props);
+            onFailure(exceptions::JoynrMessageNotSentException(errorMsg));
+            return;
+        }
+    }
+
     int rc = mosquitto_publish_v5(_mosq,
                                   &mid,
                                   topic.c_str(),

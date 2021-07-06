@@ -183,6 +183,7 @@ TEST_F(MosquittoConnectionTest, generalTest)
                                          qosLevel,
                                          onFailure,
                                          msgTtlSec,
+                                         immutableMessage->getPrefixedCustomHeaders(),
                                          rawMessage.size(),
                                          rawMessage.data());
 
@@ -274,6 +275,7 @@ TEST_F(MosquittoConnectionTest, deliverMessageWithinItsExpiryIntervalAfterReconn
                                          qosLevel,
                                          onFailure,
                                          msgTtlSec,
+                                         immutableMessage->getPrefixedCustomHeaders(),
                                          rawMessage.size(),
                                          rawMessage.data());
 
@@ -364,6 +366,7 @@ TEST_F(MosquittoConnectionTest, noMessageDeliveryWhenExceedingItsExpiryIntervalA
                                          qosLevel,
                                          onFailure,
                                          msgTtlSec,
+                                         immutableMessage->getPrefixedCustomHeaders(),
                                          rawMessage.size(),
                                          rawMessage.data());
 

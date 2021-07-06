@@ -91,6 +91,7 @@ public:
             const int qosLevel,
             const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure,
             const uint32_t msgTtlSec,
+            const std::unordered_map<std::string, std::string> prefixedCustomHeaders,
             const uint32_t payloadlen,
             const void* payload);
     virtual void subscribeToTopic(const std::string& topic);

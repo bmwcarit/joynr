@@ -52,10 +52,11 @@ public:
     MOCK_CONST_METHOD0(isMqttRetain, bool());
     MOCK_CONST_METHOD0(isReadyToSend, bool());
     MOCK_CONST_METHOD0(isSubscribedToChannelTopic, bool());
-    MOCK_METHOD6(publishMessage, void(const std::string& _topic,
+    MOCK_METHOD7(publishMessage, void(const std::string& _topic,
                                       const int qosLevel,
                                       const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure,
                                       const std::uint32_t msgTtlSec,
+                                      std::unordered_map<std::string, std::string> prefixedCustomHeaders,
                                       const std::uint32_t payloadlen,
                                       const void* payload));
     MOCK_METHOD1(registerChannelId, void(const std::string& _channelId));
