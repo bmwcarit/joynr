@@ -105,6 +105,7 @@ TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
                     _,
                     _,
                     _,
+                    _,
                     _));
 
     mqttSender->sendMessage(mqttAddress,
@@ -141,6 +142,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
                     _,
                     Eq(expectedRoundedMsgTtlSec),
                     _,
+                    _,
                     _));
 
     mqttSender->sendMessage(mqttAddress, immutableMessage1, onFailure);
@@ -160,6 +162,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
                     _,
                     _,
                     Eq(expectedRoundedMsgTtlSec),
+                    _,
                     _,
                     _));
 
@@ -201,6 +204,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecGreaterThanMaxIntervalAlways
                     _,
                     Eq(expectedMaxMsgTtlSec),
                     _,
+                    _,
                     _)).Times(2);
 
     mqttSender->sendMessage(mqttAddress, immutableMessage1, onFailure);
@@ -232,6 +236,7 @@ TEST_F(MqttSenderTest, multicastMessagePublishedToCorrectTopic)
     EXPECT_CALL(*mockMosquittoConnection, publishMessage(
                     Eq(expectedTopic),
                     Eq(0),
+                    _,
                     _,
                     _,
                     _,

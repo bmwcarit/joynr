@@ -101,8 +101,13 @@ void MqttSender::sendMessage(
     } else {
         ttlSec = static_cast<std::uint32_t>(std::ceil(msgExpiryDate.count() / 1000.0));
     }
-    _mosquittoConnection->publishMessage(
-            topic, qosLevel, onFailure, ttlSec, rawMessage.size(), rawMessage.data());
+    _mosquittoConnection->publishMessage(topic,
+                                         qosLevel,
+                                         onFailure,
+                                         ttlSec,
+                                         message->getPrefixedCustomHeaders(),
+                                         rawMessage.size(),
+                                         rawMessage.data());
 }
 
 } // namespace joynr
