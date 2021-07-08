@@ -18,7 +18,13 @@ None.
 None.
 
 ## Bug fixes
-None.
+* **[Android]** Prevent message loop between libjoynr clients (with fixed client address) and
+  cluster controller. A loop could occur after client restart:
+  * when delivering reply messages for proxies from a previous client lifecycle.
+  * when delivering request messages for providers that are not (yet) registered (again) in the new
+    client lifecycle.
+* **[Java]** Fixed dependency inconsistencies in `tools/generator` and all subprojects: now the
+  same versions for all direct and transitive dependencies are used.
 
 # joynr 1.17.2
 
