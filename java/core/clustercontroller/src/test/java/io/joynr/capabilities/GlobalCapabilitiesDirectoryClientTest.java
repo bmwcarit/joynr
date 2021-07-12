@@ -345,7 +345,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
         // Test whether removeStale() of the GlobalCapabilitiesDirectoryProxy 
         // called once with the given gbid and value of max last seen date in milliseconds.
         final long maxLastSeenDateMs = 1000000L;
-        final long expectedRemoveStaleTtl = 60 * 60 * 1000L;
+        final long expectedRemoveStaleTtl = 60 * 1000L;
         final MessagingQos messagingQos = new MessagingQos(expectedRemoveStaleTtl);
         messagingQos.putCustomMessageHeader(Message.CUSTOM_HEADER_GBID_KEY, GBID_DEFAULT_BACKEND);
 
