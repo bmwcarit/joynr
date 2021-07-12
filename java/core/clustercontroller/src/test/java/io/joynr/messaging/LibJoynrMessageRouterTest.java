@@ -163,7 +163,7 @@ public class LibJoynrMessageRouterTest {
 
     @Test
     public void itQueriesParentForNextHop() throws Exception {
-        messageRouter.route(message);
+        messageRouter.routeOut(message);
         Thread.sleep(100);
         verify(messageRouterParent).resolveNextHop(eq(unknownParticipantId));
     }
@@ -172,14 +172,14 @@ public class LibJoynrMessageRouterTest {
     public void preventRoutingBackToCC() throws Exception {
         when(message.isReceivedFromGlobal()).thenReturn(true);
         message.setReceivedFromGlobal(true);
-        messageRouter.route(message);
+        messageRouter.routeIn(message);
         Thread.sleep(100);
         verify(messageRouterParent, never()).resolveNextHop(any());
     }
 
     @Test
     public void addsNextHopAfterQueryingParent() throws Exception {
-        messageRouter.route(message);
+        messageRouter.routeOut(message);
         Thread.sleep(100);
         final boolean isGloballyVisible = true;
         final long expiryDateMs = Long.MAX_VALUE;

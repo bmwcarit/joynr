@@ -120,7 +120,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
                 messageRouter.setToKnown(message.getSender());
             }
 
-            messageRouter.route(message);
+            messageRouter.routeIn(message);
         } catch (Exception error) {
             failureAction.execute(error);
         }

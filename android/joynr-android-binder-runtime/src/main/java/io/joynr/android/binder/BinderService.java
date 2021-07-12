@@ -97,7 +97,8 @@ public class BinderService extends Service {
         message.setReceivedFromGlobal(true);
 
         MessageRouter messageRouter = AndroidBinderRuntime.getInjector().getInstance(MessageRouter.class);
-        messageRouter.route(message);
+        //should work for libjoynr binder runtime and cc binder runtime because routeIn and routeOut are the same in CC
+        messageRouter.routeOut(message);
     }
 
     /**

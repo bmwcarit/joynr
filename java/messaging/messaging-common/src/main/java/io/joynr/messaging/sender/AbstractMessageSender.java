@@ -97,6 +97,6 @@ public abstract class AbstractMessageSender implements MessageSender {
             throw new JoynrRuntimeException(exception.getMessage());
         }
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
     }
 }

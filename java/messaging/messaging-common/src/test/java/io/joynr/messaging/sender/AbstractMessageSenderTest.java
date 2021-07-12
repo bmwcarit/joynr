@@ -79,7 +79,7 @@ public class AbstractMessageSenderTest extends MessageSenderTestBase {
         subject.sendMessage(message);
 
         ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        verify(messageRouterMock).route(argCaptor.capture());
+        verify(messageRouterMock).routeOut(argCaptor.capture());
         assertEquals(null, argCaptor.getValue().getReplyTo());
     }
 
@@ -89,7 +89,7 @@ public class AbstractMessageSenderTest extends MessageSenderTestBase {
         message = spy(message);
 
         subject.sendMessage(message);
-        verify(messageRouterMock, never()).route(any(ImmutableMessage.class));
+        verify(messageRouterMock, never()).routeOut(any(ImmutableMessage.class));
 
         ImmutableMessage immutableMessageMock = Mockito.mock(ImmutableMessage.class);
         when(message.getImmutableMessage()).thenReturn(immutableMessageMock);
@@ -97,7 +97,7 @@ public class AbstractMessageSenderTest extends MessageSenderTestBase {
         String expectedReplyTo = "expectedReplyTo";
         subject.setReplyToAddress(expectedReplyTo, "someGlobal");
 
-        verify(messageRouterMock, times(1)).route(immutableMessageMock);
+        verify(messageRouterMock, times(1)).routeOut(immutableMessageMock);
     }
 
     @Test

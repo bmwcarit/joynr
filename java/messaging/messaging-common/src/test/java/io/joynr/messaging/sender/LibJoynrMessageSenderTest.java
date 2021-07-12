@@ -54,7 +54,7 @@ public class LibJoynrMessageSenderTest extends MessageSenderTestBase {
         subject.sendMessage(message);
 
         ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        verify(messageRouterMock).route(argCaptor.capture());
+        verify(messageRouterMock).routeOut(argCaptor.capture());
         assertEquals(expectedReplyToOnMessage, argCaptor.getValue().getReplyTo());
     }
 }

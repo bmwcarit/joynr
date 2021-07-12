@@ -56,6 +56,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -281,14 +282,13 @@ public class CcMessageRouterTest {
         joynrMessage.setLocalMessage(true);
     }
 
-    @Test
-    public void testScheduleMessageOk() throws Exception {
+    private void testScheduleMessageOk(Consumer<ImmutableMessage> route) throws Exception {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
 
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        messageRouter.route(immutableMessage);
+        route.accept(immutableMessage);
 
         ArgumentCaptor<DelayableImmutableMessage> passedDelaybleMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue).put(passedDelaybleMessage.capture());
@@ -302,6 +302,18 @@ public class CcMessageRouterTest {
                                                          any(FailureAction.class));
     }
 
+    // In theory, every test could be split like that. This is not done, since it
+    // would just clutter the class without any benefits.
+    @Test
+    public void routeIn_scheduleMessageOk() throws Exception {
+        testScheduleMessageOk(m -> messageRouter.routeIn(m));
+    }
+
+    @Test
+    public void routeOut_scheduleMessageOk() throws Exception {
+        testScheduleMessageOk(m -> messageRouter.routeOut(m));
+    }
+
     @Test
     public void testScheduleExpiredMessageFails() throws Exception {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1).getValue());
@@ -311,7 +323,7 @@ public class CcMessageRouterTest {
 
         Thread.sleep(5);
         try {
-            messageRouter.route(immutableMessage);
+            messageRouter.routeOut(immutableMessage);
         } catch (JoynrMessageExpiredException e) {
             verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
             verify(mqttMessagingStubFactoryMock, never()).create(any(MqttAddress.class));
@@ -362,7 +374,7 @@ public class CcMessageRouterTest {
             }
         }).when(messagingStubMock).transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
 
         Thread.sleep(1000);
 
@@ -412,7 +424,7 @@ public class CcMessageRouterTest {
         }).when(failingMessagingStubMock)
           .transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
 
         Thread.sleep(1000);
 
@@ -437,7 +449,7 @@ public class CcMessageRouterTest {
 
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
         Thread.sleep(100);
 
         return immutableMessage;
@@ -521,7 +533,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        messageRouterWithMaxExponentialBackoff.route(immutableMessage);
+        messageRouterWithMaxExponentialBackoff.routeOut(immutableMessage);
         Thread.sleep(routingDuration);
 
         // test that the mock is called multiple times which means that
@@ -565,7 +577,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        messageRouterWithHighRetryInterval.route(immutableMessage);
+        messageRouterWithHighRetryInterval.routeOut(immutableMessage);
         Thread.sleep(routingDuration);
 
         // make sure that the stub is called at least few times
@@ -601,7 +613,7 @@ public class CcMessageRouterTest {
         }).when(messagingStubMock)
           .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
 
         semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
@@ -632,7 +644,7 @@ public class CcMessageRouterTest {
         }).when(messagingStubMock)
           .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeIn(immutableMessage);
 
         semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
@@ -671,7 +683,7 @@ public class CcMessageRouterTest {
         }).when(messagingStubMock)
           .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
 
         semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
@@ -708,7 +720,7 @@ public class CcMessageRouterTest {
         }).when(messagingStubMock)
           .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeIn(immutableMessage);
 
         semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
@@ -754,10 +766,10 @@ public class CcMessageRouterTest {
         messageRouter.registerMessageProcessedListener(mockMessageProcessedListener);
 
         if (expectedException == null) {
-            messageRouter.route(immutableMessage);
+            messageRouter.routeIn(immutableMessage);
         } else {
             try {
-                messageRouter.route(immutableMessage);
+                messageRouter.routeIn(immutableMessage);
                 fail("Expected exception of type " + expectedException);
             } catch (Exception e) {
                 assertEquals(expectedException, e.getClass());
@@ -852,7 +864,7 @@ public class CcMessageRouterTest {
             }
         }).when(messagingStubMock).transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeIn(immutableMessage);
 
         semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
         verify(messagingStubMock, times(2)).transmit(eq(immutableMessage),
@@ -877,7 +889,7 @@ public class CcMessageRouterTest {
                                                                       any(SuccessAction.class),
                                                                       any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
         Thread.sleep(500);
 
         verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
@@ -916,7 +928,7 @@ public class CcMessageRouterTest {
                                                                         any(SuccessAction.class),
                                                                         any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
         Thread.sleep(550);
 
         verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
@@ -950,7 +962,7 @@ public class CcMessageRouterTest {
                                                                       any(SuccessAction.class),
                                                                       any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeIn(immutableMessage);
         Thread.sleep(ttlMs);
 
         verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
@@ -1003,7 +1015,7 @@ public class CcMessageRouterTest {
         };
         messageRouter.registerMessageProcessedListener(mockMsgProcessedListener);
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
         assertTrue(countDownLatch.await(3000, TimeUnit.MILLISECONDS));
         verify(messageQueue, times(1)).put(any(DelayableImmutableMessage.class));
         verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
@@ -1058,7 +1070,7 @@ public class CcMessageRouterTest {
         };
         messageRouter.registerMessageProcessedListener(mockMsgProcessedListener);
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeIn(immutableMessage);
         assertTrue(countDownLatch.await(3000, TimeUnit.MILLISECONDS));
         verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
 
@@ -1124,7 +1136,7 @@ public class CcMessageRouterTest {
         }).when(messagingStubMock).transmit(eq(failingMessage), any(SuccessAction.class), any(FailureAction.class));
 
         for (int i = 0; i < MESSAGE_LOAD; i++) {
-            messageRouter.route(failingMessage);
+            messageRouter.routeOut(failingMessage);
         }
 
         Thread.sleep(2000);
@@ -1151,7 +1163,7 @@ public class CcMessageRouterTest {
             }
         }).when(messagingStubMock).transmit(eq(anotherMessage), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(anotherMessage);
+        messageRouter.routeOut(anotherMessage);
         assertTrue(semaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
     }
 
@@ -1204,7 +1216,7 @@ public class CcMessageRouterTest {
         doAnswer(stubAnswer).when(messagingStubMock2)
                             .transmit(eq(immutableMessage), any(SuccessAction.class), any(FailureAction.class));
 
-        messageRouter.route(immutableMessage);
+        messageRouter.routeOut(immutableMessage);
 
         Thread.sleep(1000);
 
@@ -1269,7 +1281,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        messageRouterWithAccessControl.route(immutableMessage);
+        messageRouterWithAccessControl.routeIn(immutableMessage);
 
         verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
                                                                      any(HasConsumerPermissionCallback.class));
@@ -1302,7 +1314,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(false);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        messageRouterWithAccessControl.route(immutableMessage);
+        messageRouterWithAccessControl.routeOut(immutableMessage);
 
         verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
                                                                      any(HasConsumerPermissionCallback.class));
@@ -1333,11 +1345,24 @@ public class CcMessageRouterTest {
 
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        messageRouterWithAccessControl.route(immutableMessage);
+        messageRouterWithAccessControl.routeOut(immutableMessage);
 
         verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
                                                                      any(HasConsumerPermissionCallback.class));
         verify(mockMessageProcessedListener, times(1)).messageProcessed(eq(immutableMessage.getId()));
         verify(routingTable).remove(eq(immutableMessage.getSender()));
+    }
+
+    @Test(expected = JoynrMessageExpiredException.class)
+    public void routeExpiredMessage_throwsException() throws Exception {
+        // create expired message
+        MutableMessage message = new MutableMessage();
+        message.setSender("someSender");
+        message.setRecipient("someRecipient");
+        message.setTtlAbsolute(true);
+        message.setTtlMs(System.currentTimeMillis() - 1000);
+        message.setPayload(new byte[]{ 0, 1, 2 });
+
+        messageRouter.routeOut(message.getImmutableMessage());
     }
 }

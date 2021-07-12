@@ -91,7 +91,17 @@ public class CcMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
-    public void route(final ImmutableMessage message) {
+    public void routeIn(ImmutableMessage message) {
+        route(message);
+    }
+
+    @Override
+    public void routeOut(ImmutableMessage message) {
+        route(message);
+    }
+
+    @Override
+    protected void route(final ImmutableMessage message) {
         if (enableAccessControl) {
             accessController.hasConsumerPermission(message, new HasConsumerPermissionCallback() {
                 @Override

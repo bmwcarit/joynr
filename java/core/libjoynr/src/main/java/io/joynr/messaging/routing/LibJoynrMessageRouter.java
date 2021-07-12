@@ -244,4 +244,14 @@ public class LibJoynrMessageRouter extends AbstractMessageRouter {
     public void setIncomingAddress(Address incomingAddress) {
         this.incomingAddress = incomingAddress;
     }
+
+    @Override
+    public void routeIn(ImmutableMessage message) {
+        super.route(message);
+    }
+
+    @Override
+    public void routeOut(ImmutableMessage message) {
+        super.route(message);
+    }
 }

@@ -124,7 +124,7 @@ public class WebSocketMessagingSkeletonTest {
         for (MessageType type : MessageType.values()) {
             subject.transmit(createMessage(type), NO_FAILURE_EXPECTED);
             ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
-            verify(messageRouter).route(messageCaptor.capture());
+            verify(messageRouter).routeIn(messageCaptor.capture());
             assertEquals(expected, messageCaptor.getValue().isReceivedFromGlobal());
             reset(messageRouter);
         }

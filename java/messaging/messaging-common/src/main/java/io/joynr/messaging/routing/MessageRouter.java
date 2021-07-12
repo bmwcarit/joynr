@@ -28,7 +28,9 @@ import joynr.system.RoutingTypes.Address;
 public interface MessageRouter {
     static final String SCHEDULEDTHREADPOOL = "io.joynr.messaging.scheduledthreadpool";
 
-    public void route(ImmutableMessage message);
+    public void routeIn(ImmutableMessage message);
+
+    public void routeOut(ImmutableMessage message);
 
     public void setToKnown(final String participantId);
 

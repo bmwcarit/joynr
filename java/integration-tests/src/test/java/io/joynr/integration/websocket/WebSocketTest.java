@@ -99,7 +99,7 @@ public class WebSocketTest {
                 logger.debug("Message arrived: {}", invocationOnMock.getArguments().toString());
                 return null;
             }
-        }).when(messageRouterMock).route(Mockito.any(ImmutableMessage.class));
+        }).when(messageRouterMock).routeIn(Mockito.any(ImmutableMessage.class));
         messageFactory = new MutableMessageFactory(new ObjectMapper(), new HashSet<JoynrMessageProcessor>());
     }
 
@@ -199,7 +199,7 @@ public class WebSocketTest {
             }
         });
         Mockito.verify(messageRouterMock, Mockito.timeout(1000))
-               .route(argThat(new SerializedDataOfImmutableMessageMatcher(msg)));
+               .routeIn(argThat(new SerializedDataOfImmutableMessageMatcher(msg)));
         Mockito.verify(successAction).execute();
     }
 

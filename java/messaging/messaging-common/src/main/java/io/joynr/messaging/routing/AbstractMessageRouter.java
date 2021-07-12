@@ -281,8 +281,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         routingTable.put(participantId, address, isGloballyVisible, expiryDateMs);
     }
 
-    @Override
-    public void route(final ImmutableMessage message) {
+    protected void route(final ImmutableMessage message) {
         checkExpiry(message);
         routeInternal(message, 0, 0);
     }

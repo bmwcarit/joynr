@@ -189,7 +189,7 @@ public class MqttMessagingSkeletonTest {
         subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
-        verify(messageRouter).route(captor.capture());
+        verify(messageRouter).routeIn(captor.capture());
 
         assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
     }
@@ -204,7 +204,7 @@ public class MqttMessagingSkeletonTest {
         final MqttAddress expectedAddress = new MqttAddress(ownGbid, "testTopic");
         verify(routingTable).put(rqMessage.getSender(), expectedAddress, true, 100000L);
 
-        verify(messageRouter).route(captor.capture());
+        verify(messageRouter).routeIn(captor.capture());
         assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
     }
 
@@ -276,7 +276,7 @@ public class MqttMessagingSkeletonTest {
     public void testFailureActionCalledAfterExceptionFromMessageRouter() throws Exception {
         ImmutableMessage rqMessage = createTestRequestMessage();
 
-        doThrow(new JoynrRuntimeException()).when(messageRouter).route(any(ImmutableMessage.class));
+        doThrow(new JoynrRuntimeException()).when(messageRouter).routeIn(any(ImmutableMessage.class));
 
         Semaphore semaphore = new Semaphore(0);
         subject.transmit(rqMessage.getSerializedMessage(), getExpectToBeCalledAction(semaphore));
@@ -289,14 +289,14 @@ public class MqttMessagingSkeletonTest {
     public void testFurtherRequestsAreDroppedWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
         assertEquals(0, subject.getDroppedMessagesCount());
-        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
 
         // As the limit is reached, further requests should be dropped
         subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY).getSerializedMessage(),
                          failIfCalledAction);
         assertEquals(2, subject.getDroppedMessagesCount());
-        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
     }
 
     @Test
@@ -311,7 +311,7 @@ public class MqttMessagingSkeletonTest {
     public void testOtherMessagesAreAcceptedEvenWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
         assertEquals(0, subject.getDroppedMessagesCount());
-        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
 
         // Further non-request messages should still be accepted
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
@@ -331,7 +331,7 @@ public class MqttMessagingSkeletonTest {
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getSerializedMessage(),
                          failIfCalledAction);
         assertEquals(0, subject.getDroppedMessagesCount());
-        verify(messageRouter, times(maxIncomingMqttRequests + 8)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests + 8)).routeIn(any(ImmutableMessage.class));
     }
 
     @Test
@@ -341,18 +341,18 @@ public class MqttMessagingSkeletonTest {
         subject.transmit(rqMessage1.getSerializedMessage(), failIfCalledAction);
 
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests - 1);
-        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
 
         // As the limit is reached, further requests should be dropped and not transmitted
         // until an already accepted request is marked as processed
         subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
         assertEquals(1, subject.getDroppedMessagesCount());
-        verify(messageRouter, times(maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
 
         subject.messageProcessed(messageId1);
 
         subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
-        verify(messageRouter, times(maxIncomingMqttRequests + 1)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(maxIncomingMqttRequests + 1)).routeIn(any(ImmutableMessage.class));
     }
 
     @Test
@@ -380,7 +380,7 @@ public class MqttMessagingSkeletonTest {
                                      Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST,
                                      2 * maxIncomingMqttRequests);
 
-        verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).route(any(ImmutableMessage.class));
+        verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
         assertEquals(0, subject.getDroppedMessagesCount());
     }
 }
