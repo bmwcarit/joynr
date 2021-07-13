@@ -263,30 +263,6 @@ same interface and domain combination.
 * **User property**: `joynr.discovery.participantids_persistence_file`
 * **Default value**: `joynr_participantIds.properties`
 
-#### `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE`
-If the file based subscription request storage (`FileSubscriptionRequestStorage`) is used,
-then subscription requests for attributes and filtered (=selective) broadcasts are persisted
-to this file provided subscription requests persistency is enabled
-(see `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY`).
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `joynr.dispatching.subscription.subscriptionrequests_persistence_file`
-* **Default value**: `joynr_persistedSubscriptionRequests`
-
-#### `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY`
-Controls whether subscriptions for filtered (=selective) broadcasts and attributes
-will be persisted. Needs to be `true` if a provider after restart should be able to
-continue sending publications for those subscriptions established before the restart.
-For this to work, the routing entries from routing table must be persisted as well.
-Note that unfiltered (=non-selective) broadcasts (=multicasts) are not affected by
-this setting since they are published on a 1:n base and thus need no persistency.
-
-* **OPTIONAL**
-* **Type**: Boolean
-* **User property**: `joynr.dispatching.subscription.subscriptionrequests_persistency`
-* **Default value**: `true`
-
 ### Properties to override the DiscoveryEntries of the joynr backend services
 
 The following properties can be used to override the provisioned DiscoveryEntry for the

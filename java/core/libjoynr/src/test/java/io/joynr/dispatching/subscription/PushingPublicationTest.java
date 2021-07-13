@@ -73,7 +73,6 @@ import joynr.tests.testSubscriptionPublisherImpl;
 public class PushingPublicationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(PushingPublicationTest.class);
-    private static final boolean SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED = true;
 
     private SubscriptionTestsProviderImpl provider;
     private PublicationManager publicationManager;
@@ -113,9 +112,7 @@ public class PushingPublicationTest {
                                                         providerDirectory,
                                                         Mockito.mock(RoutingTable.class),
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class),
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                        shutdownNotifier);
         subscriptionId = "subscriptionId";
         proxyId = "proxyId";
         providerId = "providerId";

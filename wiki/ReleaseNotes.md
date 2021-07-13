@@ -2,6 +2,25 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.4
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java, JEE]** The persistency support for subscription requests has been
+  discontinued.
+
+## Configuration Property Changes
+* **[Java, JEE]** The properties `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` and
+  `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,` have been removed.
+
+## Security Fixes
+None.
+
+## Bug fixes
+None.
+
 # joynr 1.17.3
 
 ## API-relevant Changes

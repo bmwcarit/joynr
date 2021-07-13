@@ -70,7 +70,6 @@ public class PublicationTimersTest {
 
     private static final Logger logger = LoggerFactory.getLogger(PublicationTimersTest.class);
     private final String attributeName = "notifyReadWrite";
-    private static final boolean SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED = true;
 
     @Mock
     private RequestCaller requestCaller;
@@ -129,9 +128,7 @@ public class PublicationTimersTest {
                                                                            providerDirectory,
                                                                            Mockito.mock(RoutingTable.class),
                                                                            cleanupScheduler,
-                                                                           Mockito.mock(SubscriptionRequestStorage.class),
-                                                                           shutdownNotifier,
-                                                                           SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                                           shutdownNotifier);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
 

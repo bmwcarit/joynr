@@ -42,7 +42,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PersistedSubscriptionRequest;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -223,22 +222,16 @@ public class SerializationTest {
     @Test
     public void serializeDeserializeSubscriptionRequests() throws Exception {
         String persistenceFileName = "target/test_persistenceSubscriptionRequests_" + createUuidString();
-        String proxyPid = "proxyPid";
-        String providerPid = "providerPid";
         String subscriptionId = "subscriptionId";
         String subscribedToName = "subscribedToName";
         SubscriptionQos qos = new OnChangeSubscriptionQos();
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(subscriptionId, subscribedToName, qos);
-        new File(persistenceFileName).delete();
-        FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
-        fileSubscriptionRequestStorage.persistSubscriptionRequest(proxyPid, providerPid, subscriptionRequest);
-        MultiMap<String, PersistedSubscriptionRequest> savedSubscriptionRequests = fileSubscriptionRequestStorage.getSavedSubscriptionRequests();
-        assertEquals(1, savedSubscriptionRequests.get(providerPid).size());
-        PersistedSubscriptionRequest persistedSubscriptionRequest = savedSubscriptionRequests.get(providerPid)
-                                                                                             .iterator()
-                                                                                             .next();
-        assertEquals(subscriptionRequest, persistedSubscriptionRequest.getSubscriptonRequest());
-        assertEquals(proxyPid, persistedSubscriptionRequest.getProxyParticipantId());
+
+        String serializedSubscriptionRequest = objectMapper.writeValueAsString(subscriptionRequest);
+        SubscriptionRequest deserializedSubscriptionRequest = objectMapper.readValue(serializedSubscriptionRequest,
+                                                                                     SubscriptionRequest.class);
+
+        assertEquals(subscriptionRequest, deserializedSubscriptionRequest);
     }
 
     @Test

@@ -48,7 +48,6 @@ public class AndroidBinderRuntime {
 
     private static final String STATIC_PERSISTENCE_FILE = "clustercontroller-joynr.properties";
     private static final String STATIC_PARTICIPANTS_FILE = "joynr.properties_participants";
-    private static final String STATIC_PERSISTENCE_SUSBCRIPTION_REQUESTS = "joynr_persistedSubscriptionRequests";
 
     private static final Logger logger = LoggerFactory.getLogger(AndroidBinderRuntime.class);
 
@@ -167,9 +166,6 @@ public class AndroidBinderRuntime {
                            context.getFilesDir() + "/" + STATIC_PERSISTENCE_FILE);
         config.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE,
                            context.getFilesDir() + "/" + STATIC_PARTICIPANTS_FILE);
-
-        config.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,
-                           context.getFilesDir() + "/" + STATIC_PERSISTENCE_SUSBCRIPTION_REQUESTS);
 
         return config;
     }

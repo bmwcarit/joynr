@@ -63,10 +63,8 @@ import com.google.inject.util.Modules;
 import io.joynr.common.ExpiryDate;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.subscription.AttributePollInterpreter;
-import io.joynr.dispatching.subscription.FileSubscriptionRequestStorage;
 import io.joynr.dispatching.subscription.PublicationManager;
 import io.joynr.dispatching.subscription.PublicationManagerImpl;
-import io.joynr.dispatching.subscription.SubscriptionRequestStorage;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
@@ -171,7 +169,6 @@ public class TtlUpliftTest {
                                                                                   }
                                                                               });
                                               bind(PublicationManager.class).to(PublicationManagerImpl.class);
-                                              bind(SubscriptionRequestStorage.class).toInstance(Mockito.mock(FileSubscriptionRequestStorage.class));
                                               bind(AttributePollInterpreter.class).toInstance(attributePollInterpreter);
                                               bind(Dispatcher.class).toInstance(dispatcher);
                                               bind(ProviderDirectory.class).toInstance(providerDirectory);

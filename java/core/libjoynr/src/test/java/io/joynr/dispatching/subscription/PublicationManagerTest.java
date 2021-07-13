@@ -149,9 +149,7 @@ public class PublicationManagerTest {
                                                         providerDirectory,
                                                         routingTable,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class),
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                        shutdownNotifier);
 
         requestCaller = new RequestCallerFactory().create(provider);
         when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
@@ -188,9 +186,7 @@ public class PublicationManagerTest {
                                                                            requestCallerDirectory,
                                                                            routingTable,
                                                                            cleanupScheduler,
-                                                                           Mockito.mock(SubscriptionRequestStorage.class),
-                                                                           shutdownNotifier,
-                                                                           SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                                           shutdownNotifier);
 
         when(requestCallerDirectory.get(eq(providerId))).thenReturn(providerContainer);
 
@@ -245,9 +241,8 @@ public class PublicationManagerTest {
                                                                            providerDirectory,
                                                                            routingTable,
                                                                            cleanupScheduler,
-                                                                           Mockito.mock(SubscriptionRequestStorage.class),
-                                                                           shutdownNotifier,
-                                                                           SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                                           shutdownNotifier);
+
         verifyNoMoreInteractions(routingTable);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
@@ -301,9 +296,8 @@ public class PublicationManagerTest {
                                                                            providerDirectory,
                                                                            routingTable,
                                                                            cleanupScheduler,
-                                                                           Mockito.mock(SubscriptionRequestStorage.class),
-                                                                           shutdownNotifier,
-                                                                           SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                                           shutdownNotifier);
+
         verifyNoMoreInteractions(routingTable);
 
         when(providerDirectory.get(eq(providerId))).thenReturn(providerContainer);
@@ -875,9 +869,7 @@ public class PublicationManagerTest {
                                                         providerDirectory,
                                                         routingTable,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class),
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                        shutdownNotifier);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -927,9 +919,7 @@ public class PublicationManagerTest {
                                                         providerDirectory,
                                                         routingTable,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class),
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                        shutdownNotifier);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -988,9 +978,7 @@ public class PublicationManagerTest {
                                                         providerDirectory,
                                                         routingTable,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class),
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                        shutdownNotifier);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -1042,9 +1030,7 @@ public class PublicationManagerTest {
                                                         providerDirectory,
                                                         routingTable,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class),
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                        shutdownNotifier);
 
         long minInterval_ms = 0;
         long ttl = 1000;
@@ -1092,9 +1078,7 @@ public class PublicationManagerTest {
                                                         providerDirectory,
                                                         routingTable,
                                                         cleanupScheduler,
-                                                        Mockito.mock(SubscriptionRequestStorage.class),
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
+                                                        shutdownNotifier);
         int period = 200;
         int testLengthMax = 3000;
         long validityMs = testLengthMax;
@@ -1152,182 +1136,6 @@ public class PublicationManagerTest {
         verify(dispatcher).sendMulticast(eq(providerParticipantId),
                                          Mockito.<MulticastPublication> any(),
                                          Mockito.<MessagingQos> any());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test(timeout = 3000000)
-    public void persistedSubscriptionRequestsAreQueued() throws Exception {
-        String persistenceFileName = "target/" + PublicationManagerTest.class.getCanonicalName()
-                + ".test_persistenceSubscriptionRequests";
-
-        String providerParticipantId = "providerParticipantId";
-        String proxyParticipantId = "proxyParticipantId";
-        int period = 200;
-        int times = 5;
-        int validityMs = (period * times) + period;
-        long publicationTtl = validityMs;
-        SubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
-                                                           .setValidityMs(validityMs)
-                                                           .setPublicationTtlMs(publicationTtl);
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
-
-        new File(persistenceFileName).delete();
-
-        // pre-fill the persistence file
-        FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
-        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-
-        // no providers are currently registered
-        ProviderDirectory myProviderDirectory = new ProviderDirectory();
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
-                                                        dispatcher,
-                                                        myProviderDirectory,
-                                                        routingTable,
-                                                        cleanupScheduler,
-                                                        fileSubscriptionRequestStorage,
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
-
-        publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
-        assertEquals(1, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-        verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
-
-        publicationManager.shutdown();
-
-        // open the persistence file that should now contain one element
-        fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
-        assertEquals(1, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
-                                                        dispatcher,
-                                                        myProviderDirectory,
-                                                        routingTable,
-                                                        cleanupScheduler,
-                                                        fileSubscriptionRequestStorage,
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
-
-        // when the provider is registered, persisted subscription requests should be activated
-        myProviderDirectory.add(providerParticipantId, providerContainer);
-
-        verify(dispatcher,
-               timeout(validityMs).atLeast(times)).sendSubscriptionPublication(any(String.class),
-                                                                               any(Set.class),
-                                                                               any(SubscriptionPublication.class),
-                                                                               any(MessagingQos.class));
-
-        Thread.sleep(validityMs + 1000);
-        publicationManager.shutdown();
-
-        // Start again with the same file, that should now be empty as all persisted subscriptions were already queued
-        reset(dispatcher);
-        fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
-                                                        dispatcher,
-                                                        myProviderDirectory,
-                                                        routingTable,
-                                                        cleanupScheduler,
-                                                        fileSubscriptionRequestStorage,
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
-        verifyNoMoreInteractions(dispatcher);
-        fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
-        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-    }
-
-    @Test(timeout = 5000)
-    public void multicastSubscriptionRequestsAreNeverPersisted() throws Exception {
-        final String persistenceFileName = "target/" + PublicationManagerTest.class.getCanonicalName()
-                + ".test_persistenceSubscriptionRequests";
-
-        final String providerParticipantId = "providerParticipantId";
-        final String proxyParticipantId = "proxyParticipantId";
-        final String multicastId = "multicastId";
-        final String multicastName = "multicastName";
-        final int validityMs = 5000;
-        SubscriptionQos qos = new MulticastSubscriptionQos().setValidityMs(validityMs);
-        SubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest(multicastId,
-                                                                                   SUBSCRIPTION_ID,
-                                                                                   multicastName,
-                                                                                   qos);
-
-        new File(persistenceFileName).delete();
-
-        // pre-fill the persistence file
-        FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
-        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-
-        // run test with generally enabled persistency
-        // no providers are currently registered
-        ProviderDirectory myProviderDirectory = new ProviderDirectory();
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
-                                                        dispatcher,
-                                                        myProviderDirectory,
-                                                        routingTable,
-                                                        cleanupScheduler,
-                                                        fileSubscriptionRequestStorage,
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED);
-
-        publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
-        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-
-        publicationManager.shutdown();
-
-        // run test with generally disabled persistency
-        // no providers are currently registered
-        myProviderDirectory = new ProviderDirectory();
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
-                                                        dispatcher,
-                                                        myProviderDirectory,
-                                                        routingTable,
-                                                        cleanupScheduler,
-                                                        fileSubscriptionRequestStorage,
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_DISABLED);
-
-        publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
-        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-
-        publicationManager.shutdown();
-    }
-
-    @Test(timeout = 5000)
-    public void subscriptionRequestsAreNotPersistedIfPersistencyIsDisabled() throws Exception {
-        String persistenceFileName = "target/" + PublicationManagerTest.class.getCanonicalName()
-                + ".test_persistenceSubscriptionRequests";
-
-        String providerParticipantId = "providerParticipantId";
-        String proxyParticipantId = "proxyParticipantId";
-        int period = 200;
-        int times = 5;
-        int validityMs = (period * times) + period;
-        long publicationTtl = validityMs;
-        SubscriptionQos qos = new PeriodicSubscriptionQos().setPeriodMs(period)
-                                                           .setValidityMs(validityMs)
-                                                           .setPublicationTtlMs(publicationTtl);
-        SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
-
-        new File(persistenceFileName).delete();
-
-        // pre-fill the persistence file
-        FileSubscriptionRequestStorage fileSubscriptionRequestStorage = new FileSubscriptionRequestStorage(persistenceFileName);
-        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-
-        // no providers are currently registered
-        ProviderDirectory myProviderDirectory = new ProviderDirectory();
-        publicationManager = new PublicationManagerImpl(attributePollInterpreter,
-                                                        dispatcher,
-                                                        myProviderDirectory,
-                                                        routingTable,
-                                                        cleanupScheduler,
-                                                        fileSubscriptionRequestStorage,
-                                                        shutdownNotifier,
-                                                        SUBSCRIPTIONSREQUEST_PERSISTENCY_DISABLED);
-
-        publicationManager.addSubscriptionRequest(proxyParticipantId, providerParticipantId, subscriptionRequest);
-        assertEquals(0, fileSubscriptionRequestStorage.getSavedSubscriptionRequests().size());
-
-        publicationManager.shutdown();
     }
 
     @Test

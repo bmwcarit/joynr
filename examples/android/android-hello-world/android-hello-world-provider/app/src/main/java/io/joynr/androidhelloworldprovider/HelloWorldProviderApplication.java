@@ -35,7 +35,6 @@ public class HelloWorldProviderApplication extends Application {
 
         final String STATIC_PERSISTENCE_FILE = "provider-joynr.properties";
         final String STATIC_PARTICIPANTS_FILE = "joynr.properties_participants";
-        final String STATIC_SUBSCRIPTION_REQUESTS_FILE = "joynr.subscriptionrequests";
         final String PROPERTY_JOYNR_DOMAIN_LOCAL = "joynr.domain.local";
 
         final Properties joynrConfig = new Properties();
@@ -46,9 +45,6 @@ public class HelloWorldProviderApplication extends Application {
                                 getApplicationContext().getCacheDir() + "/" + STATIC_PERSISTENCE_FILE);
         joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE,
                                 getApplicationContext().getCacheDir() + "/" + STATIC_PARTICIPANTS_FILE);
-
-        joynrConfig.setProperty(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,
-                                getApplicationContext().getCacheDir() + "/" + STATIC_SUBSCRIPTION_REQUESTS_FILE);
 
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
 

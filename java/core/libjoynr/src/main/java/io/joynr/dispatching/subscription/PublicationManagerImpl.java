@@ -114,9 +114,6 @@ public class PublicationManagerImpl
     @Named(ConfigurableMessagingSettings.PROPERTY_TTL_UPLIFT_MS)
     private long ttlUpliftMs = 0;
 
-    private SubscriptionRequestStorage subscriptionRequestStorage;
-    private boolean subscriptionRequestPersistency;
-
     static class PublicationInformation {
         private String providerParticipantId;
         private String proxyParticipantId;
@@ -201,16 +198,13 @@ public class PublicationManagerImpl
                                   ProviderDirectory providerDirectory,
                                   RoutingTable routingTable,
                                   @Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
-                                  SubscriptionRequestStorage subscriptionRequestStorage,
-                                  ShutdownNotifier shutdownNotifier,
-                                  @Named(ConfigurableMessagingSettings.PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY) boolean subscriptionRequestPersistency) {
+                                  ShutdownNotifier shutdownNotifier) {
         super();
         this.dispatcher = dispatcher;
         this.providerDirectory = providerDirectory;
         this.routingTable = routingTable;
         this.addRemoveLock = new Object();
         this.cleanupScheduler = cleanupScheduler;
-        this.subscriptionRequestStorage = subscriptionRequestStorage;
         this.queuedSubscriptionRequests = new MultiMap<>();
         this.subscriptionId2PublicationInformation = new ConcurrentHashMap<>();
         this.publicationTimers = new ConcurrentHashMap<>();
@@ -218,36 +212,11 @@ public class PublicationManagerImpl
         this.unregisterAttributeListeners = new ConcurrentHashMap<>();
         this.unregisterBroadcastListeners = new ConcurrentHashMap<>();
         this.attributePollInterpreter = attributePollInterpreter;
-        this.subscriptionRequestPersistency = subscriptionRequestPersistency;
         providerDirectory.addListener(this);
         providerDirectory.forEach(this::entryAdded);
-        if (subscriptionRequestPersistency) {
-            queueSavedSubscriptionRequests();
-        }
         shutdownNotifier.registerForShutdown(this);
     }
     // CHECKSTYLE:ON
-
-    private void queueSavedSubscriptionRequests() {
-
-        MultiMap<String, PersistedSubscriptionRequest> persistedSubscriptionRequests = subscriptionRequestStorage.getSavedSubscriptionRequests();
-        if (persistedSubscriptionRequests == null || persistedSubscriptionRequests.isEmpty()) {
-            return;
-        }
-
-        try {
-            for (String providerId : persistedSubscriptionRequests.keySet()) {
-                for (PersistedSubscriptionRequest persistedSubscriptionRequest : persistedSubscriptionRequests.get(providerId)) {
-                    addSubscriptionRequest(persistedSubscriptionRequest.getProxyParticipantId(),
-                                           providerId,
-                                           persistedSubscriptionRequest.getSubscriptonRequest());
-                    subscriptionRequestStorage.removeSubscriptionRequest(providerId, persistedSubscriptionRequest);
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Unable to queue saved subscription requests: ", e);
-        }
-    }
 
     // requires addRemoveLock: publicationTimers, handleOnChangeSubscription
     private void handleSubscriptionRequest(PublicationInformation publicationInformation,
@@ -446,13 +415,6 @@ public class PublicationManagerImpl
     public void addSubscriptionRequest(String proxyParticipantId,
                                        String providerParticipantId,
                                        SubscriptionRequest subscriptionRequest) {
-
-        if (subscriptionRequestPersistency && (!(subscriptionRequest instanceof MulticastSubscriptionRequest))) {
-            // only requests for attribute and selective/filtered broadcast subscriptions get persisted
-            subscriptionRequestStorage.persistSubscriptionRequest(proxyParticipantId,
-                                                                  providerParticipantId,
-                                                                  subscriptionRequest);
-        }
 
         synchronized (providerDirectory) {
             synchronized (addRemoveLock) {
