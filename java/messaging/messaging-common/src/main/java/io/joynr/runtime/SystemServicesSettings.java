@@ -29,6 +29,7 @@ public class SystemServicesSettings {
     public static final String PROPERTY_SYSTEM_SERVICES_DOMAIN = "joynr.messaging.systemservicesdomain";
     public static final String PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID = "joynr.messaging.discoveryproviderparticipantid";
     public static final String PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID = "joynr.messaging.routingproviderparticipantid";
+    public static final String PROPERTY_CC_REMOVE_STALE_DELAY_MS = "joynr.messaging.removestaledelayms";
 
     public static final String LIBJOYNR_MESSAGING_ADDRESS = "libjoynr_messaging_address";
 

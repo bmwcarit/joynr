@@ -18,6 +18,10 @@
  */
 package io.joynr.runtime;
 
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +35,7 @@ import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.CcMessageRouter;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.ProxyBuilderFactory;
@@ -44,6 +49,8 @@ import joynr.types.ProviderScope;
 public class ClusterControllerRuntime extends JoynrRuntimeImpl {
 
     public static final Logger logger = LoggerFactory.getLogger(ClusterControllerRuntime.class);
+    private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> removeStaleScheduledFuture;
 
     // CHECKSTYLE:OFF
     @Inject
@@ -62,7 +69,9 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     final CcMessageRouter messageRouter,
                                     CapabilitiesRegistrar capabilitiesRegistrar,
                                     LocalCapabilitiesDirectory localCapabilitiesDirectory,
-                                    RoutingProvider routingProvider) {
+                                    RoutingProvider routingProvider,
+                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                                    @Named(SystemServicesSettings.PROPERTY_CC_REMOVE_STALE_DELAY_MS) long removeStaleDelayMs) {
         super(objectMapper,
               proxyBuilderFactory,
               dispatcher,
@@ -93,6 +102,24 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                                new String[]{},
                                                awaitGlobalRegistration);
 
-        localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
+        this.scheduler = scheduler;
+        scheduleRemoveStale(localCapabilitiesDirectory, removeStaleDelayMs);
+    }
+
+    @Override
+    public void shutdown(boolean clear) {
+        if (removeStaleScheduledFuture != null) {
+            removeStaleScheduledFuture.cancel(false);
+        }
+        super.shutdown(clear);
+    }
+
+    private void scheduleRemoveStale(LocalCapabilitiesDirectory localCapabilitiesDirectory, long removeStaleDelayMs) {
+        removeStaleScheduledFuture = scheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
+            }
+        }, removeStaleDelayMs, TimeUnit.MILLISECONDS);
     }
 }

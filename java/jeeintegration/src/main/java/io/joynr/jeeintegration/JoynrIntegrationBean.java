@@ -57,7 +57,6 @@ import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.ProviderRegistrar;
-import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -295,8 +294,7 @@ public class JoynrIntegrationBean {
                 }
             }
         }
-        ShutdownNotifier shutdownNotifier = getJoynrInjector().getInstance(ShutdownNotifier.class);
-        shutdownNotifier.shutdown();
+        joynrRuntime.shutdown(false);
     }
 
     /**

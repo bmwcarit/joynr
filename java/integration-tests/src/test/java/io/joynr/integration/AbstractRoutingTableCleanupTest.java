@@ -340,6 +340,7 @@ public class AbstractRoutingTableCleanupTest {
 
         properties.setProperty(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS,
                                String.valueOf(ROUTINGTABLE_CLEANUP_INTERVAL_MS));
+        properties.setProperty(SystemServicesSettings.PROPERTY_CC_REMOVE_STALE_DELAY_MS, String.valueOf(0));
         return properties;
     }
 

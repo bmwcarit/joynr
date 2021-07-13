@@ -19,6 +19,7 @@
 package io.joynr.integration;
 
 import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
+import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CC_REMOVE_STALE_DELAY_MS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -216,7 +218,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         JoynrRuntime runtimeSecond;
         String providerDomain = TEST_DOMAIN + "_removeStaleProvidersOfClusterController";
 
-        int numberOfProxyBuildRetries = 5;
+        int numberOfProxyBuildTries = 5;
         int iterator = 1;
 
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -225,8 +227,6 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         discoveryQos.setDiscoveryTimeoutMs(DISCOVERY_TIMEOUT);
         discoveryQos.setRetryIntervalMs(DISCOVERY_TIMEOUT + 1L);
         discoveryQos.setCacheMaxAgeMs(0L);
-
-        final Future<Void> future = new Future<Void>();
 
         // create first joynr cluster controller runtime
         runtimeFirst = createRuntime();
@@ -242,9 +242,39 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         runtimeFirst.shutdown(false);
 
         // create cluster controller second time
-        runtimeSecond = createRuntime();
+        final int removeStaleDelay = 2000;
+        runtimeSecond = createRuntime(removeStaleDelay);
 
-        while (iterator <= numberOfProxyBuildRetries) {
+        // wait some time to make sure that cluster controller runtime has been started
+        Thread.sleep(500);
+
+        final Future<Void> futureFirstProxy = new Future<Void>();
+        final Future<Void> futureSecondProxy = new Future<Void>();
+
+        // Check if proxy is built before removeStale is called
+        runtimeSecond.getProxyBuilder(providerDomain, testProxy.class)
+                     .setDiscoveryQos(discoveryQos)
+                     .build(new ProxyCreatedCallback<testProxy>() {
+                         @Override
+                         public void onProxyCreationFinished(testProxy result) {
+                             futureFirstProxy.onSuccess(null);
+                         }
+
+                         @Override
+                         public void onProxyCreationError(JoynrRuntimeException error) {
+                             futureFirstProxy.onFailure(error);
+                         }
+                     });
+        try {
+            futureFirstProxy.get();
+        } catch (Exception e) {
+            runtimeSecond.shutdown(true);
+            fail("runtimeSecond.getProxyBuilder().build() should have been successful!");
+        }
+
+        Thread.sleep(1000);
+
+        while (iterator <= numberOfProxyBuildTries) {
             // wait some time to make sure that removeStale has been published and processed
             Thread.sleep(iterator * 1000);
             // build proxy when provider are unregistered
@@ -253,18 +283,18 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
                          .build(new ProxyCreatedCallback<testProxy>() {
                              @Override
                              public void onProxyCreationFinished(testProxy result) {
-                                 future.onSuccess(null);
+                                 futureSecondProxy.onSuccess(null);
                              }
 
                              @Override
                              public void onProxyCreationError(JoynrRuntimeException error) {
-                                 future.onFailure(error);
+                                 futureSecondProxy.onFailure(error);
                              }
                          });
             iterator++;
             try {
-                future.get(DISCOVERY_TIMEOUT + 1000);
-                if (iterator == numberOfProxyBuildRetries) {
+                futureSecondProxy.get(DISCOVERY_TIMEOUT + 1000);
+                if (iterator == numberOfProxyBuildTries) {
                     runtimeSecond.shutdown(true);
                     fail("runtimeSecond.getProxyBuilder().build() should throw Exception!");
                 }
@@ -279,16 +309,25 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
     }
 
     private Injector createInjector() {
+        return createInjector(0);
+    }
+
+    private Injector createInjector(long removeStaleDelayMs) {
         Properties properties = new Properties();
         properties.put(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS,
                        String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
+        properties.put(PROPERTY_CC_REMOVE_STALE_DELAY_MS, String.valueOf(removeStaleDelayMs));
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule())
                                       .with(new HivemqMqttClientModule(), new JoynrPropertiesModule(properties));
         return Guice.createInjector(runtimeModule);
     }
 
     private JoynrRuntime createRuntime() {
-        Injector injector = createInjector();
+        return createRuntime(0);
+    }
+
+    private JoynrRuntime createRuntime(int removeStaleDelay) {
+        Injector injector = createInjector(removeStaleDelay);
         return injector.getInstance(JoynrRuntime.class);
     }
 

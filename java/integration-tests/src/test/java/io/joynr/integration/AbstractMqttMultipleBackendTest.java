@@ -58,6 +58,7 @@ import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.runtime.SystemServicesSettings;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
@@ -123,6 +124,7 @@ public abstract class AbstractMqttMultipleBackendTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "60,30");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,30");
         properties.put(ConfigurableMessagingSettings.PROPERTY_GBIDS, gbids);
+        properties.put(SystemServicesSettings.PROPERTY_CC_REMOVE_STALE_DELAY_MS, String.valueOf(0));
         return properties;
     }
 
