@@ -5,7 +5,12 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.17.4
 
 ## API-relevant Changes
-None.
+* **[Java]** The MessagePersister feature has been discontinued.
+  The related classes / interfaces
+  `io.joynr.messaging.persistence.MessagePersister`,
+  `io.joynr.messaging.persistence.NoOpMessagePersister`,
+  `io.joynr.jeeintegration.api.JoynrMessagePersister`
+  have been removed.
 
 ## Other Changes
 * **[Java, JEE]** The persistency support for subscription requests has been
@@ -14,6 +19,8 @@ None.
 ## Configuration Property Changes
 * **[Java, JEE]** The properties `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` and
   `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,` have been removed.
+* **[Java]** Removed property `MESSAGE_QUEUE_ID` / `io.joynr.messaging.queue.id`
+  related to discontinued MessagePersister feature.
 
 ## Security Fixes
 None.

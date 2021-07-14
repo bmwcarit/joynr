@@ -30,7 +30,6 @@
 
 	<modules>
 		<module>custom-headers</module>
-		<module>message-persistence</module>
 		<module>radio-app</module>
 		<module>radio-jee</module>
 		<module>stateless-async</module>

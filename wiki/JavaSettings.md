@@ -475,17 +475,6 @@ drain on `prepareForShutdown` before timing out.
 * **User property**: `io.joynr.messaging.queue.shutdown.timeout`
 * **Default value**: `5000`
 
-### `MESSAGE_QUEUE_ID`
-
-The unique ID of the MessageQueue instance for the joynr runtime. It is used when calling the
-methods in `MessagePersister` in order to identify which queue is reading or writing the messages.
-
-* **OPTIONAL**
-* **Type**: String
-* **User property**: `io.joynr.messaging.queue.id`
-* **Default value**: A random UUID or a persisted value in the joynr properties
-
-
 ## MqttModule
 
 ### `PROPERTY_MQTT_BROKER_URIS`

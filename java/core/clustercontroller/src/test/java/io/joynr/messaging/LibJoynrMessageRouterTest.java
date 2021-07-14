@@ -45,7 +45,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
@@ -97,8 +96,6 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private ShutdownNotifier shutdownNotifier;
     @Mock
-    private MessagePersister messagePersisterMock;
-    @Mock
     RoutingTable routingTableMock;
 
     private MessageQueue messageQueue;
@@ -130,8 +127,6 @@ public class LibJoynrMessageRouterTest {
 
         messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                         new MessageQueue.MaxTimeoutHolder(),
-                                        createUuidString(),
-                                        messagePersisterMock,
                                         routingTableMock);
 
         messageRouter = new LibJoynrMessageRouter(routingTable,

@@ -68,8 +68,6 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
-import io.joynr.messaging.persistence.MessagePersister;
-import io.joynr.messaging.persistence.NoOpMessagePersister;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.InMemoryMulticastReceiverRegistry;
 import io.joynr.messaging.routing.MessageRouter;
@@ -152,7 +150,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(StatelessAsyncCallbackDirectory.class).to(StatelessAsyncCallbackDirectoryImpl.class).in(Singleton.class);
         bind(StatelessAsyncIdCalculator.class).to(DefaultStatelessAsyncIdCalculatorImpl.class);
         bind(StatelessAsyncRequestReplyIdManager.class).to(DefaultStatelessAsyncRequestReplyIdManagerImpl.class);
-        bind(MessagePersister.class).to(NoOpMessagePersister.class);
         bind(JoynrStatusMetrics.class).to(JoynrStatusMetricsAggregator.class);
         bind(JoynrStatusMetricsReceiver.class).to(JoynrStatusMetricsAggregator.class);
         bind(JoynrStatusMetricsAggregator.class).in(Singleton.class);

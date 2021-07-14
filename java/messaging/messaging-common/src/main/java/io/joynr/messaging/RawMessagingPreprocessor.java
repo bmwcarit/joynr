@@ -27,8 +27,7 @@ public abstract class RawMessagingPreprocessor {
     /**
      * @param rawMessage the raw joynr message bytes
      * @param context you can optionally add String:Serializable pairs to this map, which
-     * will be made available to the message's recipient. The value must be serializable to
-     * support persistence of messages that could not be processed in the current lifecycle.
+     * will be made available to the message's recipient. The value must be serializable.
      * The map is preinitialized.
      * @return the processed rawMessage. NOTE: you are responsible for
      * returning a message that can still be parsed by the messaging skeleton;

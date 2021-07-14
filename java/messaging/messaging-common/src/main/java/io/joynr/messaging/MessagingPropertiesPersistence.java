@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.joynr.messaging.routing.MessageQueue;
 import io.joynr.runtime.PropertyLoader;
 
 public class MessagingPropertiesPersistence {
@@ -43,7 +42,6 @@ public class MessagingPropertiesPersistence {
 
         generateIfAbsent(MessagingPropertyKeys.CHANNELID);
         generateIfAbsent(MessagingPropertyKeys.RECEIVERID);
-        generateIfAbsent(MessageQueue.MESSAGE_QUEUE_ID);
 
         persistProperties();
     }

@@ -103,7 +103,6 @@ import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
-import io.joynr.messaging.persistence.MessagePersister;
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
@@ -153,8 +152,6 @@ public class CcMessageRouterTest {
     private AbstractMiddlewareMessagingStubFactory<IMessagingStub, InProcessAddress> inProcessMessagingStubFactoryMock;
     @Mock
     private ShutdownNotifier shutdownNotifier;
-    @Mock
-    private MessagePersister messagePersisterMock;
 
     @Mock
     private AccessController accessControllerMock;
@@ -179,8 +176,6 @@ public class CcMessageRouterTest {
         routingTable = spy(new RoutingTableImpl(42, gbidsArray, addressValidatorMock));
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder(),
-                                            createUuidString(),
-                                            messagePersisterMock,
                                             routingTable));
         addressManager = spy(new AddressManager(routingTable,
                                                 new AddressManager.PrimaryGlobalTransportHolder(null),
@@ -214,8 +209,6 @@ public class CcMessageRouterTest {
                                 .toInstance(routingTableGracePeriodMs);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
                                 .toInstance(routingTableCleanupIntervalMs);
-                bind(String.class).annotatedWith(Names.named(MessageQueue.MESSAGE_QUEUE_ID))
-                                  .toInstance(createUuidString());
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT))
                                 .toInstance(globalMaxRetryCount);
 
@@ -223,7 +216,6 @@ public class CcMessageRouterTest {
                               .to(false);
 
                 bind(AccessController.class).toInstance(accessControllerMock);
-                bind(MessagePersister.class).toInstance(messagePersisterMock);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
                 messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
