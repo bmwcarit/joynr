@@ -99,6 +99,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     private static final long READD_INTERVAL_DAYS = 7L;
+    private static final long REMOVESTALE_MAX_RETRY_MS = 3600000L;
 
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> freshnessUpdateScheduledFuture;
@@ -1356,7 +1357,14 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 logger.error("RemoveStale in gbid={} (maxLastSeenDateMs={}) failed.", gbid, ccStartUpDateInMs, error);
                 if (!(error instanceof JoynrMessageNotSentException
                         && error.getMessage().contains("Address type not supported"))) {
-                    removeStaleProvidersOfClusterController(gbid);
+                    if (System.currentTimeMillis() - ccStartUpDateInMs <= REMOVESTALE_MAX_RETRY_MS) {
+                        removeStaleProvidersOfClusterController(gbid);
+                    } else {
+                        logger.error("RemoveStale in gbid={} (maxLastSeenDateMs={}) was not retried because a duration to retry"
+                                + "(60 minutes) after a start of cluster controller was exceeded.",
+                                     gbid,
+                                     ccStartUpDateInMs);
+                    }
                 }
             }
         };

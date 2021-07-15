@@ -260,6 +260,38 @@ public class LocalCapabilitiesDirectoryTest {
                 && expected.getAddress().equals(actual.getAddress());
     }
 
+    private Field getPrivateField(Class<?> privateClass, String fieldName) {
+        Field result = null;
+        try {
+            result = privateClass.getDeclaredField(fieldName);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T getFieldValue(Object object, String fieldName) {
+        Field objectField = getPrivateField(object.getClass(), fieldName);
+        assertNotNull(objectField);
+        objectField.setAccessible(true);
+        T result = null;
+        try {
+            result = (T) objectField.get(object);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        return result;
+    }
+
+    private <T> void setFieldValue(Object object, String fieldName, T value) throws IllegalArgumentException,
+                                                                             IllegalAccessException {
+        Field objectField = getPrivateField(object.getClass(), fieldName);
+        assertNotNull(objectField);
+        objectField.setAccessible(true);
+        objectField.set(object, value);
+    }
+
     @Before
     public void setUp() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -4412,6 +4444,42 @@ public class LocalCapabilitiesDirectoryTest {
         for (String gbid : knownGbids) {
             verify(globalCapabilitiesDirectoryClient, times(1)).removeStale(Matchers.<Callback<Void>> any(),
                                                                             anyLong(),
+                                                                            eq(gbid));
+        }
+    }
+
+    @Test
+    public void removeStaleProvidersOfClusterController_noRetryIfRetryDurationExceeded() {
+        final long removeStaleMaxRetryMs = 3600000;
+        // Set a custom value of cluster controller start time to simulate timeout for removeStale retries
+        final long ccStartUpDateMs = removeStaleMaxRetryMs + 1;
+        try {
+            setFieldValue(localCapabilitiesDirectory, "ccStartUpDateInMs", ccStartUpDateMs);
+        } catch (Exception e) {
+            fail("Couldn't set start date of cluster controller in milliseconds.");
+        }
+
+        JoynrRuntimeException exception = new JoynrRuntimeException("removeStale failed");
+        for (String gbid : knownGbids) {
+            doAnswer(new Answer<Future<Void>>() {
+                @Override
+                public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+                    Future<Void> result = new Future<Void>();
+                    @SuppressWarnings("unchecked")
+                    Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+                    callback.onFailure(exception);
+                    result.onSuccess(null);
+                    return result;
+                }
+            }).when(globalCapabilitiesDirectoryClient)
+              .removeStale(Matchers.<Callback<Void>> any(), anyLong(), eq(gbid));
+        }
+
+        localCapabilitiesDirectory.removeStaleProvidersOfClusterController();
+
+        for (String gbid : knownGbids) {
+            verify(globalCapabilitiesDirectoryClient, times(1)).removeStale(Matchers.<Callback<Void>> any(),
+                                                                            eq(ccStartUpDateMs),
                                                                             eq(gbid));
         }
     }
