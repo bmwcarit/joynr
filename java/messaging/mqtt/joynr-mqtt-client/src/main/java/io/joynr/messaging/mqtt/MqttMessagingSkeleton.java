@@ -38,6 +38,7 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.AbstractGlobalMessagingSkeleton;
 import io.joynr.messaging.routing.MessageProcessedListener;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.smrf.EncodingException;
@@ -54,6 +55,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
 
     protected final int maxIncomingMqttRequests;
     private final MessageRouter messageRouter;
+    private final MessageProcessedHandler messageProcessedHandler;
     private JoynrMqttClient mqttClient;
     private final MqttClientFactory mqttClientFactory;
     private final String ownTopic;
@@ -70,6 +72,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     public MqttMessagingSkeleton(String ownTopic,
                                  int maxIncomingMqttRequests,
                                  MessageRouter messageRouter,
+                                 MessageProcessedHandler messageProcessedHandler,
                                  MqttClientFactory mqttClientFactory,
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
@@ -81,6 +84,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.ownTopic = ownTopic;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
+        this.messageProcessedHandler = messageProcessedHandler;
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
@@ -97,7 +101,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     public void init() {
         logger.debug("Initializing MQTT skeleton (ownGbid={}) ...", ownGbid);
 
-        messageRouter.registerMessageProcessedListener(this);
+        messageProcessedHandler.registerMessageProcessedListener(this);
 
         mqttClient.setMessageListener(this);
         mqttClient.start();

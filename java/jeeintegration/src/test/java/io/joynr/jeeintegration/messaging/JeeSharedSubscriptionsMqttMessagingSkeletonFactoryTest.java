@@ -31,6 +31,7 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -40,6 +41,9 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactoryTest {
 
     @Mock
     private MqttClientFactory mockMqttClientFactory;
+
+    @Mock
+    private MessageProcessedHandler mockMessageProcessedHandler;
 
     @Test
     public void createsExpectedSkeletons() {
@@ -51,6 +55,7 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactoryTest {
                                                                                                                             23,
                                                                                                                             new MqttAddress(),
                                                                                                                             null,
+                                                                                                                            mockMessageProcessedHandler,
                                                                                                                             mockMqttClientFactory,
                                                                                                                             "channelId",
                                                                                                                             null,

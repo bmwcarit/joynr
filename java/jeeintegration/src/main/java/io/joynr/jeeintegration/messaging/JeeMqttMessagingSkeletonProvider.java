@@ -39,6 +39,7 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
@@ -67,6 +68,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             MessageRouter messageRouter,
+                                            MessageProcessedHandler messageProcessedHandler,
                                             MqttClientFactory mqttClientFactory,
                                             @Named(CHANNELID) String channelId,
                                             MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -83,6 +85,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               backpressureIncomingMqttRequestsLowerThreshold,
               replyToAddress,
               messageRouter,
+              messageProcessedHandler,
               mqttClientFactory,
               channelId,
               mqttTopicPrefixProvider,
@@ -102,6 +105,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                                                       backpressureIncomingMqttRequestsLowerThreshold,
                                                                       replyToAddress,
                                                                       messageRouter,
+                                                                      messageProcessedHandler,
                                                                       mqttClientFactory,
                                                                       channelId,
                                                                       mqttTopicPrefixProvider,

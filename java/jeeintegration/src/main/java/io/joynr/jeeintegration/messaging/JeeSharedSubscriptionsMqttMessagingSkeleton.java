@@ -25,6 +25,7 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
@@ -46,6 +47,7 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
                                                        int backpressureIncomingMqttRequestsLowerThreshold,
                                                        String replyToTopic,
                                                        MessageRouter messageRouter,
+                                                       MessageProcessedHandler messageProcessedHandler,
                                                        MqttClientFactory mqttClientFactory,
                                                        String channelId,
                                                        MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -61,6 +63,7 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
               backpressureIncomingMqttRequestsLowerThreshold,
               replyToTopic,
               messageRouter,
+              messageProcessedHandler,
               mqttClientFactory,
               channelId,
               mqttTopicPrefixProvider,

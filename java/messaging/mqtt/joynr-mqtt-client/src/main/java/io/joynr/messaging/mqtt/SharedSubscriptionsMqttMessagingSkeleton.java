@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 
@@ -65,6 +66,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     int backpressureIncomingMqttRequestsLowerThreshold,
                                                     String replyToTopic,
                                                     MessageRouter messageRouter,
+                                                    MessageProcessedHandler messageProcessedHandler,
                                                     MqttClientFactory mqttClientFactory,
                                                     String channelId,
                                                     MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -76,6 +78,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         super(ownTopic,
               maxIncomingMqttRequests,
               messageRouter,
+              messageProcessedHandler,
               mqttClientFactory,
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,

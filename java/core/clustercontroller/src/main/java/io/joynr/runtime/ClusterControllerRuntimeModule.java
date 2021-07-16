@@ -36,6 +36,7 @@ import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.messaging.routing.CcRoutingTableAddressValidator;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingProviderImpl;
 import io.joynr.messaging.routing.RoutingTableAddressValidator;
@@ -57,6 +58,7 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
         bind(MessageSender.class).to(CcMessageSender.class);
         bind(CcMessageRouter.class).in(Singleton.class);
         bind(MessageRouter.class).to(CcMessageRouter.class);
+        bind(MessageProcessedHandler.class).to(CcMessageRouter.class);
         bind(MulticastReceiverRegistrar.class).to(CcMessageRouter.class);
         bind(RoutingTableAddressValidator.class).to(CcRoutingTableAddressValidator.class);
 

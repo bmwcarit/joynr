@@ -26,9 +26,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.messaging.IMessagingSkeletonFactory;
+import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -39,6 +41,8 @@ public class JeeMqttMessagingSkeletonProviderTest {
 
     @Mock
     private MessageRouter mockMessageRouter;
+    @Mock
+    private MessageProcessedHandler mockMessageProcessedHandler;
 
     @Mock
     private MqttClientFactory mockMqttClientFactory;
@@ -56,6 +60,7 @@ public class JeeMqttMessagingSkeletonProviderTest {
                                                        23,
                                                        new MqttAddress(),
                                                        mockMessageRouter,
+                                                       mockMessageProcessedHandler,
                                                        mockMqttClientFactory,
                                                        "",
                                                        mockMqttTopicPrefixProvider,

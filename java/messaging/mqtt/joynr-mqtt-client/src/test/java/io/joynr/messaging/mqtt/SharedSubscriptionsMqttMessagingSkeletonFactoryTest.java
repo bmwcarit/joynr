@@ -28,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.messaging.IMessagingSkeleton;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -37,6 +38,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactoryTest {
 
     @Mock
     private MqttClientFactory mockMqttClientFactory;
+
+    @Mock
+    private MessageProcessedHandler mockMessageProcessedHandler;
 
     @Test
     public void createsExpectedSkeletons() {
@@ -48,6 +52,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactoryTest {
                                                                                                                       23,
                                                                                                                       new MqttAddress(),
                                                                                                                       null,
+                                                                                                                      mockMessageProcessedHandler,
                                                                                                                       mockMqttClientFactory,
                                                                                                                       "channelId",
                                                                                                                       null,

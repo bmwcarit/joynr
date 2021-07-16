@@ -42,6 +42,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.PropertyLoader;
@@ -61,6 +62,8 @@ public class DefaultMqttTopicPrefixProviderTest {
 
     @Mock
     private MessageRouter mockMessageRouter;
+    @Mock
+    private MessageProcessedHandler mockMessageProcessedHandler;
 
     @Mock
     private RoutingTable mockRoutingTable;
@@ -83,6 +86,7 @@ public class DefaultMqttTopicPrefixProviderTest {
                 Multibinder.newSetBinder(binder(), JoynrMessageProcessor.class);
                 bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
                 bind(MessageRouter.class).toInstance(mockMessageRouter);
+                bind(MessageProcessedHandler.class).toInstance(mockMessageProcessedHandler);
                 bind(RoutingTable.class).toInstance(mockRoutingTable);
                 bind(MqttClientFactory.class).toInstance(mqttClientFactory);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))

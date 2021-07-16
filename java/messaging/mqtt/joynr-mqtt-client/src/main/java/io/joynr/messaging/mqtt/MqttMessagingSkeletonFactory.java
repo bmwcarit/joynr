@@ -23,6 +23,7 @@ import java.util.Set;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -34,6 +35,7 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                         MqttAddress ownAddress,
                                         int maxIncomingMqttRequests,
                                         MessageRouter messageRouter,
+                                        MessageProcessedHandler messageProcessedHandler,
                                         MqttClientFactory mqttClientFactory,
                                         MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                         RawMessagingPreprocessor rawMessagingPreprocessor,
@@ -46,6 +48,7 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                        new MqttMessagingSkeleton(ownAddress.getTopic(),
                                                                  maxIncomingMqttRequests,
                                                                  messageRouter,
+                                                                 messageProcessedHandler,
                                                                  mqttClientFactory,
                                                                  mqttTopicPrefixProvider,
                                                                  rawMessagingPreprocessor,

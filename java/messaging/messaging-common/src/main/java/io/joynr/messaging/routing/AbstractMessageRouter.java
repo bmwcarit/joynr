@@ -67,7 +67,8 @@ import joynr.Message.MessageType;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.LocalAddress;
 
-abstract public class AbstractMessageRouter implements MessageRouter, MulticastReceiverRegistrar, ShutdownListener {
+abstract public class AbstractMessageRouter
+        implements MessageRouter, MessageProcessedHandler, MulticastReceiverRegistrar, ShutdownListener {
     final static Set<Message.MessageType> MESSAGE_TYPE_REQUESTS = new HashSet<MessageType>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
                                                                                                          Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST,
                                                                                                          Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST,
@@ -200,6 +201,15 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
     public void unregisterMessageProcessedListener(MessageProcessedListener messageProcessedListener) {
         synchronized (messageProcessedListeners) {
             messageProcessedListeners.remove(messageProcessedListener);
+        }
+    }
+
+    @Override
+    public void messageProcessed(String messageId) {
+        synchronized (messageProcessedListeners) {
+            for (MessageProcessedListener messageProcessedListener : messageProcessedListeners) {
+                messageProcessedListener.messageProcessed(messageId);
+            }
         }
     }
 
@@ -452,11 +462,7 @@ abstract public class AbstractMessageRouter implements MessageRouter, MulticastR
         }
         message.messageProcessed();
         decreaseReferenceCountsForMessage(message, isMessageRoutingsuccessful);
-        synchronized (messageProcessedListeners) {
-            for (MessageProcessedListener messageProcessedListener : messageProcessedListeners) {
-                messageProcessedListener.messageProcessed(message.getId());
-            }
-        }
+        messageProcessed(message.getId());
     }
 
     private SuccessAction createMessageProcessedAction(final ImmutableMessage message) {

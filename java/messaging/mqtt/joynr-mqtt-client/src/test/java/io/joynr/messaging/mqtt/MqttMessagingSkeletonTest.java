@@ -61,6 +61,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.util.ObjectMapper;
@@ -80,6 +81,8 @@ public class MqttMessagingSkeletonTest {
 
     @Mock
     private MessageRouter messageRouter;
+    @Mock
+    private MessageProcessedHandler mockMessageProcessedHandler;
 
     @Mock
     private RoutingTable routingTable;
@@ -108,6 +111,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
+                                            mockMessageProcessedHandler,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
@@ -135,7 +139,7 @@ public class MqttMessagingSkeletonTest {
 
     @Test
     public void testSkeletonRegistersItselfAsMessageProcessedListener() {
-        verify(messageRouter).registerMessageProcessedListener(eq(subject));
+        verify(mockMessageProcessedHandler).registerMessageProcessedListener(eq(subject));
     }
 
     @Test
@@ -217,6 +221,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
+                                            mockMessageProcessedHandler,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             rawMessagingPreprocessorMock,
@@ -245,6 +250,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
+                                            mockMessageProcessedHandler,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
@@ -362,6 +368,7 @@ public class MqttMessagingSkeletonTest {
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequestsNoLimit,
                                             messageRouter,
+                                            mockMessageProcessedHandler,
                                             mqttClientFactory,
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),

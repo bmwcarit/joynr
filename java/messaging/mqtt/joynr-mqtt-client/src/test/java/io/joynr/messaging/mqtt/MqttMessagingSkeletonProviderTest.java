@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import io.joynr.messaging.IMessagingSkeletonFactory;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -33,6 +34,8 @@ public class MqttMessagingSkeletonProviderTest {
 
     @Mock
     private MessageRouter mockMessageRouter;
+    @Mock
+    private MessageProcessedHandler mockMessageProcessedHandler;
 
     @Mock
     private MqttClientFactory mockMqttClientFactory;
@@ -50,6 +53,7 @@ public class MqttMessagingSkeletonProviderTest {
                                                     23,
                                                     new MqttAddress(),
                                                     mockMessageRouter,
+                                                    mockMessageProcessedHandler,
                                                     mockMqttClientFactory,
                                                     "",
                                                     mockMqttTopicPrefixProvider,

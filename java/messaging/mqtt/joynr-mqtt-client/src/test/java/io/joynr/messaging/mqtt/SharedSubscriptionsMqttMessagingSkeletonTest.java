@@ -55,6 +55,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
                                                                backpressureIncomingMqttRequestsLowerThreshold,
                                                                replyToTopic,
                                                                messageRouter,
+                                                               messageProcessedHandler,
                                                                mqttClientFactory,
                                                                channelId,
                                                                mqttTopicPrefixProvider,

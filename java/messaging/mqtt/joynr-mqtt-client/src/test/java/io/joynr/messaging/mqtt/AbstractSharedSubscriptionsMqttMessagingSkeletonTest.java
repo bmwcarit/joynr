@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
@@ -57,6 +58,8 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
     protected final String replyToTopic = "testReplyToTopic";
     @Mock
     protected MessageRouter messageRouter;
+    @Mock
+    protected MessageProcessedHandler messageProcessedHandler;
     @Mock
     protected RoutingTable routingTable;
     @Mock

@@ -74,6 +74,7 @@ import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
@@ -95,6 +96,8 @@ public class HivemqMqttClientIntegrationTest {
     private IMqttMessagingSkeleton mockReceiver2;
     @Mock
     private MessageRouter mockMessageRouter;
+    @Mock
+    private MessageProcessedHandler mockMessageProcessedHandler;
     @Mock
     private RoutingTable mockRoutingTable;
     @Mock
@@ -139,6 +142,7 @@ public class HivemqMqttClientIntegrationTest {
             @Override
             protected void configure() {
                 bind(MessageRouter.class).toInstance(mockMessageRouter);
+                bind(MessageProcessedHandler.class).toInstance(mockMessageProcessedHandler);
                 bind(RoutingTable.class).toInstance(mockRoutingTable);
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(Executors.newScheduledThreadPool(10));

@@ -42,10 +42,6 @@ public interface MessageRouter {
 
     public boolean resolveNextHop(String participantId);
 
-    void registerMessageProcessedListener(MessageProcessedListener messageProcessedListener);
-
-    void unregisterMessageProcessedListener(MessageProcessedListener messageProcessedListener);
-
     void registerProxy(Object proxy, String proxyParticipantId, ShutdownListener shutdownListener);
 
     void registerProxyProviderParticipantIds(String proxyParticipantId, Set<String> providerParticipantIds);

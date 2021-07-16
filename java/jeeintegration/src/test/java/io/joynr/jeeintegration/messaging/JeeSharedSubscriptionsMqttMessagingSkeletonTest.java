@@ -60,6 +60,7 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
                                                                   backpressureIncomingMqttRequestsLowerThreshold,
                                                                   replyToTopic,
                                                                   messageRouter,
+                                                                  messageProcessedHandler,
                                                                   mqttClientFactory,
                                                                   channelId,
                                                                   mqttTopicPrefixProvider,

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
+import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
@@ -38,6 +39,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                            int backpressureIncomingMqttRequestsLowerThreshold,
                                                            MqttAddress replyToAddress,
                                                            MessageRouter messageRouter,
+                                                           MessageProcessedHandler messageProcessedHandler,
                                                            MqttClientFactory mqttClientFactory,
                                                            String channelId,
                                                            MqttTopicPrefixProvider mqttTopicPrefixProvider,
@@ -55,6 +57,7 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                                                     backpressureIncomingMqttRequestsLowerThreshold,
                                                                                     replyToAddress.getTopic(),
                                                                                     messageRouter,
+                                                                                    messageProcessedHandler,
                                                                                     mqttClientFactory,
                                                                                     channelId,
                                                                                     mqttTopicPrefixProvider,
