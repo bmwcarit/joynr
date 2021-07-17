@@ -11,16 +11,65 @@ the versioning scheme [here](JoynrVersioning.md).
   `io.joynr.messaging.persistence.NoOpMessagePersister`,
   `io.joynr.jeeintegration.api.JoynrMessagePersister`
   have been removed.
+* **[C++]** The following configuration related APIs have been removed in LibjoynrSettings:
+  * LibjoynrSettings::getBroadcastSubscriptionRequestPersistenceFilename()
+  * LibjoynrSettings::setBroadcastSubscriptionRequestPersistenceFilename(...)
+  * LibjoynrSettings::SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
+  * LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
+  * LibjoynrSettings::getSubscriptionRequestPersistenceFilename()
+  * LibjoynrSettings::setSubscriptionRequestPersistenceFilename(...)
+  * LibjoynrSettings::SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
+  * LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
+  * LibjoynrSettings::isSubscriptionPersistencyEnabled()
+  * LibjoynrSettings::setSubscriptionPersistencyEnabled(...)
+  * LibjoynrSettings::SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED()
+  * LibjoynrSettings::DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED()
+  * LibjoynrSettings::isMessageRouterPersistencyEnabled()
+  * LibjoynrSettings::setMessageRouterPersistencyEnabled(...)
+  * LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED()
+  * LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCY_ENABLED()
+  * LibjoynrSettings::getMessageRouterPersistenceFilename()
+  * LibjoynrSettings::setMessageRouterPersistenceFilename(...)
+  * LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()
+  * LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME()
+  * LibjoynrSettings::isClearSubscriptionEnabled()
+  * LibjoynrSettings::setClearSubscriptionEnabled(...)
+  * LibjoynrSettings::SETTING_CLEAR_SUBSCRIPTION_ENABLED()
+  * LibjoynrSettings::DEFAULT_CLEAR_SUBSCRIPTION_ENABLED()
+* **[C++]** The following configuration related APIs have been removed in ClusterControllerSettings:
+  * ClusterControllerSettings::getMulticastReceiverDirectoryPersistenceFilename()
+  * ClusterControllerSettings::setMulticastReceiverDirectoryPersistenceFilename(...)
+  * ClusterControllerSettings::SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()
+  * ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()
+  * ClusterControllerSettings::isMulticastReceiverDirectoryPersistencyEnabled()
+  * ClusterControllerSettings::setMulticastReceiverDirectoryPersistencyEnabled(...)
+  * ClusterControllerSettings::SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED()
+  * ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED()
 
 ## Other Changes
 * **[Java, JEE]** The persistency support for subscription requests has been
   discontinued.
+* **[C++]** The features `Message Persistency`, `Routing Table Persistency`, `Subscription Persistency`
+and `Multicast Receiver Directory Persistency` have been discontinued.
 
 ## Configuration Property Changes
 * **[Java, JEE]** The properties `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` and
   `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCE_FILE,` have been removed.
 * **[Java]** Removed property `MESSAGE_QUEUE_ID` / `io.joynr.messaging.queue.id`
   related to discontinued MessagePersister feature.
+* **[C++]** The following settings have been removed and will be ignored, if present:
+```
+  [lib-joynr]
+  message-router-persistence-file
+  message-router-persistency
+  subscriptionrequest-persistence-file
+  broadcastsubscriptionrequest-persistence-file
+  subscription-persistency
+
+  [cluster-controller]
+  multicast-receiver-directory-persistence-file
+  multicast-receiver-directory-persistency-enabled
+```
 
 ## Security Fixes
 None.
