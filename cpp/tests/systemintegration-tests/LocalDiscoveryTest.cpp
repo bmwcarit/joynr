@@ -48,11 +48,6 @@ public:
         MessagingSettings messagingSettings1(*settings1);
         MessagingSettings messagingSettings2(*settings2);
 
-        messagingSettings1.setMessagingPropertiesPersistenceFilename(
-                "End2EndBroadcastTest-runtime1-joynr.settings");
-        messagingSettings2.setMessagingPropertiesPersistenceFilename(
-                "End2EndBroadcastTest-runtime2-joynr.settings");
-
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
 

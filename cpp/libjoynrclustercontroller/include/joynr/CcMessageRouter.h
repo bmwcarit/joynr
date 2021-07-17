@@ -94,7 +94,6 @@ public:
                     std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
                     const std::string& globalClusterControllerAddress,
                     const std::string& messageNotificationProviderParticipantId,
-                    bool persistRoutingTable,
                     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
                     std::unique_ptr<MessageQueue<std::string>> messageQueue,
                     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
@@ -228,8 +227,6 @@ public:
     bool publishToGlobal(const ImmutableMessage& message) final;
     void setAccessController(std::weak_ptr<IAccessController> accessController);
     void setMessageSender(std::weak_ptr<IMessageSender> messageSender);
-    void saveMulticastReceiverDirectory() const;
-    void loadMulticastReceiverDirectory(std::string filename);
     std::shared_ptr<joynr::system::MessageNotificationProvider> getMessageNotificationProvider()
             const;
     friend class MessageRunnable;
@@ -274,12 +271,10 @@ private:
     std::shared_ptr<MulticastMessagingSkeletonDirectory> _multicastMessagingSkeletonDirectory;
     std::unique_ptr<IPlatformSecurityManager> _securityManager;
     std::weak_ptr<IAccessController> _accessController;
-    std::string _multicastReceiverDirectoryFilename;
     const std::string _globalClusterControllerAddress;
     std::shared_ptr<CcMessageNotificationProvider> _messageNotificationProvider;
     const std::string _messageNotificationProviderParticipantId;
     ClusterControllerSettings& _clusterControllerSettings;
-    const bool _multicastReceiverDirectoryPersistencyEnabled;
     const system::RoutingTypes::Address& _ownGlobalAddress;
     std::weak_ptr<IMessageSender> _messageSender;
 };

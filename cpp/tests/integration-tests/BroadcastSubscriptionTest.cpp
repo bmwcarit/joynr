@@ -97,9 +97,6 @@ public:
 
     void SetUp()
     {
-        // remove stored subscriptions
-        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
-                            .c_str());
         subscriptionManager = std::make_shared<SubscriptionManager>(
                 singleThreadIOService->getIOService(), mockMessageRouter);
         dispatcher->registerSubscriptionManager(subscriptionManager);

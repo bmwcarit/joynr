@@ -159,14 +159,11 @@ void LibJoynrRuntime::init(
             std::move(messagingStubFactory),
             _singleThreadIOService->getIOService(),
             std::move(addressCalculator),
-            _libjoynrSettings->isMessageRouterPersistencyEnabled(),
             std::vector<std::shared_ptr<ITransportStatus>>{},
             std::make_unique<MessageQueue<std::string>>(),
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
     _libJoynrMessageRouter->init();
 
-    _libJoynrMessageRouter->loadRoutingTable(
-            _libjoynrSettings->getMessageRouterPersistenceFilename());
     _libJoynrMessageRouter->setParentAddress(routingProviderParticipantId, ccMessagingAddress);
     startLibJoynrMessagingSkeleton(_libJoynrMessageRouter);
 
@@ -180,15 +177,10 @@ void LibJoynrRuntime::init(
     _dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(_joynrDispatcher);
     _dispatcherAddress = std::make_shared<InProcessMessagingAddress>(_dispatcherMessagingSkeleton);
 
-    _publicationManager = std::make_shared<PublicationManager>(
-            _singleThreadIOService->getIOService(),
-            _messageSender,
-            _libjoynrSettings->isSubscriptionPersistencyEnabled(),
-            _messagingSettings.getTtlUpliftMs());
-    _publicationManager->loadSavedAttributeSubscriptionRequestsMap(
-            _libjoynrSettings->getSubscriptionRequestPersistenceFilename());
-    _publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
-            _libjoynrSettings->getBroadcastSubscriptionRequestPersistenceFilename());
+    _publicationManager =
+            std::make_shared<PublicationManager>(_singleThreadIOService->getIOService(),
+                                                 _messageSender,
+                                                 _messagingSettings.getTtlUpliftMs());
 
     _subscriptionManager = std::make_shared<SubscriptionManager>(
             _singleThreadIOService->getIOService(), _libJoynrMessageRouter);

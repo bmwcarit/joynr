@@ -68,7 +68,6 @@ public:
     std::shared_ptr<MockInProcessMessagingSkeleton> _inProcessMessagingSkeleton;
     Semaphore _semaphore;
     const bool _isLocalMessage;
-    const bool _enablePersistency;
 
     MutableMessageFactory _messageFactory;
     std::shared_ptr<MockTransportMessageReceiver> _mockMessageReceiver;
@@ -92,7 +91,6 @@ public:
                       std::make_shared<MockInProcessMessagingSkeleton>(_dispatcher)),
               _semaphore(0),
               _isLocalMessage(false),
-              _enablePersistency(true),
               _messageFactory(),
               _mockMessageReceiver(new MockTransportMessageReceiver()),
               _mockMessageSender(new MockTransportMessageSender()),
@@ -118,7 +116,6 @@ public:
                 nullptr,
                 globalCCAddress,
                 messageNotificationProviderParticipantId,
-                _enablePersistency,
                 std::vector<std::shared_ptr<ITransportStatus>>{},
                 std::make_unique<MessageQueue<std::string>>(),
                 std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(),

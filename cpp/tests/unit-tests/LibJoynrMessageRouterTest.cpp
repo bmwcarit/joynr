@@ -996,7 +996,6 @@ TEST_F(LibJoynrMessageRouterTest, invalidIncommingAddress)
     EXPECT_CALL(*stubFactory, shutdown()).Times(1);
     boost::asio::io_service ioService;
     std::unique_ptr<IMulticastAddressCalculator> noMultiCast(nullptr);
-    const bool noPersistRoutingTable = false;
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
     LibJoynrMessageRouter messageRouter(
@@ -1005,7 +1004,6 @@ TEST_F(LibJoynrMessageRouterTest, invalidIncommingAddress)
             stubFactory,
             ioService,
             std::move(noMultiCast),
-            noPersistRoutingTable,
             transportStatuses,
             std::make_unique<MessageQueue<std::string>>(),
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());
@@ -1038,7 +1036,6 @@ TEST_F(LibJoynrMessageRouterTest, udsIncommingAddress)
     EXPECT_CALL(*stubFactory, shutdown()).Times(1);
     boost::asio::io_service ioService;
     std::unique_ptr<IMulticastAddressCalculator> noMultiCast(nullptr);
-    const bool noPersistRoutingTable = false;
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
 
     LibJoynrMessageRouter messageRouter(
@@ -1047,7 +1044,6 @@ TEST_F(LibJoynrMessageRouterTest, udsIncommingAddress)
             stubFactory,
             ioService,
             std::move(noMultiCast),
-            noPersistRoutingTable,
             transportStatuses,
             std::make_unique<MessageQueue<std::string>>(),
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>());

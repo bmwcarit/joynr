@@ -52,7 +52,6 @@ AbstractMessageRouter::AbstractMessageRouter(
         std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
         boost::asio::io_service& ioService,
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
-        bool persistRoutingTable,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue,
@@ -63,7 +62,6 @@ AbstractMessageRouter::AbstractMessageRouter(
           _routingTableLock(),
           _multicastReceiverDirectory(),
           _messagingSettings(messagingSettings),
-          _persistRoutingTable(persistRoutingTable),
           _messagingStubFactory(std::move(messagingStubFactory)),
           _messageScheduler(std::make_shared<ThreadPoolDelayedScheduler>(1,
                                                                          "AbstractMessageRouter",
@@ -72,7 +70,6 @@ AbstractMessageRouter::AbstractMessageRouter(
           _messageQueueRetryLock(),
           _transportNotAvailableQueue(std::move(transportNotAvailableQueue)),
           _transportAvailabilityMutex(),
-          _routingTableFileName(),
           _addressCalculator(std::move(addressCalculator)),
           _messageQueueCleanerTimer(ioService),
           _messageQueueCleanerTimerPeriodMs(std::chrono::milliseconds(1000)),
@@ -443,47 +440,6 @@ void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> messa
     _messageQueue->queueMessage(std::move(recipient), std::move(message));
 }
 
-void AbstractMessageRouter::loadRoutingTable(std::string fileName)
-{
-
-    if (!_persistRoutingTable) {
-        return;
-    }
-
-    // update reference file
-    if (fileName != _routingTableFileName) {
-        _routingTableFileName = std::move(fileName);
-    }
-
-    if (!joynr::util::fileExists(_routingTableFileName)) {
-        return;
-    }
-
-    WriteLocker lock(_routingTableLock);
-    try {
-        joynr::serializer::deserializeFromJson(
-                _routingTable, joynr::util::loadStringFromFile(_routingTableFileName));
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger(), ex.what());
-    } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger(), "could not deserialize from JSON: {}", ex.what());
-    }
-}
-
-void AbstractMessageRouter::saveRoutingTable()
-{
-    if (!_persistRoutingTable) {
-        return;
-    }
-    WriteLocker lock(_routingTableLock);
-    try {
-        joynr::util::saveStringToFile(
-                _routingTableFileName, joynr::serializer::serializeToJson(_routingTable));
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger(), ex.what());
-    }
-}
-
 bool AbstractMessageRouter::addToRoutingTable(
         std::string participantId,
         bool isGloballyVisible,
@@ -543,12 +499,6 @@ bool AbstractMessageRouter::addToRoutingTable(
         _routingTable.add(
                 std::move(participantId), isGloballyVisible, address, expiryDateMs, isSticky);
     }
-    const joynr::InProcessMessagingAddress* inprocessAddress =
-            dynamic_cast<const joynr::InProcessMessagingAddress*>(address.get());
-    if (!inprocessAddress) {
-        saveRoutingTable();
-    }
-
     return true;
 }
 

@@ -50,43 +50,6 @@ public:
 
     bool contains(const std::string& multicastId, const std::string& receiverId);
 
-    template <typename Archive>
-    void load(Archive& archive)
-    {
-        std::unordered_map<std::string, std::unordered_set<std::string>>
-                persistedMulticastReceivers;
-
-        archive(muesli::make_nvp("multicastReceivers", persistedMulticastReceivers));
-
-        {
-            std::lock_guard<std::recursive_mutex> lock(_mutex);
-
-            _multicastReceivers.clear();
-            for (const auto& multicastReceiverEntry : persistedMulticastReceivers) {
-                _multicastReceivers.emplace(MulticastMatcher(multicastReceiverEntry.first),
-                                            multicastReceiverEntry.second);
-            }
-        }
-    }
-
-    template <typename Archive>
-    void save(Archive& archive)
-    {
-        std::unordered_map<std::string, std::unordered_set<std::string>>
-                convertedMulticastReceivers;
-
-        {
-            std::lock_guard<std::recursive_mutex> lock(_mutex);
-
-            for (const auto& multicastReceiverEntry : _multicastReceivers) {
-                convertedMulticastReceivers.emplace(
-                        multicastReceiverEntry.first._multicastId, multicastReceiverEntry.second);
-            }
-        }
-
-        archive(muesli::make_nvp("multicastReceivers", convertedMulticastReceivers));
-    }
-
 private:
     DISALLOW_COPY_AND_ASSIGN(MulticastReceiverDirectory);
     ADD_LOGGER(MulticastReceiverDirectory)

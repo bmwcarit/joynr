@@ -32,21 +32,8 @@ class Settings;
 class JOYNR_EXPORT LibjoynrSettings
 {
 public:
-    static const std::string& SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
-    static const std::string& SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
     static const std::string& SETTING_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
-    static const std::string& SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
-    static const std::string& SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED();
-    static const std::string& SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED();
-    static const std::string& SETTING_CLEAR_SUBSCRIPTION_ENABLED();
-
-    static const std::string& DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
-    static const std::string& DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME();
-    static const std::string& DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME();
-    static bool DEFAULT_MESSAGE_ROUTER_PERSISTENCY_ENABLED();
-    static bool DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED();
-    static bool DEFAULT_CLEAR_SUBSCRIPTION_ENABLED();
 
     explicit LibjoynrSettings(Settings& settings);
     LibjoynrSettings(const LibjoynrSettings&) = default;
@@ -54,26 +41,8 @@ public:
 
     ~LibjoynrSettings() = default;
 
-    std::string getBroadcastSubscriptionRequestPersistenceFilename() const;
-    void setBroadcastSubscriptionRequestPersistenceFilename(const std::string& filename);
-
-    std::string getMessageRouterPersistenceFilename() const;
-    void setMessageRouterPersistenceFilename(const std::string& filename);
-
     std::string getParticipantIdsPersistenceFilename() const;
     void setParticipantIdsPersistenceFilename(const std::string& filename);
-
-    std::string getSubscriptionRequestPersistenceFilename() const;
-    void setSubscriptionRequestPersistenceFilename(const std::string& filename);
-
-    bool isMessageRouterPersistencyEnabled() const;
-    void setMessageRouterPersistencyEnabled(bool enable);
-
-    bool isSubscriptionPersistencyEnabled() const;
-    void setSubscriptionPersistencyEnabled(bool enable);
-
-    bool isClearSubscriptionEnabled() const;
-    void setClearSubscriptionEnabled(bool enable);
 
     void printSettings() const;
 

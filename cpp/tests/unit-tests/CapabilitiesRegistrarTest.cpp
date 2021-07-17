@@ -62,7 +62,6 @@ public:
               _mockProvider(std::make_shared<MockProvider>()),
               _domain("testDomain"),
               _expectedParticipantId("testParticipantId"),
-              _enablePersistency(true),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _mockMessageRouter(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
@@ -70,8 +69,7 @@ public:
               _mockMessageSender(std::make_shared<MockMessageSender>()),
               _pubManager(
                       std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
-                                                           _mockMessageSender,
-                                                           _enablePersistency))
+                                                           _mockMessageSender))
     {
         _singleThreadedIOService->start();
     }
@@ -112,7 +110,6 @@ protected:
     std::shared_ptr<MockProvider> _mockProvider;
     std::string _domain;
     std::string _expectedParticipantId;
-    const bool _enablePersistency;
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> _mockMessageRouter;
     const types::Version _expectedProviderVersion;

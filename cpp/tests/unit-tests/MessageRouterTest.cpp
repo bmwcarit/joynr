@@ -313,53 +313,6 @@ TYPED_TEST(MessageRouterTest, queuedMsgsAreQueuedInTransportNotAvailableQueueWhe
     EXPECT_EQ(queuedMessage, immutableMessage);
 }
 
-TYPED_TEST(MessageRouterTest, restoreRoutingTable)
-{
-    Semaphore semaphore(0);
-    bool isLibJoynr = false;
-    const std::string participantId = "myParticipantId";
-    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
-    std::remove(routingTablePersistenceFilename.c_str());
-
-    // Load and set RoutingTable persistence filename
-    this->_messageRouter->loadRoutingTable(routingTablePersistenceFilename);
-
-    auto webSocketAddress = std::make_shared<const joynr::system::RoutingTypes::WebSocketAddress>();
-    auto mqttAddress = std::make_shared<const joynr::system::RoutingTypes::MqttAddress>();
-    if (typeid(*this->_messageRouter) == typeid(LibJoynrMessageRouter)) {
-        isLibJoynr = true;
-    }
-    const bool isGloballyVisible = true;
-    if (isLibJoynr) {
-        this->_messageRouter->addProvisionedNextHop(
-                participantId,
-                webSocketAddress,
-                isGloballyVisible); // Saves routingTable to the persistence file.
-    } else {
-        this->_messageRouter->addProvisionedNextHop(
-                participantId,
-                mqttAddress,
-                isGloballyVisible); // Saves routingTable to the persistence file.
-    }
-
-    // create a new MessageRouter
-    this->_messageRouter->shutdown();
-    this->_messageRouter = this->createMessageRouter();
-    this->_messageRouter->loadRoutingTable(routingTablePersistenceFilename);
-
-    this->_mutableMessage.setRecipient(participantId);
-    std::shared_ptr<IMessagingStub> mockMessagingStub = std::make_shared<MockMessagingStub>();
-    if (isLibJoynr) {
-        EXPECT_CALL(*(this->_messagingStubFactory), create(Pointee(Eq(*webSocketAddress))))
-                .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Return(mockMessagingStub)));
-    } else {
-        EXPECT_CALL(*(this->_messagingStubFactory), create(Pointee(Eq(*mqttAddress))))
-                .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Return(mockMessagingStub)));
-    }
-    this->_messageRouter->route(this->_mutableMessage.getImmutableMessage());
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
-}
-
 TYPED_TEST(MessageRouterTest, cleanupExpiredMessagesFromTransportNotAvailableQueue)
 {
     auto mockTransportStatus = std::make_shared<MockTransportStatus>();

@@ -392,7 +392,6 @@ void JoynrClusterControllerRuntime::init()
             std::move(addressCalculator),
             globalClusterControllerAddress,
             _systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
-            _libjoynrSettings.isMessageRouterPersistencyEnabled(),
             std::move(transportStatuses),
             std::move(messageQueue),
             std::move(transportStatusQueue),
@@ -400,11 +399,6 @@ void JoynrClusterControllerRuntime::init()
             _availableGbids);
 
     _ccMessageRouter->init();
-    if (_libjoynrSettings.isMessageRouterPersistencyEnabled()) {
-        _ccMessageRouter->loadRoutingTable(_libjoynrSettings.getMessageRouterPersistenceFilename());
-    }
-    _ccMessageRouter->loadMulticastReceiverDirectory(
-            _clusterControllerSettings.getMulticastReceiverDirectoryPersistenceFilename());
 
     // provision global capabilities directory
     bool isGloballyVisible = true;
@@ -526,16 +520,10 @@ void JoynrClusterControllerRuntime::init()
       * libJoynr side
       *
       */
-    _publicationManager = std::make_shared<PublicationManager>(
-            _singleThreadIOService->getIOService(),
-            _messageSender,
-            _libjoynrSettings.isSubscriptionPersistencyEnabled(),
-            _messagingSettings.getTtlUpliftMs());
-    _publicationManager->loadSavedAttributeSubscriptionRequestsMap(
-            _libjoynrSettings.getSubscriptionRequestPersistenceFilename());
-    _publicationManager->loadSavedBroadcastSubscriptionRequestsMap(
-            _libjoynrSettings.getBroadcastSubscriptionRequestPersistenceFilename());
-
+    _publicationManager =
+            std::make_shared<PublicationManager>(_singleThreadIOService->getIOService(),
+                                                 _messageSender,
+                                                 _messagingSettings.getTtlUpliftMs());
     _subscriptionManager = std::make_shared<SubscriptionManager>(
             _singleThreadIOService->getIOService(), _ccMessageRouter);
 

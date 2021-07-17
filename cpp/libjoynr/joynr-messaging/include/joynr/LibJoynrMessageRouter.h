@@ -76,7 +76,6 @@ public:
             std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
             boost::asio::io_service& ioService,
             std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
-            bool persistRoutingTable,
             std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
             std::unique_ptr<MessageQueue<std::string>> messageQueue,
             std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>

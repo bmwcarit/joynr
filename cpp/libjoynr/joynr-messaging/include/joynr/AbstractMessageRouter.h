@@ -81,8 +81,6 @@ public:
     virtual void setToKnown(const std::string& participantId) override;
 
     virtual void init();
-    void saveRoutingTable();
-    void loadRoutingTable(std::string fileName);
     std::uint64_t getNumberOfRoutedMessages() const;
     void removeRoutingEntries(std::shared_ptr<const joynr::system::RoutingTypes::Address> address);
 
@@ -124,7 +122,6 @@ protected:
                           std::shared_ptr<IMessagingStubFactory> messagingStubFactory,
                           boost::asio::io_service& ioService,
                           std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
-                          bool persistRoutingTable,
                           std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
                           std::unique_ptr<MessageQueue<std::string>> messageQueue,
                           std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>>
@@ -202,7 +199,6 @@ protected:
     ReadWriteLock _routingTableLock;
     MulticastReceiverDirectory _multicastReceiverDirectory;
     MessagingSettings _messagingSettings;
-    bool _persistRoutingTable;
     std::shared_ptr<IMessagingStubFactory> _messagingStubFactory;
     std::shared_ptr<ThreadPoolDelayedScheduler> _messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> _messageQueue;
@@ -216,7 +212,6 @@ protected:
     ReadWriteLock _messageQueueRetryLock;
     std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> _transportNotAvailableQueue;
     std::mutex _transportAvailabilityMutex;
-    std::string _routingTableFileName;
     std::unique_ptr<IMulticastAddressCalculator> _addressCalculator;
     SteadyTimer _messageQueueCleanerTimer;
     const std::chrono::milliseconds _messageQueueCleanerTimerPeriodMs;

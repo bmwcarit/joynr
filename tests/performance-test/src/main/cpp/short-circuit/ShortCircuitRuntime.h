@@ -319,8 +319,6 @@ private:
     const system::RoutingTypes::Address _ownAddress;
     std::vector<std::string> _availableGbids;
     void fillAvailableGbidsVector(const MessagingSettings& messagingSettings);
-
-    const bool _enablePersistency;
 };
 
 } // namespace joynr

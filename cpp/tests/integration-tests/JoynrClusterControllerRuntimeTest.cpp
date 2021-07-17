@@ -505,7 +505,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
 {
     createRuntimeMqtt();
-    std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
     types::ProviderQos providerQos;
@@ -563,7 +562,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
 TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
 {
     createRuntimeMqtt();
-    std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME().c_str());
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
     types::ProviderQos providerQos;

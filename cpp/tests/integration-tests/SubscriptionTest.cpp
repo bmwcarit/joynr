@@ -83,7 +83,6 @@ public:
               _providerParticipantId("providerParticipantId"),
               _proxyParticipantId("proxyParticipantId"),
               _requestReplyId("requestReplyId"),
-              _persistencyEnabled(true),
               _messageFactory(),
               _messageSender(std::make_shared<MessageSender>(_mockMessageRouter, nullptr)),
               _dispatcher(std::make_shared<Dispatcher>(_messageSender,
@@ -92,8 +91,7 @@ public:
               _provider(new MockTestProvider),
               _publicationManager(
                       std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
-                                                           _messageSender,
-                                                           _persistencyEnabled)),
+                                                           _messageSender)),
               _requestCaller(new joynr::tests::testRequestCaller(_provider)),
               _isLocalMessage(true)
     {
@@ -102,8 +100,6 @@ public:
 
     void SetUp()
     {
-        std::remove(LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
-                            .c_str()); // remove stored subscriptions
         _subscriptionManager = std::make_shared<SubscriptionManager>(
                 _singleThreadedIOService->getIOService(), _mockMessageRouter);
         _dispatcher->registerPublicationManager(_publicationManager);
@@ -139,7 +135,6 @@ protected:
     std::string _providerParticipantId;
     std::string _proxyParticipantId;
     std::string _requestReplyId;
-    const bool _persistencyEnabled;
 
     MutableMessageFactory _messageFactory;
     std::shared_ptr<MessageSender> _messageSender;

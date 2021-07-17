@@ -35,7 +35,6 @@
 #include "joynr/types/Version.h"
 
 #include "libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h"
-#include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/utils/PtrUtils.h"
@@ -47,8 +46,6 @@
 using namespace ::testing;
 using namespace joynr;
 
-static const std::string messagingPropertiesPersistenceFileName(
-        "GlobalCapabilitiesDirectoryClientTest-joynr.settings");
 static const std::string libJoynrSettingsFilename(
         "test-resources/libjoynrSystemIntegration1.settings");
 
@@ -77,10 +74,6 @@ public:
               sysSettings(*settings)
     {
         clusterControllerSettings.setCapabilitiesFreshnessUpdateIntervalMs(std::chrono::milliseconds(500));
-        messagingSettings.setMessagingPropertiesPersistenceFilename(
-                messagingPropertiesPersistenceFileName);
-        MessagingPropertiesPersistence storage(
-                messagingSettings.getMessagingPropertiesPersistenceFilename());
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
 

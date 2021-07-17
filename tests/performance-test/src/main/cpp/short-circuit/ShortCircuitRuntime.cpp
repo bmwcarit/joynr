@@ -48,8 +48,7 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
         : JoynrRuntimeImpl(*settings, [](const exceptions::JoynrRuntimeException&) {}),
           _keyChain(std::move(keyChain)),
           _clusterControllerSettings(*settings),
-          _ownAddress(),
-          _enablePersistency(true)
+          _ownAddress()
 {
     auto messagingStubFactory = std::make_unique<MessagingStubFactory>();
     _requestCallerDirectory = std::make_shared<DummyRequestCallerDirectory>();
@@ -77,7 +76,6 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
             std::move(addressCalculator),
             globalClusterControllerAddress,
             messageNotificationProviderParticipantId,
-            _enablePersistency,
             std::vector<std::shared_ptr<ITransportStatus>>{},
             std::make_unique<MessageQueue<std::string>>(),
             std::make_unique<MessageQueue<std::shared_ptr<ITransportStatus>>>(),
@@ -93,7 +91,7 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
     _dispatcherAddress = std::make_shared<InProcessMessagingAddress>(_dispatcherMessagingSkeleton);
 
     _publicationManager = std::make_shared<PublicationManager>(
-            _singleThreadedIOService.getIOService(), _messageSender, _enablePersistency);
+            _singleThreadedIOService.getIOService(), _messageSender);
     _subscriptionManager = std::make_shared<SubscriptionManager>(
             _singleThreadedIOService.getIOService(), _messageRouter);
 

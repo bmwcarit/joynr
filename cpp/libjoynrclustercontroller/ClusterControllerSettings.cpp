@@ -36,16 +36,6 @@ ClusterControllerSettings::ClusterControllerSettings(Settings& settings) : _sett
 
 void ClusterControllerSettings::checkSettings()
 {
-    if (!_settings.contains(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME())) {
-        setMulticastReceiverDirectoryPersistenceFilename(
-                DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME());
-    }
-
-    if (!_settings.contains(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED())) {
-        setMulticastReceiverDirectoryPersistencyEnabled(
-                DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED());
-    }
-
     if (!_settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME())) {
         setLocalCapabilitiesDirectoryPersistenceFilename(
                 DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
@@ -194,22 +184,6 @@ const std::string& ClusterControllerSettings::
         DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
 {
     static const std::string value("LocalCapabilitiesDirectory.persist");
-    return value;
-}
-
-const std::string& ClusterControllerSettings::
-        SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()
-{
-    static const std::string value(
-            "cluster-controller/multicast-receiver-directory-persistence-file");
-    return value;
-}
-
-const std::string& ClusterControllerSettings::
-        SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED()
-{
-    static const std::string value(
-            "cluster-controller/multicast-receiver-directory-persistency-enabled");
     return value;
 }
 
@@ -429,18 +403,6 @@ const std::string& ClusterControllerSettings::DEFAULT_MQTT_UNICAST_TOPIC_PREFIX(
     return value;
 }
 
-const std::string& ClusterControllerSettings::
-        DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()
-{
-    static const std::string value("MulticastReceiverDirectory.persist");
-    return value;
-}
-
-bool ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED()
-{
-    return false;
-}
-
 bool ClusterControllerSettings::DEFAULT_ENABLE_ACCESS_CONTROLLER()
 {
     return false;
@@ -455,27 +417,6 @@ const std::string& ClusterControllerSettings::DEFAULT_CLUSTERCONTROLLER_SETTINGS
 int ClusterControllerSettings::DEFAULT_ROUTED_MESSAGE_PRINT_INTERVAL_S()
 {
     return 10; // 10 seconds
-}
-
-std::string ClusterControllerSettings::getMulticastReceiverDirectoryPersistenceFilename() const
-{
-    return _settings.get<std::string>(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME());
-}
-
-void ClusterControllerSettings::setMulticastReceiverDirectoryPersistenceFilename(
-        const std::string& filename)
-{
-    _settings.set(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(), filename);
-}
-
-bool ClusterControllerSettings::isMulticastReceiverDirectoryPersistencyEnabled() const
-{
-    return _settings.get<bool>(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED());
-}
-
-void ClusterControllerSettings::setMulticastReceiverDirectoryPersistencyEnabled(bool enabled)
-{
-    _settings.set(SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED(), enabled);
 }
 
 bool ClusterControllerSettings::isWsTLSPortSet() const
@@ -879,16 +820,6 @@ void ClusterControllerSettings::setCapabilitiesFreshnessUpdateIntervalMs(
 
 void ClusterControllerSettings::printSettings() const
 {
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED(),
-                   isMulticastReceiverDirectoryPersistencyEnabled());
-
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME(),
-                   getMulticastReceiverDirectoryPersistenceFilename());
-
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),

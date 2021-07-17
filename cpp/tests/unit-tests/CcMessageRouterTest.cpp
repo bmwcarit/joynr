@@ -1000,89 +1000,9 @@ TEST_F(CcMessageRouterTest, addMulticastReceiver_NonChildRouter_succeedsIfSkelet
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
 }
 
-TEST_F(CcMessageRouterTest, loadNonExistingMulticastDirectoryPersistenceFile)
-{
-    EXPECT_NO_THROW(_messageRouter->loadMulticastReceiverDirectory("not-existing.persist"));
-}
-
-TEST_F(CcMessageRouterTest, persistMulticastReceiverDirectory)
-{
-    const std::string providerParticipantId("providerParticipantId");
-    const std::string subscriberParticipantId("subscriberParticipantId");
-    const std::string multicastId =
-            util::createMulticastId(providerParticipantId, "multicastName", {});
-
-    auto providerAddress = std::make_shared<system::RoutingTypes::MqttAddress>();
-    auto multicastSubscriber = std::make_shared<MockMessagingMulticastSubscriber>();
-
-    const std::string persistencyFilename = "multicast-receiver-directory-test.persist";
-    const bool isGloballyVisible = true;
-    constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
-    const bool isSticky = false;
-    std::remove(persistencyFilename.c_str());
-    // Load method stores the filename which will later be used to save the multicast receiver
-    // directory.
-    _messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
-
-    _multicastMessagingSkeletonDirectory->registerSkeleton<system::RoutingTypes::MqttAddress>(
-            multicastSubscriber);
-    _messageRouter->addNextHop(
-            providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
-    EXPECT_CALL(*multicastSubscriber, registerMulticastSubscription(multicastId)).Times(1);
-    _messageRouter->addMulticastReceiver(
-            multicastId, subscriberParticipantId, providerParticipantId, []() {}, nullptr);
-
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
-    _messageRouter->shutdown();
-    _messageRouter = createMessageRouter();
-    _messageRouter->addNextHop(
-            providerParticipantId, providerAddress, isGloballyVisible, expiryDateMs, isSticky);
-
-    EXPECT_CALL(*multicastSubscriber, registerMulticastSubscription(multicastId)).Times(1);
-    _messageRouter->loadMulticastReceiverDirectory(persistencyFilename);
-}
-
-TEST_F(CcMessageRouterTest, doNotSaveInProcessMessagingAddressToFile)
-{
-    const std::string providerParticipantId("providerParticipantId");
-    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
-    std::remove(routingTablePersistenceFilename.c_str());
-
-    _messageRouter->loadRoutingTable(routingTablePersistenceFilename);
-    {
-        auto dispatcher = std::make_shared<MockDispatcher>();
-        auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
-        auto providerAddress = std::make_shared<const joynr::InProcessMessagingAddress>(skeleton);
-        _messageRouter->addProvisionedNextHop(
-                providerParticipantId, providerAddress, _DEFAULT_IS_GLOBALLY_VISIBLE);
-    }
-
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
-    _messageRouter->shutdown();
-    _messageRouter = createMessageRouter();
-    _messageRouter->loadRoutingTable(routingTablePersistenceFilename);
-
-    Semaphore successCallbackCalled;
-    _messageRouter->resolveNextHop(
-            providerParticipantId,
-            [&successCallbackCalled](const bool& resolved) {
-                if (resolved) {
-                    FAIL() << "resolve should not succeed.";
-                } else {
-                    successCallbackCalled.notify();
-                }
-            },
-            [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
-                successCallbackCalled.notify();
-            });
-    EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
-}
-
 TEST_F(CcMessageRouterTest, routingTableGetsCleaned)
 {
     const std::string providerParticipantId("providerParticipantId");
-    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
-    std::remove(routingTablePersistenceFilename.c_str());
 
     auto dispatcher = std::make_shared<MockDispatcher>();
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
@@ -2054,8 +1974,6 @@ TEST_F(CcMessageRouterTest, routingTableRemoveEntriesWorks)
     const std::string providerParticipantId1("providerParticipantId1");
     const std::string providerParticipantId2("providerParticipantId2");
     const std::string providerParticipantId3("providerParticipantId3");
-    const std::string routingTablePersistenceFilename = "test-RoutingTable.persist";
-    std::remove(routingTablePersistenceFilename.c_str());
 
     EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();

@@ -55,8 +55,6 @@ public:
     static const std::string& SETTING_MQTT_PASSWORD();
     static const std::string& SETTING_MQTT_MULTICAST_TOPIC_PREFIX();
     static const std::string& SETTING_MQTT_UNICAST_TOPIC_PREFIX();
-    static const std::string& SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
-    static const std::string& SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED();
     static const std::string& SETTING_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
     static const std::string& SETTING_WS_TLS_PORT();
     static const std::string& SETTING_WS_PORT();
@@ -80,8 +78,6 @@ public:
     static const std::string& DEFAULT_MQTT_TLS_CIPHERS();
     static const std::string& DEFAULT_MQTT_MULTICAST_TOPIC_PREFIX();
     static const std::string& DEFAULT_MQTT_UNICAST_TOPIC_PREFIX();
-    static const std::string& DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME();
-    static bool DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED();
     static int DEFAULT_PURGE_EXPIRED_DISCOVERY_ENTRIES_INTERVAL_MS();
     static bool DEFAULT_ENABLE_ACCESS_CONTROLLER();
     static bool DEFAULT_ACCESS_CONTROL_AUDIT();
@@ -100,11 +96,6 @@ public:
     ClusterControllerSettings(ClusterControllerSettings&&) = default;
 
     ~ClusterControllerSettings() = default;
-
-    std::string getMulticastReceiverDirectoryPersistenceFilename() const;
-    void setMulticastReceiverDirectoryPersistenceFilename(const std::string& filename);
-    bool isMulticastReceiverDirectoryPersistencyEnabled() const;
-    void setMulticastReceiverDirectoryPersistencyEnabled(bool enabled);
 
     bool isWsTLSPortSet() const;
     std::uint16_t getWsTLSPort() const;

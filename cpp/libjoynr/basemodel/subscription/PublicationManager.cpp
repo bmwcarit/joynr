@@ -99,8 +99,6 @@ PublicationManager::~PublicationManager()
 
 void PublicationManager::shutdown()
 {
-    // saveSubscriptionRequestsMap will not store to file, as soon as shuttingDown is true
-    // except extra parameter is provided
     {
         std::lock_guard<std::mutex> shutDownLocker(_shutDownMutex);
         assert(!_shuttingDown);
@@ -113,28 +111,22 @@ void PublicationManager::shutdown()
     JOYNR_LOG_TRACE(logger(), "shutting down thread pool and scheduler ...");
     _delayedScheduler->shutdown();
 
-    JOYNR_LOG_TRACE(logger(), "saving subscriptionsMap...");
-    bool finalSave = true;
-    saveAttributeSubscriptionRequestsMap(finalSave);
-    saveBroadcastSubscriptionRequestsMap(finalSave);
-
     // Remove all publications
     JOYNR_LOG_TRACE(logger(), "removing publications");
 
     while (_subscriptionId2SubscriptionRequest.size() > 0) {
         auto subscriptionRequest = _subscriptionId2SubscriptionRequest.begin();
-        removeAttributePublication((subscriptionRequest->second)->getSubscriptionId(), false);
+        removeAttributePublication((subscriptionRequest->second)->getSubscriptionId());
     }
 
     while (_subscriptionId2BroadcastSubscriptionRequest.size() > 0) {
         auto broadcastRequest = _subscriptionId2BroadcastSubscriptionRequest.begin();
-        removeBroadcastPublication((broadcastRequest->second)->getSubscriptionId(), false);
+        removeBroadcastPublication((broadcastRequest->second)->getSubscriptionId());
     }
 }
 
 PublicationManager::PublicationManager(boost::asio::io_service& ioService,
                                        std::weak_ptr<IMessageSender> messageSender,
-                                       bool enableSubscriptionStorage,
                                        std::uint64_t ttlUplift,
                                        int maxThreads)
         : _messageSender(messageSender),
@@ -147,8 +139,6 @@ PublicationManager::PublicationManager(boost::asio::io_service& ioService,
                                                                          ioService)),
           _shutDownMutex(),
           _shuttingDown(false),
-          _subscriptionRequestStorageFileName(),
-          _broadcastSubscriptionRequestStorageFileName(),
           _queuedSubscriptionRequests(),
           _queuedSubscriptionRequestsMutex(),
           _queuedBroadcastSubscriptionRequests(),
@@ -157,7 +147,6 @@ PublicationManager::PublicationManager(boost::asio::io_service& ioService,
           _currentScheduledPublicationsMutex(),
           _broadcastFilterLock(),
           _ttlUplift(ttlUplift),
-          _enableSubscriptionStorage(enableSubscriptionStorage),
           _publicationsMutex()
 {
 }
@@ -273,8 +262,6 @@ void PublicationManager::handleAttributeSubscriptionRequest(
     // Make note of the publication
     _publications.insert(subscriptionId, publication);
 
-    saveAttributeSubscriptionRequestsMap();
-
     JOYNR_LOG_DEBUG(logger(), "added subscription: {}", requestInfo->toString());
 
     {
@@ -377,7 +364,6 @@ void PublicationManager::add(const std::string& proxyParticipantId,
     }
 
     _subscriptionId2SubscriptionRequest.insert(requestInfo->getSubscriptionId(), requestInfo);
-    saveAttributeSubscriptionRequestsMap();
 }
 
 void PublicationManager::add(const std::string& proxyParticipantId,
@@ -428,8 +414,6 @@ void PublicationManager::handleBroadcastSubscriptionRequest(
     _publications.insert(subscriptionId, publication);
     JOYNR_LOG_DEBUG(logger(), "added subscription: {}", requestInfo->toString());
 
-    saveBroadcastSubscriptionRequestsMap();
-
     {
         std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
         // Add an onChange publication if needed
@@ -478,7 +462,6 @@ void PublicationManager::add(const std::string& proxyParticipantId,
 
     _subscriptionId2BroadcastSubscriptionRequest.insert(
             requestInfo->getSubscriptionId(), requestInfo);
-    saveBroadcastSubscriptionRequestsMap();
 }
 
 void PublicationManager::removeAllSubscriptions(const std::string& providerId)
@@ -593,149 +576,7 @@ void PublicationManager::restore(const std::string& providerId,
     }
 }
 
-void PublicationManager::loadSavedAttributeSubscriptionRequestsMap(const std::string& fileName)
-{
-    JOYNR_LOG_TRACE(logger(), "Loading stored AttributeSubscriptionrequests.");
-
-    // update reference file
-    if (fileName != _subscriptionRequestStorageFileName) {
-        _subscriptionRequestStorageFileName = std::move(fileName);
-    }
-
-    loadSavedSubscriptionRequestsMap<SubscriptionRequestInformation>(
-            _subscriptionRequestStorageFileName,
-            _queuedSubscriptionRequestsMutex,
-            _queuedSubscriptionRequests);
-}
-
-void PublicationManager::loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName)
-{
-    JOYNR_LOG_TRACE(logger(), "Loading stored BroadcastSubscriptionrequests.");
-
-    // update reference file
-    if (fileName != _broadcastSubscriptionRequestStorageFileName) {
-        _broadcastSubscriptionRequestStorageFileName = std::move(fileName);
-    }
-
-    loadSavedSubscriptionRequestsMap<BroadcastSubscriptionRequestInformation>(
-            _broadcastSubscriptionRequestStorageFileName,
-            _queuedBroadcastSubscriptionRequestsMutex,
-            _queuedBroadcastSubscriptionRequests);
-}
-
-// This function assumes that subscriptionList is a copy that is exclusively used by this function
-void PublicationManager::saveBroadcastSubscriptionRequestsMap(bool saveOnShutdown)
-{
-    JOYNR_LOG_TRACE(logger(), "Saving active broadcastSubscriptionRequests to file.");
-
-    saveSubscriptionRequestsMap(_subscriptionId2BroadcastSubscriptionRequest,
-                                _broadcastSubscriptionRequestStorageFileName,
-                                saveOnShutdown);
-}
-
-void PublicationManager::saveAttributeSubscriptionRequestsMap(bool finalSave)
-{
-    JOYNR_LOG_TRACE(logger(), "Saving active attribute subscriptionRequests to file.");
-
-    saveSubscriptionRequestsMap(
-            _subscriptionId2SubscriptionRequest, _subscriptionRequestStorageFileName, finalSave);
-}
-
-template <typename Map>
-void PublicationManager::saveSubscriptionRequestsMap(const Map& mmap,
-                                                     const std::string& storageFilename,
-                                                     bool finalSave)
-{
-    if (!_enableSubscriptionStorage) {
-        return;
-    }
-
-    if (!finalSave && isShuttingDown()) {
-        JOYNR_LOG_TRACE(logger(), "Abort saving, because we are already shutting down.");
-        return;
-    }
-
-    if (storageFilename.empty()) {
-        JOYNR_LOG_TRACE(logger(), "Won't save since no storage file was specified.");
-        return;
-    }
-
-    std::vector<typename Map::mapped_type> subscriptionVector;
-    subscriptionVector.reserve(mmap.size());
-
-    auto callback = [&subscriptionVector](auto&& localMap) {
-        for (auto&& entry : localMap) {
-            subscriptionVector.push_back(entry.second);
-        }
-    };
-
-    mmap.applyReadFun(callback);
-
-    try {
-        joynr::util::saveStringToFile(
-                storageFilename, joynr::serializer::serializeToJson(subscriptionVector));
-    } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger(), "serializing subscription map to JSON failed: {}", ex.what());
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger(), ex.what());
-    }
-}
-
-template <class RequestInformationType>
-void PublicationManager::loadSavedSubscriptionRequestsMap(
-        const std::string& storageFilename,
-        std::mutex& queueMutex,
-        std::multimap<std::string, std::shared_ptr<RequestInformationType>>& queuedSubscriptions)
-{
-    static_assert(std::is_base_of<SubscriptionRequest, RequestInformationType>::value,
-                  "loadSavedSubscriptionRequestsMap can only be used for subclasses of "
-                  "SubscriptionRequest");
-
-    if (!_enableSubscriptionStorage) {
-        return;
-    }
-
-    if (storageFilename.empty()) {
-        JOYNR_LOG_TRACE(logger(), "Won't load since no file was specified for loading.");
-        return;
-    }
-
-    std::string jsonString;
-    try {
-        jsonString = joynr::util::loadStringFromFile(storageFilename);
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger(), ex.what());
-    }
-
-    if (jsonString.empty()) {
-        return;
-    }
-
-    std::lock_guard<std::mutex> queueLocker(queueMutex);
-
-    // Deserialize the JSON into the array of subscription requests
-    std::vector<std::shared_ptr<RequestInformationType>> subscriptionVector;
-    try {
-        joynr::serializer::deserializeFromJson(subscriptionVector, jsonString);
-    } catch (const std::invalid_argument& e) {
-        std::string errorMessage("could not deserialize subscription requests from'" + jsonString +
-                                 "' - error: " + e.what());
-        JOYNR_LOG_FATAL(logger(), errorMessage);
-        return;
-    }
-
-    // Loop through the saved subscriptions
-    for (auto& requestInfo : subscriptionVector) {
-        if (isSubscriptionExpired(requestInfo->getQos())) {
-            JOYNR_LOG_TRACE(logger(), "Removing subscription Request: {}", requestInfo->toString());
-        } else {
-            queuedSubscriptions.emplace(requestInfo->getProviderId(), std::move(requestInfo));
-        }
-    }
-}
-
-void PublicationManager::removeAttributePublication(const std::string& subscriptionId,
-                                                    const bool updatePersistenceFile)
+void PublicationManager::removeAttributePublication(const std::string& subscriptionId)
 {
     JOYNR_LOG_DEBUG(logger(), "removePublication: {}", subscriptionId);
 
@@ -750,14 +591,9 @@ void PublicationManager::removeAttributePublication(const std::string& subscript
         // Delete the onChange publication if needed
         removeOnChangePublication(subscriptionId, request, publication);
     }
-
-    if (updatePersistenceFile) {
-        saveAttributeSubscriptionRequestsMap();
-    }
 }
 
-void PublicationManager::removeBroadcastPublication(const std::string& subscriptionId,
-                                                    const bool updatePersistenceFile)
+void PublicationManager::removeBroadcastPublication(const std::string& subscriptionId)
 {
     JOYNR_LOG_DEBUG(logger(), "removeBroadcast: {}", subscriptionId);
 
@@ -777,10 +613,6 @@ void PublicationManager::removeBroadcastPublication(const std::string& subscript
         publication->_broadcastListener = nullptr;
 
         removePublicationEndRunnable(publication);
-    }
-
-    if (updatePersistenceFile) {
-        saveBroadcastSubscriptionRequestsMap();
     }
 }
 

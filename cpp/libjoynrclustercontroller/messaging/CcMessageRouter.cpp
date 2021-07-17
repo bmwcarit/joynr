@@ -138,7 +138,6 @@ CcMessageRouter::CcMessageRouter(
         std::unique_ptr<IMulticastAddressCalculator> addressCalculator,
         const std::string& globalClusterControllerAddress,
         const std::string& messageNotificationProviderParticipantId,
-        bool persistRoutingTable,
         std::vector<std::shared_ptr<ITransportStatus>> transportStatuses,
         std::unique_ptr<MessageQueue<std::string>> messageQueue,
         std::unique_ptr<MessageQueue<std::shared_ptr<ITransportStatus>>> transportNotAvailableQueue,
@@ -148,7 +147,6 @@ CcMessageRouter::CcMessageRouter(
                                 std::move(messagingStubFactory),
                                 ioService,
                                 std::move(addressCalculator),
-                                persistRoutingTable,
                                 std::move(transportStatuses),
                                 std::move(messageQueue),
                                 std::move(transportNotAvailableQueue),
@@ -157,13 +155,10 @@ CcMessageRouter::CcMessageRouter(
           _multicastMessagingSkeletonDirectory(multicastMessagingSkeletonDirectory),
           _securityManager(std::move(securityManager)),
           _accessController(),
-          _multicastReceiverDirectoryFilename(),
           _globalClusterControllerAddress(globalClusterControllerAddress),
           _messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
           _messageNotificationProviderParticipantId(messageNotificationProviderParticipantId),
           _clusterControllerSettings(clusterControllerSettings),
-          _multicastReceiverDirectoryPersistencyEnabled(
-                  clusterControllerSettings.isMulticastReceiverDirectoryPersistencyEnabled()),
           _ownGlobalAddress(ownGlobalAddress),
           _messageSender()
 {
@@ -185,56 +180,6 @@ void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> acces
 void CcMessageRouter::setMessageSender(std::weak_ptr<IMessageSender> messageSender)
 {
     this->_messageSender = std::move(messageSender);
-}
-
-void CcMessageRouter::saveMulticastReceiverDirectory() const
-{
-    if (!_multicastReceiverDirectoryPersistencyEnabled) {
-        return;
-    }
-
-    if (_multicastReceiverDirectoryFilename.empty()) {
-        JOYNR_LOG_INFO(
-                logger(), "Did not save multicast receiver directory: No filename specified");
-        return;
-    }
-
-    try {
-        joynr::util::saveStringToFile(
-                _multicastReceiverDirectoryFilename,
-                joynr::serializer::serializeToJson(_multicastReceiverDirectory));
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger(), ex.what());
-    }
-}
-
-void CcMessageRouter::loadMulticastReceiverDirectory(std::string filename)
-{
-    if (!_multicastReceiverDirectoryPersistencyEnabled) {
-        return;
-    }
-
-    _multicastReceiverDirectoryFilename = std::move(filename);
-
-    if (_multicastReceiverDirectoryFilename.empty()) {
-        JOYNR_LOG_INFO(
-                logger(), "Did not load multicast receiver directory: No filename specified");
-        return;
-    }
-
-    try {
-        joynr::serializer::deserializeFromJson(
-                _multicastReceiverDirectory,
-                joynr::util::loadStringFromFile(_multicastReceiverDirectoryFilename));
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger(), ex.what());
-        return;
-    } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger(), "Deserialization from JSON failed: {}", ex.what());
-        return;
-    }
-
-    reestablishMulticastSubscriptions();
 }
 
 std::shared_ptr<system::MessageNotificationProvider> CcMessageRouter::
@@ -513,8 +458,6 @@ void CcMessageRouter::removeNextHop(
         _routingTable.remove(participantId);
     }
 
-    saveRoutingTable();
-
     if (onSuccess) {
         onSuccess();
     }
@@ -785,7 +728,6 @@ void CcMessageRouter::addMulticastReceiver(
                             "added multicast receiver={} for multicastId={}",
                             subscriberParticipantId,
                             multicastId);
-            thisSharedPtr->saveMulticastReceiverDirectory();
             if (onSuccess) {
                 onSuccess();
             }
@@ -892,7 +834,6 @@ void CcMessageRouter::removeUnreachableMulticastReceivers(
                            multicastId,
                            participantId);
             _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, participantId);
-            saveMulticastReceiverDirectory();
             if (multicastMessagingSkeleton) {
                 multicastMessagingSkeleton->unregisterMulticastSubscription(multicastId);
             }
@@ -956,7 +897,6 @@ void CcMessageRouter::removeMulticastReceiver(
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
     _multicastReceiverDirectory.unregisterMulticastReceiver(multicastId, subscriberParticipantId);
-    saveMulticastReceiverDirectory();
     unregisterMulticastInSkeleton(
             multicastId, providerParticipantId, std::move(onSuccess), std::move(onError));
 }

@@ -65,14 +65,12 @@ public:
               _providerParticipantId("providerParticipantId"),
               _proxyParticipantId("proxyParticipantId"),
               _subscriptionId("subscriptionId"),
-              _persistencyEnabled(true),
               _mockMessageRouter(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
               _messageSender(std::make_shared<MessageSender>(_mockMessageRouter, nullptr)),
               _publicationManager(
                       std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
-                                                           _messageSender,
-                                                           _persistencyEnabled)),
+                                                           _messageSender)),
               _publicationSender(std::make_shared<MockPublicationSender>()),
               _request(),
               _subscriptionBroadcastListener(
@@ -98,10 +96,6 @@ public:
 
     void SetUp()
     {
-        // remove stored subscriptions
-        std::remove(LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
-                            .c_str());
-
         _request.setSubscribeToName("locationUpdateSelective");
         _request.setSubscriptionId(_subscriptionId);
 
@@ -141,7 +135,6 @@ protected:
     std::string _providerParticipantId;
     std::string _proxyParticipantId;
     std::string _subscriptionId;
-    const bool _persistencyEnabled;
     std::shared_ptr<MockMessageRouter> _mockMessageRouter;
     std::shared_ptr<IMessageSender> _messageSender;
     std::shared_ptr<PublicationManager> _publicationManager;

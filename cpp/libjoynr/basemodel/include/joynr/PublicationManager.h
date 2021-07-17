@@ -74,7 +74,6 @@ class JOYNR_EXPORT PublicationManager : public std::enable_shared_from_this<Publ
 public:
     PublicationManager(boost::asio::io_service& ioService,
                        std::weak_ptr<IMessageSender> messageSender,
-                       bool enableSubscriptionStorage,
                        std::uint64_t ttlUplift = 0,
                        int maxThreads = 1);
     virtual ~PublicationManager();
@@ -198,10 +197,6 @@ public:
     void selectiveBroadcastOccurred(const std::string& subscriptionId,
                                     const std::vector<std::shared_ptr<BroadcastFilter>>& filters,
                                     const Ts&... values);
-
-    void loadSavedBroadcastSubscriptionRequestsMap(const std::string& fileName);
-    void loadSavedAttributeSubscriptionRequestsMap(const std::string& fileName);
-
     void shutdown();
 
 private:
@@ -227,10 +222,6 @@ private:
     // Support for clean shutdowns
     std::mutex _shutDownMutex;
     bool _shuttingDown;
-
-    // Subscription persistence
-    std::string _subscriptionRequestStorageFileName;
-    std::string _broadcastSubscriptionRequestStorageFileName;
 
     // Queues all subscription requests that are either received by the
     // dispatcher or restored from the subscription storage file before
@@ -258,9 +249,6 @@ private:
 
     std::uint64_t _ttlUplift;
 
-    // Configuration if persistency is enabled or not
-    bool _enableSubscriptionStorage;
-
     // lock for publications map
     std::mutex _publicationsMutex;
 
@@ -273,10 +261,8 @@ private:
     // Functions called by runnables
     void pollSubscription(const std::string& subscriptionId);
     void removePublication(const std::string& subscriptionId);
-    void removeAttributePublication(const std::string& subscriptionId,
-                                    const bool updatePersistenceFile = true);
-    void removeBroadcastPublication(const std::string& subscriptionId,
-                                    const bool updatePersistenceFile = true);
+    void removeAttributePublication(const std::string& subscriptionId);
+    void removeBroadcastPublication(const std::string& subscriptionId);
 
     // Helper functions
     void sendSubscriptionReply(std::weak_ptr<IPublicationSender> publicationSender,
@@ -297,8 +283,6 @@ private:
                                std::shared_ptr<exceptions::SubscriptionException> error);
     bool publicationExists(const std::string& subscriptionId) const;
     void createPublishRunnable(const std::string& subscriptionId);
-    void saveAttributeSubscriptionRequestsMap(bool finalSave = false);
-    void saveBroadcastSubscriptionRequestsMap(bool finalSave = false);
 
     void reschedulePublication(const std::string& subscriptionId, std::int64_t nextPublication);
 
@@ -314,18 +298,6 @@ private:
      */
     std::int64_t getTimeUntilNextPublication(std::shared_ptr<Publication> publication,
                                              const std::shared_ptr<SubscriptionQos> qos);
-
-    template <typename Map>
-    void saveSubscriptionRequestsMap(const Map& mmap,
-                                     const std::string& storageFilename,
-                                     bool saveOnShutdown);
-
-    template <class RequestInformationType>
-    void loadSavedSubscriptionRequestsMap(
-            const std::string& storageFilename,
-            std::mutex& mutex,
-            std::multimap<std::string, std::shared_ptr<RequestInformationType>>&
-                    queuedSubscriptions);
 
     bool isShuttingDown();
     std::int64_t getPublicationTtlMs(

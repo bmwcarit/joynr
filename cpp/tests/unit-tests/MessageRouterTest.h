@@ -74,7 +74,6 @@ public:
               _webSocketClientAddress(
                       std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>(
                               "testWebSocketClientAddress")),
-              _enablePersistency(true),
               _sendMsgRetryInterval(1000),
               _availableGbids{"testGbid1", "testGbid2", "testGbid3"},
               _ownAddress(std::make_shared<const system::RoutingTypes::Address>())
@@ -116,7 +115,6 @@ protected:
                 _messagingStubFactory,
                 _singleThreadedIOService->getIOService(),
                 std::make_unique<WebSocketMulticastAddressCalculator>(_localTransport),
-                _enablePersistency,
                 std::move(transportStatuses),
                 std::move(messageQueueForMessageRouter),
                 std::move(transportNotAvailableQueue));
@@ -133,7 +131,6 @@ protected:
         const std::string messageNotificationProviderParticipantId(
                 "messageNotificationProviderParticipantId");
         ClusterControllerSettings ccSettings(_settings);
-        ccSettings.setMulticastReceiverDirectoryPersistencyEnabled(true);
 
         _messagingSettings.setRoutingTableCleanupIntervalMs(5000);
         _messagingSettings.setSendMsgRetryInterval(_sendMsgRetryInterval);
@@ -155,7 +152,6 @@ protected:
                         ccSettings.getMqttMulticastTopicPrefix(), _availableGbids),
                 globalCcAddress,
                 messageNotificationProviderParticipantId,
-                _enablePersistency,
                 std::move(transportStatuses),
                 std::move(messageQueueForMessageRouter),
                 std::move(transportNotAvailableQueue),
@@ -188,7 +184,6 @@ protected:
     const std::shared_ptr<const joynr::system::RoutingTypes::WebSocketClientAddress>
             _webSocketClientAddress;
 
-    const bool _enablePersistency;
     const std::uint32_t _sendMsgRetryInterval;
     std::vector<std::string> _availableGbids;
 
