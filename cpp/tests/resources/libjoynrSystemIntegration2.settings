@@ -3,4 +3,3 @@ uds-enabled = false
 
 [lib-joynr]
 participant-ids-persistence-file = joynr_participantIds2.persist
-message-router-persistence-file = message-router-persistence-file2.persist

@@ -14,11 +14,8 @@ broker-timeout=
 max-send-ttl=
 
 [lib-joynr]
-message-router-persistence-file=cc.MessageRouter.persist
 participant-ids-persistence-file=cc.ParticipantIds.persist
-subscriptionrequest-persistence-file=cc.SubscriptionRequests.persist
 local-capabilities-directory-persistence-file=cc.LocalCapabilitiesDirectory.persist
-broadcastsubscriptionrequest-persistence-file=cc.BroadcastSubscriptionRequests.persist
 
 [uds]
 socket-path=/tmp/joynr-radio-app.sock

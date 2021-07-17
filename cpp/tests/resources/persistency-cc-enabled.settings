@@ -1,11 +1,5 @@
-[lib-joynr]
-message-router-persistency=true
-subscription-persistency=true
 [cluster-controller]
 local-capabilities-directory-persistency-enabled=true
-# Use default for local-capabilities-directory-persistence-file. Test assumes it.
-multicast-receiver-directory-persistency-enabled=true
-# Use default for multicast-receiver-directory-persistence-file. Test assumes it.
+
 [websocket]
 tls-enabled=false
-

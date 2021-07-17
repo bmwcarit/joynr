@@ -1,10 +1,2 @@
-[lib-joynr]
-message-router-persistency=false
-subscription-persistency=false
-[cluster-controller]
-multicast-receiver-directory-persistency-enabled=false
-multicast-receiver-directory-persistence-file=MulticastReceiverDirectory.persist
-local-capabilities-directory-persistency-enabled=false
-local-capabilities-directory-persistence-file=LocalCapabilitiesDirectory.persist
 [websocket]
 tls-enabled=false

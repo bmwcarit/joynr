@@ -3,4 +3,3 @@ persistence-file=performancetest-provider-messaging-settings.persist
 
 [lib-joynr]
 participant-ids-persistence-file=performancetest-provider.participantids
-message-router-persistence-file=performancetest-provider-routing-table.persist

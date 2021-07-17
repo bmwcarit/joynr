@@ -664,10 +664,8 @@ STDOUT=$PERFORMANCETESTS_RESULTS_DIR/consumer-stdout.txt
 rm -f $STDOUT
 rm -f $REPORTFILE
 
-rm -f $JOYNR_BIN_DIR/BroadcastSubscriptionRequests.persist
 rm -f $JOYNR_BIN_DIR/joynr.settings
 rm -f $JOYNR_BIN_DIR/ParticipantIds.persist
-rm -f $JOYNR_BIN_DIR/SubscriptionRequests.persist
 rm -f $PERFORMANCETESTS_BIN_DIR/performancetest-provider.participantids
 rm -f $PERFORMANCETESTS_SOURCE_DIR/java-consumer.persistence_file
 rm -f $PERFORMANCETESTS_SOURCE_DIR/joynr_participantIds.properties

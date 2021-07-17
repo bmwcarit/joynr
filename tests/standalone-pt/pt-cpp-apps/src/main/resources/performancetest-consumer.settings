@@ -10,4 +10,3 @@ capabilities-directory-participantid=capabilitiesdirectory_participantid
 
 [lib-joynr]
 participant-ids-persistence-file=performancetest-consumer.participantids
-message-router-persistence-file=performancetest-consumer-routing-table.persist

@@ -2,11 +2,8 @@
 persistence-file=radio-app-provider.joynr.settings
 
 [lib-joynr]
-message-router-persistence-file=radio-app-provider.MessageRouter.persist
 participant-ids-persistence-file=radio-app-provider.ParticipantIds.persist
-subscriptionrequest-persistence-file=radio-app-provider.SubscriptionRequests.persist
 local-capabilities-directory-persistence-file=radio-app-provider.LocalCapabilitiesDirectory.persist
-broadcastsubscriptionrequest-persistence-file=radio-app-provider.BroadcastSubscriptionRequests.persist
 
 [uds]
 socket-path=/tmp/joynr-radio-app.sock

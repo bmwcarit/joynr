@@ -1,5 +1,2 @@
-[lib-joynr]
-message-router-persistency=false
-subscription-persistency=false
 [uds]
 socket-path=./uds-libjoynr-test.sock

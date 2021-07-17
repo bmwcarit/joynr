@@ -1,10 +1,5 @@
-[lib-joynr]
-message-router-persistency=true
-subscription-persistency=true
-
 [cluster-controller]
 local-capabilities-directory-persistency-enabled=true
-multicast-receiver-directory-persistency-enabled=true
 purge-expired-discovery-entries-interval-ms=3000
 
 [messaging]
