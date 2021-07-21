@@ -145,6 +145,8 @@ else
 
 	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-MoCOCrW-package.sh 2>&1"'
 
+	execute_in_docker '"echo \"Building and packaging mosquitto\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-mosquitto-package.sh 2>&1"'
+
 	execute_in_docker '"echo \"Building and packaging smrf\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"'
 
 	execute_in_docker '"echo \"Building joynr c++\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs '"${JOBS}"' --enableclangformatter OFF --buildtests OFF 2>&1"'
@@ -194,6 +196,7 @@ find  $CPP_BUILDDIR/joynr/package/RPM/x86_64/ -iregex ".*joynr-[0-9].*rpm" -exec
 find  $CPP_BUILDDIR/smrf/package/RPM/x86_64/ -iregex ".*smrf-[0-9].*rpm" -exec cp {} $DOCKER_BUILDDIR/smrf.rpm \;
 
 cp $JOYNR_REPODIR/docker/build/MoCOCrW.tar.gz $DOCKER_BUILDDIR/MoCOCrW.tar.gz
+cp $JOYNR_REPODIR/docker/build/mosquitto.tar.gz $DOCKER_BUILDDIR/mosquitto.tar.gz
 
 cp -R $JOYNR_REPODIR/docker/joynr-base/scripts/gen-certificates.sh ${DOCKER_BUILDDIR}
 cp -R $JOYNR_REPODIR/docker/joynr-base/openssl.conf ${DOCKER_BUILDDIR}
@@ -214,7 +217,7 @@ cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     RUN . /etc/profile \
         && dnf install -y \
         boost \
-        mosquitto \
+        libwebsockets \
         openssl
 
     ###################################################
@@ -223,6 +226,13 @@ cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     COPY MoCOCrW.tar.gz /tmp/MoCOCrW.tar.gz
     RUN cd / \
         && tar xvf /tmp/MoCOCrW.tar.gz
+
+    ###################################################
+    # Install mosquitto
+    ###################################################
+    COPY mosquitto.tar.gz /tmp/mosquitto.tar.gz
+    RUN cd / \
+        && tar xvf /tmp/mosquitto.tar.gz
 
     ###################################################
     # Install joynr and smrf
