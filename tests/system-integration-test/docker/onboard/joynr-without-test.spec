@@ -71,8 +71,8 @@ mv /data/build/joynr/package/RPM/tmp $RPM_BUILD_ROOT
 %files devel
 %defattr(-,root,root,-)
 %dir "/usr/lib64/cmake"
-/usr/lib64/cmake/joynr
-/usr/lib64/cmake/JoynrGenerator
-/usr/include/joynr
+/usr/lib64/cmake/joynr-*
+/usr/lib64/cmake/JoynrGenerator/*
+/usr/include/joynr-*
 /usr/bin/joynr-generator
 /usr/libexec
