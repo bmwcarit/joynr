@@ -72,6 +72,9 @@ then
     rpm_with_flags="--with performancetests"
 fi
 
+mkdir -p $DESTDIR/usr/share/doc
+chmod 755 $DESTDIR/usr/share/doc
+
 # Install the C++ standalone generator
 JOYNR_GENERATOR_SRCDIR=$SRCDIR/tools/generator/joynr-generator-standalone
 JOYNR_GENERATOR_SCRIPT_SRCDIR=$JOYNR_GENERATOR_SRCDIR/target/scripts
