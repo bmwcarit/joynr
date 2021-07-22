@@ -6,51 +6,51 @@ the versioning scheme [here](JoynrVersioning.md).
 
 ## API-relevant Changes
 * **[Java]** The MessagePersister feature has been discontinued.
-  The related classes / interfaces
-  `io.joynr.messaging.persistence.MessagePersister`,
-  `io.joynr.messaging.persistence.NoOpMessagePersister`,
-  `io.joynr.jeeintegration.api.JoynrMessagePersister`
+  The related classes / interfaces  
+  `io.joynr.messaging.persistence.MessagePersister`,  
+  `io.joynr.messaging.persistence.NoOpMessagePersister`,  
+  `io.joynr.jeeintegration.api.JoynrMessagePersister`  
   have been removed.
 * **[C++]** The following configuration related APIs have been removed in LibjoynrSettings:
-  * LibjoynrSettings::getBroadcastSubscriptionRequestPersistenceFilename()
-  * LibjoynrSettings::setBroadcastSubscriptionRequestPersistenceFilename(...)
-  * LibjoynrSettings::SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
-  * LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
-  * LibjoynrSettings::getSubscriptionRequestPersistenceFilename()
-  * LibjoynrSettings::setSubscriptionRequestPersistenceFilename(...)
-  * LibjoynrSettings::SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
-  * LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()
-  * LibjoynrSettings::isSubscriptionPersistencyEnabled()
-  * LibjoynrSettings::setSubscriptionPersistencyEnabled(...)
-  * LibjoynrSettings::SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED()
-  * LibjoynrSettings::DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED()
-  * LibjoynrSettings::isMessageRouterPersistencyEnabled()
-  * LibjoynrSettings::setMessageRouterPersistencyEnabled(...)
-  * LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED()
-  * LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCY_ENABLED()
-  * LibjoynrSettings::getMessageRouterPersistenceFilename()
-  * LibjoynrSettings::setMessageRouterPersistenceFilename(...)
-  * LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()
-  * LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME()
-  * LibjoynrSettings::isClearSubscriptionEnabled()
-  * LibjoynrSettings::setClearSubscriptionEnabled(...)
-  * LibjoynrSettings::SETTING_CLEAR_SUBSCRIPTION_ENABLED()
-  * LibjoynrSettings::DEFAULT_CLEAR_SUBSCRIPTION_ENABLED()
+  * `LibjoynrSettings::getBroadcastSubscriptionRequestPersistenceFilename()`
+  * `LibjoynrSettings::setBroadcastSubscriptionRequestPersistenceFilename(...)`
+  * `LibjoynrSettings::SETTING_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()`
+  * `LibjoynrSettings::DEFAULT_BROADCASTSUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()`
+  * `LibjoynrSettings::getSubscriptionRequestPersistenceFilename()`
+  * `LibjoynrSettings::setSubscriptionRequestPersistenceFilename(...)`
+  * `LibjoynrSettings::SETTING_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()`
+  * `LibjoynrSettings::DEFAULT_SUBSCRIPTIONREQUEST_PERSISTENCE_FILENAME()`
+  * `LibjoynrSettings::isSubscriptionPersistencyEnabled()`
+  * `LibjoynrSettings::setSubscriptionPersistencyEnabled(...)`
+  * `LibjoynrSettings::SETTING_SUBSCRIPTION_PERSISTENCY_ENABLED()`
+  * `LibjoynrSettings::DEFAULT_SUBSCRIPTION_PERSISTENCY_ENABLED()`
+  * `LibjoynrSettings::isMessageRouterPersistencyEnabled()`
+  * `LibjoynrSettings::setMessageRouterPersistencyEnabled(...)`
+  * `LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCY_ENABLED()`
+  * `LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCY_ENABLED()`
+  * `LibjoynrSettings::getMessageRouterPersistenceFilename()`
+  * `LibjoynrSettings::setMessageRouterPersistenceFilename(...)`
+  * `LibjoynrSettings::SETTING_MESSAGE_ROUTER_PERSISTENCE_FILENAME()`
+  * `LibjoynrSettings::DEFAULT_MESSAGE_ROUTER_PERSISTENCE_FILENAME()`
+  * `LibjoynrSettings::isClearSubscriptionEnabled()`
+  * `LibjoynrSettings::setClearSubscriptionEnabled(...)`
+  * `LibjoynrSettings::SETTING_CLEAR_SUBSCRIPTION_ENABLED()`
+  * `LibjoynrSettings::DEFAULT_CLEAR_SUBSCRIPTION_ENABLED()`
 * **[C++]** The following configuration related APIs have been removed in ClusterControllerSettings:
-  * ClusterControllerSettings::getMulticastReceiverDirectoryPersistenceFilename()
-  * ClusterControllerSettings::setMulticastReceiverDirectoryPersistenceFilename(...)
-  * ClusterControllerSettings::SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()
-  * ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()
-  * ClusterControllerSettings::isMulticastReceiverDirectoryPersistencyEnabled()
-  * ClusterControllerSettings::setMulticastReceiverDirectoryPersistencyEnabled(...)
-  * ClusterControllerSettings::SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED()
-  * ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED()
+  * `ClusterControllerSettings::getMulticastReceiverDirectoryPersistenceFilename()`
+  * `ClusterControllerSettings::setMulticastReceiverDirectoryPersistenceFilename(...)`
+  * `ClusterControllerSettings::SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()`
+  * `ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCE_FILENAME()`
+  * `ClusterControllerSettings::isMulticastReceiverDirectoryPersistencyEnabled()`
+  * `ClusterControllerSettings::setMulticastReceiverDirectoryPersistencyEnabled(...)`
+  * `ClusterControllerSettings::SETTING_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED()`
+  * `ClusterControllerSettings::DEFAULT_MULTICAST_RECEIVER_DIRECTORY_PERSISTENCY_ENABLED()`
 
 ## Other Changes
 * **[Java, JEE]** The persistency support for subscription requests has been
   discontinued.
 * **[C++]** The features `Message Persistency`, `Routing Table Persistency`, `Subscription Persistency`
-and `Multicast Receiver Directory Persistency` have been discontinued.
+  and `Multicast Receiver Directory Persistency` have been discontinued.
 
 ## Configuration Property Changes
 * **[Java, JEE]** The properties `PROPERTY_SUBSCRIPTIONREQUESTS_PERSISTENCY` and
@@ -74,7 +74,7 @@ and `Multicast Receiver Directory Persistency` have been discontinued.
 ## Security Fixes
 None.
 
-## Bug fixes
+## Bug Fixes
 None.
 
 # joynr 1.17.3
@@ -92,7 +92,7 @@ None.
 ## Security Fixes
 None.
 
-## Bug fixes
+## Bug Fixes
 * **[Android]** Prevent message loop between libjoynr clients (with fixed client address) and
   cluster controller. A loop could occur after client restart:
   * when delivering reply messages for proxies from a previous client lifecycle.
@@ -115,7 +115,7 @@ None.
 ## Security Fixes
 * **[JS]** Updated ws to version 7.5.0 and @types/ws to version 7.4.5, fixing `CVE-2021-32640`.
 
-## Bug fixes
+## Bug Fixes
 * **[Java]** Fixed dependency problems in `joynr-generator-standalone`: Now the declared versions
   for all dependencies of `joynr-generator-standalone` are used. The build failed because a newer
   transitive dependency is not compatible with Java 8.
@@ -146,7 +146,7 @@ None.
 ## Security Fixes
 None.
 
-## Bug fixes
+## Bug Fixes
 * **[C++]** Fixed the UID determination of UDS clients for access control in the cluster controller.
 * **[C++]** Delay reconnect when MQTT disconnect with failure occurs instead of attempting to
   reconnect immediately.
@@ -179,8 +179,32 @@ None.
 ## Security Fixes
 None.
 
-## Bug fixes
+## Bug Fixes
 None.
+
+# joynr 1.16.2
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[C++]** Changed behavior of 'removeStale`:
+  * cluster controller now delays `removeStale` for 5 minutes instead of sending it immediately
+    after boot.
+  * Retry of `removeStale` is now limited to 1 hour.
+  * TTL for a single try of `removeStale` is now 1 minute instead of 1 hour.
+* **[C++]** Added boost includes that were accidentally omitted.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed the UID determination of UDS clients for access control in the cluster controller.
+* **[C++]** Delay reconnect when MQTT disconnect with failure occurs instead of attempting to
+  reconnect immediately.
 
 # joynr 1.16.1
 
@@ -719,7 +743,7 @@ None.
   as response to CONNECT is used, if available; otherwise the size is limited to the default
   value specified by HiveMQ client.
 
-## Bug fixes
+## Bug Fixes
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
     This is fixed and replies will now expire at the same time as the original request.
@@ -849,7 +873,7 @@ None.
   as response to CONNECT is used, if available; otherwise the size is limited to the default
   value specified by HiveMQ client.
 
-## Bug fixes
+## Bug Fixes
 * **[Java, JEE]** Fixed some cases, where an UndeclaredThrowableException was returned when
   customer provider method implementation code was using an unsupported exception type
   (neither ProviderRuntimeException nor ApplicationException where applicable).
@@ -885,7 +909,7 @@ None.
 * **[Android]** Updated joynr Gradle generator to use latest Gradle wrapper (6.1.1) and build
  tools (4.0.0).
 
-## Bug fixes
+## Bug Fixes
 
 * **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
   occurs after connection has been established
@@ -908,7 +932,7 @@ None.
   tailored for the CC to run in user 0 (system), and joynr app clients can connect on
   whichever user they decide to in a system with multi-user capabilities.
 
-## Bug fixes
+## Bug Fixes
 * **[Java, JEE]** When sending replies to requests, the relative TTL was erroneously set to the
     absolute TTL timestamp of the request, resulting in replies that virtually never expired.
     This is fixed and replies will now expire at the same time as the original request.
@@ -1049,7 +1073,7 @@ None.
 ## Configuration property changes
 None.
 
-## Bug fixes
+## Bug Fixes
 * **[Generator, C++]** Correctly reference enum values with fully qualified name where required
 
 # joynr 1.11.4
@@ -1063,7 +1087,7 @@ None.
 ## Configuration property changes
 None.
 
-## Bug fixes
+## Bug Fixes
 * **[C++]** MosquittoConnection tries to reconnect even in case a fatal error
   occurs after connection has been established
 
