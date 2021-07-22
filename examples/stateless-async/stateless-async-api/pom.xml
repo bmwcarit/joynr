@@ -25,7 +25,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<parent>
 		<groupId>io.joynr.examples</groupId>
 		<artifactId>stateless-async</artifactId>
-		<version>1.17.4</version>
+		<version>1.17.5-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
