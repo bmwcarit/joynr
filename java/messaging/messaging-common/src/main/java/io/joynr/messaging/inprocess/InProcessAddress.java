@@ -21,9 +21,9 @@ package io.joynr.messaging.inprocess;
 import java.io.Serializable;
 
 import io.joynr.subtypes.JoynrType;
-import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.LocalAddress;
 
-public class InProcessAddress extends Address implements Serializable, JoynrType {
+public class InProcessAddress extends LocalAddress implements Serializable, JoynrType {
 
     private static final long serialVersionUID = -647813790331888374L;
 

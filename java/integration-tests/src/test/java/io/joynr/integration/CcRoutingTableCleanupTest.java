@@ -35,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -54,6 +55,7 @@ import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
+import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessAddress;
@@ -62,6 +64,9 @@ import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.websocket.IWebSocketMessagingSkeleton;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
+import io.joynr.proxy.MessageIdCallback;
+import io.joynr.proxy.ReplyContext;
+import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
@@ -70,12 +75,15 @@ import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
+import joynr.Reply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.tests.DefaulttestProvider;
+import joynr.tests.testProxy;
+import joynr.tests.testStatelessAsyncCallback;
 import joynr.tests.testTypes.TestEnum;
 
 /**
@@ -89,6 +97,7 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
     private final WebSocketClientAddress wsClientAddress = new WebSocketClientAddress("wsProxyRuntime");
     private String proxyParticipantId;
     private DefaulttestProvider testProvider;
+    private static final String STATELESS_ASYNC_USE_CASE = "testStatelessUseCase";
 
     @Before
     public void setUp() throws InterruptedException, IOException {
@@ -1205,6 +1214,82 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
     @Test
     public void ws_attributeSrqSrp_success() {
         attributeSrqSrp_success(wsClientAddress, webSocketClientMessagingStubMock, false, insertWsMessage);
+    }
+
+    public class StatelessAsyncCallback implements testStatelessAsyncCallback {
+        private CountDownLatch resultCdl;
+
+        public StatelessAsyncCallback(CountDownLatch resultCdl) {
+            this.resultCdl = resultCdl;
+        }
+
+        @Override
+        public String getUseCase() {
+            return STATELESS_ASYNC_USE_CASE;
+        }
+
+        @Override
+        public void sayHelloSuccess(String result, ReplyContext replyContext) {
+            logger.info("SUCCESS for {}: {}", replyContext.getMessageId(), result);
+            resultCdl.countDown();
+        }
+
+        @Override
+        public void sayHelloFailed(JoynrRuntimeException runtimeException, ReplyContext replyContext) {
+            logger.error("ERROR for {}: {}", replyContext.getMessageId(), runtimeException);
+            resultCdl.countDown();
+        }
+    }
+
+    @Test
+    public void mqtt_statelessReply_success() throws NoSuchMethodException, SecurityException {
+        createProxyRoutingEntry(replyToAddress); // some remote proxy unrelated to this test case (to pass check in tearDown)
+        CountDownLatch cbCdl = new CountDownLatch(1);
+        StatelessAsyncCallback cb = new StatelessAsyncCallback(cbCdl);
+        joynrRuntime.registerStatelessAsyncCallback(cb);
+
+        StatelessAsyncIdCalculator calculator = injector.getInstance(StatelessAsyncIdCalculator.class);
+        String cbId = calculator.calculateParticipantId(testProxy.INTERFACE_NAME, cb);
+        checkRefCnt(cbId, 1);
+
+        // fake incoming stateless reply and check refCounts
+        CountDownLatch rpCdl = new CountDownLatch(1);
+        doAnswer(factory -> {
+            InProcessMessagingStub inProcessMessagingStubSpy = spy((InProcessMessagingStub) factory.callRealMethod());
+
+            doAnswer(invocation -> {
+                ImmutableMessage msg = (ImmutableMessage) invocation.getArguments()[0];
+                assertEquals(MessageType.VALUE_MESSAGE_TYPE_REPLY, msg.getType());
+                assertEquals(cbId, msg.getRecipient());
+                checkRefCnt(cbId, 1);
+
+                SuccessAction onSuccess = (SuccessAction) invocation.getArguments()[1];
+                invocation.callRealMethod();
+                onSuccess.execute();
+
+                rpCdl.countDown();
+                return null;
+            }).when(inProcessMessagingStubSpy)
+              .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
+
+            return inProcessMessagingStubSpy;
+        }).when(inProcessMessagingStubFactorySpy).create(any(InProcessAddress.class));
+
+        Method sayHello = testProxy.class.getMethod("sayHello", new Class<?>[]{ MessageIdCallback.class });
+        String requestReplyId = calculator.calculateStatelessCallbackRequestReplyId(sayHello);
+        MutableMessage replyMsg = messageFactory.createReply(FIXEDPARTICIPANTID1,
+                                                             cbId,
+                                                             new Reply(requestReplyId, "result"),
+                                                             new MessagingQos());
+        try {
+            insertMqttMessage.accept(replyMsg);
+        } catch (Exception e) {
+            fail("fake incoming stateless reply failed: " + e);
+        }
+
+        waitFor(rpCdl, DEFAULT_WAIT_TIME);
+        waitFor(cbCdl, DEFAULT_WAIT_TIME);
+        checkRefCnt(cbId, 1);
     }
 
 }

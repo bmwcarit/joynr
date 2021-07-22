@@ -613,10 +613,46 @@ public class CcMessageRouterTest {
     }
 
     @Test
-    public void testMessageProcessedListenerCalledOnSuccessForReply() throws Exception {
+    public void testMessageProcessedListenerCalledOnSuccessForReply_inProcessRecipient() throws Exception {
         final Semaphore semaphore = new Semaphore(0);
 
-        final Reply reply = new Reply("requestReplyId", new JoynrRuntimeException("TestException"));
+        String toInProcess = "toInProcess";
+        final Reply reply = new Reply("requestReplyId");
+        joynrMessage = messageFactory.createReply(fromParticipantId, toInProcess, reply, new MessagingQos());
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+        final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        when(inProcessMessagingStubFactoryMock.create(any(InProcessAddress.class))).thenReturn(messagingStubMock);
+        InProcessAddress inProcessAddress = new InProcessAddress(mock(InProcessMessagingSkeleton.class));
+        routingTable.put(toInProcess, inProcessAddress, true, Long.MAX_VALUE);
+
+        final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
+        ccMessageRouter.registerMessageProcessedListener(mockMessageProcessedListener);
+
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
+                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                semaphore.release();
+                return null;
+            }
+        }).when(messagingStubMock)
+          .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
+
+        ccMessageRouter.routeIn(immutableMessage);
+
+        semaphore.tryAcquire(100000, TimeUnit.MILLISECONDS);
+        verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
+        verify(routingTable, never()).remove(eq(joynrMessage.getRecipient()));
+    }
+
+    @Test
+    public void testMessageProcessedListenerCalledOnSuccessForReply_mqttRecipient() throws Exception {
+        final Semaphore semaphore = new Semaphore(0);
+
+        final Reply reply = new Reply("requestReplyId");
         joynrMessage = messageFactory.createReply(fromParticipantId, toParticipantId, reply, new MessagingQos());
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
@@ -636,7 +672,7 @@ public class CcMessageRouterTest {
         }).when(messagingStubMock)
           .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
 
-        ccMessageRouter.routeIn(immutableMessage);
+        ccMessageRouter.routeOut(immutableMessage);
 
         semaphore.tryAcquire(1000, TimeUnit.MILLISECONDS);
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
