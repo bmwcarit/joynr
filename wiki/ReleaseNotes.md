@@ -2,6 +2,24 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.16.3
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed a bug where replies for stateless asynchronous remote procedure
+  calls could not be handled correctly
+
 # joynr 1.16.2
 
 ## API-relevant Changes
