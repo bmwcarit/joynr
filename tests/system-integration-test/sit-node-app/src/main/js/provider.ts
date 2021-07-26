@@ -18,6 +18,7 @@
  */
 
 import joynr = require("joynr");
+import WebSocketLibjoynrRuntime = require("joynr/joynr/start/WebSocketLibjoynrRuntime");
 
 import testbase from "test-base";
 import SystemIntegrationTestProvider from "../generated-sources/joynr/test/SystemIntegrationTestProvider";
@@ -89,6 +90,7 @@ const timeoutPromise = new Promise((reject) => {
     }, 30000);
 });
 
+joynr.selectRuntime(WebSocketLibjoynrRuntime);
 joynr
     .load(testbase.provisioning_common)
     .then(() => {

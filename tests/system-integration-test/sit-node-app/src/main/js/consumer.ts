@@ -18,6 +18,7 @@
  */
 
 import joynr = require("joynr");
+import WebSocketLibjoynrRuntime = require("joynr/joynr/start/WebSocketLibjoynrRuntime");
 import testbase from "test-base";
 import fs from "fs";
 
@@ -101,6 +102,7 @@ async function runTest(systemIntegrationTestProxy: SystemIntegrationTestProxy): 
     }
 }
 
+joynr.selectRuntime(WebSocketLibjoynrRuntime);
 joynr
     .load(provisioning)
     .then(() => {
