@@ -18,9 +18,13 @@
 # #L%
 ###
 
+# Uncomment cmdline below to get stdout/stderr logged into
+# file for online inspection when being interactively logged
+# in to running container with a shell
+#exec 1> /tmp/run-onboard-sit.log 2>&1
+
 # Give the JEE Discovery Directory a chance to start ...
 sleep 120
-#sleep 100000000
 
 echo "SIT: Onboard RUN END TO END TEST"
 
@@ -44,6 +48,7 @@ NVM_DIR=/usr/local/nvm
 type node
 
 DATA_DIR=/data
+LOG_DIR=/tmp/logs
 CPP_HOME=${DATA_DIR}/sit-cpp-app
 NODE_APP_HOME=${DATA_DIR}/sit-node-app
 # Do not use JAVA_HOME, which has special meaning
@@ -123,12 +128,15 @@ cp -a sit-java-app sit-java-app-provider-failure
 rm -rf sit-java-app-consumer-failure
 cp -a sit-java-app sit-java-app-consumer-failure
 
+# just in case this is not mounted as a volume, create it
+mkdir -p ${LOG_DIR}
+
 # Start cluster controller
 cd ${CPP_HOME}/bin
-/usr/bin/cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings > cc.log 2>&1 &
+/usr/bin/cluster-controller ${DATA_DIR}/onboard-cc-messaging.settings > ${LOG_DIR}/cc.log 2>&1 &
 CLUSTER_CONTROLLER_PID=$!
 
-/usr/bin/cluster-controller ${DATA_DIR}/onboard-failure-cc-messaging.settings > failure-cc.log 2>&1 &
+/usr/bin/cluster-controller ${DATA_DIR}/onboard-failure-cc-messaging.settings > ${LOG_DIR}/failure-cc.log 2>&1 &
 FAILURE_CLUSTER_CONTROLLER_PID=$!
 
 # Start provider
@@ -136,22 +144,22 @@ for i in 0 1 2
 do
 	echo "SIT: Starting C++ provider for domain ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}.cpp"
 	cd ${CPP_HOME}/${BACKEND_PREFIX[$i]}
-	./jsit-provider-ws -d ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}.cpp -r -g ${GBIDS[$i]} -G > provider_cpp_${BACKEND_PREFIX[$i]}.log 2>&1 &
+	./jsit-provider-ws -d ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}.cpp -r -g ${GBIDS[$i]} -G > ${LOG_DIR}/provider_cpp_${BACKEND_PREFIX[$i]}.log 2>&1 &
 	CPP_PROVIDER_PID[$i]=$!
 
 	echo "SIT: Starting Node provider for domain ${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.node"
 	cd ${DATA_DIR}/sit-node-app-${BACKEND_PREFIX[$i]}
-	npm run-script startprovider --sit-node-app:domain=${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.node --sit-node-app:gbids=${GBIDS[$i]} > provider_node_${BACKEND_PREFIX[$i]}.log 2>&1 &
+	npm run-script startprovider --sit-node-app:domain=${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.node --sit-node-app:gbids=${GBIDS[$i]} > ${LOG_DIR}/provider_node_${BACKEND_PREFIX[$i]}.log 2>&1 &
 	NODE_PROVIDER_PID[$i]=$!
 
 	echo "SIT: Starting Node TLS provider for domain ${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.nodeTls"
 	cd ${DATA_DIR}/sit-node-app-tls-${BACKEND_PREFIX[$i]}
-	npm run-script startprovidertls --sit-node-app:domain=${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.nodeTls --sit-node-app:gbids=${GBIDS[$i]} > provider_tls_node_${BACKEND_PREFIX[$i]}.log 2>&1 &
+	npm run-script startprovidertls --sit-node-app:domain=${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.nodeTls --sit-node-app:gbids=${GBIDS[$i]} > ${LOG_DIR}/provider_tls_node_${BACKEND_PREFIX[$i]}.log 2>&1 &
 	NODE_TLS_PROVIDER_PID[$i]=$!
 
 	echo "SIT: Starting Java provider for domain ${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.java"
 	cd ${DATA_DIR}/sit-java-app-provider-${BACKEND_PREFIX[$i]}
-	java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication -d ${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.java -r -g ${GBIDS[$i]} -G > provider_java_${BACKEND_PREFIX[$i]}.log 2>&1 &
+	java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication -d ${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.java -r -g ${GBIDS[$i]} -G > ${LOG_DIR}/provider_java_${BACKEND_PREFIX[$i]}.log 2>&1 &
 	JAVA_PROVIDER_PID[$i]=$!
 done
 
@@ -179,12 +187,13 @@ echo "SIT: Waiting for JEE Application to be started"
 			max_retries=60
 			while [ $retry_count -le $max_retries ]
 			do
-				curl -f -s http://sit-jee-app-$i:8080/sit-jee-app/sit-controller/ping
-				if [ "$?" = 0 ]
+				curl --noproxy sit-jee-app-$i -f -s http://sit-jee-app-$i:8080/sit-jee-app/sit-controller/ping
+				exitcode=$?
+				if [ $exitcode -eq 0 ]
 				then
 					break
 				fi
-				echo "SIT: JEE application not started yet ..."
+				echo "SIT: JEE application not started yet ... curl failed with exit code $exitcode"
 				sleep 2
 				retry_count=$(($retry_count+1))
 			done
@@ -214,7 +223,7 @@ do
 			cd ${CPP_HOME}/${BACKEND_PREFIX[$i]}
 			./jsit-consumer-ws -d ${BACKEND_PREFIX[$i]}_$domainprefix.cpp -g ${GBIDS[$i]} -G
 
-			if [ "$?" = "0" ]
+			if [ $? -eq 0 ]
 			then
 				echo "SIT: cpp<->cpp joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix succeeded"
 			else
@@ -229,7 +238,7 @@ do
 			cd ${CPP_HOME}/${BACKEND_PREFIX[$i]}
 			./jsit-consumer-ws -d ${BACKEND_PREFIX[$i]}_$domainprefix.java -g ${GBIDS[$i]} -G
 
-			if [ "$?" = "0" ]
+			if [ $? -eq 0 ]
 			then
 				echo "SIT: cpp<->java joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix succeeded"
 			else
@@ -244,7 +253,7 @@ do
 			cd ${CPP_HOME}/${BACKEND_PREFIX[$i]}
 			./jsit-consumer-ws -d ${BACKEND_PREFIX[$i]}_$domainprefix.node -g ${GBIDS[$i]} -G
 
-			if [ "$?" = "0" ]
+			if [ $? -eq 0 ]
 			then
 				echo "SIT: cpp<->node joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix succeeded"
 			else
@@ -259,7 +268,7 @@ do
 			echo "SIT: running cpp<->jee joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix.jee"
 			./jsit-consumer-ws -d ${BACKEND_PREFIX[$i]}_$domainprefix.jee -g ${GBIDS[$i]} -G
 
-			if [ "$?" = "0" ]
+			if [ $? -eq 0 ]
 			then
 				echo "SIT: cpp<->jee joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix succeeded"
 			else
@@ -271,8 +280,8 @@ do
                 cd ${CPP_HOME}/failure
                 echo "SIT: running cpp joynr system integration test for failure on invalid gbid"
                 ./jsit-consumer-ws -d failure -f -g "invalid" -G
- 
-                if [ "$?" = "0" ]
+
+                if [ $? -eq 0 ]
                 then
                         echo "SIT: cpp joynr system integration test for failure on invalid gbid failed"
                 else
@@ -282,13 +291,13 @@ do
                 cd ${CPP_HOME}/failure
                 echo "SIT: running cpp joynr system integration test for failure on unknown gbid"
                 ./jsit-consumer-ws -d failure -f -g "othergbid" -G
- 
-                if [ "$?" = "0" ]
+
+                if [ $? -eq 0 ]
                 then
                         echo "SIT: cpp joynr system integration test for failure on unknown gbid failed"
                 else
                         echo "SIT RESULT SUCCESS joynr cpp system integration test for failure on unknown gbid failed as expected"
-                fi 
+                fi
 	)
 
 
@@ -302,7 +311,7 @@ do
 			rm -f *.persistence_file joynr_participantIds.properties
 			java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d ${BACKEND_PREFIX[$i]}_$domainprefix.cpp -g ${GBIDS[$i]} -G
 
-			if [ "$?" = "0" ]
+			if [ $? -eq 0 ]
 			then
 				echo "SIT: java<->cpp joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix succeeded"
 			else
@@ -318,7 +327,7 @@ do
 			rm -f *.persistence_file joynr_participantIds.properties
 			java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d ${BACKEND_PREFIX[$i]}_$domainprefix.java -g ${GBIDS[$i]} -G
 
-			if [ "$?" = "0" ]
+			if [ $? -eq 0 ]
 			then
 				echo "SIT: java<->java joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix succeeded"
 			else
@@ -334,7 +343,7 @@ do
 			rm -f *.persistence_file joynr_participantIds.properties
 			java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d ${BACKEND_PREFIX[$i]}_$domainprefix.node -g ${GBIDS[$i]} -G
 
-			if [ "$?" = "0" ]
+			if [ $? -eq 0 ]
 			then
 				echo "SIT: java<->node joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix succeeded"
 			else
@@ -350,7 +359,7 @@ do
 			rm -f *.persistence_file joynr_participantIds.properties
 			java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d ${BACKEND_PREFIX[$i]}_$domainprefix.jee -g ${GBIDS[$i]} -G
 
-			if [ "$?" = "0" ]
+			if [ $? -eq 0 ]
 			then
 				echo "SIT: java<->jee joynr system integration test for domain ${BACKEND_PREFIX[$i]}_$domainprefix succeeded"
 			else
@@ -364,7 +373,7 @@ do
                 rm -f *.persistence_file joynr_participantIds.properties
                 java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d failure -g "invalid" -f -G
 
-                if [ "$?" = "0" ]
+                if [ $? -eq 0 ]
                 then
                         echo "SIT: java joynr system integration test for failure on invalid gbid succeeded"
                 else
@@ -376,7 +385,7 @@ do
                 rm -f *.persistence_file joynr_participantIds.properties
                 java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d failure -g "othergbid" -f -G
 
-                if [ "$?" = "0" ] 
+                if [ $? -eq 0 ]
                 then
                         echo "SIT: java joynr system integration test for failure on unknown gbid succeeded"
                 else
