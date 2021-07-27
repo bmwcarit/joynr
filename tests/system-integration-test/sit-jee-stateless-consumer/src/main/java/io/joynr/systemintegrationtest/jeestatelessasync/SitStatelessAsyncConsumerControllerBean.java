@@ -82,7 +82,7 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
     public String waitForStatelessResult(Integer timeoutMs) {
         logger.info("waitForStatelessResult called");
         try {
-            return Base64.getEncoder()
+            return Base64.getMimeEncoder()
                          .encodeToString(resultQueue.getResult(timeoutMs).getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             String errorMsg = "SIT RESULT error: stateless async JEE consumer -> " + e.toString();

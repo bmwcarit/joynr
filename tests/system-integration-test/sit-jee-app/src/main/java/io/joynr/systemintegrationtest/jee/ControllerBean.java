@@ -85,7 +85,7 @@ public class ControllerBean implements SitControllerSync {
                 }
             }
         }
-        return Base64.getEncoder().encodeToString(result.toString().getBytes(StandardCharsets.UTF_8));
+        return Base64.getMimeEncoder().encodeToString(result.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     private void callProducer(String domain, StringBuffer result) {

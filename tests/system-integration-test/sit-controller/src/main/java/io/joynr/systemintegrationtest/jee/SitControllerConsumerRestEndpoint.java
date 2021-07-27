@@ -181,7 +181,7 @@ public class SitControllerConsumerRestEndpoint {
                                                                       .withMessagingQos(messagingQos)
                                                                       .withGbids(gbids)
                                                                       .build();
-                result.append(new String(Base64.getDecoder()
+                result.append(new String(Base64.getMimeDecoder()
                                                .decode(sitControllerJeeApp.triggerTests(domainsToBeSent[i], false)
                                                                           .getBytes(StandardCharsets.ISO_8859_1)),
                                          StandardCharsets.UTF_8));
@@ -201,7 +201,7 @@ public class SitControllerConsumerRestEndpoint {
                                                                   .withMessagingQos(messagingQos)
                                                                   .withGbids(gbids)
                                                                   .build();
-            result.append(new String(Base64.getDecoder()
+            result.append(new String(Base64.getMimeDecoder()
                                            .decode(sitControllerJeeApp.triggerTests(domainsToBeSent[0], true)
                                                                       .getBytes(StandardCharsets.ISO_8859_1)),
                                      StandardCharsets.UTF_8));
@@ -235,19 +235,19 @@ public class SitControllerConsumerRestEndpoint {
 
             result.append(sitControllerJeeStatelessAsyncNode1.triggerTests(configuredDomains[0], false));
 
-            result.append(new String(Base64.getDecoder()
+            result.append(new String(Base64.getMimeDecoder()
                                            .decode(sitControllerJeeStatelessAsyncNode1.waitForStatelessResult(60000)
                                                                                       .getBytes(StandardCharsets.ISO_8859_1)),
                                      StandardCharsets.UTF_8));
             result.append("\n");
-            result.append(new String(Base64.getDecoder()
+            result.append(new String(Base64.getMimeDecoder()
                                            .decode(sitControllerJeeStatelessAsyncNode2.waitForStatelessResult(60000)
                                                                                       .getBytes(StandardCharsets.ISO_8859_1)),
                                      StandardCharsets.UTF_8));
             result.append("\n");
         } catch (Exception e) {
             String errorMsg = "SIT RESULT error: triggerTests of sit-jee-stateless-consumer failed: " + e;
-            logger.error(errorMsg);
+            logger.error(errorMsg, e);
             result.append("\n").append(errorMsg);
         }
         return result.toString();
