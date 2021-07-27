@@ -8,6 +8,6 @@ PID=$!
 # and wait grace period to let the server and database start up
 sleep 30
 
-asadmin --interactive=false --user admin --passwordfile=/tmp/pwdfile deploy /sit-jee-stateless-consumer.war
+asadmin --interactive=false --user admin --passwordfile=/opt/payara41/pwdfile deploy /sit-jee-stateless-consumer.war
 # Prevent script from exiting which would cause the container to terminate immediately
 wait $PID
