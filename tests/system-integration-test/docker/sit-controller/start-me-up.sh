@@ -6,7 +6,7 @@ sleep 30
 function wait_for_endpoint {
 	retry_count=0
 	max_retries=60
-	until curl -f -s $2 || ((retry_count++ > max_retries))
+	until curl --noproxy localhost -f -s $2 || ((retry_count++ > max_retries))
 	do
 		echo "$1 ping not started yet ..."
 		sleep 2
@@ -25,7 +25,7 @@ function call_consumer {
 	sleep 15
 	wait_for_endpoint "SIT controller" "http://localhost:8080/sit-controller/ping" && \
 	printf "\n\n >>>  STARTING SIT CONTROLLER  <<<\n\n" && \
-	SIT_RESULT=$(curl -f -s http://localhost:8080/sit-controller/test)
+	SIT_RESULT=$(curl --noproxy localhost -f -s http://localhost:8080/sit-controller/test)
     EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]
     then
