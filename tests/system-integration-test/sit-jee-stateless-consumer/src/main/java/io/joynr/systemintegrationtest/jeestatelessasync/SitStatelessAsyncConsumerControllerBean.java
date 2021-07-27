@@ -106,7 +106,7 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
                                                                       .withGbids(gbids)
                                                                       .build();
 
-            final int iterations = 10;
+            final int iterations = 100;
             CountDownLatch countDownLatch = new CountDownLatch(iterations);
             for (int i = 0; i < iterations; i++) {
                 final int requestNumber = i + 1;
