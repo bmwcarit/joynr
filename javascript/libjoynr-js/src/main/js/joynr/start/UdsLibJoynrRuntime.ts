@@ -142,7 +142,6 @@ class UdsLibJoynrRuntime extends JoynrRuntime<UdsLibJoynrProvisioning> {
 
         super.initializeComponents(
             provisioning,
-            messageRouterSettings.joynrInstanceId,
             localDiscoveryAggregator,
             clusterControllerMessagingStub,
             typedCapabilities
@@ -218,7 +217,6 @@ class UdsLibJoynrRuntime extends JoynrRuntime<UdsLibJoynrProvisioning> {
             .then((newDiscoveryProxy: DiscoveryProxy) => {
                 localDiscoveryAggregator.setDiscoveryProxy(newDiscoveryProxy);
                 this.joynrState = JoynrStates.STARTED;
-                this.publicationManager.restore();
                 log.debug("UdsLibJoynrRuntime initialized");
             })
             .catch(async error => {

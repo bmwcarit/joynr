@@ -188,7 +188,6 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
 
         super.initializeComponents(
             provisioning,
-            messageRouterSettings.joynrInstanceId,
             localDiscoveryAggregator,
             clusterControllerMessagingStub,
             typedCapabilities
@@ -233,7 +232,6 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
             .then((newDiscoveryProxy: DiscoveryProxy) => {
                 localDiscoveryAggregator.setDiscoveryProxy(newDiscoveryProxy);
                 this.joynrState = JoynrStates.STARTED;
-                this.publicationManager.restore();
                 log.debug("joynr web socket initialized");
             })
             .catch(async error => {

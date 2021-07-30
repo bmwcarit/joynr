@@ -16,7 +16,6 @@
  * limitations under the License.
  * #L%
  */
-import { Persistency } from "../../../global/interface/Persistency";
 import {
     ProviderAttribute,
     ProviderReadNotifyAttribute,
@@ -35,7 +34,6 @@ import * as SubscriptionUtil from "./util/SubscriptionUtil";
 import SubscriptionException from "../../exceptions/SubscriptionException";
 import * as JSONSerializer from "../../util/JSONSerializer";
 import LongTimer from "../../util/LongTimer";
-import * as UtilInternal from "../../util/UtilInternal";
 import LoggingManager from "../../system/LoggingManager";
 import Dispatcher = require("../Dispatcher");
 import SubscriptionRequest = require("../types/SubscriptionRequest");
@@ -46,11 +44,8 @@ import OnChangeWithKeepAliveSubscriptionQos = require("../../proxy/OnChangeWithK
 const log = LoggingManager.getLogger("joynr.dispatching.subscription.PublicationManager");
 
 class PublicationManager {
-    public static SUBSCRIPTIONS_STORAGE_PREFIX = "subscriptions";
-    private persistency: Persistency;
     private dispatcher: Dispatcher;
     private started: boolean = true;
-    private subscriptionPersistenceKey: string;
     private multicastSubscriptions: Record<string, any> = {};
 
     // map: providerId+eventName -> subscriptionIds -> subscription
@@ -77,20 +72,9 @@ class PublicationManager {
      * The PublicationManager is responsible for handling subscription requests.
      *
      * @param dispatcher
-     * @param persistency
-     * @param joynrInstanceId: the Id of the actual joynr instance
      */
-    public constructor(dispatcher: Dispatcher, persistency: Persistency, joynrInstanceId: string) {
-        this.subscriptionPersistenceKey = `${PublicationManager.SUBSCRIPTIONS_STORAGE_PREFIX}_${joynrInstanceId}`;
-
-        if (!persistency) {
-            this.storeSubscriptions = UtilInternal.emptyFunction;
-            this.removeSubscriptionFromPersistency = UtilInternal.emptyFunction;
-            this.addSubscriptionToPersistency = UtilInternal.emptyFunction;
-        }
-
+    public constructor(dispatcher: Dispatcher) {
         this.dispatcher = dispatcher;
-        this.persistency = persistency;
 
         this.triggerPublication = this.triggerPublication.bind(this);
         this.removeSubscription = this.removeSubscription.bind(this);
@@ -610,8 +594,6 @@ class PublicationManager {
         this.removeRequestFromMulticastSubscriptions(subscription.multicastId, subscriptionId);
 
         delete this.subscriptionInfos[subscriptionId];
-
-        this.removeSubscriptionFromPersistency(subscriptionId);
     }
 
     /**
@@ -905,8 +887,6 @@ class PublicationManager {
         this.subscriptionInfos[subscriptionId] = subscriptionInfo;
         subscriptions[subscriptionId] = subscriptionInfo;
 
-        this.addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
-
         this.optionalCallbackDispatcher(
             callbackDispatcherSettings,
             {
@@ -914,24 +894,6 @@ class PublicationManager {
             },
             callbackDispatcher
         );
-    }
-
-    /**
-     * Stores subscriptions
-     */
-    public storeSubscriptions(): void {
-        const item = SubscriptionUtil.serializeSubscriptionIds(this.subscriptionInfos);
-        this.persistency.setItem(this.subscriptionPersistenceKey, item);
-    }
-
-    public removeSubscriptionFromPersistency(subscriptionId: string): void {
-        this.persistency.removeItem(subscriptionId);
-        this.storeSubscriptions();
-    }
-
-    public addSubscriptionToPersistency(subscriptionId: string, subscriptionInfo: SubscriptionInformation): void {
-        this.persistency.setItem(subscriptionId, JSON.stringify(subscriptionInfo));
-        this.storeSubscriptions();
     }
 
     /**
@@ -1191,8 +1153,6 @@ class PublicationManager {
         this.subscriptionInfos[subscriptionId] = subscriptionInfo;
         subscriptions[subscriptionId] = subscriptionInfo;
 
-        this.addSubscriptionToPersistency(subscriptionId, subscriptionInfo);
-
         this.triggerPublication(subscriptionInfo);
         this.optionalCallbackDispatcher(callbackDispatcherSettings, { subscriptionId }, callbackDispatcher);
     }
@@ -1349,66 +1309,6 @@ class PublicationManager {
                             subscriptionObject.providerParticipantId,
                             subscriptionObject
                         );
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Loads subscriptions
-     */
-    public restore(callbackAsync?: Function): void {
-        if (!this.isReady()) {
-            throw new Error("PublicationManager is already shut down");
-        }
-
-        if (!this.persistency) {
-            return;
-        }
-
-        const subscriptions = this.persistency.getItem(this.subscriptionPersistenceKey);
-        if (subscriptions) {
-            const subscriptionIds = SubscriptionUtil.deserializeSubscriptionIds(subscriptions);
-            for (const subscriptionId in subscriptionIds) {
-                if (subscriptionIds.hasOwnProperty(subscriptionId)) {
-                    const item = this.persistency.getItem(subscriptionIds[subscriptionId]);
-                    if (item !== null && item !== undefined) {
-                        try {
-                            const subscriptionInfo = JSON.parse(item);
-                            if (
-                                subscriptionInfo.subscriptionType ===
-                                SubscriptionInformation.SUBSCRIPTION_TYPE_ATTRIBUTE
-                            ) {
-                                // call attribute subscription handler
-                                this.handleSubscriptionRequest(
-                                    subscriptionInfo.proxyParticipantId,
-                                    subscriptionInfo.providerParticipantId,
-                                    subscriptionInfo,
-                                    callbackAsync
-                                );
-                            } else if (
-                                subscriptionInfo.subscriptionType ===
-                                SubscriptionInformation.SUBSCRIPTION_TYPE_BROADCAST
-                            ) {
-                                // call broadcast subscription handler
-                                this.handleBroadcastSubscriptionRequest(
-                                    subscriptionInfo.proxyParticipantId,
-                                    subscriptionInfo.providerParticipantId,
-                                    subscriptionInfo,
-                                    callbackAsync
-                                );
-                            } else {
-                                this.handleMulticastSubscriptionRequest(
-                                    subscriptionInfo.proxyParticipantId,
-                                    subscriptionInfo.providerParticipantId,
-                                    subscriptionInfo,
-                                    callbackAsync
-                                );
-                            }
-                        } catch (err) {
-                            throw new Error(err);
-                        }
                     }
                 }
             }

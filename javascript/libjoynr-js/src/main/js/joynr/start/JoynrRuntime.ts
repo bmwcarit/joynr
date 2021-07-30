@@ -126,11 +126,7 @@ class JoynrRuntime<T extends Provisioning> {
         );
 
         let persistencyPromise;
-        if (
-            persistencyProvisioning.routingTable ||
-            persistencyProvisioning.capabilities ||
-            persistencyProvisioning.publications
-        ) {
+        if (persistencyProvisioning.routingTable || persistencyProvisioning.capabilities) {
             this.persistency = new LocalStorage({
                 clearPersistency: persistencyProvisioning.clearPersistency,
                 location: persistencyProvisioning.location
@@ -142,8 +138,7 @@ class JoynrRuntime<T extends Provisioning> {
 
         this.persistencyConfig = {
             routingTable: persistencyProvisioning.routingTable ? this.persistency : undefined,
-            capabilities: persistencyProvisioning.capabilities ? this.persistency : new MemoryStorage(),
-            publications: persistencyProvisioning.publications ? this.persistency : undefined
+            capabilities: persistencyProvisioning.capabilities ? this.persistency : new MemoryStorage()
         };
 
         return persistencyPromise;
@@ -171,7 +166,6 @@ class JoynrRuntime<T extends Provisioning> {
 
     protected initializeComponents(
         provisioning: T,
-        joynrInstanceId: string,
         discovery: DiscoveryStub,
         externalMessagingStub: InProcessMessagingStub,
         typedCapabilities?: DiscoveryEntryWithMetaInfo[]
@@ -191,11 +185,7 @@ class JoynrRuntime<T extends Provisioning> {
 
         this.requestReplyManager = new RequestReplyManager(this.dispatcher);
         this.subscriptionManager = new SubscriptionManager(this.dispatcher);
-        this.publicationManager = new PublicationManager(
-            this.dispatcher,
-            this.persistencyConfig.publications,
-            joynrInstanceId
-        );
+        this.publicationManager = new PublicationManager(this.dispatcher);
 
         this.dispatcher.registerRequestReplyManager(this.requestReplyManager);
         this.dispatcher.registerSubscriptionManager(this.subscriptionManager);

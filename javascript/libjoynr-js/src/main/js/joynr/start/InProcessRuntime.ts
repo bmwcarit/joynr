@@ -181,12 +181,7 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
         const externalMessagingStub = new InProcessMessagingStub(externalMessagingSkeleton);
         externalMessagingSkeleton.registerListener(this.messageRouter.route);
 
-        super.initializeComponents(
-            provisioning,
-            messageRouterSettings.joynrInstanceId,
-            capabilityDiscovery,
-            externalMessagingStub
-        );
+        super.initializeComponents(provisioning, capabilityDiscovery, externalMessagingStub);
 
         const mqttMessagingSkeleton = new MqttMessagingSkeleton({
             address: globalClusterControllerAddress,
@@ -222,7 +217,6 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
         }
 
         this.joynrState = JoynrStates.STARTED;
-        this.publicationManager.restore();
         log.debug("joynr initialized");
     }
 

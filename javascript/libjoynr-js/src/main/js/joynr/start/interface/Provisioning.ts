@@ -66,11 +66,6 @@ export interface Persistency {
      * providers and thus keeps them upon restart.
      */
     capabilities?: boolean;
-    /**
-     * Default true. Persists previously received subscriptionRequests and thus
-     * allows publications to resume successfully upon restart.
-     */
-    publications?: boolean;
 }
 
 export interface ShutdownSettings {

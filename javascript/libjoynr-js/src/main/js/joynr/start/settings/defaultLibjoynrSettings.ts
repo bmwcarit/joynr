@@ -71,8 +71,7 @@ const defaultLibJoynrSettings = {
     },
     persistencySettings: {
         routingTable: false,
-        capabilities: true,
-        publications: true
+        capabilities: true
     }
 };
 export = defaultLibJoynrSettings;

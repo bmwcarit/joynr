@@ -53,7 +53,7 @@ const spies: Record<string, any> = {};
         ]
     ],
     ["ParticipantIdStorage"],
-    ["PublicationManager", ["restore", "shutdown"]],
+    ["PublicationManager", ["shutdown"]],
     ["LocalStorageNode", ["shutdown", "getItem"]],
     ["MessagingQos"],
     ["LoggingManager", ["configure", "getLogger", "registerForLogLevelChanged"]],
@@ -283,7 +283,6 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
         expect(spies.PublicationManager.mock.calls.length).toEqual(1);
         expect(spies.UdsClient.mock.calls.length).toEqual(1);
-        expect(spies.PublicationManager.mock.calls[0][1]).toEqual(mocks.LocalStorageNode);
         await runtime.shutdown();
     });
 
@@ -305,15 +304,6 @@ describe("libjoynr-js.joynr.start.UdsLibJoynrRuntimeTest", () => {
         await runtime.start(provisioning);
         expect(spies.ParticipantIdStorage.mock.calls.length).toEqual(1);
         expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
-        await runtime.shutdown();
-    });
-
-    it("disables PublicationManager persistency if configured", async () => {
-        provisioning.persistency = { publications: false };
-        runtime = new UdsLibJoynrRuntime(onFatalRuntimeErrorCallBack);
-        await runtime.start(provisioning);
-        expect(spies.PublicationManager.mock.calls.length).toEqual(1);
-        expect(spies.PublicationManager.mock.calls[0][1]).toBeUndefined();
         await runtime.shutdown();
     });
 
