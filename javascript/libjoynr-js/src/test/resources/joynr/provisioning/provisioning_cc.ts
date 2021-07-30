@@ -49,7 +49,6 @@ const provisioning = {
     bounceProxyBaseUrl,
     bounceProxyUrl: `${bounceProxyBaseUrl}/bounceproxy/`,
     persistency: {
-        routingTable: false,
         capabilities: false
     }
 };

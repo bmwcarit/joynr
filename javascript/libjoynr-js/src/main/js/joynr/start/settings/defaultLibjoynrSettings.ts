@@ -70,7 +70,6 @@ const defaultLibJoynrSettings = {
         clearSubscriptionsTimeoutMs: 1000
     },
     persistencySettings: {
-        routingTable: false,
         capabilities: true
     }
 };

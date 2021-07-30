@@ -31,9 +31,7 @@ import MessageReplyToAddressCalculator from "../MessageReplyToAddressCalculator"
 import JoynrRuntimeException from "../../exceptions/JoynrRuntimeException";
 import * as Typing from "../../util/Typing";
 import * as UtilInternal from "../../util/UtilInternal";
-import * as JSONSerializer from "../../util/JSONSerializer";
 import MessagingStubFactory = require("../MessagingStubFactory");
-import LocalStorageNode = require("../../../global/LocalStorageNode");
 import MessageQueue = require("./MessageQueue");
 import Address = require("../../../generated/joynr/system/RoutingTypes/Address");
 import JoynrCompound = require("../../types/JoynrCompound");
@@ -43,7 +41,6 @@ import UdsAddress from "../../../generated/joynr/system/RoutingTypes/UdsAddress"
 const log = LoggingManager.getLogger("joynr/messaging/routing/MessageRouter");
 
 type RoutingTable = Record<string, Address>;
-type LocalStorage = LocalStorageNode;
 type MulticastSkeletons = Record<string, any>;
 /*
     TODO: let WebSocketMulticastAddressCalculator and MqttMulticastAddresscalculator, etc. implement this interface,
@@ -59,9 +56,7 @@ namespace MessageRouter {
         messagingStubFactory: MessagingStubFactory;
         incomingAddress?: Address;
         parentMessageRouterAddress?: Address;
-        persistency: LocalStorage;
         messageQueue: MessageQueue;
-        joynrInstanceId: string;
         initialRoutingTable?: RoutingTable;
         multicastAddressCalculator: MulticastAddressCalculator;
         multicastSkeletons: MulticastSkeletons;
@@ -80,8 +75,6 @@ class MessageRouter {
     private multicastAddressCalculator: MulticastAddressCalculator;
     private parentMessageRouterAddress?: Address;
     private incomingAddress?: Address;
-    private persistency: LocalStorage;
-    private id: string;
     private routingTable: RoutingTable;
     private queuedRemoveMulticastReceiverCalls: any;
     private queuedAddMulticastReceiverCalls: any;
@@ -98,9 +91,7 @@ class MessageRouter {
      * @param settings.messagingStubFactory
      * @param settings.incomingAddress
      * @param settings.parentMessageRouterAddress
-     * @param settings.persistency - LocalStorage or another object implementing the same interface
      * @param settings.messageQueue
-     * @param settings.joynrInstanceId
      * @param settings.initialRoutingTable
      * @param settings.multicastAddressCalculator
      * @param settings.multicastSkeletons
@@ -123,8 +114,6 @@ class MessageRouter {
         this.queuedAddMulticastReceiverCalls = [];
         this.queuedRemoveMulticastReceiverCalls = [];
         this.routingTable = settings.initialRoutingTable || {};
-        this.id = settings.joynrInstanceId;
-        this.persistency = settings.persistency;
         this.incomingAddress = settings.incomingAddress;
         this.parentMessageRouterAddress = settings.parentMessageRouterAddress;
         this.multicastAddressCalculator = settings.multicastAddressCalculator;
@@ -140,10 +129,6 @@ class MessageRouter {
         }
         if (settings.messageQueue === undefined) {
             throw new Error("messageQueue is undefined");
-        }
-
-        if (!this.persistency) {
-            this.getAddressFromPersistency = UtilInternal.emptyFunction as any;
         }
 
         this.route = this.route.bind(this);
@@ -220,13 +205,12 @@ class MessageRouter {
 
     /**
      * This method is called when no address can be found in the local routing table.
-     *
-     * It tries to resolve the next hop from the persistency and parent router.
+     * It tries to resolve the next hop from parent router.
      */
     private resolveNextHopInternal(participantId: string): Promise<Address> {
-        const address = this.getAddressFromPersistency(participantId);
+        const address = (undefined as unknown) as Address;
 
-        if (address === undefined && this.routingProxy !== undefined) {
+        if (this.routingProxy !== undefined) {
             return this.routingProxy
                 .resolveNextHop({
                     participantId
@@ -362,63 +346,43 @@ class MessageRouter {
     }
 
     private resolveNextHopAndRoute(participantId: string, joynrMessage: JoynrMessage): Promise<void> {
-        const address = this.getAddressFromPersistency(participantId);
-
-        if (address === undefined) {
-            if (this.routingProxy !== undefined) {
-                return this.routingProxy
-                    .resolveNextHop({
-                        participantId
-                    })
-                    .then(opArgs => {
-                        if (opArgs.resolved && this.parentMessageRouterAddress !== undefined) {
-                            this.routingTable[participantId] = this.parentMessageRouterAddress;
-                            return this.routeInternal(this.parentMessageRouterAddress, joynrMessage);
-                        }
-                        throw new Error(
-                            `nextHop cannot be resolved, as participant with id ${participantId} is not reachable by parent routing table`
-                        );
-                    })
-                    .catch((e: Error) => {
-                        log.error(e.message);
-                    });
-            }
-            if (
-                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_REPLY ||
-                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY ||
-                joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
-            ) {
-                const errorMsg = `Received message for unknown proxy. Dropping the message. ID: ${joynrMessage.msgId}`;
-                const now = Date.now();
-                log.warn(`${errorMsg}, expiryDate: ${joynrMessage.expiryDate}, now: ${now}`);
-                return Promise.resolve();
-            }
-
-            log.warn(
-                `No message receiver found for participantId: ${joynrMessage.to}. Queuing message.`,
-                DiagnosticTags.forJoynrMessage(joynrMessage)
-            );
-
-            // message is queued until the participant is registered
-            this.settings.messageQueue.putMessage(joynrMessage);
+        if (this.routingProxy !== undefined) {
+            return this.routingProxy
+                .resolveNextHop({
+                    participantId
+                })
+                .then(opArgs => {
+                    if (opArgs.resolved && this.parentMessageRouterAddress !== undefined) {
+                        this.routingTable[participantId] = this.parentMessageRouterAddress;
+                        return this.routeInternal(this.parentMessageRouterAddress, joynrMessage);
+                    }
+                    throw new Error(
+                        `nextHop cannot be resolved, as participant with id ${participantId} is not reachable by parent routing table`
+                    );
+                })
+                .catch((e: Error) => {
+                    log.error(e.message);
+                });
+        }
+        if (
+            joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_REPLY ||
+            joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_SUBSCRIPTION_REPLY ||
+            joynrMessage.type === JoynrMessage.JOYNRMESSAGE_TYPE_PUBLICATION
+        ) {
+            const errorMsg = `Received message for unknown proxy. Dropping the message. ID: ${joynrMessage.msgId}`;
+            const now = Date.now();
+            log.warn(`${errorMsg}, expiryDate: ${joynrMessage.expiryDate}, now: ${now}`);
             return Promise.resolve();
         }
-        return this.routeInternal(address, joynrMessage);
-    }
 
-    private getAddressFromPersistency(participantId: string): Address | undefined {
-        try {
-            const addressString = this.persistency.getItem(this.getStorageKey(participantId));
-            if (addressString === undefined || addressString === null || addressString === "{}") {
-                this.persistency.removeItem(this.getStorageKey(participantId));
-            } else {
-                const address = Typing.augmentTypes(JSON.parse(addressString));
-                this.routingTable[participantId] = address;
-                return address;
-            }
-        } catch (error) {
-            log.error(`Failed to get address from persisted routing entries for participant ${participantId}`);
-        }
+        log.warn(
+            `No message receiver found for participantId: ${joynrMessage.to}. Queuing message.`,
+            DiagnosticTags.forJoynrMessage(joynrMessage)
+        );
+
+        // message is queued until the participant is registered
+        this.settings.messageQueue.putMessage(joynrMessage);
+        return Promise.resolve();
     }
 
     /**
@@ -435,15 +399,6 @@ class MessageRouter {
     /**
      * @param participantId
      *
-     * @returns the storage key
-     */
-    public getStorageKey(participantId: string): string {
-        return `${this.id}_${participantId}`;
-    }
-
-    /**
-     * @param participantId
-     *
      * @returns promise
      */
     public removeNextHop(participantId: string): Promise<any> {
@@ -453,9 +408,6 @@ class MessageRouter {
         }
 
         delete this.routingTable[participantId];
-        if (this.persistency) {
-            this.persistency.removeItem(this.getStorageKey(participantId));
-        }
 
         if (this.routingProxy !== undefined) {
             return this.routingProxy.removeNextHop({
@@ -634,18 +586,9 @@ class MessageRouter {
             log.debug("addNextHop: ignore call as message router is already shut down");
             return Promise.reject(new Error("message router is already shut down"));
         }
-        // store the address of the participantId persistently
+        // store the address of the participantId in memory
         this.routingTable[participantId] = address;
-        const serializedAddress = JSONSerializer.stringify(address);
         let promise;
-        if (serializedAddress === undefined || serializedAddress === null || serializedAddress === "{}") {
-            log.info(
-                `addNextHop: HOP address ${serializedAddress} will not be persisted for participant id: ${participantId}`
-            );
-        } else if (address._typeName !== InProcessAddress._typeName && this.persistency) {
-            // only persist if it's not an InProcessAddress
-            this.persistency.setItem(this.getStorageKey(participantId), serializedAddress);
-        }
 
         if (this.routingProxy !== undefined) {
             // register remotely

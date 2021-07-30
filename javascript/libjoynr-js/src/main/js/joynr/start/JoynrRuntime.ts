@@ -126,7 +126,7 @@ class JoynrRuntime<T extends Provisioning> {
         );
 
         let persistencyPromise;
-        if (persistencyProvisioning.routingTable || persistencyProvisioning.capabilities) {
+        if (persistencyProvisioning.capabilities) {
             this.persistency = new LocalStorage({
                 clearPersistency: persistencyProvisioning.clearPersistency,
                 location: persistencyProvisioning.location
@@ -137,7 +137,6 @@ class JoynrRuntime<T extends Provisioning> {
         }
 
         this.persistencyConfig = {
-            routingTable: persistencyProvisioning.routingTable ? this.persistency : undefined,
             capabilities: persistencyProvisioning.capabilities ? this.persistency : new MemoryStorage()
         };
 
@@ -146,7 +145,7 @@ class JoynrRuntime<T extends Provisioning> {
 
     protected createMessageRouter(
         provisioning: T,
-        messageRouterSettings: Omit<MessageRouterSettings, "persistency" | "multicastSkeletons" | "messageQueue">
+        messageRouterSettings: Omit<MessageRouterSettings, "multicastSkeletons" | "messageQueue">
     ): void {
         if (UtilInternal.checkNullUndefined(this.persistencyConfig)) {
             throw new Error("Call initializePersistency before createMessageRouter.");
@@ -157,7 +156,6 @@ class JoynrRuntime<T extends Provisioning> {
             messageQueueSettings.maxQueueSizeInKBytes = provisioning.messaging.maxQueueSizeInKBytes;
         }
 
-        (messageRouterSettings as MessageRouterSettings).persistency = this.persistencyConfig.routingTable;
         (messageRouterSettings as MessageRouterSettings).multicastSkeletons = this.multicastSkeletons;
         (messageRouterSettings as MessageRouterSettings).messageQueue = new MessageQueue(messageQueueSettings);
 

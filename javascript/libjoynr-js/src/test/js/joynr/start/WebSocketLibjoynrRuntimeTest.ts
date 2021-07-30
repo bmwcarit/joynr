@@ -187,22 +187,9 @@ describe("libjoynr-js.joynr.start.WebSocketLibjoynrRuntime", () => {
         runtime = new WebSocketLibjoynrRuntime(onFatalRuntimeError);
         await runtime.start(provisioning);
         expect(spies.MessageRouter.mock.calls.length).toEqual(1);
-        expect(spies.MessageRouter.mock.calls[0][0].persistency).toBeUndefined();
         expect(spies.ParticipantIdStorage.mock.calls.length).toEqual(1);
         expect(spies.ParticipantIdStorage.mock.calls[0][0]).toEqual(mocks.LocalStorageNode);
         expect(spies.PublicationManager.mock.calls.length).toEqual(1);
-        await runtime.shutdown();
-    });
-
-    it("enables MessageRouter Persistency if configured", async () => {
-        provisioning.persistency = { routingTable: true };
-        runtime = new WebSocketLibjoynrRuntime(onFatalRuntimeError);
-        await runtime.start(provisioning);
-        expect(spies.MessageRouter.mock.calls.length).toEqual(1);
-        expect(spies.MessageRouter.mock.calls[0][0].persistency).toEqual(mocks.LocalStorageNode);
-        expect(spies.MessageRouter).toHaveBeenCalledWith(
-            expect.objectContaining({ persistency: mocks.LocalStorageNode })
-        );
         await runtime.shutdown();
     });
 

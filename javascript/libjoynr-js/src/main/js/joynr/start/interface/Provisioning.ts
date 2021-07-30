@@ -57,11 +57,6 @@ export interface Persistency {
     /** Default is current dir */
     location?: string;
     /**
-     * Default false. Persists RoutingTable entries and thus
-     * allows the runtime to restart without help from the cc.
-     */
-    routingTable?: boolean;
-    /**
      * Default true. Persists ParticipantIds of registered
      * providers and thus keeps them upon restart.
      */

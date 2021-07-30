@@ -38,10 +38,10 @@ async function increaseFakeTime(timeMs: number) {
     await testUtil.multipleSetImmediate();
 }
 describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
-    let store: any, typeRegistry: any;
+    let typeRegistry: any;
     let senderParticipantId: any, receiverParticipantId: any, receiverParticipantId2: any;
     let joynrMessage: any, joynrMessage2: any;
-    let persistencySpy: any, address: any;
+    let address: any;
     let messagingStubSpy: any, messagingSkeletonSpy: any, messagingStubFactorySpy: any;
     let messageQueueSpy: any,
         messageRouter: any,
@@ -56,15 +56,12 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     const multicastSkeletons: any = {};
 
     const createMessageRouter = function(
-        persistency: any,
         messageQueue: any,
         incomingAddress?: any,
         parentMessageRouterAddress?: any
     ): MessageRouter {
         return new MessageRouter({
             initialRoutingTable: routingTable,
-            persistency,
-            joynrInstanceId: "joynrInstanceID",
             messagingStubFactory: messagingStubFactorySpy,
             multicastSkeletons,
             multicastAddressCalculator: multicastAddressCalculatorSpy,
@@ -74,8 +71,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         });
     };
 
-    const createRootMessageRouter = function(persistency: any, messageQueue: any) {
-        return createMessageRouter(persistency, messageQueue);
+    const createRootMessageRouter = function(messageQueue: any) {
+        return createMessageRouter(messageQueue);
     };
 
     beforeEach(done => {
@@ -137,19 +134,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             shutdown: jest.fn()
         };
 
-        store = {};
-        persistencySpy = {
-            setItem: jest.fn(),
-            removeItem: jest.fn(),
-            getItem: jest.fn()
-        };
-        persistencySpy.setItem.mockImplementation((key: any, value: any) => {
-            store[key] = value;
-        });
-        persistencySpy.getItem.mockImplementation((key: any) => {
-            return store[key];
-        });
-
         fakeTime = Date.now();
         jest.useFakeTimers();
         jest.spyOn(Date, "now").mockImplementation(() => {
@@ -176,7 +160,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             proxyParticipantId: "proxyParticipantId"
         };
 
-        messageRouter = createRootMessageRouter(persistencySpy, messageQueueSpy);
+        messageRouter = createRootMessageRouter(messageQueueSpy);
         messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
 
         done();
@@ -185,27 +169,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
     afterEach(done => {
         jest.useRealTimers();
         done();
-    });
-
-    it("resolves a previously persisted channel address", () => {
-        const participantId = "participantId";
-        const channelAddress = new ChannelAddress({
-            messagingEndpointUrl: "http://testurl.com",
-            channelId: "channelId"
-        });
-        persistencySpy.setItem(messageRouter.getStorageKey(participantId), JSON.stringify(channelAddress));
-
-        increaseFakeTime(1);
-    });
-
-    it("resolves a previously persisted browser address", () => {
-        const participantId = "participantId";
-        const browserAddress = new BrowserAddress({
-            windowId: "windowId"
-        });
-        persistencySpy.setItem(messageRouter.getStorageKey(participantId), JSON.stringify(browserAddress));
-
-        increaseFakeTime(1);
     });
 
     it("does not queue Reply and Publication Messages with unknown destinationParticipant", async () => {
@@ -454,17 +417,8 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         expect(messageRouter.addNextHop).not.toHaveBeenCalled();
     });
 
-    it("addNextHop won't write InProcessAdresses", async () => {
-        // @ts-ignore
-        address = new InProcessAddress();
-        await messageRouter.addNextHop(joynrMessage.to, address);
-        expect(persistencySpy.setItem).not.toHaveBeenCalled();
-
-        expect(() => messageRouter.removeNextHop(joynrMessage.to)).not.toThrow();
-    });
-
-    it("addNextHop will work without Persistency", async () => {
-        messageRouter = createMessageRouter(null, messageQueueSpy);
+    it("addNextHop will work", async () => {
+        messageRouter = createMessageRouter(messageQueueSpy);
         messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
         messageRouter.addNextHop(joynrMessage.to, address);
 
@@ -611,7 +565,6 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             });
 
             messageRouterWithUdsAddress = createMessageRouter(
-                persistencySpy,
                 messageQueueSpy,
                 incomingAddress,
                 parentMessageRouterAddress
@@ -636,33 +589,16 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
             expect(() => messageRouterWithUdsAddress.removeNextHop(joynrMessage.to)).not.toThrow();
             expect(routingProxySpy.addNextHop).toHaveBeenCalledWith(expectedParameters);
         });
-
-        it("addNextHop persists UdsClientAddress", async () => {
-            await messageRouterWithUdsAddress.setRoutingProxy(routingProxySpy);
-            address = new UdsClientAddress({ id: "udsId" });
-            await messageRouterWithUdsAddress.addNextHop(joynrMessage.to, address, true);
-            expect(persistencySpy.setItem).toHaveBeenCalled();
-        });
     }); // describe ChildMessageRouterWithUdsAddress
 
     describe("ChildMessageRouter", () => {
         beforeEach(() => {
-            messageRouter = createMessageRouter(
-                persistencySpy,
-                messageQueueSpy,
-                incomingAddress,
-                parentMessageRouterAddress
-            );
+            messageRouter = createMessageRouter(messageQueueSpy, incomingAddress, parentMessageRouterAddress);
             messageRouter.setReplyToAddress(serializedTestGlobalClusterControllerAddress);
         });
 
         it("queries global address from routing provider", () => {
-            messageRouter = createMessageRouter(
-                persistencySpy,
-                messageQueueSpy,
-                incomingAddress,
-                parentMessageRouterAddress
-            );
+            messageRouter = createMessageRouter(messageQueueSpy, incomingAddress, parentMessageRouterAddress);
             routingProxySpy.addNextHop.mockReturnValue(Promise.resolve());
         });
 
@@ -696,12 +632,7 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
 
         it("queues non local messages until global address is available", async () => {
             const isGloballyVisible = true;
-            messageRouter = createMessageRouter(
-                persistencySpy,
-                messageQueueSpy,
-                incomingAddress,
-                parentMessageRouterAddress
-            );
+            messageRouter = createMessageRouter(messageQueueSpy, incomingAddress, parentMessageRouterAddress);
             routingProxySpy.addNextHop.mockReturnValue(Promise.resolve());
             await messageRouter.addNextHop(joynrMessage.to, address, isGloballyVisible);
 
