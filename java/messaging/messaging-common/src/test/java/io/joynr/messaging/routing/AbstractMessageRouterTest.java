@@ -48,13 +48,11 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.AbstractMessageRouter.ProxyInformation;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.ImmutableMessage;
-import joynr.MutableMessage;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractMessageRouterTest {

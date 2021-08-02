@@ -283,11 +283,6 @@ abstract public class AbstractMessageRouter
     @Override
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible) {
         final long expiryDateMs = Long.MAX_VALUE;
-
-        addToRoutingTable(participantId, address, isGloballyVisible, expiryDateMs);
-    }
-
-    public void addToRoutingTable(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs) {
         routingTable.put(participantId, address, isGloballyVisible, expiryDateMs);
     }
 
