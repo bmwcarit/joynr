@@ -8,7 +8,7 @@ services:
     networks:
       - sharedSubscriptionNetwork
     environment:
-      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+      - HIVEMQ_ALLOW_ALL_CLIENTS=true
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
                  backpressure-provider-large,backpressure-monitor-app,test-driver

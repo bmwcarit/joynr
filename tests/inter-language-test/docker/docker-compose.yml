@@ -6,7 +6,7 @@ services:
     image: 'hivemq/hivemq4:${HIVEMQ_IMAGE_VERSION}'
     container_name: mqttbroker
     environment:
-      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+      - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
   joynrbackend:
     image: "joynr-backend-jee:${JOYNR_BACKEND_IMAGE_VERSION}"

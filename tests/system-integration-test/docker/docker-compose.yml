@@ -6,13 +6,13 @@ services:
     image: 'hivemq/hivemq4'
     container_name: mqttbroker-1
     environment:
-      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+      - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
   hivemq-2:
     image: 'hivemq/hivemq4'
     container_name: mqttbroker-2
     environment:
-      - HIVEMQ_DISABLE_AUTH_PLUGIN=true
+      - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
   joynrbackend-1:
     image: "joynr-backend-jee-1:latest"
