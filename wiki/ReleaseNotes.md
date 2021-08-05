@@ -5,13 +5,19 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.17.5
 
 ## API-relevant Changes
-None.
+* **[TS]** Persistency support for routingTable and subscriptions has been
+  discontinued. Affected elements `routingTable` and `publications` with
+  boolean values have been removed from persistencyValue object which
+  is optional part of provisioning object.
+  For the remaining configuration options in joynr TS see `persistencyValue`
+  in [JavaScript settings](/wiki/JavaScriptSettings.md).
 
 ## Other Changes
 None.
 
 ## Configuration Property Changes
-None.
+* **[TS]** Configuration options for routingTable and subscription persistency
+  have been removed, see section API-relevant Changes above.
 
 ## Security Fixes
 None.
