@@ -13,7 +13,11 @@ the versioning scheme [here](JoynrVersioning.md).
   in [JavaScript settings](/wiki/JavaScriptSettings.md).
 
 ## Other Changes
-None.
+* **[Java]** Changed behavior of 'removeStale`:
+  * cluster controller now delays `removeStale` for 5 minutes instead of sending it immediately
+    after start.
+  * Retry of `removeStale` is now limited to 1 hour.
+  * TTl for a single try of `removeStale` is now 1 minute instead of 1 hour.
 
 ## Configuration Property Changes
 * **[TS]** Configuration options for routingTable and subscription persistency
@@ -24,7 +28,8 @@ None.
 
 ## Bug Fixes
 * **[Java]** Fixed a bug where replies for stateless asynchronous remote procedure
-  calls could not be handled correctly
+  calls could not be handled correctly.
+* **[TS]** Added missing dependency to lodash.
 
 # joynr 1.17.4
 
