@@ -18,9 +18,6 @@
  */
 package io.joynr.messaging.routing;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -99,24 +95,6 @@ abstract public class AbstractMessageRouter
     private List<MessageProcessedListener> messageProcessedListeners;
     private List<MessageWorker> messageWorkers;
 
-    protected static class ProxyInformation {
-        public String participantId;
-        public ShutdownListener shutdownListener;
-        public final Set<String> providerParticipantIds;
-
-        public ProxyInformation(String participantId, ShutdownListener shutdownListener) {
-            this.participantId = participantId;
-            this.shutdownListener = shutdownListener;
-            this.providerParticipantIds = new HashSet<String>();
-        }
-    }
-
-    // Map weak reference to proxy object -> {proxyParticipantId, shutdownListener}
-    private final ConcurrentHashMap<WeakReference<Object>, ProxyInformation> proxyMap;
-    private final ReferenceQueue<Object> garbageCollectedProxiesQueue;
-    private final ShutdownNotifier shutdownNotifier;
-    private final ConcurrentHashMap<String, ProxyInformation> proxyParticipantIdToProxyInformationMap;
-
     @Inject
     @Singleton
     // CHECKSTYLE:OFF
@@ -142,10 +120,6 @@ abstract public class AbstractMessageRouter
         this.addressManager = addressManager;
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
-        this.proxyMap = new ConcurrentHashMap<WeakReference<Object>, ProxyInformation>();
-        this.proxyParticipantIdToProxyInformationMap = new ConcurrentHashMap<String, ProxyInformation>();
-        this.garbageCollectedProxiesQueue = new ReferenceQueue<Object>();
-        this.shutdownNotifier = shutdownNotifier;
         shutdownNotifier.registerForShutdown(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
@@ -166,26 +140,6 @@ abstract public class AbstractMessageRouter
             @Override
             public void run() {
                 routingTable.purge();
-
-                // remove Routing table entries for proxies which have been garbage collected
-                Reference<? extends Object> r;
-                synchronized (garbageCollectedProxiesQueue) {
-                    r = garbageCollectedProxiesQueue.poll();
-                }
-                while (r != null) {
-                    ProxyInformation proxyInformation = proxyMap.get(r);
-                    logger.debug("Removing garbage collected proxy participantId {}", proxyInformation.participantId);
-                    removeNextHop(proxyInformation.participantId);
-                    for (String providerParticipantId : proxyInformation.providerParticipantIds) {
-                        removeNextHop(providerParticipantId);
-                    }
-                    shutdownNotifier.unregister(proxyInformation.shutdownListener);
-                    proxyMap.remove(r);
-                    proxyParticipantIdToProxyInformationMap.remove(proxyInformation.participantId);
-                    synchronized (garbageCollectedProxiesQueue) {
-                        r = garbageCollectedProxiesQueue.poll();
-                    }
-                }
             }
         }, routingTableCleanupIntervalMs, routingTableCleanupIntervalMs, TimeUnit.MILLISECONDS);
     }
@@ -497,48 +451,6 @@ abstract public class AbstractMessageRouter
         }
     }
 
-    @Override
-    public void registerProxy(Object proxy, String proxyParticipantId, ShutdownListener shutdownListener) {
-        synchronized (garbageCollectedProxiesQueue) {
-            ProxyInformation proxyInformation = new ProxyInformation(proxyParticipantId, shutdownListener);
-            if (proxyParticipantIdToProxyInformationMap.putIfAbsent(proxyParticipantId, proxyInformation) == null) {
-                logger.debug("registerProxy called for {}", proxyParticipantId);
-                proxyMap.put(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue), proxyInformation);
-            } else {
-                throw new JoynrIllegalStateException("The proxy with " + proxyParticipantId
-                        + " has already been registered.");
-            }
-        }
-    }
-
-    @Override
-    public void registerProxyProviderParticipantIds(String proxyParticipantId, Set<String> providerParticipantIds) {
-        if (proxyParticipantId == null || proxyParticipantId.isEmpty()) {
-            throw new JoynrIllegalStateException("Proxy participant id is null or has an empty value."
-                    + "Registration of proxy's provider participant ids failed.");
-        }
-
-        if (providerParticipantIds == null || providerParticipantIds.isEmpty()) {
-            throw new JoynrIllegalStateException("Set of the provider participant ids is null or empty."
-                    + "Registration of proxy's provider participant ids failed.");
-        } else {
-            if (providerParticipantIds.contains(null) || providerParticipantIds.contains("")) {
-                throw new JoynrIllegalStateException("Set of the provider participant ids has an entry with an empty or null value."
-                        + "Registration of proxy's provider participant ids failed.");
-            }
-        }
-
-        proxyParticipantIdToProxyInformationMap.computeIfPresent(proxyParticipantId, (key, oldVal) -> {
-            if (oldVal.providerParticipantIds.isEmpty()) {
-                oldVal.providerParticipantIds.addAll(providerParticipantIds);
-                return oldVal;
-            } else {
-                throw new JoynrIllegalStateException("The proxy with " + proxyParticipantId
-                        + " already has registered providers. Registration of proxy's provider participant ids failed.");
-            }
-        });
-    }
-
     private long createDelayWithExponentialBackoff(long sendMsgRetryIntervalMs, int retries) {
         long millis = sendMsgRetryIntervalMs + (long) ((2 ^ (retries)) * sendMsgRetryIntervalMs * Math.random());
         if (maxDelayMs >= sendMsgRetryIntervalMs && millis > maxDelayMs) {
@@ -551,13 +463,11 @@ abstract public class AbstractMessageRouter
     private void decreaseReferenceCountsForMessage(final ImmutableMessage message, boolean isMessageRoutingSuccessful) {
         MessageType type = message.getType();
         if (!isMessageRoutingSuccessful && MESSAGE_TYPE_REQUESTS.contains(type)) {
-            if (!proxyParticipantIdToProxyInformationMap.containsKey(message.getSender())
-                    && !(routingTable.get(message.getSender()) instanceof LocalAddress)) {
+            if (!(routingTable.get(message.getSender()) instanceof LocalAddress)) {
                 // Sender (global / remote proxy) address is not required anymore to send a reply message
                 routingTable.remove(message.getSender());
             }
         } else if (MESSAGE_TYPE_REPLIES.contains(type)
-                && !proxyParticipantIdToProxyInformationMap.containsKey(message.getRecipient())
                 && !(routingTable.get(message.getRecipient()) instanceof LocalAddress)) {
             if (type == MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY
                     && !(routingTable.get(message.getSender()) instanceof InProcessAddress)) {

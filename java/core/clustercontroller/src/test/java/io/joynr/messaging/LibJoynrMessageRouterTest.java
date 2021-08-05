@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging;
 
-import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;

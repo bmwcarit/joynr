@@ -363,7 +363,7 @@ public class RoutingTableImpl implements RoutingTable {
 
                 if (!e.getValue().getIsSticky() && e.getValue().expiryDateMs < currentTimeMillis) {
                     it.remove();
-                    logger.trace("Purged routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, refCnt {}",
+                    logger.debug("Purged routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, refCnt {}",
                                  e.getKey(),
                                  e.getValue().getAddress(),
                                  e.getValue().getIsGloballyVisible(),

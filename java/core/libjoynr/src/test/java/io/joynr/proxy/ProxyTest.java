@@ -90,6 +90,7 @@ import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.routing.GarbageCollectionHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
@@ -157,6 +158,8 @@ public class ProxyTest {
     SubscriptionManager subscriptionManager;
     @Mock
     MessageRouter messageRouter;
+    @Mock
+    private GarbageCollectionHandler gcdHandler;
     @Mock
     Dispatcher dispatcher;
     @Mock
@@ -264,6 +267,7 @@ public class ProxyTest {
                 bind(RequestReplyManager.class).toInstance(requestReplyManager);
                 bind(SubscriptionManager.class).toInstance(subscriptionManager);
                 bind(MessageRouter.class).toInstance(messageRouter);
+                bind(GarbageCollectionHandler.class).toInstance(gcdHandler);
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(StatelessAsyncCallbackDirectory.class).toInstance(statelessAsyncCallbackDirectory);
                 bind(StatelessAsyncIdCalculator.class).toInstance(new DefaultStatelessAsyncIdCalculatorImpl("channel"));

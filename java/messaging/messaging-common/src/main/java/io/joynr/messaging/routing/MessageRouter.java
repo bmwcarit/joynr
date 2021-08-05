@@ -19,9 +19,6 @@
  */
 package io.joynr.messaging.routing;
 
-import java.util.Set;
-
-import io.joynr.runtime.ShutdownListener;
 import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.Address;
 
@@ -39,8 +36,4 @@ public interface MessageRouter {
     public void removeNextHop(String participantId);
 
     public boolean resolveNextHop(String participantId);
-
-    void registerProxy(Object proxy, String proxyParticipantId, ShutdownListener shutdownListener);
-
-    void registerProxyProviderParticipantIds(String proxyParticipantId, Set<String> providerParticipantIds);
 }

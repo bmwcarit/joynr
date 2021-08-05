@@ -18,7 +18,6 @@
  */
 package io.joynr.integration;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -77,6 +76,7 @@ import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.GarbageCollectionHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.routing.TestGlobalAddressModule;
@@ -116,17 +116,20 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
     private ConnectorFactory connectorFactory;
     private ConnectorFactory connectorFactoryMock;
     private MessageRouter messageRouter;
+    private GarbageCollectionHandler gcHandler;
     private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
 
     @Inject
     public ProxyInvocationHandlerFactoryImpl(ConnectorFactory connectorFactory,
                                              @Named("connectorFactoryMock") JoynrMessagingConnectorFactory connectorFactoryMock,
                                              MessageRouter messageRouter,
+                                             GarbageCollectionHandler gcHandler,
                                              @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                                              ShutdownNotifier shutdownNotifier,
                                              StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         super();
         this.messageRouter = messageRouter;
+        this.gcHandler = gcHandler;
         this.connectorFactory = connectorFactory;
         this.connectorFactoryMock = new ConnectorFactory(connectorFactoryMock, messageRouter, dispatcherAddress);
         this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
@@ -149,6 +152,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                                   statelessAsyncCallback,
                                                   connectorFactory,
                                                   messageRouter,
+                                                  gcHandler,
                                                   shutdownNotifier,
                                                   statelessAsyncIdCalculator);
         }
@@ -160,6 +164,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                               statelessAsyncCallback,
                                               connectorFactoryMock,
                                               messageRouter,
+                                              gcHandler,
                                               shutdownNotifier,
                                               statelessAsyncIdCalculator);
     }

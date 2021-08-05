@@ -59,6 +59,7 @@ import io.joynr.dispatcher.rpc.annotation.FireAndForget;
 import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.GarbageCollectionHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -80,17 +81,19 @@ public class ProxyInvocationHandlerTest {
     private Object proxy;
 
     @Mock
-    private ConnectorFactory connectorFactory;
+    private ConnectorFactory mockConnectorFactory;
 
     @Mock
     private MessageRouter mockMessageRouter;
+    @Mock
+    private GarbageCollectionHandler mockGcHandler;
 
     @Mock
-    private ShutdownNotifier shutdownNotifier;
+    private ShutdownNotifier mockShutdownNotifier;
     private ShutdownListener shutdownListener;
 
     @Mock
-    private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    private StatelessAsyncIdCalculator mockStatelessAsyncIdCalculator;
 
     private ProxyInvocationHandlerImpl proxyInvocationHandler;
 
@@ -118,27 +121,25 @@ public class ProxyInvocationHandlerTest {
     @Before
     public void setup() {
         proxy = new Object();
-        connectorFactory = Mockito.mock(ConnectorFactory.class);
-        mockMessageRouter = Mockito.mock(MessageRouter.class);
-        @SuppressWarnings("unchecked")
         StatelessAsyncCallback mockStatelessAsyncCallback = Mockito.mock(StatelessAsyncCallback.class);
-        doAnswer(new Answer() {
+        doAnswer(new Answer<Void>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 shutdownListener = (ShutdownListener) invocation.getArguments()[0];
                 return null;
             }
-        }).when(shutdownNotifier).registerForShutdown(any());
+        }).when(mockShutdownNotifier).registerForShutdown(any());
         proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet<String>(Arrays.asList(domain)),
                                                                 interfaceName,
                                                                 proxyParticipantId,
                                                                 discoveryQos,
                                                                 messagingQos,
                                                                 Optional.of(mockStatelessAsyncCallback),
-                                                                connectorFactory,
+                                                                mockConnectorFactory,
                                                                 mockMessageRouter,
-                                                                shutdownNotifier,
-                                                                statelessAsyncIdCalculator);
+                                                                mockGcHandler,
+                                                                mockShutdownNotifier,
+                                                                mockStatelessAsyncIdCalculator);
     }
 
     @Test(timeout = 3000)
@@ -179,10 +180,10 @@ public class ProxyInvocationHandlerTest {
         DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo();
         discoveryEntry.setParticipantId("participantId");
         arbitrationResult.setDiscoveryEntries(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
-        when(connectorFactory.create(Mockito.anyString(),
-                                     Mockito.<ArbitrationResult> any(),
-                                     any(),
-                                     any())).thenReturn(Optional.empty());
+        when(mockConnectorFactory.create(Mockito.anyString(),
+                                         Mockito.<ArbitrationResult> any(),
+                                         any(),
+                                         any())).thenReturn(Optional.empty());
         proxyInvocationHandler.createConnector(arbitrationResult);
 
         // if the bug that causes one thread to hang in arbitration exists, one
@@ -195,10 +196,10 @@ public class ProxyInvocationHandlerTest {
     @Test
     public void testCallFireAndForgetMethod() throws Throwable {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
-        when(connectorFactory.create(Mockito.anyString(),
-                                     Mockito.<ArbitrationResult> any(),
-                                     Mockito.eq(messagingQos),
-                                     Mockito.eq(null))).thenReturn(Optional.of(connectorInvocationHandler));
+        when(mockConnectorFactory.create(Mockito.anyString(),
+                                         Mockito.<ArbitrationResult> any(),
+                                         Mockito.eq(messagingQos),
+                                         Mockito.eq(null))).thenReturn(Optional.of(connectorInvocationHandler));
         Method fireAndForgetMethod = TestServiceSync.class.getMethod("callMe", new Class<?>[]{ String.class });
         Object[] args = new Object[]{ "test" };
 
@@ -243,10 +244,10 @@ public class ProxyInvocationHandlerTest {
     @Test
     public void testPartitionsPassedToMulticastSubscription() throws NoSuchMethodException, ApplicationException {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
-        when(connectorFactory.create(Mockito.anyString(),
-                                     Mockito.<ArbitrationResult> any(),
-                                     Mockito.eq(messagingQos),
-                                     Mockito.eq(null))).thenReturn(Optional.of(connectorInvocationHandler));
+        when(mockConnectorFactory.create(Mockito.anyString(),
+                                         Mockito.<ArbitrationResult> any(),
+                                         Mockito.eq(messagingQos),
+                                         Mockito.eq(null))).thenReturn(Optional.of(connectorInvocationHandler));
         MyBroadcastSubscriptionListener broadcastSubscriptionListener = mock(MyBroadcastSubscriptionListener.class);
         SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
 
@@ -298,10 +299,10 @@ public class ProxyInvocationHandlerTest {
     @Test
     public void testExecuteFireAndForgetAfterPrepareForShutdownAllowed() throws Exception {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
-        when(connectorFactory.create(anyString(),
-                                     any(),
-                                     any(),
-                                     any())).thenReturn(Optional.of(connectorInvocationHandler));
+        when(mockConnectorFactory.create(anyString(),
+                                         any(),
+                                         any(),
+                                         any())).thenReturn(Optional.of(connectorInvocationHandler));
         shutdownListener.prepareForShutdown();
         proxyInvocationHandler.createConnector(mock(ArbitrationResult.class));
         Method method = TestServiceSync.class.getMethod("callMe", String.class);
@@ -314,10 +315,10 @@ public class ProxyInvocationHandlerTest {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
         final String proxyParticipantId = "proxyParticipantId";
         final String expectedProxyParticipantId = proxyParticipantId;
-        when(connectorFactory.create(eq(proxyParticipantId),
-                                     Mockito.<ArbitrationResult> any(),
-                                     Mockito.eq(messagingQos),
-                                     Mockito.eq(null))).thenReturn(Optional.of(connectorInvocationHandler));
+        when(mockConnectorFactory.create(eq(proxyParticipantId),
+                                         Mockito.<ArbitrationResult> any(),
+                                         Mockito.eq(messagingQos),
+                                         Mockito.eq(null))).thenReturn(Optional.of(connectorInvocationHandler));
 
         DiscoveryEntryWithMetaInfo selectedDiscoveryEntry1 = new DiscoveryEntryWithMetaInfo();
         selectedDiscoveryEntry1.setParticipantId("participantId1");
@@ -341,8 +342,15 @@ public class ProxyInvocationHandlerTest {
 
         proxyInvocationHandler.createConnector(arbitrationResult);
 
-        verify(mockMessageRouter).registerProxyProviderParticipantIds(eq(expectedProxyParticipantId),
-                                                                      eq(expectedProviderParticipantIds));
+        verify(mockGcHandler).registerProxyProviderParticipantIds(eq(expectedProxyParticipantId),
+                                                                  eq(expectedProviderParticipantIds));
         verify(mockMessageRouter).removeNextHop(expectedNonSelectedParticipantId);
+    }
+
+    @Test
+    public void testRegisterProxy() {
+        Object proxy = new Object();
+        proxyInvocationHandler.registerProxy(proxy);
+        verify(mockGcHandler).registerProxy(proxy, proxyParticipantId, shutdownListener);
     }
 }

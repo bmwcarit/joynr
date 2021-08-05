@@ -28,6 +28,7 @@ import com.google.inject.assistedinject.Assisted;
 import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.messaging.MessagingQos;
+import io.joynr.messaging.routing.GarbageCollectionHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -35,6 +36,7 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
     private ConnectorFactory connectorFactory;
     private MessageRouter messageRouter;
+    private GarbageCollectionHandler gcHandler;
 
     // CHECKSTYLE:OFF
     @Inject
@@ -46,6 +48,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                                       @Assisted Optional<StatelessAsyncCallback> statelessAsyncCallback,
                                       ConnectorFactory connectorFactory,
                                       MessageRouter messageRouter,
+                                      GarbageCollectionHandler gcHandler,
                                       ShutdownNotifier shutdownNotifier,
                                       StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         super(domains,
@@ -59,6 +62,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         // CHECKSTYLE:ON
         this.connectorFactory = connectorFactory;
         this.messageRouter = messageRouter;
+        this.gcHandler = gcHandler;
     }
 
     /**
@@ -81,7 +85,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
         for (DiscoveryEntryWithMetaInfo selectedEntry : result.getDiscoveryEntries()) {
             providerParticipantIds.add(selectedEntry.getParticipantId());
         }
-        messageRouter.registerProxyProviderParticipantIds(proxyParticipantId, providerParticipantIds);
+        gcHandler.registerProxyProviderParticipantIds(proxyParticipantId, providerParticipantIds);
 
         // decrease the RoutingEntry reference count for non-selected providers
         for (DiscoveryEntryWithMetaInfo nonSelectedEntry : result.getOtherDiscoveryEntries()) {
@@ -91,6 +95,6 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     @Override
     public void registerProxy(Object proxy) {
-        messageRouter.registerProxy(proxy, proxyParticipantId, shutdownListener);
+        gcHandler.registerProxy(proxy, proxyParticipantId, shutdownListener);
     }
 }
