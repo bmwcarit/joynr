@@ -154,7 +154,6 @@ class InProcessRuntime extends JoynrRuntime<InProcessProvisioning> {
 
         const messageRouterSettings = {
             initialRoutingTable,
-            joynrInstanceId: channelId,
             typeRegistry: this.typeRegistry,
             messagingStubFactory,
             multicastAddressCalculator: new MqttMulticastAddressCalculator({

@@ -123,7 +123,6 @@ class UdsLibJoynrRuntime extends JoynrRuntime<UdsLibJoynrProvisioning> {
             messagingStubFactory,
             incomingAddress: localAddress,
             parentMessageRouterAddress: ccAddress,
-            joynrInstanceId: nanoid(),
             multicastAddressCalculator: new UdsMulticastAddressCalculator({
                 globalAddress: ccAddress
             })

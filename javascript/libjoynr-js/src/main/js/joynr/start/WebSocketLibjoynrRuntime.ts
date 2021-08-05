@@ -166,7 +166,6 @@ class WebSocketLibjoynrRuntime extends JoynrRuntime<WebSocketLibjoynrProvisionin
 
         const messageRouterSettings = {
             initialRoutingTable,
-            joynrInstanceId: nanoid(),
             messagingStubFactory,
             multicastAddressCalculator: new WebSocketMulticastAddressCalculator({
                 globalAddress: ccAddress
