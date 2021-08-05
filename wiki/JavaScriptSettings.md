@@ -110,15 +110,8 @@ var messagingValue = {
 var persistencyValue = {
     clearPersistency: <true|false>, // clear persistent data during startup. Default value is false
     location: /path/to/localStorage, // Optional. Only implemented for Node. Default is current dir
-    routingTable: <true|false>, /* Optional. Default false. Persists RoutingTable entries and thus
-                                 * allows the runtime to restart without help from the cc.
-                                 */
-    capabilities: <true|false>, /* Optional. Default true. Persists ParticipantIds of registered
+    capabilities: <true|false>  /* Optional. Default true. Persists ParticipantIds of registered
                                  * providers and thus keeps them upon restart.
-                                 */
-    publications: <true|false>, /* Optional. Default true. Persists previously received
-                                 * SubscriptionRequests and thus allows publications to resume
-                                 * successfully upon restart.
                                  */
 };
 
