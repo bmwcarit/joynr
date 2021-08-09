@@ -89,6 +89,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
         // decrease the RoutingEntry reference count for non-selected providers
         for (DiscoveryEntryWithMetaInfo nonSelectedEntry : result.getOtherDiscoveryEntries()) {
+            messageRouter.setToKnown(nonSelectedEntry.getParticipantId());
             messageRouter.removeNextHop(nonSelectedEntry.getParticipantId());
         }
     }

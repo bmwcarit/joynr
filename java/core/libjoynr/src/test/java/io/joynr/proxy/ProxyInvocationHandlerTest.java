@@ -344,6 +344,7 @@ public class ProxyInvocationHandlerTest {
 
         verify(mockGcHandler).registerProxyProviderParticipantIds(eq(expectedProxyParticipantId),
                                                                   eq(expectedProviderParticipantIds));
+        verify(mockMessageRouter).setToKnown(expectedNonSelectedParticipantId);
         verify(mockMessageRouter).removeNextHop(expectedNonSelectedParticipantId);
     }
 
