@@ -550,7 +550,7 @@ protected:
     virtual std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
             const;
 
-    std::shared_ptr<SingleThreadedIOService> _singleThreadIOService;
+    std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
 
     /** @brief Factory for creating proxy instances */
     std::unique_ptr<ProxyFactory> _proxyFactory;

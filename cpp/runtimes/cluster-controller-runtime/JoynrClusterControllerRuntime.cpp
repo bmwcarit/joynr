@@ -162,7 +162,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _dummyGlobalAddress(),
           _clusterControllerStartDateMs(TimePoint::now().toMilliseconds()),
           _removeStaleDelay(removeStaleDelayMs),
-          _removeStaleTimer(_singleThreadIOService->getIOService())
+          _removeStaleTimer(_singleThreadedIOService->getIOService())
 {
 }
 
@@ -388,7 +388,7 @@ void JoynrClusterControllerRuntime::init()
             messagingStubFactory,
             _multicastMessagingSkeletonDirectory,
             std::move(securityManager),
-            _singleThreadIOService->getIOService(),
+            _singleThreadedIOService->getIOService(),
             std::move(addressCalculator),
             globalClusterControllerAddress,
             _systemServicesSettings.getCcMessageNotificationProviderParticipantId(),
@@ -448,7 +448,7 @@ void JoynrClusterControllerRuntime::init()
     _messageSender = std::make_shared<MessageSender>(
             _ccMessageRouter, _keyChain, _messagingSettings.getTtlUpliftMs());
     _joynrDispatcher =
-            std::make_shared<Dispatcher>(_messageSender, _singleThreadIOService->getIOService());
+            std::make_shared<Dispatcher>(_messageSender, _singleThreadedIOService->getIOService());
     _messageSender->registerDispatcher(_joynrDispatcher);
     _messageSender->setReplyToAddress(globalClusterControllerAddress);
     _ccMessageRouter->setMessageSender(_messageSender);
@@ -521,11 +521,11 @@ void JoynrClusterControllerRuntime::init()
       *
       */
     _publicationManager =
-            std::make_shared<PublicationManager>(_singleThreadIOService->getIOService(),
+            std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
                                                  _messageSender,
                                                  _messagingSettings.getTtlUpliftMs());
     _subscriptionManager = std::make_shared<SubscriptionManager>(
-            _singleThreadIOService->getIOService(), _ccMessageRouter);
+            _singleThreadedIOService->getIOService(), _ccMessageRouter);
 
     _dispatcherAddress = std::make_shared<InProcessMessagingAddress>(_libJoynrMessagingSkeleton);
 
@@ -553,7 +553,7 @@ void JoynrClusterControllerRuntime::init()
             _localCapabilitiesDirectoryStore,
             globalClusterControllerAddress,
             _ccMessageRouter,
-            _singleThreadIOService->getIOService(),
+            _singleThreadedIOService->getIOService(),
             clusterControllerId,
             _availableGbids,
             _messagingSettings.getDiscoveryEntryExpiryIntervalMs());
@@ -793,7 +793,7 @@ void JoynrClusterControllerRuntime::startLocalCommunication()
                 bool useEncryptedTls = _wsSettings.getEncryptedTlsUsage();
 
                 _wsTLSCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonTLS>(
-                        _singleThreadIOService->getIOService(),
+                        _singleThreadedIOService->getIOService(),
                         _ccMessageRouter,
                         _wsMessagingStubFactory,
                         wsAddress,
@@ -813,7 +813,7 @@ void JoynrClusterControllerRuntime::startLocalCommunication()
                     "");
 
             _wsCcMessagingSkeleton = std::make_shared<WebSocketCcMessagingSkeletonNonTLS>(
-                    _singleThreadIOService->getIOService(),
+                    _singleThreadedIOService->getIOService(),
                     _ccMessageRouter,
                     _wsMessagingStubFactory,
                     wsAddress);
@@ -970,7 +970,7 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
 
 void JoynrClusterControllerRuntime::start()
 {
-    _singleThreadIOService->start();
+    _singleThreadedIOService->start();
     startExternalCommunication();
     startLocalCommunication();
     scheduleRemoveStaleTimer();
@@ -1019,8 +1019,8 @@ void JoynrClusterControllerRuntime::stop()
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
-    if (_singleThreadIOService) {
-        _singleThreadIOService->stop();
+    if (_singleThreadedIOService) {
+        _singleThreadedIOService->stop();
     }
 }
 

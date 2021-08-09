@@ -38,7 +38,7 @@ JoynrRuntimeImpl::JoynrRuntimeImpl(
         Settings& settings,
         std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
         std::shared_ptr<IKeychain> keyChain)
-        : _singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
+        : _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
           _proxyFactory(nullptr),
           _participantIdStorage(nullptr),
           _capabilitiesRegistrar(nullptr),

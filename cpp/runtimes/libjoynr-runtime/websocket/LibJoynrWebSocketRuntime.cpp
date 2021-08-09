@@ -80,8 +80,8 @@ void LibJoynrWebSocketRuntime::shutdown()
     // synchronously stop the underlying boost::asio::io_service
     // this ensures all asynchronous operations are stopped now
     // which allows a safe shutdown
-    assert(_singleThreadIOService);
-    _singleThreadIOService->stop();
+    assert(_singleThreadedIOService);
+    _singleThreadedIOService->stop();
     LibJoynrRuntime::shutdown();
 }
 
@@ -183,11 +183,11 @@ void LibJoynrWebSocketRuntime::createWebsocketClient()
 
         JOYNR_LOG_INFO(logger(), "Using TLS connection");
         _websocket = std::make_shared<WebSocketPpClientTLS>(
-                _wsSettings, _singleThreadIOService->getIOService(), _keyChain);
+                _wsSettings, _singleThreadedIOService->getIOService(), _keyChain);
     } else if (webSocketAddress.getProtocol() == system::RoutingTypes::WebSocketProtocol::WS) {
         JOYNR_LOG_INFO(logger(), "Using non-TLS connection");
         _websocket = std::make_shared<WebSocketPpClientNonTLS>(
-                _wsSettings, _singleThreadIOService->getIOService());
+                _wsSettings, _singleThreadedIOService->getIOService());
     } else {
         throw exceptions::JoynrRuntimeException(
                 "Unknown protocol used for settings property 'cluster-controller-messaging-url'");

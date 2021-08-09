@@ -87,7 +87,7 @@ LibJoynrRuntime::LibJoynrRuntime(
           _libJoynrRuntimeIsShuttingDown(false)
 {
     _libjoynrSettings->printSettings();
-    _singleThreadIOService->start();
+    _singleThreadedIOService->start();
 }
 
 LibJoynrRuntime::~LibJoynrRuntime()
@@ -157,7 +157,7 @@ void LibJoynrRuntime::init(
             _messagingSettings,
             libjoynrMessagingAddress,
             std::move(messagingStubFactory),
-            _singleThreadIOService->getIOService(),
+            _singleThreadedIOService->getIOService(),
             std::move(addressCalculator),
             std::vector<std::shared_ptr<ITransportStatus>>{},
             std::make_unique<MessageQueue<std::string>>(),
@@ -170,7 +170,7 @@ void LibJoynrRuntime::init(
     _messageSender = std::make_shared<MessageSender>(
             _libJoynrMessageRouter, _keyChain, _messagingSettings.getTtlUpliftMs());
     _joynrDispatcher =
-            std::make_shared<Dispatcher>(_messageSender, _singleThreadIOService->getIOService());
+            std::make_shared<Dispatcher>(_messageSender, _singleThreadedIOService->getIOService());
     _messageSender->registerDispatcher(_joynrDispatcher);
 
     // create the inprocess skeleton for the dispatcher
@@ -178,12 +178,12 @@ void LibJoynrRuntime::init(
     _dispatcherAddress = std::make_shared<InProcessMessagingAddress>(_dispatcherMessagingSkeleton);
 
     _publicationManager =
-            std::make_shared<PublicationManager>(_singleThreadIOService->getIOService(),
+            std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
                                                  _messageSender,
                                                  _messagingSettings.getTtlUpliftMs());
 
     _subscriptionManager = std::make_shared<SubscriptionManager>(
-            _singleThreadIOService->getIOService(), _libJoynrMessageRouter);
+            _singleThreadedIOService->getIOService(), _libJoynrMessageRouter);
 
     auto joynrMessagingConnectorFactory =
             std::make_shared<JoynrMessagingConnectorFactory>(_messageSender, _subscriptionManager);
