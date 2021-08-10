@@ -22,7 +22,6 @@
 #include <utility>
 
 #include "joynr/Settings.h"
-#include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
 #include "joynr/UdsClient.h"
 #include "joynr/UdsMulticastAddressCalculator.h"
@@ -65,10 +64,6 @@ void LibJoynrUdsRuntime::shutdown()
          */
         _client->shutdown();
 
-        // synchronously stop the underlying boost::asio::io_service
-        // this ensures all asynchronous operations are stopped now
-        // which allows a safe shutdown
-        _singleThreadedIOService->stop();
         LibJoynrRuntime::shutdown();
     }
 }

@@ -107,6 +107,12 @@ void LibJoynrRuntime::shutdown()
         return;
     }
 
+    // synchronously stop the underlying boost::asio::io_service
+    // this ensures all asynchronous operations are stopped now
+    // which allows a safe shutdown
+    assert(_singleThreadedIOService);
+    _singleThreadedIOService->stop();
+
     std::lock_guard<std::mutex> lock(_proxyBuildersMutex);
     for (auto proxyBuilder : _proxyBuilders) {
         proxyBuilder->stop();
