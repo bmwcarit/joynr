@@ -29,8 +29,8 @@ import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.routing.DummyRoutingTable;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
-import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.ProxyBuilder;
@@ -52,7 +52,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            Dispatcher dispatcher,
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
-                           RoutingTable routingTable,
+                           DummyRoutingTable routingTable,
                            StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                            DiscoverySettingsStorage discoverySettingsStorage,
                            ParticipantIdStorage participantIdStorage,
