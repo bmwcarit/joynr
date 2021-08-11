@@ -114,6 +114,16 @@ public class ImmutableMessage extends Message {
         return customHeaders;
     }
 
+    public Map<String, String> getPrefixedCustomHeaders() {
+        Map<String, String> prefixedCustomHeaders = new HashMap<>();
+        for (Map.Entry<String, String> entry : getHeaders().entrySet()) {
+            if (entry.getKey().startsWith(Message.CUSTOM_HEADER_PREFIX)) {
+                prefixedCustomHeaders.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return prefixedCustomHeaders;
+    }
+
     public void setContext(HashMap<String, Serializable> context) {
         this.context = context;
     }

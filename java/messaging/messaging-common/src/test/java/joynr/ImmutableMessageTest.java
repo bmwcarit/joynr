@@ -20,6 +20,10 @@ package joynr;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -58,5 +62,40 @@ public class ImmutableMessageTest {
         String logMessage = testMessage.getImmutableMessage().toLogMessage();
 
         assertThat(logMessage, containsString(payload));
+    }
+
+    @Test
+    public void testAllCustomHeadersGetter() throws Exception {
+        final String payload = "$=payload=$";
+        MutableMessage testMessage = new MutableMessage();
+        final String TEST_CUSTOM_HEADER_KEY_1 = "testCustHeaderKey1";
+        final String TEST_CUSTOM_HEADER_VALUE_1 = "testCustHeaderValue1";
+        final String TEST_CUSTOM_HEADER_KEY_2 = "testCustHeaderKey2";
+        final String TEST_CUSTOM_HEADER_VALUE_2 = "testCustHeaderValue2";
+
+        testMessage.setPayload(payload.getBytes());
+        testMessage.setRecipient("test");
+        testMessage.setSender("test");
+
+        Map<String, String> expectedCustomHeaders = new HashMap<>();
+        expectedCustomHeaders.put(TEST_CUSTOM_HEADER_KEY_1, TEST_CUSTOM_HEADER_VALUE_1);
+        expectedCustomHeaders.put(TEST_CUSTOM_HEADER_KEY_2, TEST_CUSTOM_HEADER_VALUE_2);
+        testMessage.setCustomHeaders(expectedCustomHeaders);
+
+        Map<String, String> expectedPrefixedCustomHeaders = new HashMap<>();
+        expectedPrefixedCustomHeaders.put(Message.CUSTOM_HEADER_PREFIX + TEST_CUSTOM_HEADER_KEY_1,
+                                          TEST_CUSTOM_HEADER_VALUE_1);
+        expectedPrefixedCustomHeaders.put(Message.CUSTOM_HEADER_PREFIX + TEST_CUSTOM_HEADER_KEY_2,
+                                          TEST_CUSTOM_HEADER_VALUE_2);
+
+        ImmutableMessage immutableMessage = testMessage.getImmutableMessage();
+
+        // check getter without prefix
+        Map<String, String> actualPrefixedCustomHeaders = immutableMessage.getPrefixedCustomHeaders();
+        assertTrue(actualPrefixedCustomHeaders.equals(expectedPrefixedCustomHeaders));
+
+        // check getter with prefix
+        Map<String, String> actualCustomHeaders = immutableMessage.getCustomHeaders();
+        assertTrue(actualCustomHeaders.equals(expectedCustomHeaders));
     }
 }
