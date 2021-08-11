@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -156,6 +157,7 @@ public abstract class AbstractMqttMultipleBackendTest {
             }
         }).when(joynrMqttClient).publishMessage(anyString(),
                                                 any(byte[].class),
+                                                anyMapOf(String.class, String.class),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),

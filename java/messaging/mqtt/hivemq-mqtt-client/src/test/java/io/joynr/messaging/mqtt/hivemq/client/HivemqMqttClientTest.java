@@ -30,7 +30,10 @@ import static org.mockito.Mockito.verify;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 
@@ -52,6 +55,8 @@ import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserPropertiesBuilder;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientConfig;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
@@ -142,17 +147,37 @@ public class HivemqMqttClientTest {
 
     @Test
     public void publishMessage_callsSuccessActionOnSuccess() {
+        final String prefixedCustomHeaderKey1 = "c-header1";
+        final String prefixedCustomHeaderKey2 = "c-header2";
+        final String customHeaderValue1 = "value1";
+        final String customHeaderValue2 = "value2";
+
+        Map<String, String> prefixedCustomHeaders = new HashMap<String, String>();
+        prefixedCustomHeaders.put(prefixedCustomHeaderKey1, customHeaderValue1);
+        prefixedCustomHeaders.put(prefixedCustomHeaderKey2, customHeaderValue2);
+
+        // since the user properties are a list ordered by insertion, it is important
+        // to insert in same order (depending on HashMap iteration) as the underlying
+        // real code since otherwise the comparision will fail.
+        Mqtt5UserPropertiesBuilder mqtt5UserPropertiesBuilder = Mqtt5UserProperties.builder();
+        for (Map.Entry<String, String> entry : prefixedCustomHeaders.entrySet()) {
+            mqtt5UserPropertiesBuilder.add(entry.getKey(), entry.getValue());
+        }
+        Mqtt5UserProperties mqtt5UserProperties = mqtt5UserPropertiesBuilder.build();
+
         Mqtt5Publish expectedPublish = Mqtt5Publish.builder()
                                                    .topic(testTopic)
                                                    .qos(MqttQos.AT_LEAST_ONCE)
                                                    .payload(testPayload)
                                                    .messageExpiryInterval(testExpiryIntervalSec)
+                                                   .userProperties(mqtt5UserProperties)
                                                    .build();
         MqttQos1Result mockResult = new MqttQos1Result((MqttPublish) expectedPublish, null, null);
         doReturn(MqttClientState.CONNECTED).when(mockClientConfig).getState();
 
         client.publishMessage(testTopic,
                               testPayload,
+                              prefixedCustomHeaders,
                               MqttQos.AT_LEAST_ONCE.getCode(),
                               testExpiryIntervalSec,
                               mockSuccessAction,
@@ -175,6 +200,7 @@ public class HivemqMqttClientTest {
 
         client.publishMessage(testTopic,
                               testPayload,
+                              Collections.<String, String> emptyMap(),
                               MqttQos.AT_LEAST_ONCE.getCode(),
                               testExpiryIntervalSec,
                               mockSuccessAction,
@@ -221,6 +247,7 @@ public class HivemqMqttClientTest {
 
         client.publishMessage(testTopic,
                               testPayload,
+                              Collections.<String, String> emptyMap(),
                               MqttQos.AT_LEAST_ONCE.getCode(),
                               testExpiryIntervalSec,
                               mockSuccessAction,
@@ -272,6 +299,7 @@ public class HivemqMqttClientTest {
 
         client.publishMessage(testTopic,
                               testPayload,
+                              Collections.<String, String> emptyMap(),
                               MqttQos.AT_LEAST_ONCE.getCode(),
                               testExpiryIntervalSec,
                               mockSuccessAction,
@@ -374,6 +402,7 @@ public class HivemqMqttClientTest {
 
         client.publishMessage(testTopic,
                               largeSerializedMessage,
+                              Collections.<String, String> emptyMap(),
                               MqttQos.AT_LEAST_ONCE.getCode(),
                               testExpiryIntervalSec,
                               mockSuccessAction,
@@ -411,6 +440,7 @@ public class HivemqMqttClientTest {
 
         client.publishMessage(testTopic,
                               shortSerializedMessage,
+                              Collections.<String, String> emptyMap(),
                               MqttQos.AT_LEAST_ONCE.getCode(),
                               testExpiryIntervalSec,
                               mockSuccessAction,

@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -32,6 +33,9 @@ import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -85,6 +89,7 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient).publishMessage(eq(expectedTopic),
                                           any(byte[].class),
+                                          anyMapOf(String.class, String.class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                           anyLong(),
                                           any(SuccessAction.class),
@@ -101,6 +106,7 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient).publishMessage(eq(expectedTopic),
                                           any(byte[].class),
+                                          anyMapOf(String.class, String.class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                           anyLong(),
                                           any(SuccessAction.class),
@@ -115,6 +121,7 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient).publishMessage(anyString(),
                                           any(byte[].class),
+                                          anyMapOf(String.class, String.class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                           anyLong(),
                                           any(SuccessAction.class),
@@ -146,6 +153,7 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient, times(2)).publishMessage(anyString(),
                                                     any(byte[].class),
+                                                    anyMapOf(String.class, String.class),
                                                     eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                                     eq(expectedRoundedMsgTtlSec),
                                                     any(SuccessAction.class),
@@ -171,6 +179,7 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient, times(2)).publishMessage(anyString(),
                                                     any(byte[].class),
+                                                    anyMapOf(String.class, String.class),
                                                     eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                                     eq(expectedMaxMsgTtlSec),
                                                     any(SuccessAction.class),
@@ -185,6 +194,7 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient).publishMessage(anyString(),
                                           any(byte[].class),
+                                          anyMapOf(String.class, String.class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                           anyLong(),
                                           any(SuccessAction.class),
@@ -199,6 +209,7 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient).publishMessage(anyString(),
                                           any(byte[].class),
+                                          anyMapOf(String.class, String.class),
                                           eq(MqttMessagingStub.BEST_EFFORT_QOS_LEVEL),
                                           anyLong(),
                                           any(SuccessAction.class),
@@ -213,6 +224,7 @@ public class MqttMessagingStubTest {
 
         verify(mqttClient).publishMessage(anyString(),
                                           any(byte[].class),
+                                          anyMapOf(String.class, String.class),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
                                           anyLong(),
                                           same(successAction),
@@ -228,6 +240,7 @@ public class MqttMessagingStubTest {
         JoynrRuntimeException expectedException = new JoynrRuntimeException(exception.getMessage());
         doThrow(exception).when(mqttClient).publishMessage(anyString(),
                                                            any(byte[].class),
+                                                           anyMapOf(String.class, String.class),
                                                            anyInt(),
                                                            anyLong(),
                                                            any(SuccessAction.class),
@@ -241,5 +254,23 @@ public class MqttMessagingStubTest {
         }
         verify(successAction, times(0)).execute();
         verify(failureAction, times(0)).execute(exception);
+    }
+
+    @Test
+    public void testMessagePublishedWithPrefixedCustomHeaders() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("c-header1", "value1");
+        map.put("c-header2", "value2");
+        when(joynrMessage.getPrefixedCustomHeaders()).thenReturn(map);
+
+        subject.transmit(joynrMessage, successAction, failureAction);
+
+        verify(mqttClient).publishMessage(anyString(),
+                                          any(byte[].class),
+                                          eq(map),
+                                          eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),
+                                          anyLong(),
+                                          any(SuccessAction.class),
+                                          any(FailureAction.class));
     }
 }

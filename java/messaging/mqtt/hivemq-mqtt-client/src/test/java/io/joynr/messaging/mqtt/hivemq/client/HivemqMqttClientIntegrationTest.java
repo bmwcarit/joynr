@@ -35,6 +35,7 @@ import static org.mockito.Mockito.verify;
 import java.lang.reflect.Field;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -177,6 +178,7 @@ public class HivemqMqttClientIntegrationTest {
 
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
+                                    Collections.<String, String> emptyMap(),
                                     DEFAULT_QOS_LEVEL,
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
@@ -243,6 +245,7 @@ public class HivemqMqttClientIntegrationTest {
                             }
                             clientSender.publishMessage(topic,
                                                         payload,
+                                                        Collections.<String, String> emptyMap(),
                                                         DEFAULT_QOS_LEVEL,
                                                         DEFAULT_EXPIRY_INTERVAL_SEC,
                                                         mockSuccessAction,
@@ -314,6 +317,7 @@ public class HivemqMqttClientIntegrationTest {
 
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
+                                    Collections.<String, String> emptyMap(),
                                     DEFAULT_QOS_LEVEL,
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
@@ -381,6 +385,7 @@ public class HivemqMqttClientIntegrationTest {
 
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
+                                    Collections.<String, String> emptyMap(),
                                     DEFAULT_QOS_LEVEL,
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
@@ -416,6 +421,7 @@ public class HivemqMqttClientIntegrationTest {
 
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
+                                    Collections.<String, String> emptyMap(),
                                     DEFAULT_QOS_LEVEL,
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
@@ -453,6 +459,7 @@ public class HivemqMqttClientIntegrationTest {
 
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
+                                    Collections.<String, String> emptyMap(),
                                     DEFAULT_QOS_LEVEL,
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
@@ -502,6 +509,7 @@ public class HivemqMqttClientIntegrationTest {
 
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
+                                    Collections.<String, String> emptyMap(),
                                     DEFAULT_QOS_LEVEL,
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
@@ -544,6 +552,7 @@ public class HivemqMqttClientIntegrationTest {
         clientReceiver.shutdown();
         clientSender.publishMessage(ownTopic,
                                     serializedMessage,
+                                    Collections.<String, String> emptyMap(),
                                     DEFAULT_QOS_LEVEL,
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,

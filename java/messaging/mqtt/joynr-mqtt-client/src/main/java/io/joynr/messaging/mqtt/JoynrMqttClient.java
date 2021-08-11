@@ -18,6 +18,8 @@
  */
 package io.joynr.messaging.mqtt;
 
+import java.util.Map;
+
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
 
@@ -31,6 +33,7 @@ public interface JoynrMqttClient {
 
     public void publishMessage(String topic,
                                byte[] serializedMessage,
+                               Map<String, String> prefixedCustomHeaders,
                                int qosLevel,
                                long messageExpiryDateMs,
                                SuccessAction successAction,

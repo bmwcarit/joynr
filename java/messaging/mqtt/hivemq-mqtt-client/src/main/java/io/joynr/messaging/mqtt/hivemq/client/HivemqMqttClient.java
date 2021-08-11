@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserPropertiesBuilder;
 import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.exceptions.MqttSessionExpiredException;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientConfig;
@@ -259,11 +261,17 @@ public class HivemqMqttClient implements JoynrMqttClient {
     @Override
     public void publishMessage(String topic,
                                byte[] serializedMessage,
+                               Map<String, String> prefixedCustomHeaders,
                                int qosLevel,
                                long messageExpiryIntervalSec,
                                SuccessAction successAction,
                                FailureAction failureAction) {
+        assert (prefixedCustomHeaders != null);
         assert (isSender);
+
+        if (prefixedCustomHeaders == null) {
+            throw new JoynrMessageNotSentException("prefixedCustomHeaders must not be null");
+        }
 
         if (maxMsgSizeBytes != 0 && serializedMessage.length > maxMsgSizeBytes) {
             throw new JoynrMessageNotSentException("Publish failed: maximum allowed message size of " + maxMsgSizeBytes
@@ -276,11 +284,18 @@ public class HivemqMqttClient implements JoynrMqttClient {
             return;
         }
 
+        Mqtt5UserPropertiesBuilder mqtt5UserPropertiesBuilder = Mqtt5UserProperties.builder();
+        for (Map.Entry<String, String> entry : prefixedCustomHeaders.entrySet()) {
+            mqtt5UserPropertiesBuilder.add(entry.getKey(), entry.getValue());
+        }
+        Mqtt5UserProperties mqtt5UserProperties = mqtt5UserPropertiesBuilder.build();
+
         Mqtt5Publish mqtt5Publish = Mqtt5Publish.builder()
                                                 .topic(topic)
                                                 .qos(safeParseQos(qosLevel))
                                                 .payload(serializedMessage)
                                                 .messageExpiryInterval(messageExpiryIntervalSec)
+                                                .userProperties(mqtt5UserProperties)
                                                 .build();
         logger.debug("{}: Publishing to topic: {}, size: {}, qos: {}",
                      clientInformation,

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
@@ -102,12 +103,14 @@ public class MqttMessagingStubFactoryTest {
         messagingStub1.transmit(message, successAction, failureAction);
         verify(joynrMqttClient1).publishMessage(topicCaptor.capture(),
                                                 any(byte[].class),
+                                                anyMapOf(String.class, String.class),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),
                                                 any(FailureAction.class));
         verify(joynrMqttClient2, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
+                                                          anyMapOf(String.class, String.class),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
@@ -118,12 +121,14 @@ public class MqttMessagingStubFactoryTest {
         messagingStub2.transmit(message, successAction, failureAction);
         verify(joynrMqttClient1, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
+                                                          anyMapOf(String.class, String.class),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
                                                           any(FailureAction.class));
         verify(joynrMqttClient2).publishMessage(topicCaptor.capture(),
                                                 any(byte[].class),
+                                                anyMapOf(String.class, String.class),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),
