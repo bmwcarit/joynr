@@ -18,7 +18,7 @@ endif()
 
 include(AddClangFormat)
 
-find_package(Boost REQUIRED COMPONENTS system thread program_options)
+find_package(Boost 1.65.0 REQUIRED COMPONENTS system thread program_options)
 find_package(OpenSSL REQUIRED)
 find_package (Threads)
 

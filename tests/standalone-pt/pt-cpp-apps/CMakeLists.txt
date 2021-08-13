@@ -35,7 +35,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/libjoynrclustercontrolle
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/libjoynr/resources/default-system-services.settings ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources/default-system-services.settings)
 
 ######## Add Boost ########
-find_package(Boost 1.58.0 REQUIRED
+find_package(Boost 1.65.0 REQUIRED
     COMPONENTS
     filesystem
     program_options

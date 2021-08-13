@@ -32,7 +32,7 @@ message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 
 ### BEGIN Boost ###
 
-find_package(Boost 1.58.0 REQUIRED
+find_package(Boost 1.65.0 REQUIRED
     COMPONENTS
     system
     filesystem

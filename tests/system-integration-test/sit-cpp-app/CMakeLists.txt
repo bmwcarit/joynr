@@ -78,7 +78,7 @@ endif(${GENERATE_SOURCES})
 
 ######## Add Boost ########
 
-find_package(Boost 1.58.0 REQUIRED
+find_package(Boost 1.65.0 REQUIRED
     COMPONENTS
     system
     filesystem
