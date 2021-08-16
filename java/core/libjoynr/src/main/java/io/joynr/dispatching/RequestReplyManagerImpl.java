@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +48,6 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RequestInterpreter;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.exceptions.JoynrCommunicationException;
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.messaging.MessagingQos;
@@ -180,7 +178,7 @@ public class RequestReplyManagerImpl
         outstandingRequestFutures.add(responseFuture);
         if (!shuttingDown) {
             try {
-                response = responseFuture.get(messagingQos.getRoundTripTtl_ms(), TimeUnit.MILLISECONDS);
+                response = responseFuture.get();
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
@@ -188,9 +186,6 @@ public class RequestReplyManagerImpl
             } catch (ExecutionException e) {
                 throw new JoynrCommunicationException("Request: " + request.getRequestReplyId() + " failed: "
                         + e.getMessage(), e);
-            } catch (TimeoutException e) {
-                throw new JoynrIllegalStateException("Request: " + request.getRequestReplyId()
-                        + " failed unexpectedly without response.");
             } catch (CancellationException e) {
                 throw new JoynrShutdownException("Request: " + request.getRequestReplyId()
                         + " interrupted by shutdown");
