@@ -89,10 +89,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.mqtt</groupId>
-			<artifactId>mqtt-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>

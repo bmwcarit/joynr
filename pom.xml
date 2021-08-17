@@ -551,11 +551,6 @@
 				<version>1.1.4</version>
 			</dependency>
 			<dependency>
-				<groupId>io.joynr.mqtt</groupId>
-				<artifactId>mqtt-client</artifactId>
-				<version>0.0.6</version>
-			</dependency>
-			<dependency>
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<version>${guice.version}</version>
