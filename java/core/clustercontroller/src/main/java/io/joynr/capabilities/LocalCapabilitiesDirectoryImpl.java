@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -48,7 +47,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -68,6 +66,7 @@ import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.system.DiscoveryAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryEntry;
@@ -79,8 +78,8 @@ import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
 @Singleton
-public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDirectory
-        implements TransportReadyListener {
+public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
+        implements TransportReadyListener, LocalCapabilitiesDirectory {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
@@ -245,7 +244,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
                 long lastSeenDateMs = System.currentTimeMillis();
                 long expiryDateMs = lastSeenDateMs + defaultExpiryTimeMs;
 
-                // Touches all discovery entries, but only returns the participantIds of global ones 
+                // Touches all discovery entries, but only returns the participantIds of global ones
                 String[] participantIds = localDiscoveryEntryStore.touchDiscoveryEntries(lastSeenDateMs, expiryDateMs);
                 // update globalDiscoveryEntryCache
                 globalDiscoveryEntryCache.touchDiscoveryEntries(participantIds, lastSeenDateMs, expiryDateMs);
@@ -1257,9 +1256,7 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
     }
 
     @Override
-    public void shutdown(boolean unregisterAllRegisteredCapabilities) {
-        logger.debug("shutdown invoked");
-
+    public void shutdown() {
         gcdTaskSequencer.stop();
         if (freshnessUpdateScheduledFuture != null) {
             freshnessUpdateScheduledFuture.cancel(false);
@@ -1268,56 +1265,6 @@ public class LocalCapabilitiesDirectoryImpl extends AbstractLocalCapabilitiesDir
         if (reAddAllGlobalEntriesScheduledFuture != null) {
             reAddAllGlobalEntriesScheduledFuture.cancel(false);
         }
-
-        if (unregisterAllRegisteredCapabilities) {
-            Set<DiscoveryEntry> allDiscoveryEntries = localDiscoveryEntryStore.getAllDiscoveryEntries();
-
-            List<DiscoveryEntry> discoveryEntries = new ArrayList<>(allDiscoveryEntries.size());
-
-            for (DiscoveryEntry capabilityEntry : allDiscoveryEntries) {
-                if (capabilityEntry.getQos().getScope() == ProviderScope.GLOBAL) {
-                    discoveryEntries.add(capabilityEntry);
-                }
-            }
-
-            if (discoveryEntries.size() > 0) {
-                try {
-                    CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
-
-                        @Override
-                        public void onFailure(JoynrRuntimeException error) {
-                        }
-
-                        @Override
-                        public void onSuccess(Void result) {
-                        }
-
-                        @Override
-                        public void onFailure(DiscoveryError errorEnum) {
-                        }
-
-                    };
-
-                    List<String> participantIds = discoveryEntries.stream()
-                                                                  .filter(Objects::nonNull)
-                                                                  .map(dEntry -> dEntry.getParticipantId())
-                                                                  .collect(Collectors.toList());
-                    for (String participantId : participantIds) {
-                        synchronized (globalDiscoveryEntryCache) {
-                            List<String> gbidList = globalProviderParticipantIdToGbidListMap.get(participantId);
-                            if (gbidList != null) {
-                                globalCapabilitiesDirectoryClient.remove(callback,
-                                                                         participantId,
-                                                                         gbidList.toArray(new String[0]));
-                            }
-                        }
-                    }
-                } catch (DiscoveryException e) {
-                    logger.debug("Error removing discovery entries", e);
-                }
-            }
-        }
-        logger.debug("shutdown finished");
     }
 
     @Override
