@@ -269,7 +269,8 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithSinglePrimitiveParameters",
                                                          shortArg,
                                                          (Short arg,
-                                                          String res) -> res.equals(new Integer(Short.toUnsignedInt(arg)).toString()));
+                                                          String res) -> res.equals(Integer.valueOf(Short.toUnsignedInt(arg))
+                                                                                           .toString()));
         logger.info(name.getMethodName() + " - OK");
         return;
     }

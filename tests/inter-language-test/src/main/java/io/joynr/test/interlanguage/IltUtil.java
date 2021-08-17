@@ -344,7 +344,7 @@ public class IltUtil {
         // range
         structOfPrimitives.setUInt8MinElement((byte) 0);
         structOfPrimitives.setUInt8MaxElement((byte) 127);
-        // structOfPrimitives.setUInt8MaxElement(new Short((short)255).byteValue());
+        // structOfPrimitives.setUInt8MaxElement(Short.valueOf((short)255).byteValue());
         // structOfPrimitives.setUInt8MaxElement((byte)255);
 
         // negative values are not allowed on the wire (JSON) for uint16 range
@@ -354,7 +354,7 @@ public class IltUtil {
         // negative values are not allowed on the wire (JSON) for uint32 range
         structOfPrimitives.setUInt32MinElement(0);
         structOfPrimitives.setUInt32MaxElement(Integer.MAX_VALUE);
-        // structOfPrimitives.setUInt32MaxElement(new Long(4294967295L).intValue());
+        // structOfPrimitives.setUInt32MaxElement(Long.valueOf(4294967295L).intValue());
 
         // negative values are not allowed on the wire (JSON) for uint64 range
         structOfPrimitives.setUInt64MinElement(0L);

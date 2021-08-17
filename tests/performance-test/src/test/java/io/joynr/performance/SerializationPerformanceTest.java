@@ -58,13 +58,15 @@ public class SerializationPerformanceTest {
     @Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                { new Integer(1000), new Integer(NUM_WARMUP_RUNS), new Byte((byte) 123), "Warmup" },
-                { new Integer(1000), new Integer(NUM_RUNS), new Byte((byte) 123), "1k bytes (3 digits)" },
-                { new Integer(10000), new Integer(NUM_RUNS), new Byte((byte) 123), "10k bytes (3 digits)" },
-                { new Integer(100000), new Integer(NUM_RUNS), new Byte((byte) 123), "100k bytes (3 digits)" },
-                { new Integer(1000), new Integer(NUM_RUNS), new Byte((byte) 1), "1k bytes (1 digit)" },
-                { new Integer(10000), new Integer(NUM_RUNS), new Byte((byte) 1), "10k bytes (1 digit)" },
-                { new Integer(100000), new Integer(NUM_RUNS), new Byte((byte) 1), "100k bytes (1 digit)" } });
+                { Integer.valueOf(1000), Integer.valueOf(NUM_WARMUP_RUNS), Byte.valueOf((byte) 123), "Warmup" },
+                { Integer.valueOf(1000), Integer.valueOf(NUM_RUNS), Byte.valueOf((byte) 123), "1k bytes (3 digits)" },
+                { Integer.valueOf(10000), Integer.valueOf(NUM_RUNS), Byte.valueOf((byte) 123), "10k bytes (3 digits)" },
+                { Integer.valueOf(100000), Integer.valueOf(NUM_RUNS), Byte.valueOf((byte) 123),
+                        "100k bytes (3 digits)" },
+                { Integer.valueOf(1000), Integer.valueOf(NUM_RUNS), Byte.valueOf((byte) 1), "1k bytes (1 digit)" },
+                { Integer.valueOf(10000), Integer.valueOf(NUM_RUNS), Byte.valueOf((byte) 1), "10k bytes (1 digit)" },
+                { Integer.valueOf(100000), Integer.valueOf(NUM_RUNS), Byte.valueOf((byte) 1),
+                        "100k bytes (1 digit)" } });
     }
 
     public interface ITestCase {
@@ -89,7 +91,7 @@ public class SerializationPerformanceTest {
         // If the native byte type is used, jackson will automatically serialize the array as a base64
         // encoded string.
         final Byte[] content = new Byte[byteArraySize];
-        Arrays.fill(content, new Byte(byteArrayInitValue));
+        Arrays.fill(content, Byte.valueOf(byteArrayInitValue));
 
         runSerializationBenchmarkTest(String.format("Non-base64 - encode, %s", testName), new ITestCase() {
             @Override
@@ -105,7 +107,7 @@ public class SerializationPerformanceTest {
         // If the native byte type is used, jackson will automatically serialize the array as a base64
         // encoded string.
         Byte[] content = new Byte[byteArraySize];
-        Arrays.fill(content, new Byte(byteArrayInitValue));
+        Arrays.fill(content, Byte.valueOf(byteArrayInitValue));
         final String jsonString = objectMapper.writeValueAsString(content);
 
         runSerializationBenchmarkTest(String.format("Non-base64 - decode, %s", testName), new ITestCase() {

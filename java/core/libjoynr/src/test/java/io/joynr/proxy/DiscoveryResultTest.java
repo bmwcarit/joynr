@@ -65,8 +65,8 @@ public class DiscoveryResultTest {
 
     @Test
     public void testReturnLastSeen() {
-        Long lastSeenDateMs = new Long(10000);
-        Long anotherDateMs = new Long(500);
+        Long lastSeenDateMs = Long.valueOf(10000);
+        Long anotherDateMs = Long.valueOf(500);
         DiscoveryEntryWithMetaInfo entry1 = new DiscoveryEntryWithMetaInfo();
         entry1.setLastSeenDateMs(lastSeenDateMs);
         DiscoveryEntryWithMetaInfo entry2 = new DiscoveryEntryWithMetaInfo();
@@ -78,8 +78,8 @@ public class DiscoveryResultTest {
 
     @Test
     public void testReturnHighestPriority() {
-        Long highPriority = new Long(10000);
-        Long lowPriority = new Long(500);
+        Long highPriority = Long.valueOf(10000);
+        Long lowPriority = Long.valueOf(500);
         ProviderQos highPriorityProviderQos = new ProviderQos();
         highPriorityProviderQos.setPriority(highPriority);
         ProviderQos lowPriorityProviderQos = new ProviderQos();

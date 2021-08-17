@@ -216,7 +216,7 @@ public class IltConsumerJUnitListener extends RunListener {
         for (int i = 0; i < store.testCaseResults.size(); i++) {
             if (store.testCaseResults.get(i).getName().equals(getTestCaseName(description))) {
                 // update time for failed entry
-                //testCaseResults.get(i).setTime(new Long(endTimeTestCase - startTimeTestCase).toString());
+                //testCaseResults.get(i).setTime(Long.valueOf(endTimeTestCase - startTimeTestCase).toString());
                 store.testCaseResults.get(i).setTime(getFormattedDuration(endTimeTestCase - startTimeTestCase));
                 found = true;
                 break;
@@ -226,7 +226,7 @@ public class IltConsumerJUnitListener extends RunListener {
             // create new entry
             TestCaseResult testCaseResult = new TestCaseResult(getTestCaseName(description),
                                                                getTestSuiteClassName(description),
-                                                               //new Long(endTimeTestCase - startTimeTestCase).toString(),
+                                                               //Long.valueOf(endTimeTestCase - startTimeTestCase).toString(),
                                                                getFormattedDuration(endTimeTestCase
                                                                        - startTimeTestCase),
                                                                "ok", // status
@@ -254,7 +254,7 @@ public class IltConsumerJUnitListener extends RunListener {
         // create new entry
         TestCaseResult testCaseResult = new TestCaseResult(getTestCaseName(description),
                                                            getTestSuiteClassName(description),
-                                                           //new Long(endTimeTestCase - startTimeTestCase).toString(),
+                                                           //Long.valueOf(endTimeTestCase - startTimeTestCase).toString(),
                                                            "0.000",
                                                            "ignored", // status
                                                            null, // no failure
