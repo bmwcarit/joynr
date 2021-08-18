@@ -115,6 +115,50 @@ TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
                             });
 }
 
+TEST_F(MqttSenderTest, messagePublishedWithPrefixedCustomHeadersInMqtt5UserProps)
+{
+    const std::string expectedTopic = mqttAddress.getTopic() + "/low";
+    MutableMessage mutableMessage;
+
+    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings", MqttSenderTest::noMqttMessagePacketSize);
+
+    mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    mutableMessage.setSender("testSender");
+    mutableMessage.setRecipient("testRecipient");
+    mutableMessage.setPayload("shortMessage");
+
+    const std::string customHeaderKey = "custom-header-key";
+    const std::string customHeaderValue = "custom-value";
+    std::unordered_map<std::string, std::string> customHeaders{
+            {customHeaderKey, customHeaderValue}};
+    mutableMessage.setCustomHeader(customHeaderKey, customHeaderValue);
+
+    const std::string prefixedHeaderKey = joynr::Message::CUSTOM_HEADER_PREFIX() + customHeaderKey;
+    const std::string prefixedHeaderValue = "value";
+
+    std::unordered_map<std::string, std::string> prefixedCustomHeaders {
+            {prefixedHeaderKey, prefixedHeaderValue}};
+    mutableMessage.setPrefixedCustomHeaders(prefixedCustomHeaders);
+
+    std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
+            mutableMessage.getImmutableMessage();
+
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(
+                    Eq(expectedTopic),
+                    Eq(0),
+                    _,
+                    _,
+                    Eq(immutableMessage->getPrefixedCustomHeaders()),
+                    _,
+                    _));
+
+    mqttSender->sendMessage(mqttAddress,
+                            immutableMessage,
+                            [] (const exceptions::JoynrRuntimeException& exception) {
+                                FAIL() << "sendMessage failed: " << exception.getMessage();
+                            });
+}
+
 TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
 {
     const TimePoint now = TimePoint::now();
