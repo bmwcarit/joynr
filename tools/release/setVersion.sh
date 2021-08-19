@@ -34,8 +34,6 @@ examples/radio-app/CMakeLists.txt \
 tests/dummyKeychain/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
-tests/robustness-test/CMakeLists.txt \
-tests/robustness-test-env/CMakeLists.txt \
 tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt
 
@@ -45,8 +43,6 @@ examples/radio-app/CMakeLists.txt \
 tests/dummyKeychain/CMakeLists.txt \
 tests/inter-language-test/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
-tests/robustness-test/CMakeLists.txt \
-tests/robustness-test-env/CMakeLists.txt \
 tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt
 
@@ -57,7 +53,6 @@ _sed 's/'$oldVersion'/'$newVersion'/g' \
 package.json \
 tests/inter-language-test/package.json \
 tests/performance-test/package.json \
-tests/robustness-test/package.json \
 tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/package.json \
 examples/radio-node/pom.xml \

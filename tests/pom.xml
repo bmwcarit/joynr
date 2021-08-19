@@ -33,9 +33,6 @@
 		<module>performance-test</module>
 		<module>performance-test-jee</module>
 		<module>pt-java</module>
-		<module>robustness-test</module>
-		<module>robustness-test-env</module>
-		<module>robustness-test-base</module>
 		<module>inter-language-test</module>
 		<module>inter-language-test-jee</module>
 		<module>system-integration-test</module>
