@@ -70,8 +70,14 @@ if(${GENERATE_SOURCES})
 endif(${GENERATE_SOURCES})
 
 #### BEGIN Globally required dependencies ####
-
-set(JOYNR_BOOST_REQUIRED_VERSION 1.65.0)
+if(JOYNR_SUPPORT_UDS)
+# As we use some features of Boost 1.66 in UDS, it is required for any build that compiles it.
+    set(JOYNR_BOOST_REQUIRED_VERSION 1.66.0)
+else()
+# The setting for 1.65 is necessary to stay compatible with older build systems, where its is the
+# maximum available boost version. These systems will not be able to use UDS.
+    set(JOYNR_BOOST_REQUIRED_VERSION 1.65.0)
+endif(JOYNR_SUPPORT_UDS)
 set(JOYNR_BOOST_REQUIRED_COMPONENTS system filesystem thread)
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
