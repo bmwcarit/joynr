@@ -8,7 +8,7 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
-None.
+* **[Java, JEE]** Updated hivemq-mqtt-client to 1.2.2 and its transitive dependencies
 
 ## Configuration Property Changes
 None.
