@@ -2,6 +2,29 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.6
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Custom headers are additionally sent as MQTT5 user properties within PUBLISH.
+* **[C++]** Consistently use minimum required boost version 1.65.0 in all joynr CMake projects.
+* **[Java]** Removed unused dependency to `io.joynr.mqtt:mqtt-client`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed a segmentation fault in libjoynr runtime that could occur during shutdown when
+  logging was attempted within a background thread after spdlog was already in the process of
+  getting shutdown by libc exit handlers on the main thread.
+* **[Java]** Fixed race condition on RPC timeout that sporadically caused a
+  `JoynrIllegalStateException` instead of the expected `JoynrCommunicationException`.
+
 # joynr 1.17.5
 
 ## API-relevant Changes
@@ -210,6 +233,24 @@ None.
 
 ## Bug Fixes
 None.
+
+# joynr 1.16.3
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed a bug where replies for stateless asynchronous remote procedure
+  calls could not be handled correctly
 
 # joynr 1.16.2
 
@@ -1226,6 +1267,24 @@ None.
 * **[Android]** Added libjoynr-android-websocket-runtime, updated joynr-generator-gradle-plugin
   and added Android examples to examples/android/android-hello-world.
 
+
+## Configuration property changes
+None.
+
+# joynr 1.9.2
+
+## API relevant changes
+None.
+
+## Other changes
+* **[Java]** Fixed a bug that requests for GlobalCapabilitiesDirectory from a joynr runtime that
+  uses the empty GBID could not be answered.
+* **[Java]** Updated jackson to version 2.9.10
+* **[Java]** Updated net.sourceforge.htmlunit:htmlunit to 2.36.0
+* **[Java]** Orphaned shutdown listener entries related to no longer referenced proxy instances
+  are now removed by the Routing Table cleanup background job, provided the related proxy instances
+  have already been collected by the Java garbage collector.
+* **[Java]** Added synchronization to ShutdownNotifierList to avoid corruption
 
 ## Configuration property changes
 None.
