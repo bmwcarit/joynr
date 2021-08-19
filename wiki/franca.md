@@ -33,6 +33,21 @@ Name | Meaning
 
 Each *element* is a ```<Type> variableName``` pair.
 
+### Restrictions
+
+Please be aware of several restrictions:
+
+* Java does not support any unsigned types at all, always use signed instead if a Java application
+  is part of the communication.
+* JavaScript does not support `int64` or `uint64`. It has a [limited maximum integer that is safe
+  to use](https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER)
+* C++ does not support `NULL` values or undefined values. We strongly discourage the use of `NULL`
+  for all languages. If you want to emulate optional elements, you should instead use an array. An
+  empty array would then signal the absence of a value, whereas the presence of a value would be
+  signalled by the array having one element.
+* The serialization of a `ByteBuffer` is extremely inefficient. We recommend instead encoding the
+  data with Base64 and putting it in a `String` value.
+
 ## Franca Packages
 
 A Franca package definition creates a unique namespace.
