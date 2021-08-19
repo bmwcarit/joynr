@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(Joynr VERSION 1.17.6 LANGUAGES CXX)
+project(Joynr VERSION 1.17.7 LANGUAGES CXX)
 message(STATUS "-----------------------------------------------------")
 message(STATUS "- PROJECT: Joynr ${Joynr_VERSION}")
 message(STATUS "-----------------------------------------------------")

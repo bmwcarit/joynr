@@ -1,6 +1,6 @@
 {
   "name": "joynr",
-  "version": "1.17.6",
+  "version": "1.17.7-SNAPSHOT",
   "description": "Web-based communication framework for applications wanting to interact with other applications, no matter whether they're deployed on consumer devices, vehicles, or backend infrastructure",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
