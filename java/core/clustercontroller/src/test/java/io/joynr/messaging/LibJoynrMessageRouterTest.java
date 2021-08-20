@@ -18,16 +18,22 @@
  */
 package io.joynr.messaging;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,23 +44,27 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.common.ExpiryDate;
-import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.dispatching.Dispatcher;
+import io.joynr.dispatching.MutableMessageFactory;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessageQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.routing.MulticastReceiverRegistry;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
+import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.MutableMessage;
+import joynr.Request;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
@@ -69,9 +79,9 @@ public class LibJoynrMessageRouterTest {
     @Mock
     IMessagingStub messagingStub;
     @Mock
-    private RoutingTable routingTable;
-    @Mock
     private RoutingProxy messageRouterParent;
+    @Mock
+    private RoutingProxy deferredMessageRouterParent;
     @Mock
     private RoutingProxy messageRouterParentUdsAddress;
     @Mock
@@ -89,27 +99,34 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private AddressManager addressManager;
     @Mock
-    private MulticastReceiverRegistry multicastReceiverRegistry;
-    @Mock
     private ImmutableMessage message;
     @Mock
     private ShutdownNotifier shutdownNotifier;
     @Mock
     RoutingTable routingTableMock;
-
-    private MessageQueue messageQueue;
+    @Mock
+    private Dispatcher dispatcherMock;
+    private MessageQueue incomingMessageQueue;
+    private MessageQueue outgoingMessageQueue;
     private LibJoynrMessageRouter messageRouter;
     private LibJoynrMessageRouter messageRouterForUdsAddresses;
     private String unknownParticipantId = "unknownParticipantId";
     private String unknownSenderParticipantId = "unknownSenderParticipantId";
-    private Long sendMsgRetryIntervalMs = 10L;
-    private int maxParallelSends = 10;
-    private long routingTableCleanupIntervalMs = 60000L;
+    private int maxParallelSends = 2;
+
+    private MutableMessageFactory messageFactory;
+    private MutableMessage joynrMessage;
 
     private String globalAddress = "global-address";
+    private String toParticipantId = "toParticipantId";
+    private String fromParticipantId = "fromParticipantId";
 
     @Before
     public void setUp() {
+        incomingMessageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
+                                                    new MessageQueue.MaxTimeoutHolder()));
+        outgoingMessageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
+                                                    new MessageQueue.MaxTimeoutHolder()));
         when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000000).getValue());
         when(message.isTtlAbsolute()).thenReturn(true);
         when(message.getRecipient()).thenReturn(unknownParticipantId);
@@ -117,74 +134,32 @@ public class LibJoynrMessageRouterTest {
         when(message.isLocalMessage()).thenReturn(false);
         when(message.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
 
-        when(routingTable.containsKey(unknownParticipantId)).thenReturn(false);
-        when(messageRouterParent.resolveNextHop(unknownParticipantId)).thenReturn(true);
         when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
         when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");
         when(messagingSkeletonFactory.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
 
-        messageQueue = new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
-                                        new MessageQueue.MaxTimeoutHolder(),
-                                        routingTableMock);
-
-        messageRouter = new LibJoynrMessageRouter(routingTable,
-                                                  incomingAddress,
+        messageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                   provideMessageSchedulerThreadPoolExecutor(),
-                                                  sendMsgRetryIntervalMs,
                                                   maxParallelSends,
-                                                  routingTableCleanupIntervalMs,
                                                   messagingStubFactory,
-                                                  messagingSkeletonFactory,
-                                                  addressManager,
-                                                  multicastReceiverRegistry,
-                                                  messageQueue,
-                                                  shutdownNotifier);
-        messageRouterForUdsAddresses = new LibJoynrMessageRouter(routingTable,
-                                                                 incomingUdsClientAddress,
+                                                  incomingMessageQueue,
+                                                  outgoingMessageQueue,
+                                                  shutdownNotifier,
+                                                  dispatcherMock);
+        messageRouterForUdsAddresses = new LibJoynrMessageRouter(incomingUdsClientAddress,
                                                                  provideMessageSchedulerThreadPoolExecutor(),
-                                                                 sendMsgRetryIntervalMs,
                                                                  maxParallelSends,
-                                                                 routingTableCleanupIntervalMs,
                                                                  messagingStubFactory,
-                                                                 messagingSkeletonFactory,
-                                                                 addressManager,
-                                                                 multicastReceiverRegistry,
-                                                                 messageQueue,
-                                                                 shutdownNotifier);
+                                                                 incomingMessageQueue,
+                                                                 outgoingMessageQueue,
+                                                                 shutdownNotifier,
+                                                                 dispatcherMock);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
-    }
-
-    @Test
-    public void itQueriesParentForNextHop() throws Exception {
-        messageRouter.routeOut(message);
-        Thread.sleep(100);
-        verify(messageRouterParent).resolveNextHop(eq(unknownParticipantId));
-    }
-
-    @Test
-    public void preventRoutingBackToCC() throws Exception {
-        when(message.isReceivedFromGlobal()).thenReturn(true);
-        message.setReceivedFromGlobal(true);
-        messageRouter.routeIn(message);
-        Thread.sleep(100);
-        verify(messageRouterParent, never()).resolveNextHop(any());
-    }
-
-    @Test
-    public void addsNextHopAfterQueryingParent() throws Exception {
-        messageRouter.routeOut(message);
-        Thread.sleep(100);
-        final boolean isGloballyVisible = true;
-        final long expiryDateMs = Long.MAX_VALUE;
-        verify(routingTable).put(eq(unknownParticipantId), eq(parentAddress), eq(isGloballyVisible), eq(expiryDateMs));
-    }
-
-    @Test
-    public void passesNextHopToParent() {
-        final boolean isGloballyVisible = true;
-        messageRouter.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
-        verify(messageRouterParent).addNextHop(eq(unknownParticipantId), eq(incomingAddress), eq(isGloballyVisible));
+        ObjectMapper objectMapper = new ObjectMapper();
+        messageFactory = new MutableMessageFactory(objectMapper, new HashSet<JoynrMessageProcessor>());
+        Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
+        joynrMessage = messageFactory.createRequest(fromParticipantId, toParticipantId, request, new MessagingQos());
     }
 
     @Test(expected = ProviderRuntimeException.class)
@@ -194,6 +169,33 @@ public class LibJoynrMessageRouterTest {
                                                      parentAddress,
                                                      "anotherParentParticipantId",
                                                      "anotherProxyParticipantId");
+    }
+
+    @Test
+    public void testAlwaysOneIncomingAndOutgoingWorkerAvailable() throws NoSuchFieldException, SecurityException,
+                                                                  IllegalArgumentException, IllegalAccessException {
+        int localMaxParallelSends = 1;
+        LibJoynrMessageRouter localMessageRouter = new LibJoynrMessageRouter(incomingAddress,
+                                                                             provideMessageSchedulerThreadPoolExecutor(),
+                                                                             localMaxParallelSends,
+                                                                             messagingStubFactory,
+                                                                             incomingMessageQueue,
+                                                                             outgoingMessageQueue,
+                                                                             shutdownNotifier,
+                                                                             dispatcherMock);
+        Field incomingMessageWorkerField = LibJoynrMessageRouter.class.getDeclaredField("incomingMessageWorkers");
+        incomingMessageWorkerField.setAccessible(true);
+        Field outgoingMessageWorkerField = LibJoynrMessageRouter.class.getDeclaredField("outgoingMessageWorkers");
+        outgoingMessageWorkerField.setAccessible(true);
+        assertEquals(1, ((List) incomingMessageWorkerField.get(localMessageRouter)).size());
+        assertEquals(1, ((List) outgoingMessageWorkerField.get(localMessageRouter)).size());
+    }
+
+    @Test
+    public void passesNextHopToParent() {
+        final boolean isGloballyVisible = true;
+        messageRouter.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
+        verify(messageRouterParent).addNextHop(eq(unknownParticipantId), eq(incomingAddress), eq(isGloballyVisible));
     }
 
     @Test
@@ -215,29 +217,10 @@ public class LibJoynrMessageRouterTest {
     }
 
     @Test
-    public void addMulticastReceiverForInProcessProvider() {
-        InProcessAddress mockInProcessAddress = mock(InProcessAddress.class);
+    public void testAddMulticastReceiver() {
         final String multicastId = "multicastIdTest";
         final String subscriberParticipantId = "subscriberParticipantIdTest";
         final String providerParticipantId = "providerParticipantIdTest";
-        when(routingTable.get(providerParticipantId)).thenReturn(mockInProcessAddress);
-        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
-
-        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-        // we don't expect this to be called
-        verify(messageRouterParent, times(0)).addMulticastReceiver(any(String.class),
-                                                                   any(String.class),
-                                                                   any(String.class));
-    }
-
-    @Test
-    public void addMulticastReceiverForNotInProcessProvider() {
-        WebSocketAddress mockWebSocketAddress = mock(WebSocketAddress.class);
-        final String multicastId = "multicastIdTest";
-        final String subscriberParticipantId = "subscriberParticipantIdTest";
-        final String providerParticipantId = "providerParticipantIdTest";
-        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
-        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
 
         messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         verify(messageRouterParent).addMulticastReceiver(eq(multicastId),
@@ -246,15 +229,11 @@ public class LibJoynrMessageRouterTest {
     }
 
     @Test
-    public void removeMulticastReceiverForNotInProcessProvider() {
-        WebSocketAddress mockWebSocketAddress = mock(WebSocketAddress.class);
+    public void testRemoveMulticastReceiver() {
         final String multicastId = "multicastIdTest";
         final String subscriberParticipantId = "subscriberParticipantIdTest";
         final String providerParticipantId = "providerParticipantIdTest";
-        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
-        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
 
-        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         verify(messageRouterParent).removeMulticastReceiver(eq(multicastId),
                                                             eq(subscriberParticipantId),
@@ -262,59 +241,115 @@ public class LibJoynrMessageRouterTest {
     }
 
     @Test
-    public void setToKnownAddsCcAddressToRoutingTable() {
-        final String participantId = "setToKnownParticipantId";
-        messageRouter.setToKnown(participantId);
-        verify(routingTable).put(participantId, parentAddress, false, Long.MAX_VALUE);
-    }
-
-    @Test(expected = JoynrIllegalStateException.class)
-    public void addMulticastReceiver_throwsWhenAddressIsUnknown() {
-        final String multicastId = "multicastIdTest";
-        final String subscriberParticipantId = "subscriberParticipantIdTest";
-        final String providerParticipantId = "providerParticipantIdTest";
-        when(routingTable.containsKey(providerParticipantId)).thenReturn(false);
-
-        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-        verify(messagingSkeletonFactory, times(0)).getSkeleton(any());
+    public void routeInEnqueuesNonExpiredMessage() throws Exception {
+        ImmutableMessage immutableMessage;
+        immutableMessage = joynrMessage.getImmutableMessage();
+        messageRouter.routeIn(immutableMessage);
+        ArgumentCaptor<DelayableImmutableMessage> messageCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(incomingMessageQueue).put(messageCaptor.capture());
+        ImmutableMessage capturedMessage = messageCaptor.getValue().getMessage();
+        assertEquals(immutableMessage.getSender(), capturedMessage.getSender());
+        assertEquals(immutableMessage.getRecipient(), capturedMessage.getRecipient());
+        assertEquals(immutableMessage.getReplyTo(), capturedMessage.getReplyTo());
+        verify(dispatcherMock, timeout(1000)).messageArrived(immutableMessage);
+        verify(messagingStub, never()).transmit(any(), any(), any());
     }
 
     @Test
-    public void addMulticastReceiver_callsMessagingSkeletonFactoryWhenAddressIsKnown() {
-        WebSocketAddress mockWebSocketAddress = mock(WebSocketAddress.class);
-        final String multicastId = "multicastIdTest";
-        final String subscriberParticipantId = "subscriberParticipantIdTest";
-        final String providerParticipantId = "providerParticipantIdTest";
-        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
-        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
-
-        messageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-        verify(messagingSkeletonFactory, times(1)).getSkeleton(mockWebSocketAddress);
+    public void routeOutEnqueuesNonExpiredMessage() throws Exception {
+        ImmutableMessage immutableMessage;
+        immutableMessage = joynrMessage.getImmutableMessage();
+        messageRouter.routeOut(immutableMessage);
+        ArgumentCaptor<DelayableImmutableMessage> messageCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
+        verify(outgoingMessageQueue).put(messageCaptor.capture());
+        ImmutableMessage capturedMessage = messageCaptor.getValue().getMessage();
+        assertEquals(immutableMessage.getSender(), capturedMessage.getSender());
+        assertEquals(immutableMessage.getRecipient(), capturedMessage.getRecipient());
+        assertEquals(immutableMessage.getReplyTo(), capturedMessage.getReplyTo());
+        verify(messagingStubFactory, timeout(1000)).create(parentAddress);
+        verify(messagingStub, timeout(1000)).transmit(eq(immutableMessage), any(), any());
+        verify(dispatcherMock, never()).messageArrived(any());
     }
 
-    @Test(expected = JoynrIllegalStateException.class)
-    public void removeMulticastRecevier_throwsWhenAddressIsUnknown() {
-        final String multicastId = "multicastIdTest";
-        final String subscriberParticipantId = "subscriberParticipantIdTest";
-        final String providerParticipantId = "providerParticipantIdTest";
-        when(routingTable.containsKey(providerParticipantId)).thenReturn(false);
+    @Test(expected = JoynrMessageExpiredException.class)
+    public void routeInOnExpiredMessageThrows() {
+        ImmutableMessage immutableMessage = null;
+        try {
+            joynrMessage.setTtlMs(0);
+            immutableMessage = joynrMessage.getImmutableMessage();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+        messageRouter.routeIn(immutableMessage);
+    }
 
-        messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-        verify(multicastReceiverRegistry, times(1)).unregisterMulticastReceiver(multicastId, subscriberParticipantId);
-        verify(messagingSkeletonFactory, times(0)).getSkeleton(any());
+    @Test(expected = JoynrMessageExpiredException.class)
+    public void routeOutOnExpiredMessageThrows() {
+        ImmutableMessage immutableMessage = null;
+        try {
+            joynrMessage.setTtlMs(0);
+            immutableMessage = joynrMessage.getImmutableMessage();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+        messageRouter.routeOut(immutableMessage);
     }
 
     @Test
-    public void removeMulticastReceveiver_callsMessagingSkeletonFactoryWhenAddressIsKnown() {
-        WebSocketAddress mockWebSocketAddress = mock(WebSocketAddress.class);
-        final String multicastId = "multicastIdTest";
-        final String subscriberParticipantId = "subscriberParticipantIdTest";
-        final String providerParticipantId = "providerParticipantIdTest";
-        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
-        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
-
-        messageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-        verify(multicastReceiverRegistry, times(1)).unregisterMulticastReceiver(multicastId, subscriberParticipantId);
-        verify(messagingSkeletonFactory, times(1)).getSkeleton(any());
+    public void deferredRegistrationsHappenAfterParentRouterSet() {
+        LibJoynrMessageRouter deferredMessageRouter = new LibJoynrMessageRouter(incomingAddress,
+                                                                                provideMessageSchedulerThreadPoolExecutor(),
+                                                                                maxParallelSends,
+                                                                                messagingStubFactory,
+                                                                                incomingMessageQueue,
+                                                                                outgoingMessageQueue,
+                                                                                shutdownNotifier,
+                                                                                dispatcherMock);
+        deferredMessageRouter.addNextHop("participant1", new WebSocketAddress(), true);
+        deferredMessageRouter.addNextHop("participant2", new WebSocketAddress(), true);
+        deferredMessageRouter.addNextHop("participant3", new WebSocketAddress(), true);
+        verify(deferredMessageRouterParent, never()).addNextHop(any(), any(WebSocketClientAddress.class), any());
+        deferredMessageRouter.setParentRouter(deferredMessageRouterParent,
+                                              parentAddress,
+                                              "parentParticipantId",
+                                              "proxyParticipantId");
+        //parent called 4 times because of addNextHop call for the application itself
+        verify(deferredMessageRouterParent, times(4)).addNextHop(any(), any(WebSocketClientAddress.class), any());
     }
+
+    @Test
+    public void deferredMulticastReceiversRegisteredAfterParentRouterSet() {
+        LibJoynrMessageRouter deferredMessageRouter = new LibJoynrMessageRouter(incomingAddress,
+                                                                                provideMessageSchedulerThreadPoolExecutor(),
+                                                                                maxParallelSends,
+                                                                                messagingStubFactory,
+                                                                                incomingMessageQueue,
+                                                                                outgoingMessageQueue,
+                                                                                shutdownNotifier,
+                                                                                dispatcherMock);
+        deferredMessageRouter.addMulticastReceiver("multicastId1",
+                                                   "subscriberParticipantId1",
+                                                   "providerParticipantId1");
+        deferredMessageRouter.addMulticastReceiver("multicastId2",
+                                                   "subscriberParticipantId2",
+                                                   "providerParticipantId2");
+        deferredMessageRouter.addMulticastReceiver("multicastId3",
+                                                   "subscriberParticipantId3",
+                                                   "providerParticipantId3");
+        verify(deferredMessageRouterParent, never()).addMulticastReceiver(any(), any(), any());
+        deferredMessageRouter.setParentRouter(deferredMessageRouterParent,
+                                              parentAddress,
+                                              "parentParticipantId",
+                                              "proxyParticipantId");
+        //parent called 4 times because of addNextHop call for the application itself
+        verify(deferredMessageRouterParent, times(3)).addMulticastReceiver(any(), any(), any());
+    }
+
+    @Test
+    public void testShutdown() throws InterruptedException {
+        verify(shutdownNotifier).registerForShutdown(messageRouter);
+    }
+
 }
