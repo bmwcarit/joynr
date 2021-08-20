@@ -2,6 +2,24 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.7
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed segmentation fault / abortions in cluster controller and libjoynr runtime
+  occurring during UDS socket opening.
+
 # joynr 1.17.6
 
 ## API-relevant Changes

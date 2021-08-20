@@ -73,6 +73,9 @@ endif(${GENERATE_SOURCES})
 if(JOYNR_SUPPORT_UDS)
 # As we use some features of Boost 1.66 in UDS, it is required for any build that compiles it.
     set(JOYNR_BOOST_REQUIRED_VERSION 1.66.0)
+    #EPOLL has known issues causing memory corruptions: SIG ABRT/SEGV
+    #Avoid regression for WebSocket.
+    add_compile_definitions(BOOST_ASIO_DISABLE_EPOLL)
 else()
 # The setting for 1.65 is necessary to stay compatible with older build systems, where its is the
 # maximum available boost version. These systems will not be able to use UDS.
