@@ -175,8 +175,7 @@ public class CcMessageRouterTest {
         final String[] gbidsArray = { "joynrtestgbid1", "joynrtestgbid2" };
         routingTable = spy(new RoutingTableImpl(42, gbidsArray, addressValidatorMock));
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
-                                            new MessageQueue.MaxTimeoutHolder(),
-                                            routingTable));
+                                            new MessageQueue.MaxTimeoutHolder()));
         addressManager = spy(new AddressManager(routingTable,
                                                 new AddressManager.PrimaryGlobalTransportHolder(null),
                                                 new HashSet<MulticastAddressCalculator>(),

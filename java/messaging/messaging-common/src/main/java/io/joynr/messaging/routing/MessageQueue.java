@@ -40,7 +40,6 @@ public class MessageQueue {
 
     private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
     private final long shutdownTimeoutMs;
-    private final RoutingTable routingTable;
 
     /**
      * Helper class to enable constructor injection of an optionally configured timeout value.
@@ -57,11 +56,9 @@ public class MessageQueue {
 
     @Inject
     public MessageQueue(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages,
-                        MaxTimeoutHolder maxTimeoutHolder,
-                        RoutingTable routingTable) {
+                        MaxTimeoutHolder maxTimeoutHolder) {
         this.delayableImmutableMessages = delayableImmutableMessages;
         this.shutdownTimeoutMs = maxTimeoutHolder.getTimeout();
-        this.routingTable = routingTable;
     }
 
     /**

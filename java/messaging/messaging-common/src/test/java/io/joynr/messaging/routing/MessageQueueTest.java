@@ -18,15 +18,10 @@
  */
 package io.joynr.messaging.routing;
 
-import static io.joynr.util.JoynrUtil.createUuidString;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,7 +29,6 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
@@ -44,16 +38,13 @@ import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
-import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -80,9 +71,6 @@ public class MessageQueueTest {
 
     @Spy
     private DelayQueue<DelayableImmutableMessage> delayQueue = new DelayQueue<>();
-
-    @Mock
-    RoutingTable routingTableMock;
 
     private MessageQueue subject;
 
@@ -114,7 +102,7 @@ public class MessageQueueTest {
         objectMapperField.setAccessible(true);
         objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
         // create test subject
-        subject = new MessageQueue(delayQueue, maxTimeoutHolderMock, routingTableMock);
+        subject = new MessageQueue(delayQueue, maxTimeoutHolderMock);
     }
 
     @Test
