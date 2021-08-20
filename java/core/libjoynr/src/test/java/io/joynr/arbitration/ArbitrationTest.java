@@ -1385,7 +1385,6 @@ public class ArbitrationTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(arbitrationCallback, times(1)).onError(throwableCaptor.capture());
-        verify(messageRouter, never()).setToKnown(any());
         verify(messageRouter, never()).removeNextHop(any());
         assertTrue(throwableCaptor.getValue() instanceof DiscoveryException);
         assertNotNull(throwableCaptor.getValue().getMessage());
@@ -1437,7 +1436,6 @@ public class ArbitrationTest {
 
         ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
         verify(arbitrationCallback, times(1)).onError(throwableCaptor.capture());
-        verify(messageRouter, never()).setToKnown(any());
         verify(messageRouter, never()).removeNextHop(any());
 
         assertNotNull(throwableCaptor.getValue().getMessage());
@@ -1450,7 +1448,6 @@ public class ArbitrationTest {
         setUpProviderCapabilitiesForMultipleDomains(domains);
         createArbitratorWithCallbackAndAwaitArbitration(new DiscoveryQos(), domains.toArray(new String[0]));
         verify(arbitrationCallback).onSuccess(any());
-        verify(messageRouter, never()).setToKnown(any());
         verify(messageRouter, never()).removeNextHop(any());
     }
 
@@ -1464,7 +1461,6 @@ public class ArbitrationTest {
         verify(arbitrationCallback, never()).onSuccess(any());
         for (String participantId : participantIDs) {
             InOrder incrementBeforeDecrement = Mockito.inOrder(messageRouter);
-            incrementBeforeDecrement.verify(messageRouter, times(1)).setToKnown(participantId);
             incrementBeforeDecrement.verify(messageRouter, times(1)).removeNextHop(participantId);
         }
     }
@@ -1481,7 +1477,6 @@ public class ArbitrationTest {
         verify(arbitrationCallback, never()).onSuccess(any());
         for (String participantId : participantIDs) {
             InOrder incrementBeforeDecrement = Mockito.inOrder(messageRouter);
-            incrementBeforeDecrement.verify(messageRouter, times(1)).setToKnown(participantId);
             incrementBeforeDecrement.verify(messageRouter, times(1)).removeNextHop(participantId);
         }
     }

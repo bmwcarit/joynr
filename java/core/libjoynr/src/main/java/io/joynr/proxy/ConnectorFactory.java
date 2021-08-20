@@ -74,7 +74,6 @@ public class ConnectorFactory {
             if (entry.getQos().getScope() == ProviderScope.GLOBAL) {
                 isGloballyVisible = true;
             }
-            messageRouter.setToKnown(entry.getParticipantId());
         }
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
         return Optional.ofNullable(joynrMessagingConnectorFactory.create(fromParticipantId,

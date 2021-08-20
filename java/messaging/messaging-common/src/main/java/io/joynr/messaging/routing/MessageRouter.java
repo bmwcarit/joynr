@@ -29,8 +29,6 @@ public interface MessageRouter {
 
     public void routeOut(ImmutableMessage message);
 
-    public void setToKnown(final String participantId);
-
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible);
 
     public void removeNextHop(String participantId);

@@ -88,38 +88,6 @@ public class WebSocketMessagingSkeletonTest {
 
     }
 
-    @Test
-    public void addRoutingEntryForRequestMessages() throws Exception {
-        subject.transmit(createMessage(MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST), NO_FAILURE_EXPECTED);
-        verify(messageRouter, times(1)).setToKnown(SENDER_ID);
-
-        reset(messageRouter);
-
-        subject.transmit(createMessage(MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST),
-                         NO_FAILURE_EXPECTED);
-        verify(messageRouter, times(1)).setToKnown(SENDER_ID);
-
-        reset(messageRouter);
-
-        subject.transmit(createMessage(MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST),
-                         NO_FAILURE_EXPECTED);
-        verify(messageRouter, times(1)).setToKnown(SENDER_ID);
-
-        reset(messageRouter);
-
-        subject.transmit(createMessage(MessageType.VALUE_MESSAGE_TYPE_REQUEST), NO_FAILURE_EXPECTED);
-        verify(messageRouter, times(1)).setToKnown(SENDER_ID);
-    }
-
-    @Test
-    public void doNotAddRoutingEntryForNonRequestMessages() throws Exception {
-        subject.transmit(createMessage(MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY), NO_FAILURE_EXPECTED);
-        verify(messageRouter, times(0)).setToKnown(any());
-
-        subject.transmit(createMessage(MessageType.VALUE_MESSAGE_TYPE_ONE_WAY), NO_FAILURE_EXPECTED);
-        verify(messageRouter, times(0)).setToKnown(any());
-    }
-
     private void verifyReceivedFromGlobal(boolean expected) throws Exception {
         for (MessageType type : MessageType.values()) {
             subject.transmit(createMessage(type), NO_FAILURE_EXPECTED);

@@ -1257,16 +1257,6 @@ public class CcMessageRouterTest {
         verify(mqttMessagingStubFactoryMock, times(2)).create(receiverAddress2);
     }
 
-    @Test
-    public void setToKnownDoesNotChangeRoutingTable() {
-        final String participantId = "setToKnownParticipantId";
-        ccMessageRouter.setToKnown(participantId);
-        verify(routingTable, times(0)).put(eq(participantId), any(Address.class), anyBoolean(), anyLong());
-        verify(routingTable,
-               times(0)).put(eq(participantId), any(Address.class), anyBoolean(), anyLong(), anyBoolean());
-        assertFalse(routingTable.containsKey(participantId));
-    }
-
     private CcMessageRouter getCcMessageRouterWithEnabledAccessControl() {
         // Reconfigure testModule to enable access control
         // return messageRouter with an enabled access control

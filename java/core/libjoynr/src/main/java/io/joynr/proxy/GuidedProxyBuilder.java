@@ -358,7 +358,6 @@ public class GuidedProxyBuilder {
         proxyBuiltOnce = true;
         // decrease all the reference counts for the associated routing entries.
         for (DiscoveryEntryWithMetaInfo selectedDiscoveryEntry : savedArbitrationResult.getDiscoveryEntries()) {
-            messageRouter.setToKnown(selectedDiscoveryEntry.getParticipantId());
             messageRouter.removeNextHop(selectedDiscoveryEntry.getParticipantId());
         }
     }

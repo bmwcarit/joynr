@@ -471,9 +471,6 @@ public class Arbitrator {
             for (DiscoveryEntryWithMetaInfo discoveryEntry : discoveryEntries) {
                 String participantId = discoveryEntry.getParticipantId();
 
-                //Increment local RoutingEntry.refCount
-                messageRouter.setToKnown(participantId);
-
                 //Decrement local and remote RoutingEntry.refCount
                 messageRouter.removeNextHop(participantId);
             }

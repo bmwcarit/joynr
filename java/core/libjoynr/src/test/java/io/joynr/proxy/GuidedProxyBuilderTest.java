@@ -355,8 +355,6 @@ public class GuidedProxyBuilderTest {
         subject.buildNone();
         verify(proxyBuilderFactory, never()).get(anyString(), any());
         verify(proxyBuilder, never()).build(Mockito.<ArbitrationResult> any());
-        verify(messageRouter).setToKnown(eq(expectedParticipantId1));
-        verify(messageRouter).setToKnown(eq(expectedParticipantId2));
         verify(messageRouter).removeNextHop(eq(expectedParticipantId1));
         verify(messageRouter).removeNextHop(eq(expectedParticipantId2));
     }

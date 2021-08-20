@@ -111,9 +111,6 @@ public class ConnectorFactoryTest {
         doReturn(discoveredProviders).when(arbitrationResult).getDiscoveryEntries();
 
         connectorFactory.create(proxyParticipantId, arbitrationResult, messagingQos, statelessAsyncParticipantId);
-
-        verify(messageRouter).setToKnown(provider1ParticipantId);
-        verify(messageRouter).setToKnown(provider2ParticipantId);
     }
 
 }

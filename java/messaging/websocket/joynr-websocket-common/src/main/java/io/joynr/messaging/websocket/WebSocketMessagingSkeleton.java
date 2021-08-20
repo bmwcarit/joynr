@@ -116,9 +116,6 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
                  */
                 message.setReceivedFromGlobal(true);
             }
-            if (MESSAGE_TYPE_REQUESTS.contains(message.getType())) {
-                messageRouter.setToKnown(message.getSender());
-            }
 
             messageRouter.routeIn(message);
         } catch (Exception error) {

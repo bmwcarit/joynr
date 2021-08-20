@@ -69,11 +69,6 @@ public class AbstractMessageRouterTest {
         }
 
         @Override
-        public void setToKnown(String participantId) {
-            // Do nothing
-        }
-
-        @Override
         public void routeIn(ImmutableMessage message) {
         }
 

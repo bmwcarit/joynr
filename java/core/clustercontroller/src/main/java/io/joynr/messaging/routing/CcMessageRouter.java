@@ -86,11 +86,6 @@ public class CcMessageRouter extends AbstractMessageRouter {
     }
 
     @Override
-    public void setToKnown(final String participantId) {
-        logger.trace("SetToKnown called");
-    }
-
-    @Override
     public void routeIn(ImmutableMessage message) {
         route(message);
     }
