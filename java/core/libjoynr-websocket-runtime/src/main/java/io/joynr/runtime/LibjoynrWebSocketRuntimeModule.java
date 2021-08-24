@@ -29,10 +29,8 @@ import io.joynr.messaging.GbidArrayFactory;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.routing.DummyRoutingTable;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
-import io.joynr.messaging.routing.LibjoynrRoutingTableAddressValidator;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.messaging.routing.RoutingTableAddressValidator;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -59,7 +57,6 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
         bind(MessageRouter.class).to(LibJoynrMessageRouter.class);
         bind(MulticastReceiverRegistrar.class).to(LibJoynrMessageRouter.class);
         bind(MessageSender.class).to(LibJoynrMessageSender.class);
-        bind(RoutingTableAddressValidator.class).to(LibjoynrRoutingTableAddressValidator.class);
         bind(RoutingTable.class).to(DummyRoutingTable.class).asEagerSingleton();
         bind(Boolean.class).annotatedWith(Names.named(WebSocketMessagingSkeleton.WEBSOCKET_IS_MAIN_TRANSPORT))
                            .toInstance(Boolean.TRUE);
