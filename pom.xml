@@ -808,6 +808,11 @@
 				<version>10.10.1.1</version>
 			</dependency>
 			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>42.2.23</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
 				<artifactId>guice-assistedinject</artifactId>
 				<version>${guice.version}</version>

@@ -24,6 +24,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.After;
@@ -79,7 +82,7 @@ public class CapabilitiesDirectoryIntegrationTest {
     String postFix = "" + System.currentTimeMillis();
 
     @BeforeClass
-    public static void start() {
+    public static void start() throws UnknownHostException {
         Properties systemProperties = System.getProperties();
         systemProperties.setProperty(CapabilitiesDirectoryImpl.GCD_GBID, gcdGbid);
         System.setProperties(systemProperties);
@@ -142,8 +145,14 @@ public class CapabilitiesDirectoryIntegrationTest {
 
     }
 
-    private static CapabilitiesDirectoryImpl startCapabilitiesDirectory() {
-        CapabilitiesDirectoryLauncher.start(new Properties());
+    private static CapabilitiesDirectoryImpl startCapabilitiesDirectory() throws UnknownHostException {
+        Properties testProperties = new Properties();
+        testProperties.setProperty(CapabilitiesDirectoryLauncher.GCD_DB_NAME, "gcd-test");
+        Map<String, String> jpaProperties = new HashMap<String, String>();
+        // create-drop: drop the schema at the end of the session
+        jpaProperties.put("hibernate.hbm2ddl.auto", "create-drop");
+        testProperties.put(CapabilitiesDirectoryLauncher.GCD_JPA_PROPERTIES, jpaProperties);
+        CapabilitiesDirectoryLauncher.start(testProperties);
         return CapabilitiesDirectoryLauncher.getCapabilitiesDirectory();
     }
 
@@ -154,7 +163,7 @@ public class CapabilitiesDirectoryIntegrationTest {
 
     @AfterClass
     public static void stop() {
-        CapabilitiesDirectoryLauncher.stop();
+        CapabilitiesDirectoryLauncher.shutdown();
     }
 
     private void checkDiscoveryEntry(GlobalDiscoveryEntry expected, GlobalDiscoveryEntry actual, String expectedGbid) {

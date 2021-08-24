@@ -84,8 +84,8 @@
 			<artifactId>javax.persistence-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -124,7 +124,7 @@
 							<configuration>
 								<ignoredUnusedDeclaredDependencies>
 									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-log4j12</ignoredUnusedDeclaredDependency>
-									<ignoredUnusedDeclaredDependency>org.apache.derby:derby</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.postgresql:postgresql</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.hibernate:hibernate-entitymanager</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
@@ -197,7 +197,6 @@
 							<directory>${project.basedir}</directory>
 							<includes>
 								<include>joynr.properties</include>
-								<include>derby.log</include>
 							</includes>
 						</fileset>
 					</filesets>

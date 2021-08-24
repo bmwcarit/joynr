@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,88 +20,167 @@ package io.joynr.capabilities.directory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
-import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.name.Names;
 import com.google.inject.persist.PersistService;
 import com.google.inject.persist.jpa.JpaPersistModule;
 import com.google.inject.util.Modules;
 
 import io.joynr.capabilities.directory.util.GcdUtilities;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.JoynrApplication;
-import io.joynr.runtime.JoynrApplicationModule;
-import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
 import joynr.exceptions.ApplicationException;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
 
-public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
+public class CapabilitiesDirectoryLauncher {
 
+    private static final Logger logger = LoggerFactory.getLogger(CapabilitiesDirectoryLauncher.class);
+    public static final String GCD_DB_HOST = CapabilitiesDirectoryImpl.PROPERTY_PREFIX + "db.host";
+    public static final String GCD_DB_PORT = CapabilitiesDirectoryImpl.PROPERTY_PREFIX + "db.port";
+    private static final String DEFAULT_DB_HOST = "localhost";
+    private static String dbHost = DEFAULT_DB_HOST;
+    private static final String DEFAULT_DB_PORT = "5432";
+    private static String dbPort = DEFAULT_DB_PORT;
+    static final String GCD_DB_NAME = CapabilitiesDirectoryImpl.PROPERTY_PREFIX + "test.db.name";
+    static final String GCD_JPA_PROPERTIES = CapabilitiesDirectoryImpl.PROPERTY_PREFIX + "test.jpa.properties";
+    private static String dbName = "gcd";
     private static int shutdownPort = Integer.parseInt(System.getProperty("joynr.capabilitiesdirectorylauncher.shutdownport",
                                                                           "9999"));
+    private static JoynrRuntime runtime;
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
-    private static JoynrApplication capabilitiesDirectoryLauncher;
 
-    private static Module getRuntimeModule(Properties joynrConfig) {
-        joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
-        joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+    private static PersistService persistService;
 
+    private static String getUserProperty(String key, Properties userProperties, String defaultValue) {
+        String value;
+        String property = PropertyLoader.getPropertiesWithPattern(userProperties, key).getProperty(key);
+        if (property == null || property.isEmpty()) {
+            value = defaultValue;
+            logger.warn("Using default {]: {}", key, value);
+        } else {
+            value = property;
+            logger.info("Using {}: {}", key, value);
+        }
+        return value;
+    }
+
+    private static void prepareConfig(Properties joynrConfig) {
         Properties userProperties = new Properties();
         userProperties.putAll(System.getenv());
         userProperties.putAll(PropertyLoader.getPropertiesWithPattern(System.getProperties(),
                                                                       "^" + CapabilitiesDirectoryImpl.PROPERTY_PREFIX
                                                                               + ".*$"));
-        String gcdGbid = PropertyLoader.getPropertiesWithPattern(userProperties, CapabilitiesDirectoryImpl.GCD_GBID)
-                                       .getProperty(CapabilitiesDirectoryImpl.GCD_GBID);
-        if (gcdGbid == null || gcdGbid.isEmpty()) {
-            gcdGbid = GcdUtilities.loadDefaultGbidsFromDefaultMessagingProperties()[0];
-        }
+
+        // GCD properties
+        String gcdGbid = getUserProperty(CapabilitiesDirectoryImpl.GCD_GBID,
+                                         userProperties,
+                                         GcdUtilities.loadDefaultGbidsFromDefaultMessagingProperties()[0]);
         joynrConfig.put(CapabilitiesDirectoryImpl.GCD_GBID, gcdGbid);
 
-        String validGbidsString = PropertyLoader.getPropertiesWithPattern(userProperties,
-                                                                          CapabilitiesDirectoryImpl.VALID_GBIDS)
-                                                .getProperty(CapabilitiesDirectoryImpl.VALID_GBIDS);
-        if (validGbidsString == null || validGbidsString.isEmpty()) {
-            validGbidsString = gcdGbid;
-        }
+        String validGbidsString = getUserProperty(CapabilitiesDirectoryImpl.VALID_GBIDS, userProperties, gcdGbid);
         joynrConfig.put(CapabilitiesDirectoryImpl.VALID_GBIDS, validGbidsString);
 
-        return Modules.override(new JpaPersistModule("CapabilitiesDirectory"), new CCInProcessRuntimeModule())
-                      .with(new HivemqMqttClientModule(), new CapabilitiesDirectoryModule());
+        // DB properties
+        dbHost = getUserProperty(GCD_DB_HOST, userProperties, DEFAULT_DB_HOST);
+        dbPort = getUserProperty(GCD_DB_PORT, userProperties, DEFAULT_DB_PORT);
     }
 
-    @Inject
-    private GlobalCapabilitiesDirectoryAbstractProvider capabilitiesDirectoryProvider;
+    private static Module getRuntimeModule(Properties joynrConfig) {
+        // JPA
+        JpaPersistModule jpaModule = new JpaPersistModule("CapabilitiesDirectory");
+        Properties jpaProperties = new Properties();
 
-    private PersistService persistService;
+        String dbNameProperty = joynrConfig.getProperty(GCD_DB_NAME);
+        if (dbNameProperty != null) {
+            dbName = dbNameProperty;
+            logger.warn("Using custom GCD_DB_NAME: {}", dbName);
+            joynrConfig.remove(GCD_DB_NAME);
+        }
+        @SuppressWarnings("unchecked")
+        Map<String, String> additionalJpaProperties = (Map<String, String>) joynrConfig.get(GCD_JPA_PROPERTIES);
+        if (additionalJpaProperties != null) {
+            for (Entry<String, String> entry : additionalJpaProperties.entrySet()) {
+                logger.warn("Using custom GCD_JPA_PROPERTIES: {}: {}", entry.getKey(), entry.getValue());
+                jpaProperties.setProperty(entry.getKey(), entry.getValue());
+            }
+            joynrConfig.remove(GCD_JPA_PROPERTIES);
+        }
 
-    public static void start(Properties joynrConfig) {
+        jpaProperties.setProperty("javax.persistence.jdbc.url",
+                                  "jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName);
+        jpaModule.properties(jpaProperties);
+
+        // runtime Module
+        return Modules.override(jpaModule, new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule(),
+                                                                                new JoynrPropertiesModule(joynrConfig));
+    }
+
+    public static void start(Properties joynrConfig) throws UnknownHostException {
+        prepareConfig(joynrConfig);
+        waitForDb();
         Module runtimeModule = getRuntimeModule(joynrConfig);
-        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig, runtimeModule);
-        capabilitiesDirectoryLauncher = injectorFactory.createApplication(new JoynrApplicationModule("capabilitiesDirectoryLauncher",
-                                                                                                     CapabilitiesDirectoryLauncher.class));
-        capabilitiesDirectoryLauncher.run();
-        capabilitiesDirectory = injectorFactory.getInjector().getInstance(CapabilitiesDirectoryImpl.class);
-    }
-
-    public static void stop() {
-        capabilitiesDirectoryLauncher.shutdown();
+        // CapabilitiesDirectoryModule (part of runtimeModule) overrides the CHANNELID property that is generated in
+        // JoynrPropertiesModule with the GCD channelId
+        Injector injector = Guice.createInjector(Modules.override(runtimeModule)
+                                                        .with(new CapabilitiesDirectoryModule()));
+        runtime = injector.getInstance(JoynrRuntime.class);
+        persistService = injector.getInstance(PersistService.class);
+        capabilitiesDirectory = injector.getInstance(CapabilitiesDirectoryImpl.class);
+        String localDomain = injector.getInstance(Key.get(String.class,
+                                                          Names.named(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL)));
+        Future<Void> future = runtime.getProviderRegistrar(localDomain, capabilitiesDirectory).awaitGlobalRegistration().register();
+        try {
+            future.get(10000);
+        } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {
+            logger.error("Provider registration failed.", e);
+            return;
+        }
+        logger.info("GCD ready.");
     }
 
     static CapabilitiesDirectoryImpl getCapabilitiesDirectory() {
         return capabilitiesDirectory;
     }
 
-    @Inject
-    public CapabilitiesDirectoryLauncher(PersistService persistService) {
-        this.persistService = persistService;
+    private static void waitForDb() throws UnknownHostException {
+        Socket s;
+        for (int i = 0; i < 60; i++) {
+            try {
+                s = new Socket(dbHost, Integer.parseInt(dbPort));
+                s.close();
+                logger.info("Database available.");
+                return;
+            } catch (UnknownHostException e) {
+                throw e;
+            } catch (IOException e) {
+                logger.warn("Database not yet available.", e);
+            }
+            try {
+                Thread.sleep(i * 500);
+            } catch (InterruptedException e) {
+                logger.warn("Sleep interrupted.", e);
+            }
+        }
+        logger.error("Database not available in time.");
+        throw new JoynrWaitExpiredException();
     }
 
     private static void waitUntilShutdownRequested() {
@@ -115,18 +194,7 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
         return;
     }
 
-    @Override
-    public void run() {
-        Future<Void> future = runtime.getProviderRegistrar(localDomain, capabilitiesDirectoryProvider).register();
-        try {
-            future.get();
-        } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {
-            return;
-        }
-    }
-
-    @Override
-    public void shutdown() {
+    public static void shutdown() {
         persistService.stop();
         runtime.shutdown(true);
     }
@@ -134,9 +202,9 @@ public class CapabilitiesDirectoryLauncher extends AbstractJoynrApplication {
     // if invoked as standalone program then after initialization wait
     // until a connection on a shutdownPort gets established, to
     // allow to initiate shutdown from outside.
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException {
         start(new Properties());
         waitUntilShutdownRequested();
-        capabilitiesDirectoryLauncher.shutdown();
+        shutdown();
     }
 }

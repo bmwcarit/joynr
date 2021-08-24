@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -70,7 +71,13 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     @Before
     public void setUp() throws Exception {
 
-        Injector injector = Guice.createInjector(new JpaPersistModule("CapabilitiesDirectory"), new AbstractModule() {
+        JpaPersistModule jpaModule = new JpaPersistModule("CapabilitiesDirectory");
+        Properties jpaProperties = new Properties();
+        jpaProperties.setProperty("javax.persistence.jdbc.url", "jdbc:postgresql://localhost:5432/gcd-test");
+        // create-drop: drop the schema at the end of the session
+        jpaProperties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
+        jpaModule.properties(jpaProperties);
+        Injector injector = Guice.createInjector(jpaModule, new AbstractModule() {
             @Override
             protected void configure() {
                 bind(String.class).annotatedWith(Names.named(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS))

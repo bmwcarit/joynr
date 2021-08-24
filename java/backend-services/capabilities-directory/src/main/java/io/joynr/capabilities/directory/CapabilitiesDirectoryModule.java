@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2021 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +23,18 @@ import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 
-import io.joynr.capabilities.CustomParameterPersisted;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersisted;
 import io.joynr.capabilities.GlobalDiscoveryEntryPersistedStorePersisted;
 import io.joynr.capabilities.GlobalDiscoveryEntryStore;
-import io.joynr.capabilities.ProviderQosPersisted;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryAbstractProvider;
-import joynr.types.CustomParameter;
 import joynr.types.GlobalDiscoveryEntry;
-import joynr.types.ProviderQos;
 
 public class CapabilitiesDirectoryModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(GlobalCapabilitiesDirectoryAbstractProvider.class).to(CapabilitiesDirectoryImpl.class);
-        bind(CustomParameter.class).to(CustomParameterPersisted.class);
-        bind(ProviderQos.class).to(ProviderQosPersisted.class);
         bind(new TypeLiteral<GlobalDiscoveryEntryStore<GlobalDiscoveryEntryPersisted>>() {
         }).to(new TypeLiteral<GlobalDiscoveryEntryPersistedStorePersisted>() {
         });

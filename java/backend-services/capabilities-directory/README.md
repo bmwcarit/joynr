@@ -4,7 +4,7 @@
 cd $JOYNR_REPOSITORY
 mvn clean install
 cd java/backend-services/capabilities-directory
-java -jar target/deploy/capabilities-directory-jar-with-dependencies.jar
+java -Dlog4j.configuration="file:target/deploy/log4j.properties" -jar target/deploy/capabilities-directory-jar-with-dependencies.jar
 ```
 
 This will connect to a MQTT broker on localhost:1883.
@@ -13,7 +13,7 @@ The MQTT broker address can also be specified on the command
 line by overriding a joynr property as shown below:
 
 ```
-java -Djoynr.messaging.mqtt.brokerUri="tcp://somehost:1883" \
+java -Djoynr.messaging.mqtt.brokeruris="tcp://somehost:1883" \
      -jar target/deploy/capabilities-directory-jar-with-dependencies.jar
 ```
 
@@ -26,6 +26,8 @@ telnet etc.). If required, the port can be modified using the additional command
 ```
 
 # Additional configuration for multiple backends
+
+Note: The GCD itself is always connected to only a single MQTT Broker!
 
 ## Configure own GBID of the GCD instance (=GBID of the backend of the GCD instance)
 
@@ -46,4 +48,22 @@ DEFAULT: `["joynrdefaultgbid"]`
 The GCD will only accept GBIDs that are in its list of valid GBIDs. Add, lookup and remove
 attempts with other GBIDs are rejected with `DiscoveryError.UNKNOWN_GBID` or
 `DiscoveryError.INVALID_GBID`.
+
+# Configuration of database connection
+
+By default, the GCD connects to a PostgreSQL database running on localhost on port 5432.
+
+## Custom database host
+
+Add `-Djoynr.gcd.db.host="somehost"` or set the environment variable `joynr_gcd_db_host`
+before starting the GCD service.
+
+DEFAULT: `localhost`
+
+## Custom database port
+
+Add `-Djoynr.gcd.db.port="42"` or set the environment variable `joynr_gcd_db_port`
+before starting the GCD service.
+
+DEFAULT: `5432`
 
