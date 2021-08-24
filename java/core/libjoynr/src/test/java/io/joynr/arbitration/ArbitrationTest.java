@@ -264,7 +264,7 @@ public class ArbitrationTest {
                                                              localDiscoveryAggregator,
                                                              gbids);
             arbitrator.setArbitrationListener(arbitrationCallback);
-            arbitrator.scheduleArbitration();
+            arbitrator.scheduleArbitration(true);
 
             assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(ARBITRATION_TIMEOUT, TimeUnit.MILLISECONDS));
         } catch (DiscoveryException e) {
@@ -1096,7 +1096,7 @@ public class ArbitrationTest {
                                                          gbids);
         arbitrator.setArbitrationListener(arbitrationCallback);
 
-        arbitrator.scheduleArbitration();
+        arbitrator.scheduleArbitration(true);
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
         assertFalse(localDiscoveryAggregatorSemaphore.tryAcquire(ARBITRATION_TIMEOUT / 2, TimeUnit.MILLISECONDS));
@@ -1137,7 +1137,7 @@ public class ArbitrationTest {
         arbitrator.setArbitrationListener(arbitrationCallback);
 
         Thread.sleep(ARBITRATION_TIMEOUT - retryInterval + 1);
-        arbitrator.scheduleArbitration();
+        arbitrator.scheduleArbitration(true);
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
         verify(arbitrationCallback, times(1)).onError((isA(DiscoveryException.class)));
@@ -1286,7 +1286,7 @@ public class ArbitrationTest {
     }
 
     @Test
-    public void lookupForGuidedProxyBuilder() {
+    public void lookupForGuidedProxyBuilder() throws InterruptedException {
         Set<String> domainsSet = new HashSet<String>(Arrays.asList(domain));
         Arbitrator arbitrator = ArbitratorFactory.create(domainsSet,
                                                          interfaceName,
@@ -1295,7 +1295,9 @@ public class ArbitrationTest {
                                                          localDiscoveryAggregator,
                                                          new String[]{});
         arbitrator.setArbitrationListener(arbitrationCallback);
-        arbitrator.lookup();
+        arbitrator.scheduleArbitration(false);
+
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
         verify(localDiscoveryAggregator).lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
                                                 any(String[].class),
                                                 any(String.class),
@@ -1318,7 +1320,7 @@ public class ArbitrationTest {
                                                          localDiscoveryAggregator,
                                                          new String[]{});
         arbitrator.setArbitrationListener(arbitrationCallback);
-        arbitrator.lookup();
+        arbitrator.scheduleArbitration(false);
 
         assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(100, TimeUnit.MILLISECONDS));
         assertFalse(localDiscoveryAggregatorSemaphore.tryAcquire(ARBITRATION_TIMEOUT / 2, TimeUnit.MILLISECONDS));
@@ -1482,6 +1484,107 @@ public class ArbitrationTest {
             incrementBeforeDecrement.verify(messageRouter, times(1)).setToKnown(participantId);
             incrementBeforeDecrement.verify(messageRouter, times(1)).removeNextHop(participantId);
         }
+    }
+
+    @Test
+    public void testArbitratorForGPB_doesNotFilterByVersionsAndStrategyOnRetry() throws InterruptedException {
+        ProviderQos providerQos = new ProviderQos();
+        providerQos.setPriority(testPriority);
+
+        expectedEndpointAddress = testAddress;
+        DiscoveryEntryWithMetaInfo expectedDiscoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
+                                                                                           domain,
+                                                                                           TestInterface.INTERFACE_NAME,
+                                                                                           expectedParticipantId,
+                                                                                           providerQos,
+                                                                                           System.currentTimeMillis(),
+                                                                                           NO_EXPIRY,
+                                                                                           publicKeyId,
+                                                                                           true);
+        capabilitiesList.add(expectedDiscoveryEntry);
+
+        ProviderQos highPriorityProviderQos = new ProviderQos();
+        highPriorityProviderQos.setPriority(1000L);
+
+        DiscoveryEntryWithMetaInfo discoveryEntryNotFilteredDueToVersion = new DiscoveryEntryWithMetaInfo(new Version(22,
+                                                                                                                      11),
+                                                                                                          domain,
+                                                                                                          TestInterface.INTERFACE_NAME,
+                                                                                                          "randomParticipantId1",
+                                                                                                          highPriorityProviderQos,
+                                                                                                          System.currentTimeMillis(),
+                                                                                                          NO_EXPIRY,
+                                                                                                          publicKeyId,
+                                                                                                          true);
+        capabilitiesList.add(discoveryEntryNotFilteredDueToVersion);
+        long negativePriority = -10;
+        ProviderQos negativePriorityProviderQos = new ProviderQos();
+        negativePriorityProviderQos.setPriority(negativePriority);
+
+        Address thirdEndpointAddress = new MqttAddress(testAddress.getBrokerUri(), "topic1");
+        ArrayList<Address> thirdEndpointAddresses = new ArrayList<Address>();
+        thirdEndpointAddresses.add(thirdEndpointAddress);
+        DiscoveryEntryWithMetaInfo discoveryEntryNotFilteredDueToLowPriority = new DiscoveryEntryWithMetaInfo(new Version(47,
+                                                                                                                          11),
+                                                                                                              domain,
+                                                                                                              TestInterface.INTERFACE_NAME,
+                                                                                                              "randomParticipantId2",
+                                                                                                              negativePriorityProviderQos,
+                                                                                                              System.currentTimeMillis(),
+                                                                                                              NO_EXPIRY,
+                                                                                                              publicKeyId,
+                                                                                                              true);
+        capabilitiesList.add(discoveryEntryNotFilteredDueToLowPriority);
+        discoveryQos = new DiscoveryQos();
+        discoveryQos.setDiscoveryTimeoutMs(ARBITRATION_TIMEOUT);
+        discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
+        final long retryInterval = 50;
+        discoveryQos.setRetryIntervalMs(retryInterval);
+
+        Set<String> domainsSet = new HashSet<String>(Arrays.asList(domain));
+        Arbitrator arbitrator = ArbitratorFactory.create(domainsSet,
+                                                         interfaceName,
+                                                         interfaceVersion,
+                                                         discoveryQos,
+                                                         localDiscoveryAggregator,
+                                                         new String[]{});
+        arbitrator.setArbitrationListener(arbitrationCallback);
+        when(localDiscoveryAggregator.lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                                             any(String[].class),
+                                             any(String.class),
+                                             any(joynr.types.DiscoveryQos.class),
+                                             any(String[].class))).thenAnswer(createAnswerWithDiscoveryError(DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS))
+                                                                  .thenAnswer(new Answer<Object>() {
+                                                                      @Override
+                                                                      public Object answer(InvocationOnMock invocation) throws Throwable {
+                                                                          Object[] arguments = invocation.getArguments();
+                                                                          assert (arguments[0] instanceof Callback);
+                                                                          assert (arguments[0] instanceof CallbackWithModeledError);
+                                                                          @SuppressWarnings("unchecked")
+                                                                          CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> callback = (CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>) arguments[0];
+                                                                          callback.resolve((Object) capabilitiesList.toArray(new DiscoveryEntryWithMetaInfo[0]));
+                                                                          localDiscoveryAggregatorSemaphore.release();
+                                                                          return null;
+                                                                      }
+                                                                  });
+        arbitrator.scheduleArbitration(false);
+        assertTrue(localDiscoveryAggregatorSemaphore.tryAcquire(60000, TimeUnit.MILLISECONDS));
+        Thread.sleep(500);
+        ArbitrationResult capturedArbitrationResult = captureArbitrationResultByArbitrationCallbackOnSuccess();
+        verify(localDiscoveryAggregator,
+               times(2)).lookup(Mockito.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+                                any(String[].class),
+                                any(String.class),
+                                any(joynr.types.DiscoveryQos.class),
+                                any(String[].class));
+
+        Set<DiscoveryEntryWithMetaInfo> expectedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(expectedDiscoveryEntry,
+                                                                                                       discoveryEntryNotFilteredDueToVersion,
+                                                                                                       discoveryEntryNotFilteredDueToLowPriority));
+        Set<DiscoveryEntryWithMetaInfo> expectedOtherDiscoveryEntries = new HashSet<>();
+        ArbitrationResult expectedArbitrationResult = new ArbitrationResult(expectedSelectedDiscoveryEntries,
+                                                                            expectedOtherDiscoveryEntries);
+        assertEquals(expectedArbitrationResult, capturedArbitrationResult);
     }
 
 }

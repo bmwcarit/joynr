@@ -147,7 +147,7 @@ public class GuidedProxyBuilderTest {
         CompletableFuture<DiscoveryResult> result = subject.discoverAsync();
         ArgumentCaptor<ArbitrationCallback> callbackCaptor = ArgumentCaptor.forClass(ArbitrationCallback.class);
         verify(arbitrator).setArbitrationListener(callbackCaptor.capture());
-        verify(arbitrator).lookup();
+        verify(arbitrator).scheduleArbitration(false);
         DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         String testParticipantId = "test";
         mockedDiscoveryEntry.setParticipantId(testParticipantId);
@@ -196,7 +196,7 @@ public class GuidedProxyBuilderTest {
         CompletableFuture<DiscoveryResult> result = subject.discoverAsync();
         ArgumentCaptor<ArbitrationCallback> callbackCaptor = ArgumentCaptor.forClass(ArbitrationCallback.class);
         verify(arbitrator).setArbitrationListener(callbackCaptor.capture());
-        verify(arbitrator).lookup();
+        verify(arbitrator).scheduleArbitration(false);
         callbackCaptor.getValue().onError(new JoynrRuntimeException());
         result.get();
     }
@@ -207,7 +207,7 @@ public class GuidedProxyBuilderTest {
         CompletableFuture<DiscoveryResult> result = subject.discoverAsync();
         ArgumentCaptor<ArbitrationCallback> callbackCaptor = ArgumentCaptor.forClass(ArbitrationCallback.class);
         verify(arbitrator).setArbitrationListener(callbackCaptor.capture());
-        verify(arbitrator).lookup();
+        verify(arbitrator).scheduleArbitration(false);
         callbackCaptor.getValue().onError(new NullPointerException());
         result.get();
     }
@@ -240,11 +240,11 @@ public class GuidedProxyBuilderTest {
                 callbacks[0].onSuccess(mockedArbitrationResult);
                 return null;
             }
-        }).when(arbitrator).lookup();
+        }).when(arbitrator).scheduleArbitration(false);
 
         DiscoveryResult result = subject.discover();
 
-        verify(arbitrator).lookup();
+        verify(arbitrator).scheduleArbitration(eq(false));
         assertNotNull(result);
     }
 
@@ -276,11 +276,11 @@ public class GuidedProxyBuilderTest {
                 callbacks[0].onSuccess(mockedArbitrationResult);
                 return null;
             }
-        }).when(arbitrator).lookup();
+        }).when(arbitrator).scheduleArbitration(false);
 
         DiscoveryResult result = subject.discover();
 
-        verify(arbitrator).lookup();
+        verify(arbitrator).scheduleArbitration(eq(false));
         assertNotNull(result);
         subject.discover();
     }

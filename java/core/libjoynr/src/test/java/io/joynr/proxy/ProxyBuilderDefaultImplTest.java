@@ -162,7 +162,7 @@ public class ProxyBuilderDefaultImplTest {
                 });
                 return null;
             }
-        }).when(arbitrator).scheduleArbitration();
+        }).when(arbitrator).scheduleArbitration(true);
         subject.build(proxyCreatedCallback);
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
@@ -202,7 +202,7 @@ public class ProxyBuilderDefaultImplTest {
                 });
                 return null;
             }
-        }).when(arbitrator).scheduleArbitration();
+        }).when(arbitrator).scheduleArbitration(true);
         subject.build(proxyCreatedCallback);
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);

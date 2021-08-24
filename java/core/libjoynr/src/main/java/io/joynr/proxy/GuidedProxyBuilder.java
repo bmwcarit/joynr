@@ -332,7 +332,7 @@ public class GuidedProxyBuilder {
         });
         savedArbitrationResult = new ArbitrationResult();
         discoveryInProgress = true;
-        arbitrator.lookup();
+        arbitrator.scheduleArbitration(false);
         return resultFuture;
     }
 

@@ -244,7 +244,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             ProxyInvocationHandler proxyInvocationHandler = createProxyInvocationHandler(callback);
             proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
             proxyInvocationHandler.registerProxy(proxy);
-            arbitrator.scheduleArbitration();
+            arbitrator.scheduleArbitration(true);
             return proxy;
         } catch (JoynrRuntimeException e) {
             logger.debug("Error creating proxy: interface: {} domains: {}, {}, Error:",

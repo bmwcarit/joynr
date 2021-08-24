@@ -74,6 +74,7 @@ public class Arbitrator {
     private String[] gbids;
     private int arbitrationCnt = 0;
     private final MessageRouter messageRouter;
+    private boolean filterByVersionAndArbitartionStrategy = true;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public Arbitrator(final Set<String> domains,
@@ -120,7 +121,8 @@ public class Arbitrator {
     /**
      * Called by the proxy builder to start the arbitration process.
      */
-    public void scheduleArbitration() {
+    public void scheduleArbitration(boolean filterByVersionAndArbitartionStrategy) {
+        this.filterByVersionAndArbitartionStrategy = filterByVersionAndArbitartionStrategy;
         DelayableArbitration arbitration = new DelayableArbitration(this, retryDelay);
         arbitrationQueue.put(arbitration);
     }
@@ -133,26 +135,7 @@ public class Arbitrator {
                      interfaceName,
                      interfaceVersion,
                      Arrays.toString(gbids));
-        localDiscoveryAggregator.lookup(new DiscoveryCallback(),
-                                        domains.toArray(new String[domains.size()]),
-                                        interfaceName,
-                                        new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
-                                                                     arbitrationDeadline - System.currentTimeMillis(),
-                                                                     joynr.types.DiscoveryScope.valueOf(discoveryQos.getDiscoveryScope()
-                                                                                                                    .name()),
-                                                                     discoveryQos.getProviderMustSupportOnChange()),
-                                        gbids);
-    }
-
-    public void lookup() {
-        arbitrationCnt++;
-        logger.debug("DISCOVERY lookup #{} for domains: {}, interface: {}, {}, gbids: {}",
-                     arbitrationCnt,
-                     domains,
-                     interfaceName,
-                     interfaceVersion,
-                     Arrays.toString(gbids));
-        localDiscoveryAggregator.lookup(new DiscoveryCallback(false),
+        localDiscoveryAggregator.lookup(new DiscoveryCallback(filterByVersionAndArbitartionStrategy),
                                         domains.toArray(new String[domains.size()]),
                                         interfaceName,
                                         new joynr.types.DiscoveryQos(discoveryQos.getCacheMaxAgeMs(),
@@ -215,7 +198,7 @@ public class Arbitrator {
             return;
         }
         logger.trace("Rescheduling arbitration with delay {}ms", retryDelay);
-        scheduleArbitration();
+        scheduleArbitration(filterByVersionAndArbitartionStrategy);
     }
 
     protected void arbitrationFailed() {
@@ -348,9 +331,6 @@ public class Arbitrator {
     private class DiscoveryCallback extends CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError> {
 
         private boolean filterByVersionAndArbitrationStrategy = true;
-
-        public DiscoveryCallback() {
-        };
 
         public DiscoveryCallback(boolean filterByVersionAndArbitrationStrategy) {
             this.filterByVersionAndArbitrationStrategy = filterByVersionAndArbitrationStrategy;
