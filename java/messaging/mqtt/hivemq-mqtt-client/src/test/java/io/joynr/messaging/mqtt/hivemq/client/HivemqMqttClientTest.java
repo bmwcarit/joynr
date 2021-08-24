@@ -30,12 +30,13 @@ import static org.mockito.Mockito.verify;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,16 +51,17 @@ import org.mockito.stubbing.Answer;
 
 import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
 import com.hivemq.client.internal.mqtt.message.publish.MqttPublishResult.MqttQos1Result;
-import com.hivemq.client.mqtt.datatypes.MqttTopic;
 import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
+import com.hivemq.client.mqtt.datatypes.MqttTopic;
 import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
-import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties;
-import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserPropertiesBuilder;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientConfig;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserPropertiesBuilder;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperty;
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
 import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAck;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
@@ -113,6 +115,8 @@ public class HivemqMqttClientTest {
     @Mock
     private ConnectionStatusMetricsImpl mockConnectionStatusMetrics;
 
+    private Map<String, String> prefixedCustomHeaders = new HashMap<String, String>();
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -124,6 +128,14 @@ public class HivemqMqttClientTest {
         testPayload = (this.getClass().getName() + "-payload-" + System.currentTimeMillis()).getBytes();
         testExpiryIntervalSec = 60;
         publishFuture = new CompletableFuture<Mqtt5PublishResult>();
+
+        final String prefixedCustomHeaderKey1 = "c-header1";
+        final String prefixedCustomHeaderKey2 = "c-header2";
+        final String customHeaderValue1 = "value1";
+        final String customHeaderValue2 = "value2";
+
+        prefixedCustomHeaders.put(prefixedCustomHeaderKey1, customHeaderValue1);
+        prefixedCustomHeaders.put(prefixedCustomHeaderKey2, customHeaderValue2);
 
         doReturn(mockClientConfig).when(mockRxClient).getConfig();
         doReturn(mockPublishesFlowable).when(mockRxClient).publishes(eq(MqttGlobalPublishFilter.ALL));
@@ -145,26 +157,20 @@ public class HivemqMqttClientTest {
                                       mockConnectionStatusMetrics);
     }
 
-    @Test
-    public void publishMessage_callsSuccessActionOnSuccess() {
-        final String prefixedCustomHeaderKey1 = "c-header1";
-        final String prefixedCustomHeaderKey2 = "c-header2";
-        final String customHeaderValue1 = "value1";
-        final String customHeaderValue2 = "value2";
-
-        Map<String, String> prefixedCustomHeaders = new HashMap<String, String>();
-        prefixedCustomHeaders.put(prefixedCustomHeaderKey1, customHeaderValue1);
-        prefixedCustomHeaders.put(prefixedCustomHeaderKey2, customHeaderValue2);
-
+    private Mqtt5UserProperties getMqtt5UserProperties(Map<String, String> prefixedCustomHeaders) {
         // since the user properties are a list ordered by insertion, it is important
         // to insert in same order (depending on HashMap iteration) as the underlying
-        // real code since otherwise the comparision will fail.
+        // real code since otherwise the comparison will fail.
         Mqtt5UserPropertiesBuilder mqtt5UserPropertiesBuilder = Mqtt5UserProperties.builder();
         for (Map.Entry<String, String> entry : prefixedCustomHeaders.entrySet()) {
             mqtt5UserPropertiesBuilder.add(entry.getKey(), entry.getValue());
         }
-        Mqtt5UserProperties mqtt5UserProperties = mqtt5UserPropertiesBuilder.build();
+        return mqtt5UserPropertiesBuilder.build();
+    }
 
+    @Test
+    public void publishMessage_callsSuccessActionOnSuccess() {
+        Mqtt5UserProperties mqtt5UserProperties = getMqtt5UserProperties(prefixedCustomHeaders);
         Mqtt5Publish expectedPublish = Mqtt5Publish.builder()
                                                    .topic(testTopic)
                                                    .qos(MqttQos.AT_LEAST_ONCE)
@@ -315,6 +321,7 @@ public class HivemqMqttClientTest {
         verify(mockConnectionStatusMetrics, times(0)).increaseSentMessages();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void incomingMessageIncreasesReceivedMessagesCount() throws Exception {
         // Capturing the real publishes Consumers did not work because verify() with ArgumentCaptor calls
@@ -331,18 +338,24 @@ public class HivemqMqttClientTest {
         verify(mockConnectionStatusMetrics, times(0)).increaseReceivedMessages();
 
         Mqtt5Publish mockPublish = mock(Mqtt5Publish.class);
-        doReturn(new byte[0]).when(mockPublish).getPayloadAsBytes();
         Optional<ByteBuffer> optionalByteBuffer = Optional.ofNullable(null);
+        Mqtt5UserProperties mockMqtt5UserProperties = mock(Mqtt5UserProperties.class);
+
         doReturn(optionalByteBuffer).when(mockPublish).getPayload();
         doReturn(MqttTopic.of("topic")).when(mockPublish).getTopic();
-        doReturn(false).when(mockPublish).isRetain();
         doReturn(null).when(mockPublish).getQos();
+        doReturn(false).when(mockPublish).isRetain();
         doReturn(OptionalLong.of(0l)).when(mockPublish).getMessageExpiryInterval();
+        doReturn(mockMqtt5UserProperties).when(mockPublish).getUserProperties();
+        doReturn(new byte[0]).when(mockPublish).getPayloadAsBytes();
+        doReturn(new ArrayList<Mqtt5UserProperty>()).when(mockMqtt5UserProperties).asList();
+
         Method handleIncomingMessage = client.getClass().getDeclaredMethod("handleIncomingMessage", Mqtt5Publish.class);
         handleIncomingMessage.setAccessible(true);
         handleIncomingMessage.invoke(client, mockPublish);
 
         verify(mockConnectionStatusMetrics, times(1)).increaseReceivedMessages();
+        verify(mockSkeleton).transmit(eq(new byte[0]), any(Map.class), any(FailureAction.class));
     }
 
     @Test

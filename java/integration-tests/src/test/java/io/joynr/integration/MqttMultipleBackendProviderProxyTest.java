@@ -272,12 +272,14 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                                                                                                                ""));
         // the GBID of the replyTo address will be replaced in skeleton.transmit before adding the routing entry
         incomingMessage.setReplyTo(CapabilityUtils.serializeAddress(new MqttAddress("anyString", "")));
-        skeleton.transmit(incomingMessage.getImmutableMessage().getSerializedMessage(), new FailureAction() {
-            @Override
-            public void execute(Throwable error) {
-                fail("fake request failed in skeleton.transmit: " + error);
-            }
-        });
+        skeleton.transmit(incomingMessage.getImmutableMessage().getSerializedMessage(),
+                          incomingMessage.getImmutableMessage().getPrefixedCustomHeaders(),
+                          new FailureAction() {
+                              @Override
+                              public void execute(Throwable error) {
+                                  fail("fake request failed in skeleton.transmit: " + error);
+                              }
+                          });
     }
 
     private void unregisterProvider(Object provider) throws InterruptedException, EncodingException,

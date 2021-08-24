@@ -42,6 +42,7 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -60,10 +61,10 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -190,7 +191,7 @@ public class MqttMessagingSkeletonTest {
     public void testMessageRouterIsCalled() throws Exception {
         ImmutableMessage rqMessage = createTestRequestMessage();
 
-        subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
+        subject.transmit(rqMessage.getSerializedMessage(), rqMessage.getPrefixedCustomHeaders(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(messageRouter).routeIn(captor.capture());
@@ -202,7 +203,7 @@ public class MqttMessagingSkeletonTest {
     public void testRegistrationOfReplyToAddress() throws Exception {
         ImmutableMessage rqMessage = createTestRequestMessage();
 
-        subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
+        subject.transmit(rqMessage.getSerializedMessage(), rqMessage.getPrefixedCustomHeaders(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
         final MqttAddress expectedAddress = new MqttAddress(ownGbid, "testTopic");
@@ -232,7 +233,7 @@ public class MqttMessagingSkeletonTest {
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
-        subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
+        subject.transmit(rqMessage.getSerializedMessage(), rqMessage.getPrefixedCustomHeaders(), failIfCalledAction);
 
         ArgumentCaptor<byte[]> argCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(rawMessagingPreprocessorMock).process(argCaptor.capture(),
@@ -261,7 +262,7 @@ public class MqttMessagingSkeletonTest {
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
-        subject.transmit(rqMessage.getSerializedMessage(), failIfCalledAction);
+        subject.transmit(rqMessage.getSerializedMessage(), rqMessage.getPrefixedCustomHeaders(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(processorMock).processIncoming(argCaptor.capture());
@@ -272,7 +273,9 @@ public class MqttMessagingSkeletonTest {
     @Test
     public void testFailureActionCalledForInvalidMessage() throws Exception {
         Semaphore semaphore = new Semaphore(0);
+        Map<String, String> prefixedCustomHeaders = new HashMap<String, String>();
         subject.transmit("Invalid message which cannot be deserialized".getBytes(),
+                         prefixedCustomHeaders,
                          getExpectToBeCalledAction(semaphore));
 
         assertTrue(semaphore.tryAcquire());
@@ -285,7 +288,9 @@ public class MqttMessagingSkeletonTest {
         doThrow(new JoynrRuntimeException()).when(messageRouter).routeIn(any(ImmutableMessage.class));
 
         Semaphore semaphore = new Semaphore(0);
-        subject.transmit(rqMessage.getSerializedMessage(), getExpectToBeCalledAction(semaphore));
+        subject.transmit(rqMessage.getSerializedMessage(),
+                         rqMessage.getPrefixedCustomHeaders(),
+                         getExpectToBeCalledAction(semaphore));
 
         assertTrue(semaphore.tryAcquire());
         verify(routingTable, times(1)).remove(rqMessage.getSender());
@@ -298,8 +303,11 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
 
         // As the limit is reached, further requests should be dropped
-        subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestRequestMessage().getSerializedMessage(),
+                         createTestRequestMessage().getPrefixedCustomHeaders(),
+                         failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         assertEquals(2, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
@@ -308,7 +316,9 @@ public class MqttMessagingSkeletonTest {
     @Test
     public void testMqttStatusReceiverIsNotifiedWhenMessageIsDropped() throws Exception {
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
-        subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestRequestMessage().getSerializedMessage(),
+                         createTestRequestMessage().getPrefixedCustomHeaders(),
+                         failIfCalledAction);
 
         verify(mockJoynrStatusMetricsReceiver, times(1)).notifyMessageDropped();
     }
@@ -321,20 +331,28 @@ public class MqttMessagingSkeletonTest {
 
         // Further non-request messages should still be accepted
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests + 8)).routeIn(any(ImmutableMessage.class));
@@ -344,20 +362,24 @@ public class MqttMessagingSkeletonTest {
     public void testRequestsAreAcceptedAgainWhenPreviousAreProcessedAfterMaxIncomingRequestsReached() throws Exception {
         ImmutableMessage rqMessage1 = createTestRequestMessage();
         final String messageId1 = rqMessage1.getId();
-        subject.transmit(rqMessage1.getSerializedMessage(), failIfCalledAction);
+        subject.transmit(rqMessage1.getSerializedMessage(), rqMessage1.getPrefixedCustomHeaders(), failIfCalledAction);
 
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests - 1);
         verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
 
         // As the limit is reached, further requests should be dropped and not transmitted
         // until an already accepted request is marked as processed
-        subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestRequestMessage().getSerializedMessage(),
+                         createTestRequestMessage().getPrefixedCustomHeaders(),
+                         failIfCalledAction);
         assertEquals(1, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
 
         subject.messageProcessed(messageId1);
 
-        subject.transmit(createTestRequestMessage().getSerializedMessage(), failIfCalledAction);
+        subject.transmit(createTestRequestMessage().getSerializedMessage(),
+                         createTestRequestMessage().getPrefixedCustomHeaders(),
+                         failIfCalledAction);
         verify(messageRouter, times(maxIncomingMqttRequests + 1)).routeIn(any(ImmutableMessage.class));
     }
 

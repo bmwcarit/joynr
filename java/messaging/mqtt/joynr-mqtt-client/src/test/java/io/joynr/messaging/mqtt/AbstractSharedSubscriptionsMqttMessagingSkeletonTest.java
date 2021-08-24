@@ -216,13 +216,16 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
         // messages that are not of request type should not trigger unsubscribe as well
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         verify(mqttClient, times(0)).unsubscribe(any(String.class));
 
         // a further request should hit the threshold value and trigger an unsubscribe
         subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST).getSerializedMessage(),
+                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         verify(mqttClient).unsubscribe(startsWith("$share/channelIdBackpressure/"));
     }

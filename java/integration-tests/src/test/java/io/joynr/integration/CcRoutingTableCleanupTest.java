@@ -367,7 +367,9 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
     public void mqtt_rqRp_error_rqExpired() {
         rqRp_error_rqExpired(replyToAddress, mqttMessagingStubMock, true, (msg, onFailure) -> {
             IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(replyToAddress);
-            skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(), onFailure);
+            skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(),
+                              msg.getImmutableMessage().getPrefixedCustomHeaders(),
+                              onFailure);
         });
     }
 
@@ -592,7 +594,9 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
     public void mqtt_rqRp_error_rqWithRelativeTtl() {
         rqRp_error_rqWithRelativeTtl(replyToAddress, (msg, onFailure) -> {
             IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(replyToAddress);
-            skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(), onFailure);
+            skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(),
+                              msg.getImmutableMessage().getPrefixedCustomHeaders(),
+                              onFailure);
         });
     }
 

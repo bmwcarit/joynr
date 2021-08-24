@@ -18,9 +18,13 @@
  */
 package io.joynr.messaging.mqtt;
 
+import java.util.Map;
+
 import io.joynr.messaging.FailureAction;
 
 public interface IMqttMessagingSkeleton {
 
-    public void transmit(byte[] serializedMessage, FailureAction failureAction);
+    public void transmit(byte[] serializedMessage,
+                         Map<String, String> prefixedCustomHeaders,
+                         FailureAction failureAction);
 }

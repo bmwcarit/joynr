@@ -33,12 +33,13 @@ import org.slf4j.LoggerFactory;
 import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.MqttGlobalPublishFilter;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
-import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties;
-import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserPropertiesBuilder;
 import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
 import com.hivemq.client.mqtt.exceptions.MqttSessionExpiredException;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientConfig;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperties;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserPropertiesBuilder;
+import com.hivemq.client.mqtt.mqtt5.datatypes.Mqtt5UserProperty;
 import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5Connect;
 import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckRestrictions;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
@@ -55,6 +56,7 @@ import io.joynr.messaging.mqtt.IMqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
 import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 import io.reactivex.disposables.Disposable;
+import joynr.Message;
 
 /**
  * This implements the {@link JoynrMqttClient} using the HiveMQ MQTT Client library.
@@ -456,7 +458,17 @@ public class HivemqMqttClient implements JoynrMqttClient {
                          mqtt5Publish.getMessageExpiryInterval().orElse(0));
         }
         connectionStatusMetrics.increaseReceivedMessages();
-        messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(), (throwable) -> {
+        // extract prefixed custom header
+        Mqtt5UserProperties mqtt5UserProperties = mqtt5Publish.getUserProperties();
+        List<? extends Mqtt5UserProperty> mqtt5UserPropertiesList = mqtt5UserProperties.asList();
+
+        Map<String, String> prefixedCustomHeaders = new HashMap<String, String>();
+        for (Mqtt5UserProperty entry : mqtt5UserPropertiesList) {
+            if (entry.getName().toString().startsWith(Message.CUSTOM_HEADER_PREFIX)) {
+                prefixedCustomHeaders.put(entry.getName().toString(), entry.getValue().toString());
+            }
+        }
+        messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(), prefixedCustomHeaders, (throwable) -> {
             if (throwable instanceof JoynrMessageExpiredException) {
                 logger.warn("{}: Unable to handle incoming {}", clientInformation, mqtt5Publish, throwable);
             } else {

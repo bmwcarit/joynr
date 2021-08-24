@@ -431,12 +431,14 @@ public class AbstractRoutingTableCleanupTest {
                                                                                   UnsuppportedVersionException {
         IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(new MqttAddress(targetGbid,
                                                                                                                    ""));
-        skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(), new FailureAction() {
-            @Override
-            public void execute(Throwable error) {
-                fail("fake incoming MQTT message failed in skeleton.transmit: " + error);
-            }
-        });
+        skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(),
+                          msg.getImmutableMessage().getPrefixedCustomHeaders(),
+                          new FailureAction() {
+                              @Override
+                              public void execute(Throwable error) {
+                                  fail("fake incoming MQTT message failed in skeleton.transmit: " + error);
+                              }
+                          });
     }
 
     protected void checkRefCnt(String participantId, long expectedRefCnt) {

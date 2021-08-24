@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,14 +36,14 @@ import org.slf4j.LoggerFactory;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.AbstractGlobalMessagingSkeleton;
-import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageProcessedHandler;
+import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
 
@@ -152,13 +153,16 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     }
 
     @Override
-    public void transmit(byte[] serializedMessage, FailureAction failureAction) {
+    public void transmit(byte[] serializedMessage,
+                         Map<String, String> prefixedCustomHeaders,
+                         FailureAction failureAction) {
         try {
             HashMap<String, Serializable> context = new HashMap<String, Serializable>();
             byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, Optional.of(context));
 
             ImmutableMessage message = new ImmutableMessage(processedMessage);
             message.setContext(context);
+            message.setPrefixedExtraCustomHeaders(prefixedCustomHeaders);
 
             if (logger.isTraceEnabled()) {
                 logger.trace("<<< INCOMING FROM {} <<< {}", ownGbid, message);

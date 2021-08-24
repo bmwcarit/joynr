@@ -79,12 +79,14 @@ public class MqttMultipleBackendDiscoveryRemoveTest extends MqttMultipleBackendD
         MqttMessagingSkeletonFactory skeletonFactory = (MqttMessagingSkeletonFactory) skeletonProvider.get();
         IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) skeletonFactory.getSkeleton(new MqttAddress(targetGbid,
                                                                                                                ""));
-        skeleton.transmit(replyMessage.getImmutableMessage().getSerializedMessage(), new FailureAction() {
-            @Override
-            public void execute(Throwable error) {
-                fail("fake reply failed in skeleton.transmit: " + error);
-            }
-        });
+        skeleton.transmit(replyMessage.getImmutableMessage().getSerializedMessage(),
+                          replyMessage.getImmutableMessage().getPrefixedCustomHeaders(),
+                          new FailureAction() {
+                              @Override
+                              public void execute(Throwable error) {
+                                  fail("fake reply failed in skeleton.transmit: " + error);
+                              }
+                          });
     }
 
     private testProvider registerProvider(String[] targetGbids,

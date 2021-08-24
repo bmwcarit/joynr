@@ -24,6 +24,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,6 +34,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.MessageDeserializer;
 import io.joynr.smrf.MessageDeserializerImpl;
@@ -45,6 +49,8 @@ import io.joynr.util.ObjectMapper;
  * It's not possible to modify a immutable message any more because the content may be signed.
  */
 public class ImmutableMessage extends Message {
+
+    private static final Logger logger = LoggerFactory.getLogger(ImmutableMessage.class);
     private transient boolean receivedFromGlobal;
     private transient boolean isMessageProcessed = false;
     private final MessageDeserializer messageDeserializer;
@@ -52,6 +58,27 @@ public class ImmutableMessage extends Message {
     private transient Map<String, Serializable> context = new HashMap<String, Serializable>();
     private ObjectMapper objectMapper = null;
     public final static String DUMMY_CREATOR_USER_ID = "creatorUserId";
+
+    private Map<String, String> extraCustomHeaders = new HashMap<String, String>();
+
+    public void setPrefixedExtraCustomHeaders(Map<String, String> prefixedCustomHeaders) {
+        extraCustomHeaders = stripCustomHeadersPrefix(prefixedCustomHeaders);
+    }
+
+    public void setExtraCustomHeaders(Map<String, String> customHeaders) {
+        for (Map.Entry<String, String> entry : customHeaders.entrySet()) {
+            if (entry.getKey().startsWith(Message.CUSTOM_HEADER_PREFIX)) {
+                logger.error("Extra custom header must not be prefixed: {} {}!", entry.getKey(), entry.getValue());
+                throw new JoynrIllegalStateException("Extra custom header must not be prefixed: " + entry.getKey() + " "
+                        + entry.getValue() + " !");
+            }
+        }
+        this.extraCustomHeaders = customHeaders;
+    }
+
+    public Map<String, String> getExtraCustomHeaders() {
+        return extraCustomHeaders;
+    }
 
     public ImmutableMessage(byte[] serializedMessage) throws EncodingException, UnsuppportedVersionException {
         this.serializedMessage = serializedMessage.clone();
@@ -104,8 +131,12 @@ public class ImmutableMessage extends Message {
     }
 
     public Map<String, String> getCustomHeaders() {
+        return stripCustomHeadersPrefix(messageDeserializer.getHeaders());
+    }
+
+    private Map<String, String> stripCustomHeadersPrefix(Map<String, String> prefixedCustomHeaders) {
         Map<String, String> customHeaders = new HashMap<>();
-        for (Map.Entry<String, String> entry : getHeaders().entrySet()) {
+        for (Map.Entry<String, String> entry : prefixedCustomHeaders.entrySet()) {
             if (entry.getKey().startsWith(Message.CUSTOM_HEADER_PREFIX)) {
                 String key = entry.getKey().replaceFirst("^" + Message.CUSTOM_HEADER_PREFIX, "");
                 customHeaders.put(key, entry.getValue());
@@ -244,4 +275,5 @@ public class ImmutableMessage extends Message {
         trackingInfo.append(", expiryDate: ").append(getTtlMs()).append(", size: ").append(getMessageSize());
         return trackingInfo.toString();
     }
+
 }

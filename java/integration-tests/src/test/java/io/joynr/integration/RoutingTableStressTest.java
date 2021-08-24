@@ -443,14 +443,16 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
 
             IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(new MqttAddress(gbids[1],
                                                                                                                        ""));
-            skeleton.transmit(requestMsg.getImmutableMessage().getSerializedMessage(), new FailureAction() {
-                @Override
-                public void execute(Throwable error) {
-                    assertTrue(JoynrMessageNotSentException.class.isInstance(error));
-                    assertTrue(error.getMessage().contains("expired"));
-                    cdl.countDown();
-                }
-            });
+            skeleton.transmit(requestMsg.getImmutableMessage().getSerializedMessage(),
+                              requestMsg.getImmutableMessage().getPrefixedCustomHeaders(),
+                              new FailureAction() {
+                                  @Override
+                                  public void execute(Throwable error) {
+                                      assertTrue(JoynrMessageNotSentException.class.isInstance(error));
+                                      assertTrue(error.getMessage().contains("expired"));
+                                      cdl.countDown();
+                                  }
+                              });
         } catch (Exception e) {
             fail("fake incoming request failed: " + e);
         }

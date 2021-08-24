@@ -59,7 +59,7 @@ final class MqttMessagingSkeletonTestUtil {
 
         for (int i = 0; i < numMessages; i++) {
             ImmutableMessage message = createTestMessage(messageType);
-            skeleton.transmit(message.getSerializedMessage(), failIfCalledAction);
+            skeleton.transmit(message.getSerializedMessage(), message.getPrefixedCustomHeaders(), failIfCalledAction);
             messageIds.add(message.getId());
         }
         return messageIds;
