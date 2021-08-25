@@ -359,6 +359,36 @@ public class HivemqMqttClientTest {
     }
 
     @Test
+    public void handleIncomingMessageRetrievesTheUserPropsFromMqtt5Publish() throws Exception {
+        client.setMessageListener(mockSkeleton);
+        verify(mockConnectionStatusMetrics, times(0)).increaseReceivedMessages();
+
+        // mocking objects
+        Mqtt5Publish mockPublish = mock(Mqtt5Publish.class);
+        Optional<ByteBuffer> optionalByteBuffer = Optional.ofNullable(null);
+
+        doReturn(optionalByteBuffer).when(mockPublish).getPayload();
+        doReturn(MqttTopic.of("topic")).when(mockPublish).getTopic();
+        doReturn(null).when(mockPublish).getQos();
+        doReturn(false).when(mockPublish).isRetain();
+        doReturn(OptionalLong.of(0l)).when(mockPublish).getMessageExpiryInterval();
+
+        Mqtt5UserProperties mqtt5UserProperties = getMqtt5UserProperties(prefixedCustomHeaders);
+
+        doReturn(mqtt5UserProperties).when(mockPublish).getUserProperties();
+        doReturn(new byte[0]).when(mockPublish).getPayloadAsBytes();
+
+        Method handleIncomingMessage = client.getClass().getDeclaredMethod("handleIncomingMessage", Mqtt5Publish.class);
+        handleIncomingMessage.setAccessible(true);
+        handleIncomingMessage.invoke(client, mockPublish);
+
+        verify(mockConnectionStatusMetrics, times(1)).increaseReceivedMessages();
+
+        Map<String, String> expectedPrefixedCustomHeaders = prefixedCustomHeaders;
+        verify(mockSkeleton).transmit(eq(new byte[0]), eq(expectedPrefixedCustomHeaders), any(FailureAction.class));
+    }
+
+    @Test
     public void startIncreasesNumberOfConnectionAttempts() {
         doAnswer(new Answer<MqttClientState>() {
             int callCount = 0;
