@@ -69,13 +69,9 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     private static final Logger logger = LoggerFactory.getLogger(LibJoynrMessageRouter.class);
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss z");
     private ScheduledExecutorService scheduler;
-    private long sendMsgRetryIntervalMs;
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT)
     private long maxRetryCount = ConfigurableMessagingSettings.DEFAULT_ROUTING_MAX_RETRY_COUNT;
-    @Inject(optional = true)
-    @Named(ConfigurableMessagingSettings.PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS)
-    private long maxDelayMs = ConfigurableMessagingSettings.DEFAULT_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF;
     private MessagingStubFactory messagingStubFactory;
 
     private final MessageQueue incomingMessageQueue;
@@ -110,7 +106,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LibJoynrMessageRouter(@Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                                 @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
                                  MessagingStubFactory messagingStubFactory,
                                  MessageQueue incomingMessageQueue,
@@ -121,7 +116,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.scheduler = scheduler;
         this.dispatcher = dispatcher;
-        this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
         this.incomingMessageQueue = incomingMessageQueue;
         this.outgoingMessageQueue = outgoingMessageQueue;
@@ -330,8 +324,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                 if (error instanceof JoynrDelayMessageException) {
                     delayMs = ((JoynrDelayMessageException) error).getDelayMs();
                 } else {
-                    delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs,
-                                                                delayableMessage.getRetriesCount());
+                    delayMs = MessageRouterUtil.createDelayWithExponentialBackoff(delayableMessage.getRetriesCount());
                 }
                 delayableMessage.setDelay(delayMs);
                 delayableMessage.setRetriesCount(delayableMessage.getRetriesCount() + 1);
@@ -360,20 +353,12 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         return successAction;
     }
 
-    private boolean isExpired(final ImmutableMessage message) {
-        if (!message.isTtlAbsolute()) {
-            // relative ttl is not supported
-            return true;
-        }
-        return (message.getTtlMs() <= System.currentTimeMillis());
-    }
-
     private void checkExpiry(final ImmutableMessage message) {
         if (!message.isTtlAbsolute()) {
             throw new JoynrRuntimeException("Relative ttl not supported");
         }
 
-        if (isExpired(message)) {
+        if (MessageRouterUtil.isExpired(message)) {
             long currentTimeMillis = System.currentTimeMillis();
             String errorMessage = MessageFormat.format("Received expired message: (now ={0}). Dropping the message {1}",
                                                        currentTimeMillis,
@@ -387,13 +372,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     public void prepareForShutdown() {
         incomingMessageQueue.waitForQueueToDrain();
         outgoingMessageQueue.waitForQueueToDrain();
-    private long createDelayWithExponentialBackoff(long sendMsgRetryIntervalMs, int retries) {
-        long millis = sendMsgRetryIntervalMs + (long) ((2 ^ (retries)) * sendMsgRetryIntervalMs * Math.random());
-        if (maxDelayMs >= sendMsgRetryIntervalMs && millis > maxDelayMs) {
-            millis = maxDelayMs;
-        }
-        logger.trace("Created delay of {}ms in retry {}", millis, retries);
-        return millis;
     }
 
     @Override

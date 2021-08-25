@@ -46,7 +46,6 @@ public class AbstractMessageRouterTest {
     private class DummyMessageRouter extends AbstractMessageRouter {
         public DummyMessageRouter(RoutingTable routingTable,
                                   ScheduledExecutorService scheduler,
-                                  long sendMsgRetryIntervalMs,
                                   int maxParallelSends,
                                   long routingTableCleanupIntervalMs,
                                   MessagingStubFactory messagingStubFactory,
@@ -57,7 +56,6 @@ public class AbstractMessageRouterTest {
                                   ShutdownNotifier shutdownNotifier) {
             super(routingTable,
                   scheduler,
-                  sendMsgRetryIntervalMs,
                   maxParallelSends,
                   routingTableCleanupIntervalMs,
                   messagingStubFactory,
@@ -98,7 +96,6 @@ public class AbstractMessageRouterTest {
 
     private final ScheduledExecutorService scheduler = Mockito.spy(new ScheduledThreadPoolExecutor(42));
 
-    private final long sendMsgRetryIntervalMs = 100;
     private final int maxParallelSends = 1;
     private final long routingTableCleanupIntervalMs = 1000;
 
@@ -109,7 +106,6 @@ public class AbstractMessageRouterTest {
     public void setup() {
         subject = new DummyMessageRouter(mockRoutingTable,
                                          scheduler,
-                                         sendMsgRetryIntervalMs,
                                          maxParallelSends,
                                          routingTableCleanupIntervalMs,
                                          mockMessagingStubFactory,

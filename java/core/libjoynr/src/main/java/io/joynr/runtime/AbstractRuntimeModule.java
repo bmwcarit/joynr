@@ -71,6 +71,7 @@ import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.InMemoryMulticastReceiverRegistry;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessageRouterUtil;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
@@ -103,7 +104,8 @@ abstract class AbstractRuntimeModule extends AbstractModule {
                                RoutingTypesUtil.class,
                                ArbitratorFactory.class,
                                JoynrDelayMessageException.class,
-                               JoynrAppenderManagerFactory.class);
+                               JoynrAppenderManagerFactory.class,
+                               MessageRouterUtil.class);
 
         install(new JsonMessageSerializerModule());
         install(new FactoryModuleBuilder().implement(ProxyInvocationHandler.class, ProxyInvocationHandlerImpl.class)

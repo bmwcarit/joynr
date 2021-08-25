@@ -77,14 +77,10 @@ abstract public class AbstractMessageRouter
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss z");
     protected final RoutingTable routingTable;
     private ScheduledExecutorService scheduler;
-    private long sendMsgRetryIntervalMs;
     private long routingTableCleanupIntervalMs;
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT)
     private long maxRetryCount = ConfigurableMessagingSettings.DEFAULT_ROUTING_MAX_RETRY_COUNT;
-    @Inject(optional = true)
-    @Named(ConfigurableMessagingSettings.PROPERTY_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF_MS)
-    private long maxDelayMs = ConfigurableMessagingSettings.DEFAULT_MAX_DELAY_WITH_EXPONENTIAL_BACKOFF;
     private MessagingStubFactory messagingStubFactory;
     private final MessagingSkeletonFactory messagingSkeletonFactory;
     private AddressManager addressManager;
@@ -100,7 +96,6 @@ abstract public class AbstractMessageRouter
     // CHECKSTYLE:OFF
     public AbstractMessageRouter(RoutingTable routingTable,
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                                 @Named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS) long routingTableCleanupIntervalMs,
                                  MessagingStubFactory messagingStubFactory,
@@ -113,7 +108,6 @@ abstract public class AbstractMessageRouter
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.routingTable = routingTable;
         this.scheduler = scheduler;
-        this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
         this.routingTableCleanupIntervalMs = routingTableCleanupIntervalMs;
         this.messagingStubFactory = messagingStubFactory;
         this.messagingSkeletonFactory = messagingSkeletonFactory;
@@ -308,21 +302,13 @@ abstract public class AbstractMessageRouter
         messageQueue.put(delayableMessage);
     }
 
-    private boolean isExpired(final ImmutableMessage message) {
-        if (!message.isTtlAbsolute()) {
-            // relative ttl is not supported
-            return true;
-        }
-        return (message.getTtlMs() <= System.currentTimeMillis());
-    }
-
     private void checkExpiry(final ImmutableMessage message) {
         if (!message.isTtlAbsolute()) {
             finalizeMessageProcessing(message, false);
             throw new JoynrRuntimeException("Relative ttl not supported");
         }
 
-        if (isExpired(message)) {
+        if (MessageRouterUtil.isExpired(message)) {
             long currentTimeMillis = System.currentTimeMillis();
             String errorMessage = MessageFormat.format("Received expired message: (now ={0}). Dropping the message {1}",
                                                        currentTimeMillis,
@@ -362,7 +348,7 @@ abstract public class AbstractMessageRouter
                                  messageNotSent.getTrackingInfo(),
                                  error);
 
-                    if (!isExpired(messageNotSent)
+                    if (!MessageRouterUtil.isExpired(messageNotSent)
                             && messageNotSent.getType().equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
                         ImmutableMessage replyMessage = createReplyMessageWithError(messageNotSent,
                                                                                     (JoynrMessageNotSentException) error);
@@ -384,8 +370,7 @@ abstract public class AbstractMessageRouter
                 if (error instanceof JoynrDelayMessageException) {
                     delayMs = ((JoynrDelayMessageException) error).getDelayMs();
                 } else {
-                    delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs,
-                                                                delayableMessage.getRetriesCount());
+                    delayMs = MessageRouterUtil.createDelayWithExponentialBackoff(delayableMessage.getRetriesCount());
                 }
                 delayableMessage.setDelay(delayMs);
                 delayableMessage.setRetriesCount(delayableMessage.getRetriesCount() + 1);
@@ -449,15 +434,6 @@ abstract public class AbstractMessageRouter
         } catch (InterruptedException e) {
             logger.error("Interrupted while waiting for message workers to stop.", e);
         }
-    }
-
-    private long createDelayWithExponentialBackoff(long sendMsgRetryIntervalMs, int retries) {
-        long millis = sendMsgRetryIntervalMs + (long) ((2 ^ (retries)) * sendMsgRetryIntervalMs * Math.random());
-        if (maxDelayMs >= sendMsgRetryIntervalMs && millis > maxDelayMs) {
-            millis = maxDelayMs;
-        }
-        logger.trace("Created delay of {}ms in retry {}", millis, retries);
-        return millis;
     }
 
     private void decreaseReferenceCountsForMessage(final ImmutableMessage message, boolean isMessageRoutingSuccessful) {
@@ -525,8 +501,8 @@ abstract public class AbstractMessageRouter
                         continue;
                     } catch (Exception error) {
                         logger.debug("ERROR SENDING: retrying send of message. Error:", error);
-                        final long delayMs = createDelayWithExponentialBackoff(sendMsgRetryIntervalMs,
-                                                                               delayableMessage.getRetriesCount() + 1);
+                        final long delayMs = MessageRouterUtil.createDelayWithExponentialBackoff(delayableMessage.getRetriesCount()
+                                + 1);
                         delayableMessage.setDelay(delayMs);
                         delayableMessage.setRetriesCount(delayableMessage.getRetriesCount() + 1);
                         scheduleMessage(delayableMessage);
