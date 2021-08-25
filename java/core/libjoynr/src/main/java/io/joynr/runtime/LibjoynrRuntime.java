@@ -26,7 +26,6 @@ import com.google.inject.name.Named;
 
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.DummyRoutingTable;
@@ -49,7 +48,6 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
     @Inject
     public LibjoynrRuntime(ObjectMapper objectMapper,
                            ProxyBuilderFactory proxyBuilderFactory,
-                           Dispatcher dispatcher,
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
                            DummyRoutingTable routingTable,
@@ -65,7 +63,6 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) final String parentRoutingProviderParticipantId) {
         super(objectMapper,
               proxyBuilderFactory,
-              dispatcher,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
               routingTable,

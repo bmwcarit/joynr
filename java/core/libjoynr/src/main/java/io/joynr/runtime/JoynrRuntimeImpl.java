@@ -18,8 +18,6 @@
  */
 package io.joynr.runtime;
 
-import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -38,12 +36,8 @@ import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
-import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
-import io.joynr.messaging.routing.AddressOperation;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.JoynrInterface;
@@ -65,8 +59,6 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.exceptions.ApplicationException;
-import joynr.system.Discovery;
-import joynr.system.Routing;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
 
@@ -78,8 +70,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     @Inject
     private CapabilitiesRegistrar capabilitiesRegistrar;
-
-    private Dispatcher dispatcher;
 
     @Inject
     public ObjectMapper objectMapper;
@@ -99,7 +89,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
                             ProxyBuilderFactory proxyBuilderFactory,
-                            Dispatcher dispatcher,
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             RoutingTable routingTable,
@@ -111,7 +100,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                             @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress) {
         // CHECKSTYLE:ON
-        this.dispatcher = dispatcher;
         this.messageRouter = messageRouter;
         this.objectMapper = objectMapper;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
@@ -121,32 +109,6 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
         objectMapper.registerSubtypes(messageTypes);
         this.proxyBuilderFactory = proxyBuilderFactory;
-        if (dispatcherAddress instanceof InProcessAddress) {
-            ((InProcessAddress) dispatcherAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
-        }
-        routingTable.apply(new AddressOperation() {
-            @Override
-            public void perform(Address address) {
-                if (address instanceof InProcessAddress && ((InProcessAddress) address).getSkeleton() == null) {
-                    ((InProcessAddress) address).setSkeleton(new InProcessLibjoynrMessagingSkeleton(JoynrRuntimeImpl.this.dispatcher));
-                }
-            }
-        });
-
-        if (ccMessagingAddress instanceof InProcessAddress) {
-            ((InProcessAddress) ccMessagingAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
-        }
-        final boolean isGloballyVisible = false;
-        final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = true;
-        final String discoveryProviderParticipantId = participantIdStorage.getProviderParticipantId(systemServicesDomain,
-                                                                                                    Discovery.INTERFACE_NAME,
-                                                                                                    getVersionFromAnnotation(Discovery.class).getMajorVersion());
-        final String routingProviderParticipantId = participantIdStorage.getProviderParticipantId(systemServicesDomain,
-                                                                                                  Routing.INTERFACE_NAME,
-                                                                                                  getVersionFromAnnotation(Routing.class).getMajorVersion());
-        routingTable.put(discoveryProviderParticipantId, ccMessagingAddress, isGloballyVisible, expiryDateMs, isSticky);
-        routingTable.put(routingProviderParticipantId, ccMessagingAddress, isGloballyVisible, expiryDateMs, isSticky);
 
         localDiscoveryAggregator.forceQueryOfDiscoveryProxy();
         ArbitratorFactory.start();

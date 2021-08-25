@@ -18,6 +18,8 @@
  */
 package io.joynr.runtime;
 
+import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +36,9 @@ import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.messaging.MessagingSkeletonFactory;
+import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
+import io.joynr.messaging.routing.AddressOperation;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
@@ -41,6 +46,8 @@ import io.joynr.proxy.DiscoverySettingsStorage;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.util.ObjectMapper;
+import joynr.system.Discovery;
+import joynr.system.Routing;
 import joynr.system.RoutingProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
@@ -74,7 +81,6 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     @Named(SystemServicesSettings.PROPERTY_CC_REMOVE_STALE_DELAY_MS) long removeStaleDelayMs) {
         super(objectMapper,
               proxyBuilderFactory,
-              dispatcher,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
               routingTable,
@@ -86,6 +92,41 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               dispatcherAddress,
               discoveryProviderAddress);
         // CHECKSTYLE:ON
+
+        if (dispatcherAddress instanceof InProcessAddress) {
+            ((InProcessAddress) dispatcherAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        }
+        routingTable.apply(new AddressOperation() {
+            @Override
+            public void perform(Address address) {
+                if (address instanceof InProcessAddress && ((InProcessAddress) address).getSkeleton() == null) {
+                    ((InProcessAddress) address).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+                }
+            }
+        });
+
+        if (discoveryProviderAddress instanceof InProcessAddress) {
+            ((InProcessAddress) discoveryProviderAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
+        }
+        final boolean isGloballyVisible = false;
+        final long expiryDateMs = Long.MAX_VALUE;
+        final boolean isSticky = true;
+        final String discoveryProviderParticipantId = participantIdStorage.getProviderParticipantId(systemServicesDomain,
+                                                                                                    Discovery.INTERFACE_NAME,
+                                                                                                    getVersionFromAnnotation(Discovery.class).getMajorVersion());
+        final String routingProviderParticipantId = participantIdStorage.getProviderParticipantId(systemServicesDomain,
+                                                                                                  Routing.INTERFACE_NAME,
+                                                                                                  getVersionFromAnnotation(Routing.class).getMajorVersion());
+        routingTable.put(discoveryProviderParticipantId,
+                         discoveryProviderAddress,
+                         isGloballyVisible,
+                         expiryDateMs,
+                         isSticky);
+        routingTable.put(routingProviderParticipantId,
+                         discoveryProviderAddress,
+                         isGloballyVisible,
+                         expiryDateMs,
+                         isSticky);
 
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
