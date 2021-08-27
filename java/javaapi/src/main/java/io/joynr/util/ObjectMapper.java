@@ -21,15 +21,19 @@ package io.joynr.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,11 +45,18 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class ObjectMapper {
 
-    private com.fasterxml.jackson.databind.ObjectMapper realObjectMapper;
-    private ReentrantReadWriteLock lock;
+    private final com.fasterxml.jackson.databind.ObjectMapper realObjectMapper;
+    private final Set<Class<?>> registeredSubtypes;
+    private final ReentrantReadWriteLock lock;
 
     public ObjectMapper() {
-        realObjectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        this(new com.fasterxml.jackson.databind.ObjectMapper());
+    }
+
+    ObjectMapper(com.fasterxml.jackson.databind.ObjectMapper realObjectMapper) {
+        Objects.requireNonNull(realObjectMapper);
+        this.realObjectMapper = realObjectMapper;
+        registeredSubtypes = new HashSet<Class<?>>();
         lock = new ReentrantReadWriteLock();
     }
 
@@ -205,11 +216,23 @@ public class ObjectMapper {
     }
 
     public void registerSubtypes(Class<?>... classes) {
-        lock.writeLock().lock();
+        lock.readLock().lock();
         try {
-            realObjectMapper.registerSubtypes(classes);
+            classes = Arrays.asList(classes)
+                            .stream()
+                            .filter(c -> !registeredSubtypes.contains(c))
+                            .toArray(size -> new Class<?>[size]);
         } finally {
-            lock.writeLock().unlock();
+            lock.readLock().unlock();
+        }
+        if (0 != classes.length) {
+            lock.writeLock().lock();
+            try {
+                realObjectMapper.registerSubtypes(classes);
+                registeredSubtypes.addAll(Arrays.asList(classes));
+            } finally {
+                lock.writeLock().unlock();
+            }
         }
     }
 
