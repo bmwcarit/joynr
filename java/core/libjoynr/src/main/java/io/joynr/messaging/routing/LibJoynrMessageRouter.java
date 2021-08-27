@@ -248,16 +248,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         }
     }
 
-    /**
-     * Sets the address which will be registered at the parent router for the next hop
-     * to contact this child message router
-     * @param incomingAddress address of this libjoynr instance. Used by the cluster controller's
-     *                        message router to forward messages
-     */
-    public void setIncomingAddress(Address incomingAddress) {
-        this.incomingAddress = incomingAddress;
-    }
-
     @Override
     public void routeIn(ImmutableMessage message) {
         checkExpiry(message);
