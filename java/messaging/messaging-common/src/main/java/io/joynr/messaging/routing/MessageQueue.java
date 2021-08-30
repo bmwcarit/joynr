@@ -28,7 +28,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 /**
- * This class holds the queued messages which are to be processed in the {@link AbstractMessageRouter} and offers
+ * This class holds the queued messages which are to be processed in the {@link MessageRouter} and offers
  * the ability to {@link #waitForQueueToDrain() attempt to wait for the queue to drain}.
  */
 public class MessageQueue {

@@ -42,6 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
@@ -70,12 +71,10 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
@@ -129,7 +128,10 @@ public class CcMessageRouterTest {
     private String mqttTopic = "MessageSchedulerTest_" + createUuidString();
     private final MqttAddress mqttAddress = new MqttAddress("mqtt://testUrl:42", mqttTopic);
     private final int maximumParallelSends = 1;
+    // message runnables + cleanup thread
+    private int numberOfThreads = maximumParallelSends + 1;
     private final long routingTableGracePeriodMs = 30000;
+    private long routingTableCleanupIntervalMs = 60000;
 
     @Mock
     private RoutingTableAddressValidator addressValidatorMock;
@@ -157,6 +159,8 @@ public class CcMessageRouterTest {
     private AccessController accessControllerMock;
 
     private MessageQueue messageQueue;
+
+    private final ScheduledExecutorService scheduler = Mockito.spy(provideMessageSchedulerThreadPoolExecutor(numberOfThreads));
 
     private CcMessageRouter ccMessageRouter;
     private MutableMessage joynrMessage;
@@ -187,9 +191,6 @@ public class CcMessageRouterTest {
         AbstractModule mockModule = new AbstractModule() {
 
             private Long msgRetryIntervalMs = 10L;
-            // message runnables + cleanup thread
-            private int numberOfThreads = maximumParallelSends + 1;
-            private long routingTableCleanupIntervalMs = 60000;
 
             @Override
             protected void configure() {
@@ -233,17 +234,9 @@ public class CcMessageRouterTest {
 
                 Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
                 });
-            }
 
-            @Provides
-            @Named(MessageRouter.SCHEDULEDTHREADPOOL)
-            ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor() {
-                ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("joynr.MessageScheduler-scheduler");
-                ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(numberOfThreads,
-                                                                                        schedulerNamedThreadFactory);
-                scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
-                scheduler.allowCoreThreadTimeOut(true);
-                return scheduler;
+                bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
+                                                    .toInstance(scheduler);
             }
         };
 
@@ -270,6 +263,28 @@ public class CcMessageRouterTest {
 
         joynrMessage = messageFactory.createRequest(fromParticipantId, toParticipantId, request, new MessagingQos());
         joynrMessage.setLocalMessage(true);
+    }
+
+    private ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(int numberOfThreads) {
+        ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("joynr.MessageScheduler-scheduler");
+        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(numberOfThreads,
+                                                                                schedulerNamedThreadFactory);
+        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
+        scheduler.allowCoreThreadTimeOut(true);
+        return scheduler;
+    }
+
+    @Test
+    public void cleanupJobRemovesPurgesExpiredRoutingEntries() throws IllegalAccessException, IllegalArgumentException,
+                                                               InvocationTargetException {
+        // Capture Runnable when cleanup job is invoked
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(scheduler, times(1)).scheduleWithFixedDelay(runnableCaptor.capture(),
+                                                           eq(routingTableCleanupIntervalMs),
+                                                           eq(routingTableCleanupIntervalMs),
+                                                           eq(TimeUnit.MILLISECONDS));
+        runnableCaptor.getValue().run();
+        verify(routingTable).purge();
     }
 
     private void testScheduleMessageOk(Consumer<ImmutableMessage> route) throws Exception {
@@ -806,9 +821,9 @@ public class CcMessageRouterTest {
         verify(mockMessageProcessedListener).messageProcessed(eq(immutableMessage.getId()));
 
         MessageType type = immutableMessage.getType();
-        if (AbstractMessageRouter.MESSAGE_TYPE_REQUESTS.contains(type)) {
+        if (CcMessageRouter.MESSAGE_TYPE_REQUESTS.contains(type)) {
             verify(routingTable, times(1)).remove(eq(immutableMessage.getSender()));
-        } else if (AbstractMessageRouter.MESSAGE_TYPE_REPLIES.contains(type)) {
+        } else if (CcMessageRouter.MESSAGE_TYPE_REPLIES.contains(type)) {
             verify(routingTable, times(1)).remove(eq(immutableMessage.getRecipient()));
         }
     }

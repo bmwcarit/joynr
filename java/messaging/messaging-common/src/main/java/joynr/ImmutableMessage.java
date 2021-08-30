@@ -45,7 +45,7 @@ import io.joynr.util.ObjectMapper;
  * This class wraps binary SMRF messages and provides access to the serialized attributes
  * of the message. This type is mainly used by the messaging layers and the message router.
  * {@link MutableMessage} objects will be converted to ImmutableMessage objects before they
- * are handed over to a sub-class of {@link io.joynr.messaging.routing.AbstractMessageRouter}.
+ * are handed over to a sub-class of {@link io.joynr.messaging.routing.MessageRouter}.
  * It's not possible to modify a immutable message any more because the content may be signed.
  */
 public class ImmutableMessage extends Message {

@@ -31,7 +31,7 @@ import io.joynr.smrf.UnsuppportedVersionException;
 /**
  * Represents a joynr message which is about to be transmitted. It will be converted to
  * an {@link ImmutableMessage} before it is passed to a sub-class of
- * {@link io.joynr.messaging.routing.AbstractMessageRouter}.
+ * {@link io.joynr.messaging.routing.MessageRouter}.
  */
 public class MutableMessage extends Message {
     private String sender;
