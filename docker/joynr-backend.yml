@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+
+  joynr-gcd-db:
+    image: 'joynr-gcd-db'
+    ports:
+      - "5432:5432"
+    container_name: 'joynr-gcd-db'

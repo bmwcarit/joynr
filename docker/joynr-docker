@@ -48,6 +48,7 @@ done
 
 #list of available images
 declare -a listOfImages=(
+    "joynr-gcd-db"
     "joynr-base"
     "joynr-java"
     "joynr-android"

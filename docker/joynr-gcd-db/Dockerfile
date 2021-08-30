@@ -1,0 +1,10 @@
+FROM postgres:alpine
+
+ENV POSTGRES_USER gcd
+ENV POSTGRES_PASSWORD gcd
+ENV POSTGRES_DB gcd
+
+COPY init.sql /docker-entrypoint-initdb.d/init.sql
+
+CMD ["postgres", "-c", "log_statement=all"]
+
