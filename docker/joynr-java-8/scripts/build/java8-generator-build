@@ -1,0 +1,15 @@
+#/bin/bash
+
+# fail on first error
+set -e
+
+# build and test generator
+cd /data/src
+
+mvn clean install --projects io.joynr.tools.generator:joynr-generator-standalone -am \
+-DskipTests=false \
+-Dmaven.test.failure.ignore=true \
+-Denforcer.skip=true -Dmaven.compile.fork=true \
+-Dmaven.junit.fork=true
+
+exit 0

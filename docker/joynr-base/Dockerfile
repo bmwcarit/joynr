@@ -87,6 +87,8 @@ RUN dnf update -y \
     xcb-util-*-devel \
     zlib.i686 \
     zlib-devel \
+# when changing this (after the upgrade from java 8), also adjust the joynr-java-8 docker image
+# so that the proper package is uninstalled
     java-1.8.0-openjdk \
     xz \
     maven \

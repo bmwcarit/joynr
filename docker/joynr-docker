@@ -58,6 +58,7 @@ declare -a listOfImages=(
     "joynr-ilt-gcc"
     "joynr-complete-deps"
     "joynr-runtime-environment-base"
+    "joynr-java-8"
 )
 
 function build
