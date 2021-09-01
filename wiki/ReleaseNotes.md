@@ -8,6 +8,11 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
+* **[C++]** Custom headers are additionally sent as MQTT5 user properties within PUBLISH.
+* **[C++]** Raise required minimum boost version from 1.65.0 to 1.66.0 when building joynr
+  with UDS support (default `JOYNR_SUPPORT_UDS=ON`). Minimum required boost version is still 1.65.0
+  when building without UDS support (`JOYNR_SUPPORT_UDS=OFF`).
+
 * **[Java, JEE]** Updated hivemq-mqtt-client to 1.2.2 and its transitive dependencies
 
 ## Configuration Property Changes
@@ -19,6 +24,8 @@ None.
 ## Bug Fixes
 * **[C++]** Fixed segmentation fault / abortions in cluster controller and libjoynr runtime
   occurring during UDS socket opening.
+* **[Java]** Fixed a bug in `GuidedProxyBuilder`: `DiscoveryResult` now always contains all
+  discovered providers (it was erronously prefiltered in case of automatic discovery retries.
 
 # joynr 1.17.6
 
