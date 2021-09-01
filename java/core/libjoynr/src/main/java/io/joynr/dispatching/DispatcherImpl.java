@@ -325,6 +325,7 @@ public class DispatcherImpl implements Dispatcher {
         Map<String, Serializable> result = new HashMap<>();
         result.putAll(message.getContext());
         result.putAll(message.getCustomHeaders());
+        result.putAll(message.getExtraCustomHeaders());
         return result;
     }
 

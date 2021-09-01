@@ -435,6 +435,13 @@ public RawMessagingPreprocessor rawMessagingPreprocessor() {
 Inject `JoynrJeeMessageMetaInfo` to your EJB in order to retrieve the context (including custom
 headers) for a received message.
 
+CustomHeaders can be provided on the consumer side via the `MessagingQos` when building a proxy
+or as optional `MessagingQos` parameter when executing a method call.
+
+Additional CustomHeaders can be added and existing CustomHeaders can be modified by the MQTT broker
+if the broker is part of the communication process. In that case, the value set by the MQTT broker
+takes precedence over a value set by `MessagingQos` on the consumer side as mentioned above.
+
 The context can be accessed by calling `JoynrJeeMessageMetaInfo.getMessageContext()`:
 
 ```java

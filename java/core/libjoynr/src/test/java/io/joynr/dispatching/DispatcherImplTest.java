@@ -37,6 +37,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -91,6 +92,7 @@ import io.joynr.smrf.UnsuppportedVersionException;
 import io.joynr.util.JoynrThreadFactory;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
+import joynr.Message;
 import joynr.MulticastPublication;
 import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
@@ -576,6 +578,65 @@ public class DispatcherImplTest {
         assertNotNull(capturedReply);
         assertEquals(methodId, capturedReply.getStatelessAsyncCallbackMethodId());
         assertEquals(statelessAsyncCallbackId, capturedReply.getStatelessAsyncCallbackId());
+    }
+
+    @Test
+    public void customHeadersArePassedToHandleRequest() throws Exception {
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, "12345678");
+        MutableMessage mutableMessage = messageFactory.createRequest("from", "to", request, new MessagingQos(100000L));
+        Map<String, String> customHeaders = new HashMap<>();
+        customHeaders.put("header1", "value1");
+        customHeaders.put("header2", "value2");
+        Map<String, String> expectedHeaders = new HashMap<>();
+        customHeaders.forEach((k, v) -> expectedHeaders.put(k, v));
+        mutableMessage.setCustomHeaders(customHeaders);
+        expectedHeaders.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID,
+                            mutableMessage.getCustomHeaders().get(Message.CUSTOM_HEADER_REQUEST_REPLY_ID));
+        fixture.messageArrived(mutableMessage.getImmutableMessage());
+        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        verify(requestReplyManagerMock).handleRequest(Mockito.<ProviderCallback<Reply>> any(),
+                                                      any(String.class),
+                                                      requestCaptor.capture(),
+                                                      any(Long.class));
+        Map<String, Serializable> context = requestCaptor.getValue().getContext();
+        for (String key : expectedHeaders.keySet()) {
+            assertEquals(expectedHeaders.get(key), context.get(key).toString());
+        }
+        assertEquals(expectedHeaders.size(), context.size());
+    }
+
+    @Test
+    public void extraCustomHeadersOverrideOriginalOnes() throws Exception {
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, "12345678");
+        MutableMessage mutableMessage = messageFactory.createRequest("from", "to", request, new MessagingQos(100000L));
+        Map<String, String> customHeaders = new HashMap<>();
+        String mutableMessageKey1 = "header1";
+        String value1 = "value1";
+        String mutableMessageKey2 = "header2";
+        String value2_1 = "value2_1";
+        String value2_2 = "value2_2";
+        String extraHeaderKey = "header3";
+        String value3 = "value3";
+        customHeaders.put(mutableMessageKey1, value1);
+        customHeaders.put(mutableMessageKey2, value2_1);
+        mutableMessage.setCustomHeaders(customHeaders);
+
+        Map<String, String> extraCustomHeaders = new HashMap<>();
+        extraCustomHeaders.put(mutableMessageKey2, value2_2);
+        extraCustomHeaders.put(extraHeaderKey, value3);
+        ImmutableMessage immutableMessage = mutableMessage.getImmutableMessage();
+        immutableMessage.setExtraCustomHeaders(extraCustomHeaders);
+
+        fixture.messageArrived(immutableMessage);
+        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        verify(requestReplyManagerMock).handleRequest(Mockito.<ProviderCallback<Reply>> any(),
+                                                      any(String.class),
+                                                      requestCaptor.capture(),
+                                                      any(Long.class));
+        Map<String, Serializable> context = requestCaptor.getValue().getContext();
+        assertEquals(value1, context.get(mutableMessageKey1).toString());
+        assertEquals(value2_2, context.get(mutableMessageKey2).toString());
+        assertEquals(value3, context.get(extraHeaderKey).toString());
     }
 
     private static class MessageIsCompressedMatcher extends ArgumentMatcher<MutableMessage> {

@@ -1573,6 +1573,28 @@ private static void provisionAccessControl(Properties properties, String domain)
 }
 ```
 
+### Accessing custom headers from a provider
+
+In case a provider method has to access custom headers it can do so using the following code snippet:
+
+```java
+    HashMap <String, String> customHeadersMap = new HashMap<>();
+    for (Map.Entry<String, Serializable> entry : AbstractJoynrProvider.getCallContext()
+                                                                      .getContext()
+                                                                      .entrySet()) {
+        customHeadersMap.put(entry.getKey(), entry.getValue().toString());
+    }
+```
+
+Check out our [custom headers example](../examples/custom-headers/README.md) for a more comprehensive example.
+
+CustomHeaders can be provided on the consumer side via the `MessagingQos` when building a proxy
+or as optional `MessagingQos` parameter when executing a method call.
+
+Additional CustomHeaders can be added and existing CustomHeaders can be modified by the MQTT broker
+if the broker is part of the communication process. In that case, the value set by the MQTT broker
+takes precedence over a value set by `MessagingQos` on the consumer side as mentioned above.
+
 ## The My&lt;Interface>Provider class
 
 The provider class implements the **attributes**, **methods** and **broadcasts** of a particular

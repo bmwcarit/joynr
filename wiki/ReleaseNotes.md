@@ -2,6 +2,27 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.9
+
+## API-relevant Changes
+* **[Java, JEE]** Joynr custom headers can now be added or modified by the MQTT broker
+  via MQTT user properties, where values modified by the broker take precedence over values
+  set by the consumer application. The resulting set of custom headers is available to
+  provider applications as before.
+  See the [Java](/wiki/java.md) and [JEE](/wiki/jee.md) documentation for more details.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.17.8
 
 ## API-relevant Changes

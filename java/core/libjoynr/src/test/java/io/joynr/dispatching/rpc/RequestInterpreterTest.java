@@ -18,11 +18,19 @@
  */
 package io.joynr.dispatching.rpc;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.spy;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -34,6 +42,7 @@ import io.joynr.dispatching.RequestCaller;
 import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.messaging.JoynrMessageCreator;
 import io.joynr.messaging.JoynrMessageMetaInfo;
+import io.joynr.provider.CallContext;
 import joynr.OneWayRequest;
 import joynr.tests.DefaulttestProvider;
 
@@ -64,13 +73,15 @@ public class RequestInterpreterTest {
 
     private OneWayRequest request;
 
+    private String creatorUserId = "creator";
+
     @Before
     public void setup() {
         RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(new DefaulttestProvider());
         subject = new RequestInterpreter(joynrMessageScope, joynrMessageCreatorProvider, joynrMessageContextProvider);
         request = new OneWayRequest("getTestAttribute", new Object[0], new Class[0]);
-        request.setCreatorUserId("creator");
+        request.setCreatorUserId(creatorUserId);
         Mockito.when(joynrMessageCreatorProvider.get()).thenReturn(joynrMessageCreator);
         Mockito.when(joynrMessageContextProvider.get()).thenReturn(joynrMessageContext);
     }
@@ -90,10 +101,17 @@ public class RequestInterpreterTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void testContextSet() {
-        subject.invokeMethod(requestCaller, request);
+        Map<String, Serializable> context = new HashMap<String, Serializable>();
+        context.put("key1", "value1");
+        request.setContext(context);
+        RequestCaller requestCallerSpy = spy(requestCaller);
+        subject.invokeMethod(requestCallerSpy, request);
         verify(joynrMessageContextProvider).get();
-        verify(joynrMessageContext).setMessageContext(Mockito.anyMap());
+        verify(joynrMessageContext).setMessageContext(eq(context));
+        ArgumentCaptor<CallContext> callContextCaptor = ArgumentCaptor.forClass(CallContext.class);
+        verify(requestCallerSpy).setContext(callContextCaptor.capture());
+        assertEquals(context, callContextCaptor.getValue().getContext());
+        assertEquals(creatorUserId, callContextCaptor.getValue().getPrincipal());
     }
 }
