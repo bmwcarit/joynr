@@ -84,13 +84,13 @@ import io.joynr.accesscontrol.HasConsumerPermissionCallback;
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrDelayMessageException;
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
-import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
@@ -134,7 +134,7 @@ public class CcMessageRouterTest {
     @Mock
     private RoutingTableAddressValidator addressValidatorMock;
     private RoutingTable routingTable;
-    InMemoryMulticastReceiverRegistry multicastReceiverRegistry = new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory());
+    InMemoryMulticastReceiverRegistry multicastReceiverRegistry = spy(new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory()));
     private AddressManager addressManager;
 
     @Mock
@@ -149,6 +149,9 @@ public class CcMessageRouterTest {
     private AbstractMiddlewareMessagingStubFactory<IMessagingStub, InProcessAddress> inProcessMessagingStubFactoryMock;
     @Mock
     private ShutdownNotifier shutdownNotifier;
+
+    @Mock
+    private MessagingSkeletonFactory messagingSkeletonFactoryMock;
 
     @Mock
     private AccessController accessControllerMock;
@@ -179,6 +182,7 @@ public class CcMessageRouterTest {
                                                 multicastReceiverRegistry));
 
         when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
+        when(messagingSkeletonFactoryMock.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
 
         AbstractModule mockModule = new AbstractModule() {
 
@@ -225,9 +229,7 @@ public class CcMessageRouterTest {
                 messagingStubFactory.addBinding(MqttAddress.class).toInstance(mqttMessagingStubFactoryMock);
                 messagingStubFactory.addBinding(InProcessAddress.class).toInstance(inProcessMessagingStubFactoryMock);
 
-                MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-                }, new TypeLiteral<IMessagingSkeletonFactory>() {
-                }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETON_FACTORIES));
+                bind(MessagingSkeletonFactory.class).toInstance(messagingSkeletonFactoryMock);
 
                 Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
                 });
@@ -1378,5 +1380,51 @@ public class CcMessageRouterTest {
         message.setPayload(new byte[]{ 0, 1, 2 });
 
         ccMessageRouter.routeOut(message.getImmutableMessage());
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void removeMulticastReceiver_throwsWhenAddressIsUnknown() {
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(false);
+        ccMessageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void addMulticastReceiver_throwsWhenAddressIsUnknown() {
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(false);
+
+        ccMessageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+    }
+
+    @Test
+    public void removeMulticastReceiver() {
+        WebSocketClientAddress mockWebSocketAddress = mock(WebSocketClientAddress.class);
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
+        ccMessageRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        verify(messagingSkeletonFactoryMock, times(1)).getSkeleton(mockWebSocketAddress);
+        verify(multicastReceiverRegistry, times(1)).unregisterMulticastReceiver(multicastId, subscriberParticipantId);
+    }
+
+    @Test
+    public void addMulticastReceiver() {
+        WebSocketClientAddress mockWebSocketAddress = mock(WebSocketClientAddress.class);
+        final String multicastId = "multicastIdTest";
+        final String subscriberParticipantId = "subscriberParticipantIdTest";
+        final String providerParticipantId = "providerParticipantIdTest";
+        when(routingTable.get(providerParticipantId)).thenReturn(mockWebSocketAddress);
+        when(routingTable.containsKey(providerParticipantId)).thenReturn(true);
+
+        ccMessageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
+        verify(messagingSkeletonFactoryMock, times(1)).getSkeleton(mockWebSocketAddress);
+        verify(multicastReceiverRegistry, times(1)).registerMulticastReceiver(multicastId, subscriberParticipantId);
     }
 }
