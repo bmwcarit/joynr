@@ -344,7 +344,7 @@ public class CapabilitiesDirectoryImpl extends GlobalCapabilitiesDirectoryAbstra
                 Collection<GlobalDiscoveryEntryPersisted> lookupResult = discoveryEntryStore.lookup(domains,
                                                                                                     interfaceName);
                 if (lookupResult.isEmpty()) {
-                    deferred.resolve(new GlobalDiscoveryEntryPersisted[0]);
+                    deferred.resolve(new GlobalDiscoveryEntry[0]);
                     return promise;
                 }
 

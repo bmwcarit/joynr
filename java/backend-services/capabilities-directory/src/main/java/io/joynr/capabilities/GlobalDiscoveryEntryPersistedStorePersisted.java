@@ -20,6 +20,7 @@ package io.joynr.capabilities;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.persistence.LockModeType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +78,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
+            entityManager.createNativeQuery("LOCK TABLE discovery_entries in ACCESS EXCLUSIVE MODE").executeUpdate();
             for (String gbid : gbids) {
                 GlobalDiscoveryEntryPersistedKey key = new GlobalDiscoveryEntryPersistedKey();
                 key.setGbid(gbid);
@@ -99,6 +102,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                 }
             }
             transaction.commit();
+            entityManager.clear();
             logger.trace("Add({}) committed successfully", participantId);
         } catch (Exception e) {
             logger.error("Add({}) failed: ", participantId, e);
@@ -114,15 +118,21 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
     @Override
     public synchronized int remove(String participantId, String[] gbids) {
         int deletedCount = 0;
-        String queryString = "DELETE FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.participantId = :participantId AND gdep.gbid IN :gbids";
-
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
-            deletedCount = entityManager.createQuery(queryString)
-                                        .setParameter("participantId", participantId)
-                                        .setParameter("gbids", new HashSet<String>(Arrays.asList(gbids)))
-                                        .executeUpdate();
+            entityManager.createNativeQuery("LOCK TABLE discovery_entries in ACCESS EXCLUSIVE MODE").executeUpdate();
+
+            for (String gbid : gbids) {
+                GlobalDiscoveryEntryPersistedKey key = new GlobalDiscoveryEntryPersistedKey();
+                key.setGbid(gbid);
+                key.setParticipantId(participantId);
+                GlobalDiscoveryEntryPersisted entity = entityManager.find(GlobalDiscoveryEntryPersisted.class, key);
+                if (entity != null) {
+                    entityManager.remove(entity);
+                    deletedCount++;
+                }
+            }
 
             if (deletedCount == 0) {
                 logger.warn("Error removing participantId {}. Participant is not registered in GBIDs {}.",
@@ -163,31 +173,76 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep "
                 + "WHERE gdep.domain IN :domains AND gdep.interfaceName = :interfaceName "
                 + "ORDER BY gdep.participantId";
-        List<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
-                                                                                    GlobalDiscoveryEntryPersisted.class)
-                                                                       .setParameter("domains",
-                                                                                     new HashSet<String>(Arrays.asList(domains)))
-                                                                       .setParameter("interfaceName", interfaceName)
-                                                                       .getResultList();
+        List<GlobalDiscoveryEntryPersisted> queryResult = null;
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            queryResult = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
+                                       .setLockMode(LockModeType.PESSIMISTIC_READ)
+                                       .setParameter("domains", new HashSet<String>(Arrays.asList(domains)))
+                                       .setParameter("interfaceName", interfaceName)
+                                       .getResultList();
+            transaction.commit();
+            entityManager.clear();
+            logger.trace("Lookup({}, {}) committed successfully", Arrays.toString(domains), interfaceName);
+        } catch (Exception e) {
+            logger.error("Lookup({}, {}) failed.", Arrays.toString(domains), interfaceName, e);
+        } finally {
+            if (transaction.isActive()) {
+                logger.error("Lookup({}, {}): rollback.", Arrays.toString(domains), interfaceName);
+                transaction.rollback();
+            }
+        }
         return queryResult;
     }
 
     @Override
     public synchronized Optional<Collection<GlobalDiscoveryEntryPersisted>> lookup(String participantId) {
         String queryString = "FROM GlobalDiscoveryEntryPersisted gdep WHERE " + "gdep.participantId = :participantId";
-        Collection<GlobalDiscoveryEntryPersisted> queryResult = entityManager.createQuery(queryString,
-                                                                                          GlobalDiscoveryEntryPersisted.class)
-                                                                             .setParameter("participantId",
-                                                                                           participantId)
-                                                                             .getResultList();
+        Collection<GlobalDiscoveryEntryPersisted> queryResult = null;
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            queryResult = entityManager.createQuery(queryString, GlobalDiscoveryEntryPersisted.class)
+                                       .setLockMode(LockModeType.PESSIMISTIC_READ)
+                                       .setParameter("participantId", participantId)
+                                       .getResultList();
+
+            transaction.commit();
+            entityManager.clear();
+            logger.trace("Lookup({}) committed successfully", participantId);
+        } catch (Exception e) {
+            logger.error("Lookup({}) failed.", participantId, e);
+        } finally {
+            if (transaction.isActive()) {
+                logger.error("Lookup({}): rollback.", participantId);
+                transaction.rollback();
+            }
+        }
         return Optional.ofNullable(queryResult);
     }
 
     @Override
     public Set<GlobalDiscoveryEntryPersisted> getAllDiscoveryEntries() {
-        List<GlobalDiscoveryEntryPersisted> allCapabilityEntries = entityManager.createQuery("FROM GlobalDiscoveryEntryPersisted gdep",
-                                                                                             GlobalDiscoveryEntryPersisted.class)
-                                                                                .getResultList();
+        List<GlobalDiscoveryEntryPersisted> allCapabilityEntries = new ArrayList<>();
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            allCapabilityEntries = entityManager.createQuery("FROM GlobalDiscoveryEntryPersisted gdep",
+                                                             GlobalDiscoveryEntryPersisted.class)
+                                                .setLockMode(LockModeType.PESSIMISTIC_READ)
+                                                .getResultList();
+            transaction.commit();
+            entityManager.clear();
+            logger.trace("GetAllDiscoveryEntries() committed successfully");
+        } catch (Exception e) {
+            logger.error("GetAllDiscoveryEntries() failed.", e);
+        } finally {
+            if (transaction.isActive()) {
+                logger.error("GetAllDiscoveryEntries(): rollback.");
+                transaction.rollback();
+            }
+        }
         Set<GlobalDiscoveryEntryPersisted> result = new HashSet<>(allCapabilityEntries);
         logger.debug("Retrieved all discovery entries: {}", result);
         return result;
@@ -195,20 +250,26 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
 
     @Override
     public boolean hasDiscoveryEntry(GlobalDiscoveryEntryPersisted discoveryEntry) {
-        String query = "FROM GlobalDiscoveryEntryPersisted gdep WHERE gdep.clusterControllerId = :clusterControllerId";
-        String clusterControllerId = discoveryEntry.getClusterControllerId();
-        @SuppressWarnings("unchecked")
-        List<GlobalDiscoveryEntryPersisted> capabilitiesList = entityManager.createQuery(query)
-                                                                            .setParameter("clusterControllerId",
-                                                                                          clusterControllerId)
-                                                                            .getResultList();
-
-        if (capabilitiesList.size() > 1) {
-            logger.warn("There are {} discovery entries for {}",
-                        capabilitiesList.size(),
-                        discoveryEntry.getParticipantId());
+        GlobalDiscoveryEntryPersisted entity = null;
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            GlobalDiscoveryEntryPersistedKey key = new GlobalDiscoveryEntryPersistedKey();
+            key.setGbid(discoveryEntry.getGbid());
+            key.setParticipantId(discoveryEntry.getParticipantId());
+            entity = entityManager.find(GlobalDiscoveryEntryPersisted.class, key, LockModeType.PESSIMISTIC_READ);
+            transaction.commit();
+            entityManager.clear();
+            logger.trace("HasDiscoveryEntry({}) committed successfully", discoveryEntry);
+        } catch (Exception e) {
+            logger.error("HasDiscoveryEntry({}) failed.", discoveryEntry, e);
+        } finally {
+            if (transaction.isActive()) {
+                logger.error("HasDiscoveryEntry({}): rollback.", discoveryEntry);
+                transaction.rollback();
+            }
         }
-        return discoveryEntry.equals(capabilitiesList.get(0));
+        return entity != null;
     }
 
     @Override
@@ -217,6 +278,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
+            entityManager.createNativeQuery("LOCK TABLE discovery_entries in ACCESS EXCLUSIVE MODE").executeUpdate();
             @SuppressWarnings("unchecked")
             List<GlobalDiscoveryEntryPersisted> capabilitiesList = entityManager.createQuery(query)
                                                                                 .setParameter("clusterControllerId",
@@ -224,6 +286,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                                                                                 .getResultList();
             touchEntries(capabilitiesList);
             transaction.commit();
+            entityManager.clear();
             logger.trace("Touch(ccId={}) committed successfully.", clusterControllerId);
         } catch (RuntimeException e) {
             logger.error("Touch(ccId={}) failed.", clusterControllerId, e);
@@ -265,6 +328,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
+            entityManager.createNativeQuery("LOCK TABLE discovery_entries in ACCESS EXCLUSIVE MODE").executeUpdate();
             @SuppressWarnings("unchecked")
             List<GlobalDiscoveryEntryPersisted> capabilitiesList = entityManager.createQuery(query)
                                                                                 .setParameter("clusterControllerId",
@@ -274,6 +338,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
                                                                                 .getResultList();
             touchEntries(capabilitiesList);
             transaction.commit();
+            entityManager.clear();
             if (participantIds.length > capabilitiesList.size()) {
                 logger.warn("Touch(ccId={}, participantIds={}) committed successfully, but updated only {} entries: {}.",
                             clusterControllerId,
@@ -306,6 +371,7 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
+            entityManager.createNativeQuery("LOCK TABLE discovery_entries in ACCESS EXCLUSIVE MODE").executeUpdate();
             deletedCount = entityManager.createQuery(queryString)
                                         .setParameter("clusterControllerId", clusterControllerId)
                                         .setParameter("maxLastSeenDateMs", maxLastSeenDateMs)
