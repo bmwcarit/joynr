@@ -48,3 +48,9 @@ CREATE TABLE IF NOT EXISTS public.discovery_entries_customparameters
         ON DELETE NO ACTION
 );
 
+CREATE DATABASE "gcd-test"
+    WITH
+    OWNER = gcd
+    ENCODING = 'UTF8'
+    CONNECTION LIMIT = -1;
+
