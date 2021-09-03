@@ -783,11 +783,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.hibernate</groupId>
-				<artifactId>hibernate-ehcache</artifactId>
-				<version>${hibernate.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-entitymanager</artifactId>
 				<version>${hibernate.version}</version>
 			</dependency>
@@ -796,11 +791,6 @@
 				<artifactId>hibernate-entitymanager</artifactId>
 				<version>${hibernate.version}</version>
 				<classifier>sources</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.hibernate.javax.persistence</groupId>
-				<artifactId>hibernate-jpa-2.1-api</artifactId>
-				<version>1.0.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.derby</groupId>
