@@ -393,7 +393,7 @@
 		<guice.version>3.0</guice.version>
 		<jetty.version>9.2.13.v20150730</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
-		<hibernate.version>5.4.12.Final</hibernate.version>
+		<hibernate.version>5.5.7.Final</hibernate.version>
 		<android.platform.version>9_r6</android.platform.version>
 		<android.platform.level>28</android.platform.level>
 		<skipTests>true</skipTests>
