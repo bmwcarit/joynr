@@ -1,5 +1,7 @@
 FROM postgres:alpine
 
+LABEL com.jfrog.artifactory.retention.maxCount="25"
+
 ENV POSTGRES_USER gcd
 ENV POSTGRES_PASSWORD gcd
 ENV POSTGRES_DB gcd
