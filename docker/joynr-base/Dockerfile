@@ -3,7 +3,7 @@ FROM fedora:30
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2021-04-20-17-10
+ENV REFRESHED_AT 2021-09-08-15-10
 
 ###################################################
 # create data directories and volumes
@@ -64,13 +64,13 @@ RUN dnf update -y \
     libcurl-devel \
     libstdc++.i686 \
     libtool \
-    libxcb \
-    libxcb-devel \
-    libX11-devel \
-    libXi-devel \
-    libXrender-devel \
     libuuid-devel \
     libwebsockets-devel \
+    libX11-devel \
+    libxcb \
+    libxcb-devel \
+    libXi-devel \
+    libXrender-devel \
     net-tools \
     openssl \
     openssl-devel \
@@ -83,10 +83,10 @@ RUN dnf update -y \
     wget \
     which \
     xcb-util \
-    xcb-util-devel \
     xcb-util-*-devel \
-    zlib.i686 \
+    xcb-util-devel \
     zlib-devel \
+    zlib.i686 \
 # when changing this (after the upgrade from java 8), also adjust the joynr-java-8 docker image
 # so that the proper package is uninstalled
     java-1.8.0-openjdk \
@@ -115,6 +115,15 @@ RUN git config --global user.email "dummy@dummy.com" \
 COPY openssl.conf /tmp/openssl.cnf
 RUN mkdir -p /data/ssl-data \
     && /data/scripts/gen-certificates.sh --configfile /tmp/openssl.cnf --destdir /data/ssl-data
+
+###################################################
+# Install postgresql
+###################################################
+RUN . /etc/profile \
+    && dnf install -y postgresql-server postgresql-contrib \
+    && echo "gcd" > /opt/gcd_password \
+    && chown postgres /opt/gcd_password \
+    && su - postgres /data/scripts/configure-db.sh
 
 ###################################################
 # Install payara
@@ -188,7 +197,7 @@ RUN cd /tmp \
     && . /etc/profile \
     && curl -o gosu -sSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && mv gosu /usr/local/bin/gosu \
-    && chmod 755 /usr/local/bin/gosu
+    && chmod 4755 /usr/local/bin/gosu
 
 COPY scripts/boot2user.sh /data/scripts/boot2user.sh
 
