@@ -49,8 +49,22 @@ in your local repository (see below for which ones are required).
 
 ## Building
 
-Build the required docker images by changing into the following
-directories and executing the './docker_build' scripts inside:
+### Prerequisite
+
+The joynr backend docker images `joynr-gcd-db` and `joynr-gcd` are required to run the tests.
+
+You can build them by running `cd <joynr_repo>/docker/ && ./build_backend.sh`.
+
+### Test docker images
+
+The easiest way to build all necessary images is to execute the
+
+`./build_all.sh`
+
+script in this directory.
+
+Alternatively, build the required docker images by changing into the following
+directories and executing the './build_docker_image.sh' scripts inside:
 
 `test-apps/backpressure-clustered-provider-large/`
 `test-apps/backpressure-clustered-provider-small/`
@@ -64,21 +78,20 @@ does and make the appropriate changes for your OS)
 
 You should now see the appropriate Docker Images:
 
-        localhost> $ docker images
-        REPOSITORY                                                      TAG                 IMAGE ID            CREATED             SIZE
-        test-driver-container                                           latest              7b24c01f99fd        6 days ago          231MB
-        shared-subs-test-monitor-app                                    latest              0ded26ec8cc7        6 days ago          1.27GB
-        shared-subs-test-clustered-app                                  latest              6528b5fd9ad6        6 days ago          1.27GB
-        backpressure-test-monitor-app                                   latest              9863d9cf8cf6        6 days ago          1.27GB
-        backpressure-test-clustered-provider-small                      latest              cd240788b955        6 days ago          1.27GB
-        backpressure-test-clustered-provider-large                      latest              99dabb10e9d6        6 days ago          1.27GB
-        joynr-backend-jee                                               latest              25f3b1d1b1c6        6 days ago          1.35GB
+    localhost> $ docker images
+    REPOSITORY                                   TAG      IMAGE ID       CREATED        SIZE
+    test-driver-container                        latest   7b24c01f99fd   6 days ago     231MB
+    shared-subs-test-monitor-app                 latest   0ded26ec8cc7   6 days ago     1.27GB
+    shared-subs-test-clustered-app               latest   6528b5fd9ad6   6 days ago     1.27GB
+    backpressure-test-monitor-app                latest   9863d9cf8cf6   6 days ago     1.27GB
+    backpressure-test-clustered-provider-small   latest   cd240788b955   6 days ago     1.27GB
+    backpressure-test-clustered-provider-large   latest   99dabb10e9d6   6 days ago     1.27GB
+    joynr-backend-jee                            latest   25f3b1d1b1c6   6 days ago     1.35GB
+    joynr-gcd                                    latest   7948363be5d6   15 hours ago   261MB
+    joynr-gcd-db                                 latest   8a2e8fa2c8cc   15 hours ago   192MB
+    hivemq/hivemq4                               latest   ce5b6a31edf1   4 weeks ago    438MB
 
-As shown above, the scenarios also require the joynr-backend-jee and HiveMQ 3.4.1 Docker
-images.
-
-The joynr-backend-jee image can be built from the joynr project.  See
-`${joynr_project_root}/tests/system-integration-test/docker/joynr-backend-jee/`.
+The HiveMQ 4 Docker image will be downloaded automatically when running the tests.
 
 ## Running
 

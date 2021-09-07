@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker build -t test-driver-container:latest .
+docker build $@ -t shared-subs-test-clustered-app:latest .
 
 for image in `docker images | grep '<none' | awk '{print $3}'`
 do

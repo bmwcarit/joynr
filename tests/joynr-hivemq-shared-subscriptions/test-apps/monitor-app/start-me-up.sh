@@ -2,7 +2,7 @@
 
 echo "Check that joynrbackend is running ..."
 
-while [ -z "$(curl -v http://joynrbackend:8080/health 2>&1 | grep '200 OK')" ]; do
+while [ -z "$(echo "\n" | curl -v telnet://joynrbackend:9998 2>&1 | grep 'OK')" ]; do
     echo "Waiting for joynr backend to become available ..."
     sleep 5
 done

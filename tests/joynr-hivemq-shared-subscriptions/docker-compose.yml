@@ -3,7 +3,7 @@ version: '3.0'
 services:
 
   hivemq:
-    image: 'hivemq/hivemq4'
+    image: "hivemq/hivemq4"
     container_name: mqttbroker
     networks:
       - sharedSubscriptionNetwork
@@ -13,15 +13,23 @@ services:
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
                  backpressure-provider-large,backpressure-monitor-app,test-driver
 
+  joynr-gcd-db:
+    # build: run "cd ../../docker/joynr-gcd-db && ./build_docker_image.sh"
+    image: "joynr-gcd-db"
+    container_name: "joynr-gcd-db"
+    networks:
+      - sharedSubscriptionNetwork
 
   joynrbackend:
-    image: "joynr-backend-jee:latest"
-    build: joynr-backend-jee/
+    # build: run "cd ../../docker/joynr-gcd && ./build_docker_image.sh"
+    image: "joynr-gcd:latest"
     container_name: joynrbackend
     depends_on:
+      - "joynr-gcd-db"
       - "hivemq"
     environment:
-      - MQTT_BROKER_URL=tcp://mqttbroker:1883
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker:1883
+      - joynr_gcd_db_host=joynr-gcd-db
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
                  backpressure-provider-large,backpressure-monitor-app,test-driver
@@ -32,6 +40,8 @@ services:
     build: test-apps/clustered-app
     image: "shared-subs-test-clustered-app:latest"
     container_name: clustered-app-node-1
+    depends_on:
+      - "joynrbackend"
     environment:
       - joynr_servlet_hostpath="http://clustered-app-node-1:8080"
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
@@ -45,6 +55,8 @@ services:
     build: test-apps/clustered-app
     image: "shared-subs-test-clustered-app:latest"
     container_name: clustered-app-node-2
+    depends_on:
+      - "joynrbackend"
     environment:
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
@@ -58,6 +70,8 @@ services:
     build: test-apps/monitor-app
     image: "shared-subs-test-monitor-app:latest"
     container_name: monitor-app
+    depends_on:
+      - "joynrbackend"
     environment:
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
@@ -70,6 +84,8 @@ services:
     build: test-apps/backpressure-clustered-provider-small
     image: "backpressure-test-clustered-provider-small:latest"
     container_name: backpressure-provider-small
+    depends_on:
+      - "joynrbackend"
     environment:
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
@@ -83,6 +99,8 @@ services:
     build: test-apps/backpressure-clustered-provider-large
     image: "backpressure-test-clustered-provider-large:latest"
     container_name: backpressure-provider-large
+    depends_on:
+      - "joynrbackend"
     environment:
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
@@ -96,6 +114,8 @@ services:
     build: test-apps/backpressure-monitor-app
     image: "backpressure-test-monitor-app:latest"
     container_name: backpressure-monitor-app
+    depends_on:
+      - "joynrbackend"
     environment:
       - MQTT_BROKER_URL=tcp://mqttbroker:1883
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
@@ -108,6 +128,9 @@ services:
     build: test-driver-container
     image: "test-driver-container:latest"
     container_name: test-driver
+    depends_on:
+      - "monitor-app"
+      - "backpressure-monitor-app"
     environment:
       - no_proxy=127.0.0.1,localhost,mqttbroker,joynrbackend,monitor-app, \
                  clustered-app-node-1,clustered-app-node-2,backpressure-provider-small, \
