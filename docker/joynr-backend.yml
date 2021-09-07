@@ -8,3 +8,26 @@ services:
     ports:
       - "5432:5432"
     container_name: 'joynr-gcd-db'
+
+  mqttbroker-1:
+    image: 'hivemq/hivemq4'
+    ports:
+      - "1883:1883"
+    container_name: 'mqttbroker-1'
+    environment:
+      - HIVEMQ_ALLOW_ALL_CLIENTS=true
+
+  joynr-gcd-1:
+    # build: run "cd joynr-gcd && ./build_docker_image.sh"
+    image: 'joynr-gcd'
+    container_name: 'joynr-gcd-1'
+    depends_on:
+      - joynr-gcd-db
+      - mqttbroker-1
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker-1:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      # optional ("joynrdefaultgbid" is the default value for the following properties)
+      - joynr_gcd_gbid=joynrdefaultgbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid
+      - joynr_messaging_gbids=joynrdefaultgbid
