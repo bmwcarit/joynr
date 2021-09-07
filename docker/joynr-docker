@@ -47,8 +47,7 @@ echo "PARAM is: $1"
 done
 
 #list of available images
-declare -a listOfImages=(
-    "joynr-gcd-db"
+declare -a normalBuildImages=(
     "joynr-base"
     "joynr-java"
     "joynr-android"
@@ -61,23 +60,36 @@ declare -a listOfImages=(
     "joynr-runtime-environment-base"
     "joynr-java-8"
 )
+declare -a scriptBuildImages=(
+    "joynr-gcd-db"
+)
+declare -a allImages=(
+    ${normalBuildImages[@]}
+    ${scriptBuildImages[@]}
+)
 
 function build
 {
-    for image in "${listOfImages[@]}"
+    proxy_arg=""
+    if [ -n "$proxy" ]
+    then
+        proxy_arg="--build-arg http_proxy=$proxy"
+    fi
+    for image in "${normalBuildImages[@]}"
     do
-        proxy_arg=""
-        if [ -n "$proxy" ]
-        then
-            proxy_arg="--build-arg http_proxy=$proxy"
-        fi
         echo "building image: ${image}:latest"
         docker build $proxy_arg -t ${image}:latest ${image}/
-
+    done
+    for image in "${scriptBuildImages[@]}"
+    do
+        echo "building image: ${image}:latest"
+        pushd $image
+        ./build_docker_image.sh $proxy_arg
+        popd
     done
      
     if [[ "$additionaltags" != "latest" ]] || [[ "$version" != "latest" ]]; then
-        for image in "${listOfImages[@]}"
+        for image in "${allImages[@]}"
         do
             IFS=',' read -ra tags <<< "$additionaltags"    #Convert string to array
             tags+=("$version")
@@ -93,7 +105,7 @@ function build
 function pull
 {
     echo "pulling from repository: $repository for version:$version"
-    for image in "${listOfImages[@]}"
+    for image in "${allImages[@]}"
     do
         docker pull ${repository}${image}:${version}
     done
@@ -102,7 +114,7 @@ function pull
 function push
 {
     echo "pushing to repository: $repository with version:$version"
-    for image in "${listOfImages[@]}"
+    for image in "${allImages[@]}"
     do
         docker push ${repository}${image}:${version}
 
@@ -127,7 +139,7 @@ function remove
         repositoryurl=`echo $repository | cut -d'/' -f1`/v2/`echo $repository | cut -d'/' -f2-`
         echo "repository name $repository is not equipped with docker specific namespaces. Modified repository name: $repositoryurl"
     fi
-    for image in "${listOfImages[@]}"
+    for image in "${allImages[@]}"
     do
         docker rmi ${repository}${image}:${version}
         digest=`curl -H 'Accept: application/vnd.docker.distribution.manifest.v2+json' -L -s -I https://${repositoryurl}${image}/manifests/${version} | grep 'Docker-Content-Digest' | cut -d':' -f2- | cut -d\  -f2- | tr -d '\r'`
