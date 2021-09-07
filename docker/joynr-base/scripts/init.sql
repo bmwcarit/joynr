@@ -37,12 +37,12 @@ CREATE TABLE IF NOT EXISTS public.discovery_entries_customparameters
     globaldiscoveryentrypersisted_gbid character varying(255) COLLATE pg_catalog."default" NOT NULL,
     globaldiscoveryentrypersisted_participantid character varying(255) COLLATE pg_catalog."default" NOT NULL,
     customparameterlist_id bigint NOT NULL,
-    CONSTRAINT uk_a64uvuch6vcmhp01lp34qcsmm UNIQUE (customparameterlist_id),
-    CONSTRAINT fkd0oj1nnnhhycfc3lhtxw43xqv FOREIGN KEY (customparameterlist_id)
+    CONSTRAINT customparameterlist_id_is_unique UNIQUE (customparameterlist_id),
+    CONSTRAINT customparameterlist_id_references_customparameters FOREIGN KEY (customparameterlist_id)
         REFERENCES public.customparameters (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
-    CONSTRAINT fkk7pg6nowtmpmce2rr8cld5lcb FOREIGN KEY (globaldiscoveryentrypersisted_gbid, globaldiscoveryentrypersisted_participantid)
+    CONSTRAINT gbid_participantid_references_discovery_entries FOREIGN KEY (globaldiscoveryentrypersisted_gbid, globaldiscoveryentrypersisted_participantid)
         REFERENCES public.discovery_entries (gbid, participantid) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION

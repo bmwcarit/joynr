@@ -1,8 +1,9 @@
-version: '3'
+version: '3.0'
 
 services:
 
   joynr-gcd-db:
+    # build: run "cd joynr-gcd-db && ./build_docker_image.sh"
     image: 'joynr-gcd-db'
     ports:
       - "5432:5432"

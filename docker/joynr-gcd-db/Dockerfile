@@ -9,4 +9,3 @@ ENV POSTGRES_DB gcd
 COPY init.sql /docker-entrypoint-initdb.d/init.sql
 
 CMD ["postgres", "-c", "log_statement=all"]
-
