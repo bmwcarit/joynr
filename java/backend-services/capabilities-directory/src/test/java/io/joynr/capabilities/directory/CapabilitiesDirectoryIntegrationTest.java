@@ -24,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.net.UnknownHostException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.provider.PromiseKeeper;
 import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ApplicationException;
@@ -82,9 +83,10 @@ public class CapabilitiesDirectoryIntegrationTest {
     String postFix = "" + System.currentTimeMillis();
 
     @BeforeClass
-    public static void start() throws UnknownHostException {
+    public static void start() throws IOException {
         Properties systemProperties = System.getProperties();
         systemProperties.setProperty(CapabilitiesDirectoryImpl.GCD_GBID, gcdGbid);
+        systemProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, gcdGbid);
         System.setProperties(systemProperties);
         capabilitiesDirectory = startCapabilitiesDirectory();
     }
@@ -145,7 +147,7 @@ public class CapabilitiesDirectoryIntegrationTest {
 
     }
 
-    private static CapabilitiesDirectoryImpl startCapabilitiesDirectory() throws UnknownHostException {
+    private static CapabilitiesDirectoryImpl startCapabilitiesDirectory() throws IOException {
         Properties testProperties = new Properties();
         testProperties.setProperty(CapabilitiesDirectoryLauncher.GCD_DB_NAME, "gcd-test");
         Map<String, String> jpaProperties = new HashMap<String, String>();

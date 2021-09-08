@@ -19,12 +19,17 @@
 package io.joynr.capabilities.directory;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +67,15 @@ public class CapabilitiesDirectoryLauncher {
     static final String GCD_DB_NAME = CapabilitiesDirectoryImpl.PROPERTY_PREFIX + "test.db.name";
     static final String GCD_JPA_PROPERTIES = CapabilitiesDirectoryImpl.PROPERTY_PREFIX + "test.jpa.properties";
     private static String dbName = "gcd";
+    private static AtomicBoolean shutdown = new AtomicBoolean(false);
+    private static AtomicBoolean started = new AtomicBoolean(false);
     private static int shutdownPort = Integer.parseInt(System.getProperty("joynr.capabilitiesdirectorylauncher.shutdownport",
                                                                           "9999"));
+    private static int readyPort = Integer.parseInt(System.getProperty("joynr.capabilitiesdirectorylauncher.readyport",
+                                                                       "9998"));
+    private static Thread readyThread;
+    private static AtomicBoolean ready = new AtomicBoolean(false);
+    private static ServerSocket readyServer;
     private static JoynrRuntime runtime;
     private static CapabilitiesDirectoryImpl capabilitiesDirectory;
 
@@ -134,6 +146,14 @@ public class CapabilitiesDirectoryLauncher {
     }
 
     public static void start(Properties joynrConfig) throws UnknownHostException {
+        if (shutdown.get()) {
+            logger.error("Already shut down");
+            return;
+        }
+        if (started.getAndSet(true)) {
+            logger.error("Already started");
+            return;
+        }
         prepareConfig(joynrConfig);
         waitForDb();
         Module runtimeModule = getRuntimeModule(joynrConfig);
@@ -146,14 +166,17 @@ public class CapabilitiesDirectoryLauncher {
         capabilitiesDirectory = injector.getInstance(CapabilitiesDirectoryImpl.class);
         String localDomain = injector.getInstance(Key.get(String.class,
                                                           Names.named(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL)));
-        Future<Void> future = runtime.getProviderRegistrar(localDomain, capabilitiesDirectory).awaitGlobalRegistration().register();
+        Future<Void> future = runtime.getProviderRegistrar(localDomain, capabilitiesDirectory)
+                                     .awaitGlobalRegistration()
+                                     .register();
         try {
             future.get(10000);
+            ready.set(true);
+            logger.info("GCD ready.");
         } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {
             logger.error("Provider registration failed.", e);
             return;
         }
-        logger.info("GCD ready.");
     }
 
     static CapabilitiesDirectoryImpl getCapabilitiesDirectory() {
@@ -183,27 +206,87 @@ public class CapabilitiesDirectoryLauncher {
         throw new JoynrWaitExpiredException();
     }
 
+    private static void startReadyServer() throws IOException {
+        readyServer = new ServerSocket(readyPort);
+        readyThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!shutdown.get()) {
+                    try {
+                        Socket s = readyServer.accept();
+                        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(s.getOutputStream(),
+                                                                                      StandardCharsets.US_ASCII),
+                                                               true);) {
+                            if (ready.get()) {
+                                out.println("OK");
+                            } else {
+                                out.println("ERROR");
+                            }
+                        }
+                        s.close();
+                    } catch (IOException e) {
+                        if (shutdown.get() && e instanceof SocketException) {
+                            // Ignore SocketException from serverSocket.close()
+                            break;
+                        }
+                        logger.error("Exception from readyServer.accept()", e);
+                    }
+                }
+            }
+        });
+        readyThread.start();
+    }
+
     private static void waitUntilShutdownRequested() {
         try {
             ServerSocket serverSocket = new ServerSocket(shutdownPort);
             serverSocket.accept();
             serverSocket.close();
         } catch (IOException e) {
+            logger.error("Exception from shutdown server socket", e);
             return;
         }
         return;
     }
 
     public static void shutdown() {
+        if (!started.get()) {
+            logger.error("Not started");
+            return;
+        }
+        if (shutdown.getAndSet(true)) {
+            logger.error("Already shut down");
+            return;
+        }
+        ready.set(false);
         persistService.stop();
         runtime.shutdown(true);
+        if (readyServer != null) {
+            stopReadyServer();
+        }
+    }
+
+    private static void stopReadyServer() {
+        try {
+            readyServer.close();
+        } catch (IOException e1) {
+            // ignore
+        }
+        readyServer = null;
+        try {
+            readyThread.join();
+        } catch (InterruptedException e) {
+            // ignore
+        }
+        readyThread = null;
     }
 
     // if invoked as standalone program then after initialization wait
     // until a connection on a shutdownPort gets established, to
     // allow to initiate shutdown from outside.
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) throws IOException {
         start(new Properties());
+        startReadyServer();
         waitUntilShutdownRequested();
         shutdown();
     }
