@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source /data/scripts/global.sh
+source /data/src/docker/joynr-base/scripts/start-and-stop-gcd-service.sh
 
 log "ENVIRONMENT"
 env
@@ -12,44 +13,34 @@ echo '# start services'
 echo '# This script assumes mvn was run.'
 echo '####################################################'
 
+/data/src/docker/joynr-base/scripts/start-db.sh
+
 log "start mosquitto"
 mosquitto -c /data/src/docker/joynr-base/mosquitto.conf &
 MOSQUITTO_PID=$!
+log "Mosquitto started with PID $MOSQUITTO_PID"
 
 # wait a while to allow mosquitto server to initialize
 sleep 5
 
-function stopmosquitto
+function stopservices
 {
+    stopGcd
+
     log "stop mosquitto"
     kill -TERM $MOSQUITTO_PID
     wait $MOSQUITTO_PID
+    /data/src/docker/joynr-base/scripts/stop-db.sh
 }
 
-(
-    log "start payara"
-    cd /data/src/java
-    JOYNR_VERSION=$(mvn -q -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive org.codehaus.mojo:exec-maven-plugin:exec)
-    MVN_REPO=${REPODIR:=/home/$(whoami)/.m2/repository}
-
-    DISCOVERY_DIRECTORY_WAR_FILE="$MVN_REPO/io/joynr/java/backend-services/discovery-directory-jee/$JOYNR_VERSION/discovery-directory-jee-$JOYNR_VERSION.war"
-
-    echo DISCOVERY_DIRECTORY_WAR_FILE=$DISCOVERY_DIRECTORY_WAR_FILE
-    if [ ! -f $DISCOVERY_DIRECTORY_WAR_FILE ]; then
-      log "Cannot run tests: path DISCOVERY_DIRECTORY_WAR_FILE does not exist.\nMVN_REPO=$MVN_REPO"
-      exit 1
-    fi
-
-    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
-    SUCCESS=$?
-    exit $SUCCESS
-)
+startGcd
 SUCCESS=$?
 if [ "$SUCCESS" != "0" ]; then
     echo '########################################################'
-    echo '# Start Payara failed with exit code:' $SUCCESS
+    echo '# Start GCD failed with exit code:' $SUCCESS
     echo '########################################################'
-    stopmosquitto
+
+    stopservices
     exit $SUCCESS
 fi
 
@@ -76,8 +67,6 @@ echo '####################################################'
 echo '# stop services'
 echo '####################################################'
 
-log "stop payara"
-/data/src/docker/joynr-base/scripts/stop-payara.sh
-stopmosquitto
+stopservices
 
 exit $SUCCESS
