@@ -19,6 +19,7 @@
 package io.joynr.messaging;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -106,8 +107,7 @@ public class LibJoynrMessageRouterTest {
     RoutingTable routingTableMock;
     @Mock
     private Dispatcher dispatcherMock;
-    private MessageQueue incomingMessageQueue;
-    private MessageQueue outgoingMessageQueue;
+    private MessageQueue messageQueue;
     private LibJoynrMessageRouter messageRouter;
     private LibJoynrMessageRouter messageRouterForUdsAddresses;
     private String unknownParticipantId = "unknownParticipantId";
@@ -123,10 +123,8 @@ public class LibJoynrMessageRouterTest {
 
     @Before
     public void setUp() {
-        incomingMessageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
-                                                    new MessageQueue.MaxTimeoutHolder()));
-        outgoingMessageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
-                                                    new MessageQueue.MaxTimeoutHolder()));
+        messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
+                                            new MessageQueue.MaxTimeoutHolder()));
         when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000000).getValue());
         when(message.isTtlAbsolute()).thenReturn(true);
         when(message.getRecipient()).thenReturn(unknownParticipantId);
@@ -143,16 +141,14 @@ public class LibJoynrMessageRouterTest {
                                                   provideMessageSchedulerThreadPoolExecutor(),
                                                   maxParallelSends,
                                                   messagingStubFactory,
-                                                  incomingMessageQueue,
-                                                  outgoingMessageQueue,
+                                                  messageQueue,
                                                   shutdownNotifier,
                                                   dispatcherMock);
         messageRouterForUdsAddresses = new LibJoynrMessageRouter(incomingUdsClientAddress,
                                                                  provideMessageSchedulerThreadPoolExecutor(),
                                                                  maxParallelSends,
                                                                  messagingStubFactory,
-                                                                 incomingMessageQueue,
-                                                                 outgoingMessageQueue,
+                                                                 messageQueue,
                                                                  shutdownNotifier,
                                                                  dispatcherMock);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
@@ -172,23 +168,19 @@ public class LibJoynrMessageRouterTest {
     }
 
     @Test
-    public void testAlwaysOneIncomingAndOutgoingWorkerAvailable() throws NoSuchFieldException, SecurityException,
-                                                                  IllegalArgumentException, IllegalAccessException {
+    public void testAlwaysAtLeastTwoMessageWorkersAvailable() throws NoSuchFieldException, SecurityException,
+                                                              IllegalArgumentException, IllegalAccessException {
         int localMaxParallelSends = 1;
         LibJoynrMessageRouter localMessageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                                              provideMessageSchedulerThreadPoolExecutor(),
                                                                              localMaxParallelSends,
                                                                              messagingStubFactory,
-                                                                             incomingMessageQueue,
-                                                                             outgoingMessageQueue,
+                                                                             messageQueue,
                                                                              shutdownNotifier,
                                                                              dispatcherMock);
-        Field incomingMessageWorkerField = LibJoynrMessageRouter.class.getDeclaredField("incomingMessageWorkers");
-        incomingMessageWorkerField.setAccessible(true);
-        Field outgoingMessageWorkerField = LibJoynrMessageRouter.class.getDeclaredField("outgoingMessageWorkers");
-        outgoingMessageWorkerField.setAccessible(true);
-        assertEquals(1, ((List) incomingMessageWorkerField.get(localMessageRouter)).size());
-        assertEquals(1, ((List) outgoingMessageWorkerField.get(localMessageRouter)).size());
+        Field messageWorkerField = LibJoynrMessageRouter.class.getDeclaredField("messageWorkers");
+        messageWorkerField.setAccessible(true);
+        assertTrue(((List) messageWorkerField.get(localMessageRouter)).size() >= 2);
     }
 
     @Test
@@ -244,9 +236,11 @@ public class LibJoynrMessageRouterTest {
     public void routeInEnqueuesNonExpiredMessage() throws Exception {
         ImmutableMessage immutableMessage;
         immutableMessage = joynrMessage.getImmutableMessage();
+        // incoming messages must have been received from cluster controller and have receivedFromGlobal set to true
+        immutableMessage.setReceivedFromGlobal(true);
         messageRouter.routeIn(immutableMessage);
         ArgumentCaptor<DelayableImmutableMessage> messageCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
-        verify(incomingMessageQueue).put(messageCaptor.capture());
+        verify(messageQueue).put(messageCaptor.capture());
         ImmutableMessage capturedMessage = messageCaptor.getValue().getMessage();
         assertEquals(immutableMessage.getSender(), capturedMessage.getSender());
         assertEquals(immutableMessage.getRecipient(), capturedMessage.getRecipient());
@@ -259,9 +253,11 @@ public class LibJoynrMessageRouterTest {
     public void routeOutEnqueuesNonExpiredMessage() throws Exception {
         ImmutableMessage immutableMessage;
         immutableMessage = joynrMessage.getImmutableMessage();
+        // outgoing messages were not been received from cluster controller and thus have receivedFromGlobal set to false
+        immutableMessage.setReceivedFromGlobal(false);
         messageRouter.routeOut(immutableMessage);
         ArgumentCaptor<DelayableImmutableMessage> messageCaptor = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
-        verify(outgoingMessageQueue).put(messageCaptor.capture());
+        verify(messageQueue).put(messageCaptor.capture());
         ImmutableMessage capturedMessage = messageCaptor.getValue().getMessage();
         assertEquals(immutableMessage.getSender(), capturedMessage.getSender());
         assertEquals(immutableMessage.getRecipient(), capturedMessage.getRecipient());
@@ -277,6 +273,8 @@ public class LibJoynrMessageRouterTest {
         try {
             joynrMessage.setTtlMs(0);
             immutableMessage = joynrMessage.getImmutableMessage();
+            // incoming messages must have been received from cluster controller and have receivedFromGlobal set to true
+            immutableMessage.setReceivedFromGlobal(true);
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -290,6 +288,8 @@ public class LibJoynrMessageRouterTest {
         try {
             joynrMessage.setTtlMs(0);
             immutableMessage = joynrMessage.getImmutableMessage();
+            // outgoing messages were not been received from cluster controller and thus have receivedFromGlobal set to false
+            immutableMessage.setReceivedFromGlobal(false);
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -303,8 +303,7 @@ public class LibJoynrMessageRouterTest {
                                                                                 provideMessageSchedulerThreadPoolExecutor(),
                                                                                 maxParallelSends,
                                                                                 messagingStubFactory,
-                                                                                incomingMessageQueue,
-                                                                                outgoingMessageQueue,
+                                                                                messageQueue,
                                                                                 shutdownNotifier,
                                                                                 dispatcherMock);
         deferredMessageRouter.addNextHop("participant1", new WebSocketAddress(), true);
@@ -325,8 +324,7 @@ public class LibJoynrMessageRouterTest {
                                                                                 provideMessageSchedulerThreadPoolExecutor(),
                                                                                 maxParallelSends,
                                                                                 messagingStubFactory,
-                                                                                incomingMessageQueue,
-                                                                                outgoingMessageQueue,
+                                                                                messageQueue,
                                                                                 shutdownNotifier,
                                                                                 dispatcherMock);
         deferredMessageRouter.addMulticastReceiver("multicastId1",

@@ -74,11 +74,9 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     private long maxRetryCount = ConfigurableMessagingSettings.DEFAULT_ROUTING_MAX_RETRY_COUNT;
     private MessagingStubFactory messagingStubFactory;
 
-    private final MessageQueue incomingMessageQueue;
-    private final MessageQueue outgoingMessageQueue;
+    private final MessageQueue messageQueue;
 
-    private List<IncomingMessageWorker> incomingMessageWorkers;
-    private List<OutgoingMessageWorker> outgoingMessageWorkers;
+    private List<MessageWorker> messageWorkers;
 
     private static interface DeferrableRegistration {
         void register();
@@ -108,8 +106,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
                                  MessagingStubFactory messagingStubFactory,
-                                 MessageQueue incomingMessageQueue,
-                                 MessageQueue outgoingMessageQueue,
+                                 MessageQueue messageQueue,
                                  ShutdownNotifier shutdownNotifier,
                                  Dispatcher dispatcher) {
         // CHECKSTYLE:ON
@@ -117,8 +114,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         this.scheduler = scheduler;
         this.dispatcher = dispatcher;
         this.messagingStubFactory = messagingStubFactory;
-        this.incomingMessageQueue = incomingMessageQueue;
-        this.outgoingMessageQueue = outgoingMessageQueue;
+        this.messageQueue = messageQueue;
         shutdownNotifier.registerForShutdown(this);
         if (maxParallelSends < 2) {
             maxParallelSends = 2;
@@ -133,20 +129,11 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     }
 
     private void startMessageWorkerThreads(int numberOfWorkThreads) {
-        final int numberOfIncomingMessageWorkers = Math.floorDiv(numberOfWorkThreads, 2);
-        incomingMessageWorkers = new ArrayList<IncomingMessageWorker>(numberOfIncomingMessageWorkers);
-        for (int i = 0; i < numberOfIncomingMessageWorkers; i++) {
-            IncomingMessageWorker messageWorker = new IncomingMessageWorker(i);
+        messageWorkers = new ArrayList<MessageWorker>(numberOfWorkThreads);
+        for (int i = 0; i < numberOfWorkThreads; i++) {
+            MessageWorker messageWorker = new MessageWorker(i);
             scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
-            incomingMessageWorkers.add(messageWorker);
-        }
-
-        final int numberOfOutgoingMessageWorkers = numberOfWorkThreads - numberOfIncomingMessageWorkers;
-        outgoingMessageWorkers = new ArrayList<OutgoingMessageWorker>(numberOfOutgoingMessageWorkers);
-        for (int i = 0; i < numberOfOutgoingMessageWorkers; i++) {
-            OutgoingMessageWorker messageWorker = new OutgoingMessageWorker(i);
-            scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
-            outgoingMessageWorkers.add(messageWorker);
+            messageWorkers.add(messageWorker);
         }
     }
 
@@ -252,7 +239,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     public void routeIn(ImmutableMessage message) {
         checkExpiry(message);
         DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, "incoming", 0);
-        incomingMessageQueue.put(delayableMessage);
+        messageQueue.put(delayableMessage);
     }
 
     @Override
@@ -279,7 +266,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                          maxRetryCount,
                          delayableMessage.getMessage().getTrackingInfo());
         }
-        outgoingMessageQueue.put(delayableMessage);
+        messageQueue.put(delayableMessage);
     }
 
     private FailureAction createFailureAction(final DelayableImmutableMessage delayableMessage) {
@@ -360,18 +347,14 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     @Override
     public void prepareForShutdown() {
-        incomingMessageQueue.waitForQueueToDrain();
-        outgoingMessageQueue.waitForQueueToDrain();
+        messageQueue.waitForQueueToDrain();
     }
 
     @Override
     public void shutdown() {
-        CountDownLatch countDownLatch = new CountDownLatch(incomingMessageWorkers.size()
-                + outgoingMessageWorkers.size());
-        for (IncomingMessageWorker worker : incomingMessageWorkers) {
-            worker.stopWorker(countDownLatch);
-        }
-        for (OutgoingMessageWorker worker : outgoingMessageWorkers) {
+        // tell all message workers to stop
+        CountDownLatch countDownLatch = new CountDownLatch(messageWorkers.size());
+        for (MessageWorker worker : messageWorkers) {
             worker.stopWorker(countDownLatch);
         }
         try {
@@ -381,13 +364,13 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         }
     }
 
-    class IncomingMessageWorker implements Runnable {
-        private Logger logger = LoggerFactory.getLogger(IncomingMessageWorker.class);
+    class MessageWorker implements Runnable {
+        private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
         private volatile CountDownLatch countDownLatch;
         private volatile boolean stopped;
 
-        public IncomingMessageWorker(int number) {
+        public MessageWorker(int number) {
             this.number = number;
             countDownLatch = null;
             stopped = false;
@@ -398,98 +381,76 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
             stopped = true;
         }
 
-        @Override
-        public void run() {
-            Thread.currentThread().setName("joynrIncomingMessageWorker-" + number);
+        void handleOutgoingMessage(DelayableImmutableMessage delayableMessage) {
+            FailureAction failureAction = null;
 
-            while (!stopped) {
-                DelayableImmutableMessage delayableMessage = null;
+            try {
+                ImmutableMessage message = delayableMessage.getMessage();
+                logger.trace("Starting processing of outgoing message {}", message);
+                checkExpiry(message);
 
-                try {
-                    delayableMessage = incomingMessageQueue.poll(1000, TimeUnit.MILLISECONDS);
+                SuccessAction messageProcessedAction = createMessageProcessedAction(message);
+                failureAction = createFailureAction(delayableMessage);
+                logger.trace(">>>>> SEND message {}", message.getId());
 
-                    if (delayableMessage == null) {
-                        continue;
-                    }
-
-                    ImmutableMessage message = delayableMessage.getMessage();
-                    logger.trace("Starting processing of incoming message {}", message);
-                    checkExpiry(message);
-                    dispatcher.messageArrived(message);
-                } catch (InterruptedException e) {
-                    logger.trace("Message Worker interrupted. Stopping.");
-                    Thread.currentThread().interrupt();
+                IMessagingStub messagingStub = messagingStubFactory.create(parentRouterMessagingAddress);
+                messagingStub.transmit(message, messageProcessedAction, failureAction);
+            } catch (Exception error) {
+                if (delayableMessage == null) {
+                    logger.error("Error in scheduled MessageWorker thread while processing outgoing message. delayableMessage == null, continuing. Error:",
+                                 error);
                     return;
-                } catch (Exception error) {
-                    if (delayableMessage == null) {
-                        logger.error("Error in scheduled incoming message router thread. delayableMessage == null, continuing. Error:",
-                                     error);
-                    }
-                    logger.error("Error in scheduled incoming message router thread:", error);
-                    continue;
                 }
+                logger.error("Error in scheduled MessageWorker thread while processing outgoing message:", error);
+                if (failureAction == null) {
+                    failureAction = createFailureAction(delayableMessage);
+                }
+                failureAction.execute(error);
             }
-            countDownLatch.countDown();
-        }
-    }
-
-    class OutgoingMessageWorker implements Runnable {
-        private Logger logger = LoggerFactory.getLogger(OutgoingMessageWorker.class);
-        private int number;
-        private volatile CountDownLatch countDownLatch;
-        private volatile boolean stopped;
-
-        public OutgoingMessageWorker(int number) {
-            this.number = number;
-            countDownLatch = null;
-            stopped = false;
         }
 
-        void stopWorker(CountDownLatch countDownLatch) {
-            this.countDownLatch = countDownLatch;
-            stopped = true;
+        void handleIncomingMessage(DelayableImmutableMessage delayableMessage) {
+            try {
+                ImmutableMessage message = delayableMessage.getMessage();
+                logger.trace("Starting processing of incoming message {}", message);
+                checkExpiry(message);
+                dispatcher.messageArrived(message);
+            } catch (Exception error) {
+                if (delayableMessage == null) {
+                    logger.error("Error in scheduled MessageWorker thread while processing incoming message. delayableMessage == null, continuing. Error:",
+                                 error);
+                    return;
+                }
+                logger.error("Error in scheduled MessageWorker thread while processing incoming message:", error);
+            }
         }
 
         @Override
         public void run() {
-            Thread.currentThread().setName("joynrOutgoingMessageWorker-" + number);
+            Thread.currentThread().setName("joynrMessageWorker-" + number);
 
             while (!stopped) {
                 DelayableImmutableMessage delayableMessage = null;
-                FailureAction failureAction = null;
 
                 try {
-                    delayableMessage = outgoingMessageQueue.poll(1000, TimeUnit.MILLISECONDS);
-
-                    if (delayableMessage == null) {
-                        continue;
+                    delayableMessage = messageQueue.poll(1000, TimeUnit.MILLISECONDS);
+                    if (delayableMessage != null) {
+                        // Since there is no longer a MessageRouter in libJoynrRuntime
+                        // all messages are sent to / received from the ClusterController
+                        // (even if consumer and provider are using same libJoynrRuntime)
+                        // which means incoming messages all have the receivedFromGlobal
+                        // flag set since this is the case for everything received from
+                        // cluster controller.
+                        if (delayableMessage.getMessage().isReceivedFromGlobal()) {
+                            handleIncomingMessage(delayableMessage);
+                        } else {
+                            handleOutgoingMessage(delayableMessage);
+                        }
                     }
-
-                    ImmutableMessage message = delayableMessage.getMessage();
-                    logger.trace("Starting processing of outgoing message {}", message);
-                    checkExpiry(message);
-
-                    SuccessAction messageProcessedAction = createMessageProcessedAction(message);
-                    failureAction = createFailureAction(delayableMessage);
-                    logger.trace(">>>>> SEND message {}", message.getId());
-
-                    IMessagingStub messagingStub = messagingStubFactory.create(parentRouterMessagingAddress);
-                    messagingStub.transmit(message, messageProcessedAction, failureAction);
                 } catch (InterruptedException e) {
-                    logger.trace("Message Worker interrupted. Stopping.");
+                    logger.trace("MessageWorker interrupted. Stopping.");
                     Thread.currentThread().interrupt();
                     return;
-                } catch (Exception error) {
-                    if (delayableMessage == null) {
-                        logger.error("Error in scheduled outgoing message router thread. delayableMessage == null, continuing. Error:",
-                                     error);
-                        continue;
-                    }
-                    logger.error("Error in scheduled outgoing message router thread:", error);
-                    if (failureAction == null) {
-                        failureAction = createFailureAction(delayableMessage);
-                    }
-                    failureAction.execute(error);
                 }
             }
             countDownLatch.countDown();
