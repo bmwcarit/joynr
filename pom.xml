@@ -1627,6 +1627,18 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>enforce-fixed-dependencies</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<rules>
+								<dependencyConvergence/>
+							</rules>
+						</configuration>
+					</execution>
+					<execution>
 						<id>enforce-bytecode-version</id>
 						<configuration>
 							<rules>
