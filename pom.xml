@@ -1627,12 +1627,13 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>enforce-fixed-dependencies</id>
+						<id>enforce-dependency-lock</id>
 						<goals>
 							<goal>enforce</goal>
 						</goals>
 						<phase>validate</phase>
 						<configuration>
+							<skip>${skip.dependency-lock}</skip>
 							<rules>
 								<dependencyConvergence/>
 							</rules>
