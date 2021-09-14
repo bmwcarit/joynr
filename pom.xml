@@ -47,39 +47,19 @@
 	</licenses>
 
 	<modules>
-		<!--
-			ATTENTION: Order of modules matters!
-			Tools must be build first in order to have build-resources available right
-			at the beginning of the build.
-		-->
-		<module>tools</module>
-		<module>basemodel</module>
-		<module>java</module>
-		<module>cpp</module>
-		<module>examples</module>
-		<module>tests</module>
+		<!-- Lock dependency versions. Modules are included by dependency lock. -->
+		<module>dependency-lock</module>
 	</modules>
 
 	<profiles>
 		<profile>
-			<!-- Build and test javascript -->
-			<id>javascript</id>
-			<modules>
-				<module>javascript</module>
-			</modules>
-		</profile>
-		<profile>
-			<!-- Build and test Android distribution -->
 			<id>android</id>
-			<modules>
-				<module>android</module>
-			</modules>
 			<repositories>
 				<repository>
 					<id>google-maven</id>
 					<url>https://maven.google.com/</url>
 				</repository>
-			</repositories>			
+			</repositories>
 		</profile>
 		<profile>
 			<!-- see comments of profile deploy-artifacts-to-sonatype -->
@@ -430,7 +410,8 @@
 
 	<!--
 		specify dependency versions and properties here to share this information
-		with all children that use the specified dependency
+		with all children that use the specified dependency.
+		Use tools/dependency-lock/write.py to pin the dependency versions.
 	-->
 	<dependencyManagement>
 		<dependencies>
