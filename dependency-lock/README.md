@@ -33,7 +33,7 @@ The following tools are provided within this directory to support the dependency
 All tools require Python 3 and can be executed directly in Linux shells, without any arguments.
 
 ### write.py
-Rewrites [lock POM](./pom.xml) using automatic Maven dependency mediation. 
+Rewrites [lock POM](./pom.xml) using automatic Maven dependency mediation.
 Rewriting a dependency lock can always lead to different results in case new versions are available
 for dependencies not explicitly locked in the [root POM](../pom.xml). If a general transitive
 dependency upgrade is not desired, try the `update.py` instead.
