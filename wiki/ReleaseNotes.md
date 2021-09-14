@@ -2,6 +2,23 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.17.8
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Android]** Added Gradle 7.0 support for joynr-generator-gradle-plugin.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.17.7
 
 ## API-relevant Changes
