@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>cpp</artifactId>
-		<version>1.17.8-SNAPSHOT</version>
+		<version>1.17.8</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

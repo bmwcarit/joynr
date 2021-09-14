@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>1.17.8-SNAPSHOT</version>
+		<version>1.17.8</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
