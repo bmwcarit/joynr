@@ -501,10 +501,22 @@
 				<version>1.1.3</version>
 			</dependency>
 			<dependency>
+				<groupId>fish.payara.arquillian</groupId>
+				<artifactId>arquillian-payara-server-embedded</artifactId>
+				<type>jar</type>
+				<version>2.4.4</version>
+			</dependency>
+			<dependency>
 				<groupId>fish.payara.extras</groupId>
 				<artifactId>payara-embedded-all</artifactId>
 				<type>jar</type>
 				<version>5.194</version>
+			</dependency>
+			<dependency>
+				<groupId>fish.payara.extras</groupId>
+				<artifactId>payara-embedded-all</artifactId>
+				<type>jar</type>
+				<version>5.2021.6</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -618,7 +630,7 @@
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy</artifactId>
 				<type>jar</type>
-				<version>1.10.7</version>
+				<version>1.11.12</version>
 			</dependency>
 			<dependency>
 				<groupId>net.jcip</groupId>
@@ -681,6 +693,12 @@
 				<version>1.12</version>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<type>jar</type>
+				<version>3.8.1</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.derby</groupId>
 				<artifactId>derby</artifactId>
 				<type>jar</type>
@@ -714,7 +732,7 @@
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-artifact</artifactId>
 				<type>jar</type>
-				<version>2.2.1</version>
+				<version>3.6.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
@@ -724,15 +742,21 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
+				<artifactId>maven-builder-support</artifactId>
+				<type>jar</type>
+				<version>3.6.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-model</artifactId>
 				<type>jar</type>
-				<version>3.2.5</version>
+				<version>3.6.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-model-builder</artifactId>
 				<type>jar</type>
-				<version>3.2.5</version>
+				<version>3.6.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
@@ -762,25 +786,25 @@
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-repository-metadata</artifactId>
 				<type>jar</type>
-				<version>3.2.5</version>
+				<version>3.6.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-settings</artifactId>
 				<type>jar</type>
-				<version>3.2.5</version>
+				<version>3.6.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-settings-builder</artifactId>
 				<type>jar</type>
-				<version>3.2.5</version>
+				<version>3.6.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-file</artifactId>
 				<type>jar</type>
-				<version>2.6</version>
+				<version>3.3.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.wagon</groupId>
@@ -798,7 +822,7 @@
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-provider-api</artifactId>
 				<type>jar</type>
-				<version>2.6</version>
+				<version>3.3.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.bouncycastle</groupId>
@@ -820,12 +844,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.plexus</groupId>
-				<artifactId>plexus-component-annotations</artifactId>
-				<type>jar</type>
-				<version>1.5.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.codehaus.plexus</groupId>
 				<artifactId>plexus-container-default</artifactId>
 				<type>jar</type>
 				<version>1.0-alpha-9-stable-1</version>
@@ -834,19 +852,13 @@
 				<groupId>org.codehaus.plexus</groupId>
 				<artifactId>plexus-interpolation</artifactId>
 				<type>jar</type>
-				<version>1.21</version>
+				<version>1.25</version>
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.plexus</groupId>
 				<artifactId>plexus-utils</artifactId>
 				<type>jar</type>
-				<version>3.0.20</version>
-			</dependency>
-			<dependency>
-				<groupId>org.dom4j</groupId>
-				<artifactId>dom4j</artifactId>
-				<type>jar</type>
-				<version>2.1.1</version>
+				<version>3.2.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.aether</groupId>
@@ -1065,6 +1077,12 @@
 				<version>3.8.0</version>
 			</dependency>
 			<dependency>
+				<groupId>org.eclipse.sisu</groupId>
+				<artifactId>org.eclipse.sisu.inject</artifactId>
+				<type>jar</type>
+				<version>0.3.4</version>
+			</dependency>
+			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>org.eclipse.xtend.core</artifactId>
 				<type>jar</type>
@@ -1143,12 +1161,6 @@
 				<version>2.3.1</version>
 			</dependency>
 			<dependency>
-				<groupId>org.glassfish.main.extras</groupId>
-				<artifactId>glassfish-embedded-all</artifactId>
-				<type>jar</type>
-				<version>4.1.2</version>
-			</dependency>
-			<dependency>
 				<groupId>org.hamcrest</groupId>
 				<artifactId>hamcrest-core</artifactId>
 				<type>jar</type>
@@ -1164,19 +1176,19 @@
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-core</artifactId>
 				<type>jar</type>
-				<version>5.4.12.Final</version>
+				<version>5.5.7.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-entitymanager</artifactId>
 				<type>jar</type>
-				<version>5.4.12.Final</version>
+				<version>5.5.7.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hibernate.common</groupId>
 				<artifactId>hibernate-commons-annotations</artifactId>
 				<type>jar</type>
-				<version>5.1.0.Final</version>
+				<version>5.1.2.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.javassist</groupId>
@@ -1188,49 +1200,55 @@
 				<groupId>org.jboss</groupId>
 				<artifactId>jandex</artifactId>
 				<type>jar</type>
-				<version>2.1.1.Final</version>
+				<version>2.2.3.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.config</groupId>
 				<artifactId>arquillian-config-api</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.config</groupId>
 				<artifactId>arquillian-config-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian.config</groupId>
+				<artifactId>arquillian-config-spi</artifactId>
+				<type>jar</type>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-spi</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-test-api</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-test-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-test-spi</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
@@ -1242,19 +1260,19 @@
 				<groupId>org.jboss.arquillian.core</groupId>
 				<artifactId>arquillian-core-api</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.core</groupId>
 				<artifactId>arquillian-core-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.core</groupId>
 				<artifactId>arquillian-core-spi</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.extension</groupId>
@@ -1284,67 +1302,67 @@
 				<groupId>org.jboss.arquillian.junit</groupId>
 				<artifactId>arquillian-junit-container</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.junit</groupId>
 				<artifactId>arquillian-junit-core</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.protocol</groupId>
 				<artifactId>arquillian-protocol-servlet</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.test</groupId>
 				<artifactId>arquillian-test-api</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.test</groupId>
 				<artifactId>arquillian-test-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.test</groupId>
 				<artifactId>arquillian-test-spi</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.testenricher</groupId>
 				<artifactId>arquillian-testenricher-cdi</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.testenricher</groupId>
 				<artifactId>arquillian-testenricher-ejb</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.testenricher</groupId>
 				<artifactId>arquillian-testenricher-initialcontext</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.testenricher</groupId>
 				<artifactId>arquillian-testenricher-resource</artifactId>
 				<type>jar</type>
-				<version>1.1.15.Final</version>
+				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.logging</groupId>
 				<artifactId>jboss-logging</artifactId>
 				<type>jar</type>
-				<version>3.3.2.Final</version>
+				<version>3.4.2.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.shrinkwrap</groupId>
@@ -1380,13 +1398,13 @@
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
 				<artifactId>shrinkwrap-resolver-api</artifactId>
 				<type>jar</type>
-				<version>2.2.6</version>
+				<version>3.1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
 				<artifactId>shrinkwrap-resolver-api-maven</artifactId>
 				<type>jar</type>
-				<version>2.2.6</version>
+				<version>3.1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
@@ -1398,13 +1416,13 @@
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
 				<artifactId>shrinkwrap-resolver-spi</artifactId>
 				<type>jar</type>
-				<version>2.2.6</version>
+				<version>3.1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.shrinkwrap.resolver</groupId>
 				<artifactId>shrinkwrap-resolver-spi-maven</artifactId>
 				<type>jar</type>
-				<version>2.2.6</version>
+				<version>3.1.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.spec.javax.transaction</groupId>
@@ -1476,7 +1494,7 @@
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
 				<type>jar</type>
-				<version>1.7.2</version>
+				<version>1.12.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jvnet.staxex</groupId>
@@ -1554,31 +1572,31 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<type>jar</type>
-				<version>1.7.25</version>
+				<version>1.7.28</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-jdk14</artifactId>
 				<type>jar</type>
-				<version>1.7.25</version>
+				<version>1.7.28</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-log4j12</artifactId>
 				<type>jar</type>
-				<version>1.7.25</version>
+				<version>1.7.28</version>
 			</dependency>
 			<dependency>
 				<groupId>org.sonatype.plexus</groupId>
 				<artifactId>plexus-cipher</artifactId>
 				<type>jar</type>
-				<version>1.4</version>
+				<version>1.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.sonatype.plexus</groupId>
 				<artifactId>plexus-sec-dispatcher</artifactId>
 				<type>jar</type>
-				<version>1.3</version>
+				<version>1.4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
