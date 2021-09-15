@@ -64,6 +64,7 @@ then
 fi
 
 ILT_DIR=$JOYNR_SOURCE_DIR/tests/inter-language-test
+GCD_PATH=$JOYNR_SOURCE_DIR/java/backend-services/capabilities-directory/target/deploy
 
 if [ -z "$ILT_BUILD_DIR" ]
 then
@@ -118,14 +119,14 @@ function prechecks {
 	if [ ! -f "$ILT_BUILD_DIR/bin/cluster-controller" ]
 	then
 		log 'cluster-controller for ILT not found in $ILT_BUILD_DIR/bin/cluster-controller, trying fallback'
-        if [ -f "$ILT_BUILD_DIR/../joynr/bin/cluster-controller" ]
-        then
-            ln -s "$ILT_BUILD_DIR/../joynr/bin/cluster-controller" "$ILT_BUILD_DIR/bin/cluster-controller"
-        else
-            echo "No CC found in $ILT_BUILD_DIR/../joynr/bin/cluster-controller"
-            log 'cluster-controller could also not be found in fallback location'
-		    exit 1
-        fi
+		if [ -f "$ILT_BUILD_DIR/../joynr/bin/cluster-controller" ]
+		then
+			ln -s "$ILT_BUILD_DIR/../joynr/bin/cluster-controller" "$ILT_BUILD_DIR/bin/cluster-controller"
+		else
+			echo "No CC found in $ILT_BUILD_DIR/../joynr/bin/cluster-controller"
+			log 'cluster-controller could also not be found in fallback location'
+			exit 1
+		fi
 	fi
 
 	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-ws" ]
@@ -152,81 +153,65 @@ function prechecks {
 		exit 1
 	fi
 
-	if [ ! -f "$ILT_DIR/target/discovery-jee.war" ]
+	if [ ! -f "$GCD_PATH/capabilities-directory-jar-with-dependencies.jar" ]
 	then
-		log 'discovery-jee.war not found in $ILT_DIR/target/discovery-jee.war'
+		log 'capabilities-directory-jar-with-dependencies.jar not found in $GCD_PATH/capabilities-directory-jar-with-dependencies.jar'
 		exit 1
 	fi
 
 }
 
-PAYARA_LOG=$ILT_RESULTS_DIR/payara.log
-function prepare_payara {
-	asadmin --user admin start-domain
-	asadmin --user admin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes=512000000
-	asadmin --user admin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.file="${PAYARA_LOG}"
-	asadmin --user admin stop-domain
-}
-
-function start_payara {
-	DISCOVERY_WAR_FILE=$ILT_DIR/target/discovery-jee.war
-
-    echo "Starting payara"
-
-	# When starting the database there is no need to add the option:
-	# --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true"
-	# It is already added in inter-language-test/docker/joynr-backend-jee/start-me-up.sh
-	# Otherwise CI reports an error:
-	# Repeats not allowed for option: jvmoptions
-	asadmin --user admin start-database
-	asadmin --user admin start-domain
-
-	asadmin --user admin deploy --force=true $DISCOVERY_WAR_FILE
-
-	SUCCESS=$?
-	if [ "$SUCCESS" != 0 ]
-	then
-		log 'Payara deployment FAILED.'
-		PAYARA_FAILED=1
-	else
-		echo "payara started"
-	fi
-}
-
-function stop_payara {
-    echo "stopping payara"
-	for app in `asadmin list-applications | egrep '(discovery)' | cut -d" " -f1`;
+function wait_for_gcd {
+	try_count=0
+	max_retries=30
+	while [ -z "$(echo '\n' | curl -v telnet://localhost:9998 2>&1 | grep 'OK')" ]
 	do
-		echo "undeploy $app";
-		asadmin --user admin undeploy --droptables=true $app;
+		echo "GCD not started yet ..."
+		try_count=$((try_count+1))
+		if [ $try_count -gt $max_retries ]; then
+			echo "GCD failed to start in time."
+			kill -9 $GCD_PID
+			return 1
+		fi
+		echo "try_count ${try_count}"
+		sleep 2
 	done
-
-	asadmin --user admin stop-domain
-	asadmin --user admin stop-database
-
-	# save payara log for a particular provider
-	mv $PAYARA_LOG $ILT_RESULTS_DIR/payara-$1.log
+	echo "GCD started successfully."
+	return 0
 }
 
-function start_services {
-	cd $ILT_DIR
-	rm -f joynr.properties
-	rm -f joynr_participantIds.properties
-	log '# starting services'
 
-	echo "Starting mosquitto"
-	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitto-$1.log 2>&1 &
-	MOSQUITTO_PID=$!
-	echo "Mosquitto started with PID $MOSQUITTO_PID"
-	sleep 2
+GCD_LOG=$ILT_RESULTS_DIR/gcd.log
 
-	start_payara
+function startGcd {
+	log 'start GCD'
+	java -Dlog4j.configuration="file:${GCD_PATH}/log4j.properties" -jar ${GCD_PATH}/capabilities-directory-jar-with-dependencies.jar 2>&1 > $GCD_LOG &
+	GCD_PID=$!
+	wait_for_gcd
+	return $?
 }
 
-function stop_services {
-	log '# stopping services'
+function stopGcd
+{
 
-	stop_payara $1
+	echo 'stop GCD'
+	# The app will shutdown if a network connection is attempted on localhost:9999
+	(
+		set +e
+		# curl returns error because the server closes the connection. We do not need the ret val.
+		timeout 1 curl telnet://127.0.0.1:9999
+		exit 0
+	)
+	wait $GCD_PID
+	# save GCD log for a particular provider
+	mv $GCD_LOG $ILT_RESULTS_DIR/gcd-$1.log
+}
+
+function stop_services
+{
+	log '# stop services'
+
+	stopGcd $1
 
 	if [ -n "$MOSQUITTO_PID" ]
 	then
@@ -235,6 +220,38 @@ function stop_services {
 		killProcessHierarchy $MOSQUITTO_PID
 		wait $MOSQUITTO_PID
 		MOSQUITTO_PID=""
+	fi
+
+	if [ -f /data/src/docker/joynr-base/scripts/stop-db.sh ]; then
+		/data/src/docker/joynr-base/scripts/stop-db.sh
+	fi
+
+}
+
+function start_services {
+	cd $ILT_DIR
+	rm -f joynr.properties
+	rm -f joynr_participantIds.properties
+
+	log '# start services'
+
+	if [ -f /data/src/docker/joynr-base/scripts/start-db.sh ]; then
+		/data/src/docker/joynr-base/scripts/start-db.sh
+	fi
+
+	echo "Starting mosquitto"
+	mosquitto -c /etc/mosquitto/mosquitto.conf > $ILT_RESULTS_DIR/mosquitto-$1.log 2>&1 &
+	MOSQUITTO_PID=$!
+	echo "Mosquitto started with PID $MOSQUITTO_PID"
+	sleep 2
+
+	startGcd
+	SUCCESS=$?
+	if [ "$SUCCESS" != "0" ]; then
+		echo '# Start GCD failed with exit code:' $SUCCESS
+
+		stop_services
+		exit $SUCCESS
 	fi
 }
 
@@ -598,9 +615,6 @@ npm run build
 # provider is changed, since otherwise the discovery service
 # continues to return data for the already stopped provider
 # since it currently assumes that it will be restarted.
-
-# prepare payara
-prepare_payara
 
 # run checks with Java provider cc
 clean_up
