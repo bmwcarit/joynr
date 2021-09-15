@@ -442,58 +442,85 @@ function stopAnyProvider {
     fi
 }
 
-function startPayara {
-    DISCOVERY_WAR_FILE=$PERFORMANCETESTS_SOURCE_DIR/target/discovery-jee.war
-
-    echo "Starting payara"
-
-    OLD_VALUE=$joynr_messaging_mqtt_separateconnections
-    export joynr_messaging_mqtt_separateconnections="$MQTT_SEPARATE_CONNECTIONS"
-
-    asadmin start-database
-    asadmin start-domain
-
-    asadmin deploy --force=true $DISCOVERY_WAR_FILE
-
-    if [ -n "$OLD_VALUE" ]
-    then
-        export joynr_messaging_mqtt_separateconnections=$OLD_VALUE
-    else
-        unset joynr_messaging_mqtt_separateconnections
-    fi
-
-    echo "payara started"
-}
-
-function stopPayara {
-    echo "stopping payara"
-    for app in `asadmin list-applications | egrep '(discovery|access)' | cut -d" " -f1`;
+function wait_for_gcd {
+    try_count=0
+    max_retries=30
+    while [ -z "$(echo '\n' | curl -v telnet://localhost:9998 2>&1 | grep 'OK')" ]
     do
-        echo "undeploy $app";
-        asadmin undeploy --droptables=true $app;
+        echo "GCD not started yet ..."
+        try_count=$((try_count+1))
+        if [ $try_count -gt $max_retries ]; then
+            echo "GCD failed to start in time."
+            kill -9 $GCD_PID
+            return 1
+        fi
+        echo "try_count ${try_count}"
+        sleep 2
     done
-
-    asadmin stop-domain
-    asadmin stop-database
+    echo "GCD started successfully."
+    return 0
 }
 
-function startServices {
-    startMosquitto
-    echo '# starting services'
-    startPayara
-    sleep 5
+JOYNR_SOURCE_DIR=`git rev-parse --show-toplevel`
+GCD_PATH=$JOYNR_SOURCE_DIR/java/backend-services/capabilities-directory/target/deploy
+
+GCD_LOG=$PERFORMANCETESTS_RESULTS_DIR/gcd.log
+
+function startGcd {
+    echo 'start GCD'
+    java -Dlog4j.configuration="file:${GCD_PATH}/log4j.properties" -jar ${GCD_PATH}/capabilities-directory-jar-with-dependencies.jar 2>&1 > $GCD_LOG &
+    GCD_PID=$!
+    wait_for_gcd
+    return $?
+}
+
+function stopGcd
+{
+    echo 'stop GCD'
+    # The app will shutdown if a network connection is attempted on localhost:9999
+    (
+        set +e
+        # curl returns error because the server closes the connection. We do not need the ret val.
+        timeout 1 curl telnet://127.0.0.1:9999
+        exit 0
+    )
+    wait $GCD_PID
+    # save GCD log for a particular provider
+    mv $GCD_LOG $PERFORMANCETESTS_RESULTS_DIR/gcd-$1.log
 }
 
 function stopServices {
     echo '# stopping services'
 
-    stopPayara
+    stopGcd
 
-    if [ -n "$MOSQUITTO_PID" ]
-    then
+    if [ -n "$MOSQUITTO_PID" ]; then
         echo "Stopping mosquitto with PID $MOSQUITTO_PID"
         stopMosquitto
     fi
+
+    if [ -f /data/src/docker/joynr-base/scripts/stop-db.sh ]; then
+        /data/src/docker/joynr-base/scripts/stop-db.sh
+    fi
+}
+
+function startServices {
+    startMosquitto
+    echo '# starting services'
+    if [ -f /data/src/docker/joynr-base/scripts/start-db.sh ]; then
+        /data/src/docker/joynr-base/scripts/start-db.sh
+    fi
+    startGcd
+    SUCCESS=$?
+    if [ "$SUCCESS" != "0" ]; then
+        echo '########################################################'
+        echo '# Start GCD failed with exit code:' $SUCCESS
+        echo '########################################################'
+
+        stopServices
+        exit $SUCCESS
+    fi
+    sleep 5
 }
 
 function echoUsage {
