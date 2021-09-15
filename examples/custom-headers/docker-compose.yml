@@ -8,18 +8,34 @@ services:
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
+  joynr-gcd-db:
+    # build: run "cd ../../docker/joynr-gcd-db && ./build_docker_image.sh"
+    image: "joynr-gcd-db:latest"
+    container_name: "joynr-gcd-db"
+
   joynrbackend:
-    image: "joynr-backend-jee:latest"
+    # build: run "cd ../../docker/joynr-gcd && ./build_docker_image.sh"
+    image: "joynr-gcd:latest"
     container_name: joynrbackend
+    depends_on:
+      - "joynr-gcd-db"
+      - "hivemq"
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker:1883
+      - joynr_gcd_db_host=joynr-gcd-db
 
   jee-provider:
     image: "custom-headers-jee-provider:latest"
     container_name: jee-provider
+    depends_on:
+      - "joynrbackend"
     ports:
       - "8080:8080"
 
   jee-consumer:
     image: "custom-headers-jee-consumer:latest"
     container_name: jee-consumer
+    depends_on:
+      - "joynrbackend"
     ports:
       - "8081:8080"

@@ -33,8 +33,8 @@ from the root to build all projects. Once the build is finished, use the `docker
 in the sub-projects `custom-headers-jee-provider` and `custom-headers-jee-consumer` in order to
 create the necessary docker images.
 
-The `joynr-backend-jee` image can be built from
-`${joynr_project_root}/tests/joynr-hivemq-shared-subscriptions/joynr-backend-jee/`.
+The `joynr-gcd` and `joynr-gcd-db` images can be built with
+`${joynr_project_root}/docker/build_backend.sh`.
 
 ## Running
 
