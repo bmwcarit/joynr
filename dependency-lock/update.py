@@ -145,6 +145,7 @@ class ProjectDependency(object):
                     ProjectDependency.MVN_EXEC, mvnCall.stdout, mvnCall.stderr))
 
             self.__cmd = [ProjectDependency.MVN_EXEC, '-f', pomFile,
+                          '-pl', '"-io.joynr.examples:radio-app"',
                           '-P', ','.join(ProjectDependency.ADDITIONAL_PROFILES)]
         except Exception as e:
             self.__log.error(
