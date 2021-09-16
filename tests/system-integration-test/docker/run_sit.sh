@@ -12,7 +12,8 @@ then
   exit 1
 fi
 
-echo "wait 20 minutes, then log the result of the docker containers"
+echo "Wait 20 minutes, then log the result of the docker containers"
+echo "Started: $(date)"
 sleep 1200
 
 docker-compose logs > sit-apps.log

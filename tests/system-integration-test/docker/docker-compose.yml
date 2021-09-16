@@ -3,43 +3,55 @@ version: '2.0'
 services:
 
   hivemq-1:
-    image: 'hivemq/hivemq4'
+    image: "hivemq/hivemq4"
     container_name: mqttbroker-1
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
   hivemq-2:
-    image: 'hivemq/hivemq4'
+    image: "hivemq/hivemq4"
     container_name: mqttbroker-2
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
-  joynrbackend-1:
-    image: "joynr-backend-jee-1:latest"
-    container_name: joynrbackend-1
+  joynr-gcd-db:
+    image: "joynr-gcd-db:latest"
+    container_name: "joynr-gcd-db"
+
+  joynr-gcd-1:
+    image: "joynr-gcd-db:latest"
+    container_name: joynr-gcd-1
     depends_on:
       - "hivemq-1"
       - "hivemq-2"
-      - "joynrbackend-db"
+      - "joynr-gcd-db"
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker-1:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      - joynr_gcd_gbid=joynrdefaultgbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid,othergbid
+      - joynr_messaging_gbids=joynrdefaultgbid
 
-  joynrbackend-2:
-    image: "joynr-backend-jee-2:latest"
-    container_name: joynrbackend-2
+  joynr-gcd-2:
+    image: "joynr-gcd-db:latest"
+    container_name: joynr-gcd-2
     depends_on:
       - "hivemq-1"
       - "hivemq-2"
-      - "joynrbackend-db"
-
-  joynrbackend-db:
-    image: "joynr-backend-jee-db:latest"
-    container_name: joynrbackend-db
+      - "joynr-gcd-db"
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker-2:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      - joynr_gcd_gbid=othergbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid,othergbid
+      - joynr_messaging_gbids=othergbid
 
   jeeapp-1:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app-1
     depends_on:
-      - "joynrbackend-1"
-      - "joynrbackend-2"
+      - "joynr-gcd-1"
+      - "joynr-gcd-2"
     environment:
       - SIT_DOMAIN=onlyBackend1
       - SIT_GBIDS=joynrdefaultgbid
@@ -51,8 +63,8 @@ services:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app-2
     depends_on:
-      - "joynrbackend-1"
-      - "joynrbackend-2"
+      - "joynr-gcd-1"
+      - "joynr-gcd-2"
     environment:
       - SIT_DOMAIN=onlyBackend2
       - SIT_GBIDS=othergbid
@@ -64,8 +76,8 @@ services:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app-3
     depends_on:
-      - "joynrbackend-1"
-      - "joynrbackend-2"
+      - "joynr-gcd-1"
+      - "joynr-gcd-2"
     environment:
       - SIT_DOMAIN=bothBackends
       - SIT_GBIDS=joynrdefaultgbid,othergbid
@@ -78,8 +90,8 @@ services:
     container_name: sit-onboard-apps
     tty: true
     depends_on:
-      - "joynrbackend-1"
-      - "joynrbackend-2"
+      - "joynr-gcd-1"
+      - "joynr-gcd-2"
 
   sit-jee-stateless-consumer-node-1:
     image: "sit-jee-stateless-consumer:latest"
@@ -88,8 +100,8 @@ services:
       - RECEIVER_ID=stateless-cons-1
       - SIT_DOMAIN=bothBackends
     depends_on:
-      - "joynrbackend-1"
-      - "joynrbackend-2"
+      - "joynr-gcd-1"
+      - "joynr-gcd-2"
 
   sit-jee-stateless-consumer-node-2:
     image: "sit-jee-stateless-consumer:latest"
@@ -98,15 +110,15 @@ services:
       - RECEIVER_ID=stateless-cons-2
       - SIT_DOMAIN=bothBackends
     depends_on:
-      - "joynrbackend-1"
-      - "joynrbackend-2"
+      - "joynr-gcd-1"
+      - "joynr-gcd-2"
 
   sit-controller:
     image: "sit-controller:latest"
     container_name: sit-controller
     depends_on:
-      - "joynrbackend-1"
-      - "joynrbackend-2"
+      - "joynr-gcd-1"
+      - "joynr-gcd-2"
     environment:
       - SIT_DOMAINS=onlyBackend1,onlyBackend2,bothBackends
       - SIT_DOMAINS_TO_BE_SENT=onlyBackend1|bothBackends,onlyBackend2|bothBackends,onlyBackend1|onlyBackend2|bothBackends
