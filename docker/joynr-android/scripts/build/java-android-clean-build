@@ -1,5 +1,6 @@
 #/bin/bash
 
+source /data/src/docker/joynr-base/scripts/start-and-stop-gcd-service.sh
 cd /data/src
 
 # fail on first error
@@ -52,12 +53,12 @@ keytool -importkeystore -deststorepass $KEYSTORE_PASSWORD -destkeypass $KEYSTORE
 keytool -list -keystore clientkeystore.jks -storepass $KEYSTORE_PASSWORD
 
 echo '####################################################'
-echo '# prepare services'
+echo '# start tests'
 echo '####################################################'
 
 cd /data/src
 
-# 1st run; just build without tests to provide WAR files for payara
+# 1st run; just build without tests to provide JAR file for GCD
 mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests \
@@ -82,8 +83,7 @@ MOSQUITTO_PID=$!
 
 function stopservices
 {
-    echo "stop payara"
-    /data/src/docker/joynr-base/scripts/stop-payara.sh
+    stopGcd
 
     echo "stop mosquitto"
     kill -TERM $MOSQUITTO_PID
@@ -91,15 +91,12 @@ function stopservices
     /data/src/docker/joynr-base/scripts/stop-db.sh
 }
 
-# Use the default discovery-directory-jee with embedded db. Its name is e.g. discovery-directory-jee-1.10.0-SNAPSHOT.war
-DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-[0-9].*war")
-
-set +e # stop services even if there are failing tests or the deployment fails
-/data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
+set +e # stop services even if there are failing tests or startGcd fails
+startGcd
 SUCCESS=$?
 if [ "$SUCCESS" != "0" ]; then
     echo '########################################################'
-    echo '# Start Payara failed with exit code:' $SUCCESS
+    echo '# Start GCD failed with exit code:' $SUCCESS
     echo '########################################################'
 
     stopservices
@@ -110,12 +107,11 @@ echo '####################################################'
 echo '# start tests'
 echo '####################################################'
 
-# Assume that mosquitto and payara have sufficient time to startup before reaching
+# Assume that mosquitto and GCD have sufficient time to startup before reaching
 # any test code that requires it;
-# also assume that it is safe to remove and recreate WAR files once payara got
-# started and WAR files have been deployed
+# also assume that it is safe to remove and recreate JAR file once GCD got started
 
-# 2nd run; now including test execution which requires mosquitto / payara and
+# 2nd run; now including test execution which requires mosquitto / GCD
 # generate site report
 mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
@@ -136,4 +132,3 @@ echo '####################################################'
 stopservices
 
 exit $EXIT_CODE
-
