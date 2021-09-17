@@ -3,7 +3,7 @@ version: '3.3'
 services:
 
   mqttbroker:
-    image: 'joynr-hivemq'
+    image: "joynr-hivemq"
     container_name: mqttbroker
     depends_on:
       - "tc"
@@ -12,19 +12,27 @@ services:
     ports:
       - "8080:8080"
 
-  infra-db:
-    image: "joynr-infra-db:latest"
-    container_name: infra-db
+  joynr-gcd-db:
+    image: "joynr-gcd-db:latest"
+    container_name: "joynr-gcd-db"
     depends_on:
       - "tc"
 
-  infra:
-    image: "joynr-infra:latest"
-    container_name: joynr-infra
+  joynr-gcd:
+    image: "joynr-gcd:latest"
+    container_name: "joynr-gcd"
     depends_on:
       - "tc"
       - "mqttbroker"
-      - "infra-db"
+      - "joynr-gcd-db"
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      - joynr_gcd_gbid=joynrdefaultgbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid,othergbid
+      - joynr_messaging_gbids=joynrdefaultgbid
+    command: |
+     sh -c ""
 
   jee-provider:
     image: "joynr-jee-provider:latest"
@@ -32,7 +40,7 @@ services:
     depends_on:
       - "tc"
       - "mqttbroker"
-      - "infra"
+      - "joynr-gcd"
     environment:
       - JOYNR_LOG_LEVEL=ERROR
       - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
@@ -70,19 +78,19 @@ services:
       - /var/docker-tc:/var/docker-tc
     network_mode: host
 
-  # jee consumer container
-  # jeeapp-1:
-  #   image: "joynr-pt-jee-app:latest"
-  #   container_name: joynr-pt-jee-app-1
-  #   depends_on:
-  #     - "mqttbroker-1"
-  #     - "joynrbackend-1"
-  #   environment:
-  #     - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
-  #     - PT_CONSUMER_DOMAIN=pt-domain.jee.consumer
-  #     - PT_GBIDS=joynrdefaultgbid
-  #     - PT_BROKERURIS=tcp://mqttbroker-1:1883
-  #     - PT_CONNECTION_TIMEOUTS=60
-  #     - PT_KEEP_ALIVE_TIMERS=60
-  #     - PT_NUMBER_OF_CALLS=5
-  #     - PT_NUMBER_OF_REPETITIONS=
+# jee consumer container
+# jeeapp-1:
+#   image: "joynr-pt-jee-app:latest"
+#   container_name: joynr-pt-jee-app-1
+#   depends_on:
+#     - "mqttbroker-1"
+#     - "joynrbackend-1"
+#   environment:
+#     - PT_PROVIDER_DOMAIN=pt-domain.jee.provider
+#     - PT_CONSUMER_DOMAIN=pt-domain.jee.consumer
+#     - PT_GBIDS=joynrdefaultgbid
+#     - PT_BROKERURIS=tcp://mqttbroker-1:1883
+#     - PT_CONNECTION_TIMEOUTS=60
+#     - PT_KEEP_ALIVE_TIMERS=60
+#     - PT_NUMBER_OF_CALLS=5
+#     - PT_NUMBER_OF_REPETITIONS=
