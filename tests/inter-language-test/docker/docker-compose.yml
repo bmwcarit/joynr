@@ -3,14 +3,32 @@ version: '2.0'
 services:
 
   hivemq:
-    image: 'hivemq/hivemq4:${HIVEMQ_IMAGE_VERSION}'
+    image: "hivemq/hivemq4:${HIVEMQ_IMAGE_VERSION}"
     container_name: mqttbroker
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
+  joynr-gcd-db:
+    image: "joynr-gcd-db"
+    container_name: "joynr-gcd-db"
+
   joynrbackend:
-    image: "joynr-backend-jee:${JOYNR_BACKEND_IMAGE_VERSION}"
+    image: "joynr-gcd-db:latest"
     container_name: joynrbackend
+    depends_on:
+      - "hivemq"
+      - "joynr-gcd-db"
+    environment:
+      # environment for joynr 1.9.0 onwards
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker:1883
+      - joynr_messaging_gcd_url=tcp://mqttbroker:1883
+      # legacy environment for joynr < 1.9.0
+      - joynr_messaging_mqtt_brokeruri=tcp://mqttbroker:1883
+      - joynr_messaging_discoverydirectoryurl=tcp://mqttbroker:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      - joynr_gcd_gbid=joynrdefaultgbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid,othergbid
+      - joynr_messaging_gbids=joynrdefaultgbid
 
   ilt-onboard-apps-1:
     image: "ilt-onboard-apps:${ILT_ONBOARD_APPS_IMAGE_VERSION_1}"
