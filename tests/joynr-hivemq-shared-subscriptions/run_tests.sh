@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# build joynr backend images
+cd ../../docker/ && ./build_backend.sh
+cd -
+
 echo "killing potentially existing containers, e.g. due to a previous failing build"
 docker-compose stop
 docker-compose rm -f
