@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source /data/src/docker/joynr-base/scripts/start-and-stop-gcd-service.sh
 export CHROME_BIN=/usr/bin/chromium-browser
 source /data/src/docker/joynr-base/scripts/global.sh
 
@@ -38,13 +39,13 @@ then
     echo '####################################################'
     echo '# start services'
     echo '####################################################'
+
+    /data/src/docker/joynr-base/scripts/start-db.sh
+
     mosquitto -c /data/src/docker/joynr-base/mosquitto.conf &
     MOSQUITTO_PID=$!
 
-    # Use the default discovery-directory-jee with embedded db. Its name is e.g. discovery-directory-jee-1.10.0-SNAPSHOT.war
-    DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-[0-9].*war")
-
-    /data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
+    startGcd
 fi
 
 (
@@ -66,9 +67,9 @@ then
     echo '# stop services'
     echo '####################################################'
 
-    /data/src/docker/joynr-base/scripts/stop-payara.sh
-
+    stopGcd
     kill -TERM $MOSQUITTO_PID
     wait $MOSQUITTO_PID
+    /data/src/docker/joynr-base/scripts/stop-db.sh
 fi
 

@@ -18,7 +18,9 @@ RUN dnf update -y \
     && pip install gcovr
 
 RUN chmod -R a+rw /opt \
-    && chown -R 1000 /usr/local
+    && chown -R 1000 /usr/local \
+    && chown root /usr/local/bin/gosu \
+    && chmod 4755 /usr/local/bin/gosu
 
 ###################################################
 # install clang 3.5 for formatting
