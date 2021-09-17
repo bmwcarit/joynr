@@ -1,5 +1,6 @@
 #/bin/bash
 
+source /data/src/docker/joynr-base/scripts/start-and-stop-gcd-service.sh
 cd /data/src
 
 # fail on first error
@@ -35,7 +36,7 @@ echo '####################################################'
 
 cd /data/src
 
-# 1st run; just build without tests to provide WAR files for payara
+# 1st run; just build without tests to provide JAR file for GCD
 mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
 -DskipTests=true \
 -Dmaven.test.failure.ignore=true \
@@ -45,20 +46,42 @@ mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
 echo '####################################################'
 echo '# start services'
 echo '####################################################'
+
+/data/src/docker/joynr-base/scripts/start-db.sh
+
 mosquitto -c /data/src/docker/joynr-base/mosquitto.conf &
 MOSQUITTO_PID=$!
 
-# Use the default discovery-directory-jee with embedded db. Its name is e.g. discovery-directory-jee-1.10.0-SNAPSHOT.war
-DISCOVERY_DIRECTORY_WAR_FILE=$(find /data/src/java/backend-services/discovery-directory-jee/target -iregex ".*discovery-directory-jee-[0-9].*war")
+function stopservices
+{
+    stopGcd
 
-/data/src/docker/joynr-base/scripts/start-payara.sh -w $DISCOVERY_DIRECTORY_WAR_FILE
+    echo "stop mosquitto"
+    kill -TERM $MOSQUITTO_PID
+    wait $MOSQUITTO_PID
+    /data/src/docker/joynr-base/scripts/stop-db.sh
+}
 
-# Assume that mosquitto and payara have sufficient time to startup before reaching
+startGcd
+SUCCESS=$?
+if [ "$SUCCESS" != "0" ]; then
+    echo '########################################################'
+    echo '# Start GCD failed with exit code:' $SUCCESS
+    echo '########################################################'
+
+    stopservices
+    exit $SUCCESS
+fi
+
+echo '####################################################'
+echo '# start tests'
+echo '####################################################'
+
+# Assume that mosquitto and GCD have sufficient time to startup before reaching
 # any test code that requires it;
-# also assume that it is safe to remove and recreate WAR files once payara got
-# started and WAR files have been deployed
+# also assume that it is safe to remove and recreate JAR file once GCD got started
 
-# 2nd run; now including test execution which requires mosquitto / payara
+# 2nd run; now including test execution which requires mosquitto / GCD
 mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
 -DskipTests=$SKIPTESTS \
 -Dmaven.test.failure.ignore=true \
@@ -69,8 +92,6 @@ echo '####################################################'
 echo '# stop services'
 echo '####################################################'
 
-/data/src/docker/joynr-base/scripts/stop-payara.sh
+stopservices
 
-kill -TERM $MOSQUITTO_PID
-wait $MOSQUITTO_PID
 exit 0
