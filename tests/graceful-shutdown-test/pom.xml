@@ -37,7 +37,6 @@
 		<module>graceful-shutdown-test-consumer</module>
 		<module>graceful-shutdown-test-provider</module>
 		<module>graceful-shutdown-test-second-level-provider</module>
-		<module>graceful-shutdown-test-backend-services</module>
 	</modules>
 
 	<properties>

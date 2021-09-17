@@ -8,11 +8,22 @@ services:
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
-  joynrbackend:
-    image: "graceful-shutdown-test-backend-services:latest"
-    container_name: joynrbackend
+  joynr-gcd-db:
+    image: "joynr-gcd-db:latest"
+    container_name: "joynr-gcd-db"
+
+  joynr-gcd:
+    image: "joynr-gcd-db:latest"
+    container_name: joynr-gcd
+    depends_on:
+      - "hivemq"
+      - "joynr-gcd-db"
     environment:
       - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      - joynr_gcd_gbid=joynrdefaultgbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid,othergbid
+      - joynr_messaging_gbids=joynrdefaultgbid
 
   secondlevel:
     image: "graceful-shutdown-test-second-level-provider:latest"
