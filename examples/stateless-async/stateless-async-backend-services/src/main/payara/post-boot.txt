@@ -1,7 +1,0 @@
-create-jdbc-connection-pool --datasourceclassname org.h2.jdbcx.JdbcDataSource --restype javax.sql.XADataSource --property url="jdbc\:h2\:mem\:joynr" JoynrPool
-
-create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS
-
-start-database
-
-create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor

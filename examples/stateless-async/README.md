@@ -7,8 +7,6 @@ It consists of the following sub-projects:
 
 * `stateless-async-api`
 	* Defines the application's service API using a FIDL file
-* `stateless-async-backend-services`
-	* Used to create a containerized application with the joynr discovery and access control services
 * `stateless-async-car-sim`
 	* The provider implementation of the service, simulates a car
 	* This runs as a single node and is not clustered
@@ -55,11 +53,11 @@ system required to run an end-to-end test.
 
 First, startup the infrastructure components:
 
-	$ docker-compose up -d hivemq postgresql ; docker-compose logs -f
+	$ docker-compose up -d hivemq joynr-gcd-db ; docker-compose logs -f
 
 Wait until no more log entries are written, then start up the joynr backend services:
 
-	$ docker-compose up -d joynrbackend ; docker-compose logs -f joynrbackend
+	$ docker-compose up -d joynr-gcd ; docker-compose logs -f joynr-gcd
 
 Again, wait until it's fully started, then fire up the car simulator:
 

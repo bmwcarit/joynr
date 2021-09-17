@@ -3,28 +3,33 @@ version: '3'
 services:
 
   hivemq:
-    image: 'hivemq/hivemq4'
+    image: "hivemq/hivemq4"
     container_name: mqttbroker
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
     ports:
       - "1883:1883"
 
-  postgresql:
-    image: 'postgres:9-alpine'
+  joynr-gcd-db:
+    image: "joynr-gcd-db"
+    container_name: "joynr-gcd-db"
     environment:
       - POSTGRES_USER=statelessasync
       - POSTGRES_PASSWORD=statelessasync
       - POSTGRES_DB=statelessasync
-    ports:
-      - "5432:5432"
-    container_name: postgresql
 
-  joynrbackend:
-    image: "stateless-async-backend-services:latest"
-    container_name: joynrbackend
+  joynr-gcd:
+    image: "joynr-gcd-db:latest"
+    container_name: joynr-gcd
+    depends_on:
+      - "hivemq"
+      - "joynr-gcd-db"
     environment:
       - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      - joynr_gcd_gbid=joynrdefaultgbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid
+      - joynr_messaging_gbids=joynrdefaultgbid
 
   carsim:
     image: "stateless-async-car-sim:latest"

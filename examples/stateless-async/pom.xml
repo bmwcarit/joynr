@@ -38,7 +38,6 @@
 		<module>stateless-async-jee-car-sim</module>
 		<module>stateless-async-consumer</module>
 		<module>stateless-async-jee-consumer</module>
-		<module>stateless-async-backend-services</module>
 	</modules>
 
 	<properties>
