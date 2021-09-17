@@ -3,6 +3,18 @@
 # fail on first error
 set -e
 
+# check java version
+if [ -z "$(java -version 2>&1 | grep 'openjdk version \"1\.8\.')" ]
+then
+    echo "ERROR wrong java version: $(java -version 2>&1)"
+    exit 1
+fi
+if [ -z "$(javac -version 2>&1 | grep 'javac 1\.8\.')" ]
+then
+    echo "ERROR wrong javac version: $(java -version 2>&1)"
+    exit 1
+fi
+
 # build and test generator
 cd /data/src
 
