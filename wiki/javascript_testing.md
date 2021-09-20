@@ -28,16 +28,10 @@ cd <JOYNR_REPO>/javascript/libjoynr-js
 mosquitto -c src/test/resources/mosquitto-test.conf
 ```
 
-The joynr mqtt infrastructure also has to be started by deploying discovery-directory-jee
-to a Java EE application server (for the configuration of the
-application server see [Infrastructure](infrastructure.md) and [JEE Developer Guide](jee.md)
-or the [Radio Tutorial](Tutorial.md)).
-
 Start joynr mqtt infrastructure:
 
-```
-asadmin deploy <JOYNR_REPO>/java/backend-services/discovery-directory-jee/target/discovery-directory-jee-<JOYNR_VERSION>.war
-```
+Please refer to the
+[starting joynr backend instructions](../docker/joynr-base/scripts/README.md)
 
 Then run:
 

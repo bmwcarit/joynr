@@ -171,8 +171,8 @@ After this, you can start the database:
 `bin/asadmin start-database`
 
 Next, fire up the joynr backend services:
-- When using primaryglobaltransport=mqtt, deploy the required war files:
-    - `bin/asadmin deploy <joynr home>/tests/inter-language-test-jee/target/discovery-jee.war`
+- When using primaryglobaltransport=mqtt, please refer to:
+ [starting joynr backend instructions](../docker/joynr-base/scripts/README.md).
 - When using primaryglobaltransport=longpolling, change to the `inter-language-test-jee`
 directory and execute `mvn -N -Pbackend-services-http jetty:run`.
 

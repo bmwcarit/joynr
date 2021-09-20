@@ -3,7 +3,6 @@
 Deploy the following projects as wars to a local payara instance, being sure to follow the
 [deployment instructions](../../java/backend-services/discovery-directory-jee/README.md):
 
-* discovery-directory-jee
 * radio-jee-provider
 * radio-jee-consumer
 

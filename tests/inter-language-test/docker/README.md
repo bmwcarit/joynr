@@ -15,7 +15,7 @@ joynr versions against each other.
 ### Docker images
 The test environment uses 4 docker containers:
 - `mqttbroker` container providing transport between different cluster controllers; using HiveMQ MQTT broker
-- `joynrbackend` container providing JDS backend via Payara based JEE implementation
+- `joynrbackend` container providing Joynr GCD backend via Postgresql db and Java implementation
 - `ilt-onboard-apps` container providing full joynr runtime environment, scripts and C++, Java, JS implementations (where applicable) of
  - cluster controller
  - provider
@@ -25,9 +25,8 @@ The `joynrbackend` and `ilt-onboard-apps` docker images are tagged so that the t
 
 ### Build scripts
 
-Build scripts are provided to create the needed inter-language-test specific docker images,
-see `<ILT_DIR>/docker/onboard/build_docker_image.sh` and
-`<ILT_DIR>/docker/joynr-backend-jee/build_docker_image.sh`.
+Build scripts are provided to create the needed inter-language-test specific docker image,
+see `<ILT_DIR>/docker/onboard/build_docker_image.sh`.
 
 The general joynr docker images are a prerequisite for this, they have to be built first
 by executing
@@ -43,7 +42,13 @@ proxy contacted by cntlm requires a user and password credential which can be
 stored in encrypted form within the cntlm configuration, so there is no need to
 expose this information to docker.
 
-The inter-language-test specific docker images can then be built as follows:
+The joynr gcd backend need to be build first.
+```bash
+cd ../../../docker/ && ./build_backend.sh
+cd -
+```
+
+The inter-language-test specific docker image can then be built as follows:
 
 ```bash
 $ cd <JOYNR>
@@ -51,8 +56,6 @@ $ mkdir -p build
 $ chmod 777 build
 $ cd <ILT_DIR>/docker/onboard
 $ ./build_docker_image.sh --docker-run-flags "-e DEV_UID=$(id -u)" <other params>
-$ cd <ILT_DIR>/docker/joynr-backend-jee
-$ ./build_docker_image.sh
 ```
 
 ### Run scripts

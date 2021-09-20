@@ -460,7 +460,7 @@ You will also need to install an MQTT broker, e.g. [Mosquitto](http://mosquitto.
 ### Starting the Backend
 
 Please refer to the
-[deployment instructions](../java/backend-services/discovery-directory-jee/README.md)
+[starting joynr backend instructions](../docker/joynr-base/scripts/README.md)
 
 ### Java
 

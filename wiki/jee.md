@@ -1021,9 +1021,8 @@ Then start up the Payara server by changing to the Payara install directory and 
 `bin/asadmin start-domain`. Follow the instructions above for configuring the required
 managed executor service and databse.
 
-Next, fire up the joynr backend service:
-- Deploy the following projects as wars to a local payara instance, being sure to follow the
-[deployment instructions](../java/backend-services/discovery-directory-jee/README.md)
+Next, fire up the joynr backend service as illustrated in:
+[starting joynr backend instructions](../docker/joynr-base/scripts/README.md)
 
 Finally, deploy the provider and consumer applications:
 

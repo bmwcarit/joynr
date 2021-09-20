@@ -20,8 +20,9 @@ With all those images, the images for the standalone test can be built.
 
 ## Building standalone test images
 Run the `build_all.sh` script to build the necessary images for standalone test which is located in
-the current working directory. This will build these images: `joynr-hivemq` , `joynr-infra`, `joynr-infra-db`,
-`jee-provider`, `joynr-consumer`. All those images should be listed when running `docker images`.
+the current working directory. This will build the `joynr-gcd-db` and `joynr-gcd` images. Please see the `JOYNR_HOME/docker/build_backend.sh` for more info. The `build_all.sh` script will also build
+these images : `joynr-hivemq` , `joynr-jee-provider`,
+`joynr-consumer`. All those images should be listed when running `docker images`.
 
 ## Parameters
 ### Applications
