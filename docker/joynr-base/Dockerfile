@@ -3,7 +3,7 @@ FROM fedora:30
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2021-09-08-15-10
+ENV REFRESHED_AT 2021-09-20-08-00
 
 ###################################################
 # create data directories and volumes
@@ -98,6 +98,17 @@ RUN dnf update -y \
     libcxx-devel \
     && dnf groupinstall -y 'Development Tools' \
     && dnf clean all
+
+###################################################
+# configure Java 11 as default
+# otherwise we would have to remove several
+# packages depending on java8 in order to be able
+# to remove java8 packages
+###################################################
+RUN alternatives --set java /usr/lib/jvm/java-11-openjdk*.x86_64/bin/java \
+    && alternatives --set javac /usr/lib/jvm/java-11-openjdk*.x86_64/bin/javac \
+    && alternatives --set jre_openjdk /usr/lib/jvm/java-11-openjdk*.x86_64 \
+    && alternatives --set java_sdk_openjdk /usr/lib/jvm/java-11-openjdk*.x86_64
 
 ###################################################
 # setup extra certs
