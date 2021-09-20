@@ -18,7 +18,7 @@ then
 fi
 
 set -e
-SDK_MANAGER=${ANDROID_HOME}/tools/bin/sdkmanager
+SDK_MANAGER=${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager
 PROXY_ARGS=""
 if [ -n "$PROXY_HOST" ]
 then

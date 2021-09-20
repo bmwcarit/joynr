@@ -16,7 +16,7 @@ RUN dnf install -y \
 COPY scripts/build/* /data/scripts/build/
 RUN chmod 777 -R /data/scripts/build/
 
-ENV ANDROID_SDK_FILENAME sdk-tools-linux-4333796.zip
+ENV ANDROID_SDK_FILENAME commandlinetools-linux-7583922_latest.zip
 ENV ANDROID_SDK_URL https://dl.google.com/android/repository/${ANDROID_SDK_FILENAME}
 ENV ANDROID_API_LEVEL android-28
 ENV ANDROID_BUILD_TOOLS_VERSION 29.0.3
@@ -26,8 +26,12 @@ RUN cd /opt \
     && mkdir -p ${ANDROID_HOME} \
     && cd ${ANDROID_HOME} \
     && wget -q ${ANDROID_SDK_URL} \
-    && unzip -q ${ANDROID_SDK_FILENAME} \
-    && rm ${ANDROID_SDK_FILENAME}
+    && unzip ${ANDROID_SDK_FILENAME} \
+    && rm ${ANDROID_SDK_FILENAME} \
+    && mv cmdline-tools tmp-cmdline-tools \
+    && mkdir -p ${ANDROID_HOME}/cmdline-tools/latest \
+    && mv tmp-cmdline-tools/* ${ANDROID_HOME}/cmdline-tools/latest \
+    && rm -fr tmp-cmdline-tools
 
 RUN chown -R root:root ${ANDROID_HOME} \
     && chmod -R 755 ${ANDROID_HOME}
@@ -36,4 +40,3 @@ ENV REFRESHED_ANDROID_AT 2020-07-08
 RUN /data/scripts/build/setup-android.sh
 
 RUN date -R > /data/timestamp
-
