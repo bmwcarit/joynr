@@ -26,7 +26,7 @@ function call_consumer {
 asadmin --interactive=false start-domain --debug --verbose &
 PID=$!
 sleep 40
-asadmin --interactive=false --user admin --passwordfile=/opt/payara41/pwdfile deploy /pt-jee-app.war
+asadmin --interactive=false --user admin --passwordfile=/opt/payara/passwordFile deploy /pt-jee-app.war
 call_consumer
 wait $PID
 

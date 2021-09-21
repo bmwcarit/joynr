@@ -2,11 +2,11 @@
 
 # we cannot use the --verbose anymore since this would block
 #asadmin start-domain --verbose
-asadmin --user admin --passwordfile=/opt/payara41/pwdfile --interactive=false start-domain --debug --verbose &
+asadmin --user admin --passwordfile=/opt/payara/passwordFile --interactive=false start-domain --debug --verbose &
 PID=$!
 # sleep a few seconds to give the broker to bootup
 sleep 40
-asadmin --user admin --passwordfile=/opt/payara41/pwdfile deploy /discovery-directory-pt-jee.war
+asadmin --user admin --passwordfile=/opt/payara/passwordFile deploy /discovery-directory-pt-jee.war
 
 # should we have a tail -f here?
 # where are the logs in this payara installation?
