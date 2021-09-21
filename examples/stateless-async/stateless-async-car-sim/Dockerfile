@@ -1,6 +1,7 @@
-FROM openjdk:8-jdk-alpine
+FROM alpine:3.13.6
 
 LABEL com.jfrog.artifactory.retention.maxCount="25"
+RUN apk add --no-cache openjdk11
 
 COPY target/stateless-async-car-sim-*.jar /app.jar
 
