@@ -510,12 +510,6 @@
 				<groupId>fish.payara.extras</groupId>
 				<artifactId>payara-embedded-all</artifactId>
 				<type>jar</type>
-				<version>5.194</version>
-			</dependency>
-			<dependency>
-				<groupId>fish.payara.extras</groupId>
-				<artifactId>payara-embedded-all</artifactId>
-				<type>jar</type>
 				<version>5.2021.6</version>
 			</dependency>
 			<dependency>
