@@ -988,41 +988,8 @@ In order to build the project you have to built joynr by executing
 `mvn install` from the root of the directory where you checked out joynr to. Next change
 to the `radio-jee` directory and find the .war-archives in the corresponding `target` subfolders.
 
-The following describes running the example on [Payara 4.1](http://www.payara.fish). First,
-install the application server and you will also need to install an MQTT broker, e.g.
-[Mosquitto](http://mosquitto.org).
-
-You need to configure Payara with a ManagedScheduledExecutorService, see
-[JEE Container configuration](#jee-container-configuration).
-
-You also need a connection pool for the database which shall be used by the backend services
-to persist data.
-For this example, we'll create a database on the JavaDB (based on Derby) database which is
-installed as part of Payara:
-```
-bin/asadmin create-jdbc-connection-pool \
-    --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
-    --restype javax.sql.XADataSource \
-    --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
-```
-Next, create a datasource resource pointing to that database connection. Here's an
-example of what that would look like when using the connection pool created above:
-```
-`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS`
-```
-
-After this, you can start the database:
-
-`bin/asadmin start-database`
-
-Start the MQTT broker, and make sure it's accepting traffic on `1883`.
-
-Then start up the Payara server by changing to the Payara install directory and executing
-`bin/asadmin start-domain`. Follow the instructions above for configuring the required
-managed executor service and databse.
-
-Next, fire up the joynr backend service as illustrated in:
-[starting joynr backend instructions](../docker/joynr-base/scripts/README.md)
+First, fire up the joynr backend service as illustrated in:
+[starting joynr backend instructions](../wiki/StartingJoynrBackend.md)
 
 Finally, deploy the provider and consumer applications:
 

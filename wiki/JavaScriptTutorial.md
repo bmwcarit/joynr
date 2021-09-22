@@ -57,7 +57,7 @@ and a local standalone cluster-controller need to be started first.
 ### Starting the Backend
 
 Please refer to the
-[starting joynr backend instructions](../docker/joynr-base/scripts/README.md)
+[starting joynr backend instructions](../wiki/StartingJoynrBackend.md)
 
 ### Starting the Cluster controller
 
