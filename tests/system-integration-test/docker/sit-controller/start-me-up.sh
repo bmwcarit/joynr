@@ -36,13 +36,13 @@ function call_consumer {
         echo "SIT RESULT error: response from SIT controller is empty"
     fi
     echo "$SIT_RESULT"
-    asadmin --user admin --passwordfile=/opt/payara41/pwdfile stop-domain
+    asadmin --user admin --passwordFile=/opt/payara/passwordFile stop-domain
     exit $EXIT_CODE
 }
 
-asadmin --user admin --passwordfile=/opt/payara41/pwdfile --interactive=false start-domain --debug --verbose &
+asadmin --user admin --passwordFile=/opt/payara/passwordFile --interactive=false start-domain --debug --verbose &
 PID=$!
 sleep 40
-asadmin --interactive=false --user admin --passwordfile=/opt/payara41/pwdfile deploy /sit-controller.war
+asadmin --interactive=false --user admin --passwordFile=/opt/payara/passwordFile deploy /sit-controller.war
 call_consumer
 wait $PID

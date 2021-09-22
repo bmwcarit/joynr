@@ -1,19 +1,16 @@
-FROM payaradocker/payaraserver:4.1.1.161.1
+FROM payara/server-full:5.2021.7-jdk11
 
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
 COPY sit-jee-stateless-consumer.war /sit-jee-stateless-consumer.war
 COPY start-me-up.sh /start-me-up.sh
 
-ENV PATH ${PATH}:/opt/payara41/glassfish/bin
-RUN echo 'AS_ADMIN_PASSWORD=glassfish\n\
-EOF\n' \
->> /opt/payara41/pwdfile
-RUN asadmin --user admin --passwordfile=/opt/payara41/pwdfile start-domain && \
-    asadmin --user admin --passwordfile=/opt/payara41/pwdfile create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor && \
-    asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-levels io.joynr=FINER && \
-    asadmin --user admin --passwordfile=/opt/payara41/pwdfile set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.multiLineMode=false && \
-    asadmin --user admin --passwordfile=/opt/payara41/pwdfile stop-domain || \
+ENV PATH ${PATH}:/opt/payara/appserver/bin
+RUN asadmin --user admin --passwordFile=/opt/payara/passwordFile start-domain && \
+    asadmin --user admin --passwordFile=/opt/payara/passwordFile create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor && \
+    asadmin --user admin --passwordFile=/opt/payara/passwordFile set-log-levels io.joynr=FINER && \
+    asadmin --user admin --passwordFile=/opt/payara/passwordFile set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.multiLineMode=false && \
+    asadmin --user admin --passwordFile=/opt/payara/passwordFile stop-domain || \
     true
 
 ENTRYPOINT ["/start-me-up.sh"]
