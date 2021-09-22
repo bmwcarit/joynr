@@ -64,27 +64,6 @@
 					<artifactId>maven-dependency-plugin</artifactId>
 					<executions>
 						<execution>
-							<id>copy-backend-services-jee</id>
-							<phase>none</phase>
-							<goals>
-								<goal>copy</goal>
-							</goals>
-							<configuration>
-								<artifactItems>
-									<artifactItem>
-										<groupId>io.joynr.java.backend-services</groupId>
-										<artifactId>discovery-directory-jee</artifactId>
-										<version>${project.version}</version>
-										<type>war</type>
-										<outputDirectory>${project.build.directory}</outputDirectory>
-										<destFileName>discovery-jee.war</destFileName>
-									</artifactItem>
-								</artifactItems>
-								<overWriteReleases>false</overWriteReleases>
-								<overWriteSnapshots>true</overWriteSnapshots>
-							</configuration>
-						</execution>
-						<execution>
 							<id>analyze</id>
 							<goals>
 								<goal>analyze-only</goal>

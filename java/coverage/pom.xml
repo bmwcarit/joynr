@@ -116,13 +116,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		-->
-		<!-- ignore WAR Files
-		<dependency>
-			<groupId>io.joynr.java.backend-services</groupId>
-			<artifactId>discovery-directory-jee</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>jeeintegration</artifactId>

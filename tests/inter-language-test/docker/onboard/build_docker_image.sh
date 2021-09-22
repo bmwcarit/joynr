@@ -320,8 +320,4 @@ echo "environment:" `env`
 echo "docker build -t ilt-onboard-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR"
 docker build -t ilt-onboard-apps:latest --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} --build-arg no_proxy=${no_proxy} $DOCKER_BUILDDIR
 
-# GAO
-#echo "### end build_docker_image.sh for joynr-backend-jee ###"
-#rm -rf $DOCKER_BUILDDIR
-
 echo "### end build_docker_image.sh for onboard ###"

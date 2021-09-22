@@ -1,7 +1,7 @@
 # Setup
 
 Deploy the following projects as wars to a local payara instance, being sure to follow the
-[deployment instructions](../../java/backend-services/discovery-directory-jee/README.md):
+[deployment instructions](../../wiki/jee.md):
 
 * radio-jee-provider
 * radio-jee-consumer

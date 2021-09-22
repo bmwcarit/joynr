@@ -32,7 +32,6 @@
 	</parent>
 
 	<modules>
-		<module>discovery-directory-jee</module>
 		<module>capabilities-directory</module>
 	</modules>
 

@@ -316,7 +316,7 @@ echo "environment:" `env`
 echo "docker build -t sit-onboard-apps:latest $DOCKER_BUILDDIR"
 docker build -t sit-onboard-apps:latest $DOCKER_BUILDDIR
 
-echo "### end build_docker_image.sh for joynr-backend-jee ###"
+echo "### end build_docker_image.sh for joynr-gcd ###"
 rm -rf $DOCKER_BUILDDIR
 
 echo "### end build_docker_image.sh for onboard ###"

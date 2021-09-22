@@ -86,7 +86,6 @@ You should now see the appropriate Docker Images:
     backpressure-test-monitor-app                latest   9863d9cf8cf6   6 days ago     1.27GB
     backpressure-test-clustered-provider-small   latest   cd240788b955   6 days ago     1.27GB
     backpressure-test-clustered-provider-large   latest   99dabb10e9d6   6 days ago     1.27GB
-    joynr-backend-jee                            latest   25f3b1d1b1c6   6 days ago     1.35GB
     joynr-gcd                                    latest   7948363be5d6   15 hours ago   261MB
     joynr-gcd-db                                 latest   8a2e8fa2c8cc   15 hours ago   192MB
     hivemq/hivemq4                               latest   ce5b6a31edf1   4 weeks ago    438MB
