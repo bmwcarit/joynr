@@ -39,7 +39,20 @@ RUN dnf update -y \
 	wget \
 	procps \
 	java-1.8.0-openjdk-headless \
+	java-11-openjdk \
+	java-11-openjdk-devel \
 	&& dnf clean all
+
+###################################################
+# configure Java 11 as default
+# otherwise we would have to remove several
+# packages depending on java8 in order to be able
+# to remove java8 packages
+###################################################
+RUN alternatives --set java /usr/lib/jvm/java-11-openjdk*.x86_64/bin/java \
+	&& alternatives --set javac /usr/lib/jvm/java-11-openjdk*.x86_64/bin/javac \
+	&& alternatives --set jre_openjdk /usr/lib/jvm/java-11-openjdk*.x86_64 \
+	&& alternatives --set java_sdk_openjdk /usr/lib/jvm/java-11-openjdk*.x86_64
 
 ###################################################
 # setup extra certs
