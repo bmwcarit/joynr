@@ -3,13 +3,13 @@ version: '2.0'
 services:
 
   hivemq-1:
-    image: "hivemq/hivemq4"
+    image: "hivemq/hivemq-ce:2021.2"
     container_name: mqttbroker-1
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
 
   hivemq-2:
-    image: "hivemq/hivemq4"
+    image: "hivemq/hivemq-ce:2021.2"
     container_name: mqttbroker-2
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true

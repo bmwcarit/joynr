@@ -3,7 +3,7 @@ version: '2.0'
 services:
 
   hivemq:
-    image: "hivemq/hivemq4:${HIVEMQ_IMAGE_VERSION}"
+    image: "hivemq/hivemq-ce:2021.2:${HIVEMQ_IMAGE_VERSION}"
     container_name: mqttbroker
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true

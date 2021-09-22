@@ -10,7 +10,7 @@ services:
     container_name: 'joynr-gcd-db'
 
   mqttbroker-1:
-    image: 'hivemq/hivemq4'
+    image: 'hivemq/hivemq-ce:2021.2'
     ports:
       - "1883:1883"
     container_name: 'mqttbroker-1'
