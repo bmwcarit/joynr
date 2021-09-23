@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.mqtt.hivemq.client;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -33,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -76,6 +78,7 @@ import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
+import joynr.Message;
 
 public class HivemqMqttClientTest {
 
@@ -166,6 +169,74 @@ public class HivemqMqttClientTest {
             mqtt5UserPropertiesBuilder.add(entry.getKey(), entry.getValue());
         }
         return mqtt5UserPropertiesBuilder.build();
+    }
+
+    @Test
+    public void publishMessage_do_not_publish_empty_mqtt5_user_property() {
+        final String prefixedCustomHeaderKey1 = "c-header1";
+        final String prefixedCustomHeaderKey2 = "c-header2";
+        final String prefixedCustomHeaderKey3 = "c-header3";
+        final String prefixedCustomHeaderKey4 = "";
+        final String customHeaderValue1 = "value1";
+        final String customHeaderValue2 = "value2";
+        final String customHeaderValue3 = "";
+        final String customHeaderValue4 = "value4";
+
+        Map<String, String> localPrefixedCustomHeaders = new HashMap<>();
+
+        localPrefixedCustomHeaders.put(prefixedCustomHeaderKey1, customHeaderValue1);
+        localPrefixedCustomHeaders.put(prefixedCustomHeaderKey2, customHeaderValue2);
+        localPrefixedCustomHeaders.put(prefixedCustomHeaderKey3, customHeaderValue3);
+        localPrefixedCustomHeaders.put(prefixedCustomHeaderKey4, customHeaderValue4);
+
+        Mqtt5UserProperties mqtt5UserProperties = getMqtt5UserProperties(localPrefixedCustomHeaders);
+        Mqtt5Publish expectedPublish = Mqtt5Publish.builder()
+                                                   .topic(testTopic)
+                                                   .qos(MqttQos.AT_LEAST_ONCE)
+                                                   .payload(testPayload)
+                                                   .messageExpiryInterval(testExpiryIntervalSec)
+                                                   .userProperties(mqtt5UserProperties)
+                                                   .build();
+        MqttQos1Result mockResult = new MqttQos1Result((MqttPublish) expectedPublish, null, null);
+        doReturn(MqttClientState.CONNECTED).when(mockClientConfig).getState();
+
+        // The entries which have an empty key or value will be filtered out and will not be sent to the Broker
+        client.publishMessage(testTopic,
+                              testPayload,
+                              localPrefixedCustomHeaders,
+                              MqttQos.AT_LEAST_ONCE.getCode(),
+                              testExpiryIntervalSec,
+                              mockSuccessAction,
+                              mockFailureAction);
+
+        verify(mockConnectionStatusMetrics, times(0)).increaseSentMessages();
+        verify(mockSuccessAction, times(0)).execute();
+
+        ArgumentCaptor<Mqtt5Publish> mqtt5PublishCaptor = ArgumentCaptor.forClass(Mqtt5Publish.class);
+        verify(mockAsyncClient, times(1)).publish(mqtt5PublishCaptor.capture());
+
+        // extract prefixed custom header out of the captured mqtt5Publish
+        Mqtt5UserProperties mqtt5UserProps = mqtt5PublishCaptor.getValue().getUserProperties();
+        List<? extends Mqtt5UserProperty> mqtt5UserPropertiesList = mqtt5UserProps.asList();
+
+        Map<String, String> capturedPrefixedCustomHeaders = new HashMap<String, String>();
+        for (Mqtt5UserProperty entry : mqtt5UserPropertiesList) {
+            if (entry.getName().toString().startsWith(Message.CUSTOM_HEADER_PREFIX)) {
+                capturedPrefixedCustomHeaders.put(entry.getName().toString(), entry.getValue().toString());
+            }
+        }
+
+        Map<String, String> expectedPrefixedCustomHeaders = new HashMap<>();
+        expectedPrefixedCustomHeaders.put(prefixedCustomHeaderKey1, customHeaderValue1);
+        expectedPrefixedCustomHeaders.put(prefixedCustomHeaderKey2, customHeaderValue2);
+
+        assertTrue(capturedPrefixedCustomHeaders.equals(expectedPrefixedCustomHeaders));
+
+        publishFuture.complete(mockResult);
+
+        verify(mockSuccessAction, times(1)).execute();
+        verify(mockConnectionStatusMetrics, times(1)).increaseSentMessages();
+        verify(mockFailureAction, times(0)).execute(any(Throwable.class));
     }
 
     @Test

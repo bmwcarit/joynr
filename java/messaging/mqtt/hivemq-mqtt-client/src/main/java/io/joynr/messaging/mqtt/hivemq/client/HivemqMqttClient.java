@@ -288,6 +288,15 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
         Mqtt5UserPropertiesBuilder mqtt5UserPropertiesBuilder = Mqtt5UserProperties.builder();
         for (Map.Entry<String, String> entry : prefixedCustomHeaders.entrySet()) {
+            if (entry.getKey().isEmpty() || entry.getValue().isEmpty()) {
+                logger.trace("{}: Did not add MQTT empty user property {} / {}",
+                             clientInformation,
+                             entry.getKey(),
+                             entry.getValue());
+                // Skip entries with empty key or value for similar behavior to joynr C++
+                // where this is required as a workaround.
+                continue;
+            }
             mqtt5UserPropertiesBuilder.add(entry.getKey(), entry.getValue());
         }
         Mqtt5UserProperties mqtt5UserProperties = mqtt5UserPropertiesBuilder.build();
