@@ -83,14 +83,20 @@ public class ResourceContentProvider {
         } else {
             logger.trace("File {} doesn't exist on filesystem, attempting to read from classpath.",
                          provisionedCapabilitiesJsonFilename);
-            try (InputStream resourceAsStream = StaticCapabilitiesProvisioning.class.getClassLoader()
-                                                                                    .getResourceAsStream(provisionedCapabilitiesJsonFilename)) {
+            InputStream resourceAsStream = null;
+            try {
+                resourceAsStream = StaticCapabilitiesProvisioning.class.getClassLoader()
+                                                                       .getResourceAsStream(provisionedCapabilitiesJsonFilename);
                 if (resourceAsStream != null) {
                     return readFromStream(resourceAsStream);
                 }
+                return null;
+            } finally {
+                if (resourceAsStream != null) {
+                    resourceAsStream.close();
+                }
             }
         }
-        return null;
     }
 
     private String readFromUri(URI uri) throws IOException {
