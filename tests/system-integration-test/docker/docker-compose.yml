@@ -19,7 +19,7 @@ services:
     container_name: "joynr-gcd-db"
 
   joynr-gcd-1:
-    image: "joynr-gcd-db:latest"
+    image: "joynr-gcd:latest"
     container_name: joynr-gcd-1
     depends_on:
       - "hivemq-1"
@@ -33,7 +33,7 @@ services:
       - joynr_messaging_gbids=joynrdefaultgbid
 
   joynr-gcd-2:
-    image: "joynr-gcd-db:latest"
+    image: "joynr-gcd:latest"
     container_name: joynr-gcd-2
     depends_on:
       - "hivemq-1"
