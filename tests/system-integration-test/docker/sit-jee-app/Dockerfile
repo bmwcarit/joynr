@@ -1,6 +1,13 @@
 FROM payara/server-full:5.2021.7-jdk11
 
+USER root
+
 LABEL com.jfrog.artifactory.retention.maxCount="25"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl
+
+USER payara
 
 COPY sit-jee-app.war /sit-jee-app.war
 COPY start-me-up.sh /start-me-up.sh
