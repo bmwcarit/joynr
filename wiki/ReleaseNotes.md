@@ -12,7 +12,9 @@ the versioning scheme [here](JoynrVersioning.md).
   See the [Java](/wiki/java.md) and [JEE](/wiki/jee.md) documentation for more details.
 
 ## Other Changes
-None.
+* **[Java, JEE]** The JEE based joynr JDS demo implementation has been replaced by a pure Java variant.
+  This is now more easily available through a docker-concerto.
+  See the [starting joynr backend instructions](StartingJoynrBackend.md) for more details.
 
 ## Configuration Property Changes
 None.
