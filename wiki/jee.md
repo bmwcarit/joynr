@@ -989,7 +989,7 @@ In order to build the project you have to built joynr by executing
 to the `radio-jee` directory and find the .war-archives in the corresponding `target` subfolders.
 
 First, fire up the joynr backend service as illustrated in:
-[starting joynr backend instructions](../wiki/StartingJoynrBackend.md)
+[starting joynr backend instructions](../wiki/infrastructure.md)
 
 Finally, deploy the provider and consumer applications:
 

@@ -125,16 +125,17 @@ Quality of Service objects allow the application developer to tailor discovery, 
 The Qos objects are described in more detail in the Developer Guides separately for each programming language.
 
 
-## Runtime Environment
+## Runtime Environment / Infrastructure
 joynr requires the following components to run:
 
 ### MQTT Broker
 The default configuration communicates via MQTT and needs a MQTT broker (e.g.
-[Mosquitto](http://mosquitto.org)) listening on port 1883.
+[Mosquitto](http://mosquitto.org)) listening on port 1883.  
+See [Infrastructure](infrastructure.md).
 
 ### Global Capabilities (Discovery) Directory (GCD)
 Centralized directory to discover providers for a given domain and interface.
-The discovery directory is using MQTT communication.
+The discovery directory is using MQTT communication.  
 See [Infrastructure](infrastructure.md).
 
 

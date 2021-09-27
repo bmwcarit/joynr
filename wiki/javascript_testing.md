@@ -31,7 +31,7 @@ mosquitto -c src/test/resources/mosquitto-test.conf
 Start joynr mqtt infrastructure:
 
 Please refer to the
-[starting joynr backend instructions](../wiki/StartingJoynrBackend.md)
+[starting joynr backend instructions](../wiki/infrastructure.md)
 
 Then run:
 
