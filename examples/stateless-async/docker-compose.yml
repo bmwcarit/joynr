@@ -5,22 +5,25 @@ services:
   hivemq:
     image: "hivemq/hivemq-ce:2021.2"
     container_name: mqttbroker
+    networks:
+      - statelessAsyncNetwork
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
     ports:
       - "1883:1883"
 
   joynr-gcd-db:
+    # build: run "cd ../../docker/joynr-gcd-db && ./build_docker_image.sh"
     image: "joynr-gcd-db"
     container_name: "joynr-gcd-db"
-    environment:
-      - POSTGRES_USER=statelessasync
-      - POSTGRES_PASSWORD=statelessasync
-      - POSTGRES_DB=statelessasync
+    networks:
+      - statelessAsyncNetwork
 
   joynr-gcd:
     image: "joynr-gcd:latest"
     container_name: joynr-gcd
+    networks:
+      - statelessAsyncNetwork
     depends_on:
       - "hivemq"
       - "joynr-gcd-db"
@@ -31,32 +34,58 @@ services:
       - joynr_gcd_valid_gbids=joynrdefaultgbid
       - joynr_messaging_gbids=joynrdefaultgbid
 
+  postgresql:
+    image: 'postgres:9-alpine'
+    container_name: postgresql
+    networks:
+      - statelessAsyncNetwork
+    environment:
+      - POSTGRES_USER=statelessasync
+      - POSTGRES_PASSWORD=statelessasync
+      - POSTGRES_DB=statelessasync
+
   carsim:
     image: "stateless-async-car-sim:latest"
     container_name: carsim
+    networks:
+      - statelessAsyncNetwork
 
   jee-carsim:
     image: "stateless-async-jee-car-sim:latest"
     container_name: jee-carsim
+    networks:
+      - statelessAsyncNetwork
 
   jee-consumer-1:
     image: "stateless-async-jee-consumer:latest"
     container_name: jee-consumer-1
+    networks:
+      - statelessAsyncNetwork
     ports:
       - "8081:8080"
 
   jee-consumer-2:
     image: "stateless-async-jee-consumer:latest"
     container_name: jee-consumer-2
+    networks:
+      - statelessAsyncNetwork
     ports:
       - "8082:8080"
 
   jee-consumer-3:
     image: "stateless-async-jee-consumer:latest"
     container_name: jee-consumer-3
+    networks:
+      - statelessAsyncNetwork
     ports:
       - "8083:8080"
 
   java-consumer:
     image: "stateless-async-consumer:latest"
     container_name: java-consumer
+    networks:
+      - statelessAsyncNetwork
+
+networks:
+  statelessAsyncNetwork:
+    driver: bridge

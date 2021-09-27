@@ -41,7 +41,7 @@ public class Bootstrap {
     public static final void main(String... args) {
         logger.info("Starting car simulator ...");
         Properties joynrProperties = new Properties();
-        joynrProperties.put("joynr.messaging.mqtt.brokerUris", "tcp://mqttbroker:1883");
+        joynrProperties.put("joynr.messaging.mqtt.brokeruris", "tcp://mqttbroker:1883");
         joynrProperties.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "car-sim-joynr.properties");
         joynrProperties.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "stateless_async_car_sim_local_domain");
