@@ -151,7 +151,7 @@ struct PerformanceTest
         std::cerr << "RequestPerSec:\t\t" << requestPerSec << std::endl;
 
         const std::string csvFile = "/home/joynr/build/results_cont_"+containerId+".csv";
-        std::cerr << "Writting results to: " << csvFile << "\n";
+        std::cerr << "Writing results to: " << csvFile << "\n";
         PerformanceTest::writeDataToFile(csvFile,
                     containerId,
                     repetition,
