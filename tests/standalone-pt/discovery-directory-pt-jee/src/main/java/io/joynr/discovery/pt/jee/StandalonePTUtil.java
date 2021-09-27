@@ -72,7 +72,7 @@ public class StandalonePTUtil {
                 headerWriter.newLine(); //Add new line afterwards
                 headerWriter.close();
             } else {
-                logger.debug("File already exists. Writting data to: {}", csvFile);
+                logger.debug("File already exists. Writing data to: {}", csvFile);
             }
         } catch (IOException e) {
             logger.error("An error occurred while creating csv file.");
