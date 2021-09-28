@@ -80,7 +80,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private final boolean isReceiver;
     private final boolean isSender;
     private final String clientInformation;
-    private volatile boolean shuttingDown;
+    private AtomicBoolean shuttingDown = new AtomicBoolean(false);
     private IMqttMessagingSkeleton messagingSkeleton;
     private ConnectionStatusMetricsImpl connectionStatusMetrics;
 
@@ -112,7 +112,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
         clientInformation = createClientInformationString(gbid);
         this.connectionStatusMetrics = connectionStatusMetrics;
         this.publishesDisposable = null;
-        shuttingDown = false;
     }
 
     private void registerPublishCallback() {
@@ -165,7 +164,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public synchronized void start() {
-        shuttingDown = false;
+        shuttingDown.set(false);
         logger.info("{}: Initializing HiveMQ MQTT client for address {}.",
                     clientInformation,
                     client.getConfig().getServerAddress());
@@ -197,7 +196,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                     logger.error("{}: Exception encountered while connecting MQTT client.", clientInformation, e);
                     do {
                         try {
-                            logger.trace("{}: Waiting to reconnect, state: {}.",
+                            logger.debug("{}: Waiting to reconnect, state: {}.",
                                          clientInformation,
                                          client.getConfig().getState());
                             wait(reconnectDelayMs);
@@ -208,6 +207,9 @@ public class HivemqMqttClient implements JoynrMqttClient {
                     } while (client.getConfig().getState() == MqttClientState.CONNECTING
                             || client.getConfig().getState() == MqttClientState.CONNECTING_RECONNECT
                             || client.getConfig().getState() == MqttClientState.DISCONNECTED_RECONNECT);
+                    logger.debug("{}: Leaving reconnect loop, state: {}.",
+                                 clientInformation,
+                                 client.getConfig().getState());
                 }
             }
         } else {
@@ -223,10 +225,9 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public synchronized void shutdown() {
-        if (!shuttingDown) {
+        if (!shuttingDown.getAndSet(true)) {
             try {
                 logger.info("{}: Attempting to shutdown connection.", clientInformation);
-                shuttingDown = true;
                 client.disconnectWith().noSessionExpiry().applyDisconnect().doOnComplete(() -> {
                     logger.info("{}: Disconnected.", clientInformation);
                 }).onErrorComplete(throwable -> {
@@ -382,7 +383,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                                                                    .qos(MqttQos.AT_LEAST_ONCE) // TODO make configurable
                                                                                                    .build());
 
-            if (isShutdown()) {
+            if (shuttingDown.get()) {
                 return;
             }
             doSubscribe(subscription, topic);
@@ -452,7 +453,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
 
     @Override
     public synchronized boolean isShutdown() {
-        return shuttingDown;
+        return shuttingDown.get();
     }
 
     private void handleIncomingMessage(Mqtt5Publish mqtt5Publish) {
