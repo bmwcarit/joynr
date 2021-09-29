@@ -114,6 +114,40 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-java-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>${generic.requireJavaVersion}</version>
+									<message>Wrong java version. You must use Java ${generic.requireJavaVersion} to build joynr.</message>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+					<execution>
+						<id>enforce-bytecode-version</id>
+						<configuration>
+							<rules>
+								<enforceBytecodeVersion>
+									<maxJdkVersion>${generic.enforceByteCode.maxJdkVersion}</maxJdkVersion>
+								</enforceBytecodeVersion>
+							</rules>
+						</configuration>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

@@ -38,6 +38,27 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven.compiler.plugin.version}</version>
+					<configuration>
+						<source>${tools.maven.compiler.source}</source>
+						<target>${tools.maven.compiler.target}</target>
+						<testSource>${tools.maven.compiler.source}</testSource>
+						<testTarget>${tools.maven.compiler.target}</testTarget>
+						<debug>true</debug>
+						<debuglevel>lines,vars,source</debuglevel>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>org.codehaus.plexus</groupId>
+							<artifactId>plexus-compiler-eclipse</artifactId>
+							<version>1.8.6</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+
 				<!-- Enforce failure is dependency check fails -->
 				<!-- Can optionally be moved up to parent pom -->
 				<plugin>
@@ -75,6 +96,44 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-java-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>${tools.requireJavaVersion}</version>
+									<message>Wrong java version. You must use Java ${tools.requireJavaVersion} to build joynr.</message>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+					<execution>
+						<id>enforce-bytecode-version</id>
+						<configuration>
+							<rules>
+								<enforceBytecodeVersion>
+									<maxJdkVersion>${tools.enforceByteCode.maxJdkVersion}</maxJdkVersion>
+								</enforceBytecodeVersion>
+							</rules>
+						</configuration>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
