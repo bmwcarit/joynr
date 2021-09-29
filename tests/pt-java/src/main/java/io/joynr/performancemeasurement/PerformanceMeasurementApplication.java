@@ -64,7 +64,7 @@ public class PerformanceMeasurementApplication {
 
     private static AtomicInteger resultCounterReceived;
     private static ConcurrentLinkedQueue<Long> durationQueue;
-    private static AtomicInteger proxyCreatedCounter;
+    private static AtomicInteger proxyCreatedCounter = new AtomicInteger(0);
 
     private static PerformanceTestData performanceTestData;
 
@@ -304,7 +304,6 @@ public class PerformanceMeasurementApplication {
         public void run() {
             try {
                 proxiesCreationMaxInflightSemaphore = new Semaphore(numOfProxyCreations);
-                proxyCreatedCounter = new AtomicInteger(0);
 
                 DiscoveryQos discoveryQos = new DiscoveryQos();
                 discoveryQos.setDiscoveryTimeoutMs(10000);
