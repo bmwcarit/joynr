@@ -1,0 +1,53 @@
+version: '3.0'
+
+services:
+
+  joynr-gcd-db:
+    image: 'joynr-gcd-db'
+    ports:
+      - "5432:5432"
+    container_name: 'joynr-gcd-db'
+
+  mqttbroker-1:
+    image: 'hivemq/hivemq-ce:2021.2'
+    ports:
+      - "1883:1883"
+    container_name: 'mqttbroker-1'
+    environment:
+      - HIVEMQ_ALLOW_ALL_CLIENTS=true
+
+  joynr-gcd-1:
+    image: 'joynr-gcd'
+    container_name: 'joynr-gcd-1'
+    depends_on:
+      - joynr-gcd-db
+      - mqttbroker-1
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker-1:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      # please use your own GBID configuration here:
+      - joynr_gcd_gbid=gbid1
+      - joynr_gcd_valid_gbids=gbid1,gbid2
+      - joynr_messaging_gbids=gbid1
+
+  mqttbroker-2:
+    image: 'hivemq/hivemq-ce:2021.2'
+    ports:
+      - "1884:1883"
+    container_name: 'mqttbroker-2'
+    environment:
+      - HIVEMQ_ALLOW_ALL_CLIENTS=true
+
+  joynr-gcd-2:
+    image: 'joynr-gcd'
+    container_name: 'joynr-gcd-2'
+    depends_on:
+      - joynr-gcd-db
+      - mqttbroker-2
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker-2:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      # please use your own GBID configuration here:
+      - joynr_gcd_gbid=gbid2
+      - joynr_gcd_valid_gbids=gbid1,gbid2
+      - joynr_messaging_gbids=gbid2
