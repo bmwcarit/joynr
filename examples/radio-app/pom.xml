@@ -185,17 +185,17 @@
 		</pluginManagement>
 
 		<plugins>
-			<!-- The following section makes sure that Java 7
+			<!-- The following section makes sure that Java 11
 				is used since joynr framework requires it -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
+				<version>3.8.1</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-					<testSource>1.8</testSource>
-					<testTarget>1.8</testTarget>
+					<source>11</source>
+					<target>11</target>
+					<testSource>11</testSource>
+					<testTarget>11</testTarget>
 					<debug>true</debug>
 					<debuglevel>lines,vars,source</debuglevel>
 				</configuration>
