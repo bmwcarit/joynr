@@ -54,6 +54,9 @@
 	<profiles>
 		<profile>
 			<id>android</id>
+		</profile>
+		<profile>
+			<id>androidDisabled</id>
 			<repositories>
 				<repository>
 					<id>google-maven</id>

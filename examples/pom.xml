@@ -46,6 +46,9 @@
 		<!-- Only include Android examples when Android is available -->
 		<profile>
 			<id>android</id>
+		</profile>
+		<profile>
+			<id>androidDisabled</id>
 			<modules>
 				<module>android</module>
 			</modules>

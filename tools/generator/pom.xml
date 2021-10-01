@@ -197,6 +197,9 @@
 		</profile>
 		<profile>
 			<id>android</id>
+		</profile>
+		<profile>
+			<id>androidDisabled</id>
 			<modules>
 				<module>joynr-generator-gradle-plugin</module>
 			</modules>
