@@ -6,9 +6,146 @@ the versioning scheme [here](JoynrVersioning.md).
 
 ## API-relevant Changes
 * **[Android]** Android support has been temporarily disabled until further notice.
+* **[Java,JEE]** joynr has been migrated to support Java 11.
+  Any later Java versions are not supported, even if it may appear to work.
+  Java 11 is now required, except for the generator part which remains to be
+  compatible to both Java 8 and Java 11 (any other Java version is not supported).
+* **[Java.JEE]** The runtime environment requires now use of Payara 5
+  and jakartaee-api 8, Payara 4 and javaee-api 7 are no longer supported.
+* **[Java,JEE]** Several dependencies have been upgraded. Please make sure to
+  upgrade any applications / JEE server accordingly to avoid possible
+  version conflicts.
+  `mvn dependency:tree` from top-level pom.xml reports the following changes:
+  Removed or updated old dependencies (old versions derived from joynr 1.17.8):
+  * com.google.guava:guava:jar:18.0
+  * commons-cli:commons-cli:jar:1.3
+  * commons-io:commons-io:jar:2.2
+  * commons-lang:commons-lang:jar:2.6
+  * com.sun.mail:javax.mail:jar:1.5.0
+  * fish.payara.extras:payara-embedded-all:jar:4.1.2.181
+  * javax.activation:activation:jar:1.1
+  * javax:javaee-api:jar:7.0
+  * net.bytebuddy:byte-buddy:jar:1.10.7
+  * org.apache.maven:maven-aether-provider:jar:3.2.5
+  * org.apache.maven:maven-artifact:jar:2.2.1
+  * org.apache.maven:maven-model-builder:jar:3.2.5
+  * org.apache.maven:maven-model:jar:2.2.1
+  * org.apache.maven:maven-model:jar:3.2.5
+  * org.apache.maven:maven-repository-metadata:jar:2.2.1
+  * org.apache.maven:maven-repository-metadata:jar:3.2.5
+  * org.apache.maven:maven-settings-builder:jar:3.2.5
+  * org.apache.maven:maven-settings:jar:2.2.1
+  * org.apache.maven:maven-settings:jar:3.2.5
+  * org.apache.maven.wagon:wagon-file:jar:2.6
+  * org.apache.maven.wagon:wagon-http-lightweight:jar:2.6
+  * org.apache.maven.wagon:wagon-http-shared:jar:2.6
+  * org.apache.maven.wagon:wagon-provider-api:jar:1.0-beta-6
+  * org.apache.maven.wagon:wagon-provider-api:jar:2.6
+  * org.codehaus.plexus:plexus-component-annotations:jar:1.5.5
+  * org.codehaus.plexus:plexus-interpolation:jar:1.11
+  * org.codehaus.plexus:plexus-interpolation:jar:1.21
+  * org.codehaus.plexus:plexus-utils:jar:1.5.15
+  * org.codehaus.plexus:plexus-utils:jar:3.0.20
+  * org.dom4j:dom4j:jar:2.1.1
+  * org.eclipse.aether:aether-api:jar:1.0.0.v20140518
+  * org.eclipse.aether:aether-connector-basic:jar:1.0.0.v20140518
+  * org.eclipse.aether:aether-impl:jar:1.0.0.v20140518
+  * org.eclipse.aether:aether-spi:jar:1.0.0.v20140518
+  * org.eclipse.aether:aether-transport-wagon:jar:1.0.0.v20140518
+  * org.eclipse.aether:aether-util:jar:1.0.0.v20140518
+  * org.glassfish.main.extras:glassfish-embedded-all:jar:4.1.2
+  * org.hibernate.common:hibernate-commons-annotations:jar:5.1.0.Final
+  * org.hibernate:hibernate-core:jar:5.4.12.Final
+  * org.hibernate:hibernate-entitymanager:jar:5.4.12.Final
+  * org.javassist:javassist:jar:3.24.0-GA
+  * org.jboss.arquillian.config:arquillian-config-api:jar:1.1.15.Final
+  * org.jboss.arquillian.config:arquillian-config-impl-base:jar:1.1.15.Final
+  * org.jboss.arquillian.container:arquillian-container-impl-base:jar:1.1.15.Final
+  * org.jboss.arquillian.container:arquillian-container-spi:jar:1.1.15.Final
+  * org.jboss.arquillian.container:arquillian-container-test-api:jar:1.1.15.Final
+  * org.jboss.arquillian.container:arquillian-container-test-impl-base:jar:1.1.15.Final
+  * org.jboss.arquillian.container:arquillian-container-test-spi:jar:1.1.15.Final
+  * org.jboss.arquillian.container:arquillian-glassfish-embedded-3.1:jar:1.0.2
+  * org.jboss.arquillian.core:arquillian-core-api:jar:1.1.15.Final
+  * org.jboss.arquillian.core:arquillian-core-impl-base:jar:1.1.15.Final
+  * org.jboss.arquillian.core:arquillian-core-spi:jar:1.1.15.Final
+  * org.jboss.arquillian.extension:arquillian-transaction-api:jar:1.0.5
+  * org.jboss.arquillian.extension:arquillian-transaction-impl-base:jar:1.0.5
+  * org.jboss.arquillian.extension:arquillian-transaction-jta:jar:1.0.5
+  * org.jboss.arquillian.extension:arquillian-transaction-spi:jar:1.0.5
+  * org.jboss.arquillian.junit:arquillian-junit-container:jar:1.1.15.Final
+  * org.jboss.arquillian.junit:arquillian-junit-core:jar:1.1.15.Final
+  * org.jboss.arquillian.protocol:arquillian-protocol-servlet:jar:1.1.15.Final
+  * org.jboss.arquillian.test:arquillian-test-api:jar:1.1.15.Final
+  * org.jboss.arquillian.test:arquillian-test-impl-base:jar:1.1.15.Final
+  * org.jboss.arquillian.test:arquillian-test-spi:jar:1.1.15.Final
+  * org.jboss.arquillian.testenricher:arquillian-testenricher-cdi:jar:1.1.15.Final
+  * org.jboss.arquillian.testenricher:arquillian-testenricher-ejb:jar:1.1.15.Final
+  * org.jboss.arquillian.testenricher:arquillian-testenricher-initialcontext:jar:1.1.15.Final
+  * org.jboss.arquillian.testenricher:arquillian-testenricher-resource:jar:1.1.15.Final
+  * org.jboss:jandex:jar:2.1.1.Final
+  * org.jboss.logging:jboss-logging:jar:3.3.2.Final
+  * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api:jar:2.2.6
+  * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven:jar:2.2.6
+  * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:jar:2.2.6
+  * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi:jar:2.2.6
+  * org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-spi-maven:jar:2.2.6
+  * org.jsoup:jsoup:jar:1.7.2
+  * org.slf4j:slf4j-api:jar:1.6.6
+  * org.slf4j:slf4j-api:jar:1.7.25
+  * org.slf4j:slf4j-jdk14:jar:1.7.25
+  * org.slf4j:slf4j-log4j12:jar:1.6.6
+  * org.slf4j:slf4j-log4j12:jar:1.7.25
+  * org.sonatype.plexus:plexus-cipher:jar:1.4
+  * org.sonatype.plexus:plexus-sec-dispatcher:jar:1.3
+  Added or updated dependencies (new versions derived from this release):
+  * fish.payara.arquillian:arquillian-payara-server-embedded:jar:2.4.4
+  * fish.payara.extras:payara-embedded-all:jar:5.2021.6
+  * jakarta.platform:jakarta.jakartaee-api:jar:8.0.0
+  * net.bytebuddy:byte-buddy:jar:1.11.12
+  * org.apache.commons:commons-lang3:jar:3.8.1
+  * org.apache.maven:maven-artifact:jar:3.6.3
+  * org.apache.maven:maven-model:jar:3.6.3
+  * org.apache.maven:maven-repository-metadata:jar:3.6.3
+  * org.apache.maven:maven-settings:jar:3.6.3
+  * org.apache.maven.wagon:wagon-provider-api:jar:3.3.4
+  * org.codehaus.plexus:plexus-interpolation:jar:1.25
+  * org.codehaus.plexus:plexus-utils:jar:3.2.1
+  * org.hibernate.common:hibernate-commons-annotations:jar:5.1.2.Final
+  * org.hibernate:hibernate-core:jar:5.5.7.Final
+  * org.hibernate:hibernate-entitymanager:jar:5.5.7.Final
+  * org.jboss.arquillian.config:arquillian-config-api:jar:1.6.0.Final
+  * org.jboss.arquillian.config:arquillian-config-impl-base:jar:1.6.0.Final
+  * org.jboss.arquillian.config:arquillian-config-spi:jar:1.6.0.Final
+  * org.jboss.arquillian.container:arquillian-container-impl-base:jar:1.6.0.Final
+  * org.jboss.arquillian.container:arquillian-container-spi:jar:1.6.0.Final
+  * org.jboss.arquillian.container:arquillian-container-test-api:jar:1.6.0.Final
+  * org.jboss.arquillian.container:arquillian-container-test-impl-base:jar:1.6.0.Final
+  * org.jboss.arquillian.container:arquillian-container-test-spi:jar:1.6.0.Final
+  * org.jboss.arquillian.core:arquillian-core-api:jar:1.6.0.Final
+  * org.jboss.arquillian.core:arquillian-core-impl-base:jar:1.6.0.Final
+  * org.jboss.arquillian.core:arquillian-core-spi:jar:1.6.0.Final
+  * org.jboss.arquillian.junit:arquillian-junit-container:jar:1.6.0.Final
+  * org.jboss.arquillian.junit:arquillian-junit-core:jar:1.6.0.Final
+  * org.jboss.arquillian.protocol:arquillian-protocol-servlet:jar:1.6.0.Final
+  * org.jboss.arquillian.test:arquillian-test-api:jar:1.6.0.Final
+  * org.jboss.arquillian.test:arquillian-test-impl-base:jar:1.6.0.Final
+  * org.jboss.arquillian.test:arquillian-test-spi:jar:1.6.0.Final
+  * org.jboss.arquillian.testenricher:arquillian-testenricher-cdi:jar:1.6.0.Final
+  * org.jboss.arquillian.testenricher:arquillian-testenricher-ejb:jar:1.6.0.Final
+  * org.jboss.arquillian.testenricher:arquillian-testenricher-initialcontext:jar:1.6.0.Final
+  * org.jboss.arquillian.testenricher:arquillian-testenricher-resource:jar:1.6.0.Final
+  * org.jboss:jandex:jar:2.2.3.Final
+  * org.jboss.logging:jboss-logging:jar:3.4.2.Final
+  * org.slf4j:slf4j-api:jar:1.7.28
+  * org.slf4j:slf4j-jdk14:jar:1.7.28
+  * org.slf4j:slf4j-log4j12:jar:1.7.28
 
 ## Other Changes
-None.
+* **[Java,JEE]** The JEE JDS demo implementation has been discontinued.
+  The JDS demo implementation continues to be available as pure Java version.
+  Additionally a ready-to-use docker concerto with MQTT broker, database and
+  JDS demo implementation is provided for single- and multiple-backend use case.
 
 ## Configuration Property Changes
 None.
