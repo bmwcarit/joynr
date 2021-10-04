@@ -6,12 +6,19 @@ the versioning scheme [here](JoynrVersioning.md).
 
 ## API-relevant Changes
 * **[Android]** Android support has been temporarily disabled until further notice.
+* **[Java,JEE]** Joynr custom headers can now be added or modified by the MQTT broker
+  via MQTT user properties, where values modified by the broker take precedence over values
+  set by the consumer application. The resulting set of custom headers is available to
+  provider applications as before.  
+  See the [Java](/wiki/java.md) and [JEE](/wiki/jee.md) documentation for more details.  
+  Note: Only custom headers with non empty key and non empty value will be transmitted via MQTT
+  user properties.
 * **[Java,JEE]** joynr has been migrated to support Java 11.
   Any later Java versions are not supported, even if it may appear to work.
   Java 11 is now required, except for the generator part which remains to be
   compatible to both Java 8 and Java 11 (any other Java version is not supported).
-* **[Java.JEE]** The runtime environment requires now use of Payara 5
-  and jakartaee-api 8, Payara 4 and javaee-api 7 are no longer supported.
+* **[Java,JEE]** The runtime environment requires now use of Payara 5, Payara 4 is no longer
+  supported. The dependency to javaee-api 7 has been upgraded to jakartaee-api 8.
 * **[Java,JEE]** Several dependencies have been upgraded. Please make sure to
   upgrade any applications / JEE server accordingly to avoid possible
   version conflicts.
@@ -26,6 +33,7 @@ the versioning scheme [here](JoynrVersioning.md).
   * javax.activation:activation:jar:1.1
   * javax:javaee-api:jar:7.0
   * net.bytebuddy:byte-buddy:jar:1.10.7
+  * org.apache.derby:jar:10.10.1.1
   * org.apache.maven:maven-aether-provider:jar:3.2.5
   * org.apache.maven:maven-artifact:jar:2.2.1
   * org.apache.maven:maven-model-builder:jar:3.2.5
@@ -146,28 +154,6 @@ the versioning scheme [here](JoynrVersioning.md).
   The JDS demo implementation continues to be available as pure Java version.
   Additionally a ready-to-use docker concerto with MQTT broker, database and
   JDS demo implementation is provided for single- and multiple-backend use case.
-
-## Configuration Property Changes
-None.
-
-## Security Fixes
-None.
-
-## Bug Fixes
-None.
-
-# joynr 1.17.9
-
-## API-relevant Changes
-* **[Java, JEE]** Joynr custom headers can now be added or modified by the MQTT broker
-  via MQTT user properties, where values modified by the broker take precedence over values
-  set by the consumer application. The resulting set of custom headers is available to
-  provider applications as before.
-  See the [Java](/wiki/java.md) and [JEE](/wiki/jee.md) documentation for more details.
-
-## Other Changes
-* **[Java, JEE]** The JEE based joynr JDS demo implementation has been replaced by a pure Java variant.
-  This is now more easily available through a docker-concerto.
   See the [starting joynr backend instructions](infrastructure.md) for more details.
 
 ## Configuration Property Changes
