@@ -21,6 +21,9 @@ fi
 echo "BEGIN Listing $HOME/.m2"
 ls -al $HOME/.m2
 echo "END Listing $HOME/.m2"
+cat > /root/.mavenrc << EOF
+export JAVA_HOME=/usr/lib/jvm/java-openjdk
+EOF
 /data/src/docker/joynr-cpp-base/scripts/build/cpp-generate.sh
 /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --jobs 16 --buildtests OFF --enableclangformatter OFF
 cd /data/build/joynr
