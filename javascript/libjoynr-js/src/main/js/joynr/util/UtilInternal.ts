@@ -185,7 +185,7 @@ export function getLengthInBytes(text: string): number {
  *
  */
 export function getMaxLongValue(): number {
-    return Math.pow(2, 53) - 1;
+    return Number.MAX_SAFE_INTEGER;
 }
 
 /**
