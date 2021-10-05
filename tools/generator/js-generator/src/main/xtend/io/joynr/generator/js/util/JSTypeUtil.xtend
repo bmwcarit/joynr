@@ -237,7 +237,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 			} else {
 				childPath = Paths.get(type.derived.getDependencyPath(generateVersion));
 			}
-			return "." + File::separator + parentPath.getParent().relativize(childPath).toString();
+			return "./" + parentPath.getParent().relativize(childPath).toString();
 		}
 		return null;
 	}
@@ -245,7 +245,7 @@ class JSTypeUtil extends AbstractTypeUtil {
 	def String getRelativeImportPath (FType type, FType parentElement, boolean generateVersion) {
 		var parentPath = Paths.get(parentElement.getDependencyPath(generateVersion));
 		var childPath = Paths.get(type.getDependencyPath(generateVersion));
-		return "." + File::separator + parentPath.getParent().relativize(childPath).toString();
+		return "./" + parentPath.getParent().relativize(childPath).toString();
 	}
 
 	def getJsdocTypeName(FType datatype) {
@@ -456,8 +456,8 @@ class JSTypeUtil extends AbstractTypeUtil {
 	}
 
 	def getDependencyPath(FType datatype, boolean generateVersion) {
-		return datatype.buildPackagePath(File.separator, true, generateVersion)
-					+ File.separator
+		return datatype.buildPackagePath("/", true, generateVersion)
+					+ "/"
 					+ datatype.joynrName
 	}
 

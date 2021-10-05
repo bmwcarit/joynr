@@ -39,9 +39,9 @@ class TypesGenerator {
 
 	def generateTypes(Iterable<FType> types, IFileSystemAccess fsa, boolean generateVersion) {
 		for (type : filterComplex(types)) {
-			val path = type.buildPackagePath(File::separator, true, generateVersion)
+			val path = type.buildPackagePath("/", true, generateVersion)
 
-			val fileName = path + File::separator + type.joynrName + ".ts"
+			val fileName = path + "/" + type.joynrName + ".ts"
 			if (clean) {
 				fsa.deleteFile(fileName);
 			}

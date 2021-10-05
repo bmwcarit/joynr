@@ -41,7 +41,7 @@ class ProviderGenerator extends InterfaceJsTemplate {
 	def relativePathToBase() {
 		var relativePath = ""
 		for (var i=0; i<packagePathDepth; i++) {
-			relativePath += ".." + File::separator
+			relativePath += "../"
 		}
 		return relativePath
 	}

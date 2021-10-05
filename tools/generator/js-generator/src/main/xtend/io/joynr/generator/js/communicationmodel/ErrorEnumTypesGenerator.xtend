@@ -43,8 +43,8 @@ class ErrorEnumTypesGenerator {
 			var enumType = method.errors;
 			if (enumType !== null) {
 				enumType.name = methodToErrorEnumName.get(method);
-				val path = getPackagePathWithJoynrPrefix(enumType, File::separator, generateVersion)
-				val fileName = path + File::separator + enumType.joynrName + ".ts"
+				val path = getPackagePathWithJoynrPrefix(enumType, "/", generateVersion)
+				val fileName = path + "/" + enumType.joynrName + ".ts"
 				if (clean) {
 					fsa.deleteFile(fileName)
 				}
