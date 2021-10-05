@@ -141,40 +141,15 @@ The project is sub-divided into one multi-module parent project and three subpro
 
 In order to build the project, change to the `inter-language-test-jee` directory and call `mvn install`.
 
-The following describes running the example on [Payara 4.1](http://www.payara.fish). First,
-install the application server and you will also need to install an MQTT broker, e.g.
-[Mosquitto](http://mosquitto.org).
+Next, fire up the joynr infrastructure components with default configuration (single backend),
+see [joynr infrastructure](../../wiki/infrastructure.md).
 
-Start the MQTT broker, and make sure it's accepting traffic on `1883`.
+The following describes running the example on [Payara 5](http://www.payara.fish). First,
+install the application server.
 
 Then start up the Payara server by changing to the Payara install directory and executing
 `bin/asadmin start-domain`. Follow the instructions above for configuring the required
 managed executor service.
-
-When using primaryglobaltransport=mqtt (default), you need a connection pool for the database which
-shall be used by the backend to persist data.
-For this example, we'll create a database
-on the JavaDB (based on Derby) database which is installed as part of Payara / Glassfish:
-
-    bin/asadmin create-jdbc-connection-pool \
-        --datasourceclassname org.apache.derby.jdbc.ClientDataSource \
-        --restype javax.sql.XADataSource \
-        --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool
-
-Next, create a datasource resource pointing to that database connection. Here's an
-example of what that would look like when using the connection pool created above:
-
-`bin/asadmin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS`
-
-After this, you can start the database:
-
-`bin/asadmin start-database`
-
-Next, fire up the joynr backend services:
-- When using primaryglobaltransport=mqtt, please refer to:
- [starting joynr backend instructions](../docker/joynr-base/scripts/README.md).
-- When using primaryglobaltransport=longpolling, change to the `inter-language-test-jee`
-directory and execute `mvn -N -Pbackend-services-http jetty:run`.
 
 Depending on whether only consumer, only provider or both should run as JEE applications,
 deploy the required WAR files:
@@ -183,9 +158,7 @@ deploy the required WAR files:
 - `bin/asadmin deploy <joynr home>/tests/inter-language-test-jee/inter-language-test-jee-consumer/target/inter-language-test-jee-consumer.war`
 
 Make sure that any involved external embedded or standalone cluster controller is configured
-correctly (especially because the Payara server is running on port 8080 and the Discovery and
-Bounce proxy service is running inside a Jetty on port 8383 which differs from standard
-configuration used for other tests).
+correctly.
 
 In case just the JEE provider should be tested, then once the provider application has started
 successfully, you can start up the external consumer as normal. Note that an external consumer
