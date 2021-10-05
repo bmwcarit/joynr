@@ -3,7 +3,7 @@ FROM fedora:30
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2021-09-20-08-00
+ENV REFRESHED_AT 2021-10-05-08-00
 
 ###################################################
 # create data directories and volumes
@@ -148,8 +148,6 @@ RUN wget --quiet -O /opt/payara-5.2021.7.zip https://s3-eu-west-1.amazonaws.com/
 
 RUN asadmin --user admin start-domain && \
     asadmin --user admin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor && \
-    asadmin --user admin create-jdbc-connection-pool --datasourceclassname org.apache.derby.jdbc.ClientDataSource --restype javax.sql.XADataSource --property portNumber=1527:password=APP:user=APP:serverName=localhost:databaseName=joynr-discovery-directory:connectionAttributes=\;create\\=true JoynrPool && \
-    asadmin --user admin create-jdbc-resource --connectionpoolid JoynrPool joynr/DiscoveryDirectoryDS && \
     asadmin --user admin set-log-levels io.joynr.messaging=FINE && \
     asadmin --user admin set-log-levels io.joynr.dispatching=FINE && \
     asadmin --user admin set-log-levels io.joynr.discovery=FINEST && \

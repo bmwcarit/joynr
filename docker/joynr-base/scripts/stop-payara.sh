@@ -7,4 +7,3 @@ do
 done
 
 asadmin --user admin stop-domain --kill=true
-asadmin --user admin stop-database

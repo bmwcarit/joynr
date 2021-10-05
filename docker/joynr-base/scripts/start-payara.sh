@@ -20,7 +20,6 @@ echo "PARAM is: $1"
 done
 
 asadmin --user admin start-domain
-asadmin --user admin start-database --jvmoptions="-Dderby.storage.useDefaultFilePermissions=true"
 
 if [ -d "/data/logs" ]
 then
