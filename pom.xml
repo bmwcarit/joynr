@@ -776,11 +776,6 @@
 				<classifier>sources</classifier>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.derby</groupId>
-				<artifactId>derby</artifactId>
-				<version>10.10.1.1</version>
-			</dependency>
-			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
 				<version>42.2.23</version>

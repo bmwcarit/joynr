@@ -696,12 +696,6 @@
 				<version>3.8.1</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.derby</groupId>
-				<artifactId>derby</artifactId>
-				<type>jar</type>
-				<version>10.10.1.1</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
 				<type>jar</type>
