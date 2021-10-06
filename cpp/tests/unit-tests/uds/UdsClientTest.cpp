@@ -17,7 +17,8 @@
  * #L%
  */
 #include "UdsClientTest.h"
-#include "joynr/Semaphore.h"
+
+#include <stdlib.h>
 
 #include "libjoynr/uds/UdsFrameBufferV1.h"
 
@@ -25,6 +26,7 @@
 
 using namespace joynr;
 using namespace testing;
+namespace fs = boost::filesystem;
 
 constexpr char UdsClientTest::_settingsFile[];
 // Global settings for timeout, when communication between client-server is checked
@@ -293,5 +295,69 @@ TEST_F(UdsClientTest, fatalErrorCallbackException)
     client->start();
     ASSERT_EQ(countServerConnections(1), 1);
     sendFromServer(1);
+    // fatal runtime error, stopping all communication permanently
     ASSERT_EQ(countServerConnections(0), 0);
+}
+
+TEST_F(UdsClientTest, fatalErrorSocketDirDoesNotExist)
+{
+    auto socketDir = _tmpDirectory / "does/not/exist";
+    auto socketPath = socketDir / "someSocket";
+    _udsSettings.setSocketPath(socketPath.string());
+    std::string errorMessage;
+    createClientAndGetRuntimeErrorMessage(errorMessage);
+    EXPECT_THAT(errorMessage, HasSubstr("Socket path directory"));
+    EXPECT_THAT(errorMessage, HasSubstr("does not exist"));
+    EXPECT_THAT(errorMessage, EndsWith(socketDir.string()));
+
+    // fatal runtime error, stopping all communication permanently
+    fs::create_directories(socketDir);
+    restartServer();
+    std::this_thread::sleep_for(_waitPeriodForClientServerCommunication);
+    ASSERT_EQ(countServerConnections(0), 0);
+
+    // Check validity of test-setup
+    auto client = createClient();
+    client->start();
+    ASSERT_EQ(countServerConnections(1), 1);
+}
+
+TEST_F(UdsClientTest, fatalErrorSocketDirNotReadable)
+{
+    auto socketDir = _tmpDirectory / "noReadAccess";
+    auto socketPath = socketDir / "someSocket";
+    _udsSettings.setSocketPath(socketPath.string());
+    fs::create_directory(socketDir);
+    fs::permissions(socketDir,
+                    fs::perms::remove_perms | fs::perms::owner_read | fs::perms::group_read |
+                            fs::perms::others_read);
+    std::string errorMessage;
+    createClientAndGetRuntimeErrorMessage(errorMessage);
+    EXPECT_THAT(errorMessage, HasSubstr("Socket path directory"));
+    EXPECT_THAT(errorMessage, HasSubstr("not readable"));
+    EXPECT_THAT(errorMessage, EndsWith(socketDir.string()));
+    fs::permissions(socketDir,
+                    fs::perms::add_perms | fs::perms::owner_read | fs::perms::group_read |
+                            fs::perms::others_read);
+}
+
+TEST_F(UdsClientTest, fatalErrorSocketPathNotReadWriteable)
+{
+    auto socketDir = _tmpDirectory / "socketDir";
+    auto socketPath = socketDir / "someSocket";
+    _udsSettings.setSocketPath(socketPath.string());
+    fs::create_directory(socketDir);
+    fs::ofstream createSocketFile(socketPath);
+    createSocketFile.close();
+    for (auto permsToRemove :
+         {fs::perms::owner_read | fs::perms::group_read | fs::perms::others_read,
+          fs::perms::owner_write | fs::perms::group_write | fs::perms::others_write}) {
+        fs::permissions(socketPath, fs::perms::remove_perms | permsToRemove);
+        std::string errorMessage;
+        createClientAndGetRuntimeErrorMessage(errorMessage);
+        EXPECT_THAT(errorMessage, HasSubstr("Socket path exist"));
+        EXPECT_THAT(errorMessage, HasSubstr("not readable or not writable"));
+        EXPECT_THAT(errorMessage, EndsWith(socketPath.string()));
+        fs::permissions(socketPath, fs::perms::add_perms | permsToRemove);
+    }
 }

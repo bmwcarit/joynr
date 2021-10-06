@@ -459,9 +459,17 @@ public:
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param pathToLibjoynrSettings
-     * @param onFatalRuntimeError Called in case a runtime error prevents further communication
+     * @param onFatalRuntimeError
+     * @parblock
+     * Called in case a runtime error prevents further communication. For example:
+     * @li User callback throws exception
+     * @li UDS server socket not accessible since directory path does not exist (only applicable for
+     * libjoynr-runtime)
+     * @li UDS server socket not accessible since permissions insufficient (only applicable for
+     * libjoynr-runtime)
+     * @endparblock
      * @param pathToMessagingSettings
-     * @param An optional key chain that is used for websocket connections
+     * @param keyChain An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
      */
     static std::shared_ptr<JoynrRuntime> createRuntime(
@@ -474,7 +482,7 @@ public:
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param pathToLibjoynrSettings
      * @param pathToMessagingSettings
-     * @param An optional key chain that is used for websocket connections
+     * @param keyChain An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
      *
      * [[deprecated("Use createRuntime(const std::string&, std::function<void(const "
@@ -495,7 +503,15 @@ public:
     /**
      * @brief Create a JoynrRuntime object. The call blocks until the runtime is created.
      * @param settings settings object
-     * @param onFatalRuntimeError Called in case a runtime error prevents further communication
+     * @param onFatalRuntimeError
+     * @parblock
+     * Called in case a runtime error prevents further communication. For example:
+     * @li User callback throws exception
+     * @li UDS server socket not accessible since directory path does not exist (only applicable for
+     * libjoynr-runtime)
+     * @li UDS server socket not accessible since permissions insufficient (only applicable for
+     * libjoynr-runtime)
+     * @endparblock
      * @param An optional key chain that is used for websocket connections
      * @return pointer to a JoynrRuntime instance
      */
@@ -526,12 +542,20 @@ public:
      * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param pathToLibjoynrSettings Path to lib joynr setting files
-     * @param onFatalRuntimeError Called (after successful setup) in case a runtime error prevents
-     * further communication
+     * @param onFatalRuntimeError
+     * @parblock
+     * Called (after successful setup) in case a runtime error prevents further communication. For
+     * example:
+     * @li User callback throws exception
+     * @li UDS server socket not accessible since directory path does not exist (only applicable for
+     * libjoynr-runtime)
+     * @li UDS server socket not accessible since permissions insufficient (only applicable for
+     * libjoynr-runtime)
+     * @endparblock
      * @param onSuccess Is called when the runtime is available for use
      * @param onError Is called when an error occurs during runtime setup
      * @param pathToMessagingSettings
-     * @param An optional key chain that is used for websocket connections
+     * @param keyChain An optional key chain that is used for websocket connections
      * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      */
@@ -550,7 +574,7 @@ public:
      * @param onSuccess Is called when the runtime is available for use
      * @param onError Is called when an error occurs during runtime setup
      * @param pathToMessagingSettings
-     * @param An optional key chain that is used for websocket connections
+     * @param keyChain An optional key chain that is used for websocket connections
      * @return shared_ptr to the JoynrRuntime instance; this instance MUST NOT be used before
      * onSuccess is called
      *
@@ -578,8 +602,16 @@ public:
      * @brief Create a JoynrRuntime object asynchronously. The call does not block. A callback
      * will be called when the runtime creation finished.
      * @param settings settings object
-     * @param onFatalRuntimeError Called (after successful setup) in case a runtime error prevents
-     * further communication
+     * @param onFatalRuntimeError
+     * @parblock
+     * Called (after successful setup) in case a runtime error prevents further communication. For
+     * example:
+     * @li User callback throws exception
+     * @li UDS server socket not accessible since directory path does not exist (only applicable for
+     * libjoynr-runtime)
+     * @li UDS server socket not accessible since permissions insufficient (only applicable for
+     * libjoynr-runtime)
+     * @endparblock
      * @param onSuccess Is called when the runtime is available for use
      * @param onError Is called when an error occurs during runtime setup
      * @param An optional key chain that is used for websocket connections

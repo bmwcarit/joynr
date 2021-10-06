@@ -106,6 +106,7 @@ public:
 private:
     // Internal worker thread
     void run();
+    void abortOnSocketConfigurationError() noexcept;
 
     // I/O context functions
     void doReadHeader() noexcept;

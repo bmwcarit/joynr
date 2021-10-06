@@ -2,6 +2,26 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.18.1
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[C++]** LibJonyrUdsRuntime calls onFatalRuntimeError and stops processing if:
+  * UDS server socket directory does not exists
+  * UDS server socket exists but is not readable or not writable 
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
+
 # joynr 1.18.0
 
 ## API-relevant Changes

@@ -25,11 +25,14 @@
 #include <thread>
 #include <vector>
 
+#include <boost/filesystem.hpp>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 #include <smrf/ByteVector.h>
 
+#include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/UdsClient.h"
 #include "joynr/UdsServer.h"
@@ -70,6 +73,7 @@ protected:
     static const std::chrono::milliseconds _retryIntervalDuringClientServerCommunication;
 
     joynr::UdsSettings _udsSettings;
+    boost::filesystem::path _tmpDirectory;
     std::mutex _connectedClientsMutex;
     std::vector<ClientInfo> _connectedClients;
 
@@ -188,19 +192,7 @@ protected:
         _server.reset();
     }
 
-public:
-    UdsClientTest() : _settingsDb(_settingsFile), _udsSettings(_settingsDb)
-    {
-        _udsSettings.setSocketPath("./UdsClientTest.sock");
-    }
-
-    ~UdsClientTest()
-    {
-        // Assure that server is stopped before deleting memory accessed by the registered callbacks
-        _server.reset();
-    }
-
-    void SetUp() override
+    void restartServer()
     {
         _server = std::make_unique<joynr::UdsServer>(_udsSettings);
         _server->setConnectCallback(
@@ -240,8 +232,44 @@ public:
         _server->start();
     }
 
+    void createClientAndGetRuntimeErrorMessage(std::string& errorMessage)
+    {
+        joynr::Semaphore semaphore;
+        MockUdsClientCallbacks callbacks;
+        joynr::exceptions::JoynrRuntimeException capturedException;
+        auto client = createClient(callbacks);
+        client->start();
+        EXPECT_CALL(callbacks, fatalRuntimeError(testing::_)).WillOnce(
+                testing::DoAll(testing::SaveArg<0>(&capturedException),
+                               testing::InvokeWithoutArgs(&semaphore, &joynr::Semaphore::notify)));
+        ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+                << std::string("No fatalRuntimeError callback received.");
+        errorMessage = capturedException.getMessage();
+    }
+
+public:
+    UdsClientTest() : _settingsDb(_settingsFile), _udsSettings(_settingsDb)
+    {
+        _udsSettings.setSocketPath("./UdsClientTest.sock");
+    }
+
+    ~UdsClientTest()
+    {
+        // Assure that server is stopped before deleting memory accessed by the registered callbacks
+        _server.reset();
+    }
+
+    void SetUp() override
+    {
+        namespace fs = boost::filesystem;
+        _tmpDirectory = fs::temp_directory_path() / fs::unique_path();
+        fs::create_directories(_tmpDirectory);
+        restartServer();
+    }
+
     void TearDown() override
     {
         remove(_settingsFile);
+        boost::filesystem::remove_all(_tmpDirectory);
     }
 };

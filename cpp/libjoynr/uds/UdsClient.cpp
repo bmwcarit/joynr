@@ -20,6 +20,10 @@
 
 #include <string>
 
+#include <unistd.h>
+
+#include <boost/filesystem.hpp>
+
 #include "joynr/Util.h"
 
 #include "UdsFrameBufferV1.h"
@@ -132,6 +136,7 @@ void UdsClient::run()
                                 _address.getId(),
                                 _endpoint.path(),
                                 _connectSleepTime.count());
+                abortOnSocketConfigurationError();
             } else {
                 if (State::START == _state.exchange(State::CONNECTED)) {
                     try {
@@ -159,6 +164,28 @@ void UdsClient::run()
         _disconnectedCallback();
     } catch (const std::exception& e) {
         doHandleFatalError("Failed to process disconnection", e);
+    }
+}
+
+void UdsClient::abortOnSocketConfigurationError() noexcept
+{
+    namespace fs = boost::filesystem;
+    try {
+        auto socketPath = fs::absolute(fs::path(_endpoint.path()));
+        auto socketDir = socketPath.parent_path();
+
+        if (0 != access(socketDir.string().c_str(), R_OK)) {
+            doHandleFatalError("Socket path directory does not exist, or is not readable: " +
+                               socketDir.string());
+        } else if (fs::is_regular_file(socketPath) &&
+                   (0 != access(socketPath.string().c_str(), R_OK | W_OK))) {
+            doHandleFatalError("Socket path exists, but is not readable or not writable: " +
+                               socketPath.string());
+        }
+    } catch (const fs::filesystem_error& e) {
+        doHandleFatalError("Invalid socket path configuration.", e);
+    } catch (const std::exception& e) {
+        doHandleFatalError("Failed to process socket path configuration", e);
     }
 }
 
