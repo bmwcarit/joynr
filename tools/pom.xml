@@ -58,6 +58,13 @@
 						</dependency>
 					</dependencies>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<configuration>
+						<source>${tools.maven.compiler.source}</source>
+					</configuration>
+				</plugin>
 
 				<!-- Enforce failure is dependency check fails -->
 				<!-- Can optionally be moved up to parent pom -->
