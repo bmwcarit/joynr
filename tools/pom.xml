@@ -41,22 +41,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>${maven.compiler.plugin.version}</version>
 					<configuration>
 						<source>${tools.maven.compiler.source}</source>
 						<target>${tools.maven.compiler.target}</target>
 						<testSource>${tools.maven.compiler.source}</testSource>
 						<testTarget>${tools.maven.compiler.target}</testTarget>
-						<debug>true</debug>
-						<debuglevel>lines,vars,source</debuglevel>
 					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>org.codehaus.plexus</groupId>
-							<artifactId>plexus-compiler-eclipse</artifactId>
-							<version>1.8.6</version>
-						</dependency>
-					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
