@@ -26,6 +26,13 @@ namespace joynr
 
 class MockLocalCapabilitiesDirectoryStore : public joynr::LocalCapabilitiesDirectoryStore {
 public:
+    MockLocalCapabilitiesDirectoryStore() = default;
+    MockLocalCapabilitiesDirectoryStore(
+            std::shared_ptr<capabilities::CachingStorage> globalLookupCache,
+            std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities) :
+        _globalLookupCache{globalLookupCache},
+        _locallyRegisteredCapabilities{locallyRegisteredCapabilities} {}
+
     MOCK_METHOD1(getLocalCapabilities, std::vector<types::DiscoveryEntry> (const std::string& participantId));
     MOCK_METHOD1(getLocalCapabilities, std::vector<types::DiscoveryEntry> (const std::vector<InterfaceAddress>&
                                                                            interfaceAddresses));
@@ -43,8 +50,21 @@ public:
     MOCK_METHOD1(getGbidsForParticipantId, std::vector<std::string> (const std::string& participantId));
     MOCK_CONST_METHOD0(getAllGlobalCapabilities, std::vector<types::DiscoveryEntry> ());
     MOCK_METHOD1(eraseParticipantIdToGbidMapping, void(const std::string& participantId));
-    MOCK_METHOD0(getGlobalLookupCache, std::shared_ptr<capabilities::CachingStorage>());
-    MOCK_METHOD0(getLocallyRegisteredCapabilities, std::shared_ptr<capabilities::Storage>());
+    std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache() override {
+        if(_globalLookupCache) {
+            return _globalLookupCache;
+        }
+        return joynr::LocalCapabilitiesDirectoryStore::getGlobalLookupCache();
+    }
+    std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities() override {
+        if(_locallyRegisteredCapabilities) {
+            return _locallyRegisteredCapabilities;
+        }
+        return joynr::LocalCapabilitiesDirectoryStore::getLocallyRegisteredCapabilities();
+    }
+private:
+    std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
+    std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
 };
 
 } //namespace joynr

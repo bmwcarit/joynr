@@ -168,8 +168,9 @@ public:
               _localCapabilitiesDirectoryStore(std::make_shared<LocalCapabilitiesDirectoryStore>()),
               _localCapabilitiesDirectoryStoreForPersistencyTests(std::make_shared<LocalCapabilitiesDirectoryStore>()),
               _mockLocallyRegisteredCapabilities(std::make_shared<capabilities::MockStorage>()),
-              _mockLocalCapabilitiesDirectoryStore(std::make_shared<MockLocalCapabilitiesDirectoryStore>()),
               _mockGlobalLookupCache(std::make_shared<capabilities::MockCachingStorage>()),
+              _mockLocalCapabilitiesDirectoryStore(
+                  std::make_shared<MockLocalCapabilitiesDirectoryStore>(_mockGlobalLookupCache, _mockLocallyRegisteredCapabilities)),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _mockMessageRouter(
                       std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
@@ -763,8 +764,8 @@ protected:
     std::shared_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
     std::shared_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStoreForPersistencyTests;
     std::shared_ptr<capabilities::MockStorage> _mockLocallyRegisteredCapabilities;
-    std::shared_ptr<MockLocalCapabilitiesDirectoryStore> _mockLocalCapabilitiesDirectoryStore;
     std::shared_ptr<capabilities::MockCachingStorage> _mockGlobalLookupCache;
+    std::shared_ptr<MockLocalCapabilitiesDirectoryStore> _mockLocalCapabilitiesDirectoryStore;
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
     std::shared_ptr<MockMessageRouter> _mockMessageRouter;
     std::string _clusterControllerId;
@@ -2005,14 +2006,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getLocallyRegisteredCapabilities())
-            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getGlobalLookupCache())
-            .WillRepeatedly(Return(_mockGlobalLookupCache));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(1);
     EXPECT_CALL(*_mockGlobalLookupCache,
                 removeByParticipantId(_dummyParticipantIdsVector[0])).Times(1);
@@ -2034,14 +2027,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                 remove(_dummyParticipantIdsVector[0], _, _, _, _))
             .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT),
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getLocallyRegisteredCapabilities())
-            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getGlobalLookupCache())
-            .WillRepeatedly(Return(_mockGlobalLookupCache));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(1);
@@ -2067,14 +2052,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getLocallyRegisteredCapabilities())
-            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getGlobalLookupCache())
-            .WillRepeatedly(Return(_mockGlobalLookupCache));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
     EXPECT_CALL(*_mockGlobalLookupCache,
                 removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
@@ -2098,14 +2075,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getLocallyRegisteredCapabilities())
-            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getGlobalLookupCache())
-            .WillRepeatedly(Return(_mockGlobalLookupCache));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
     EXPECT_CALL(*_mockGlobalLookupCache,
                 removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
@@ -2127,14 +2096,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                 remove(_dummyParticipantIdsVector[0], _, _, _, _))
             .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INTERNAL_ERROR),
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getLocallyRegisteredCapabilities())
-            .WillRepeatedly(Return(_mockLocallyRegisteredCapabilities));
-
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                getGlobalLookupCache())
-            .WillRepeatedly(Return(_mockGlobalLookupCache));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
