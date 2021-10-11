@@ -52,10 +52,7 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>android</id>
-		</profile>
-		<profile>
-			<id>androidDisabled</id>
+			<id>android</id>		
 			<modules>
 				<module>../android</module>
 			</modules>

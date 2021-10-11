@@ -103,6 +103,8 @@
 							<executable>${basedir}/${exec.gradle}</executable>
 							<arguments>
 								<argument>build</argument>
+								<argument>-x</argument>
+								<argument>test</argument>
 							</arguments>
 						</configuration>
 					</execution>
