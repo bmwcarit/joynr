@@ -187,8 +187,9 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
                                     expiryDateMs,
                                     isSticky);
                             if (addToRoutingTableSuccessful) {
-                                thisSharedPtr->sendQueuedMessages(
-                                        destinationPartId, thisSharedPtr->_parentAddress, lock1);
+                                thisSharedPtr->sendQueuedMessages(destinationPartId,
+                                                                  thisSharedPtr->_parentAddress,
+                                                                  std::move(lock1));
                             } else {
                                 JOYNR_LOG_ERROR(logger(),
                                                 "Failed to add participant {} to routing table",
@@ -237,24 +238,12 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
     }
 }
 
-void LibJoynrMessageRouter::sendQueuedMessages(
-        const std::string& destinationPartId,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-        const WriteLocker& messageQueueRetryWriteLock)
+void LibJoynrMessageRouter::sendMessage(
+        std::shared_ptr<ImmutableMessage> message,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+        std::uint32_t tryCount)
 {
-    assert(messageQueueRetryWriteLock.owns_lock());
-    std::ignore = messageQueueRetryWriteLock;
-    JOYNR_LOG_TRACE(logger(),
-                    "sendMessages: sending messages for destinationPartId {} and {}",
-                    destinationPartId,
-                    address->toString());
-    while (true) {
-        std::shared_ptr<ImmutableMessage> item(_messageQueue->getNextMessageFor(destinationPartId));
-        if (!item) {
-            break;
-        }
-        scheduleMessage(item, address);
-    }
+    scheduleMessage(message, destAddress, tryCount);
 }
 
 bool LibJoynrMessageRouter::publishToGlobal(const ImmutableMessage& message)
@@ -436,8 +425,7 @@ void LibJoynrMessageRouter::addNextHop(
     bool addToRoutingTableSuccessful =
             addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
     if (addToRoutingTableSuccessful) {
-        sendQueuedMessages(participantId, address, lock);
-        lock.unlock();
+        sendQueuedMessages(participantId, address, std::move(lock));
 
         addNextHopToParent(
                 participantId, isGloballyVisible, std::move(onSuccess), std::move(onError));
@@ -445,12 +433,12 @@ void LibJoynrMessageRouter::addNextHop(
         JOYNR_LOG_WARN(logger(),
                        "Unable to addNextHop for participant {}, as addToRoutingTable "
                        "failed. Removing from routing table.");
+        lock.unlock();
 
         if (onError) {
             onError(exceptions::ProviderRuntimeException(
                     "unable to addNextHop, as addToRoutingTable failed"));
         }
-        lock.unlock();
     }
 }
 

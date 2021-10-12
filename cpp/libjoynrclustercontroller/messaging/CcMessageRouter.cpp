@@ -249,27 +249,7 @@ void CcMessageRouter::reestablishMulticastSubscriptions()
     }
 }
 
-void CcMessageRouter::sendQueuedMessages(
-        const std::string& destinationPartId,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-        const WriteLocker& messageQueueRetryWriteLock)
-{
-    assert(messageQueueRetryWriteLock.owns_lock());
-    std::ignore = messageQueueRetryWriteLock;
-    JOYNR_LOG_TRACE(logger(),
-                    "sendMessages: sending messages for destinationPartId {} and {}",
-                    destinationPartId,
-                    address->toString());
-    while (true) {
-        std::shared_ptr<ImmutableMessage> item(_messageQueue->getNextMessageFor(destinationPartId));
-        if (!item) {
-            break;
-        }
-        doAccessControlCheckOrScheduleMessage(item, address);
-    }
-}
-
-void CcMessageRouter::doAccessControlCheckOrScheduleMessage(
+void CcMessageRouter::sendMessage(
         std::shared_ptr<ImmutableMessage> message,
         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
         std::uint32_t tryCount)
@@ -348,7 +328,7 @@ void CcMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> message,
     }
 
     for (std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress : destAddresses) {
-        doAccessControlCheckOrScheduleMessage(message, destAddress, tryCount);
+        sendMessage(message, destAddress, tryCount);
     }
 }
 
@@ -478,9 +458,7 @@ void CcMessageRouter::addNextHop(
             addToRoutingTable(participantId, isGloballyVisible, address, expiryDateMs, isSticky);
 
     if (addToRoutingTableSuccessful) {
-        sendQueuedMessages(participantId, address, lock);
-
-        lock.unlock();
+        sendQueuedMessages(participantId, address, std::move(lock));
 
         if (onSuccess) {
             onSuccess();

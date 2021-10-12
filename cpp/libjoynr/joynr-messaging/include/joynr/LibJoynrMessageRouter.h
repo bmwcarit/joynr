@@ -145,9 +145,9 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LibJoynrMessageRouter);
     ADD_LOGGER(LibJoynrMessageRouter)
 
-    void sendQueuedMessages(const std::string& destinationPartId,
-                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-                            const WriteLocker& messageQueueRetryWriteLock) final;
+    void sendMessage(std::shared_ptr<ImmutableMessage> message,
+                     std::shared_ptr<const system::RoutingTypes::Address> destAddress,
+                     std::uint32_t tryCount = 0) final;
 
     bool isParentMessageRouterSet();
     void addNextHopToParent(std::string participantId,

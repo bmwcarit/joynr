@@ -135,13 +135,21 @@ protected:
     virtual void routeInternal(std::shared_ptr<ImmutableMessage> message,
                                std::uint32_t tryCount) = 0;
 
-    virtual void sendQueuedMessages(
-            const std::string& destinationPartId,
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
-            const WriteLocker& messageQueueRetryWriteLock) = 0;
-
     void sendQueuedMessages(
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address) final;
+
+    void sendQueuedMessages(const std::string& destinationPartId,
+                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+                            WriteLocker&& messageQueueRetryWriteLock);
+
+    virtual void sendMessage(std::shared_ptr<ImmutableMessage> message,
+                             std::shared_ptr<const system::RoutingTypes::Address> destAddress,
+                             std::uint32_t tryCount = 0) = 0;
+
+    void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
+                         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
+                         std::uint32_t tryCount = 0,
+                         std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 
     virtual bool isValidForRoutingTable(
             std::shared_ptr<const joynr::system::RoutingTypes::Address> address) = 0;
@@ -154,16 +162,6 @@ protected:
                            std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
                            const std::int64_t expiryDateMs,
                            const bool isSticky);
-
-    virtual void doAccessControlCheckOrScheduleMessage(
-            std::shared_ptr<ImmutableMessage> message,
-            std::shared_ptr<const system::RoutingTypes::Address> destAddress,
-            std::uint32_t tryCount = 0);
-
-    void scheduleMessage(std::shared_ptr<ImmutableMessage> message,
-                         std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-                         std::uint32_t tryCount = 0,
-                         std::chrono::milliseconds delay = std::chrono::milliseconds(0));
 
     void activateMessageCleanerTimer();
     void activateRoutingTableCleanerTimer();

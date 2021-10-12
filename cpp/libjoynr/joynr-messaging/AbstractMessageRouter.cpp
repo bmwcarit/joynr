@@ -239,22 +239,36 @@ void AbstractMessageRouter::sendQueuedMessages(
         ReadLocker lock(_routingTableLock);
         participantIdSet = _routingTable.lookupParticipantIdsByAddress(address);
     }
-    if (participantIdSet.size() > 0) {
+    if (participantIdSet.empty()) {
+        return;
+    }
+    for (const auto& participantId : participantIdSet) {
         WriteLocker lock(_messageQueueRetryLock);
-        for (const auto& participantId : participantIdSet) {
-            sendQueuedMessages(participantId, address, lock);
-        }
+        sendQueuedMessages(participantId, address, std::move(lock));
     }
 }
-void AbstractMessageRouter::doAccessControlCheckOrScheduleMessage(
-        std::shared_ptr<ImmutableMessage> message,
-        std::shared_ptr<const joynr::system::RoutingTypes::Address> destAddress,
-        std::uint32_t tryCount)
+
+void AbstractMessageRouter::sendQueuedMessages(
+        const std::string& destinationPartId,
+        std::shared_ptr<const joynr::system::RoutingTypes::Address> address,
+        WriteLocker&& messageQueueRetryWriteLock)
 {
-    std::ignore = message;
-    std::ignore = destAddress;
-    std::ignore = tryCount;
-    // no implementation needed when this method is called by LibjoynrMessageRouter
+    assert(messageQueueRetryWriteLock.owns_lock());
+    JOYNR_LOG_TRACE(logger(),
+                    "sendMessages: sending messages for destinationPartId {} and {}",
+                    destinationPartId,
+                    address->toString());
+    std::vector<std::shared_ptr<ImmutableMessage>> messages;
+    while (auto item = _messageQueue->getNextMessageFor(destinationPartId)) {
+        messages.push_back(item);
+    }
+    // _messageQueueRetryLock must be released before calling sendMessage
+    // to prevent deadlock in case the message cannot be sent (e.g. if the stub
+    // creation fails) and it has to be queued again
+    messageQueueRetryWriteLock.unlock();
+    for (auto message : messages) {
+        sendMessage(message, address);
+    }
 }
 
 void AbstractMessageRouter::scheduleMessage(
@@ -633,8 +647,7 @@ void MessageRunnable::run()
         if (messageRouterSharedPtr->canMessageBeTransmitted(_message)) {
             _messagingStub->transmit(_message, onFailure);
         } else {
-            messageRouterSharedPtr->doAccessControlCheckOrScheduleMessage(
-                    _message, _destAddress, _tryCount);
+            messageRouterSharedPtr->sendMessage(_message, _destAddress, _tryCount);
         }
 
     } else {
