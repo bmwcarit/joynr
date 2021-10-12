@@ -34,6 +34,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -43,8 +45,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -85,10 +89,12 @@ import io.reactivex.functions.Consumer;
 public class HivemqMqttClientIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientIntegrationTest.class);
 
-    private static final String[] gbids = new String[]{ "testGbid1", "testGbid2" };
+    private static final String[] gbids = new String[]{ "testGbid1", "testGbid2", "testGbid3", "testGbid4",
+            "testGbids5" };
 
     private static final int DEFAULT_QOS_LEVEL = 1; // AT_LEAST_ONCE
     private static final int DEFAULT_EXPIRY_INTERVAL_SEC = 60;
+
     private Injector injector;
     private HivemqMqttClientFactory hivemqMqttClientFactory;
     private String ownTopic;
@@ -113,13 +119,27 @@ public class HivemqMqttClientIntegrationTest {
     private Properties properties;
     private byte[] serializedMessage;
 
+    // Get the path of the test resources
+    private static String getResourcePath(String filename) throws URISyntaxException {
+        URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
+        return resource.getPath();
+    }
+
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         properties = new Properties();
-        properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://localhost:1883, tcp://localhost:1883");
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,60");
-        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "30, 30");
+        final String keyStorePath = getResourcePath("clientkeystore.jks");
+        final String trustStorePath = getResourcePath("catruststore.jks");
+        final String KEY_AND_TRUSTSTORE_PASSWORD = "password";
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH, keyStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PATH, trustStorePath);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PWD, KEY_AND_TRUSTSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEY_AND_TRUSTSTORE_PASSWORD);
+        properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS,
+                       "tcp://localhost:1883,mqtt://localhost:1883,ssl://localhost:8883,tls://localhost:8883,mqtts://localhost:8883");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,60,60,60,60");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "30,30,30,30,30");
         properties.put(ConfigurableMessagingSettings.PROPERTY_GBIDS,
                        Arrays.stream(gbids).collect(Collectors.joining(",")));
         serializedMessage = new byte[10];
@@ -132,6 +152,13 @@ public class HivemqMqttClientIntegrationTest {
                 return "HivemqMqttClientTest-" + counter.getAndIncrement() + "_" + System.currentTimeMillis();
             }
         }).when(mockMqttClientIdProvider).getClientId();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (hivemqMqttClientFactory != null) {
+            hivemqMqttClientFactory.shutdown();
+        }
     }
 
     private void createHivemqMqttClientFactory() {
@@ -625,4 +652,20 @@ public class HivemqMqttClientIntegrationTest {
         assertTrue(client.isShutdown());
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void connectionsUseSslAccordingToProtocolPrefix() throws Exception {
+        // the following relates to PROPERTY_MQTT_BROKER_URIS defined above
+        // tcp://localhost:1883,mqtt://localhost:1883,ssl://localhost:8883,tls://localhost:8883,mqtts://localhost:8883
+        final boolean[] expectedSslConfigPresent = new boolean[]{ false, false, true, true, true };
+
+        createHivemqMqttClientFactory();
+
+        assertEquals(gbids.length, expectedSslConfigPresent.length);
+        for (int i = 0; i < gbids.length; i++) {
+            HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[i]);
+            assertEquals(expectedSslConfigPresent[i], client.getClient().getConfig().getSslConfig().isPresent());
+            client.shutdown();
+        }
+    }
 }

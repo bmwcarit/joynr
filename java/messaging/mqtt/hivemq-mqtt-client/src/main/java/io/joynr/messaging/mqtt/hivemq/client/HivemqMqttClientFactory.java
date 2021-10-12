@@ -252,7 +252,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                                      .addConnectedListener(resubscribeHandler)
                                                      .addDisconnectedListener(disconnectedListener)
                                                      .executorConfig(executorConfig);
-        if (serverUri.getScheme().equals("ssl") || serverUri.getScheme().equals("tls")) {
+        if (serverUri.getScheme().equals("ssl") || serverUri.getScheme().equals("tls")
+                || serverUri.getScheme().equals("mqtts")) {
             clientBuilder.sslWithDefaultConfig();
             setupSslConfig(clientBuilder);
         }
