@@ -9,8 +9,11 @@ None.
 
 ## Other Changes
 * **[C++]** LibJonyrUdsRuntime calls onFatalRuntimeError and stops processing if:
-  * UDS server socket directory does not exists
-  * UDS server socket exists but is not readable or not writable 
+  * UDS server socket directory does not exist
+  * UDS server socket exists but is not readable or not writable
+* **[Java]** MQTT layer accepts `mqtts`, `ssl` and `tls` as protocol descriptors
+  for TLS MQTT broker connections, and `mqtt` and `tcp` as protocol descriptors
+  for non-TLS MQTT broker connections.
 
 ## Configuration Property Changes
 None.
@@ -20,7 +23,6 @@ None.
 
 ## Bug Fixes
 None.
-
 
 # joynr 1.18.0
 
