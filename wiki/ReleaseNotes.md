@@ -8,12 +8,16 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
-* **[C++]** LibJonyrUdsRuntime calls onFatalRuntimeError and stops processing if:
+* **[Android]** Android build is enabled again in Maven profile `android`.
+* **[C++]** LibJoynrUdsRuntime calls onFatalRuntimeError and stops processing if:
   * UDS server socket directory does not exist
   * UDS server socket exists but is not readable or not writable
 * **[Java]** MQTT layer accepts `mqtts`, `ssl` and `tls` as protocol descriptors
   for TLS MQTT broker connections, and `mqtt` and `tcp` as protocol descriptors
   for non-TLS MQTT broker connections.
+* **[Generator]** Removed warning when `--addVersionTo` is set because `--addVersionTo` setting has
+  been temporarily reactived again in joynr 1.16.0 and overrules the `#noVersionGeneration` comment
+  in fidl files.
 
 ## Configuration Property Changes
 None.
@@ -22,7 +26,9 @@ None.
 None.
 
 ## Bug Fixes
-None.
+* **[C++]** Fixed a potential deadlock when trying to route queued messages.
+* **[Android]** Fixed a bug in libjoynr message routing that caused a message loop between libjoynr
+  runtime and cluster controller.
 
 # joynr 1.18.0
 
