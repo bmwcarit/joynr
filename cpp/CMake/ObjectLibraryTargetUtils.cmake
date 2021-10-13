@@ -205,12 +205,13 @@ endfunction()
 
 # For CMake older than 3.12 target_link_libraries cannot be called for OBJECT libraries.
 # This is a compatibility wrapper.
+# We also discovered an issue with CMake 3.13, so the wrapper is also used there.
 function(objlibrary_target_link_libraries target)
     get_target_property(targetType ${target} TYPE)
     if(NOT "${targetType}" STREQUAL "OBJECT_LIBRARY")
         message(FATAL_ERROR "Target ${target} is not an OBJECT library. Use target_link_[obj]libraries(${target} ${ARGN}).")
     endif()
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
         target_link_libraries(${target} ${ARGN})
         return()
     endif()
