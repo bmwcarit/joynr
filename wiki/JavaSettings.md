@@ -484,7 +484,10 @@ The amount of Broker-Uris has to be equal to the amount of defined GBIDs, define
 ConfigurableMessagingSettings.PROPERTY_GBIDS.
   
 * `tcp://HOST:PORT`: use insecure connection
+* `mqtt://HOST:PORT`: use insecure connection
 * `ssl://HOST:PORT`: use secure connection, for this you will have to provide keystore and truststore
+* `tls://HOST:PORT`: use secure connection, for this you will have to provide keystore and truststore
+* `mqtts://HOST:PORT`: use secure connection, for this you will have to provide keystore and truststore
 
 * **REQUIRED if using the MQTTModule**
 * **Type**: String
