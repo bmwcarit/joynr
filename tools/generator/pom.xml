@@ -196,7 +196,7 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>android</id>		
+			<id>android</id>
 			<modules>
 				<module>joynr-generator-gradle-plugin</module>
 			</modules>

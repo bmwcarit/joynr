@@ -53,7 +53,7 @@
 
 	<profiles>
 		<profile>
-			<id>android</id>		
+			<id>android</id>
 			<repositories>
 				<repository>
 					<id>google-maven</id>

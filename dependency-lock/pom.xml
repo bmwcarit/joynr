@@ -52,7 +52,7 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>android</id>		
+			<id>android</id>
 			<modules>
 				<module>../android</module>
 			</modules>

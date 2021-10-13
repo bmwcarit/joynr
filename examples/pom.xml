@@ -45,7 +45,7 @@
 		</profile>
 		<!-- Only include Android examples when Android is available -->
 		<profile>
-			<id>android</id>		
+			<id>android</id>
 			<modules>
 				<module>android</module>
 			</modules>
