@@ -405,6 +405,14 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             }
         }
         runtime.shutdown(true);
+        // TODO currently there is a bug preventing all threads being stopped
+        // WORKAROUND
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // do nothing; exiting application
+        }
+        System.exit(0);
     }
 
     private static void provisionAccessControl(Properties properties, String domain) throws Exception {

@@ -346,6 +346,15 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
 
         // Add any clean up code here for your application.
         runtime.shutdown(true);
+
+        // TODO currently there is a bug preventing all threads being stopped
+        // WORKAROUND
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // do nothing; exiting application
+        }
+        System.exit(0);
     }
 
     private Future<String> subscribeToWeakSignal(MulticastSubscriptionQos qos, String... partitions) {
