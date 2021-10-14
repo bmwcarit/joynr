@@ -85,4 +85,14 @@
 			</plugin>
 		</plugins>
 	</build>
+	<dependencies>
+		<dependency>
+			<!-- required for javadoc only -->
+			<groupId>com.google.android</groupId>
+			<artifactId>android</artifactId>
+			<version>28</version>
+			<scope>system</scope>
+			<systemPath>${env.ANDROID_HOME}/platforms/${env.ANDROID_API_LEVEL}/android.jar</systemPath>
+		</dependency>
+	</dependencies>
 </project>

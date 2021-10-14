@@ -233,6 +233,14 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<!-- exclude because of error: package exists in another module: java.transaction.xa -->
+					<sourceFileExcludes>**/javax/**</sourceFileExcludes>
+					<sourceFileIncludes>${project.basedir}/build/generated/aidl_source_output_dir/release/**/*.java</sourceFileIncludes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
