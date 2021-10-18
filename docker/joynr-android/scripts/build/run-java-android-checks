@@ -39,6 +39,6 @@ then
 fi
 set -e
 
-#(
-#  mvn javadoc:jar -P android
-#)
+(
+  mvn javadoc:jar -P android
+)
