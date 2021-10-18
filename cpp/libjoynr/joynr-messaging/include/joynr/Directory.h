@@ -115,6 +115,7 @@ public:
         if (found != callbackMap.cend()) {
             value = found->second;
             callbackMap.erase(keyId);
+            _timeoutTimerMap.erase(keyId);
         }
         return value;
     }
