@@ -1,0 +1,46 @@
+version: '3.0'
+
+services:
+
+  joynr-gcd-db:
+    # build: run "cd joynr-gcd-db && ./build_docker_image.sh"
+    image: 'joynr-gcd-db'
+    ports:
+      - "5432:5432"
+    container_name: 'joynr-gcd-db'
+
+  mqttbroker-1:
+    # make sure joynr-mqttbroker/scripts/prepareBrokerConfigAndCerts.sh
+    # has been invoked to prepare config file and certficates
+    image: 'hivemq/hivemq-ce:2021.2'
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+    container_name: 'mqttbroker-1'
+    environment:
+      - HIVEMQ_ALLOW_ALL_CLIENTS=true
+      - HIVEMQ_TLS_PORT=8883
+      - HIVEMQ_KEYSTORE_PATH=/tmp/certs/serverkeystore.jks
+      - HIVEMQ_KEYSTORE_PASSWORD=password
+      - HIVEMQ_PRIVATE_KEY_PASSWORD=password
+      - HIVEMQ_TRUSTSTORE_PATH=/tmp/certs/catruststore.jks
+      - HIVEMQ_TRUSTSTORE_PASSWORD=password
+      - HIVEMQ_LOG_LEVEL=TRACE
+    volumes:
+      - ./joynr-mqttbroker/var/certs:/tmp/certs
+      - ./joynr-mqttbroker/var/config.xml:/opt/hivemq-ce-2021.2/conf/config.xml
+
+  joynr-gcd-1:
+    # build: run "cd joynr-gcd && ./build_docker_image.sh"
+    image: 'joynr-gcd'
+    container_name: 'joynr-gcd-1'
+    depends_on:
+      - joynr-gcd-db
+      - mqttbroker-1
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker-1:1883
+      - joynr_gcd_db_host=joynr-gcd-db
+      # optional ("joynrdefaultgbid" is the default value for the following properties)
+      - joynr_gcd_gbid=joynrdefaultgbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid
+      - joynr_messaging_gbids=joynrdefaultgbid
