@@ -327,7 +327,7 @@ void LibJoynrMessageRouter::addNextHopToParent(
                                        std::move(onSuccess),
                                        std::move(onErrorWrapper));
     } else if (onError) {
-        std::string errorMsg = "Unsupported incomming address - ";
+        std::string errorMsg = "Unsupported incoming address - ";
         errorMsg += _incomingAddress ? _incomingAddress->toString() : " NULL pointer";
         onError(joynr::exceptions::ProviderRuntimeException(errorMsg));
     }

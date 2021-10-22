@@ -984,7 +984,7 @@ TEST_F(LibJoynrMessageRouterTest, checkIfMessageIsNotSendIfAddressIsNotAllowedIn
     EXPECT_EQ(this->_messageRouter->getNumberOfRoutedMessages(), 1);
 }
 
-TEST_F(LibJoynrMessageRouterTest, invalidIncommingAddress)
+TEST_F(LibJoynrMessageRouterTest, invalidIncomingAddress)
 {
     Settings settings;
     MessagingSettings messagingSettings(settings);
@@ -1018,12 +1018,12 @@ TEST_F(LibJoynrMessageRouterTest, invalidIncommingAddress)
     };
     messageRouter.setParentRouter(parentProxyMock, onSuccess, onError);
 
-    EXPECT_THAT(callException.what(), HasSubstr("incomming address"));
+    EXPECT_THAT(callException.what(), HasSubstr("incoming address"));
     EXPECT_THAT(callException.what(), HasSubstr("NULL pointer"));
     messageRouter.shutdown();
 }
 
-TEST_F(LibJoynrMessageRouterTest, udsIncommingAddress)
+TEST_F(LibJoynrMessageRouterTest, udsIncomingAddress)
 {
     Settings settings;
     MessagingSettings messagingSettings(settings);
