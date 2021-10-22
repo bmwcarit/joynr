@@ -59,7 +59,7 @@ public:
     virtual const system::RoutingTypes::Address& getGlobalClusterControllerAddress() const = 0;
 
     /**
-      * Starts processing incomming messages. This method must be called
+      * Starts processing incoming messages. This method must be called
       * after creation in order to receive incoming messages.
       */
     virtual void startReceiveQueue() = 0;
