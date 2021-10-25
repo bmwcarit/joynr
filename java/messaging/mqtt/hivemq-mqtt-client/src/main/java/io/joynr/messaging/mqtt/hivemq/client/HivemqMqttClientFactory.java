@@ -412,7 +412,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
         @Override
         public void onDisconnected(MqttClientDisconnectedContext context) {
-            logger.info("{}: HiveMQ MQTT client disconnected: source: {}, cause: {}",
+            logger.info("{}: HiveMQ MQTT client disconnected: source: {}",
                         clientInformation,
                         context.getSource(),
                         context.getCause());

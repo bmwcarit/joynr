@@ -235,7 +235,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                     return true;
                 }).blockingAwait(5000, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
-                logger.error("{}: Exception thrown on disconnect.", clientInformation, e.getMessage());
+                logger.error("{}: Exception thrown on disconnect.", clientInformation, e);
             }
             if (publishesDisposable != null) {
                 publishesDisposable.dispose();
