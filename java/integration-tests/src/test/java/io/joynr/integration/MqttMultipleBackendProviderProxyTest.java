@@ -445,9 +445,6 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
 
         String providerParticipantId = registerProvider(testProvider);
 
-        fakeIncomingMessage(targetGbid,
-                            messageCreator.create(proxyParticipantId, providerParticipantId, requestReplyId));
-
         // expect initial publication and SubscriptionReply
         CountDownLatch replyCountDownLatch = new CountDownLatch(2);
         doAnswer(createVoidCountDownAnswer(replyCountDownLatch)).when(expectedClient)
@@ -458,6 +455,9 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                                                                                 anyLong(),
                                                                                 any(SuccessAction.class),
                                                                                 any(FailureAction.class));
+        fakeIncomingMessage(targetGbid,
+                            messageCreator.create(proxyParticipantId, providerParticipantId, requestReplyId));
+
         assertTrue(replyCountDownLatch.await(1000, TimeUnit.MILLISECONDS));
 
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
