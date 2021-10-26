@@ -131,6 +131,8 @@ public abstract class AbstractMqttMultipleBackendTest {
 
     protected void createJoynrRuntimeWithMockedGcdClient() {
         shutdownRuntime();
+        // prevent invocation of removeStale when using unprepared mocked gcdClient
+        properties.put(SystemServicesSettings.PROPERTY_CC_REMOVE_STALE_DELAY_MS, String.valueOf(Long.MAX_VALUE));
 
         injector = Guice.createInjector(override(new CCInProcessRuntimeModule(),
                                                  new HivemqMqttClientModule()).with(new JoynrPropertiesModule(properties),
