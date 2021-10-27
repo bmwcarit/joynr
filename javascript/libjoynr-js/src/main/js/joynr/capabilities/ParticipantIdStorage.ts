@@ -19,21 +19,19 @@
 import { Persistency } from "../../global/interface/Persistency";
 import { JoynrProvider, JoynrProviderType } from "../types/JoynrProvider";
 import * as CapabilitiesUtil from "../util/CapabilitiesUtil";
-import nanoid from "nanoid";
-type nanoidType = typeof nanoid;
 
 class ParticipantIdStorage {
-    private nanoid: nanoidType;
+    private createUniqueId: () => string;
     private persistency: Persistency;
     /**
      * @constructor
      *
      * @param persistency - the persistence object to be used to store the participantIds
-     * @param nanoid - a function generating a unique string
+     * @param createUniqueId - a function generating a unique string
      */
-    public constructor(persistency: Persistency, nanoid: nanoidType) {
+    public constructor(persistency: Persistency, createUniqueId: () => string) {
         this.persistency = persistency;
-        this.nanoid = nanoid;
+        this.createUniqueId = createUniqueId;
     }
 
     /**
@@ -51,7 +49,7 @@ class ParticipantIdStorage {
         );
         let participantId = this.persistency.getItem(key);
         if (!participantId) {
-            participantId = this.nanoid();
+            participantId = this.createUniqueId();
             this.persistency.setItem(key, participantId);
         }
         return participantId;
