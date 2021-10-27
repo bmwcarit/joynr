@@ -2,6 +2,24 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.18.2
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Boost EPOLL deactivation does not work with Boost 1.72. Enabled again.
+Recommended to use Boost 1.72 or higher with joynr UDS runtime.
+
 # joynr 1.18.1
 
 ## API-relevant Changes
