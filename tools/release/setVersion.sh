@@ -1,4 +1,7 @@
 #!/bin/bash -x
+
+set -e
+
 if (( $# != 2 )); then
     echo "Improper usage of this script. Please invoke with arguments <OLD_VERSION> <NEW_VERSION> "
     exit 1
