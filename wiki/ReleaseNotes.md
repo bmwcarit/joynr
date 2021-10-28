@@ -18,7 +18,12 @@ None.
 
 ## Bug Fixes
 * **[C++]** Boost EPOLL deactivation does not work with Boost 1.72. Enabled again.
-Recommended to use Boost 1.72 or higher with joynr UDS runtime.
+  Recommended to use Boost 1.72 or higher with joynr UDS runtime.
+* **[Java]** Added missing Maven configuration to allow JavaDoc generation by executing
+  `mvn javadoc:jar`.
+* **[Java]** Fixed log statements in HivemqMqttClient and HivemqMqttClientFactory: exceptions are
+  now logged correctly with stack trace.
+* **[TS]** Remove undocumented dependency to '@types/nanoid'.
 
 # joynr 1.18.1
 
