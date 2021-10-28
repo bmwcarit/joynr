@@ -49,6 +49,12 @@ tests/performance-test/CMakeLists.txt \
 tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt
 
+# Required to run setVersion.sh without Android SDK
+if [ -z ${ANDROID_HOME} ]
+then
+    export ANDROID_HOME=""
+    export ANDROID_API_LEVEL=""
+fi
 mvn versions:set -P android,javascript -DnewVersion=$2
 mvn versions:commit -P android,javascript
 
