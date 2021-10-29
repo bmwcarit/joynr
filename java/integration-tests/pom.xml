@@ -80,7 +80,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-server</artifactId>
+			<artifactId>websocket-jetty-server</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -211,7 +211,7 @@
 							<configuration>
 								<ignoredUnusedDeclaredDependencies>
 									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-log4j12</ignoredUnusedDeclaredDependency>
-									<ignoredUnusedDeclaredDependency>org.eclipse.jetty.websocket:websocket-server</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.eclipse.jetty.websocket:websocket-jetty-server</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
 						</execution>
