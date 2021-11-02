@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,8 +23,10 @@
 #include <gtest/gtest.h>
 
 #include "joynr/ThreadPoolDelayedScheduler.h"
+#include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/mock/MockRunnable.h"
 #include "tests/utils/PtrUtils.h"
 #include "tests/utils/TestRunnable.h"
@@ -41,7 +43,8 @@ class ThreadPoolDelayedSchedulerTest : public testing::Test
 {
 public:
     ThreadPoolDelayedSchedulerTest()
-            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>())
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
+              semaphore(0)
     {
         singleThreadedIOService->start();
     }
@@ -53,6 +56,7 @@ public:
 
 protected:
     std::shared_ptr<SingleThreadedIOService> singleThreadedIOService;
+    Semaphore semaphore;
 };
 
 TEST_F(ThreadPoolDelayedSchedulerTest, startAndShutdownWithoutWork)
@@ -76,21 +80,26 @@ TEST_F(ThreadPoolDelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorO
 
     // Dtor should be called
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
-    scheduler->schedule(runnable1, std::chrono::milliseconds(100));
 
     // Dtor called after scheduler was cleaned
     auto runnable2 = std::make_shared<StrictMock<MockRunnable>>();
-    scheduler->schedule(runnable2, std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
     EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
+    EXPECT_CALL(*runnable2, shutdown()).Times(AnyNumber());
+
+    scheduler->schedule(runnable1, std::chrono::seconds(2));
+    scheduler->schedule(runnable2, std::chrono::seconds(2));
+
+    EXPECT_CALL(*runnable1, run()).Times(0);
+    EXPECT_CALL(*runnable2, run()).Times(0);
+
+    EXPECT_EQ(2, runnable1.use_count());
+    EXPECT_EQ(2, runnable2.use_count());
 
     scheduler->shutdown();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
     test::util::resetAndWaitUntilDestroyed(runnable1);
     test::util::resetAndWaitUntilDestroyed(runnable2);
 }
@@ -103,18 +112,21 @@ TEST_F(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
                                                          singleThreadedIOService->getIOService(),
                                                          std::chrono::milliseconds::zero());
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5);
-
-    scheduler->schedule(runnable1, std::chrono::milliseconds(5));
+    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(1000);
 
     EXPECT_CALL(*runnable1, runCalled()).Times(1);
-    EXPECT_CALL(*runnable1, runCalledInTime()).Times(1);
+    EXPECT_CALL(*runnable1, runCalledInTime())
+                                    .Times(1)
+                                    .WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    scheduler->schedule(runnable1, std::chrono::seconds(1));
+
+    // wait for the runnable's execution
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 
     scheduler->shutdown();
-
     test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
@@ -128,12 +140,15 @@ TEST_F(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpir
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
+    EXPECT_CALL(*runnable1, run())
+                            .Times(1)
+                            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
+
     scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
-    EXPECT_CALL(*runnable1, run()).Times(1);
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 
     scheduler->shutdown();
     test::util::resetAndWaitUntilDestroyed(runnable1);
@@ -147,47 +162,26 @@ TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
                                                          singleThreadedIOService->getIOService(),
                                                          std::chrono::milliseconds::zero());
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(1000);
+
+    EXPECT_CALL(*runnable1, dtorCalled())
+                            .Times(1)
+                            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, runCalled()).Times(0);
+    EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
 
     joynr::DelayedScheduler::RunnableHandle handle =
-            scheduler->schedule(runnable1, std::chrono::milliseconds(5));
+            scheduler->schedule(runnable1, std::chrono::seconds(1));
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_EQ(2, runnable1.use_count());
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    runnable1.reset();
 
     scheduler->unschedule(handle);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
 
     scheduler->shutdown();
-
-    test::util::resetAndWaitUntilDestroyed(runnable1);
-}
-
-TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
-{
-    auto scheduler =
-            std::make_shared<ThreadPoolDelayedScheduler>(1,
-                                                         "ThreadPoolDelayedScheduler",
-                                                         singleThreadedIOService->getIOService(),
-                                                         std::chrono::milliseconds::zero());
-
-    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(5);
-
-    joynr::DelayedScheduler::RunnableHandle handle =
-            scheduler->schedule(runnable1, std::chrono::milliseconds(5));
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
-
-    scheduler->unschedule(handle);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-    scheduler->shutdown();
-    test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
 TEST_F(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
@@ -196,20 +190,22 @@ TEST_F(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
             std::make_shared<ThreadPoolDelayedScheduler>(1,
                                                          "ThreadPoolDelayedScheduler",
                                                          singleThreadedIOService->getIOService(),
-                                                         std::chrono::milliseconds(10));
+                                                         std::chrono::milliseconds(1000));
 
-    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(10);
+    auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(1000);
+
+    EXPECT_CALL(*runnable1, runCalled()).Times(1);
+    EXPECT_CALL(*runnable1, runCalledInTime())
+                           .Times(1)
+                           .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
 
     scheduler->schedule(runnable1);
 
-    EXPECT_CALL(*runnable1, runCalled()).Times(1);
-    EXPECT_CALL(*runnable1, runCalledInTime()).Times(1);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(15));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
 
     scheduler->shutdown();
-
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
     test::util::resetAndWaitUntilDestroyed(runnable1);
 }
 
@@ -221,4 +217,5 @@ TEST_F(ThreadPoolDelayedSchedulerTest, schedule_deletingRunnablesCorrectly)
     scheduler->schedule(runnable, std::chrono::milliseconds(1));
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     scheduler->shutdown();
+    test::util::resetAndWaitUntilDestroyed(runnable);
 }
