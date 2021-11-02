@@ -74,7 +74,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-servlet</artifactId>
+			<artifactId>websocket-jetty-server</artifactId>
 		</dependency>
 	</dependencies>
 </project>

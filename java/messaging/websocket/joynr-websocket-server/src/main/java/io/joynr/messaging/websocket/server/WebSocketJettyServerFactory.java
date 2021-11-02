@@ -26,6 +26,7 @@ import com.google.inject.Singleton;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;
 import io.joynr.messaging.websocket.WebSocketEndpointFactory;
+import io.joynr.messaging.websocket.WebsocketModule;
 import io.joynr.util.ObjectMapper;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
@@ -33,20 +34,26 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 public class WebSocketJettyServerFactory implements WebSocketEndpointFactory {
 
     private int maxMessageSize;
+    private long websocketIdleTimeout;
     private ObjectMapper objectMapper;
     private WebSocketJettyServer jettyServer;
 
     @Inject
     public WebSocketJettyServerFactory(@Named(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE) int maxMessageSize,
+                                       @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_IDLE_TIMEOUT) long websocketIdleTimeout,
                                        ObjectMapper objectMapper) {
         this.maxMessageSize = maxMessageSize;
+        this.websocketIdleTimeout = websocketIdleTimeout;
         this.objectMapper = objectMapper;
     }
 
     @Override
     public synchronized JoynrWebSocketEndpoint create(WebSocketAddress serverAddress) {
         if (jettyServer == null) {
-            jettyServer = new WebSocketJettyServer((WebSocketAddress) serverAddress, objectMapper, maxMessageSize);
+            jettyServer = new WebSocketJettyServer((WebSocketAddress) serverAddress,
+                                                   objectMapper,
+                                                   maxMessageSize,
+                                                   websocketIdleTimeout);
         }
         return jettyServer;
     }

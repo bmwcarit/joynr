@@ -89,6 +89,7 @@ public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWeb
         webSocketEndpoint = webSocketEndpointFactory.create(serverAddress);
         webSocketEndpoint.setMessageListener(this);
         webSocketEndpoint.start();
+        logger.debug("WebSocketEndpoint started");
     }
 
     @Override

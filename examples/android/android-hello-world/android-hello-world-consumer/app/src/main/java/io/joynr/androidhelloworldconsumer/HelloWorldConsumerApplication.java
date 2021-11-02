@@ -39,7 +39,7 @@ public class HelloWorldConsumerApplication extends Application {
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, host);
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + port);
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "/");
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
                 getApplicationContext().getCacheDir() + "/" + STATIC_PERSISTENCE_FILE);
