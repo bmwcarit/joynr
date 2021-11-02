@@ -101,7 +101,7 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runn
 
                         if (it == thisSharedPtr->_delayedRunnables.end()) {
                             JOYNR_LOG_WARN(logger(),
-                                           "Timed runnable with ID {} not found.",
+                                           "Timed runnable with ID {} not found while scheduling.",
                                            newRunnableHandle);
                             return;
                         }
@@ -141,7 +141,9 @@ void DelayedScheduler::unschedule(const RunnableHandle runnableHandle)
         auto it = _delayedRunnables.find(runnableHandle);
 
         if (it == _delayedRunnables.end()) {
-            JOYNR_LOG_WARN(logger(), "Timed runnable with ID {} not found.", runnableHandle);
+            JOYNR_LOG_WARN(logger(),
+                           "Timed runnable with ID {} not found while unscheduling.",
+                           runnableHandle);
             return;
         }
 
