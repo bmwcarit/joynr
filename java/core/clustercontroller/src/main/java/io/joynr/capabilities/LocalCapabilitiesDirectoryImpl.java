@@ -1122,6 +1122,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
             capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
                                                                                                                            cachedGlobalCapability.get())));
         } else {
+            boolean isLookupCalledWithEmptyGbid = Arrays.equals(new String[]{ "" }, gbids);
             globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>() {
 
                 @Override
@@ -1134,6 +1135,11 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                             capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                                            localStoreEntry.get())));
                         } else {
+                            if (isLookupCalledWithEmptyGbid) {
+                                MqttAddress address = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(newGlobalDiscoveryEntry);
+                                address.setBrokerUri("");
+                                newGlobalDiscoveryEntry.setAddress(CapabilityUtils.serializeAddress(address));
+                            }
                             addToRoutingTable(newGlobalDiscoveryEntry);
                             globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
                             // No need to filter the received GDE by GBIDs: already done in GCD
@@ -1179,6 +1185,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 ? new LinkedList<DiscoveryEntryWithMetaInfo>()
                 : localDiscoveryEntries2;
 
+        boolean isLookupCalledWithEmptyGbid = Arrays.equals(new String[]{ "" }, gbids);
         globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>() {
 
             @Override
@@ -1204,6 +1211,11 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                     routingTable.incrementReferenceCount(localStoreEntry.get().getParticipantId());
                                 }
                                 continue;
+                            }
+                            if (isLookupCalledWithEmptyGbid) {
+                                MqttAddress address = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(entry);
+                                address.setBrokerUri("");
+                                entry.setAddress(CapabilityUtils.serializeAddress(address));
                             }
                             addToRoutingTable(entry);
                             globalDiscoveryEntryCache.add(entry);

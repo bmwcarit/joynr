@@ -1750,6 +1750,135 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
+    public void lookupByDomainInterface_emptyGbid_replacesReturnedGbidsWithEmpty() throws InterruptedException {
+        String[] gbids = new String[]{ "" };
+
+        LocalCapabilitiesDirectoryImpl localCapabilitiesDirectoryWithEmptyGbids = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
+                                                                                                                     globalAddressProvider,
+                                                                                                                     localDiscoveryEntryStoreMock,
+                                                                                                                     globalDiscoveryEntryCacheMock,
+                                                                                                                     routingTable,
+                                                                                                                     globalCapabilitiesDirectoryClient,
+                                                                                                                     expiredDiscoveryEntryCacheCleaner,
+                                                                                                                     freshnessUpdateIntervalMs,
+                                                                                                                     capabilitiesFreshnessUpdateExecutor,
+                                                                                                                     shutdownNotifier,
+                                                                                                                     gbids,
+                                                                                                                     DEFAULT_EXPIRY_TIME_MS);
+
+        List<GlobalDiscoveryEntry> globalEntries = new ArrayList<GlobalDiscoveryEntry>();
+
+        String domain1 = "domain1";
+        String[] domains = new String[]{ domain1 };
+        String interfaceName1 = "interfaceName1";
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.LOCAL_AND_GLOBAL, false);
+
+        // add global entries
+        String globalParticipantId = "globalParticipant";
+        GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                domain1,
+                                                                interfaceName1,
+                                                                globalParticipantId,
+                                                                new ProviderQos(),
+                                                                System.currentTimeMillis(),
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                globalAddress1Serialized);
+        globalEntries.add(capInfo);
+
+        String globalParticipantId2 = "globalParticipant2";
+        GlobalDiscoveryEntry capInfo2 = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                 domain1,
+                                                                 interfaceName1,
+                                                                 globalParticipantId2,
+                                                                 new ProviderQos(),
+                                                                 System.currentTimeMillis(),
+                                                                 expiryDateMs,
+                                                                 publicKeyId,
+                                                                 globalAddress1Serialized);
+        globalEntries.add(capInfo2);
+
+        doAnswer(createLookupAnswer(globalEntries)).when(globalCapabilitiesDirectoryClient)
+                                                   .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                           eq(new String[]{ domain1 }),
+                                                           eq(interfaceName1),
+                                                           eq(discoveryQos.getDiscoveryTimeout()),
+                                                           eq(gbids));
+        Promise<Lookup2Deferred> promise = localCapabilitiesDirectoryWithEmptyGbids.lookup(domains,
+                                                                                           interfaceName1,
+                                                                                           discoveryQos,
+                                                                                           new String[]{});
+        verifyGcdLookupAndPromiseFulfillment(1,
+                                             domains,
+                                             interfaceName1,
+                                             discoveryQos.getDiscoveryTimeout(),
+                                             gbids,
+                                             promise,
+                                             2);
+        verify(routingTable, never()).incrementReferenceCount(any());
+        ArgumentCaptor<Address> addressCaptor = ArgumentCaptor.forClass(Address.class);
+        verify(routingTable, times(1)).put(eq(globalParticipantId), addressCaptor.capture(), eq(true), anyLong());
+        MqttAddress address = (MqttAddress) addressCaptor.getValue();
+        assertEquals(gbids[0], address.getBrokerUri());
+        verify(routingTable, times(1)).put(eq(globalParticipantId2), addressCaptor.capture(), eq(true), anyLong());
+        address = (MqttAddress) addressCaptor.getValue();
+        assertEquals(gbids[0], address.getBrokerUri());
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void lookupByParticipantId_emptyGbid_replacesReturnedGbidsWithEmpty() throws InterruptedException {
+        String[] gbids = new String[]{ "" };
+
+        LocalCapabilitiesDirectoryImpl localCapabilitiesDirectoryWithEmptyGbids = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
+                                                                                                                     globalAddressProvider,
+                                                                                                                     localDiscoveryEntryStoreMock,
+                                                                                                                     globalDiscoveryEntryCacheMock,
+                                                                                                                     routingTable,
+                                                                                                                     globalCapabilitiesDirectoryClient,
+                                                                                                                     expiredDiscoveryEntryCacheCleaner,
+                                                                                                                     freshnessUpdateIntervalMs,
+                                                                                                                     capabilitiesFreshnessUpdateExecutor,
+                                                                                                                     shutdownNotifier,
+                                                                                                                     gbids,
+                                                                                                                     DEFAULT_EXPIRY_TIME_MS);
+
+        String domain1 = "domain1";
+        String interfaceName1 = "interfaceName1";
+        DiscoveryQos discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.LOCAL_AND_GLOBAL, false);
+
+        // add global entry
+        String globalParticipantId = "globalParticipant";
+        GlobalDiscoveryEntry capInfo = new GlobalDiscoveryEntry(new Version(47, 11),
+                                                                domain1,
+                                                                interfaceName1,
+                                                                globalParticipantId,
+                                                                new ProviderQos(),
+                                                                System.currentTimeMillis(),
+                                                                expiryDateMs,
+                                                                publicKeyId,
+                                                                globalAddress1Serialized);
+
+        doAnswer(createLookupAnswer(capInfo)).when(globalCapabilitiesDirectoryClient)
+                                             .lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                                                     eq(globalParticipantId),
+                                                     eq(discoveryQos.getDiscoveryTimeout()),
+                                                     eq(gbids));
+        Promise<Lookup4Deferred> promise = localCapabilitiesDirectoryWithEmptyGbids.lookup(globalParticipantId,
+                                                                                           discoveryQos,
+                                                                                           new String[]{});
+        checkPromiseSuccess(promise, "lookup failed");
+        verify(globalCapabilitiesDirectoryClient).lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+                                                         eq(globalParticipantId),
+                                                         eq(discoveryQos.getDiscoveryTimeout()),
+                                                         eq(gbids));
+        verify(routingTable, never()).incrementReferenceCount(any());
+        ArgumentCaptor<Address> addressCaptor = ArgumentCaptor.forClass(Address.class);
+        verify(routingTable, times(1)).put(eq(globalParticipantId), addressCaptor.capture(), eq(true), anyLong());
+        MqttAddress address = (MqttAddress) addressCaptor.getValue();
+        assertEquals(gbids[0], address.getBrokerUri());
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
     public void testLookupByDomainInterfaceWithGbids_globalOnly_filtersRemoteCachedEntriesByGbids() throws InterruptedException {
         String domain = "domain";
         String[] domainsForLookup = new String[]{ domain };
