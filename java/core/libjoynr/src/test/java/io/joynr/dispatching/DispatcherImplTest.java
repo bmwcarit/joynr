@@ -639,6 +639,55 @@ public class DispatcherImplTest {
         assertEquals(value3, context.get(extraHeaderKey).toString());
     }
 
+    @Test
+    public void propagateRequestExtraCustomHeadersToReplyCustomHeaders() throws Exception {
+        String rrId = createUuidString();
+        Request request = new Request("methodName", new Object[]{}, new String[]{}, rrId);
+        final String providerId = "toParticipantId";
+
+        MutableMessage mutableMessage = messageFactory.createRequest("from",
+                                                                     providerId,
+                                                                     request,
+                                                                     new MessagingQos(100000L));
+        Map<String, String> customHeaders = new HashMap<>();
+        String mutableMessageKey1 = "header1";
+        String value1 = "value1";
+        String mutableMessageKey2 = "header2";
+        String value2_1 = "value2_1";
+        String value2_2 = "value2_2";
+        String extraHeaderKey = "header3";
+        String value3 = "value3";
+        customHeaders.put(mutableMessageKey1, value1);
+        customHeaders.put(mutableMessageKey2, value2_1);
+        mutableMessage.setCustomHeaders(customHeaders);
+
+        Map<String, String> extraCustomHeaders = new HashMap<>();
+        extraCustomHeaders.put(mutableMessageKey2, value2_2);
+        extraCustomHeaders.put(extraHeaderKey, value3);
+        ImmutableMessage requestImmutableMessage = mutableMessage.getImmutableMessage();
+        requestImmutableMessage.setExtraCustomHeaders(extraCustomHeaders);
+
+        fixture.messageArrived(requestImmutableMessage);
+        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        verify(requestReplyManagerMock).handleRequest(providerCallbackReply.capture(),
+                                                      eq(providerId),
+                                                      requestCaptor.capture(),
+                                                      any(Long.class));
+        assertEquals(rrId, requestCaptor.getValue().getRequestReplyId());
+
+        // merged entries from regular customHeaders and extraCustomHeaders
+        // (where extraCustomHeader values take precedence for same keys)
+        // should be present in the reply as regular customHeaders
+        providerCallbackReply.getValue().onSuccess(new Reply(rrId));
+        ArgumentCaptor<MutableMessage> captor = ArgumentCaptor.forClass(MutableMessage.class);
+        verify(messageSenderMock).sendMessage(captor.capture());
+        ImmutableMessage replyMsg = captor.getValue().getImmutableMessage();
+        Map<String, String> replyCustomHeaders = replyMsg.getCustomHeaders();
+        assertEquals(value1, replyCustomHeaders.get(mutableMessageKey1));
+        assertEquals(value2_2, replyCustomHeaders.get(mutableMessageKey2));
+        assertEquals(value3, replyCustomHeaders.get(extraHeaderKey));
+    }
+
     private static class MessageIsCompressedMatcher extends ArgumentMatcher<MutableMessage> {
         private final boolean shouldMessageBeCompressed;
 
