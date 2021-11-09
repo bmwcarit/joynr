@@ -181,6 +181,12 @@ if(TARGET Joynr::JoynrUdsRuntime)
     )
 endif()
 
+get_target_property(
+    LibJoynr_INCLUDE_DIRS
+    Joynr::JoynrLib
+    INTERFACE_INCLUDE_DIRECTORIES
+)
+
 # Provider objects are independent of cluster controller communication
 add_library(radio-app-provider-common OBJECT
     ${radio-app-provider_HEADERS}
@@ -188,10 +194,8 @@ add_library(radio-app-provider-common OBJECT
 )
 
 target_include_directories(radio-app-provider-common
+    PUBLIC ${LibJoynr_INCLUDE_DIRS}
     PUBLIC ${LibJoynrRuntime_INCLUDE_DIRS}
-)
-target_link_libraries(radio-app-provider-common
-    radio-app
 )
 
 # Consumer objects are independent of cluster controller communication
@@ -201,10 +205,8 @@ add_library(radio-app-consumer-common OBJECT
 )
 
 target_include_directories(radio-app-consumer-common
+    PUBLIC ${LibJoynr_INCLUDE_DIRS}
     PUBLIC ${LibJoynrRuntime_INCLUDE_DIRS}
-)
-target_link_libraries(radio-app-consumer-common
-    radio-app
 )
 
 function(create_apps TYPE RUNTIME)
