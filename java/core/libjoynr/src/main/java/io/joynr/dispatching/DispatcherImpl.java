@@ -237,7 +237,6 @@ public class DispatcherImpl implements Dispatcher {
         }
 
         final long expiryDate = message.getTtlMs();
-        final Map<String, String> customHeaders = message.getCustomHeaders();
         if (DispatcherUtils.isExpired(expiryDate)) {
             if (logger.isTraceEnabled()) {
                 logger.trace("TTL expired, discarding message : {}", message);
@@ -274,6 +273,8 @@ public class DispatcherImpl implements Dispatcher {
                 logger.trace("Parsed subscription reply from message payload: {}", payload);
                 handle(subscriptionReply);
             } else if (Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST.equals(type)) {
+                final Map<String, String> customHeaders = message.getCustomHeaders();
+                customHeaders.putAll(message.getExtraCustomHeaders());
                 MessagingQosEffort effort = getEffort(message);
                 final Request request = objectMapper.readValue(payload, Request.class);
                 request.setCreatorUserId(message.getCreatorUserId());
