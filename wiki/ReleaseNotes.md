@@ -2,6 +2,33 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.1
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** In case of embedded clustercontroller runtime, reply messages
+  now contain the same customheaders as were contained in the request message
+  (i.e. derived from MQTT user properties and regular customHeaders for requests
+  received via MQTT).In the Reply message the merged headers are provided as regular
+  customHeaders which are then also additionally sent as MQTT user properties.
+
+* **[Java]** Return empty GBID in results when lookup was called with empty GBID.
+  In case of bad provisioning, the only known GBID is the empty GBID.
+  On a successful lookup, if the received address contained a non-empty GBID,
+  communication with the discovered provider would not be possible since the GBID
+  is not known.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.19.0
 
 ## API-relevant Changes
