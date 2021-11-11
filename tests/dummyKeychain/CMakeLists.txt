@@ -14,7 +14,7 @@ message(STATUS "option BUILD_SHARED_LIBS=" ${BUILD_SHARED_LIBS})
 
 # need a dependency to joynr for joynr::IKeyChain interface
 # depending on joynr will allow to use joynr utils as well
-find_package(Joynr 1.19.1 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
+find_package(Joynr 1.19.2 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 
 set(
     dummyKeychain_HEADERS
