@@ -696,10 +696,7 @@ public class PublicationManagerImpl
                         // no filtering
                         return true;
                     }
-
-                    if (!filterMethod.isAccessible()) {
-                        filterMethod.setAccessible(true);
-                    }
+                    filterMethod.setAccessible(true);
 
                     Class<?> filterParametersType = filterMethod.getParameterTypes()[values.length];
                     BroadcastFilterParameters filterParametersDerived = (BroadcastFilterParameters) filterParametersType.newInstance();

@@ -21,7 +21,6 @@ package io.joynr.dispatching.subscription;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 import static io.joynr.util.JoynrUtil.createUuidString;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -360,9 +359,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         try {
             Class<?>[] broadcastTypes = getParameterTypesForBroadcastPublication(broadcastValues);
             Method receive = broadcastSubscriptionListener.getClass().getDeclaredMethod("onReceive", broadcastTypes);
-            if (!receive.isAccessible()) {
-                receive.setAccessible(true);
-            }
+            receive.setAccessible(true);
 
             if (logger.isTraceEnabled()) {
                 logger.trace("BROADCAST SUBSCRIPTION notify listener: subscriptionId: {}, broadcastValue: {}",
@@ -374,7 +371,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             }
             receive.invoke(broadcastSubscriptionListener, broadcastValues);
 
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+        } catch (Exception e) {
             logger.error("Broadcast publication could not be processed", e);
         }
     }
