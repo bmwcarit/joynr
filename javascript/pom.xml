@@ -91,44 +91,6 @@
 						<skip>true</skip>
 					</configuration>
 				</plugin>
-
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>buildnumber-maven-plugin</artifactId>
-										<versionRange>[1.2,)</versionRange>
-										<goals>
-											<goal>create-timestamp</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>com.phasebash.jsdoc</groupId>
-										<artifactId>jsdoc3-maven-plugin</artifactId>
-										<versionRange>[1.2.0,)</versionRange>
-										<goals>
-											<goal>jsdoc3</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
 				<plugin>
 					<!-- in order to format your JavaScript code, you need to unpack the
 						config.xml using the maven-dependencies plugin, and include the
