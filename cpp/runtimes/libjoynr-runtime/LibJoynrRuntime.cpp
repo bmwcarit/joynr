@@ -179,6 +179,7 @@ void LibJoynrRuntime::init(
             std::make_shared<Dispatcher>(_messageSender, _singleThreadedIOService->getIOService());
     _messageSender->registerDispatcher(_joynrDispatcher);
 
+    _libJoynrMessageRouter->setMessageSender(_messageSender);
     // create the inprocess skeleton for the dispatcher
     _dispatcherMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(_joynrDispatcher);
     _dispatcherAddress = std::make_shared<InProcessMessagingAddress>(_dispatcherMessagingSkeleton);
