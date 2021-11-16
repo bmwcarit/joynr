@@ -254,11 +254,11 @@ private:
 protected:
     std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
     std::unordered_map<Key, SteadyTimer> _timeoutTimerMap;
+    std::mutex _mutex;
     ADD_LOGGER(Directory)
 
 private:
     DISALLOW_COPY_AND_ASSIGN(Directory);
-    std::mutex _mutex;
     boost::asio::io_service& _ioService;
     SaveFilterFunction _saveFilterFunction;
     bool _isShutdown;
