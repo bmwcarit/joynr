@@ -30,7 +30,6 @@
 #include <utility>
 
 #include "joynr/ClusterControllerSettings.h"
-#include "joynr/IMessageSender.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/ImmutableMessage.h"
@@ -159,8 +158,7 @@ CcMessageRouter::CcMessageRouter(
           _messageNotificationProvider(std::make_shared<CcMessageNotificationProvider>()),
           _messageNotificationProviderParticipantId(messageNotificationProviderParticipantId),
           _clusterControllerSettings(clusterControllerSettings),
-          _ownGlobalAddress(ownGlobalAddress),
-          _messageSender()
+          _ownGlobalAddress(ownGlobalAddress)
 {
     _printRoutedMessages = true;
     _routedMessagePrintIntervalS = clusterControllerSettings.getRoutedMessagePrintIntervalS();
@@ -175,11 +173,6 @@ CcMessageRouter::~CcMessageRouter()
 void CcMessageRouter::setAccessController(std::weak_ptr<IAccessController> accessController)
 {
     this->_accessController = std::move(accessController);
-}
-
-void CcMessageRouter::setMessageSender(std::weak_ptr<IMessageSender> messageSender)
-{
-    this->_messageSender = std::move(messageSender);
 }
 
 std::shared_ptr<system::MessageNotificationProvider> CcMessageRouter::
