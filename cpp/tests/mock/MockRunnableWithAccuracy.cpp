@@ -44,8 +44,14 @@ void MockRunnableWithAccuracy::run()
     JOYNR_LOG_TRACE(logger(), " current    : {}",now_ms);
     JOYNR_LOG_TRACE(logger(), " difference : {}",diff);
 
-    if (diff <= timerAccuracyTolerance_ms)
+    const std::uint64_t timerAcc_ms = timerAccuracyTolerance_ms;
+    if (diff <= timerAcc_ms)
     {
+        JOYNR_LOG_TRACE(logger(), " Run method called in {} ms within the accuracy "
+                                  "tolerance {} ms", diff, timerAcc_ms);
         runCalledInTime();
+    } else {
+        JOYNR_LOG_ERROR(logger(), " The given delay {} ms to runnable exceeds the accuracy "
+                                  "tolerance time {} ms", diff, timerAcc_ms);
     }
 }

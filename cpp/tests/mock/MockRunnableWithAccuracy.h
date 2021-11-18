@@ -29,7 +29,7 @@
 class MockRunnableWithAccuracy : public joynr::Runnable
 {
 public:
-    static const std::uint64_t timerAccuracyTolerance_ms = 5U;
+    static const std::uint64_t timerAccuracyTolerance_ms = 200U;
 
     MockRunnableWithAccuracy(const std::uint64_t delay);
 
