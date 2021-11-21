@@ -20,11 +20,14 @@
 
 #include <chrono>
 #include <cstdint>
+#include <functional>
 #include <memory>
+#include <string>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/ImmutableMessage.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Semaphore.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
@@ -32,6 +35,7 @@
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
@@ -42,6 +46,8 @@
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockTransportStatus.h"
+#include "tests/mock/MockMessageSender.h"
+#include "tests/mock/MockMessageQueue.h"
 
 #include "tests/utils/PtrUtils.h"
 
@@ -50,6 +56,7 @@ using ::testing::A;
 using ::testing::Action;
 using ::testing::DoAll;
 using ::testing::Eq;
+using ::testing::Invoke;
 using ::testing::InvokeArgument;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
@@ -77,6 +84,201 @@ TYPED_TEST(MessageRouterTest, addMessageToQueue)
     EXPECT_EQ(this->_messageQueue->getQueueLength(), 2);
 
     EXPECT_EQ(this->_messageRouter->getNumberOfRoutedMessages(), 2);
+}
+
+bool compareMessagingQos(const MessagingQos expectedQos, const MessagingQos actualQos)
+{
+    std::uint64_t lowestExpectedTtl = expectedQos.getTtl() - 100;
+    std::uint64_t highestExpectedTtl = expectedQos.getTtl();
+
+    return highestExpectedTtl >= actualQos.getTtl() &&
+           lowestExpectedTtl <= actualQos.getTtl() &&
+           expectedQos.getEffort() == actualQos.getEffort() &&
+           expectedQos.getEncrypt() == actualQos.getEncrypt() &&
+           expectedQos.getCompress() == actualQos.getCompress() &&
+           expectedQos.getCustomMessageHeaders() == actualQos.getCustomMessageHeaders();
+}
+
+TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
+{
+    this->_messageRouterWithMockedMessageQueue = this->createMessageRouterWithMockedMessageQueue();
+    std::function<void(std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessages)> capturedOnMsgsDroppedFunc;
+    EXPECT_CALL(*(this->_mockedMessageQueue), setOnMsgsDropped(_))
+                                           .WillOnce(SaveArg<0>(&capturedOnMsgsDroppedFunc));
+
+    auto mockMessageSender = std::make_shared<MockMessageSender>();
+    this->_messageRouterWithMockedMessageQueue->setMessageSender(mockMessageSender);
+
+    const std::string customHeaderKey = "custom-header-key";
+    const std::string customHeaderValue = "custom-value";
+    MutableMessageFactory messageFactory;
+
+    // create reply message, add it to droppedMessages
+    Reply reply;
+    MessagingQos actualQos;
+    actualQos.setTtl(1000);
+    const std::string senderId = "senderId";
+    const std::string receiverId = "receiverId";
+    reply.setRequestReplyId("anyRequestReplyId");
+    std::unordered_map<std::string, std::string> prefixedCustomHeaders{
+            {customHeaderKey, customHeaderValue}};
+    MutableMessage replyMessage = messageFactory.createReply(senderId,
+                                                         receiverId,
+                                                         actualQos,
+                                                         std::move(prefixedCustomHeaders),
+                                                         reply);
+
+    std::shared_ptr<ImmutableMessage> immutableReplyMsg = std::move(replyMessage.getImmutableMessage());
+
+    std::deque<std::shared_ptr<ImmutableMessage>> droppedMessages{immutableReplyMsg};
+    EXPECT_EQ(1, droppedMessages.size());
+
+    EXPECT_CALL(*mockMessageSender, sendReply(_, _, _, _, _)).Times(0);
+    capturedOnMsgsDroppedFunc(droppedMessages);
+    EXPECT_EQ(0, droppedMessages.size());
+
+    // create request message, add it to droppedMessages
+    const std::string requestReplyId = "requestReplyId";
+    const bool isLocalMessage = true;
+
+    Request request;
+    request.setRequestReplyId(requestReplyId);
+    MutableMessage requestMessage = messageFactory.createRequest(
+            senderId, receiverId, actualQos, request, isLocalMessage);
+    requestMessage.setCustomHeader(customHeaderKey, customHeaderValue);
+    std::shared_ptr<ImmutableMessage> immutableRequestMessage = std::move(requestMessage.getImmutableMessage());
+    droppedMessages.push_front(immutableRequestMessage);
+    EXPECT_EQ(1, droppedMessages.size());
+
+    Semaphore semaphore(0);
+    Reply capturedReply;
+    const std::string expectedSenderId = receiverId;
+    const std::string expectedReceiverId = senderId;
+    MessagingQos capturedQos;
+    // Reply is move-only type and cannot be copied with SaveArg. Reply inherits from BaseReply and
+    // BaseReply::response (type joynr::serializer::SerializationPlaceholder) is move-only.
+    auto captureReply = [&capturedReply](const std::string&,
+                                         const std::string&,
+                                         const joynr::MessagingQos&,
+                                         std::unordered_map<std::string, std::string>,
+                                         const joynr::Reply& reply) {
+        capturedReply.setRequestReplyId(reply.getRequestReplyId());
+        capturedReply.setError(reply.getError());
+        EXPECT_FALSE(reply.hasResponse());
+    };
+    EXPECT_CALL(*mockMessageSender, sendReply(
+                    Eq(expectedSenderId),
+                    Eq(expectedReceiverId),
+                    _,
+                    Eq(immutableRequestMessage->getPrefixedCustomHeaders()),
+                    _))
+                   .WillOnce(DoAll(Invoke(captureReply),
+                                   SaveArg<2>(&capturedQos),
+                                   ReleaseSemaphore(&semaphore)));
+
+    capturedOnMsgsDroppedFunc(droppedMessages);
+
+    EXPECT_EQ(0, droppedMessages.size());
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
+
+    EXPECT_TRUE(compareMessagingQos(actualQos, capturedQos));
+
+    EXPECT_EQ(requestReplyId, capturedReply.getRequestReplyId());
+    auto expectedError = std::make_shared<joynr::exceptions::ProviderRuntimeException>(
+            "Request Message {" + immutableRequestMessage->getTrackingInfo() +
+            "} dropped due to the exhaustion of the message queue.");
+    EXPECT_EQ(expectedError->getMessage(), capturedReply.getError()->getMessage());
+}
+
+TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceedsItsLimit)
+{
+    this->_messageRouterWithMockedMessageQueue = this->createMessageRouterWithMockedMessageQueue();
+    std::function<void(std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessages)> capturedOnMsgsDroppedFunc;
+    EXPECT_CALL(*(this->_mockedTransportNotAvailableQueue), setOnMsgsDropped(_))
+                                           .WillOnce(SaveArg<0>(&capturedOnMsgsDroppedFunc));
+
+    auto mockMessageSender = std::make_shared<MockMessageSender>();
+    this->_messageRouterWithMockedMessageQueue->setMessageSender(mockMessageSender);
+
+    const std::string customHeaderKey = "custom-header-key";
+    const std::string customHeaderValue = "custom-value";
+    MutableMessageFactory messageFactory;
+
+    // create reply message, add it to droppedMessages
+    Reply reply;
+    MessagingQos actualQos;
+    actualQos.setTtl(1000);
+    const std::string senderId = "senderId";
+    const std::string receiverId = "receiverId";
+    reply.setRequestReplyId("anyRequestReplyId");
+    std::unordered_map<std::string, std::string> prefixedCustomHeaders{
+            {customHeaderKey, customHeaderValue}};
+    MutableMessage replyMessage = messageFactory.createReply(senderId,
+                                                         receiverId,
+                                                         actualQos,
+                                                         std::move(prefixedCustomHeaders),
+                                                         reply);
+
+    std::shared_ptr<ImmutableMessage> immutableReplyMsg = std::move(replyMessage.getImmutableMessage());
+
+    std::deque<std::shared_ptr<ImmutableMessage>> droppedMessages{immutableReplyMsg};
+    EXPECT_EQ(1, droppedMessages.size());
+
+    EXPECT_CALL(*mockMessageSender, sendReply(_, _, _, _, _)).Times(0);
+    capturedOnMsgsDroppedFunc(droppedMessages);
+    EXPECT_EQ(0, droppedMessages.size());
+
+    // create request message, add it to droppedMessages
+    const std::string requestReplyId = "requestReplyId";
+    const bool isLocalMessage = true;
+
+    Request request;
+    request.setRequestReplyId(requestReplyId);
+    MutableMessage requestMessage = messageFactory.createRequest(
+            senderId, receiverId, actualQos, request, isLocalMessage);
+    requestMessage.setCustomHeader(customHeaderKey, customHeaderValue);
+    std::shared_ptr<ImmutableMessage> immutableRequestMessage = std::move(requestMessage.getImmutableMessage());
+    droppedMessages.push_front(immutableRequestMessage);
+    EXPECT_EQ(1, droppedMessages.size());
+
+    Semaphore semaphore(0);
+    Reply capturedReply;
+    const std::string expectedSenderId = receiverId;
+    const std::string expectedReceiverId = senderId;
+    MessagingQos capturedQos;
+    // Reply is move-only type and cannot be copied with SaveArg. Reply inherits from BaseReply and
+    // BaseReply::response (type joynr::serializer::SerializationPlaceholder) is move-only.
+    auto captureReply = [&capturedReply](const std::string&,
+                                         const std::string&,
+                                         const joynr::MessagingQos&,
+                                         std::unordered_map<std::string, std::string>,
+                                         const joynr::Reply& reply) {
+        capturedReply.setRequestReplyId(reply.getRequestReplyId());
+        capturedReply.setError(reply.getError());
+        EXPECT_FALSE(reply.hasResponse());
+    };
+    EXPECT_CALL(*mockMessageSender, sendReply(
+                    Eq(expectedSenderId),
+                    Eq(expectedReceiverId),
+                    _,
+                    Eq(immutableRequestMessage->getPrefixedCustomHeaders()),
+                    _))
+                   .WillOnce(DoAll(Invoke(captureReply),
+                                   SaveArg<2>(&capturedQos),
+                                   ReleaseSemaphore(&semaphore)));
+
+    capturedOnMsgsDroppedFunc(droppedMessages);
+
+    EXPECT_EQ(0, droppedMessages.size());
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
+
+    EXPECT_TRUE(compareMessagingQos(actualQos, capturedQos));
+
+    EXPECT_EQ(requestReplyId, capturedReply.getRequestReplyId());
+    auto expectedError = std::make_shared<joynr::exceptions::ProviderRuntimeException>(
+            "Request Message {" + immutableRequestMessage->getTrackingInfo() +
+            "} dropped due to the exhaustion of the message queue.");
+    EXPECT_EQ(expectedError->getMessage(), capturedReply.getError()->getMessage());
 }
 
 TYPED_TEST(MessageRouterTest, multicastMessageWillNotBeQueued)

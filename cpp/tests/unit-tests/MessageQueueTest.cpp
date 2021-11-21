@@ -27,6 +27,7 @@
 #include "joynr/MessageQueue.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
 #include "joynr/TimePoint.h"
 
 #include "tests/JoynrTest.h"
@@ -184,12 +185,14 @@ public:
 protected:
     std::shared_ptr<ImmutableMessage> createMessage(const TimePoint& expiryDate,
                                                     const std::string& recipient,
-                                                    const std::string& payload = "")
+                                                    const std::string& payload = "",
+                                                    const std::string& type = "")
     {
         MutableMessage mutableMsg;
         mutableMsg.setExpiryDate(expiryDate);
         mutableMsg.setRecipient(recipient);
         mutableMsg.setPayload(payload);
+        mutableMsg.setType(type);
         return mutableMsg.getImmutableMessage();
     }
 
@@ -238,6 +241,39 @@ TEST_F(MessageQueueWithLimitTest, testAddingMessages)
     EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[2]), nullptr);
     EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[3])->getRecipient(), recipient[3]);
     EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[4])->getRecipient(), recipient[4]);
+}
+
+TEST_F(MessageQueueWithLimitTest, queueLimitExceeded_onMsgsDroppedInvoked)
+{
+    Semaphore semaphore(0);
+    constexpr std::uint64_t messageQueueLimit = 4;
+    MessageQueue<std::string> messageQueue(messageQueueLimit);
+
+    const int messageCount = 5;
+    // Keep in mind that message 1 expires later than message 3. This is done in order to check
+    // if removal deletes the message with lowest ttl and not the first inserted message.
+    auto now = TimePoint::now();
+    const TimePoint expiryDate[messageCount] = {
+            now + 800, now + 500, now + 100, now + 600, now + 700};
+
+    const std::string recipient[messageCount] = {"TEST1", "TEST2", "TEST3", "TEST4", "TEST5"};
+
+    auto onMsgsDropped = [&recipient, &messageQueue, &semaphore] (std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessages) {
+            EXPECT_EQ(1, droppedMessages.size());
+            EXPECT_EQ(droppedMessages[0]->getRecipient(), recipient[2]);
+            semaphore.notify();
+    };
+
+    messageQueue.setOnMsgsDropped(onMsgsDropped);
+
+    std::shared_ptr<ImmutableMessage> immutableMessages [messageCount];
+    for (int i = 0; i < messageCount; i++) {
+        immutableMessages[i] = this->createMessage(expiryDate[i], recipient[i], "", "rq");
+        messageQueue.queueMessage(immutableMessages[i]->getRecipient(), immutableMessages[i]);
+    }
+
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+    EXPECT_EQ(messageQueue.getQueueLength(), messageQueueLimit);
 }
 
 TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_lowestTtlRemoved)
