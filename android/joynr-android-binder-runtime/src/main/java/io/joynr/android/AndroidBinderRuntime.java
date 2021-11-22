@@ -18,9 +18,11 @@
  */
 package io.joynr.android;
 
+import static io.joynr.android.AndroidBinderRuntimeUtils.getClusterControllerServicePackageName;
+import static io.joynr.android.AndroidBinderRuntimeUtils.getDefaultJoynrProperties;
+import static io.joynr.android.AndroidBinderRuntimeUtils.getJoynrInjectorFactory;
+
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ResolveInfo;
 
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -29,15 +31,11 @@ import com.google.inject.util.Modules;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Properties;
 
 import io.joynr.android.messaging.binder.util.BinderConstants;
-import io.joynr.messaging.ConfigurableMessagingSettings;
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.runtime.CCBinderRuntimeModule;
-import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrBinderRuntimeModule;
 import joynr.system.RoutingTypes.BinderAddress;
@@ -45,9 +43,6 @@ import joynr.system.RoutingTypes.BinderAddress;
 public class AndroidBinderRuntime {
 
     public static final String PROPERTY_CONTEXT_ANDROID = "joynr_context_android";
-
-    private static final String STATIC_PERSISTENCE_FILE = "clustercontroller-joynr.properties";
-    private static final String STATIC_PARTICIPANTS_FILE = "joynr.properties_participants";
 
     private static final Logger logger = LoggerFactory.getLogger(AndroidBinderRuntime.class);
 
@@ -78,8 +73,10 @@ public class AndroidBinderRuntime {
         // set default joynr properties
         final Properties config = getDefaultJoynrProperties(context);
 
-        // override with possible developer specified properties
-        config.putAll(properties);
+        if (properties != null && !properties.isEmpty()) {
+            // override with possible developer specified properties
+            config.putAll(properties);
+        }
 
         config.put("joynr.messaging.mqtt.brokerUris", brokerUri);
 
@@ -90,10 +87,10 @@ public class AndroidBinderRuntime {
             runtimeModule = Modules.override(runtimeModule).with(module);
         }
 
-        injector = new JoynrInjectorFactory(config, runtimeModule).getInjector();
+        injector = getJoynrInjectorFactory(config, runtimeModule).getInjector();
         runtime = injector.getInstance(JoynrRuntime.class);
 
-        logger.debug("Started Android CC runtime...");
+        logger.info("Started Android CC runtime...");
 
         return runtime;
     }
@@ -127,47 +124,30 @@ public class AndroidBinderRuntime {
      * @param context                      The application context.
      * @param properties                   Extra properties that can configure joynr runtime.
      * @param clusterControllerPackageName The package name of the joynr cluster controller.
-     * @return A {@link JoynrRuntime} object
+     * @return A {@link JoynrRuntime} object or null if there is no Cluster Controller in the system
      */
 
     private static JoynrRuntime init(Context context, Properties properties, String clusterControllerPackageName) {
 
-        // set default joynr properties
-        final Properties config = getDefaultJoynrProperties(context);
+        if (clusterControllerPackageName != null && !clusterControllerPackageName.isEmpty()) {
 
-        // override with possible developer specified properties
-        config.putAll(properties);
+            // set default joynr properties
+            final Properties config = getDefaultJoynrProperties(context);
 
-        BinderAddress ccBinderAddress = new BinderAddress(clusterControllerPackageName, BinderConstants.USER_ID_SYSTEM);
-        injector = new JoynrInjectorFactory(config, new LibjoynrBinderRuntimeModule(context, ccBinderAddress))
-                .createChildInjector();
-        runtime = injector.getInstance(JoynrRuntime.class);
+            if (properties != null && !properties.isEmpty()) {
+                // override with possible developer specified properties
+                config.putAll(properties);
+            }
 
-        logger.debug("Started Libjoynr runtime...");
+            BinderAddress ccBinderAddress = new BinderAddress(clusterControllerPackageName, BinderConstants.USER_ID_SYSTEM);
+            injector = getJoynrInjectorFactory(config, new LibjoynrBinderRuntimeModule(context, ccBinderAddress))
+                    .createChildInjector();
+            runtime = injector.getInstance(JoynrRuntime.class);
+
+            logger.info("Started Libjoynr runtime...");
+        }
 
         return runtime;
-    }
-
-    private static String getClusterControllerServicePackageName(Context context) {
-        Intent intent = new Intent("io.joynr.android.action.COMMUNICATE");
-
-        List<ResolveInfo> services = context.getPackageManager().queryIntentServices(intent, 0);
-        if (services == null || services.isEmpty()) {
-            logger.error("There is no joynr cluster controller app installed!");
-            return null;
-        }
-        return services.get(0).serviceInfo.applicationInfo.packageName;
-    }
-
-    private static Properties getDefaultJoynrProperties(Context context) {
-
-        final Properties config = new Properties();
-        config.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE,
-                           context.getFilesDir() + "/" + STATIC_PERSISTENCE_FILE);
-        config.setProperty(ConfigurableMessagingSettings.PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE,
-                           context.getFilesDir() + "/" + STATIC_PARTICIPANTS_FILE);
-
-        return config;
     }
 
     /**
@@ -182,5 +162,21 @@ public class AndroidBinderRuntime {
      */
     public static JoynrRuntime getRuntime() {
         return runtime;
+    }
+
+    /**
+     * Used for resetting static value of {@link JoynrRuntime} for testing
+     * @param runtime
+     */
+    protected static void setRuntime(JoynrRuntime runtime) {
+        AndroidBinderRuntime.runtime = runtime;
+    }
+
+    /**
+     * Used for resetting static value of {@link Injector} for testing
+     * @param injector
+     */
+    protected static void setInjector(Injector injector) {
+        AndroidBinderRuntime.injector = injector;
     }
 }

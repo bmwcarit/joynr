@@ -28,20 +28,13 @@ import android.net.Uri;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import io.joynr.android.AndroidBinderRuntime;
-import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.provider.AbstractJoynrProvider;
-import io.joynr.provider.ProviderContainer;
-import io.joynr.provider.ProviderContainerFactory;
-import io.joynr.runtime.PropertyLoader;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
-import static io.joynr.messaging.MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE;
-import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+import static io.joynr.android.contentprovider.PersistentProviderUtils.generatePrimitiveDiscoveryEntry;
+import static io.joynr.android.contentprovider.PersistentProviderUtils.getDefaultExpiryTimeMs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +63,7 @@ public abstract class PersistentJoynrContentProvider extends ContentProvider {
             "publicKeyId"
     };
 
-    protected static long defaultExpiryTimeMs = 0L;
+    protected long defaultExpiryTimeMs = 0L;
 
     protected List<PersistentProvider> providers;
 
@@ -182,64 +175,6 @@ public abstract class PersistentJoynrContentProvider extends ContentProvider {
                     + packageName + ". Joynr Persistent Provider is null");
         }
         return mc;
-    }
-
-    /**
-     * Gathers information from [PersistentProvider] and builds a [DiscoveryEntry] for that provider
-     *
-     * @param provider PersistentProvider object
-     * @return Discovery Entry
-     */
-    protected static DiscoveryEntry generatePrimitiveDiscoveryEntry(
-            PersistentProvider provider
-    ) {
-
-        DiscoveryEntry discoveryEntry = null;
-
-        if (provider != null && provider.domain != null && provider.providerQos != null && provider.joynrProvider != null) {
-
-            ProviderContainerFactory providerContainerFactory = AndroidBinderRuntime.getInjector().getInstance(ProviderContainerFactory.class);
-            ProviderContainer providerContainer = providerContainerFactory.create(provider.joynrProvider);
-            PropertiesFileParticipantIdStorage participantIdStorage =
-                    AndroidBinderRuntime
-                            .getInjector()
-                            .getInstance(PropertiesFileParticipantIdStorage.class);
-
-            String participantId = participantIdStorage.getProviderParticipantId(
-                    provider.domain,
-                    providerContainer.getInterfaceName(),
-                    providerContainer.getMajorVersion());
-
-            String defaultPublicKeyId = "";
-
-            discoveryEntry = new DiscoveryEntry(
-                    getVersionFromAnnotation(provider.joynrProvider.getClass()),
-                    provider.domain,
-                    providerContainer.getInterfaceName(),
-                    participantId,
-                    provider.providerQos,
-                    System.currentTimeMillis(),
-                    System.currentTimeMillis() + defaultExpiryTimeMs,
-                    defaultPublicKeyId);
-
-            logger.info("Generated DiscoveryEntry " + discoveryEntry);
-        } else {
-            logger.error("Unable to generate DiscoveryEntry. PersistentProvider "
-                    + provider + " has null variables.");
-        }
-
-
-        return discoveryEntry;
-    }
-
-    /**
-     * Gets the Default Expiry Time in Milliseconds
-     *
-     * @return the Default Expiry Time in Milliseconds
-     */
-    protected static long getDefaultExpiryTimeMs() {
-        Properties defaultMessagingProperties = PropertyLoader.loadProperties(DEFAULT_MESSAGING_PROPERTIES_FILE);
-        return Long.parseLong(defaultMessagingProperties.getProperty(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS));
     }
 
     @Override

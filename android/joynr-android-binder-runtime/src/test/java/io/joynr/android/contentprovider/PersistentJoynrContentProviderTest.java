@@ -24,11 +24,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
-
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -36,8 +33,7 @@ import android.net.Uri;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.google.inject.Injector;
-
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,15 +44,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-
-import io.joynr.android.AndroidBinderRuntime;
-import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.provider.AbstractJoynrProvider;
-import io.joynr.provider.ProviderContainer;
-import io.joynr.provider.ProviderContainerFactory;
-import io.joynr.runtime.PropertyLoader;
-import io.joynr.util.VersionUtil;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -74,19 +62,7 @@ public class PersistentJoynrContentProviderTest {
     private ProviderQos testProviderQos;
     private PersistentJoynrContentProvider.PersistentProvider testPersistentProvider;
 
-    private MockedStatic<PersistentJoynrContentProvider> persistentJoynrContentProviderMockedStatic;
-
-    @Mock
-    private Injector injector;
-
-    @Mock
-    private ProviderContainerFactory providerContainerFactory;
-
-    @Mock
-    private ProviderContainer providerContainer;
-
-    @Mock
-    private PropertiesFileParticipantIdStorage participantIdStorage;
+    private MockedStatic<PersistentProviderUtils> persistentProviderUtilsMockedStatic;
 
     @Mock
     private AbstractJoynrProvider joynrProvider;
@@ -159,91 +135,14 @@ public class PersistentJoynrContentProviderTest {
             }
         };
 
-    }
+        persistentProviderUtilsMockedStatic = Mockito.mockStatic(PersistentProviderUtils.class);
 
-    @Test
-    public void generatePrimitiveDiscoveryEntry_whenGoodPersistentProvider_returnsDiscoveryEntry() {
-
-        MockedStatic<AndroidBinderRuntime> androidBinderRuntimeMockedStatic = Mockito.mockStatic(AndroidBinderRuntime.class);
-        MockedStatic<VersionUtil> versionUtilMockedStatic = Mockito.mockStatic(VersionUtil.class);
-
-        versionUtilMockedStatic.when(() -> VersionUtil.getVersionFromAnnotation(any())).thenReturn(new Version(1, 0));
-        when(providerContainer.getInterfaceName()).thenReturn(testInterfaceName);
-        when(providerContainer.getMajorVersion()).thenReturn(testMajorVersion);
-        when(providerContainerFactory.create(any())).thenReturn(providerContainer);
-        when(injector.getInstance(ProviderContainerFactory.class)).thenReturn(providerContainerFactory);
-        when(participantIdStorage.getProviderParticipantId(anyString(), anyString(), anyInt())).thenReturn(testParticipantId);
-        when(injector.getInstance(PropertiesFileParticipantIdStorage.class)).thenReturn(participantIdStorage);
-        androidBinderRuntimeMockedStatic.when(AndroidBinderRuntime::getInjector).thenReturn(injector);
-
-        DiscoveryEntry discoveryEntry = PersistentJoynrContentProvider.generatePrimitiveDiscoveryEntry(testPersistentProvider);
-
-        assertNotNull(discoveryEntry);
-        assertEquals(testDomain, discoveryEntry.getDomain());
-        assertEquals((Integer) testMajorVersion, discoveryEntry.getProviderVersion().getMajorVersion());
-        assertEquals(testInterfaceName, discoveryEntry.getInterfaceName());
-        assertEquals(testParticipantId, discoveryEntry.getParticipantId());
-        assertEquals(testPublicKeyId, discoveryEntry.getPublicKeyId());
-        assertEquals(testProviderQos, discoveryEntry.getQos());
-
-        androidBinderRuntimeMockedStatic.close();
-        versionUtilMockedStatic.close();
-    }
-
-    @Test
-    public void generatePrimitiveDiscoveryEntry_whenNullPersistentProvider_returnsNull() {
-
-        assertNull(PersistentJoynrContentProvider.generatePrimitiveDiscoveryEntry(null));
-    }
-
-    @Test
-    public void generatePrimitiveDiscoveryEntry_whenNullJoynrProvider_returnsNull() {
-
-        assertNull(
-                PersistentJoynrContentProvider.generatePrimitiveDiscoveryEntry(
-                    new PersistentJoynrContentProvider.PersistentProvider(
-                        null,
-                        testDomain,
-                        testProviderQos
-                    )
-                )
-        );
-    }
-
-    @Test
-    public void generatePrimitiveDiscoveryEntry_whenNullDomain_returnsNull() {
-
-        assertNull(
-                PersistentJoynrContentProvider.generatePrimitiveDiscoveryEntry(
-                    new PersistentJoynrContentProvider.PersistentProvider(
-                        joynrProvider,
-                        null,
-                        testProviderQos
-                    )
-                )
-        );
-    }
-
-    @Test
-    public void generatePrimitiveDiscoveryEntry_whenNullProvideQos_returnsNull() {
-
-        assertNull(
-                PersistentJoynrContentProvider.generatePrimitiveDiscoveryEntry(
-                    new PersistentJoynrContentProvider.PersistentProvider(
-                        joynrProvider,
-                        testDomain,
-                        null
-                    )
-                )
-        );
     }
 
     @Test
     public void init_whenRegisterPersistentProviderIsConfigured_variablesAreInitAndInitIsTrue() {
 
-        persistentJoynrContentProviderMockedStatic = Mockito.mockStatic(PersistentJoynrContentProvider.class);
-
-        persistentJoynrContentProviderMockedStatic.when(PersistentJoynrContentProvider::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
+        persistentProviderUtilsMockedStatic.when(PersistentProviderUtils::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
         testProviderList.add(testPersistentProvider);
         when(context.getPackageName()).thenReturn(testPackageName);
 
@@ -251,17 +150,14 @@ public class PersistentJoynrContentProviderTest {
 
         assertNotNull(testPersistentJoynrContentProvider.uriMatcher);
         assertEquals(testProviderList, testPersistentJoynrContentProvider.providers);
-        assertEquals(PersistentJoynrContentProvider.defaultExpiryTimeMs, testDefaultExpiryTimeMs);
+        assertEquals(testPersistentJoynrContentProvider.defaultExpiryTimeMs, testDefaultExpiryTimeMs);
 
-        persistentJoynrContentProviderMockedStatic.close();
     }
 
     @Test
     public void init_whenBadRegisterPersistentProvider_providersListIsNullAndInitIsFalse() {
 
-        persistentJoynrContentProviderMockedStatic = Mockito.mockStatic(PersistentJoynrContentProvider.class);
-
-        persistentJoynrContentProviderMockedStatic.when(PersistentJoynrContentProvider::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
+        persistentProviderUtilsMockedStatic.when(PersistentProviderUtils::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
         testProviderList.add(testPersistentProvider);
         when(context.getPackageName()).thenReturn(testPackageName);
 
@@ -269,19 +165,16 @@ public class PersistentJoynrContentProviderTest {
 
         assertNotNull(badTestPersistentJoynrContentProvider.uriMatcher);
         assertNull(badTestPersistentJoynrContentProvider.providers);
-        assertEquals(PersistentJoynrContentProvider.defaultExpiryTimeMs, testDefaultExpiryTimeMs);
+        assertEquals(badTestPersistentJoynrContentProvider.defaultExpiryTimeMs, testDefaultExpiryTimeMs);
 
-        persistentJoynrContentProviderMockedStatic.close();
     }
 
 
     @Test
     public void doQuery_whenRegisterPersistentProviderConfigured_returnsDiscoveryEntry() {
 
-        persistentJoynrContentProviderMockedStatic = Mockito.mockStatic(PersistentJoynrContentProvider.class);
-
-        persistentJoynrContentProviderMockedStatic.when(PersistentJoynrContentProvider::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
-        persistentJoynrContentProviderMockedStatic.when(() -> PersistentJoynrContentProvider.generatePrimitiveDiscoveryEntry(any())).thenReturn(testDiscoveryEntry);
+        persistentProviderUtilsMockedStatic.when(PersistentProviderUtils::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
+        persistentProviderUtilsMockedStatic.when(() -> PersistentProviderUtils.generatePrimitiveDiscoveryEntry(any())).thenReturn(testDiscoveryEntry);
         testProviderList.add(testPersistentProvider);
         when(context.getPackageName()).thenReturn(testPackageName);
 
@@ -305,15 +198,12 @@ public class PersistentJoynrContentProviderTest {
         assertEquals(testDiscoveryEntry.getExpiryDateMs(), Long.valueOf(matrixCursor.getLong(10)));
         assertEquals(testDiscoveryEntry.getPublicKeyId(), matrixCursor.getString(11));
 
-        persistentJoynrContentProviderMockedStatic.close();
     }
 
     @Test
     public void doQuery_whenQueryWrongPackageName_returnsNull() {
 
-        persistentJoynrContentProviderMockedStatic = Mockito.mockStatic(PersistentJoynrContentProvider.class);
-
-        persistentJoynrContentProviderMockedStatic.when(PersistentJoynrContentProvider::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
+        persistentProviderUtilsMockedStatic.when(PersistentProviderUtils::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
         testProviderList.add(testPersistentProvider);
         when(context.getPackageName()).thenReturn(testPackageName);
 
@@ -323,15 +213,12 @@ public class PersistentJoynrContentProviderTest {
 
         assertNull(matrixCursor);
 
-        persistentJoynrContentProviderMockedStatic.close();
     }
 
     @Test
     public void doQuery_whenRegisterPersistentProviderReturnsNull_returnsNull() {
 
-        persistentJoynrContentProviderMockedStatic = Mockito.mockStatic(PersistentJoynrContentProvider.class);
-
-        persistentJoynrContentProviderMockedStatic.when(PersistentJoynrContentProvider::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
+        persistentProviderUtilsMockedStatic.when(PersistentProviderUtils::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
         testProviderList.add(testPersistentProvider);
         when(context.getPackageName()).thenReturn(testPackageName);
 
@@ -341,22 +228,12 @@ public class PersistentJoynrContentProviderTest {
 
         assertNull(matrixCursor);
 
-        persistentJoynrContentProviderMockedStatic.close();
     }
 
-    @Test
-    public void getDefaultExpiryTimeMs_returnsConfiguredDefaultExpiryTimeMsFromProperties() {
-
-        Properties testDefaultMessagingProperties = new Properties();
-        testDefaultMessagingProperties.setProperty(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS, String.valueOf(testDefaultExpiryTimeMs));
-
-        MockedStatic<PropertyLoader> propertyLoaderMockedStatic = Mockito.mockStatic(PropertyLoader.class);
-        propertyLoaderMockedStatic.when(() -> PropertyLoader.loadProperties(anyString())).thenReturn(testDefaultMessagingProperties);
-
-        long getDefaultExpiryTimeMs = PersistentJoynrContentProvider.getDefaultExpiryTimeMs();
-
-        assertEquals(testDefaultExpiryTimeMs, getDefaultExpiryTimeMs);
-
-        propertyLoaderMockedStatic.close();
+    @After
+    public void cleanup() {
+        persistentProviderUtilsMockedStatic.close();
+        reset(context);
+        reset(joynrProvider);
     }
 }
