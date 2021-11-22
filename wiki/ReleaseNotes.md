@@ -2,6 +2,23 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.2
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Updated net.sf.ehcache:ehcache to 2.10.9.2
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.19.1
 
 ## API-relevant Changes
