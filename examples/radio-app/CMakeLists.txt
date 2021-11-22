@@ -187,6 +187,14 @@ get_target_property(
     INTERFACE_INCLUDE_DIRECTORIES
 )
 
+# Use LibJoynr's definitions for compilation of joynr/Logger.h within radio-app
+# to get log output to the same destinations (e.g. stdout).
+get_target_property(
+    LibJoynr_COMPILE_DEFINITIONS
+    Joynr::JoynrLib
+    INTERFACE_COMPILE_DEFINITIONS
+)
+
 # Provider objects are independent of cluster controller communication
 add_library(radio-app-provider-common OBJECT
     ${radio-app-provider_HEADERS}
@@ -198,6 +206,10 @@ target_include_directories(radio-app-provider-common
     PUBLIC ${LibJoynrRuntime_INCLUDE_DIRS}
 )
 
+target_compile_definitions(radio-app-provider-common
+    PUBLIC ${LibJoynr_COMPILE_DEFINITIONS}
+)
+
 # Consumer objects are independent of cluster controller communication
 add_library(radio-app-consumer-common OBJECT
     ${radio-app-consumer_HEADERS}
@@ -207,6 +219,10 @@ add_library(radio-app-consumer-common OBJECT
 target_include_directories(radio-app-consumer-common
     PUBLIC ${LibJoynr_INCLUDE_DIRS}
     PUBLIC ${LibJoynrRuntime_INCLUDE_DIRS}
+)
+
+target_compile_definitions(radio-app-consumer-common
+    PUBLIC ${LibJoynr_COMPILE_DEFINITIONS}
 )
 
 function(create_apps TYPE RUNTIME)
