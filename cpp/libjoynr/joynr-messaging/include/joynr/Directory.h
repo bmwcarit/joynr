@@ -63,9 +63,9 @@ public:
     Directory(const std::string& directoryName,
               boost::asio::io_service& ioService,
               SaveFilterFunction fun)
-            : callbackMap(),
+            : _mutex(),
+              callbackMap(),
               _timeoutTimerMap(),
-              _mutex(),
               _ioService(ioService),
               _saveFilterFunction(std::move(fun)),
               _isShutdown(false)
@@ -74,9 +74,9 @@ public:
     }
 
     Directory(const std::string& directoryName, boost::asio::io_service& ioService)
-            : callbackMap(),
+            : _mutex(),
+              callbackMap(),
               _timeoutTimerMap(),
-              _mutex(),
               _ioService(ioService),
               _saveFilterFunction(),
               _isShutdown(false)
@@ -188,7 +188,6 @@ public:
     void remove(const Key& keyId)
     {
         std::lock_guard<std::mutex> lock(_mutex);
-
         callbackMap.erase(keyId);
         _timeoutTimerMap.erase(keyId);
     }
@@ -252,9 +251,9 @@ private:
     }
 
 protected:
+    std::mutex _mutex;
     std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
     std::unordered_map<Key, SteadyTimer> _timeoutTimerMap;
-    std::mutex _mutex;
     ADD_LOGGER(Directory)
 
 private:
