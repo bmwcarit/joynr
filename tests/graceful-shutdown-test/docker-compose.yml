@@ -13,7 +13,7 @@ services:
     container_name: "joynr-gcd-db"
 
   joynr-gcd:
-    image: "joynr-gcd-db:latest"
+    image: "joynr-gcd:latest"
     container_name: joynr-gcd
     depends_on:
       - "hivemq"
