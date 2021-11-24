@@ -44,6 +44,8 @@ public:
         expected.push_back(Url("mqtt", "localhost", 1883, "/"));
         validTestData.push_back("mqtts://localhost:1883");
         expected.push_back(Url("mqtts", "localhost", 1883, "/"));
+        validTestData.push_back("mqtt://127.0.0.1:1883");
+        expected.push_back(Url("mqtt", "127.0.0.1", 1883, "/"));
         validTestData.push_back("http://bounceproxy.com/script?query");
         expected.push_back(Url("http", "", "", "bounceproxy.com", 80, "/script", "query", ""));
         validTestData.push_back("https://bounceproxy.com/script#fragment");
@@ -142,4 +144,13 @@ TEST_F(UrlTest, parseEmpty)
 {
     Url url{""};
     ASSERT_FALSE(url.isValid());
+}
+
+TEST_F(UrlTest, parseMalformedIPv4)
+{
+    Url url{"127.0.0.1.47"};
+    ASSERT_FALSE(url.isValid());
+
+    Url url2{"127.0.0"};
+    ASSERT_FALSE(url2.isValid());
 }
