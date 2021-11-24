@@ -22,6 +22,7 @@
 #include <sstream>
 
 #include <boost/algorithm/string/join.hpp>
+#include <boost/asio/ip/address.hpp>
 
 namespace joynr
 {
@@ -357,6 +358,15 @@ void Url::validate()
 
     if (_host.find(":") != std::string::npos) {
         _isIPv6HexAddress = true;
+    }
+
+    if (_host.find_first_not_of("0123456789.:") == std::string::npos) {
+        // assume hardcoded IP address
+        try {
+            boost::asio::ip::make_address(_host);
+        } catch (boost::system::system_error& e) {
+            return;
+        }
     }
 
     // Assume success
