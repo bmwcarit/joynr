@@ -53,7 +53,7 @@ system required to run an end-to-end test.
 
 First, startup the infrastructure components:
 
-	$ docker-compose up -d hivemq joynr-gcd-db ; docker-compose logs -f
+	$ docker-compose up -d hivemq joynr-gcd-db postgresql ; docker-compose logs -f
 
 Wait until no more log entries are written, then start up the joynr backend services:
 
@@ -124,7 +124,7 @@ In addition to the JEE consumer application we've provided an example plain-Java
 application which demonstrates the use of the stateless async API. If you want to start up the
 application, then run:
 
-	$ docker-compose up -d stateless-async-consumer ; docker-compose logs -f stateless-async-consumer
+	$ docker-compose up -d java-consumer ; docker-compose logs -f java-consumer
 
 It will automatically fire off a set of requests to the car sim application and you can see in the
 logs that the replies have been processed.
