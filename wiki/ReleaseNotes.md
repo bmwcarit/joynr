@@ -8,7 +8,8 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
-* **[Java]** Updated net.sf.ehcache:ehcache to 2.10.9.2
+* **[Java]** Updated net.sf.ehcache:ehcache to 2.10.9.2.
+* **[Java]** Removed deprecated calls to `Method.isAccessible()`.
 
 ## Configuration Property Changes
 None.
@@ -17,7 +18,8 @@ None.
 None.
 
 ## Bug Fixes
-None.
+* **[C++]** Fixed memory leak in `Directory.h`.
+* **[C++]** Fixed `CMakeLists.txt` of radio-app example.
 
 # joynr 1.19.1
 
