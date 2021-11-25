@@ -38,6 +38,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.AbstractJoynrApplication;
 import joynr.tests.graceful.shutdown.EchoAsync;
 import joynr.tests.graceful.shutdown.EchoProxy;
@@ -66,7 +67,23 @@ public class ConsumerApplication extends AbstractJoynrApplication {
         messagingQos.setEffort(MessagingQosEffort.BEST_EFFORT);
         proxyBuilder.setMessagingQos(messagingQos);
 
-        EchoAsync echoService = proxyBuilder.build();
+        io.joynr.proxy.Future<Void> proxyFuture = new io.joynr.proxy.Future<Void>();
+        EchoAsync echoService = proxyBuilder.build(new ProxyCreatedCallback<EchoProxy>() {
+            @Override
+            public void onProxyCreationFinished(EchoProxy result) {
+                proxyFuture.resolve();
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                proxyFuture.onFailure(error);
+            }
+        });
+        try {
+            proxyFuture.get();
+        } catch (Exception e) {
+            logger.error("Proxy creation failed", e);
+        }
         int numberOfThreads = 3;
         ArrayList<Future<?>> futureList = new ArrayList<Future<?>>();
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);

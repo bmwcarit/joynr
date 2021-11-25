@@ -18,6 +18,7 @@
  */
 package io.joynr.tests.gracefulshutdown;
 
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_BROKER_URIS;
 import static io.joynr.runtime.AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL;
 
 import java.util.Properties;
@@ -41,7 +42,7 @@ public class Bootstrap {
     public static final void main(String... args) {
         logger.info("Starting consumer ...");
         Properties joynrProperties = new Properties();
-        joynrProperties.put("joynr.messaging.mqtt.brokerUri", "tcp://mqttbroker:1883");
+        joynrProperties.put(PROPERTY_MQTT_BROKER_URIS, "tcp://mqttbroker:1883");
         joynrProperties.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "consumer-joynr.properties");
         joynrProperties.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, "gracefulshutdown_consumer_local_domain");

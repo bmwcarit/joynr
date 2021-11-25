@@ -9,8 +9,6 @@ services:
       - statelessAsyncNetwork
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
-    ports:
-      - "1883:1883"
 
   joynr-gcd-db:
     # build: run "cd ../../docker/joynr-gcd-db && ./build_docker_image.sh"

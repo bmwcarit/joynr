@@ -50,7 +50,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.1.1</version>
 				<configuration>
 					<!-- put your configurations here -->
 				</configuration>
@@ -96,6 +95,11 @@
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>joynr-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
