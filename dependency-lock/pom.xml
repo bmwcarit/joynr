@@ -822,7 +822,7 @@
 				<groupId>org.bouncycastle</groupId>
 				<artifactId>bcprov-jdk15on</artifactId>
 				<type>jar</type>
-				<version>1.56</version>
+				<version>1.67</version>
 			</dependency>
 			<dependency>
 				<groupId>org.checkerframework</groupId>
