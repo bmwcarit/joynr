@@ -942,7 +942,7 @@
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-server</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>9.4.41.v20210516</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
