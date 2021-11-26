@@ -31,9 +31,9 @@ public:
     MqttMessagingTest() : mqttTopic("receiverChannelId"), testGbid()
     {
         std::string brokerHost =
-                _messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getHost();
+                _messagingSettings.getBrokerUrl().getBrokerBaseUrl().getHost();
         std::string brokerPort = std::to_string(
-                _messagingSettings.getBrokerUrl().getBrokerChannelsBaseUrl().getPort());
+                _messagingSettings.getBrokerUrl().getBrokerBaseUrl().getPort());
         testGbid = "testGbid";
         // provision global capabilities directory
         const bool isGloballyVisible = true;

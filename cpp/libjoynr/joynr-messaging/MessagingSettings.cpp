@@ -383,7 +383,7 @@ std::string MessagingSettings::getBrokerUrlString() const
 
 void MessagingSettings::setBrokerUrl(const BrokerUrl& brokerUrl)
 {
-    const std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString();
+    const std::string url = brokerUrl.getBrokerBaseUrl().toString();
     _settings.set(SETTING_BROKER_URL(), url);
 }
 
@@ -410,7 +410,7 @@ std::string MessagingSettings::getAdditionalBackendBrokerUrlString(std::uint8_t 
 void MessagingSettings::setAdditionalBackendBrokerUrl(const BrokerUrl& brokerUrl,
                                                       std::uint8_t index)
 {
-    const std::string url = brokerUrl.getBrokerChannelsBaseUrl().toString();
+    const std::string url = brokerUrl.getBrokerBaseUrl().toString();
     _settings.set(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index), url);
 }
 
