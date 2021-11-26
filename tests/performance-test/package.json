@@ -1,6 +1,6 @@
 {
   "name": "performance-test",
-  "version": "1.19.2",
+  "version": "1.19.3-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "Performance tests",
   "main": "src/main/js/consumer.js",
