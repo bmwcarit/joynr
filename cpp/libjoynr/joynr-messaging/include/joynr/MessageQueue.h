@@ -65,19 +65,29 @@ public:
     {
     }
 
-    std::size_t getQueueLength() const
+    virtual ~MessageQueue()
+    {
+    }
+
+    virtual void setOnMsgsDropped(
+            std::function<void(std::deque<std::shared_ptr<ImmutableMessage>>&)> onMsgsDroppedFunc)
+    {
+        _onMsgsDropped = std::move(onMsgsDroppedFunc);
+    }
+
+    virtual std::size_t getQueueLength() const
     {
         std::lock_guard<std::mutex> lock(_queueMutex);
         return getQueueLengthUnlocked();
     }
 
-    std::size_t getQueueSizeBytes() const
+    virtual std::size_t getQueueSizeBytes() const
     {
         std::lock_guard<std::mutex> lock(_queueMutex);
         return _queueSizeBytes;
     }
 
-    void queueMessage(const T key, std::shared_ptr<ImmutableMessage> message)
+    virtual void queueMessage(const T key, std::shared_ptr<ImmutableMessage> message)
     {
 
         MessageQueueItem item;
@@ -116,7 +126,7 @@ public:
         }
     }
 
-    std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
+    virtual std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
     {
         std::lock_guard<std::mutex> lock(_queueMutex);
         auto& keyIndex = boost::multi_index::get<messagequeuetags::key>(_queue);
@@ -137,7 +147,7 @@ public:
         return nullptr;
     }
 
-    void removeOutdatedMessages()
+    virtual void removeOutdatedMessages()
     {
         std::lock_guard<std::mutex> lock(_queueMutex);
         int numberOfErasedMessages = 0;
