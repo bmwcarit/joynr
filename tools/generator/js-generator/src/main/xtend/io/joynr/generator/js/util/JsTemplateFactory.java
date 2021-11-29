@@ -27,12 +27,15 @@ import io.joynr.generator.js.communicationmodel.CompoundTypeGenerator;
 import io.joynr.generator.js.communicationmodel.EnumTypeGenerator;
 import io.joynr.generator.js.communicationmodel.MapTypeGenerator;
 import io.joynr.generator.js.provider.ProviderGenerator;
+import io.joynr.generator.js.provider.ProviderImplCreatorGenerator;
 import io.joynr.generator.js.proxy.ProxyGenerator;
 
 public interface JsTemplateFactory {
     ProxyGenerator createProxyGenerator(FInterface francaIntf);
 
     ProviderGenerator createProviderGenerator(FInterface francaIntf);
+
+    ProviderImplCreatorGenerator createProviderImplCreatorGenerator(FInterface francaIntf);
 
     MapTypeGenerator createMapTypeGenerator(FMapType type);
 
