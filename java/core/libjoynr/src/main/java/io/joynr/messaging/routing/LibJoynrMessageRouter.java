@@ -78,7 +78,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     private List<MessageWorker> messageWorkers;
 
-    private static interface DeferrableRegistration {
+    private static interface QueuedMulticastRegistration {
         void register();
     }
 
@@ -97,7 +97,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     private Address incomingAddress;
     private Dispatcher dispatcher;
     private Set<ParticipantIdAndIsGloballyVisibleHolder> deferredParentHopsParticipantIds = new HashSet<>();
-    private Map<String, DeferrableRegistration> queuedMulticastRegistrations = new HashMap<>();
+    private Map<String, QueuedMulticastRegistration> queuedMulticastRegistrations = new HashMap<>();
     private boolean ready = false;
 
     @Inject
@@ -183,7 +183,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                      subscriberParticipantId,
                      multicastId,
                      providerParticipantId);
-        DeferrableRegistration registerWithParent = new DeferrableRegistration() {
+        QueuedMulticastRegistration registerWithParent = new QueuedMulticastRegistration() {
             @Override
             public void register() {
                 parentRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
@@ -227,7 +227,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                 addNextHopToParent(participantIds.participantId, participantIds.isGloballyVisible);
             }
             deferredParentHopsParticipantIds.clear();
-            for (DeferrableRegistration registerWithParent : queuedMulticastRegistrations.values()) {
+            for (QueuedMulticastRegistration registerWithParent : queuedMulticastRegistrations.values()) {
                 registerWithParent.register();
             }
             queuedMulticastRegistrations.clear();
