@@ -81,16 +81,22 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
             @Override
             public void onProxyCreationFinished(RoutingProxy routingProxy) {
-                messageRouter.setParentRouter(routingProxy,
-                                              ccMessagingAddress,
-                                              parentRoutingProviderParticipantId,
-                                              proxyBuilder.getParticipantId());
-                messageSender.setReplyToAddress(routingProxy.getReplyToAddress(), routingProxy.getGlobalAddress());
+                try {
+                    messageRouter.setParentRouter(routingProxy,
+                                                  ccMessagingAddress,
+                                                  parentRoutingProviderParticipantId,
+                                                  proxyBuilder.getParticipantId());
+                    messageSender.setReplyToAddress(routingProxy.getReplyToAddress(), routingProxy.getGlobalAddress());
+                } catch (Exception e) {
+                    logger.error("Error during runtime creation, communication with other joynr runtimes might not be possible.",
+                                 e);
+                }
             }
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
-                logger.error("Routing proxy creation failed:", error);
+                logger.error("Fatal error during runtime creation, no communication with other joynr runtimes is possible:"
+                        + " Routing proxy creation failed:", error);
             }
         };
         proxyBuilder.build(routingProxyCreatedCallback);
