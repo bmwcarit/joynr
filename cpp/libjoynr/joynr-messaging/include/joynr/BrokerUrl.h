@@ -30,30 +30,19 @@ namespace joynr
 class JOYNR_EXPORT BrokerUrl
 {
 public:
-    explicit BrokerUrl(const std::string& brokerChannelsBaseUrl);
+    explicit BrokerUrl(const std::string& brokerBaseUrlString);
 
     BrokerUrl(const BrokerUrl& other) = default;
 
     BrokerUrl& operator=(const BrokerUrl& brokerUrl);
     bool operator==(const BrokerUrl& brokerUrl) const;
 
-    static const std::string& CREATE_CHANNEL_QUERY_ITEM();
-    static const std::string& SEND_MESSAGE_PATH_APPENDIX();
-    static const std::string& CHANNEL_PATH_SUFFIX();
-    static const std::string& TIMECHECK_PATH_SUFFIX();
-    static const std::string& URL_PATH_SEPARATOR();
-
-    Url getCreateChannelUrl(const std::string& mcid) const;
-    Url getReceiveUrl(const std::string& channelId) const;
-    Url getSendUrl(const std::string& channelId) const;
-    Url getBrokerChannelsBaseUrl() const;
-    Url getDeleteChannelUrl(const std::string& mcid) const;
-    Url getTimeCheckUrl() const;
+    Url getBrokerBaseUrl() const;
     std::string toString() const;
 
 private:
-    std::string _brokerBaseUrl;
-    Url _brokerChannelsBaseUrl;
+    std::string _brokerBaseUrlString;
+    Url _brokerBaseUrl;
 };
 
 } // namespace joynr

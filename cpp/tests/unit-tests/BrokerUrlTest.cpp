@@ -27,8 +27,7 @@ class BrokerUrlTest : public ::testing::Test
 {
 public:
     BrokerUrlTest()
-            : brokerUrlHttp(BrokerUrl("http://localhost:8080/bounceproxy/")),
-              brokerUrlMqtt(BrokerUrl("mqtt://localhost:1883/"))
+            : brokerUrlMqtt(BrokerUrl("mqtt://localhost:1883/"))
     {
     }
 
@@ -38,45 +37,26 @@ public:
     }
 
 protected:
-    BrokerUrl brokerUrlHttp;
     BrokerUrl brokerUrlMqtt;
 };
 
-TEST_F(BrokerUrlTest, getCreateChannelUrl)
+TEST_F(BrokerUrlTest, getBrokerUrl)
 {
-    Url createChannelUrlHttp = brokerUrlHttp.getCreateChannelUrl("testMcid");
-    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/?ccid=testMcid",
-              createChannelUrlHttp.toString());
-    Url createChannelUrlMqtt = brokerUrlMqtt.getCreateChannelUrl("testMcid");
-    EXPECT_EQ("mqtt://localhost:1883/channels/?ccid=testMcid", createChannelUrlMqtt.toString());
-}
-
-TEST_F(BrokerUrlTest, getSendUrl)
-{
-    Url sendUrlHttp = brokerUrlHttp.getSendUrl("testMcid");
-    EXPECT_EQ(
-            "http://localhost:8080/bounceproxy/channels/testMcid/message/", sendUrlHttp.toString());
-    Url sendUrlMqtt = brokerUrlMqtt.getSendUrl("testMcid");
-    EXPECT_EQ("mqtt://localhost:1883/channels/testMcid/message/", sendUrlMqtt.toString());
-}
-
-TEST_F(BrokerUrlTest, getDeleteChannelUrl)
-{
-    Url deleteUrlHttp = brokerUrlHttp.getDeleteChannelUrl("testMcid");
-    EXPECT_EQ("http://localhost:8080/bounceproxy/channels/testMcid/", deleteUrlHttp.toString());
-    Url deleteUrlMqtt = brokerUrlMqtt.getDeleteChannelUrl("testMcid");
-    EXPECT_EQ("mqtt://localhost:1883/channels/testMcid/", deleteUrlMqtt.toString());
-}
-
-TEST_F(BrokerUrlTest, getTimeCheckUrl)
-{
-    Url timeCheckUrlHttp = brokerUrlHttp.getTimeCheckUrl();
-    EXPECT_EQ("http://localhost:8080/bounceproxy/time/", timeCheckUrlHttp.toString());
-    Url timeCheckUrlMqtt = brokerUrlMqtt.getTimeCheckUrl();
-    EXPECT_EQ("mqtt://localhost:1883/time/", timeCheckUrlMqtt.toString());
+    Url brokerUrl = brokerUrlMqtt.getBrokerBaseUrl();
+    EXPECT_EQ("mqtt://localhost:1883/", brokerUrl.toString());
 }
 
 TEST_F(BrokerUrlTest, createEmptyBrokerUrlWithEmptyStringThrows)
 {
     EXPECT_THROW(createBrokerUrlWithEmptyString(), std::invalid_argument);
+}
+
+TEST_F(BrokerUrlTest, invalidNonEmptyBrokerUrlsDoNotThrow)
+{
+    BrokerUrl invalidNonEmptyBrokerUrl_1("mqtt://127.0.0.1.1883");
+    EXPECT_EQ("mqtt://127.0.0.1.1883", invalidNonEmptyBrokerUrl_1.toString());
+    BrokerUrl invalidNonEmptyBrokerUrl_2("mqtts://127.0.0.1.1883");
+    EXPECT_EQ("mqtts://127.0.0.1.1883", invalidNonEmptyBrokerUrl_2.toString());
+    BrokerUrl invalidNonEmptyBrokerUrl_3("tcp://127.0.0.1.1883");
+    EXPECT_EQ("tcp://127.0.0.1.1883", invalidNonEmptyBrokerUrl_3.toString());
 }
