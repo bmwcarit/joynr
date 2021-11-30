@@ -2,6 +2,23 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.3
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Java]** Updated org.jacoco:jacoco-maven-plugin to 0.8.7
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.19.2
 
 ## API-relevant Changes
