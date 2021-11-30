@@ -48,6 +48,7 @@
 
 #include "tests/mock/MockMessagingStub.h"
 #include "tests/mock/MockMessagingStubFactory.h"
+#include "tests/mock/MockMessageQueue.h"
 
 using namespace joynr;
 
@@ -61,8 +62,11 @@ public:
               _messagingSettings(_settings),
               _clusterControllerSettings(_settings),
               _messageQueue(nullptr),
+              _mockedMessageQueue(nullptr),
+              _mockedTransportNotAvailableQueue(nullptr),
               _messagingStubFactory(nullptr),
               _messageRouter(),
+              _messageRouterWithMockedMessageQueue(),
               _mutableMessage(),
               _multicastMessagingSkeletonDirectory(
                       std::make_shared<MulticastMessagingSkeletonDirectory>()),
@@ -90,6 +94,9 @@ public:
 
     ~MessageRouterTest() override
     {
+        if(_messageRouterWithMockedMessageQueue) {
+            _messageRouterWithMockedMessageQueue->shutdown();
+        }
         EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
         _messageRouter->shutdown();
         _singleThreadedIOService->stop();
@@ -118,6 +125,33 @@ protected:
                 std::move(transportStatuses),
                 std::move(messageQueueForMessageRouter),
                 std::move(transportNotAvailableQueue));
+        libJoynrMessageRouter->init();
+
+        return libJoynrMessageRouter;
+    }
+
+    template <typename U = T,
+              typename = std::enable_if_t<std::is_same<U, LibJoynrMessageRouter>::value>>
+    std::shared_ptr<LibJoynrMessageRouter> createMessageRouterWithMockedMessageQueue(
+            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
+    {
+        constexpr std::uint64_t messageQueueLimit = 4;
+        auto mockedMessageQueueForMessageRouter = std::make_unique<MockMessageQueue<std::string>>(messageQueueLimit);
+        _mockedMessageQueue = mockedMessageQueueForMessageRouter.get();
+
+        auto mockedTransportNotAvailableQueue =
+                std::make_unique<MockMessageQueue<std::shared_ptr<ITransportStatus>>>();
+        _mockedTransportNotAvailableQueue = mockedTransportNotAvailableQueue.get();
+
+        auto libJoynrMessageRouter = std::make_shared<LibJoynrMessageRouter>(
+                _messagingSettings,
+                _webSocketClientAddress,
+                _messagingStubFactory,
+                _singleThreadedIOService->getIOService(),
+                std::make_unique<WebSocketMulticastAddressCalculator>(_localTransport),
+                std::move(transportStatuses),
+                std::move(mockedMessageQueueForMessageRouter),
+                std::move(mockedTransportNotAvailableQueue));
         libJoynrMessageRouter->init();
 
         return libJoynrMessageRouter;
@@ -161,6 +195,43 @@ protected:
         return ccMessageRouter;
     }
 
+    template <typename U = T, typename = std::enable_if_t<std::is_same<U, CcMessageRouter>::value>>
+    std::shared_ptr<CcMessageRouter> createMessageRouterWithMockedMessageQueue(
+            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
+    {
+        const std::string globalCcAddress("globalAddressMockedMessageQueue");
+        const std::string messageNotificationProviderParticipantId(
+                "messageNotificationProviderParticipantIdMockedMessageQueue");
+
+        constexpr std::uint64_t messageQueueLimit = 4;
+        auto mockedMessageQueueForMessageRouter = std::make_unique<
+                MockMessageQueue<std::string>>(messageQueueLimit);
+        _mockedMessageQueue = mockedMessageQueueForMessageRouter.get();
+
+        auto mockedTransportNotAvailableQueue =
+                std::make_unique<MockMessageQueue<std::shared_ptr<ITransportStatus>>>();
+        _mockedTransportNotAvailableQueue = mockedTransportNotAvailableQueue.get();
+
+        auto ccMessageRouter = std::make_shared<CcMessageRouter>(
+                _messagingSettings,
+                _clusterControllerSettings,
+                _messagingStubFactory,
+                _multicastMessagingSkeletonDirectory,
+                std::unique_ptr<IPlatformSecurityManager>(),
+                _singleThreadedIOService->getIOService(),
+                std::make_unique<MqttMulticastAddressCalculator>(
+                        _clusterControllerSettings.getMqttMulticastTopicPrefix(), _availableGbids),
+                globalCcAddress,
+                messageNotificationProviderParticipantId,
+                std::move(transportStatuses),
+                std::move(mockedMessageQueueForMessageRouter),
+                std::move(mockedTransportNotAvailableQueue),
+                *_ownAddress,
+                _availableGbids);
+        ccMessageRouter->init();
+        return ccMessageRouter;
+    }
+
     void setOwnAddress(std::shared_ptr<const system::RoutingTypes::Address> ownAddress)
     {
         this->_ownAddress = ownAddress;
@@ -172,10 +243,13 @@ protected:
     MessagingSettings _messagingSettings;
     ClusterControllerSettings _clusterControllerSettings;
     MessageQueue<std::string>* _messageQueue;
+    MockMessageQueue<std::string>* _mockedMessageQueue;
+    MockMessageQueue<std::shared_ptr<ITransportStatus>>* _mockedTransportNotAvailableQueue;
     MessageQueue<std::shared_ptr<ITransportStatus>>* _transportNotAvailableQueueRef;
     std::shared_ptr<MockMessagingStubFactory> _messagingStubFactory;
 
     std::shared_ptr<T> _messageRouter;
+    std::shared_ptr<T> _messageRouterWithMockedMessageQueue;
 
     MutableMessage _mutableMessage;
     std::shared_ptr<MulticastMessagingSkeletonDirectory> _multicastMessagingSkeletonDirectory;

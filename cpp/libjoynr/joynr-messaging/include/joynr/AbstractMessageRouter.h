@@ -58,6 +58,7 @@ namespace joynr
 template <typename T>
 class MessageQueue;
 
+class IMessageSender;
 class IMessagingStub;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
@@ -86,6 +87,8 @@ public:
 
     void route(std::shared_ptr<ImmutableMessage> message, std::uint32_t tryCount = 0) final;
     virtual void shutdown();
+
+    void setMessageSender(std::weak_ptr<IMessageSender> messageSender);
 
     friend class MessageRunnable;
     friend class ConsumerPermissionCallback;
@@ -200,6 +203,7 @@ protected:
     std::shared_ptr<IMessagingStubFactory> _messagingStubFactory;
     std::shared_ptr<ThreadPoolDelayedScheduler> _messageScheduler;
     std::unique_ptr<MessageQueue<std::string>> _messageQueue;
+    std::weak_ptr<IMessageSender> _messageSender;
     // MessageQueue ReadLocker is required to protect calls to queueMessage and
     // getDestinationAddresses:
     // The routing table must not be modified between getDestinationAddresses and queueMessage.

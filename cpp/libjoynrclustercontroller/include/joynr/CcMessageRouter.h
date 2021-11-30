@@ -43,7 +43,6 @@ class MessageQueue;
 
 class ClusterControllerSettings;
 class IAccessController;
-class IMessageSender;
 class IMessagingStubFactory;
 class IMulticastAddressCalculator;
 class IPlatformSecurityManager;
@@ -226,7 +225,6 @@ public:
      */
     bool publishToGlobal(const ImmutableMessage& message) final;
     void setAccessController(std::weak_ptr<IAccessController> accessController);
-    void setMessageSender(std::weak_ptr<IMessageSender> messageSender);
     std::shared_ptr<joynr::system::MessageNotificationProvider> getMessageNotificationProvider()
             const;
     friend class MessageRunnable;
@@ -272,7 +270,6 @@ private:
     const std::string _messageNotificationProviderParticipantId;
     ClusterControllerSettings& _clusterControllerSettings;
     const system::RoutingTypes::Address& _ownGlobalAddress;
-    std::weak_ptr<IMessageSender> _messageSender;
 };
 
 } // namespace joynr
