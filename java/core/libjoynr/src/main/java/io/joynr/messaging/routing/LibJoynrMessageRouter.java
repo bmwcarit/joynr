@@ -97,7 +97,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     private Address incomingAddress;
     private Dispatcher dispatcher;
     private Set<ParticipantIdAndIsGloballyVisibleHolder> deferredParentHopsParticipantIds = new HashSet<>();
-    private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
+    private Map<String, DeferrableRegistration> queuedMulticastRegistrations = new HashMap<>();
     private boolean ready = false;
 
     @Inject
@@ -191,8 +191,8 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         };
         synchronized (this) {
             if (!ready) {
-                deferredMulticastRegistrations.put(multicastId + subscriberParticipantId + providerParticipantId,
-                                                   registerWithParent);
+                queuedMulticastRegistrations.put(multicastId + subscriberParticipantId + providerParticipantId,
+                                                 registerWithParent);
                 return;
             }
         }
@@ -205,7 +205,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                                         String providerParticipantId) {
         synchronized (this) {
             if (!ready) {
-                deferredMulticastRegistrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
+                queuedMulticastRegistrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
                 return;
             }
         }
@@ -227,10 +227,10 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                 addNextHopToParent(participantIds.participantId, participantIds.isGloballyVisible);
             }
             deferredParentHopsParticipantIds.clear();
-            for (DeferrableRegistration registerWithParent : deferredMulticastRegistrations.values()) {
+            for (DeferrableRegistration registerWithParent : queuedMulticastRegistrations.values()) {
                 registerWithParent.register();
             }
-            deferredMulticastRegistrations.clear();
+            queuedMulticastRegistrations.clear();
             ready = true;
         }
     }
