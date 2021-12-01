@@ -195,11 +195,16 @@ class ProjectDependency(object):
             line = line[endOfInfo:]
             line = line.strip()
             parts = line.split(':')
-            if 5 == len(parts) and parts[4] in ProjectDependency.MVN_SCOPES:
+            if 5 == len(parts) and self.__startsWithValidScope(parts[4]):
                 del parts[-1]
                 dependencies.add(Dependency(*parts))
         return dependencies
 
+    def __startsWithValidScope(self, scopePart):
+        for supportedScopes in ProjectDependency.MVN_SCOPES:
+            if scopePart.startswith(supportedScopes):
+                return True
+        return False
 
 def init(parser):
     parser.add_argument('--loglevel', '-l', dest='loglevel', required=False,
