@@ -43,7 +43,7 @@ echo         failing: $failing
 
 #rm sit-apps.log
 #rm sit-result.log
-EXPECTED_RESULTS=78
+EXPECTED_RESULTS=79
 if [ $results -ne $EXPECTED_RESULTS ]
 then
   echo "ERROR: unexpected number of results: $results, expected $EXPECTED_RESULTS"
