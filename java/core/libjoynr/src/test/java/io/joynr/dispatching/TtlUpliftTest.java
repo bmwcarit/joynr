@@ -18,12 +18,12 @@
  */
 package io.joynr.dispatching;
 
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
@@ -49,7 +49,7 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -355,7 +355,7 @@ public class TtlUpliftTest {
         MutableMessageFactoryTest.assertExpiryDateEquals(expiryDateValue, message);
     }
 
-    private static class MessagingQosMatcher extends ArgumentMatcher<MessagingQos> {
+    private static class MessagingQosMatcher implements ArgumentMatcher<MessagingQos> {
 
         private long expectedPublicationTtlMs;
         private String describeTo;
@@ -366,7 +366,7 @@ public class TtlUpliftTest {
         }
 
         @Override
-        public boolean matches(Object argument) {
+        public boolean matches(MessagingQos argument) {
             if (argument == null) {
                 describeTo = "argument was null";
                 return false;
@@ -385,9 +385,8 @@ public class TtlUpliftTest {
         }
 
         @Override
-        public void describeTo(Description description) {
-            super.describeTo(description);
-            description.appendText(": " + describeTo);
+        public String toString() {
+            return describeTo;
         }
     }
 
@@ -437,7 +436,7 @@ public class TtlUpliftTest {
 
         // sending initial value plus the attributeValueChanged
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  argThat(new MessagingQosMatcher(publicationTtlMs)));
 
@@ -448,7 +447,7 @@ public class TtlUpliftTest {
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   any(MessagingQos.class));
     }
@@ -482,7 +481,7 @@ public class TtlUpliftTest {
         // sending initial value plus 2 times the attributeValueChanged
         verify(dispatcher,
                times(3)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                     argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                      any(SubscriptionPublication.class),
                                                      argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
 
@@ -510,7 +509,7 @@ public class TtlUpliftTest {
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   any(MessagingQos.class));
     }
@@ -536,7 +535,7 @@ public class TtlUpliftTest {
 
         verify(dispatcher,
                timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }
@@ -561,7 +560,7 @@ public class TtlUpliftTest {
 
         verify(dispatcher,
                timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }
@@ -594,7 +593,7 @@ public class TtlUpliftTest {
 
         // sending the broadcastOccurred
         verify(dispatcher, times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  argThat(new MessagingQosMatcher(publicationTtlMs)));
 
@@ -605,7 +604,7 @@ public class TtlUpliftTest {
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   any(MessagingQos.class));
     }
@@ -642,7 +641,7 @@ public class TtlUpliftTest {
         // sending 2 times the broadcastOccurred
         verify(dispatcher,
                times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                     (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                     argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                      any(SubscriptionPublication.class),
                                                      argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
 
@@ -670,7 +669,7 @@ public class TtlUpliftTest {
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   any(MessagingQos.class));
     }
@@ -696,7 +695,7 @@ public class TtlUpliftTest {
 
         verify(dispatcher,
                timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }
@@ -721,7 +720,7 @@ public class TtlUpliftTest {
 
         verify(dispatcher,
                timeout(300).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   argThat(new MessagingQosMatcher(expectedPublicationTtlMs)));
     }

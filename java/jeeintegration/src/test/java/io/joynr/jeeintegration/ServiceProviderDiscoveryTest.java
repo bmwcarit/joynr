@@ -22,7 +22,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -36,11 +39,9 @@ import javax.enterprise.util.AnnotationLiteral;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.servicelocator.MyInvalidServiceSync;
 import joynr.exceptions.ApplicationException;
@@ -113,14 +114,14 @@ public class ServiceProviderDiscoveryTest {
         BeanManager mockBeanManager = mock(BeanManager.class);
 
         Bean<DummyBeanOne> mockBeanOne = mock(Bean.class);
-        Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
+        doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
         Bean<DummyBeanTwo> mockBeanTwo = mock(Bean.class);
-        Mockito.doReturn(DummyBeanTwo.class).when(mockBeanTwo).getBeanClass();
+        doReturn(DummyBeanTwo.class).when(mockBeanTwo).getBeanClass();
 
         Set<Bean<?>> beans = new HashSet<>();
         beans.add(mockBeanOne);
         beans.add(mockBeanTwo);
-        Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
+        when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })).thenReturn(beans);
 
         ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mockBeanManager);
@@ -157,14 +158,16 @@ public class ServiceProviderDiscoveryTest {
         BeanManager mockBeanManager = mock(BeanManager.class);
 
         Bean<DummyBeanOne> mockBeanOne = mock(Bean.class);
-        Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
+        // By chance depending on the implemenation of the Set<Bean<?>> below
+        // this might called and hence lenient() must be used.
+        lenient().doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
         Bean<DummyBeanFour> mockBeanThree = mock(Bean.class);
-        Mockito.doReturn(DummyBeanThree.class).when(mockBeanThree).getBeanClass();
+        doReturn(DummyBeanThree.class).when(mockBeanThree).getBeanClass();
 
         Set<Bean<?>> beans = new HashSet<>();
         beans.add(mockBeanOne);
         beans.add(mockBeanThree);
-        Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
+        when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })).thenReturn(beans);
 
         ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mockBeanManager);
@@ -178,14 +181,16 @@ public class ServiceProviderDiscoveryTest {
         BeanManager mockBeanManager = mock(BeanManager.class);
 
         Bean<DummyBeanOne> mockBeanOne = mock(Bean.class);
-        Mockito.doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
+        // By chance depending on the implemenation of the Set<Bean<?>> below
+        // this might called and hence lenient() must be used.
+        lenient().doReturn(DummyBeanOne.class).when(mockBeanOne).getBeanClass();
         Bean<DummyBeanFour> mockBeanFour = mock(Bean.class);
-        Mockito.doReturn(DummyBeanFour.class).when(mockBeanFour).getBeanClass();
+        doReturn(DummyBeanFour.class).when(mockBeanFour).getBeanClass();
 
         Set<Bean<?>> beans = new HashSet<>();
         beans.add(mockBeanOne);
         beans.add(mockBeanFour);
-        Mockito.when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
+        when(mockBeanManager.getBeans(Object.class, new AnnotationLiteral<Any>() {
         })).thenReturn(beans);
 
         ServiceProviderDiscovery subject = new ServiceProviderDiscovery(mockBeanManager);

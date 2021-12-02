@@ -18,10 +18,11 @@
  */
 package io.joynr.capabilities;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,10 +33,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.JoynrVersion;
@@ -123,8 +124,8 @@ public class CapabilitiesRegistrarTest {
 
         when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
         requestCallerMock = mock(RequestCaller.class);
-        when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
-        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
+        lenient().when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
+        lenient().when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
         when(participantIdStorage.getProviderParticipantId(eq(domain),
                                                            eq(TestProvider.INTERFACE_NAME),
                                                            anyInt())).thenReturn(participantId);
@@ -234,11 +235,11 @@ public class CapabilitiesRegistrarTest {
 
     @Test
     public void unregisterProvider_succeeded() {
-        doAnswer(createRemoveAnswerWithSuccess()).when(localDiscoveryAggregator).remove(Matchers.<Callback<Void>> any(),
-                                                                                        eq(participantId));
+        doAnswer(createRemoveAnswerWithSuccess()).when(localDiscoveryAggregator)
+                                                 .remove(ArgumentMatchers.<Callback<Void>> any(), eq(participantId));
         try {
             Future<Void> future = registrar.unregisterProvider(domain, testProvider);
-            verify(localDiscoveryAggregator).remove(Matchers.<Callback<Void>> any(), eq(participantId));
+            verify(localDiscoveryAggregator).remove(ArgumentMatchers.<Callback<Void>> any(), eq(participantId));
             future.get(5000);
             verify(providerDirectory).remove(eq(participantId));
             verify(messageRouter).removeNextHop(eq(participantId));
@@ -251,12 +252,12 @@ public class CapabilitiesRegistrarTest {
     public void unregisterProvider_failsWithException() {
         JoynrRuntimeException expectedException = new JoynrRuntimeException("remove failed");
         doAnswer(createRemoveAnswerWithException(expectedException)).when(localDiscoveryAggregator)
-                                                                    .remove(Matchers.<Callback<Void>> any(),
+                                                                    .remove(ArgumentMatchers.<Callback<Void>> any(),
                                                                             eq(participantId));
 
         try {
             Future<Void> future = registrar.unregisterProvider(domain, testProvider);
-            verify(localDiscoveryAggregator).remove(Matchers.<Callback<Void>> any(), eq(participantId));
+            verify(localDiscoveryAggregator).remove(ArgumentMatchers.<Callback<Void>> any(), eq(participantId));
             future.get(5000);
             Assert.fail("unregisterProvider expected to fail with exception");
         } catch (Exception exception) {

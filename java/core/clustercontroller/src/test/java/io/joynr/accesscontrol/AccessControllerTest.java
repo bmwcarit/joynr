@@ -18,9 +18,10 @@
  */
 package io.joynr.accesscontrol;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,7 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.capabilities.CapabilitiesProvisioning;
@@ -94,9 +95,9 @@ public class AccessControllerTest {
 
         when(messageMock.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         when(messageMock.getRecipient()).thenReturn(toParticipantId);
-        when(messageMock.getSender()).thenReturn(fromParticipantId);
+        lenient().when(messageMock.getSender()).thenReturn(fromParticipantId);
         when(messageMock.getCreatorUserId()).thenReturn(DUMMY_USERID);
-        when(messageMock.getId()).thenReturn("someId");
+        lenient().when(messageMock.getId()).thenReturn("someId");
 
         final DiscoveryEntryWithMetaInfo discoveryEntry = new DiscoveryEntryWithMetaInfo(new Version(47, 11),
                                                                                          testDomain,

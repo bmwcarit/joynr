@@ -20,11 +20,11 @@ package io.joynr.dispatching.subscription;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySet;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -54,7 +54,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -207,7 +207,7 @@ public class SubscriptionManagerTest {
         proxyField.setAccessible(true);
         matchesSubscriptionStateContainingProxy = new ArgumentMatcher<SubscriptionState>() {
             @Override
-            public boolean matches(Object argument) {
+            public boolean matches(SubscriptionState argument) {
                 SubscriptionState state = (SubscriptionState) argument;
                 try {
                     return proxyField.get(state) == proxy;
@@ -247,8 +247,7 @@ public class SubscriptionManagerTest {
                                           Mockito.eq(TimeUnit.MILLISECONDS));
         assertTrue(capturedExpiryInterval.getValue() >= remainingExpiryDateMs
                 && capturedExpiryInterval.getValue() <= remainingExpiryDateMs + 100);
-        verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
-                                                             Mockito.any(ScheduledFuture.class));
+        verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId), any());
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
@@ -281,8 +280,7 @@ public class SubscriptionManagerTest {
                                           Mockito.eq(TimeUnit.MILLISECONDS));
         assertTrue(capturedExpiryInterval.getValue() >= remainingExpiryDateMs
                 && capturedExpiryInterval.getValue() <= remainingExpiryDateMs + 100);
-        verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId),
-                                                             Mockito.any(ScheduledFuture.class));
+        verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId), any());
 
         verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
                                                    eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
@@ -425,8 +423,6 @@ public class SubscriptionManagerTest {
                                                     JsonGenerationException, JsonMappingException, IOException {
 
         when(subscriptionStates.get(subscriptionId)).thenReturn(null);
-        when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
-        when(missedPublicationTimers.get(subscriptionId)).thenReturn(missedPublicationTimer);
         subscriptionManager.unregisterSubscription(fromParticipantId,
                                                    new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                    subscriptionId,

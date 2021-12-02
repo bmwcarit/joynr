@@ -24,8 +24,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -52,10 +52,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -275,7 +275,6 @@ public class RequestReplyManagerTest {
         TestProvider testRequestCallerSpy = spy(new TestProvider(1));
 
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerFactory.create(testRequestCallerSpy));
-        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
         providerDirectory.add(testMessageResponderParticipantId, providerContainer);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
         requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request1, TIME_TO_LIVE);
@@ -293,7 +292,6 @@ public class RequestReplyManagerTest {
         TestProvider testRequestCallerSpy = spy(new TestProvider(1));
 
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerFactory.create(testRequestCallerSpy));
-        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
         providerDirectory.add(testMessageResponderParticipantId, providerContainer);
         ReplyCallback replyCallbackMock = mock(ReplyCallback.class);
         requestReplyManager.handleRequest(replyCallbackMock, testMessageResponderParticipantId, request3, TIME_TO_LIVE);
@@ -342,7 +340,6 @@ public class RequestReplyManagerTest {
 
         testResponderUnregistered.waitForMessage((int) (TIME_TO_LIVE * 0.05));
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerFactory.create(testResponderUnregistered));
-        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
         providerDirectory.add(testResponderUnregisteredParticipantId, providerContainer);
 
         testResponderUnregistered.assertAllPayloadsReceived((int) (TIME_TO_LIVE));
@@ -379,7 +376,6 @@ public class RequestReplyManagerTest {
     private void testOneWay(int expectedCalls, long forTtl) {
         TestOneWayRecipient oneWayRecipient = spy(new TestOneWayRecipient(expectedCalls));
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerFactory.create(oneWayRecipient));
-        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisherMock);
         providerDirectory.add(testOneWayRecipientParticipantId, providerContainer);
 
         requestReplyManager.handleOneWayRequest(testOneWayRecipientParticipantId,
@@ -410,7 +406,7 @@ public class RequestReplyManagerTest {
                 return null;
             }
         }).when(mockRequestInterpreter)
-          .execute(Matchers.<ProviderCallback<Reply>> any(), any(RequestCaller.class), any(Request.class));
+          .execute(ArgumentMatchers.<ProviderCallback<Reply>> any(), any(RequestCaller.class), any(Request.class));
 
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
         providerDirectory.add(testMessageResponderParticipantId, providerContainer);
@@ -494,7 +490,7 @@ public class RequestReplyManagerTest {
                 replyCount.countDown();
                 return null;
             }
-        }).when(mockRequestInterpreter).invokeMethod(any(RequestCaller.class), any(Request.class));
+        }).when(mockRequestInterpreter).invokeMethod(any(RequestCaller.class), any(OneWayRequest.class));
 
         when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
         providerDirectory.add(testMessageResponderParticipantId, providerContainer);

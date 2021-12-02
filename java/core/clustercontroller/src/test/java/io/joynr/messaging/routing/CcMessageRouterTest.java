@@ -24,9 +24,9 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
@@ -64,7 +64,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.google.inject.AbstractModule;
@@ -368,7 +368,7 @@ public class CcMessageRouterTest {
 
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                FailureAction failureAction = invocation.getArgumentAt(2, FailureAction.class);
+                FailureAction failureAction = invocation.getArgument(2);
                 if (callCount < 2) {
                     callCount++;
                     failureAction.execute(new JoynrDelayMessageException(10, "first retry"));
@@ -405,7 +405,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                SuccessAction successAction = invocation.getArgumentAt(1, SuccessAction.class);
+                SuccessAction successAction = invocation.getArgument(1);
                 successAction.execute();
                 return null;
             }
@@ -417,7 +417,7 @@ public class CcMessageRouterTest {
 
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                FailureAction failureAction = invocation.getArgumentAt(2, FailureAction.class);
+                FailureAction failureAction = invocation.getArgument(2);
                 if (callCount < 2) {
                     callCount++;
                     failureAction.execute(new JoynrDelayMessageException(10, "first retry"));
@@ -527,7 +527,7 @@ public class CcMessageRouterTest {
                     previousInvocationTimeMs = now;
                 }
 
-                invocation.getArgumentAt(2, FailureAction.class).execute(new Exception());
+                ((FailureAction) invocation.getArgument(2)).execute(new Exception());
 
                 return null;
             }
@@ -572,7 +572,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                invocation.getArgumentAt(2, FailureAction.class).execute(new Exception());
+                ((FailureAction) invocation.getArgument(2)).execute(new Exception());
                 return null;
             }
         }).when(messagingStubMock)
@@ -611,7 +611,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -647,7 +647,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -678,7 +678,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -717,7 +717,7 @@ public class CcMessageRouterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
                 verify(routingTable, times(0)).remove(toParticipantId);
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -754,7 +754,7 @@ public class CcMessageRouterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
                 verify(routingTable, times(0)).remove(toParticipantId);
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -899,7 +899,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -924,7 +924,6 @@ public class CcMessageRouterTest {
         recipientSet.add(joynrMessage.getImmutableMessage().getRecipient());
         doReturn(recipientSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
 
-        when(websocketClientMessagingStubFactoryMock.create(any(WebSocketClientAddress.class))).thenReturn(messagingStubMock);
         doThrow(new JoynrDelayMessageException(100, "test")).when(messagingStubMock)
                                                             .transmit(any(ImmutableMessage.class),
                                                                       any(SuccessAction.class),
@@ -1233,7 +1232,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 callCount++;
-                FailureAction failureAction = invocation.getArgumentAt(2, FailureAction.class);
+                FailureAction failureAction = invocation.getArgument(2);
                 switch (callCount) {
                 case 1:
                     failureAction.execute(new JoynrDelayMessageException(32, "first stub call, failureAction"));
@@ -1299,8 +1298,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
-                                                                                  HasConsumerPermissionCallback.class);
+                HasConsumerPermissionCallback callback = invocation.getArgument(1);
                 callback.hasConsumerPermission(true);
                 return null;
             }
@@ -1333,8 +1331,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
-                                                                                  HasConsumerPermissionCallback.class);
+                HasConsumerPermissionCallback callback = invocation.getArgument(1);
                 callback.hasConsumerPermission(true);
                 return null;
             }
@@ -1366,8 +1363,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
-                                                                                  HasConsumerPermissionCallback.class);
+                HasConsumerPermissionCallback callback = invocation.getArgument(1);
                 callback.hasConsumerPermission(false);
                 return null;
             }

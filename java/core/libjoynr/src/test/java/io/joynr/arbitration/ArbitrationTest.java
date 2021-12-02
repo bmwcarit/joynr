@@ -23,10 +23,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -58,7 +57,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InOrder;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -290,7 +289,7 @@ public class ArbitrationTest {
         joynr.types.DiscoveryQos expectedDiscoveryQos = convertDiscoveryQos(discoveryQos);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos, nullGbidArray, domain);
-        verify(localDiscoveryAggregator, times(1)).lookup(anyObject(),
+        verify(localDiscoveryAggregator, times(1)).lookup(any(),
                                                           eq(new String[]{ domain }),
                                                           eq(interfaceName),
                                                           discoveryQosCaptor.capture(),
@@ -332,7 +331,7 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos, singleGbid, domain);
 
-        verify(localDiscoveryAggregator, times(1)).lookup(anyObject(),
+        verify(localDiscoveryAggregator, times(1)).lookup(any(),
                                                           eq(new String[]{ domain }),
                                                           eq(interfaceName),
                                                           discoveryQosCaptor.capture(),
@@ -354,7 +353,7 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos, multipleGbids, domain);
 
-        verify(localDiscoveryAggregator, times(1)).lookup(anyObject(),
+        verify(localDiscoveryAggregator, times(1)).lookup(any(),
                                                           eq(new String[]{ domain }),
                                                           eq(interfaceName),
                                                           discoveryQosCaptor.capture(),
@@ -811,8 +810,8 @@ public class ArbitrationTest {
         capabilitiesList.add(discoveryEntry);
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(Matchers.<Map<String, String>> any(),
-                                                Matchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
+        when(arbitrationStrategyFunction.select(ArgumentMatchers.<Map<String, String>> any(),
+                                                ArgumentMatchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(discoveryEntry)));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
@@ -847,8 +846,8 @@ public class ArbitrationTest {
         }
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(Matchers.<Map<String, String>> any(),
-                                                Matchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
+        when(arbitrationStrategyFunction.select(ArgumentMatchers.<Map<String, String>> any(),
+                                                ArgumentMatchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
@@ -882,8 +881,8 @@ public class ArbitrationTest {
         }
 
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(Matchers.<Map<String, String>> any(),
-                                                Matchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
+        when(arbitrationStrategyFunction.select(ArgumentMatchers.<Map<String, String>> any(),
+                                                ArgumentMatchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(new HashSet<DiscoveryEntryWithMetaInfo>(capabilitiesList));
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
@@ -1470,8 +1469,8 @@ public class ArbitrationTest {
         Set<String> domains = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("a", "b", "c")));
         Set<String> participantIDs = setUpProviderCapabilitiesForMultipleDomains(domains);
         ArbitrationStrategyFunction arbitrationStrategyFunction = mock(ArbitrationStrategyFunction.class);
-        when(arbitrationStrategyFunction.select(Matchers.<Map<String, String>> any(),
-                                                Matchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(null);
+        when(arbitrationStrategyFunction.select(ArgumentMatchers.<Map<String, String>> any(),
+                                                ArgumentMatchers.<Collection<DiscoveryEntryWithMetaInfo>> any())).thenReturn(null);
         discoveryQos = new DiscoveryQos(ARBITRATION_TIMEOUT, arbitrationStrategyFunction, Long.MAX_VALUE);
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos, domains.toArray(new String[0]));
         verify(arbitrationCallback, never()).onSuccess(any());

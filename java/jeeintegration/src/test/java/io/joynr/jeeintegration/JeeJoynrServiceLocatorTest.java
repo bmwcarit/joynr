@@ -22,10 +22,10 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySetOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -50,7 +50,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
@@ -121,7 +121,7 @@ public class JeeJoynrServiceLocatorTest {
         when(proxyBuilderStatelessAsync.build()).thenReturn(myJoynrProxy);
 
         doAnswer(invocation -> {
-            invocation.getArgumentAt(1, MessageIdCallback.class).accept("messageId");
+            ((MessageIdCallback) invocation.getArgument(1)).accept("messageId");
             return null;
         }).when(myJoynrProxy).callMe(eq("one"), any(MessageIdCallback.class));
     }
@@ -300,8 +300,7 @@ public class JeeJoynrServiceLocatorTest {
         domains.add("testDomain");
         Set<String> expectedDomains = new HashSet<>(domains);
 
-        when(joynrRuntime.getGuidedProxyBuilder(anySetOf(String.class),
-                                                any(Class.class))).thenReturn(mock(GuidedProxyBuilder.class));
+        when(joynrRuntime.getGuidedProxyBuilder(anySet(), any(Class.class))).thenReturn(mock(GuidedProxyBuilder.class));
 
         assertNotNull(subject.getGuidedProxyBuilder(MyServiceSync.class, domains));
 
@@ -595,8 +594,6 @@ public class JeeJoynrServiceLocatorTest {
     @Test
     public void testBuilder_withGbids() {
         setupSyncInterface();
-
-        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback<MyServiceSync>> any())).thenReturn(myJoynrProxy);
 
         String[] gbids = new String[]{ "gbid1", "gbid2" };
         subject.builder(MyServiceSync.class, "local").withGbids(gbids).build();

@@ -22,12 +22,12 @@ import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRES
 import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,7 +43,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.google.inject.AbstractModule;
@@ -118,7 +118,8 @@ public class GlobalCapabilitiesDirectoryClientTest {
         when(proxyBuilderFactoryMock.get(domainMock,
                                          GlobalCapabilitiesDirectoryProxy.class)).thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.setDiscoveryQos(any(DiscoveryQos.class))).thenReturn(capabilitiesProxyBuilderMock);
-        when(capabilitiesProxyBuilderMock.setMessagingQos(any(MessagingQos.class))).thenReturn(capabilitiesProxyBuilderMock);
+        lenient().when(capabilitiesProxyBuilderMock.setMessagingQos(any(MessagingQos.class)))
+                 .thenReturn(capabilitiesProxyBuilderMock);
         when(capabilitiesProxyBuilderMock.build()).thenReturn(globalCapabilitiesDirectoryProxyMock);
 
         // expect the default backend in the custom header if not changed in the test case
@@ -280,7 +281,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
                 return null;
             }
         }).when(globalCapabilitiesDirectoryProxyMock)
-          .lookup(anyObject(), any(String[].class), any(String.class), any(String[].class), any(MessagingQos.class));
+          .lookup(any(), any(String[].class), any(String.class), any(String[].class), any(MessagingQos.class));
         // ...and given some callback
 
         // when we execute the lookup method of the GCD client with this callback
@@ -288,7 +289,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
 
         // then the callback we used for the GCD client call is correctly completed
         verify(lookupDomainCallbackWithModeledErrorMock).onFailure(DiscoveryError.INTERNAL_ERROR);
-        verify(lookupDomainCallbackWithModeledErrorMock, times(0)).onSuccess(anyListOf(GlobalDiscoveryEntry.class));
+        verify(lookupDomainCallbackWithModeledErrorMock, times(0)).onSuccess(anyList());
     }
 
     @Test
@@ -304,7 +305,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
                 return null;
             }
         }).when(globalCapabilitiesDirectoryProxyMock)
-          .lookup(anyObject(), any(String[].class), any(String.class), any(String[].class), any(MessagingQos.class));
+          .lookup(any(), any(String[].class), any(String.class), any(String[].class), any(MessagingQos.class));
         // ...and given some callback
 
         // when we execute the lookup method of the GCD client with this callback
@@ -312,7 +313,7 @@ public class GlobalCapabilitiesDirectoryClientTest {
 
         // then the callback we used for the GCD client call is correctly completed
         verify(lookupDomainCallbackWithModeledErrorMock).onFailure(eq(new JoynrRuntimeException()));
-        verify(lookupDomainCallbackWithModeledErrorMock, times(0)).onSuccess(anyListOf(GlobalDiscoveryEntry.class));
+        verify(lookupDomainCallbackWithModeledErrorMock, times(0)).onSuccess(anyList());
     }
 
     @Test
@@ -329,14 +330,14 @@ public class GlobalCapabilitiesDirectoryClientTest {
                 return null;
             }
         }).when(globalCapabilitiesDirectoryProxyMock)
-          .lookup(anyObject(), any(String[].class), any(String.class), any(String[].class), any(MessagingQos.class));
+          .lookup(any(), any(String[].class), any(String.class), any(String[].class), any(MessagingQos.class));
         // ...and given some callback
 
         // when we execute the lookup method of the GCD client with this callback
         checkLookupDomainsIsCalledCorrectly();
 
         // then the callback we used for the GCD client call is correctly completed
-        verify(lookupDomainCallbackWithModeledErrorMock).onSuccess(anyListOf(GlobalDiscoveryEntry.class));
+        verify(lookupDomainCallbackWithModeledErrorMock).onSuccess(anyList());
         verify(lookupDomainCallbackWithModeledErrorMock, times(0)).onFailure(any(JoynrRuntimeException.class));
     }
 

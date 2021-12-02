@@ -36,7 +36,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -95,7 +95,6 @@ public class AddressManagerTest {
         when(routingTable.getIsGloballyVisible(participantId)).thenReturn(true);
         when(joynrMessage.getRecipient()).thenReturn(participantId + "/multicastname");
         when(joynrMessage.getSender()).thenReturn(participantId);
-        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(multicastAddresses);
 
@@ -126,8 +125,6 @@ public class AddressManagerTest {
         when(anotherMulticastAddressCalculator.calculate(joynrMessage)).thenReturn(multicastAddresses);
         createAddressManager(GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator, anotherMulticastAddressCalculator);
 
-        when(routingTable.getIsGloballyVisible(participantId)).thenReturn(true);
-        when(joynrMessage.getSender()).thenReturn(participantId);
         when(joynrMessage.getRecipient()).thenReturn(participantId + "/multicastname");
 
         Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
@@ -145,7 +142,6 @@ public class AddressManagerTest {
         createAddressManager(GLOBAL_TRANSPORT_MQTT, multicastAddressCalculator);
 
         when(joynrMessage.isReceivedFromGlobal()).thenReturn(true);
-        when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
         Set<String> participantIds = new HashSet<>(Arrays.asList("one", "two"));
@@ -154,7 +150,6 @@ public class AddressManagerTest {
         when(routingTable.get("one")).thenReturn(addressOne);
         Address addressTwo = mock(Address.class);
         when(routingTable.get("two")).thenReturn(addressTwo);
-        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
 
         Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
         assertNotNull(result);
@@ -182,7 +177,6 @@ public class AddressManagerTest {
     public void testGetLocalMulticastParticipantWithoutGlobalTransports() {
         createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED);
 
-        when(joynrMessage.getSender()).thenReturn("from");
         String multicastId = "from/to";
         when(joynrMessage.getRecipient()).thenReturn(multicastId);
         Set<String> participantIds = new HashSet<>(Arrays.asList("one"));
@@ -215,7 +209,6 @@ public class AddressManagerTest {
         Address globalAddress = mock(MqttAddress.class);
         Set<Address> globalAddressSet = new HashSet<>();
         globalAddressSet.add(globalAddress);
-        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(globalAddressSet);
 
@@ -256,7 +249,6 @@ public class AddressManagerTest {
         Address globalAddress = mock(Address.class);
         Set<Address> globalAddressSet = new HashSet<>();
         globalAddressSet.add(globalAddress);
-        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
 
         Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
@@ -285,7 +277,6 @@ public class AddressManagerTest {
         Address globalAddress = mock(Address.class);
         Set<Address> globalAddressSet = new HashSet<>();
         globalAddressSet.add(globalAddress);
-        when(multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
 
         Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
@@ -303,7 +294,6 @@ public class AddressManagerTest {
     public void testGetMulticastAddressFromSingleCalculatorForGloballyInvisibleProvider() {
         createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED, multicastAddressCalculator);
 
-        when(routingTable.getIsGloballyVisible(participantId)).thenReturn(false);
         when(joynrMessage.getSender()).thenReturn(participantId + "/multicastname");
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
 
@@ -315,8 +305,6 @@ public class AddressManagerTest {
     public void testGetMulticastAddressFromSingleCalculatorForGloballyInvisibleProviderNoGlobalTransport() {
         createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED, multicastAddressCalculator);
 
-        when(routingTable.getIsGloballyVisible(participantId)).thenReturn(false);
-        when(joynrMessage.getSender()).thenReturn(participantId + "/multicastname");
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(false);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(multicastAddresses);
 
@@ -362,7 +350,6 @@ public class AddressManagerTest {
         createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED, multicastAddressCalculator);
 
         when(joynrMessage.getSender()).thenReturn(participantId + "/multicastname");
-        when(routingTable.getIsGloballyVisible(participantId)).thenThrow(new JoynrRuntimeException());
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
 
         Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);

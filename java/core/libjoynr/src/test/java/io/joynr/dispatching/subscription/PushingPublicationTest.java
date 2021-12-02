@@ -18,11 +18,10 @@
  */
 package io.joynr.dispatching.subscription;
 
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,7 +42,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,7 +189,7 @@ public class PushingPublicationTest {
         Thread.sleep(1500);
 
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                 (Set<String>) argThat(contains(proxyId)),
+                                                                 argThat(mySet -> mySet.contains(proxyId)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
         verify(attributePollInterpreter, times(1)).execute(any(ProviderContainer.class), any(Method.class));
@@ -211,7 +210,7 @@ public class PushingPublicationTest {
 
         ArgumentCaptor<SubscriptionPublication> sentPublication = ArgumentCaptor.forClass(SubscriptionPublication.class);
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                 (Set<String>) argThat(contains(proxyId)),
+                                                                 argThat(mySet -> mySet.contains(proxyId)),
                                                                  sentPublication.capture(),
                                                                  any(MessagingQos.class));
         assertEquals(publication.getResponse(), sentPublication.getValue().getResponse());

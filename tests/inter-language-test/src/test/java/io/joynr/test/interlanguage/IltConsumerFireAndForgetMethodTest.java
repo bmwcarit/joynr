@@ -21,9 +21,9 @@ package io.joynr.test.interlanguage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.lenient;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,8 +93,10 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
     @Before
     public void setUp() {
         publicationReceivedSemaphore = new Semaphore(0);
-        doAnswer(releaseSemaphore).when(attributeFireAndForgetListener).onReceive(anyInt());
-        doAnswer(failWithException).when(attributeFireAndForgetListener).onError(any(JoynrRuntimeException.class));
+        lenient().doAnswer(releaseSemaphore).when(attributeFireAndForgetListener).onReceive(anyInt());
+        lenient().doAnswer(failWithException)
+                 .when(attributeFireAndForgetListener)
+                 .onError(any(JoynrRuntimeException.class));
     }
 
     @AfterClass

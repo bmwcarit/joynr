@@ -34,7 +34,7 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.AbstractModule;
@@ -51,11 +51,11 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
-import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionQos;
 import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.PeriodicSubscriptionQos;
@@ -310,7 +310,7 @@ public class MutableMessageFactoryTest {
         String multicastId = "multicastId";
         String subscriptionId = "subscriptionId";
         String multicastName = "multicastName";
-        SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
+        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos();
 
         MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(multicastId,
                                                                                                      subscriptionId,

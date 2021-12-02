@@ -25,12 +25,11 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -59,7 +58,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -276,7 +275,7 @@ public class DispatcherImplTest {
 
         // The deserialized Request forwarded to the RequestReplyManager contains the custom header
         ArgumentCaptor<Request> argument = ArgumentCaptor.forClass(Request.class);
-        verify(requestReplyManagerMock).handleRequest(anyObject(), anyString(), argument.capture(), anyLong());
+        verify(requestReplyManagerMock).handleRequest(any(), anyString(), argument.capture(), anyLong());
         assertTrue(argument.getValue().getContext().containsKey(TEST_CUSTOM_HEADER_KEY));
         assertEquals(TEST_CUSTOM_HEADER_VALUE, argument.getValue().getContext().get(TEST_CUSTOM_HEADER_KEY));
     }
@@ -688,7 +687,7 @@ public class DispatcherImplTest {
         assertEquals(value3, replyCustomHeaders.get(extraHeaderKey));
     }
 
-    private static class MessageIsCompressedMatcher extends ArgumentMatcher<MutableMessage> {
+    private static class MessageIsCompressedMatcher implements ArgumentMatcher<MutableMessage> {
         private final boolean shouldMessageBeCompressed;
 
         public MessageIsCompressedMatcher(final boolean compressed) {
@@ -696,11 +695,7 @@ public class DispatcherImplTest {
         }
 
         @Override
-        public boolean matches(Object argument) {
-            if (!(argument instanceof MutableMessage)) {
-                return false;
-            }
-
+        public boolean matches(MutableMessage argument) {
             try {
                 return ((MutableMessage) argument).getImmutableMessage().isCompressed() == shouldMessageBeCompressed;
             } catch (SecurityException | EncodingException | UnsuppportedVersionException e) {

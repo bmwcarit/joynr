@@ -21,10 +21,11 @@ package io.joynr.messaging;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -47,7 +48,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.Dispatcher;
@@ -100,8 +101,6 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private AddressManager addressManager;
     @Mock
-    private ImmutableMessage message;
-    @Mock
     private ShutdownNotifier shutdownNotifier;
     @Mock
     RoutingTable routingTableMock;
@@ -125,17 +124,10 @@ public class LibJoynrMessageRouterTest {
     public void setUp() {
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder()));
-        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000000).getValue());
-        when(message.isTtlAbsolute()).thenReturn(true);
-        when(message.getRecipient()).thenReturn(unknownParticipantId);
-        when(message.getSender()).thenReturn(unknownSenderParticipantId);
-        when(message.isLocalMessage()).thenReturn(false);
-        when(message.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
-
-        when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
+        lenient().when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
-        when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");
-        when(messagingSkeletonFactory.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
+        lenient().when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");
+        lenient().when(messagingSkeletonFactory.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
 
         messageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                   provideMessageSchedulerThreadPoolExecutor(),
