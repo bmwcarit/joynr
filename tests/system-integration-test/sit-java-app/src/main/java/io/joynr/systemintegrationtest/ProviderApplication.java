@@ -270,6 +270,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
                 registrationFuture.get(30000);
             } catch (Exception e) {
                 logger.info("SIT RESULT success: Java provider failed as expected!");
+                provider = null;
                 return;
             }
         }
@@ -279,6 +280,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
                 logger.info("SIT RESULT failure: Java provider did not fail as expected!");
             } else {
                 logger.info("SIT RESULT success: Java provider failed as expected!");
+                provider = null;
                 return;
             }
         }
