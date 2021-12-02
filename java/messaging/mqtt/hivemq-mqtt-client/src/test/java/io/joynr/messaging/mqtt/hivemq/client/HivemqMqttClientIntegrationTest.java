@@ -24,9 +24,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
@@ -38,14 +38,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -122,6 +120,9 @@ public class HivemqMqttClientIntegrationTest {
     // Get the path of the test resources
     private static String getResourcePath(String filename) throws URISyntaxException {
         URL resource = ClassLoader.getSystemClassLoader().getResource(filename);
+        if (resource == null) {
+            return "";
+        }
         return resource.getPath();
     }
 
@@ -212,16 +213,12 @@ public class HivemqMqttClientIntegrationTest {
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
                                     mockFailureAction);
-        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage),
-                                                             (Map<String, String>) anyMap(),
-                                                             any(FailureAction.class));
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), anyMap(), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
         clientReceiver.shutdown();
         clientSender.shutdown();
-        verify(mockReceiver2, times(0)).transmit(any(byte[].class),
-                                                 (Map<String, String>) anyMap(),
-                                                 any(FailureAction.class));
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -260,8 +257,7 @@ public class HivemqMqttClientIntegrationTest {
                         receivedLatch.countDown();
                         return null;
                     }
-                }).when(mockReceiver)
-                  .transmit(any(byte[].class), (Map<String, String>) anyMap(), any(FailureAction.class));
+                }).when(mockReceiver).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
 
                 Object triggerObj = new Object();
                 Thread[] threads = new Thread[count];
@@ -293,9 +289,7 @@ public class HivemqMqttClientIntegrationTest {
                     t.start();
                 }
                 threadsLatch.await();
-                verify(mockReceiver2, times(0)).transmit(any(byte[].class),
-                                                         (Map<String, String>) anyMap(),
-                                                         any(FailureAction.class));
+                verify(mockReceiver2, times(0)).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
                 synchronized (triggerObj) {
                     // trigger parallel publish
                     triggerObj.notifyAll();
@@ -318,12 +312,8 @@ public class HivemqMqttClientIntegrationTest {
                 clientReceiver.unsubscribe(topic);
                 Thread.sleep(1000);
 
-                verify(mockReceiver, times(count)).transmit(any(byte[].class),
-                                                            (Map<String, String>) anyMap(),
-                                                            any(FailureAction.class));
-                verify(mockReceiver2, times(0)).transmit(any(byte[].class),
-                                                         (Map<String, String>) anyMap(),
-                                                         any(FailureAction.class));
+                verify(mockReceiver, times(count)).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
+                verify(mockReceiver2, times(0)).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
                 reset(mockReceiver);
             }
         } catch (Exception e) {
@@ -365,16 +355,12 @@ public class HivemqMqttClientIntegrationTest {
                                     mockSuccessAction,
                                     mockFailureAction);
         Thread.sleep(1000);
-        verify(mockReceiver, times(1)).transmit(eq(serializedMessage),
-                                                (Map<String, String>) anyMap(),
-                                                any(FailureAction.class));
+        verify(mockReceiver, times(1)).transmit(eq(serializedMessage), anyMap(), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
         clientReceiver.shutdown();
         clientSender.shutdown();
-        verify(mockReceiver2, times(0)).transmit(any(byte[].class),
-                                                 (Map<String, String>) anyMap(),
-                                                 any(FailureAction.class));
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
     }
 
     @Test
@@ -437,16 +423,12 @@ public class HivemqMqttClientIntegrationTest {
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
                                     mockFailureAction);
-        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage),
-                                                             (Map<String, String>) anyMap(),
-                                                             any(FailureAction.class));
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), anyMap(), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
         clientReceiver.shutdown();
         clientSender.shutdown();
-        verify(mockReceiver2, times(0)).transmit(any(byte[].class),
-                                                 (Map<String, String>) anyMap(),
-                                                 any(FailureAction.class));
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -478,16 +460,12 @@ public class HivemqMqttClientIntegrationTest {
                                     DEFAULT_EXPIRY_INTERVAL_SEC,
                                     mockSuccessAction,
                                     mockFailureAction);
-        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage),
-                                                             (Map<String, String>) anyMap(),
-                                                             any(FailureAction.class));
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), anyMap(), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
         clientReceiver.shutdown();
         clientSender.shutdown();
-        verify(mockReceiver2, times(0)).transmit(any(byte[].class),
-                                                 (Map<String, String>) anyMap(),
-                                                 any(FailureAction.class));
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -524,17 +502,13 @@ public class HivemqMqttClientIntegrationTest {
         Thread.sleep(128);
         clientReceiver.start();
 
-        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage),
-                                                             (Map<String, String>) anyMap(),
-                                                             any(FailureAction.class));
+        verify(mockReceiver, timeout(500).times(1)).transmit(eq(serializedMessage), anyMap(), any(FailureAction.class));
 
         clientReceiver.unsubscribe(ownTopic);
         Thread.sleep(128);
         clientReceiver.shutdown();
         clientSender.shutdown();
-        verify(mockReceiver2, times(0)).transmit(any(byte[].class),
-                                                 (Map<String, String>) anyMap(),
-                                                 any(FailureAction.class));
+        verify(mockReceiver2, times(0)).transmit(any(byte[].class), anyMap(), any(FailureAction.class));
     }
 
     private void setIncomingMessageHandler(Mqtt5RxClient client, Consumer<? super Mqtt5Publish> handler) {

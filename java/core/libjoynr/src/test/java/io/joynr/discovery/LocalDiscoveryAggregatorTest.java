@@ -21,9 +21,9 @@ package io.joynr.discovery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -37,11 +37,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,9 +153,10 @@ public class LocalDiscoveryAggregatorTest {
                                                            expiryDateMs,
                                                            publicKeyId);
         localDiscoveryAggregator.add(callback, discoveryEntry);
-        verify(discoveryProxyMock, times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                 eq(discoveryEntry),
-                                                 eq(false));
+        verify(discoveryProxyMock,
+               times(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             eq(discoveryEntry),
+                             eq(false));
     }
 
     private void testAwaitGlobalRegistration(boolean awaitGlobalRegistration) {
@@ -168,7 +169,7 @@ public class LocalDiscoveryAggregatorTest {
                                                            expiryDateMs,
                                                            publicKeyId);
         localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration);
-        verify(discoveryProxyMock, times(1)).add(Matchers.<Callback<Void>> any(),
+        verify(discoveryProxyMock, times(1)).add(ArgumentMatchers.<Callback<Void>> any(),
                                                  eq(discoveryEntry),
                                                  eq(awaitGlobalRegistration));
     }
@@ -199,10 +200,11 @@ public class LocalDiscoveryAggregatorTest {
                                      discoveryEntry,
                                      awaitGlobalRegistration,
                                      gbids.clone());
-        verify(discoveryProxyMock, times(1)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                 eq(expectedDiscoveryEntry),
-                                                 eq(awaitGlobalRegistration),
-                                                 eq(gbids));
+        verify(discoveryProxyMock,
+               times(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             eq(expectedDiscoveryEntry),
+                             eq(awaitGlobalRegistration),
+                             eq(gbids));
     }
 
     @Test
@@ -242,9 +244,10 @@ public class LocalDiscoveryAggregatorTest {
         DiscoveryEntry expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
 
         localDiscoveryAggregator.addToAll(addCallbackWithModeledError, discoveryEntry, awaitGlobalRegistration);
-        verify(discoveryProxyMock, times(1)).addToAll(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                      eq(expectedDiscoveryEntry),
-                                                      eq(awaitGlobalRegistration));
+        verify(discoveryProxyMock,
+               times(1)).addToAll(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                  eq(expectedDiscoveryEntry),
+                                  eq(awaitGlobalRegistration));
     }
 
     @Test
@@ -258,7 +261,7 @@ public class LocalDiscoveryAggregatorTest {
                                         gbids);
 
         verify(discoveryProxyMock,
-               times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+               times(1)).lookup(ArgumentMatchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
                                 eq(new String[]{ anotherDomain }),
                                 eq(Discovery.INTERFACE_NAME),
                                 eq(expectedDiscoveryQos),
@@ -276,7 +279,7 @@ public class LocalDiscoveryAggregatorTest {
                                         discoveryQos);
 
         verify(discoveryProxyMock,
-               times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+               times(1)).lookup(ArgumentMatchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
                                 eq(new String[]{ anotherDomain }),
                                 eq(Discovery.INTERFACE_NAME),
                                 eq(expectedDiscoveryQos),
@@ -317,7 +320,7 @@ public class LocalDiscoveryAggregatorTest {
         assertEquals(discoveryProviderEntry.getQos(), discoveryEntriesPassed[0].getQos());
         assertEquals(discoveryProviderEntry.getProviderVersion(), discoveryEntriesPassed[0].getProviderVersion());
         verify(discoveryProxyMock,
-               never()).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+               never()).lookup(ArgumentMatchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
                                any(String[].class),
                                anyString(),
                                any(DiscoveryQos.class),
@@ -342,7 +345,7 @@ public class LocalDiscoveryAggregatorTest {
                 return null;
             }
         }).when(discoveryProxyMock)
-          .lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+          .lookup(ArgumentMatchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
                   any(String[].class),
                   anyString(),
                   any(DiscoveryQos.class),
@@ -367,7 +370,7 @@ public class LocalDiscoveryAggregatorTest {
         assertTrue(containsByInterfaceDomain(result,
                                              anotherDiscoveryProviderEntry.getInterfaceName(),
                                              anotherDiscoveryProviderEntry.getDomain()));
-        verify(discoveryProxyMock).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+        verify(discoveryProxyMock).lookup(ArgumentMatchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
                                           eq(missingDomains),
                                           eq(Discovery.INTERFACE_NAME),
                                           eq(discoveryQos),
@@ -394,7 +397,7 @@ public class LocalDiscoveryAggregatorTest {
                                         new DiscoveryQos(),
                                         gbids);
         verify(discoveryProxyMock,
-               never()).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
+               never()).lookup(ArgumentMatchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo[], DiscoveryError>> any(),
                                any(String[].class),
                                anyString(),
                                any(DiscoveryQos.class),
@@ -414,7 +417,7 @@ public class LocalDiscoveryAggregatorTest {
                                         gbids);
 
         verify(discoveryProxyMock,
-               times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>> any(),
+               times(1)).lookup(ArgumentMatchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>> any(),
                                 eq(discoveryProviderParticipantId),
                                 eq(expectedDiscoveryQos),
                                 eq(gbids),
@@ -428,7 +431,7 @@ public class LocalDiscoveryAggregatorTest {
         localDiscoveryAggregator.lookup(lookupByParticipantIdCallbackWithModeledError, discoveryProviderParticipantId);
 
         verify(discoveryProxyMock,
-               times(1)).lookup(Matchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>> any(),
+               times(1)).lookup(ArgumentMatchers.<CallbackWithModeledError<DiscoveryEntryWithMetaInfo, DiscoveryError>> any(),
                                 eq(discoveryProviderParticipantId),
                                 any(DiscoveryQos.class),
                                 eq(gbids),
@@ -438,7 +441,7 @@ public class LocalDiscoveryAggregatorTest {
     @Test
     public void removeByParticipantId() {
         localDiscoveryAggregator.remove(callback, discoveryProviderParticipantId);
-        verify(discoveryProxyMock, times(1)).remove(Matchers.<Callback<Void>> any(),
+        verify(discoveryProxyMock, times(1)).remove(ArgumentMatchers.<Callback<Void>> any(),
                                                     eq(discoveryProviderParticipantId));
     }
 

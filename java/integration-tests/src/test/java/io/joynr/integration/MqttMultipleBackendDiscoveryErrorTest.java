@@ -22,10 +22,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,9 +36,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.exceptions.DiscoveryException;
@@ -84,17 +84,17 @@ public class MqttMultipleBackendDiscoveryErrorTest extends AbstractMqttMultipleB
     }
 
     private void checkGcdClientAddLookupNotCalled() {
-        verify(gcdClient, times(0)).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+        verify(gcdClient, times(0)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                         any(GlobalDiscoveryEntry.class),
                                         anyLong(),
                                         any(String[].class));
         verify(gcdClient,
-               times(0)).lookup(Matchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
+               times(0)).lookup(ArgumentMatchers.<CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>> any(),
                                 any(String.class),
                                 anyLong(),
                                 any(String[].class));
         verify(gcdClient,
-               times(0)).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+               times(0)).lookup(ArgumentMatchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                 any(String[].class),
                                 any(String.class),
                                 anyLong(),
@@ -158,14 +158,15 @@ public class MqttMultipleBackendDiscoveryErrorTest extends AbstractMqttMultipleB
                 callback.onFailure(expectedError);
                 return null;
             }
-        }).when(gcdClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                  any(String[].class),
-                                  anyString(),
-                                  anyLong(),
-                                  any(String[].class));
+        }).when(gcdClient)
+          .lookup(ArgumentMatchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                  any(String[].class),
+                  anyString(),
+                  anyLong(),
+                  any(String[].class));
 
         testLookupWithDiscoveryError(gbidsForLookup, expectedError);
-        verify(gcdClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+        verify(gcdClient).lookup(ArgumentMatchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                  eq(new String[]{ TESTDOMAIN }),
                                  eq(testProxy.INTERFACE_NAME),
                                  anyLong(),
@@ -296,7 +297,7 @@ public class MqttMultipleBackendDiscoveryErrorTest extends AbstractMqttMultipleB
                 callback.onFailure(expectedError);
                 return null;
             }
-        }).when(gcdClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+        }).when(gcdClient).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                any(GlobalDiscoveryEntry.class),
                                anyLong(),
                                any(String[].class));
@@ -304,7 +305,7 @@ public class MqttMultipleBackendDiscoveryErrorTest extends AbstractMqttMultipleB
         testAddWithDiscoveryError(gbidsForAdd, expectedError);
 
         ArgumentCaptor<GlobalDiscoveryEntry> gdeCaptor = ArgumentCaptor.forClass(GlobalDiscoveryEntry.class);
-        verify(gcdClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+        verify(gcdClient).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                               gdeCaptor.capture(),
                               anyLong(),
                               eq(expectedGbids));

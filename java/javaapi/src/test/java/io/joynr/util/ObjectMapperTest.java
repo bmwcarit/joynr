@@ -18,15 +18,15 @@
  */
 package io.joynr.util;
 
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ObjectMapperTest {
@@ -49,7 +49,7 @@ public class ObjectMapperTest {
         verify(realObjectMapper).registerSubtypes(eq(A.class), eq(B.class));
         objectMapper.registerSubtypes(C.class);
         verify(realObjectMapper).registerSubtypes(eq(C.class));
-        verify(realObjectMapper, times(2)).registerSubtypes(Matchers.<Class<?>> anyVararg());
+        verify(realObjectMapper, times(2)).registerSubtypes(ArgumentMatchers.<Class<?>> any());
     }
 
     @Test
@@ -59,7 +59,7 @@ public class ObjectMapperTest {
         verify(realObjectMapper).registerSubtypes(eq(A.class), eq(B.class));
         objectMapper.registerSubtypes(A.class, C.class);
         verify(realObjectMapper).registerSubtypes(eq(C.class));
-        verify(realObjectMapper, times(2)).registerSubtypes(Matchers.<Class<?>> anyVararg());
+        verify(realObjectMapper, times(2)).registerSubtypes(ArgumentMatchers.<Class<?>> any());
     }
 
     @Test
@@ -68,7 +68,7 @@ public class ObjectMapperTest {
         objectMapper.registerSubtypes(A.class, B.class);
         objectMapper.registerSubtypes(A.class, B.class);
         verify(realObjectMapper).registerSubtypes(eq(A.class), eq(B.class));
-        verify(realObjectMapper, times(1)).registerSubtypes(Matchers.<Class<?>> anyVararg());
+        verify(realObjectMapper, times(1)).registerSubtypes(ArgumentMatchers.<Class<?>> any());
     }
 
 }

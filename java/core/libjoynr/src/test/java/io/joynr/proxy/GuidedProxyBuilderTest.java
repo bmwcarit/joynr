@@ -23,9 +23,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +48,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.arbitration.ArbitrationCallback;
@@ -79,9 +79,6 @@ public class GuidedProxyBuilderTest {
 
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
-
-    @Mock
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
 
     @Mock
     private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
@@ -119,13 +116,6 @@ public class GuidedProxyBuilderTest {
         arbitratorField.setAccessible(true);
         arbitratorField.set(subject, arbitrator);
         when(proxyBuilderFactory.get(Mockito.<Set<String>> any(), any())).thenReturn(proxyBuilder);
-        when(proxyInvocationHandlerFactory.create(Mockito.<Set<String>> any(),
-                                                  eq(TestInterface.INTERFACE_NAME),
-                                                  Mockito.<String> any(),
-                                                  Mockito.<DiscoveryQos> any(),
-                                                  Mockito.<MessagingQos> any(),
-                                                  Mockito.<ShutdownNotifier> any(),
-                                                  Mockito.<Optional<StatelessAsyncCallback>> any())).thenReturn(proxyInvocationHandler);
     }
 
     private void initializeSubject() {

@@ -28,9 +28,9 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -53,9 +53,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.JoynrMessageProcessor;
@@ -217,7 +217,7 @@ public class MqttMessagingSkeletonTest {
     public void testRawMessageProcessorIsCalled() throws Exception {
         RawMessagingPreprocessor rawMessagingPreprocessorMock = mock(RawMessagingPreprocessor.class);
         when(rawMessagingPreprocessorMock.process(any(byte[].class),
-                                                  Matchers.<Optional<Map<String, Serializable>>> any())).then(returnsFirstArg());
+                                                  ArgumentMatchers.<Optional<Map<String, Serializable>>> any())).then(returnsFirstArg());
 
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
@@ -237,7 +237,7 @@ public class MqttMessagingSkeletonTest {
 
         ArgumentCaptor<byte[]> argCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(rawMessagingPreprocessorMock).process(argCaptor.capture(),
-                                                     Matchers.<Optional<Map<String, Serializable>>> any());
+                                                     ArgumentMatchers.<Optional<Map<String, Serializable>>> any());
 
         Assert.assertArrayEquals(rqMessage.getSerializedMessage(), argCaptor.getValue());
     }

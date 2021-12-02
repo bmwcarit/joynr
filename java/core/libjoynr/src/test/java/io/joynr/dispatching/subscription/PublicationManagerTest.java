@@ -18,14 +18,13 @@
  */
 package io.joynr.dispatching.subscription;
 
-import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -39,7 +38,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -62,7 +60,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.dispatching.DispatcherImpl;
@@ -201,7 +199,7 @@ public class PublicationManagerTest {
         Thread.sleep(subscriptionLength);
 
         verify(dispatcher, times(nrBroadcasts)).sendSubscriptionPublication(eq(providerId),
-                                                                            (Set<String>) argThat(contains(proxyId)),
+                                                                            argThat(mySet -> mySet.contains(proxyId)),
                                                                             any(SubscriptionPublication.class),
                                                                             any(MessagingQos.class));
 
@@ -261,7 +259,7 @@ public class PublicationManagerTest {
 
         publicationManager.broadcastOccurred(subscriptionId, noFilters, nrIterations + 1);
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(providerId),
-                                                                 (Set<String>) argThat(contains(proxyId)),
+                                                                 argThat(mySet -> mySet.contains(proxyId)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
         verify(dispatcher).sendSubscriptionReply(anyString(),
@@ -310,7 +308,7 @@ public class PublicationManagerTest {
                 return null;
             }
         }).when(dispatcher).sendSubscriptionPublication(eq(providerId),
-                                                        (Set<String>) argThat(contains(proxyId)),
+                                                        argThat(mySet -> mySet.contains(proxyId)),
                                                         any(SubscriptionPublication.class),
                                                         any(MessagingQos.class));
 
@@ -347,7 +345,7 @@ public class PublicationManagerTest {
 
         // sending initial value plus the attributeValueChanged
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
@@ -359,7 +357,7 @@ public class PublicationManagerTest {
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   any(MessagingQos.class));
     }
@@ -424,6 +422,7 @@ public class PublicationManagerTest {
     @Test(timeout = 3000)
     public void addPublicationWithoutExpiryDate() throws Exception {
         int period = 200;
+        final int toleranceMs = period - 50;
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
         qos.setPeriodMs(period).setValidityMs(SubscriptionQos.IGNORE_VALUE);
         qos.setAlertAfterIntervalMs(500).setPublicationTtlMs(1000);
@@ -436,10 +435,10 @@ public class PublicationManagerTest {
         verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
 
         verify(dispatcher,
-               timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                         any(SubscriptionPublication.class),
-                                                                         any(MessagingQos.class));
+               timeout(period * 5 + toleranceMs).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                       argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
+                                                                                       any(SubscriptionPublication.class),
+                                                                                       any(MessagingQos.class));
 
         reset(dispatcher);
         verify(routingTable, times(0)).remove(any());
@@ -448,7 +447,7 @@ public class PublicationManagerTest {
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   any(MessagingQos.class));
     }
@@ -458,6 +457,7 @@ public class PublicationManagerTest {
     public void startAndStopPeriodicPublication() throws Exception {
         int period = 200;
         int testLengthMax = 3000;
+        final int toleranceMs = period - 50;
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
         qos.setPeriodMs(200).setValidityMs(testLengthMax).setPublicationTtlMs(testLengthMax);
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
@@ -468,17 +468,17 @@ public class PublicationManagerTest {
         verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
         verify(routingTable, times(0)).remove(any());
         verify(dispatcher,
-               timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                         any(SubscriptionPublication.class),
-                                                                         any(MessagingQos.class));
+               timeout(period * 5 + toleranceMs).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                       argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
+                                                                                       any(SubscriptionPublication.class),
+                                                                                       any(MessagingQos.class));
 
         reset(routingTable, dispatcher);
         publicationManager.stopPublication(SUBSCRIPTION_ID);
         verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
         verify(dispatcher,
                timeout(testLengthMax).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                            (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                            argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                             any(SubscriptionPublication.class),
                                                                             any(MessagingQos.class));
     }
@@ -506,7 +506,7 @@ public class PublicationManagerTest {
 
         // sending initial values for 2 subscriptions, plus the 2 attributeValueChanged
         verify(dispatcher, times(4)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
@@ -520,7 +520,7 @@ public class PublicationManagerTest {
 
         verify(dispatcher,
                timeout(300).times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                  (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                  argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   any(MessagingQos.class));
     }
@@ -550,7 +550,7 @@ public class PublicationManagerTest {
 
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
@@ -558,7 +558,7 @@ public class PublicationManagerTest {
 
         verify(dispatcher,
                timeout(period * 5).times(12)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                          (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                          argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                           any(SubscriptionPublication.class),
                                                                           any(MessagingQos.class));
     }
@@ -590,7 +590,7 @@ public class PublicationManagerTest {
         Thread.sleep(period);
         verifyNoMoreInteractions(routingTable);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
@@ -602,7 +602,7 @@ public class PublicationManagerTest {
                                                  eq(PROXY_PARTICIPANT_ID),
                                                  argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                      @Override
-                                                     public boolean matches(Object argument) {
+                                                     public boolean matches(SubscriptionReply argument) {
                                                          SubscriptionReply reply = (SubscriptionReply) argument;
                                                          String subscriptionId = reply.getSubscriptionId();
                                                          return null != reply.getError()
@@ -614,7 +614,7 @@ public class PublicationManagerTest {
                                                  eq(PROXY_PARTICIPANT_ID),
                                                  argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                      @Override
-                                                     public boolean matches(Object argument) {
+                                                     public boolean matches(SubscriptionReply argument) {
                                                          SubscriptionReply reply = (SubscriptionReply) argument;
                                                          String subscriptionId = reply.getSubscriptionId();
                                                          return null == reply.getError()
@@ -624,7 +624,7 @@ public class PublicationManagerTest {
                                                  any(MessagingQos.class));
         verify(dispatcher,
                timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                         argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                          any(SubscriptionPublication.class),
                                                                          any(MessagingQos.class));
         verifyNoMoreInteractions(routingTable);
@@ -674,7 +674,7 @@ public class PublicationManagerTest {
 
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
 
@@ -739,7 +739,7 @@ public class PublicationManagerTest {
                                                           eq(PROXY_PARTICIPANT_ID),
                                                           argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                               @Override
-                                                              public boolean matches(Object argument) {
+                                                              public boolean matches(SubscriptionReply argument) {
                                                                   SubscriptionReply reply = (SubscriptionReply) argument;
                                                                   return null == reply.getError();
                                                               }
@@ -749,7 +749,7 @@ public class PublicationManagerTest {
                                                           eq(PROXY_PARTICIPANT_ID),
                                                           argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                               @Override
-                                                              public boolean matches(Object argument) {
+                                                              public boolean matches(SubscriptionReply argument) {
                                                                   SubscriptionReply reply = (SubscriptionReply) argument;
                                                                   return null != reply.getError();
                                                               }
@@ -763,7 +763,7 @@ public class PublicationManagerTest {
                                                           eq(proxyParticipantId2),
                                                           argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                               @Override
-                                                              public boolean matches(Object argument) {
+                                                              public boolean matches(SubscriptionReply argument) {
                                                                   SubscriptionReply reply = (SubscriptionReply) argument;
                                                                   return null == reply.getError();
                                                               }
@@ -773,7 +773,7 @@ public class PublicationManagerTest {
                                                           eq(proxyParticipantId2),
                                                           argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                               @Override
-                                                              public boolean matches(Object argument) {
+                                                              public boolean matches(SubscriptionReply argument) {
                                                                   SubscriptionReply reply = (SubscriptionReply) argument;
                                                                   return null != reply.getError();
                                                               }
@@ -806,7 +806,7 @@ public class PublicationManagerTest {
                 return null;
             }
         }).when(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                        (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                        argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                         any(SubscriptionPublication.class),
                                                         any(MessagingQos.class));
 
@@ -822,7 +822,7 @@ public class PublicationManagerTest {
         // supposed to be called 5 times. But since the subscription expires after 150 ms, the sendSubscriptionPublication will
         // be rescheduled only 2 times, then the subscription expires and it will be removed from the queue.
         verify(dispatcher, times(2)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
         verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
@@ -831,7 +831,7 @@ public class PublicationManagerTest {
         reset(routingTable, dispatcher);
         Thread.sleep(period);
         verify(dispatcher, times(0)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                 (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                 argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                  any(SubscriptionPublication.class),
                                                                  any(MessagingQos.class));
         assertEquals(0, getQueuedSubscriptionRequests().size());
@@ -899,7 +899,7 @@ public class PublicationManagerTest {
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
         verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                       (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                       argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                        publicationCaptured.capture(),
                                                        qosCaptured.capture());
 
@@ -960,7 +960,7 @@ public class PublicationManagerTest {
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
         verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                       (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                       argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                        publicationCaptured.capture(),
                                                        qosCaptured.capture());
 
@@ -1011,7 +1011,7 @@ public class PublicationManagerTest {
         ArgumentCaptor<MessagingQos> qosCaptured = ArgumentCaptor.forClass(MessagingQos.class);
 
         verify(dispatcher).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                       (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                       argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                        publicationCaptured.capture(),
                                                        qosCaptured.capture());
 
@@ -1080,6 +1080,7 @@ public class PublicationManagerTest {
                                                         cleanupScheduler,
                                                         shutdownNotifier);
         int period = 200;
+        final int toleranceMs = period - 50;
         int testLengthMax = 3000;
         long validityMs = testLengthMax;
         long publicationTtl = testLengthMax;
@@ -1097,10 +1098,10 @@ public class PublicationManagerTest {
         reset(routingTable);
 
         verify(dispatcher,
-               timeout(period * 5).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                         (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
-                                                                         any(SubscriptionPublication.class),
-                                                                         any(MessagingQos.class));
+               timeout(period * 5 + toleranceMs).times(6)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
+                                                                                       argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
+                                                                                       any(SubscriptionPublication.class),
+                                                                                       any(MessagingQos.class));
 
         qos = new OnChangeSubscriptionQos().setMinIntervalMs(0)
                                            .setValidityMs(validityMs)
@@ -1120,7 +1121,7 @@ public class PublicationManagerTest {
 
         verify(dispatcher,
                timeout(testLengthMax).times(1)).sendSubscriptionPublication(eq(PROVIDER_PARTICIPANT_ID),
-                                                                            (Set<String>) argThat(contains(PROXY_PARTICIPANT_ID)),
+                                                                            argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                             any(SubscriptionPublication.class),
                                                                             any(MessagingQos.class));
     }
@@ -1150,7 +1151,7 @@ public class PublicationManagerTest {
                                                  eq(PROXY_PARTICIPANT_ID),
                                                  argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                      @Override
-                                                     public boolean matches(Object argument) {
+                                                     public boolean matches(SubscriptionReply argument) {
                                                          SubscriptionReply reply = (SubscriptionReply) argument;
                                                          return null != reply.getError();
                                                      }
@@ -1160,7 +1161,6 @@ public class PublicationManagerTest {
 
     @Test
     public void multicastSubscriptionRequestWithoutRoutingTableEntry() throws Exception {
-        doThrow(JoynrIllegalStateException.class).when(routingTable).incrementReferenceCount(anyString());
         MulticastSubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest("multicastId",
                                                                                             SUBSCRIPTION_ID,
                                                                                             "multicastName",
@@ -1178,7 +1178,6 @@ public class PublicationManagerTest {
                                                                           "location",
                                                                           new OnChangeSubscriptionQos().setValidityMs(0));
         Thread.sleep(5);
-        when(providerDirectory.get(PROVIDER_PARTICIPANT_ID)).thenReturn(providerContainer);
         publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
     }
@@ -1202,7 +1201,7 @@ public class PublicationManagerTest {
                                                  eq(PROXY_PARTICIPANT_ID),
                                                  argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                      @Override
-                                                     public boolean matches(Object argument) {
+                                                     public boolean matches(SubscriptionReply argument) {
                                                          SubscriptionReply reply = (SubscriptionReply) argument;
                                                          return null != reply.getError();
                                                      }
@@ -1225,7 +1224,7 @@ public class PublicationManagerTest {
                                                  eq(PROXY_PARTICIPANT_ID),
                                                  argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                      @Override
-                                                     public boolean matches(Object argument) {
+                                                     public boolean matches(SubscriptionReply argument) {
                                                          SubscriptionReply reply = (SubscriptionReply) argument;
                                                          return null != reply.getError();
                                                      }
@@ -1245,7 +1244,6 @@ public class PublicationManagerTest {
                                                                                    multicastName,
                                                                                    new OnChangeSubscriptionQos().setValidityMs(0));
         Thread.sleep(5);
-        when(providerDirectory.get(PROVIDER_PARTICIPANT_ID)).thenReturn(providerContainer);
         publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
         publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
         assertEquals(0, getQueuedSubscriptionRequests().size());
@@ -1275,7 +1273,7 @@ public class PublicationManagerTest {
                                                  eq(PROXY_PARTICIPANT_ID),
                                                  argThat(new ArgumentMatcher<SubscriptionReply>() {
                                                      @Override
-                                                     public boolean matches(Object argument) {
+                                                     public boolean matches(SubscriptionReply argument) {
                                                          SubscriptionReply reply = (SubscriptionReply) argument;
                                                          return null != reply.getError();
                                                      }

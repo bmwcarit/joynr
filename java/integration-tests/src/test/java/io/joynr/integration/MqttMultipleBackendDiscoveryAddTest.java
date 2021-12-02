@@ -20,12 +20,12 @@ package io.joynr.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyMapOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.SuccessAction;
@@ -61,7 +61,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(expectedClient)
                                                                   .publishMessage(eq(gcdTopic),
                                                                                   any(byte[].class),
-                                                                                  anyMapOf(String.class, String.class),
+                                                                                  anyMap(),
                                                                                   anyInt(),
                                                                                   anyLong(),
                                                                                   any(SuccessAction.class),
@@ -78,7 +78,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         assertTrue(publishCountDownLatch.await(1500, TimeUnit.MILLISECONDS));
         verify(otherClient, times(0)).publishMessage(anyString(),
                                                      any(byte[].class),
-                                                     anyMapOf(String.class, String.class),
+                                                     anyMap(),
                                                      anyInt(),
                                                      anyLong(),
                                                      any(SuccessAction.class),
@@ -86,7 +86,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(expectedClient).publishMessage(eq(gcdTopic),
                                               messageCaptor.capture(),
-                                              anyMapOf(String.class, String.class),
+                                              anyMap(),
                                               anyInt(),
                                               anyLong(),
                                               any(SuccessAction.class),
@@ -131,7 +131,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(joynrMqttClient1)
                                                                   .publishMessage(eq(gcdTopic),
                                                                                   any(byte[].class),
-                                                                                  anyMapOf(String.class, String.class),
+                                                                                  anyMap(),
                                                                                   anyInt(),
                                                                                   anyLong(),
                                                                                   any(SuccessAction.class),
@@ -145,7 +145,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         assertTrue(publishCountDownLatch.await(1500, TimeUnit.MILLISECONDS));
         verify(joynrMqttClient2, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
@@ -153,7 +153,7 @@ public class MqttMultipleBackendDiscoveryAddTest extends MqttMultipleBackendDisc
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(joynrMqttClient1).publishMessage(eq(gcdTopic),
                                                 messageCaptor.capture(),
-                                                anyMapOf(String.class, String.class),
+                                                anyMap(),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),
