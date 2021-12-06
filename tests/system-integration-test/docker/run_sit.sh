@@ -50,4 +50,6 @@ then
   exit 1
 fi
 
+echo "SIT SUCCESS (results: $results, expected: $EXPECTED_RESULTS)"
+
 exit $failing
