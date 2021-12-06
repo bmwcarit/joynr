@@ -391,7 +391,7 @@ public class CcMessageRouter
             //This can only happen in case of a multicast. Otherwise the participantId is taken directly from the ImmutableMessage.
             String errormessage = "Failed to route multicast publication: No recipient found for given message: "
                     + message.getTrackingInfo();
-            logger.error("ERROR SENDING: aborting send. Error:", errormessage);
+            logger.error("ERROR SENDING: aborting send. Error: {}", errormessage);
             finalizeMessageProcessing(message, false);
         }
 
