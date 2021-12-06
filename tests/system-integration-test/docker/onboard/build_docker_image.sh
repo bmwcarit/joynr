@@ -128,15 +128,17 @@ function execute_in_docker {
 		/bin/sh -c "$1"
 }
 
+# create cpp build dir:
+# The directory has to be created before the first call of 'execute_in_docker' because it is always
+# mounted,not only for C++ builds.
+mkdir -p $CPP_BUILDDIR
+
 if [ $NO_JAVA_BUILD ]; then
 	echo "Skipping Java build ..."
 else
 	# Build Java
 	execute_in_docker '"echo \"Generate Java API\" && . /etc/profile && cd /data/src && mvn clean install -P no-license-and-notice,no-java-formatter,no-checkstyle -DskipTests"'
 fi
-
-# create cpp build dir:
-mkdir -p $CPP_BUILDDIR
 
 if [ $NO_CPP_BUILD ]; then
 	echo "Skipping C++ build ..."
