@@ -42,10 +42,12 @@ public class PersistentProviderUtils {
      * Gathers information from [PersistentProvider] and builds a [DiscoveryEntry] for that provider
      *
      * @param provider PersistentProvider object
+     * @param expiryTimeMs Time for expiry of discovery entry
      * @return Discovery Entry
      */
     protected static DiscoveryEntry generatePrimitiveDiscoveryEntry(
-            PersistentJoynrContentProvider.PersistentProvider provider
+            PersistentJoynrContentProvider.PersistentProvider provider,
+            long expiryTimeMs
     ) {
 
         DiscoveryEntry discoveryEntry = null;
@@ -73,7 +75,7 @@ public class PersistentProviderUtils {
                     participantId,
                     provider.getProviderQos(),
                     System.currentTimeMillis(),
-                    System.currentTimeMillis() + getDefaultExpiryTimeMs(),
+                    System.currentTimeMillis() + expiryTimeMs,
                     defaultPublicKeyId);
 
             logger.info("Generated DiscoveryEntry " + discoveryEntry);

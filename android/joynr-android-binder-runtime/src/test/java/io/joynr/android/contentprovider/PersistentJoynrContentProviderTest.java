@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
@@ -174,7 +175,7 @@ public class PersistentJoynrContentProviderTest {
     public void doQuery_whenRegisterPersistentProviderConfigured_returnsDiscoveryEntry() {
 
         persistentProviderUtilsMockedStatic.when(PersistentProviderUtils::getDefaultExpiryTimeMs).thenReturn(testDefaultExpiryTimeMs);
-        persistentProviderUtilsMockedStatic.when(() -> PersistentProviderUtils.generatePrimitiveDiscoveryEntry(any())).thenReturn(testDiscoveryEntry);
+        persistentProviderUtilsMockedStatic.when(() -> PersistentProviderUtils.generatePrimitiveDiscoveryEntry(any(), eq(testDefaultExpiryTimeMs))).thenReturn(testDiscoveryEntry);
         testProviderList.add(testPersistentProvider);
         when(context.getPackageName()).thenReturn(testPackageName);
 

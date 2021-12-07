@@ -139,7 +139,7 @@ public class PersistentProviderUtilsTest {
         when(injector.getInstance(PropertiesFileParticipantIdStorage.class)).thenReturn(participantIdStorage);
         androidBinderRuntimeMockedStatic.when(AndroidBinderRuntime::getInjector).thenReturn(injector);
 
-        DiscoveryEntry discoveryEntry = PersistentProviderUtils.generatePrimitiveDiscoveryEntry(testPersistentProvider);
+        DiscoveryEntry discoveryEntry = PersistentProviderUtils.generatePrimitiveDiscoveryEntry(testPersistentProvider, testDefaultExpiryTimeMs);
 
         assertNotNull(discoveryEntry);
         assertEquals(testDomain, discoveryEntry.getDomain());
@@ -156,7 +156,7 @@ public class PersistentProviderUtilsTest {
     @Test
     public void generatePrimitiveDiscoveryEntry_whenNullPersistentProvider_returnsNull() {
 
-        assertNull(PersistentProviderUtils.generatePrimitiveDiscoveryEntry(null));
+        assertNull(PersistentProviderUtils.generatePrimitiveDiscoveryEntry(null, testDefaultExpiryTimeMs));
     }
 
     @Test
@@ -168,7 +168,7 @@ public class PersistentProviderUtilsTest {
                         null,
                         testDomain,
                         testProviderQos
-                    )
+                    ), testDefaultExpiryTimeMs
                 )
         );
     }
@@ -182,7 +182,7 @@ public class PersistentProviderUtilsTest {
                         joynrProvider,
                         null,
                         testProviderQos
-                    )
+                    ), testDefaultExpiryTimeMs
                 )
         );
     }
@@ -196,7 +196,7 @@ public class PersistentProviderUtilsTest {
                         joynrProvider,
                         testDomain,
                         null
-                    )
+                    ), testDefaultExpiryTimeMs
                 )
         );
     }
