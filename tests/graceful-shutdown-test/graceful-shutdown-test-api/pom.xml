@@ -25,7 +25,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>graceful-shutdown-test</artifactId>
-		<version>1.19.3-SNAPSHOT</version>
+		<version>1.19.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
