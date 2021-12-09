@@ -8,6 +8,10 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
+* **[C++]** Requests (joynr RPC calls) are now aborted with an exception if the corresponding
+  request message is dropped because the queue limit is reached. A message is queued when the
+  recipient or the required transport, e.g. MQTT, is currently not available. Joynr creates a
+  reply message with an exception for each dropped request message.
 * **[Java]** Updated org.jacoco:jacoco-maven-plugin to 0.8.7
 
 ## Configuration Property Changes

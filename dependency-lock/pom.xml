@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.19.3-SNAPSHOT</version>
+		<version>1.19.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -309,6 +309,12 @@
 				<version>2.11.3</version>
 			</dependency>
 			<dependency>
+				<groupId>com.google.android</groupId>
+				<artifactId>android</artifactId>
+				<type>jar</type>
+				<version>28</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.auto.value</groupId>
 				<artifactId>auto-value-annotations</artifactId>
 				<type>jar</type>
@@ -487,12 +493,6 @@
 				<artifactId>commons-io</artifactId>
 				<type>jar</type>
 				<version>2.4</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
-				<type>jar</type>
-				<version>2.6</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-logging</groupId>
@@ -712,12 +712,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-aether-provider</artifactId>
-				<type>jar</type>
-				<version>3.2.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-artifact</artifactId>
 				<type>jar</type>
 				<version>3.6.3</version>
@@ -730,19 +724,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-builder-support</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-model</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-model-builder</artifactId>
 				<type>jar</type>
 				<version>3.6.3</version>
 			</dependency>
@@ -781,30 +763,6 @@
 				<artifactId>maven-settings</artifactId>
 				<type>jar</type>
 				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-settings-builder</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-file</artifactId>
-				<type>jar</type>
-				<version>3.3.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-http-lightweight</artifactId>
-				<type>jar</type>
-				<version>2.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-http-shared</artifactId>
-				<type>jar</type>
-				<version>2.6</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.wagon</groupId>
@@ -847,42 +805,6 @@
 				<artifactId>plexus-utils</artifactId>
 				<type>jar</type>
 				<version>3.2.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-api</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-connector-basic</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-impl</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-spi</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-transport-wagon</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-util</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.emf</groupId>
@@ -1065,12 +987,6 @@
 				<version>3.8.0</version>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.sisu</groupId>
-				<artifactId>org.eclipse.sisu.inject</artifactId>
-				<type>jar</type>
-				<version>0.3.4</version>
-			</dependency>
-			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
 				<artifactId>org.eclipse.xtend.core</artifactId>
 				<type>jar</type>
@@ -1239,12 +1155,6 @@
 				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.arquillian.container</groupId>
-				<artifactId>arquillian-glassfish-embedded-3.1</artifactId>
-				<type>jar</type>
-				<version>1.0.2</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.arquillian.core</groupId>
 				<artifactId>arquillian-core-api</artifactId>
 				<type>jar</type>
@@ -1261,30 +1171,6 @@
 				<artifactId>arquillian-core-spi</artifactId>
 				<type>jar</type>
 				<version>1.6.0.Final</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-api</artifactId>
-				<type>jar</type>
-				<version>1.0.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-impl-base</artifactId>
-				<type>jar</type>
-				<version>1.0.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-jta</artifactId>
-				<type>jar</type>
-				<version>1.0.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-spi</artifactId>
-				<type>jar</type>
-				<version>1.0.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.junit</groupId>
@@ -1383,36 +1269,6 @@
 				<version>2.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-api</artifactId>
-				<type>jar</type>
-				<version>3.1.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-api-maven</artifactId>
-				<type>jar</type>
-				<version>3.1.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-				<type>jar</type>
-				<version>2.2.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-spi</artifactId>
-				<type>jar</type>
-				<version>3.1.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-spi-maven</artifactId>
-				<type>jar</type>
-				<version>3.1.4</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.spec.javax.transaction</groupId>
 				<artifactId>jboss-transaction-api_1.2_spec</artifactId>
 				<type>jar</type>
@@ -1477,12 +1333,6 @@
 				<artifactId>json</artifactId>
 				<type>jar</type>
 				<version>20180813</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jsoup</groupId>
-				<artifactId>jsoup</artifactId>
-				<type>jar</type>
-				<version>1.12.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jvnet.staxex</groupId>
@@ -1573,18 +1423,6 @@
 				<artifactId>slf4j-log4j12</artifactId>
 				<type>jar</type>
 				<version>1.7.28</version>
-			</dependency>
-			<dependency>
-				<groupId>org.sonatype.plexus</groupId>
-				<artifactId>plexus-cipher</artifactId>
-				<type>jar</type>
-				<version>1.7</version>
-			</dependency>
-			<dependency>
-				<groupId>org.sonatype.plexus</groupId>
-				<artifactId>plexus-sec-dispatcher</artifactId>
-				<type>jar</type>
-				<version>1.4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
