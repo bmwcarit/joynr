@@ -69,7 +69,7 @@ public class BinderMessagingStub implements IMessagingStub {
                                failureAction);
     }
 
-    private void connectAndTransmitData(byte[] data,
+    protected void connectAndTransmitData(byte[] data,
                                         BinderAddress toClientAddress,
                                         long timeout,
                                         TimeUnit unit,

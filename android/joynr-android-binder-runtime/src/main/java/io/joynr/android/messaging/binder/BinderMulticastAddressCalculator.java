@@ -52,7 +52,7 @@ public class BinderMulticastAddressCalculator implements MulticastAddressCalcula
 
     @Override
     public boolean supports(String transport) {
-        return true;
+        return transport != null && transport.toLowerCase().contains("binder");
     }
 
     @Override

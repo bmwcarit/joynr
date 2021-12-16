@@ -36,6 +36,7 @@ public class BinderServiceStub implements IBinderServiceStub {
     private Intent intent;
     private ServiceConnection serviceConnection;
     private BinderAddress toClientAddress;
+    private BinderServiceSkeleton binderService;
 
     public BinderServiceStub(Context context,
                              Intent intent,
@@ -49,13 +50,24 @@ public class BinderServiceStub implements IBinderServiceStub {
 
     @Override
     public void createBinderService() {
-        BinderServiceSkeleton binderService;
         if (toClientAddress.getUserId() == BinderConstants.USER_ID_SYSTEM) {
-            binderService = new BinderServiceServer(context, intent, serviceConnection);
+            binderService = initBinderServiceServer();
         } else {
-            binderService = new BinderServiceClient(context, intent, serviceConnection, toClientAddress);
+            binderService = initBinderServiceClient();
         }
 
         binderService.bindService();
+    }
+
+    protected BinderServiceSkeleton getBinderService() {
+        return binderService;
+    }
+
+    protected BinderServiceServer initBinderServiceServer() {
+        return new BinderServiceServer(context, intent, serviceConnection);
+    }
+
+    protected BinderServiceClient initBinderServiceClient() {
+        return new BinderServiceClient(context, intent, serviceConnection, toClientAddress);
     }
 }

@@ -146,7 +146,7 @@ public abstract class PersistentJoynrContentProvider extends ContentProvider {
                 case INIT_URL:
                     mc = new MatrixCursor(CURSOR_COLUMN_NAMES);
                     for (PersistentProvider persistentProvider : providers) {
-                        DiscoveryEntry discoveryEntry = generatePrimitiveDiscoveryEntry(persistentProvider);
+                        DiscoveryEntry discoveryEntry = generatePrimitiveDiscoveryEntry(persistentProvider, defaultExpiryTimeMs);
 
                         mc.newRow()
                                 .add(CURSOR_COLUMN_NAMES[0], discoveryEntry.getProviderVersion().getMajorVersion())

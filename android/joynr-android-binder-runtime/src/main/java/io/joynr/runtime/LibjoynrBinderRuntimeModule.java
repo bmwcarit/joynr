@@ -24,8 +24,10 @@ import android.os.Process;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 import io.joynr.android.AndroidBinderRuntime;
+import io.joynr.android.binder.BinderMessagingSkeleton;
 import io.joynr.android.messaging.binder.BinderClientMessagingStubFactory;
 import io.joynr.android.messaging.binder.BinderMessagingSkeletonFactory;
 import io.joynr.android.messaging.binder.BinderMulticastAddressCalculator;
@@ -68,6 +70,8 @@ public class LibjoynrBinderRuntimeModule extends AbstractRuntimeModule {
         bind(MessageSender.class).to(LibJoynrMessageSender.class);
         bind(RoutingTable.class).to(DummyRoutingTable.class).asEagerSingleton();
         bind(RoutingTableAddressValidator.class).to(LibjoynrBinderRoutingTableAddressValidator.class);
+        bind(Boolean.class).annotatedWith(Names.named(BinderMessagingSkeleton.BINDER_IS_MAIN_TRANSPORT))
+                .toInstance(Boolean.TRUE);
 
         messagingSkeletonFactory.addBinding(BinderAddress.class).to(BinderMessagingSkeletonFactory.class);
         messagingStubFactory.addBinding(BinderAddress.class).to(BinderClientMessagingStubFactory.class);
