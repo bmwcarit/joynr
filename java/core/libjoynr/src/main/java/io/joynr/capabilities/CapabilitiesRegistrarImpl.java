@@ -198,6 +198,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                  error);
                 }
                 providerDirectory.remove(participantId);
+                providerContainerFactory.removeProviderContainer(provider);
                 newFuture.resolve();
             }
 
