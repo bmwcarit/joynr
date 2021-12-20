@@ -81,11 +81,11 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
 
         String token = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain, interfaceName, majorVersion);
 
-        String participantId;
+        String participantId = persistedParticipantIds.getProperty(token);
 
         // first see if participantId exists in the persistence file
-        if (persistedParticipantIds.containsKey(token.toLowerCase())) {
-            participantId = persistedParticipantIds.getProperty(token.toLowerCase());
+        if (participantId != null) {
+            // if it exists, do nothing (use persisted value)
             // if not, use the default value that was passed in via properties
         } else if (defaultValue != null) {
             participantId = defaultValue;
@@ -98,22 +98,24 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (ProviderAnnotations.getInterfaceName(RoutingProvider.class).equals(interfaceName)) {
             participantId = routingProviderParticipantId;
         } else {
-
-            participantId = createUuidString();
-            persistedParticipantIds.put(token, participantId);
-            FileOutputStream fileOutputStream = null;
-            try {
-                fileOutputStream = new FileOutputStream(persistenceFileName);
-                persistedParticipantIds.store(fileOutputStream, null);
-            } catch (IOException e1) {
-                logger.error("Error saving properties file for channelId", e1);
-
-            } finally {
-                if (fileOutputStream != null) {
+            synchronized (persistedParticipantIds) {
+                participantId = createUuidString();
+                if (persistedParticipantIds.putIfAbsent(token, participantId) == null) {
+                    FileOutputStream fileOutputStream = null;
                     try {
-                        fileOutputStream.close();
-                    } catch (IOException e) {
-                        logger.debug("Error closing output stream", e);
+                        fileOutputStream = new FileOutputStream(persistenceFileName);
+                        persistedParticipantIds.store(fileOutputStream, null);
+                    } catch (IOException e1) {
+                        logger.error("Error saving properties file for channelId", e1);
+
+                    } finally {
+                        if (fileOutputStream != null) {
+                            try {
+                                fileOutputStream.close();
+                            } catch (IOException e) {
+                                logger.debug("Error closing output stream", e);
+                            }
+                        }
                     }
                 }
             }
@@ -123,13 +125,10 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
 
     @Override
     public String getProviderParticipantId(String domain, String interfaceName, int majorVersion) {
-        String defaultParticipantId = null;
         String providerParticipantIdKey = ParticipantIdKeyUtil.getProviderParticipantIdKey(domain,
                                                                                            interfaceName,
                                                                                            majorVersion);
-        if (joynrProperties.containsKey(providerParticipantIdKey)) {
-            defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
-        }
+        String defaultParticipantId = joynrProperties.getProperty(providerParticipantIdKey);
         return getProviderParticipantId(domain, interfaceName, majorVersion, defaultParticipantId);
     }
 
