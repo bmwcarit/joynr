@@ -51,7 +51,7 @@ public class ProviderContainerFactory {
                                      subscriptionPublisherFactory.create(provider));
     }
 
-    public void removeProviderContainer(JoynrProvider provider) {
+    public void removeProviderContainer(Object provider) {
         providerContainers.remove(provider);
     }
 }
