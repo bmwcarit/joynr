@@ -112,7 +112,7 @@
 							<goal>unpack-dependencies</goal>
 						</goals>
 						<configuration>
-							<includes>**/*.class,**/*.xtend,**/*.xtext, **/*.xtextbin, **/*.tokens,**/*xmi,**/log4j.properties</includes>
+							<includes>**/*.class,**/*.xtend,**/*.xtext, **/*.xtextbin, **/*.tokens,**/*xmi,**/log4j2.properties</includes>
 							<includeScope>compile</includeScope>
 							<outputDirectory>${project.build.directory}/classes</outputDirectory>
 							<overWriteReleases>true</overWriteReleases>

@@ -180,7 +180,7 @@ GCD_LOG=$ILT_RESULTS_DIR/gcd.log
 
 function startGcd {
 	log 'start GCD'
-	java -Dlog4j.configuration="file:${GCD_PATH}/log4j.properties" -jar ${GCD_PATH}/capabilities-directory-jar-with-dependencies.jar 2>&1 > $GCD_LOG &
+	java -Dlog4j.configuration="file:${GCD_PATH}/log4j2.properties" -jar ${GCD_PATH}/capabilities-directory-jar-with-dependencies.jar 2>&1 > $GCD_LOG &
 	GCD_PID=$!
 	wait_for_gcd
 	return $?

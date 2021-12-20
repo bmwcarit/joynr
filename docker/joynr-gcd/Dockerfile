@@ -1,6 +1,6 @@
 FROM openjdk:11-jre-slim
 
 COPY target/gcd.jar /gcd.jar
-COPY target/log4j.properties /log4j.properties
+COPY target/log4j*.properties /
 
-ENTRYPOINT ["java", "-Dlog4j.configuration=file:/log4j.properties", "-jar", "/gcd.jar"]
+ENTRYPOINT ["java", "-Dlog4j.configuration=file:/log4j2.properties", "-jar", "/gcd.jar"]

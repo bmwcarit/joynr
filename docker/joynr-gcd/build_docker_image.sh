@@ -25,10 +25,10 @@ function copy_build_artifact {
 
 PATH_PREFIX=../../java/backend-services/capabilities-directory/target/deploy
 GCD_JAR=$PATH_PREFIX/capabilities-directory-jar-with-dependencies.jar
-LOGGER_CONFIG=$PATH_PREFIX/log4j.properties
+LOGGER_CONFIG=$PATH_PREFIX/log4j*.properties
 
 copy_build_artifact $GCD_JAR target/gcd.jar
-copy_build_artifact $LOGGER_CONFIG target/log4j.properties
+copy_build_artifact $LOGGER_CONFIG target/
 
 docker build $@ -t joynr-gcd:latest .
 docker image prune -f

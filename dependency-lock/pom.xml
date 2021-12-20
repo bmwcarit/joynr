@@ -158,12 +158,6 @@
 				<version>1.6</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<type>jar</type>
-				<version>1.1.3</version>
-			</dependency>
-			<dependency>
 				<groupId>fish.payara.arquillian</groupId>
 				<artifactId>arquillian-payara-server-embedded</artifactId>
 				<type>jar</type>
@@ -284,12 +278,6 @@
 				<version>4.13.1</version>
 			</dependency>
 			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<type>jar</type>
-				<version>1.2.17</version>
-			</dependency>
-			<dependency>
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy</artifactId>
 				<type>jar</type>
@@ -306,6 +294,24 @@
 				<artifactId>ehcache</artifactId>
 				<type>jar</type>
 				<version>2.10.9.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<type>jar</type>
+				<version>2.17.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<type>jar</type>
+				<version>2.17.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-slf4j-impl</artifactId>
+				<type>jar</type>
+				<version>2.17.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
@@ -731,19 +737,13 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<type>jar</type>
-				<version>1.7.28</version>
+				<version>1.7.36</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-jdk14</artifactId>
 				<type>jar</type>
-				<version>1.7.28</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-log4j12</artifactId>
-				<type>jar</type>
-				<version>1.7.28</version>
+				<version>1.7.36</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
