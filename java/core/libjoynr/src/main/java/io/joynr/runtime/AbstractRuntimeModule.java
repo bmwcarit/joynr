@@ -54,7 +54,6 @@ import io.joynr.dispatching.subscription.PublicationManagerImpl;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
 import io.joynr.exceptions.JoynrDelayMessageException;
-import io.joynr.logging.JoynrAppenderManagerFactory;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeletonFactory;
@@ -104,7 +103,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
                                RoutingTypesUtil.class,
                                ArbitratorFactory.class,
                                JoynrDelayMessageException.class,
-                               JoynrAppenderManagerFactory.class,
                                MessageRouterUtil.class);
 
         install(new JsonMessageSerializerModule());
