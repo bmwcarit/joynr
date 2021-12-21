@@ -2,6 +2,28 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.4
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Provider registration was not thread safe which could cause `NullPointerException` when
+  multiple registrations were executed in parallel.
+* **[C++]** Fixed a race condition that could cause unreachable providers when removal and
+  registration of a provider overlapped in the cluster controller (the routing entry of the provider
+  was erroneously removed by the callback of the asynchronous remove task in the cluster controller
+  after the provider had been registered again).
+
 # joynr 1.19.3
 
 ## API-relevant Changes
