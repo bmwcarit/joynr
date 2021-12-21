@@ -18,8 +18,7 @@
  */
 package io.joynr.provider;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.inject.Inject;
 
@@ -27,7 +26,7 @@ import io.joynr.dispatching.RequestCallerFactory;
 import io.joynr.exceptions.JoynrRuntimeException;
 
 public class ProviderContainerFactory {
-    private final Map<Object, ProviderContainer> providerContainers;
+    private final ConcurrentHashMap<Object, ProviderContainer> providerContainers;
     private final SubscriptionPublisherFactory subscriptionPublisherFactory;
     private final RequestCallerFactory requestCallerFactory;
 
@@ -36,14 +35,12 @@ public class ProviderContainerFactory {
                                     RequestCallerFactory requestCallerFactory) {
         this.subscriptionPublisherFactory = subscriptionPublisherFactory;
         this.requestCallerFactory = requestCallerFactory;
-        providerContainers = new HashMap<>();
+        providerContainers = new ConcurrentHashMap<>();
     }
 
     public ProviderContainer create(final Object provider) {
-        if (providerContainers.get(provider) == null) {
-            providerContainers.put(provider, createInternal(provider));
-        }
-        return providerContainers.get(provider);
+        ProviderContainer container = providerContainers.computeIfAbsent(provider, k -> createInternal(k));
+        return container;
     }
 
     private ProviderContainer createInternal(final Object provider) throws JoynrRuntimeException {
@@ -54,7 +51,7 @@ public class ProviderContainerFactory {
                                      subscriptionPublisherFactory.create(provider));
     }
 
-    public void removeProviderContainer(JoynrProvider provider) {
+    public void removeProviderContainer(Object provider) {
         providerContainers.remove(provider);
     }
 }
