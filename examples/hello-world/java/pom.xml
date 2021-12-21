@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>hello-world-parent</artifactId>
-		<version>1.19.4-SNAPSHOT</version>
+		<version>1.19.4</version>
 	</parent>
 	<artifactId>hello-world-java</artifactId>
 
