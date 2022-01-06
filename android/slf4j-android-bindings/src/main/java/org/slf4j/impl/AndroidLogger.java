@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,15 +44,16 @@
  */
 package org.slf4j.impl;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import android.support.annotation.IntDef;
+import android.util.Log;
 
 import org.slf4j.Marker;
+import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
 
-import android.support.annotation.IntDef;
-import android.util.Log;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * A simple implementation that delegates all log requests to the Google Android
@@ -109,7 +110,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void trace(final String msg) {
         if (isTraceEnabled()) {
-            Log.v(name, msg);
+            formatAndLog(LogLevel.VERBOSE, msg);
         }
     }
 
@@ -117,7 +118,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void trace(final String format, final Object param1) {
         if (isTraceEnabled()) {
-            Log.v(name, format(format, param1, null));
+            formatAndLog(LogLevel.VERBOSE, format, param1);
         }
     }
 
@@ -125,7 +126,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void trace(final String format, final Object param1, final Object param2) {
         if (isTraceEnabled()) {
-            Log.v(name, format(format, param1, param2));
+            formatAndLog(LogLevel.VERBOSE, format, param1, param2);
         }
     }
 
@@ -133,7 +134,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void trace(final String format, final Object... arguments) {
         if (isTraceEnabled()) {
-            Log.v(name, format(format, arguments));
+            formatAndLog(LogLevel.VERBOSE, format, arguments);
         }
     }
 
@@ -141,7 +142,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void trace(final String msg, final Throwable t) {
         if (isTraceEnabled()) {
-            Log.v(name, msg, t);
+            formatAndLog(LogLevel.VERBOSE, msg, t);
         }
     }
 
@@ -155,7 +156,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void debug(final String msg) {
         if (isDebugEnabled()) {
-            Log.d(name, msg);
+            formatAndLog(LogLevel.DEBUG, msg);
         }
     }
 
@@ -163,7 +164,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void debug(final String format, final Object arg1) {
         if (isDebugEnabled()) {
-            Log.d(name, format(format, arg1, null));
+            formatAndLog(LogLevel.DEBUG, format, arg1);
         }
     }
 
@@ -171,7 +172,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void debug(final String format, final Object param1, final Object param2) {
         if (isDebugEnabled()) {
-            Log.d(name, format(format, param1, param2));
+            formatAndLog(LogLevel.DEBUG, format, param1, param2);
         }
     }
 
@@ -179,7 +180,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void debug(final String format, final Object... arguments) {
         if (isDebugEnabled()) {
-            Log.d(name, format(format, arguments));
+            formatAndLog(LogLevel.DEBUG, format, arguments);
         }
     }
 
@@ -187,7 +188,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void debug(final String msg, final Throwable t) {
         if (isDebugEnabled()) {
-            Log.d(name, msg, t);
+            formatAndLog(LogLevel.DEBUG, msg, t);
         }
     }
 
@@ -201,7 +202,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void info(final String msg) {
         if (isInfoEnabled()) {
-            Log.i(name, msg);
+            formatAndLog(LogLevel.INFO, msg);
         }
     }
 
@@ -209,7 +210,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void info(final String format, final Object arg) {
         if (isInfoEnabled()) {
-            Log.i(name, format(format, arg, null));
+            formatAndLog(LogLevel.INFO, format, arg);
         }
     }
 
@@ -217,7 +218,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void info(final String format, final Object arg1, final Object arg2) {
         if (isInfoEnabled()) {
-            Log.i(name, format(format, arg1, arg2));
+            formatAndLog(LogLevel.INFO, format, arg1, arg2);
         }
     }
 
@@ -225,7 +226,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void info(final String format, final Object... arguments) {
         if (isInfoEnabled()) {
-            Log.i(name, format(format, arguments));
+            formatAndLog(LogLevel.INFO, format, arguments);
         }
     }
 
@@ -233,7 +234,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void info(final String msg, final Throwable t) {
         if (isInfoEnabled()) {
-            Log.i(name, msg, t);
+            formatAndLog(LogLevel.INFO, msg, t);
         }
     }
 
@@ -247,7 +248,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void warn(final String msg) {
         if (isWarnEnabled()) {
-            Log.w(name, msg);
+            formatAndLog(LogLevel.WARN, msg);
         }
     }
 
@@ -255,7 +256,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void warn(final String format, final Object arg) {
         if (isWarnEnabled()) {
-            Log.w(name, format(format, arg, null));
+            formatAndLog(LogLevel.WARN, format, arg);
         }
     }
 
@@ -263,7 +264,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void warn(final String format, final Object arg1, final Object arg2) {
         if (isWarnEnabled()) {
-            Log.w(name, format(format, arg1, arg2));
+            formatAndLog(LogLevel.WARN, format, arg1, arg2);
         }
     }
 
@@ -271,7 +272,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void warn(final String format, final Object... arguments) {
         if (isWarnEnabled()) {
-            Log.w(name, format(format, arguments));
+            formatAndLog(LogLevel.WARN, format, arguments);
         }
     }
 
@@ -279,7 +280,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void warn(final String msg, final Throwable t) {
         if (isWarnEnabled()) {
-            Log.w(name, msg, t);
+            formatAndLog(LogLevel.WARN, msg, t);
         }
     }
 
@@ -293,7 +294,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void error(final String msg) {
         if (isErrorEnabled()) {
-            Log.e(name, msg);
+            formatAndLog(LogLevel.ERROR, msg);
         }
     }
 
@@ -301,7 +302,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void error(final String format, final Object arg) {
         if (isErrorEnabled()) {
-            Log.e(name, format(format, arg, null));
+            formatAndLog(LogLevel.ERROR, format, arg);
         }
     }
 
@@ -309,7 +310,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void error(final String format, final Object arg1, final Object arg2) {
         if (isErrorEnabled()) {
-            Log.e(name, format(format, arg1, arg2));
+            formatAndLog(LogLevel.ERROR, format, arg1, arg2);
         }
     }
 
@@ -317,7 +318,7 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void error(final String format, final Object... arguments) {
         if (isErrorEnabled()) {
-            Log.e(name, format(format, arguments));
+            formatAndLog(LogLevel.ERROR, format, arguments);
         }
     }
 
@@ -325,29 +326,78 @@ public class AndroidLogger extends MarkerIgnoringBase {
     @Override
     public void error(final String msg, final Throwable t) {
         if (isErrorEnabled()) {
-            Log.e(name, msg, t);
+            formatAndLog(LogLevel.ERROR, msg, t);
         }
     }
 
     /**
-     * For formatted messages substitute arguments.
+     * Format messages and depending on having a throwable in the arguments call the appropriate
+     * Android Log api method.
      *
-     * @param format
-     * @param arg1
-     * @param arg2
+     * @param logLevel The log level
+     * @param format   The message format
+     * @param argArray The message arguments
      */
-    private String format(final String format, final Object arg1, final Object arg2) {
-        return MessageFormatter.format(format, arg1, arg2).getMessage();
+    private void formatAndLog(int logLevel, String format, Object... argArray) {
+        FormattingTuple ft = MessageFormatter.arrayFormat(format, argArray);
+        if (ft.getThrowable() != null) {
+            logWithThrowable(logLevel, ft.getMessage(), ft.getThrowable());
+        } else {
+            logWithoutThrowable(logLevel, ft.getMessage());
+        }
     }
 
     /**
-     * For formatted messages substitute arguments.
+     * Call the appropriate Android Log api method depending on the logLevel with a throwable arg.
      *
-     * @param format
-     * @param args
+     * @param logLevel The log level
+     * @param message  The log message
+     * @param tr       A Throwable to add to the logs
      */
-    private String format(final String format, final Object[] args) {
-        return MessageFormatter.arrayFormat(format, args).getMessage();
+    private void logWithThrowable(int logLevel, String message, Throwable tr) {
+        switch (logLevel) {
+        case LogLevel.VERBOSE:
+            Log.v(name, message, tr);
+            break;
+        case LogLevel.DEBUG:
+            Log.d(name, message, tr);
+            break;
+        case LogLevel.INFO:
+            Log.i(name, message, tr);
+            break;
+        case LogLevel.WARN:
+            Log.w(name, message, tr);
+            break;
+        case LogLevel.ERROR:
+            Log.e(name, message, tr);
+            break;
+        }
+    }
+
+    /**
+     * Call the appropriate Android Log api method depending on the logLevel.
+     *
+     * @param logLevel The log level
+     * @param message  The log message
+     */
+    private void logWithoutThrowable(int logLevel, String message) {
+        switch (logLevel) {
+        case LogLevel.VERBOSE:
+            Log.v(name, message);
+            break;
+        case LogLevel.DEBUG:
+            Log.d(name, message);
+            break;
+        case LogLevel.INFO:
+            Log.i(name, message);
+            break;
+        case LogLevel.WARN:
+            Log.w(name, message);
+            break;
+        case LogLevel.ERROR:
+            Log.e(name, message);
+            break;
+        }
     }
 
     @IntDef({ LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.OFF })
