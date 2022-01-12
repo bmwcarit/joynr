@@ -1027,7 +1027,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.10</version>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.xtend</groupId>
