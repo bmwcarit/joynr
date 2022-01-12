@@ -624,7 +624,13 @@
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy</artifactId>
 				<type>jar</type>
-				<version>1.11.12</version>
+				<version>1.12.4</version>
+			</dependency>
+			<dependency>
+				<groupId>net.bytebuddy</groupId>
+				<artifactId>byte-buddy-agent</artifactId>
+				<type>jar</type>
+				<version>1.12.4</version>
 			</dependency>
 			<dependency>
 				<groupId>net.jcip</groupId>
@@ -1350,7 +1356,7 @@
 				<groupId>org.objenesis</groupId>
 				<artifactId>objenesis</artifactId>
 				<type>jar</type>
-				<version>1.0</version>
+				<version>3.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
