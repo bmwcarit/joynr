@@ -211,6 +211,7 @@ AccessController::AccessController(
           _discoveryQos()
 {
     _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+    _discoveryQos.setDiscoveryTimeout(60000);
 }
 
 void AccessController::addParticipantToWhitelist(const std::string& participantId)
