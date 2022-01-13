@@ -18,9 +18,10 @@
  */
 package io.joynr.capabilities;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,7 +39,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.runtime.ShutdownListener;
@@ -72,7 +73,7 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
     @Before
     public void setup() {
         subject = new ExpiredDiscoveryEntryCacheCleaner(scheduledExecutorService, 1, shutdownNotifier);
-        doAnswer(new Answer() {
+        lenient().doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 shutdownListener = (ShutdownListener) invocation.getArguments()[0];
@@ -97,8 +98,8 @@ public class ExpiredDiscoveryEntryCacheCleanerTest {
 
         final String expiredParticipantId = "expiredParticipantId";
         DiscoveryEntry expiredEntry = mock(DiscoveryEntry.class);
-        when(expiredEntry.getExpiryDateMs()).thenReturn(System.currentTimeMillis() - 1000L);
-        when(expiredEntry.getParticipantId()).thenReturn(expiredParticipantId);
+        lenient().when(expiredEntry.getExpiryDateMs()).thenReturn(System.currentTimeMillis() - 1000L);
+        lenient().when(expiredEntry.getParticipantId()).thenReturn(expiredParticipantId);
         allEntries.add(expiredEntry);
 
         when(cache.getAllDiscoveryEntries()).thenReturn(allEntries);

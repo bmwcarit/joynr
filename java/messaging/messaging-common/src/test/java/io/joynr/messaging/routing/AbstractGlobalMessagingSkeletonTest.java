@@ -18,12 +18,11 @@
  */
 package io.joynr.messaging.routing;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,7 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
@@ -175,7 +174,7 @@ public class AbstractGlobalMessagingSkeletonTest {
         verify(immutableMessage, times(0)).getReplyTo();
         verify(immutableMessage, times(0)).getSender();
         verify(immutableMessage, times(0)).getTtlMs();
-        verify(routingTable, times(0)).put(anyString(), anyObject(), anyBoolean(), anyLong());
+        verify(routingTable, times(0)).put(anyString(), any(), anyBoolean(), anyLong());
     }
 
     private void testUnregisterGlobalRoutingEntry(MessageType msgType, boolean alreadyProcessed) {

@@ -24,9 +24,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
@@ -254,9 +255,11 @@ public class AbstractRoutingTableCleanupTest {
         doReturn(joynrMqttClient2).when(hiveMqMqttClientFactory).createReceiver(TESTGBID2);
         doReturn(joynrMqttClient2).when(hiveMqMqttClientFactory).createSender(TESTGBID2);
 
-        doReturn(mqttMessagingStubMock).when(mqttMessagingStubFactoryMock).create(any());
-        doReturn(webSocketClientMessagingStubMock).when(websocketClientMessagingStubFactoryMock).create(any());
-        doReturn(webSocketMessagingStubMock).when(webSocketMessagingStubFactoryMock).create(any());
+        lenient().doReturn(mqttMessagingStubMock).when(mqttMessagingStubFactoryMock).create(any());
+        lenient().doReturn(webSocketClientMessagingStubMock)
+                 .when(websocketClientMessagingStubFactoryMock)
+                 .create(any());
+        lenient().doReturn(webSocketMessagingStubMock).when(webSocketMessagingStubFactoryMock).create(any());
 
         doAnswer(invocation -> {
             return (ImmutableMessage) invocation.getArguments()[0];

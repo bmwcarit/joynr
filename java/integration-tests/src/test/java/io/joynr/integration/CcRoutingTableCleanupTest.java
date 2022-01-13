@@ -22,8 +22,8 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -45,7 +45,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,7 +160,7 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
     private void verifyOutgoing(IMessagingStub stub, MessageType type, int times) {
         verify(stub, times(times)).transmit(argThat(new ArgumentMatcher<ImmutableMessage>() {
             @Override
-            public boolean matches(Object argument) {
+            public boolean matches(ImmutableMessage argument) {
                 ImmutableMessage msg = (ImmutableMessage) argument;
                 return type.equals(msg.getType());
             }

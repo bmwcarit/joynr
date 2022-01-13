@@ -40,7 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
@@ -53,18 +53,6 @@ public class MessageQueueTest {
 
     @Mock
     private DelayableImmutableMessage mockMessage;
-
-    @Mock
-    private DelayableImmutableMessage mockDelayableMessage2_multicast;
-
-    @Mock
-    private ImmutableMessage mockImmutableMessage2_multicast;
-
-    @Mock
-    private DelayableImmutableMessage mockDelayableMessage3_request;
-
-    @Mock
-    private ImmutableMessage mockImmutableMessage3_request;
 
     @Mock
     private MessageQueue.MaxTimeoutHolder maxTimeoutHolderMock;
@@ -85,18 +73,7 @@ public class MessageQueueTest {
         // configure mocks
         when(maxTimeoutHolderMock.getTimeout()).thenReturn(shutdownMaxTimeout);
 
-        Set<DelayableImmutableMessage> mockedMessages = Stream.of(mockDelayableMessage2_multicast,
-                                                                  mockDelayableMessage3_request)
-                                                              .collect(toSet());
-        when(mockDelayableMessage2_multicast.getMessage()).thenReturn(mockImmutableMessage2_multicast);
-        when(mockDelayableMessage3_request.getMessage()).thenReturn(mockImmutableMessage3_request);
-
-        when(mockImmutableMessage2_multicast.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
-        when(mockImmutableMessage3_request.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         ObjectMapper objectMapper = new ObjectMapper();
-        when(mockImmutableMessage3_request.getReplyTo()).thenReturn(objectMapper.writeValueAsString(replyToAddress));
-        when(mockImmutableMessage3_request.getTtlMs()).thenReturn(42l);
-        when(mockImmutableMessage3_request.getSender()).thenReturn(sender);
 
         Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);

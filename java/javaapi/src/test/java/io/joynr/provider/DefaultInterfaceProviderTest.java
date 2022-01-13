@@ -23,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import joynr.tests.DefaulttestProvider;

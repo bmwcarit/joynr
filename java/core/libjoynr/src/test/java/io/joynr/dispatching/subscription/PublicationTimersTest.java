@@ -18,10 +18,10 @@
  */
 package io.joynr.dispatching.subscription;
 
-import static org.hamcrest.Matchers.contains;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +97,7 @@ public class PublicationTimersTest {
     public void setUp() {
         requestCaller = new RequestCallerFactory().create(new DefaulttestProvider());
         when(providerContainer.getProviderProxy()).thenReturn(requestCaller.getProxy());
-        when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
+        lenient().when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
 
         Deferred<String> testAttributeDeferred = new Deferred<String>();
         testAttributeDeferred.resolve("testAttributeValue");
@@ -139,7 +139,7 @@ public class PublicationTimersTest {
         int publicationTimes = 1 + (subscriptionLength / period);
         verify(dispatcher,
                times(publicationTimes)).sendSubscriptionPublication(eq(providerId),
-                                                                    (Set<String>) argThat(contains(proxyId)),
+                                                                    argThat(mySet -> mySet.contains(proxyId)),
                                                                     any(SubscriptionPublication.class),
                                                                     any(MessagingQos.class));
 

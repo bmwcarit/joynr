@@ -24,7 +24,7 @@ import static io.joynr.messaging.MessagingPropertyKeys.PERSISTENCE_FILE;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;

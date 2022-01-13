@@ -18,10 +18,10 @@
  */
 package io.joynr.integration;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -45,12 +45,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -315,7 +315,7 @@ public class LocalDiscoveryTest {
     }
 
     private void verifyGlobalLookup(String interfaceName, String[] testDomains) {
-        verify(globalCapabilitiesDirectoryClientMock).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+        verify(globalCapabilitiesDirectoryClientMock).lookup(ArgumentMatchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                              eq(testDomains),
                                                              eq(interfaceName),
                                                              anyLong(),
@@ -370,7 +370,7 @@ public class LocalDiscoveryTest {
                                                               any(MessagingQos.class),
                                                               eq(null));
             verify(globalCapabilitiesDirectoryClientMock,
-                   times(0)).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                   times(0)).lookup(ArgumentMatchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                     Mockito.<String[]> any(),
                                     anyString(),
                                     anyLong(),
@@ -402,7 +402,7 @@ public class LocalDiscoveryTest {
                                                .lookup(any(String[].class), eq(interfaceName), anyLong());
         doReturn(Optional.empty()).when(localDiscoveryEntryStoreMock).lookup(anyString(), anyLong());
         doAnswer(createLookupAnswer(globalDiscoveryEntries)).when(globalCapabilitiesDirectoryClientMock)
-                                                            .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                            .lookup(ArgumentMatchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                                     any(String[].class),
                                                                     eq(interfaceName),
                                                                     anyLong(),
@@ -509,7 +509,7 @@ public class LocalDiscoveryTest {
                                                                                                  .lookup(eq(cachedDiscoveryEntry.getParticipantId()),
                                                                                                          eq(Long.MAX_VALUE));
         doAnswer(createLookupAnswer(remoteDiscoveryEntries)).when(globalCapabilitiesDirectoryClientMock)
-                                                            .lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                                                            .lookup(ArgumentMatchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
                                                                     any(String[].class),
                                                                     eq(interfaceName),
                                                                     anyLong(),
