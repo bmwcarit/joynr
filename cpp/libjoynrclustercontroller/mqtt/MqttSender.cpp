@@ -82,12 +82,25 @@ void MqttSender::sendMessage(
 
     std::size_t mqttMaximumMessageSizeBytes =
             static_cast<std::size_t>(_mosquittoConnection->getMqttMaximumPacketSize());
+
+    const std::size_t fixedOverheadPerMessage = 32;
+    const std::size_t fixedOverheadPerCustomHeader = 5;
+
+    std::size_t mqttMessageSizeBytes = rawMessage.size() + fixedOverheadPerMessage + topic.length();
+
+    auto prefixedCustomHeaders = message->getPrefixedCustomHeaders();
+    for (auto it = prefixedCustomHeaders.cbegin(); it != prefixedCustomHeaders.cend(); ++it) {
+        mqttMessageSizeBytes +=
+                it->first.length() + it->second.length() + fixedOverheadPerCustomHeader;
+    }
+
     if ((rawMessage.size() > static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max())) ||
-        ((mqttMaximumMessageSizeBytes > 0) && (rawMessage.size() > mqttMaximumMessageSizeBytes))) {
+        ((mqttMaximumMessageSizeBytes > 0) &&
+         (mqttMessageSizeBytes > mqttMaximumMessageSizeBytes))) {
         std::stringstream errorMsg;
         errorMsg << "Message size MQTT Publish failed: maximum allowed message size of "
                  << mqttMaximumMessageSizeBytes << " bytes exceeded, actual size is "
-                 << rawMessage.size() << " bytes";
+                 << mqttMessageSizeBytes << " bytes";
         JOYNR_LOG_DEBUG(logger(), errorMsg.str());
         onFailure(exceptions::JoynrMessageNotSentException(errorMsg.str()));
         return;
