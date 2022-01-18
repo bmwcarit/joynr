@@ -202,10 +202,13 @@ public:
 
     void prepareConsumerTest()
     {
+        types::DiscoveryQos discoveryQos;
+        discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+        discoveryQos.setDiscoveryTimeout(60000);
         EXPECT_CALL(
                 *_localCapabilitiesDirectoryMock,
                 lookup(_toParticipantId,
-                       A<const types::DiscoveryQos&>(),
+                       discoveryQos,
                        std::vector<std::string> {},
                        A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
                        A<std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>>()
@@ -216,10 +219,13 @@ public:
 
     void prepareConsumerTestInRetryErrorCase()
     {
+        types::DiscoveryQos discoveryQos;
+        discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
+        discoveryQos.setDiscoveryTimeout(60000);
         EXPECT_CALL(
                 *_localCapabilitiesDirectoryMock,
                 lookup(_toParticipantId,
-                       A<const types::DiscoveryQos&>(),
+                       discoveryQos,
                        std::vector<std::string> {},
                        A<std::function<void(const joynr::types::DiscoveryEntryWithMetaInfo&)>>(),
                        A<std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)>>()

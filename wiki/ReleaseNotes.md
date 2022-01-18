@@ -19,6 +19,10 @@ None.
 ## Bug Fixes
 * **[C++]** Boost EPOLL deactivation does not work with Boost 1.72. Enabled again.
 Recommended to use Boost 1.72 or higher with joynr UDS runtime.
+* **[C++]** When ACL checks were enabled, it was possible that discoveries with a
+  TTL of -1 second were started, causing an infinite loop and messages being stuck
+  in the Cluster Controller. The TTL of those discoveries has now been increased
+  to 60 seconds.
 
 # joynr 1.18.1
 
