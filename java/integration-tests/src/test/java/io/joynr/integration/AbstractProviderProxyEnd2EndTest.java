@@ -110,7 +110,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     // This timeout must be shared by all integration test environments and
     // cannot be too short.
-    protected static final long CONST_DEFAULT_TEST_TIMEOUT = 90000L;
+    protected static final long CONST_DEFAULT_TEST_TIMEOUT = 100000L;
     protected static final long CONST_DEFAULT_PROVIDER_REGISTRATION_TIMEOUT = 80000L;
 
     public static final Semaphore FIRE_AND_FORGET_SEMAPHORE = new Semaphore(1);
@@ -153,8 +153,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     public TestName name = new TestName();
 
     // The timeouts should not be to small because some test environments are slow
-    protected MessagingQos messagingQos = new MessagingQos(10000);
-    protected DiscoveryQos discoveryQos = new DiscoveryQos(10000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
+    protected MessagingQos messagingQos = new MessagingQos(15000);
+    protected DiscoveryQos discoveryQos = new DiscoveryQos(15000, ArbitrationStrategy.HighestPriority, Long.MAX_VALUE);
 
     @Mock
     Callback<String> callback;
@@ -790,6 +790,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
     public void testLargeByteBufferAttribute() throws DiscoveryException, JoynrIllegalStateException,
                                                InterruptedException {
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
+        messagingQos.setTtl_ms(MessagingQos.DEFAULT_TTL);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         byte[] bytes = new byte[1000000];
         new Random().nextBytes(bytes);
