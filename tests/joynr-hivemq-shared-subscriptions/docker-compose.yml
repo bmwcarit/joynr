@@ -3,7 +3,7 @@ version: '3.0'
 services:
 
   hivemq:
-    image: "hivemq/hivemq-ce:2021.2"
+    image: "hivemq/hivemq-ce:latest"
     container_name: mqttbroker
     networks:
       - sharedSubscriptionNetwork
