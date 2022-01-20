@@ -88,7 +88,7 @@ You should now see the appropriate Docker Images:
     backpressure-test-clustered-provider-large   latest   99dabb10e9d6   6 days ago     1.27GB
     joynr-gcd                                    latest   7948363be5d6   15 hours ago   261MB
     joynr-gcd-db                                 latest   8a2e8fa2c8cc   15 hours ago   192MB
-    hivemq/hivemq4                               latest   ce5b6a31edf1   4 weeks ago    438MB
+    hivemq/hivemq-ce                             latest   a03634593620   2 months ago   392MB
 
 The HiveMQ 4 Docker image will be downloaded automatically when running the tests.
 
