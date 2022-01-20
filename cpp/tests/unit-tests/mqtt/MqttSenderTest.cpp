@@ -325,8 +325,15 @@ TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck)
     });
     EXPECT_FALSE(gotCalled);
 
-    std::string longMessagePayload(1000, 'x');
+    // Create a message where the total number of bytes in MQTT control packet exceeds the
+    // configured maximum of 900 bytes in order to cause an exception.
+    // Currently fixed overhead (32) + rawMessageSize (804) + topic (8) = 844 bytes
+    // plus additional custom-headers each with key length + value length + fixed overhead (5)
+    // here (27 = 6+16+5) and (31 = 4+22+5) bytes + previous length (844) = 902 bytes.
+    std::string longMessagePayload(500, 'x');
     mutableMessage.setPayload(longMessagePayload);
+    mutableMessage.setCustomHeader("z4", "1234567890123456789012");
+    mutableMessage.setCustomHeader("gbid", "joynrdefaultgbid");
     immutableMessage = mutableMessage.getImmutableMessage();
 
     gotExpectedExceptionType = false;
