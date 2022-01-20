@@ -2,6 +2,35 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.5
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[C++]** Fixed the MQTT maximum message size check to correctly detect too large messages before
+  trying to publish the message to the MQTT Broker. The whole MQTT packet is now taken into account
+  instead of just the size of the payload.
+* **[Java]** Updated Mockito dependency to `mockito-core` 4.2.0 and removed `mockito-all`.
+* **[Java]** Updated Maven plugin `build-helper-maven-plugin` to version 3.2.0.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Fixed log implementation to also log throwables if present as additional parameter.
+* **[C++]** When ACL checks were enabled, it was possible that:
+  * incoming request messages to the cluster controller caused unnecessary error logs
+  * outgoing request messages were dropped if a provider discovery was required to perform the ACL
+    check (this could happen only if a lot of providers had been discovered before and the required
+    DiscoveryEntry had to be dropped from the cache because the size limit of 1000 entries had been
+    exceeded)
+
+  Discoveries for ACL checks now use a TTL of 60 seconds instead of invalid -1 seconds.
+
 # joynr 1.19.4
 
 ## API-relevant Changes
@@ -113,6 +142,32 @@ None.
 * **[Java]** Fixed log statements in HivemqMqttClient and HivemqMqttClientFactory: exceptions are
   now logged correctly with stack trace.
 * **[TS]** Remove undocumented dependency to '@types/nanoid'.
+
+# joynr 1.18.2
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Boost EPOLL deactivation does not work with Boost 1.72. Enabled again.
+Recommended to use Boost 1.72 or higher with joynr UDS runtime.
+* **[C++]** When ACL checks were enabled, it was possible that:
+  * incoming request messages to the cluster controller caused unnecessary error logs
+  * outgoing request messages were dropped if a provider discovery was required to perform the ACL
+    check (this could happen only if a lot of providers had been discovered before and the required
+    DiscoveryEntry had to be dropped from the cache because the size limit of 1000 entries had been
+    exceeded)
+
+  Discoveries for ACL checks now use a TTL of 60 seconds instead of invalid -1 seconds.
 
 # joynr 1.18.1
 
