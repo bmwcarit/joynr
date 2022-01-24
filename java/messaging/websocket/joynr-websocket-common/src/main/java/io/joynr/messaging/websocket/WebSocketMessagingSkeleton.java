@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,7 @@ import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.system.RoutingTypes.WebSocketAddress;
 
-public class WebSocketMessagingSkeleton extends WebSocketAdapter implements IWebSocketMessagingSkeleton {
+public class WebSocketMessagingSkeleton implements IWebSocketMessagingSkeleton {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketMessagingSkeleton.class);
 
     public final static String WEBSOCKET_IS_MAIN_TRANSPORT = "io.joynr.websocket.is.main.transport";
