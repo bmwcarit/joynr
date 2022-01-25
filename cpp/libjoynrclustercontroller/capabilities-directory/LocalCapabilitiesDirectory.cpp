@@ -1501,7 +1501,7 @@ void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
 void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
         const std::int64_t& clusterControllerStartDateMs)
 {
-    for (const auto gbid : _knownGbids) {
+    for (const auto& gbid : _knownGbids) {
         removeStaleProvidersOfClusterController(clusterControllerStartDateMs, gbid);
     }
 }
