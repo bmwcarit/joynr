@@ -148,5 +148,3 @@ Permission::Enum LocalDomainAccessController::getProviderPermission(
 }
 
 } // namespace joynr
-
-#pragma GCC diagnostic pop
