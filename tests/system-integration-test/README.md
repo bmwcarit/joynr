@@ -1,5 +1,6 @@
 # System Integration Tests
-Please have a look into each app's README file for instrcutions on how to run a System Intergation Test for the corresponding language.
+Please have a look into [docker/README.md](docker/README.md) for an overview about the System
+Integration Test and instructions on how to run the tests.
 
 # System Integration Tests - Incompatible fidl version tests
 
