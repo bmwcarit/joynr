@@ -21,19 +21,20 @@ package io.joynr.messaging.websocket.jetty.client;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
-import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.eclipse.jetty.websocket.api.WriteCallback;
+import org.eclipse.jetty.websocket.api.exceptions.WebSocketException;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     private WebSocketClient jettyClient;
     private int maxMessageSize;
     private long websocketIdleTimeout;
-    Future<Session> sessionFuture;
+    CompletableFuture<Session> sessionFuture;
     private WebSocketAddress serverAddress;
     private IWebSocketMessagingSkeleton messageListener;
     private ObjectMapper objectMapper;
@@ -90,15 +91,21 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     public synchronized void start() {
         if (jettyClient == null) {
             jettyClient = new WebSocketClient();
-            jettyClient.getPolicy().setMaxTextMessageSize(maxMessageSize);
-            jettyClient.getPolicy().setMaxBinaryMessageSize(maxMessageSize);
-            jettyClient.setMaxIdleTimeout(websocketIdleTimeout);
+            jettyClient.setMaxTextMessageSize(maxMessageSize);
+            jettyClient.setMaxBinaryMessageSize(maxMessageSize);
+            jettyClient.setIdleTimeout(Duration.ofMillis(websocketIdleTimeout));
         }
 
         try {
+            logger.debug("Starting WebSocket client ...");
             jettyClient.start();
-            sessionFuture = jettyClient.connect(this, toUrl(serverAddress));
-            sendInitializationMessage();
+            URI toUri = toUrl(serverAddress);
+            logger.debug("Connecting to {} ... ", toUri);
+            sessionFuture = jettyClient.connect(this, toUri);
+
+            Session session = sessionFuture.get(30, TimeUnit.SECONDS);
+            logger.debug("WebSocket client connected");
+            sendInitializationMessage(session);
         } catch (JoynrShutdownException | JoynrIllegalStateException e) {
             logger.error("Unrecoverable error starting WebSocket client: {}", e);
             return;
@@ -124,7 +131,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
         }
     }
 
-    private void sendInitializationMessage() throws InterruptedException, JoynrCommunicationException {
+    private void sendInitializationMessage(Session session) throws JoynrCommunicationException {
         String serializedAddress;
         try {
             serializedAddress = objectMapper.writeValueAsString(ownAddress);
@@ -133,10 +140,8 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
         }
 
         try {
-            sessionFuture.get(30, TimeUnit.SECONDS)
-                         .getRemote()
-                         .sendBytes(ByteBuffer.wrap(serializedAddress.getBytes(CHARSET)));
-        } catch (IOException | ExecutionException | TimeoutException e) {
+            session.getRemote().sendBytes(ByteBuffer.wrap(serializedAddress.getBytes(CHARSET)));
+        } catch (IOException e) {
             throw new JoynrCommunicationException(e.getMessage(), e);
         }
     }
@@ -164,7 +169,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
                 jettyClient.stop();
             }
         } catch (Exception e) {
-            logger.error("Error: ", e);
+            logger.error("Error stopping WebSocket client: ", e);
         }
 
     }
@@ -178,10 +183,8 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
                 }
                 sessionFuture = null;
             }
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Error while closing websocket connection: ", e);
         } catch (Exception e) {
-            logger.error("Error: ", e);
+            logger.error("Error while closing websocket connection: ", e);
         }
     }
 
@@ -207,11 +210,17 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
     }
 
     @Override
+    public void onWebSocketText(String message) {
+        logger.error("Received text Message: {}", message);
+    }
+
+    @Override
     public void onWebSocketBinary(byte[] payload, int offset, int len) {
+        final byte[] message = Arrays.copyOfRange(payload, offset, offset + len);
         if (logger.isTraceEnabled()) {
-            logger.trace("Received message: {}", new String(payload, CHARSET));
+            logger.trace("Received message: {}", new String(message, CHARSET));
         }
-        messageListener.transmit(Arrays.copyOfRange(payload, offset, offset + len), new FailureAction() {
+        messageListener.transmit(message, new FailureAction() {
 
             @Override
             public void execute(Throwable error) {
@@ -264,7 +273,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
             });
         } catch (WebSocketException | ExecutionException e) {
             reconnect();
-            throw new JoynrDelayMessageException(10, "WebSocket write timed out", e);
+            throw new JoynrDelayMessageException(10, "WebSocket write failed", e);
         } catch (TimeoutException e) {
             throw new JoynrDelayMessageException("WebSocket write timed out", e);
         } catch (InterruptedException e) {

@@ -65,16 +65,18 @@
 			<artifactId>jetty-servlet</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-util</artifactId>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>websocket-jetty-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-api</artifactId>
+			<artifactId>websocket-jetty-server</artifactId>
 		</dependency>
+		<!-- no related import, required because of maven-dependency-plugin -->
 		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-servlet</artifactId>
+			<groupId>org.eclipse.jetty.toolchain</groupId>
+			<artifactId>jetty-jakarta-servlet-api</artifactId>
+			<version>5.0.2</version>
 		</dependency>
 	</dependencies>
 </project>

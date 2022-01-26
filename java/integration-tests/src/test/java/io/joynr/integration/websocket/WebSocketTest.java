@@ -109,6 +109,7 @@ public class WebSocketTest {
                            Set<JoynrMessageProcessor> messageProcessor) {
         ObjectMapper objectMapper = new ObjectMapper();
         WebSocketEndpointFactory webSocketJettyServerFactory = new WebSocketJettyServerFactory(maxMessageSize,
+                                                                                               websocketIdleTimeout,
                                                                                                objectMapper);
         ccWebSocketMessagingSkeleton = new WebSocketMessagingSkeleton(serverAddress,
                                                                       webSocketJettyServerFactory,
