@@ -35,7 +35,6 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Module;
 
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.websocket.WebsocketModule;
@@ -140,8 +139,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
         // Use injected static provisioning of access control entries to allow access to anyone to this interface
         provisionAccessControl(joynrConfig, localDomain);
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
-                                                                     runtimeModule,
-                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(ProviderApplication.class, appConfig));
+                                                                     runtimeModule).createApplication(new JoynrApplicationModule(ProviderApplication.class, appConfig));
 
         joynrApplication.run();
         joynrApplication.shutdown();

@@ -53,7 +53,6 @@ import com.google.inject.multibindings.Multibinder;
 
 import io.joynr.ProvidedBy;
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
@@ -250,7 +249,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
             });
 
             fInjector = new JoynrInjectorFactory(joynrProperties,
-                                                 new StaticDomainAccessControlProvisioningModule(),
                                                  getMessageProcessorsModule(),
                                                  finalModule).getInjector();
         }

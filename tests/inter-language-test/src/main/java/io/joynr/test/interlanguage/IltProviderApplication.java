@@ -29,7 +29,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
@@ -80,8 +79,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         // Use injected static provisioning of access control entries to allow access to anyone to this interface
         provisionAccessControl(joynrConfig, localDomain);
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
-                                                                     runtimeModule,
-                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(IltProviderApplication.class, appConfig));
+                                                                     runtimeModule).createApplication(new JoynrApplicationModule(IltProviderApplication.class, appConfig));
         joynrApplication.run();
         joynrApplication.shutdown();
     }

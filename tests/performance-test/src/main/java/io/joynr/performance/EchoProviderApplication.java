@@ -29,7 +29,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
@@ -110,9 +109,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
         Properties joynrConfig = createJoynrConfig();
         Properties appConfig = createAppConfig();
 
-        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
-                                                                        runtimeModule,
-                                                                        new StaticDomainAccessControlProvisioningModule());
+        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig, runtimeModule);
 
         JoynrApplication joynrApplication = injectorFactory.createApplication(new JoynrApplicationModule(EchoProviderApplication.class,
                                                                                                          appConfig));

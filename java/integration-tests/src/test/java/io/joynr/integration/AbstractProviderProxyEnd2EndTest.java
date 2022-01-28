@@ -51,7 +51,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
 
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
@@ -214,9 +213,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
-        providerRuntime = getRuntime(joynrConfigProvider,
-                                     getSubscriptionPublisherFactoryModule(),
-                                     new StaticDomainAccessControlProvisioningModule());
+        providerRuntime = getRuntime(joynrConfigProvider, getSubscriptionPublisherFactoryModule());
 
         if (providerRuntime != null) {
             createdRuntimes.add(providerRuntime);
