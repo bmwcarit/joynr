@@ -987,12 +987,6 @@
 				<version>11.0.7</version>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-jetty-server</artifactId>
-				<type>jar</type>
-				<version>11.0.7</version>
-			</dependency>
-			<dependency>
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.core.commands</artifactId>
 				<type>jar</type>
