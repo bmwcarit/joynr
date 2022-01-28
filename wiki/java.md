@@ -1277,7 +1277,6 @@ supported.
 
 ```java
 import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -1347,8 +1346,7 @@ public static void main(String[] args) {
     Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule());
     JoynrApplication joynrApplication =
         new JoynrInjectorFactory(joynrConfig,
-            runtimeModule,
-            new StaticDomainAccessControlProvisioningModule()).createApplication(
+                                 runtimeModule).createApplication(
             new JoynrApplicationModule(MyProviderApplication.class, appConfig)
         );
     joynrApplication.run();
