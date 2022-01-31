@@ -36,7 +36,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import io.joynr.arbitration.ArbitrationStrategy;
-import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.integration.AbstractProviderProxyEnd2EndTest.TestProvider;
 import io.joynr.messaging.ConfigurableMessagingSettings;
@@ -44,14 +43,12 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
-import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
-import io.joynr.runtime.ProviderRegistrar;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.testProxy;
 import joynr.types.ProviderQos;
@@ -122,7 +119,6 @@ public class MqttTwoConnectionsProviderProxyEnd2EndTest extends JoynrEnd2EndTest
         logger.info("{} setup beginning...", methodName);
 
         domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
-        provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(TestProvider.class));
 
         // use channelNames = test name
         String channelIdProvider = "JavaTest-" + methodName + createUuidString() + "-end2endTestProvider";

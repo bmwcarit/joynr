@@ -1342,7 +1342,10 @@ public static void main(String[] args) {
     joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
     joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
     Properties appConfig = new Properties();
+
+    // OPTIONAL: configure access control if required (access control is diabled by default)
     provisionAccessControl(joynrConfig, localDomain);
+
     Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(new HivemqMqttClientModule());
     JoynrApplication joynrApplication =
         new JoynrInjectorFactory(joynrConfig,
@@ -1570,6 +1573,8 @@ private static void provisionAccessControl(Properties properties, String domain)
        provisionedAccessControlEntriesAsJson);
 }
 ```
+> NOTE: This configuration is only required if access control is enabled at the cluster controller.
+By default, it is disabled.
 
 ### Accessing custom headers from a provider
 

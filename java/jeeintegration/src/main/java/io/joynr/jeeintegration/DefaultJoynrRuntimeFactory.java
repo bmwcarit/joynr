@@ -71,6 +71,7 @@ import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.util.ObjectMapper;
@@ -310,6 +311,12 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     }
 
     private void provisionAccessControl(Properties properties, String domain, String[] interfaceNames) {
+        boolean enableAccessControl = Boolean.valueOf(properties.getProperty(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE,
+                                                                             Boolean.FALSE.toString()));
+        if (!enableAccessControl) {
+            // Nothing to do
+            return;
+        }
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
         List<MasterAccessControlEntry> allEntries = new ArrayList<>();

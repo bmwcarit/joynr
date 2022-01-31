@@ -60,11 +60,6 @@
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
-			<artifactId>access-control-common</artifactId>
-			<version>${joynr.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.common</groupId>
 			<artifactId>status-metrics</artifactId>
 			<version>${joynr.version}</version>
 		</dependency>
@@ -111,11 +106,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.11.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
 			<version>2.11.3</version>
 		</dependency>
 		<dependency>

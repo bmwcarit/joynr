@@ -24,25 +24,18 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.performance.EchoProviderInvocationParameters.BackendConfig;
-import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrApplication;
 import io.joynr.runtime.JoynrApplicationModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.util.ObjectMapper;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.Permission;
-import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.tests.performance.EchoProvider;
 import joynr.types.ProviderQos;
 
@@ -107,7 +100,7 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
         Module runtimeModule = Modules.override(getRuntimeModule()).with(getBackendModule());
 
         Properties joynrConfig = createJoynrConfig();
-        Properties appConfig = createAppConfig();
+        Properties appConfig = new Properties();
 
         JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig, runtimeModule);
 
@@ -129,33 +122,6 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
         joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, invocationParams.getDomain());
 
         return joynrConfig;
-    }
-
-    private static Properties createAppConfig() throws Exception {
-        Properties appConfig = new Properties();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-        MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
-                                                                                            invocationParams.getDomain(),
-                                                                                            ProviderAnnotations.getInterfaceName(EchoProviderImpl.class),
-                                                                                            TrustLevel.LOW,
-                                                                                            new TrustLevel[]{
-                                                                                                    TrustLevel.LOW },
-                                                                                            TrustLevel.LOW,
-                                                                                            new TrustLevel[]{
-                                                                                                    TrustLevel.LOW },
-                                                                                            "*",
-                                                                                            Permission.YES,
-                                                                                            new Permission[]{
-                                                                                                    Permission.YES });
-
-        MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
-        String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
-        appConfig.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
-                              provisionedAccessControlEntriesAsJson);
-
-        return appConfig;
     }
 
     private static Module getRuntimeModule() throws Exception {

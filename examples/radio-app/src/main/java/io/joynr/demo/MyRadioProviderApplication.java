@@ -33,17 +33,14 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
@@ -55,9 +52,6 @@ import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.statusmetrics.JoynrStatusMetrics;
 import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ApplicationException;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.Permission;
-import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 
@@ -202,8 +196,6 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         // them on the JoynApplicationModule.
         Properties appConfig = new Properties();
 
-        // Use injected static provisioning of access control entries to allow access to anyone to this interface
-        provisionAccessControl(joynrConfig, localDomain);
         JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
                                                                      runtimeModule).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class, appConfig) {
                                                                          @Override
@@ -408,26 +400,4 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         System.exit(0);
     }
 
-    private static void provisionAccessControl(Properties properties, String domain) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-        MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
-                                                                                            domain,
-                                                                                            ProviderAnnotations.getInterfaceName(MyRadioProvider.class),
-                                                                                            TrustLevel.LOW,
-                                                                                            new TrustLevel[]{
-                                                                                                    TrustLevel.LOW },
-                                                                                            TrustLevel.LOW,
-                                                                                            new TrustLevel[]{
-                                                                                                    TrustLevel.LOW },
-                                                                                            "*",
-                                                                                            Permission.YES,
-                                                                                            new Permission[]{
-                                                                                                    Permission.YES });
-
-        MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
-        String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
-        properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
-                               provisionedAccessControlEntriesAsJson);
-    }
 }

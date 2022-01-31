@@ -18,31 +18,12 @@
  */
 package io.joynr.integration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.mockito.Mockito;
-import org.mockito.internal.matchers.InstanceOf;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
-import io.joynr.dispatching.subscription.SubscriptionTestsPublisher;
-import io.joynr.provider.AbstractSubscriptionPublisher;
-import io.joynr.provider.JoynrProvider;
-import io.joynr.provider.ProviderAnnotations;
 import io.joynr.provider.SubscriptionPublisherFactory;
-import io.joynr.util.ObjectMapper;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.Permission;
-import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.infrastructure.GlobalCapabilitiesDirectoryProvider;
-import joynr.tests.testProvider;
 
 public class JoynrEnd2EndTest {
 
@@ -57,38 +38,4 @@ public class JoynrEnd2EndTest {
         };
     }
 
-    protected static void provisionPermissiveAccessControlEntry(String domain, String interfaceName) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-        List<MasterAccessControlEntry> provisionedAccessControlEntries = new ArrayList<MasterAccessControlEntry>();
-        String existingAccessControlEntriesJson = System.getProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES);
-        if (existingAccessControlEntriesJson != null) {
-            provisionedAccessControlEntries.addAll(Arrays.asList(objectMapper.readValue(existingAccessControlEntriesJson,
-                                                                                        MasterAccessControlEntry[].class)));
-        }
-
-        MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
-                                                                                            domain,
-                                                                                            interfaceName,
-                                                                                            TrustLevel.LOW,
-                                                                                            new TrustLevel[]{
-                                                                                                    TrustLevel.LOW },
-                                                                                            TrustLevel.LOW,
-                                                                                            new TrustLevel[]{
-                                                                                                    TrustLevel.LOW },
-                                                                                            "*",
-                                                                                            Permission.YES,
-                                                                                            new Permission[]{
-                                                                                                    Permission.YES });
-
-        provisionedAccessControlEntries.add(newMasterAccessControlEntry);
-        String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries.toArray());
-        System.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
-                           provisionedAccessControlEntriesAsJson);
-    }
-
-    protected static void provisionDiscoveryDirectoryAccessControlEntries() throws Exception {
-        provisionPermissiveAccessControlEntry("io.joynr",
-                                              ProviderAnnotations.getInterfaceName(GlobalCapabilitiesDirectoryProvider.class));
-    }
 }
