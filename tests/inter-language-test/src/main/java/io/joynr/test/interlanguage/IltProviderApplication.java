@@ -23,40 +23,33 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
-import com.google.inject.Inject;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioning;
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.provider.ProviderAnnotations;
-import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
-import io.joynr.runtime.JoynrApplication;
-import io.joynr.runtime.JoynrApplicationModule;
-import io.joynr.runtime.JoynrInjectorFactory;
+import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
 import io.joynr.util.ObjectMapper;
-import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.Permission;
-import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.ProviderQos;
 
-public class IltProviderApplication extends AbstractJoynrApplication {
+public class IltProviderApplication {
     private static final Logger logger = LoggerFactory.getLogger(IltProviderApplication.class);
     public static final String STATIC_PERSISTENCE_FILE = "java-provider.persistence_file";
 
-    private IltProvider provider = null;
-    @Inject
-    private ObjectMapper jsonSerializer;
+    private static String localDomain;
+    private static JoynrRuntime runtime;
+    private static IltProvider provider = null;
+    private static ObjectMapper jsonSerializer;
 
-    private boolean shutDownRequested = false;
+    private static boolean shutDownRequested = false;
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1 && args.length != 2) {
@@ -64,7 +57,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
                          IltProviderApplication.class.getName());
             return;
         }
-        String localDomain = args[0];
+        localDomain = args[0];
         logger.debug("Registering provider on domain \"{}\"", localDomain);
 
         Properties joynrConfig = new Properties();
@@ -74,16 +67,12 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         logger.debug("Registering provider on domain \"{}\"", localDomain);
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
-        joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
-        Properties appConfig = new Properties();
 
-        // Use injected static provisioning of access control entries to allow access to anyone to this interface
-        provisionAccessControl(joynrConfig, localDomain);
-        JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig,
-                                                                     runtimeModule,
-                                                                     new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(IltProviderApplication.class, appConfig));
-        joynrApplication.run();
-        joynrApplication.shutdown();
+        Injector injector = Guice.createInjector(runtimeModule, new JoynrPropertiesModule(joynrConfig));
+        runtime = injector.getInstance(JoynrRuntime.class);
+        jsonSerializer = injector.getInstance(ObjectMapper.class);
+        run();
+        shutdown();
     }
 
     private static Module getRuntimeModule(String[] args, Properties joynrConfig) {
@@ -104,7 +93,6 @@ public class IltProviderApplication extends AbstractJoynrApplication {
 
             if (transport.contains("mqtt")) {
                 logger.info("Configuring MQTT...");
-                joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }
             return Modules.override(runtimeModule).with(backendTransportModules);
@@ -119,8 +107,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "/");
     }
 
-    @Override
-    public void run() {
+    public static void run() {
         provider = new IltProvider();
         provider.addBroadcastFilter(new IltStringBroadcastFilter(jsonSerializer));
         ProviderQos providerQos = new ProviderQos();
@@ -137,8 +124,7 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         }
     }
 
-    @Override
-    public void shutdown() {
+    public static void shutdown() {
         logger.info("shutting down");
         if (provider != null) {
             try {
@@ -158,26 +144,4 @@ public class IltProviderApplication extends AbstractJoynrApplication {
         System.exit(0);
     }
 
-    private static void provisionAccessControl(Properties properties, String domain) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
-        MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry("*",
-                                                                                            domain,
-                                                                                            ProviderAnnotations.getInterfaceName(IltProvider.class),
-                                                                                            TrustLevel.LOW,
-                                                                                            new TrustLevel[]{
-                                                                                                    TrustLevel.LOW },
-                                                                                            TrustLevel.LOW,
-                                                                                            new TrustLevel[]{
-                                                                                                    TrustLevel.LOW },
-                                                                                            "*",
-                                                                                            Permission.YES,
-                                                                                            new Permission[]{
-                                                                                                    Permission.YES });
-
-        MasterAccessControlEntry[] provisionedAccessControlEntries = { newMasterAccessControlEntry };
-        String provisionedAccessControlEntriesAsJson = objectMapper.writeValueAsString(provisionedAccessControlEntries);
-        properties.setProperty(StaticDomainAccessControlProvisioning.PROPERTY_PROVISIONED_MASTER_ACCESSCONTROLENTRIES,
-                               provisionedAccessControlEntriesAsJson);
-    }
 }

@@ -201,8 +201,8 @@ return isRuntimeOkay ? 0 : 1;
 ...
 public static void main(String[] args) {
 ...
-    JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig, runtimeModule,
-        new StaticDomainAccessControlProvisioningModule()).createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class, appConfig) {
+    JoynrApplication joynrApplication = new JoynrInjectorFactory(joynrConfig, runtimeModule)
+        .createApplication(new JoynrApplicationModule(MyRadioProviderApplication.class, appConfig) {
         ...
     });
     joynrApplication.run();

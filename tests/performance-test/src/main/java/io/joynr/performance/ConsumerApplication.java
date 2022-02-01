@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -459,9 +458,7 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
         Properties appConfig = new Properties();
 
-        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig,
-                                                                        runtimeModule,
-                                                                        new StaticDomainAccessControlProvisioningModule());
+        JoynrInjectorFactory injectorFactory = new JoynrInjectorFactory(joynrConfig, runtimeModule);
 
         JoynrApplication joynrApplication = injectorFactory.createApplication(new JoynrApplicationModule(ConsumerApplication.class,
                                                                                                          appConfig));

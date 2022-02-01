@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -51,7 +50,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Module;
 
-import io.joynr.accesscontrol.StaticDomainAccessControlProvisioningModule;
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.dispatcher.rpc.RequestStatusCode;
@@ -67,7 +65,6 @@ import io.joynr.provider.AbstractJoynrProvider;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
-import io.joynr.provider.ProviderAnnotations;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
@@ -200,8 +197,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         domain = "ProviderProxyEnd2EndTest." + name.getMethodName() + System.currentTimeMillis();
         domainAsync = domain + "Async";
-        provisionPermissiveAccessControlEntry(domain, ProviderAnnotations.getInterfaceName(TestProvider.class));
-        provisionPermissiveAccessControlEntry(domainAsync, ProviderAnnotations.getInterfaceName(TestProvider.class));
 
         // use channelNames = test name
         String channelIdProvider = "JavaTest-" + methodName + createUuidString() + "-end2endTestProvider";
@@ -214,9 +209,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         joynrConfigProvider.put(MessagingPropertyKeys.RECEIVERID, createUuidString());
         joynrConfigProvider.put(ConfigurableMessagingSettings.PROPERTY_MAX_MESSAGE_SIZE, MAX_MESSAGE_SIZE);
 
-        providerRuntime = getRuntime(joynrConfigProvider,
-                                     getSubscriptionPublisherFactoryModule(),
-                                     new StaticDomainAccessControlProvisioningModule());
+        providerRuntime = getRuntime(joynrConfigProvider, getSubscriptionPublisherFactoryModule());
 
         if (providerRuntime != null) {
             createdRuntimes.add(providerRuntime);
