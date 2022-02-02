@@ -117,6 +117,8 @@ class JoynrJSGenerator implements IJoynrGenerator {
 			if (generateProviderCode) {
 				var providerGenerator = templateFactory.createProviderGenerator(francaIntf)
 				providerGenerator.generateProvider(fsa, generateVersioning)
+				var providerImplCreatorGenerator = templateFactory.createProviderImplCreatorGenerator(francaIntf)
+				providerImplCreatorGenerator.generateProvider(fsa, generateVersioning)
 			}
 		}
 	}

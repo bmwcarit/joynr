@@ -2,6 +2,28 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.6
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Generator, TS]** The generator now generates additional code to create a basic default provider
+  implementation `<interface>ProviderImplementationGenerator.ts` that can be used for testing.  
+  NOTE: The generated code does not fully support interfaces with overloaded methods. It is not
+  possible to define different return values for overloaded methods. All overloads of a method will
+  return the same value. This is problematic if different return types are modelled in the Franca
+  interface.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.19.5
 
 ## API-relevant Changes
