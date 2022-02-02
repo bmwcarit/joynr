@@ -1392,7 +1392,7 @@
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
 				<type>jar</type>
-				<version>42.2.4</version>
+				<version>42.2.25</version>
 			</dependency>
 			<dependency>
 				<groupId>org.reactivestreams</groupId>
