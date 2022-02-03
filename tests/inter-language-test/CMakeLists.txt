@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
-project(inter-language-test VERSION 1.19.6 LANGUAGES CXX)
+project(inter-language-test VERSION 1.19.7 LANGUAGES CXX)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -22,7 +22,7 @@ message(STATUS "option JOYNR_SERVER=${JOYNR_SERVER}")
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.19.6 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
+find_package(Joynr 1.19.7 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 find_package(CURL REQUIRED)
 find_package(mosquitto 1.6.8 REQUIRED)
 include(CheckMosquittoImportTargets)
