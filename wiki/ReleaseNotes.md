@@ -5,15 +5,19 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.19.6
 
 ## API-relevant Changes
-None.
+* **[Java]** Removed superfluous class `StaticDomainAccessControlProvisioningModule`.
 
 ## Other Changes
+* **[Docker]** Examples and tests now use the Docker image `hivemq/hivemq-ce:latest` instead of
+  `hivemq/hivemq-ce:2021.2`.
 * **[Generator, TS]** The generator now generates additional code to create a basic default provider
-  implementation `<interface>ProviderImplementationGenerator.ts` that can be used for testing.  
+  implementation `<interface>ProviderImplementationCreator.ts` that can be used for testing.  
   NOTE: The generated code does not fully support interfaces with overloaded methods. It is not
   possible to define different return values for overloaded methods. All overloads of a method will
   return the same value. This is problematic if different return types are modelled in the Franca
   interface.
+* **[C++]** Fixed some clang compiler warnings.
+* **[Java]** Updated `org.eclipse.jetty.websocket` dependencies to version `11.0.7`.
 
 ## Configuration Property Changes
 None.
