@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -42,7 +40,24 @@ public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegis
 
     private final MulticastWildcardRegexFactory multicastWildcardRegexFactory;
 
-    private ConcurrentMap<Pattern, Set<String>> multicastReceivers = new ConcurrentHashMap<>();
+    private static class PatternEntry {
+        private Pattern pattern;
+        private Set<String> participantIds = new HashSet();
+
+        public PatternEntry(Pattern pattern) {
+            this.pattern = pattern;
+        }
+
+        public Pattern getPattern() {
+            return pattern;
+        }
+
+        public Set<String> getParticipantIds() {
+            return participantIds;
+        }
+    }
+
+    private HashMap<String, PatternEntry> multicastReceivers = new HashMap<>();
 
     @Inject
     public InMemoryMulticastReceiverRegistry(MulticastWildcardRegexFactory multicastWildcardRegexFactory) {
@@ -50,39 +65,48 @@ public class InMemoryMulticastReceiverRegistry implements MulticastReceiverRegis
     }
 
     @Override
-    public void registerMulticastReceiver(String multicastId, String participantId) {
-        Pattern idPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
-        logger.trace("Compiled pattern {} for multicast ID {}", idPattern, multicastId);
-        if (!multicastReceivers.containsKey(idPattern)) {
-            multicastReceivers.putIfAbsent(idPattern, new HashSet<String>());
+    public synchronized void registerMulticastReceiver(String multicastId, String participantId) {
+        PatternEntry patternEntry;
+        if (!multicastReceivers.containsKey(multicastId)) {
+            Pattern idPattern = multicastWildcardRegexFactory.createIdPattern(multicastId);
+            logger.trace("Compiled pattern {} for multicast ID {}", idPattern, multicastId);
+
+            patternEntry = new PatternEntry(idPattern);
+            multicastReceivers.put(multicastId, patternEntry);
+        } else {
+            patternEntry = multicastReceivers.get(multicastId);
         }
-        multicastReceivers.get(idPattern).add(participantId);
+        patternEntry.getParticipantIds().add(participantId);
     }
 
     @Override
-    public void unregisterMulticastReceiver(String multicastId, String participantId) {
-        Set<String> participants = multicastReceivers.get(multicastWildcardRegexFactory.createIdPattern(multicastId));
-        if (participants != null) {
-            participants.remove(participantId);
+    public synchronized void unregisterMulticastReceiver(String multicastId, String participantId) {
+        PatternEntry patternEntry = multicastReceivers.get(multicastId);
+        if (patternEntry != null) {
+            patternEntry.getParticipantIds().remove(participantId);
+            if (patternEntry.getParticipantIds().size() == 0) {
+                multicastReceivers.remove(multicastId);
+            }
         }
     }
 
     @Override
-    public Set<String> getReceivers(String multicastId) {
+    public synchronized Set<String> getReceivers(String multicastId) {
         Set<String> result = new HashSet<>();
-        for (Map.Entry<Pattern, Set<String>> entry : multicastReceivers.entrySet()) {
-            if (entry.getKey().matcher(multicastId).matches()) {
-                result.addAll(entry.getValue());
+        for (Map.Entry<String, PatternEntry> entry : multicastReceivers.entrySet()) {
+            if (entry.getValue().getPattern().matcher(multicastId).matches()) {
+                result.addAll(entry.getValue().getParticipantIds());
             }
         }
         return result;
     }
 
     @Override
-    public Map<String, Set<String>> getReceivers() {
+    public synchronized Map<String, Set<String>> getReceivers() {
         Map<String, Set<String>> result = new HashMap<>();
-        for (Map.Entry<Pattern, Set<String>> entry : multicastReceivers.entrySet()) {
-            result.put(entry.getKey().pattern(), Collections.unmodifiableSet(entry.getValue()));
+        for (Map.Entry<String, PatternEntry> entry : multicastReceivers.entrySet()) {
+            result.put(entry.getValue().getPattern().pattern(),
+                       Collections.unmodifiableSet(entry.getValue().getParticipantIds()));
         }
         return result;
     }
