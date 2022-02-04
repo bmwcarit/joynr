@@ -18,22 +18,24 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.Set;
+
 import joynr.ImmutableMessage;
 
 public class DelayableImmutableMessage extends TimedDelayed {
     private final ImmutableMessage message;
-    private String recipient;
+    private Set<String> recipients;
     private int retriesCount = 0;
 
-    DelayableImmutableMessage(ImmutableMessage message, long delayForMs, String recipient) {
+    DelayableImmutableMessage(ImmutableMessage message, long delayForMs, Set<String> recipients) {
         super(delayForMs);
         this.message = message;
-        this.recipient = recipient;
+        this.recipients = recipients;
 
     }
 
-    public DelayableImmutableMessage(ImmutableMessage message, long delayMs, String recipient, int retriesCount) {
-        this(message, delayMs, recipient);
+    public DelayableImmutableMessage(ImmutableMessage message, long delayMs, Set<String> recipients, int retriesCount) {
+        this(message, delayMs, recipients);
         setRetriesCount(retriesCount);
     }
 
@@ -41,8 +43,8 @@ public class DelayableImmutableMessage extends TimedDelayed {
         return message;
     }
 
-    public String getRecipient() {
-        return recipient;
+    public Set<String> getRecipients() {
+        return recipients;
     }
 
     public int getRetriesCount() {
