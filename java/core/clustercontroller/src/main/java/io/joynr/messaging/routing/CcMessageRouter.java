@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
@@ -317,10 +318,6 @@ public class CcMessageRouter
         }
     }
 
-    protected Set<String> getRecipients(ImmutableMessage message) {
-        return addressManager.getParticipantIdsForImmutableMessage(message);
-    }
-
     protected void finalizeMessageProcessing(final ImmutableMessage message, boolean isMessageRoutingsuccessful) {
         if (message.isMessageProcessed()) {
             return;
@@ -386,8 +383,8 @@ public class CcMessageRouter
     private void routeInternal(final ImmutableMessage message, long delayMs, final int retriesCount) {
         logger.trace("Scheduling message {} with delay {} and retries {}", message, delayMs, retriesCount);
 
-        Set<String> recipients = getRecipients(message);
-        if (recipients.isEmpty()) {
+        Map<Address, Set<String>> recipientMap = addressManager.getParticipantIdMap(message);
+        if (recipientMap.isEmpty()) {
             //This can only happen in case of a multicast. Otherwise the participantId is taken directly from the ImmutableMessage.
             String errormessage = "Failed to route multicast publication: No recipient found for given message: "
                     + message.getTrackingInfo();
@@ -395,10 +392,12 @@ public class CcMessageRouter
             finalizeMessageProcessing(message, false);
         }
 
-        for (String recipient : recipients) {
+        for (Entry<Address, Set<String>> entry : recipientMap.entrySet()) {
+            // Schedule only a single message per destination address to prevent duplication of messages.
+            // This can only happen for multicast messages with multiple recipients.
             DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message,
                                                                                        delayMs,
-                                                                                       recipient,
+                                                                                       entry.getValue(),
                                                                                        retriesCount);
             scheduleMessage(delayableMessage);
         }
@@ -465,7 +464,7 @@ public class CcMessageRouter
                                  error);
 
                     if (!MessageRouterUtil.isExpired(messageNotSent)
-                            && messageNotSent.getType().equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
+                            && Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST.equals(messageNotSent.getType())) {
                         ImmutableMessage replyMessage = createReplyMessageWithError(messageNotSent,
                                                                                     (JoynrMessageNotSentException) error);
                         if (replyMessage != null) {
