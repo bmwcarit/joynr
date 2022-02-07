@@ -22,7 +22,6 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,25 +77,19 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     private List<MessageWorker> messageWorkers;
 
-    private static interface QueuedMulticastRegistration {
-        void register();
+    private static interface QueuedParentRoutingUpdate {
+        void execute();
     }
 
-    private static class ParticipantIdAndIsGloballyVisibleHolder {
-        final String participantId;
-        final boolean isGloballyVisible;
-
-        public ParticipantIdAndIsGloballyVisibleHolder(String participantId, boolean isGloballyVisible) {
-            this.participantId = participantId;
-            this.isGloballyVisible = isGloballyVisible;
-        }
+    private static interface QueuedMulticastRegistration {
+        void register();
     }
 
     private Address parentRouterMessagingAddress;
     private RoutingProxy parentRouter;
     private Address incomingAddress;
     private Dispatcher dispatcher;
-    private Set<ParticipantIdAndIsGloballyVisibleHolder> deferredParentHopsParticipantIds = new HashSet<>();
+    private List<QueuedParentRoutingUpdate> queuedParentRoutingUpdates = new ArrayList<>();
     private Map<String, QueuedMulticastRegistration> queuedMulticastRegistrations = new HashMap<>();
     private boolean ready = false;
 
@@ -139,11 +132,18 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     @Override
     public void addNextHop(final String participantId, final Address address, final boolean isGloballyVisible) {
-        synchronized (this) {
-            if (!ready) {
-                deferredParentHopsParticipantIds.add(new ParticipantIdAndIsGloballyVisibleHolder(participantId,
-                                                                                                 isGloballyVisible));
-                return;
+        if (!ready) {
+            synchronized (this) {
+                if (!ready) {
+                    QueuedParentRoutingUpdate queuedAdd = new QueuedParentRoutingUpdate() {
+                        @Override
+                        public void execute() {
+                            addNextHopToParent(participantId, isGloballyVisible);
+                        }
+                    };
+                    queuedParentRoutingUpdates.add(queuedAdd);
+                    return;
+                }
             }
         }
         addNextHopToParent(participantId, isGloballyVisible);
@@ -223,10 +223,10 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         final boolean isGloballyVisible = false;
         addNextHopToParent(routingProxyParticipantId, isGloballyVisible);
         synchronized (this) {
-            for (ParticipantIdAndIsGloballyVisibleHolder participantIds : deferredParentHopsParticipantIds) {
-                addNextHopToParent(participantIds.participantId, participantIds.isGloballyVisible);
+            for (QueuedParentRoutingUpdate queuedParentHopCall : queuedParentRoutingUpdates) {
+                queuedParentHopCall.execute();
             }
-            deferredParentHopsParticipantIds.clear();
+            queuedParentRoutingUpdates = new ArrayList<>();
             for (QueuedMulticastRegistration registerWithParent : queuedMulticastRegistrations.values()) {
                 registerWithParent.register();
             }

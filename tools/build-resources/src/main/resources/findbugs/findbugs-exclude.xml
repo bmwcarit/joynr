@@ -116,6 +116,11 @@
 		<Bug pattern="IS2_INCONSISTENT_SYNC"/>
 	</Match>
 	<Match>
+		<Class name="io.joynr.messaging.routing.LibJoynrMessageRouter" />
+		<Field name="ready"/>
+		<Bug pattern="IS2_INCONSISTENT_SYNC"/>
+	</Match>
+	<Match>
 		<Class name="io.joynr.messaging.info.PerformanceMeasures" />
 		<Bug pattern="NP_NONNULL_RETURN_VIOLATION"/>
 	</Match>
