@@ -74,8 +74,8 @@ public abstract class AbstractMessageSender implements MessageSender {
     }
 
     protected synchronized void setReplyToAddress(String replyToAddress, String globalAddress) {
-        this.replyToAddress = replyToAddress;
         this.globalAddress = globalAddress;
+        this.replyToAddress = replyToAddress;
 
         for (MutableMessage queuedMessage : noReplyToAddressQueue) {
             queuedMessage.setReplyTo(queuedMessage.isStatelessAsync() ? globalAddress : replyToAddress);
