@@ -94,7 +94,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     private boolean ready = false;
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LibJoynrMessageRouter(@Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
@@ -102,7 +101,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                                  MessageQueue messageQueue,
                                  ShutdownNotifier shutdownNotifier,
                                  Dispatcher dispatcher) {
-        // CHECKSTYLE:ON
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.scheduler = scheduler;
         this.dispatcher = dispatcher;
