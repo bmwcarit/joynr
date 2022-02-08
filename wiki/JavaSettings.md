@@ -650,6 +650,21 @@ By default (if the property is not set), the default ciphersuites are used.
 * **User property**: `joynr.messaging.mqtt.ssl.ciphersuites`
 * **Default value**: ""
 
+### `PROPERTY_KEY_MQTT_DISABLE_HOSTNAME_VERIFICATION`
+Configures whether the hostname verification for TLS connections shall be disabled.
+Please handle with care, this option should not be used on production systems!
+It can serve as a workaround to bypass certain certificate issues in test environments
+when the actual hostname used is not part of the list of hostnames provided by the
+certificate (e.g. wrt. SAN list).
+The hostname verification is included in recent Java versions, especially in
+Java 11 required by joynr 1.18.x and later. Earlier versions of Java 8 required by
+previous Joynr versions up to Joynr 1.16.x did not include it.
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.mqtt.disablehostnameverification`
+* **Default value**: `false`
+
 ## SystemServicesSettings
 
 ### `PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID`
