@@ -2,6 +2,25 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.7
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+* **[Java]** The optional MqttModule property
+  `PROPERTY_KEY_MQTT_DISABLE_HOSTNAME_VERIFICATION` has been added (default: false).
+  See the [Java Configuration Reference](JavaSettings.md) for details about this property.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.19.6
 
 ## API-relevant Changes
