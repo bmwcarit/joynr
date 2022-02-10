@@ -27,7 +27,21 @@ public class GcdTask {
         ADD, REMOVE, READD
     }
 
+    static abstract class CallbackCreator {
+        public abstract CallbackWithModeledError<Void, DiscoveryError> createCallback();
+    }
+
+    public final MODE mode;
+    public final CallbackCreator callbackCreator;
+    public final CallbackWithModeledError<Void, DiscoveryError> callback;
+    public final String participantId;
+    public final GlobalDiscoveryEntry globalDiscoveryEntry;
+    public final String[] gbids;
+    public final long expiryDateMs;
+    public final boolean doRetry;
+
     private GcdTask(MODE mode,
+                    CallbackCreator callbackCreator,
                     CallbackWithModeledError<Void, DiscoveryError> callback,
                     String participantId,
                     GlobalDiscoveryEntry globalDiscoveryEntry,
@@ -35,6 +49,7 @@ public class GcdTask {
                     long expiryDateMs,
                     boolean doRetry) {
         this.mode = mode;
+        this.callbackCreator = callbackCreator;
         this.callback = callback;
         this.participantId = participantId;
         this.globalDiscoveryEntry = globalDiscoveryEntry;
@@ -43,14 +58,21 @@ public class GcdTask {
         this.doRetry = doRetry;
     }
 
-    public static GcdTask createAddTask(CallbackWithModeledError<Void, DiscoveryError> callback,
+    public static GcdTask createAddTask(CallbackCreator callbackCreator,
                                         GlobalDiscoveryEntry globalDiscoveryEntry,
                                         long expiryDateMs,
                                         String[] gbids,
                                         boolean doRetry) {
 
         String participantId = "";
-        return new GcdTask(MODE.ADD, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs, doRetry);
+        return new GcdTask(MODE.ADD,
+                           callbackCreator,
+                           null,
+                           participantId,
+                           globalDiscoveryEntry,
+                           gbids,
+                           expiryDateMs,
+                           doRetry);
     }
 
     public static GcdTask createReaddTask() {
@@ -59,22 +81,20 @@ public class GcdTask {
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
         String[] gbids = null;
         long expiryDateMs = 0L;
-        return new GcdTask(MODE.READD, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs, false);
+        return new GcdTask(MODE.READD, null, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs, false);
     }
 
-    public static GcdTask createRemoveTask(CallbackWithModeledError<Void, DiscoveryError> callback,
-                                           String participantId) {
+    public static GcdTask createRemoveTask(CallbackCreator callbackCreator, String participantId) {
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
         long expiryDateMs = 0L;
         String[] gbids = null;
-        return new GcdTask(MODE.REMOVE, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs, true);
+        return new GcdTask(MODE.REMOVE,
+                           callbackCreator,
+                           null,
+                           participantId,
+                           globalDiscoveryEntry,
+                           gbids,
+                           expiryDateMs,
+                           true);
     }
-
-    public final MODE mode;
-    public final CallbackWithModeledError<Void, DiscoveryError> callback;
-    public final String participantId;
-    public final GlobalDiscoveryEntry globalDiscoveryEntry;
-    public final String[] gbids;
-    public final long expiryDateMs;
-    public final boolean doRetry;
 }
