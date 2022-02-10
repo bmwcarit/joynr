@@ -248,6 +248,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         public void onWebSocketClose(int statusCode, String reason) {
             super.onWebSocketClose(statusCode, reason);
             openSockets.remove(CCWebSocketMessagingSkeletonSocket.this);
+            // TODO remove address from routing table???
         }
     }
 

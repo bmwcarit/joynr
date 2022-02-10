@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -84,7 +85,7 @@ public class AddressManagerTest {
     public void testNoAddressAvailableForMulticast() {
         createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertEquals(0, result.size());
     }
 
@@ -98,13 +99,14 @@ public class AddressManagerTest {
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(multicastAddresses);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals(1, result.values().iterator().next().size());
 
         DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
                                                                                    1000,
-                                                                                   result.iterator().next());
+                                                                                   result.values().iterator().next());
         assertEquals(Optional.of(multicastAddress), subject.getAddressForDelayableImmutableMessage(delayablemessage));
     }
 
@@ -114,8 +116,6 @@ public class AddressManagerTest {
         createAddressManager(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED,
                              multicastAddressCalculator,
                              anotherMulticastAddressCalculator);
-
-        subject.getParticipantIdsForImmutableMessage(joynrMessage);
     }
 
     @Test
@@ -127,13 +127,14 @@ public class AddressManagerTest {
 
         when(joynrMessage.getRecipient()).thenReturn(participantId + "/multicastname");
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals(1, result.values().iterator().next().size());
 
         DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
                                                                                    1000,
-                                                                                   result.iterator().next());
+                                                                                   result.values().iterator().next());
         assertEquals(Optional.of(multicastAddress), subject.getAddressForDelayableImmutableMessage(delayablemessage));
     }
 
@@ -151,14 +152,18 @@ public class AddressManagerTest {
         Address addressTwo = mock(Address.class);
         when(routingTable.get("two")).thenReturn(addressTwo);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertNotNull(result);
         assertEquals(2, result.size());
+        assertNotNull(result.get(addressOne));
+        assertEquals(1, result.get(addressOne).size());
+        assertNotNull(result.get(addressTwo));
+        assertEquals(1, result.get(addressTwo).size());
 
         boolean messageOneFound = false;
         boolean messageTwoFound = false;
 
-        for (String participantId : result) {
+        for (Set<String> participantId : result.values()) {
             DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(joynrMessage,
                                                                                        1000,
                                                                                        participantId);
@@ -184,13 +189,14 @@ public class AddressManagerTest {
         Address one = mock(Address.class);
         when(routingTable.get("one")).thenReturn(one);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals(1, result.values().iterator().next().size());
 
         DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
                                                                                    1000,
-                                                                                   result.iterator().next());
+                                                                                   result.values().iterator().next());
         assertEquals(Optional.of(one), subject.getAddressForDelayableImmutableMessage(delayablemessage));
     }
 
@@ -212,26 +218,25 @@ public class AddressManagerTest {
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(globalAddressSet);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertNotNull(result);
         assertEquals(2, result.size());
+        assertNotNull(result.get(localAddress));
+        assertEquals(1, result.get(localAddress).size());
+        assertNotNull(result.get(globalAddress));
+        assertEquals(1, result.get(globalAddress).size());
 
-        boolean messageOneFound = false;
-        boolean messageTwoFound = false;
+        String participantIdLocal = result.get(localAddress).iterator().next();
+        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(joynrMessage,
+                                                                                   1000,
+                                                                                   Set.of(participantIdLocal));
+        Optional<Address> resultAddress = subject.getAddressForDelayableImmutableMessage(delayableMessage);
+        assertEquals(Optional.of(localAddress), resultAddress);
 
-        for (String participantId : result) {
-            DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(joynrMessage,
-                                                                                       1000,
-                                                                                       participantId);
-            Optional<Address> resultAddress = subject.getAddressForDelayableImmutableMessage(delayableMessage);
-            if (resultAddress.equals(Optional.of(localAddress))) {
-                messageOneFound = true;
-            } else if (resultAddress.equals(Optional.of(globalAddress))) {
-                messageTwoFound = true;
-            }
-        }
-
-        assertTrue(messageOneFound && messageTwoFound);
+        String participantIdGlobal = result.get(globalAddress).iterator().next();
+        delayableMessage = new DelayableImmutableMessage(joynrMessage, 1000, Set.of(participantIdGlobal));
+        resultAddress = subject.getAddressForDelayableImmutableMessage(delayableMessage);
+        assertEquals(Optional.of(globalAddress), resultAddress);
     }
 
     @Test
@@ -251,13 +256,14 @@ public class AddressManagerTest {
         globalAddressSet.add(globalAddress);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals(1, result.values().iterator().next().size());
 
         DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
                                                                                    1000,
-                                                                                   result.iterator().next());
+                                                                                   result.values().iterator().next());
         assertEquals(Optional.of(localAddress), subject.getAddressForDelayableImmutableMessage(delayablemessage));
         verify(multicastAddressCalculator, times(0)).calculate(any(ImmutableMessage.class));
     }
@@ -279,13 +285,14 @@ public class AddressManagerTest {
         globalAddressSet.add(globalAddress);
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals(1, result.values().iterator().next().size());
 
         DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
                                                                                    1000,
-                                                                                   result.iterator().next());
+                                                                                   result.values().iterator().next());
         assertEquals(Optional.of(localAddress), subject.getAddressForDelayableImmutableMessage(delayablemessage));
         verify(multicastAddressCalculator, times(0)).calculate(any(ImmutableMessage.class));
     }
@@ -297,7 +304,7 @@ public class AddressManagerTest {
         when(joynrMessage.getSender()).thenReturn(participantId + "/multicastname");
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertEquals(0, result.size());
     }
 
@@ -308,8 +315,9 @@ public class AddressManagerTest {
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(false);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(multicastAddresses);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertEquals(1, result.size());
+        assertEquals(1, result.values().iterator().next().size());
     }
 
     @Test
@@ -324,25 +332,24 @@ public class AddressManagerTest {
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
         when(multicastAddressCalculator.calculate(joynrMessage)).thenReturn(multicastAddresses);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertEquals(2, result.size());
+        assertNotNull(result.get(secondMulticastAddress));
+        assertEquals(1, result.get(secondMulticastAddress).size());
+        assertNotNull(result.get(multicastAddress));
+        assertEquals(1, result.get(multicastAddress).size());
 
-        boolean messageOneFound = false;
-        boolean messageTwoFound = false;
+        String participantId1 = result.get(multicastAddress).iterator().next();
+        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(joynrMessage,
+                                                                                   1000,
+                                                                                   Set.of(participantId1));
+        Optional<Address> resultAddress = subject.getAddressForDelayableImmutableMessage(delayableMessage);
+        assertEquals(Optional.of(multicastAddress), resultAddress);
 
-        for (String participantId : result) {
-            DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(joynrMessage,
-                                                                                       1000,
-                                                                                       participantId);
-            Optional<Address> resultAddress = subject.getAddressForDelayableImmutableMessage(delayableMessage);
-            if (resultAddress.equals(Optional.of(multicastAddress))) {
-                messageOneFound = true;
-            } else if (resultAddress.equals(Optional.of(secondMulticastAddress))) {
-                messageTwoFound = true;
-            }
-        }
-
-        assertTrue(messageOneFound && messageTwoFound);
+        String participantId2 = result.get(secondMulticastAddress).iterator().next();
+        delayableMessage = new DelayableImmutableMessage(joynrMessage, 1000, Set.of(participantId2));
+        resultAddress = subject.getAddressForDelayableImmutableMessage(delayableMessage);
+        assertEquals(Optional.of(secondMulticastAddress), resultAddress);
     }
 
     @Test
@@ -352,7 +359,7 @@ public class AddressManagerTest {
         when(joynrMessage.getSender()).thenReturn(participantId + "/multicastname");
         when(multicastAddressCalculator.createsGlobalTransportAddresses()).thenReturn(true);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertEquals(0, result.size());
     }
 

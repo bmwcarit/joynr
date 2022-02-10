@@ -90,7 +90,7 @@ public class AddressManagerNonMulticastTest {
 
     @Test
     public void testNoAddressFoundForNonMulticastMessage() {
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
         assertEquals(0, result.size());
     }
 
@@ -100,15 +100,16 @@ public class AddressManagerNonMulticastTest {
         when(routingTable.get(PARTICIPANT_ID)).thenReturn(address);
         when(joynrMessage.getRecipient()).thenReturn(PARTICIPANT_ID);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(PARTICIPANT_ID, result.iterator().next());
+        assertEquals(1, result.values().iterator().next().size());
+        assertEquals(PARTICIPANT_ID, result.values().iterator().next().iterator().next());
 
         DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
                                                                                    1000,
-                                                                                   result.iterator().next());
+                                                                                   result.values().iterator().next());
         assertEquals(Optional.of(address), subject.getAddressForDelayableImmutableMessage(delayablemessage));
 
         verify(routingTable).get(PARTICIPANT_ID);
@@ -127,15 +128,16 @@ public class AddressManagerNonMulticastTest {
         customHeader.put(Message.CUSTOM_HEADER_GBID_KEY, gbidVal);
         when(joynrMessage.getCustomHeaders()).thenReturn(customHeader);
 
-        Set<String> result = subject.getParticipantIdsForImmutableMessage(joynrMessage);
+        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(PARTICIPANT_ID, result.iterator().next());
+        assertEquals(1, result.values().iterator().next().size());
+        assertEquals(PARTICIPANT_ID, result.values().iterator().next().iterator().next());
 
         DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
                                                                                    1000,
-                                                                                   result.iterator().next());
+                                                                                   result.values().iterator().next());
         assertEquals(Optional.of(address), subject.getAddressForDelayableImmutableMessage(delayablemessage));
 
         verify(routingTable, times(0)).get(PARTICIPANT_ID);

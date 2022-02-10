@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.Message.MessageType;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -92,21 +94,56 @@ public class AddressManager {
     }
 
     /**
-     * Get the participantIds to which the passed in message should be sent to.
+     * Get the participantIds to which the passed in message should be sent to grouped by their address.
+     * <ul>
+     * <li> For multicast messages, the returned map can have multiple entries with multiple participantIds.
+     * <li> For non multicast messages, the returned map always has a single entry: a dummy address mapped to the
+     * participantId of the recipient.
+     * </ul>
+     *
      * @param message the message for which we want to find the participantIds to send it to.
-     * @return set of participantIds to send the message to. Will not be null, because if an participantId
-     * can't be determined, the returned set of addresses will be empty.
+     * @return map of participantIds to send the message to grouped by their addresses. Will not be null, because if
+     * a participantId can't be determined, the returned map will be empty.
      */
-    public Set<String> getParticipantIdsForImmutableMessage(ImmutableMessage message) {
-        Set<String> result = new HashSet<>();
-        String toParticipantId = message.getRecipient();
-        if (Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
-            getRecipientsForMulticast(message, result);
-        } else if (toParticipantId != null) {
-            result.add(toParticipantId);
+    public Map<Address, Set<String>> getParticipantIdMap(ImmutableMessage message) {
+        HashMap<Address, Set<String>> result = new HashMap<>();
+        if (MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(message.getType())) {
+
+            Set<String> localReceivers = getLocalMulticastReceiversFromRegistry(message);
+            for (String r : localReceivers) {
+                Address address = routingTable.get(r);
+                if (address == null) {
+                    logger.error("No address found for multicast receiver {} for {}", r, message.getTrackingInfo());
+                    continue;
+                }
+                Set<String> receiverSet = result.get(address);
+                if (receiverSet == null) {
+                    receiverSet = new HashSet<String>();
+                    result.put(address, receiverSet);
+                }
+                receiverSet.add(r);
+            }
+
+            if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
+                if (multicastAddressCalculator.createsGlobalTransportAddresses()) {
+                    // only global providers should multicast to the "outside world"
+                    if (isProviderGloballyVisible(message.getSender())) {
+                        addReceiversFromAddressCalculator(message, result);
+                    }
+                } else {
+                    // in case the address calculator does not provide an address
+                    // to the "outside world" it is safe to forward the message
+                    // regardless of the provider being globally visible or not
+                    addReceiversFromAddressCalculator(message, result);
+                }
+            }
+        } else {
+            String toParticipantId = message.getRecipient();
+            if (toParticipantId != null) {
+                result.put(new Address(), Set.of(toParticipantId));
+            }
         }
         logger.trace("Found the following recipients for {}: {}", message, result);
-
         return result;
     }
 
@@ -114,6 +151,9 @@ public class AddressManager {
      * Get the address to which the passed in message should be sent to.
      * This can be an address contained in the {@link RoutingTable}, or a
      * multicast address calculated from the header content of the message.
+     * <p>
+     * If the message has multiple recipients (this should only happen for multicast messages), this methods expects
+     * that all recipients have the same address, see {@link #getParticipantIdMap(ImmutableMessage)}).
      *
      * @param message the message for which we want to find an address to send it to.
      * @return Optional of an address to send the message to. Will not be null, because if an address
@@ -123,13 +163,18 @@ public class AddressManager {
         Map<String, String> customHeader = message.getMessage().getCustomHeaders();
         final String gbidVal = customHeader.get(Message.CUSTOM_HEADER_GBID_KEY);
         Address address = null;
-        String recipient = message.getRecipient();
-        if (recipient.startsWith(multicastAddressCalculatorParticipantId)) {
-            address = determineAddressFromMulticastAddressCalculator(message, recipient);
-        } else if (gbidVal == null) {
-            address = routingTable.get(recipient);
-        } else {
-            address = routingTable.get(recipient, gbidVal);
+        Set<String> recipients = message.getRecipients();
+        for (String recipient : recipients) {
+            // Return the first non null address. All recipients of a message have the same address, see getAddressesMap().
+            if (address != null) {
+                break;
+            } else if (recipient.startsWith(multicastAddressCalculatorParticipantId)) {
+                address = determineAddressFromMulticastAddressCalculator(message, recipient);
+            } else if (gbidVal == null) {
+                address = routingTable.get(recipient);
+            } else {
+                address = routingTable.get(recipient, gbidVal);
+            }
         }
         return address == null ? Optional.empty() : Optional.of(address);
     }
@@ -156,23 +201,6 @@ public class AddressManager {
         return address;
     }
 
-    private void getRecipientsForMulticast(ImmutableMessage message, Set<String> result) {
-        if (!message.isReceivedFromGlobal() && multicastAddressCalculator != null) {
-            if (multicastAddressCalculator.createsGlobalTransportAddresses()) {
-                // only global providers should multicast to the "outside world"
-                if (isProviderGloballyVisible(message.getSender())) {
-                    addReceiversFromAddressCalculator(message, result);
-                }
-            } else {
-                // in case the address calculator does not provide an address
-                // to the "outside world" it is safe to forward the message
-                // regardless of the provider being globally visible or not
-                addReceiversFromAddressCalculator(message, result);
-            }
-        }
-        addLocalMulticastReceiversFromRegistry(message, result);
-    }
-
     private boolean isProviderGloballyVisible(String participantId) {
         boolean isGloballyVisible = false;
 
@@ -186,21 +214,20 @@ public class AddressManager {
         return isGloballyVisible;
     }
 
-    private void addReceiversFromAddressCalculator(ImmutableMessage message, Set<String> result) {
+    private void addReceiversFromAddressCalculator(ImmutableMessage message, HashMap<Address, Set<String>> result) {
         Set<Address> calculatedAddresses = multicastAddressCalculator.calculate(message);
         if (calculatedAddresses.size() == 1) {
-            result.add(multicastAddressCalculatorParticipantId);
+            result.put(calculatedAddresses.iterator().next(), Set.of(multicastAddressCalculatorParticipantId));
         } else {
             // This case can only happen if we have multiple backends, which can only happen in case of MQTT
             for (Address address : calculatedAddresses) {
                 MqttAddress mqttAddress = (MqttAddress) address;
-                result.add(multicastAddressCalculatorParticipantId + "_" + mqttAddress.getBrokerUri());
+                result.put(address, Set.of(multicastAddressCalculatorParticipantId + "_" + mqttAddress.getBrokerUri()));
             }
         }
     }
 
-    private void addLocalMulticastReceiversFromRegistry(ImmutableMessage message, Set<String> result) {
-        Set<String> receivers = multicastReceiversRegistry.getReceivers(message.getRecipient());
-        result.addAll(receivers);
+    private Set<String> getLocalMulticastReceiversFromRegistry(ImmutableMessage message) {
+        return multicastReceiversRegistry.getReceivers(message.getRecipient());
     }
 }
