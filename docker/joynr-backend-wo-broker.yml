@@ -1,0 +1,24 @@
+version: '3.0'
+
+services:
+
+  joynr-gcd-db:
+    # build: run "cd joynr-gcd-db && ./build_docker_image.sh"
+    image: 'joynr-gcd-db'
+    network_mode: host
+    container_name: 'joynr-gcd-db'
+
+  joynr-gcd-1:
+    # build: run "cd joynr-gcd && ./build_docker_image.sh"
+    image: 'joynr-gcd'
+    container_name: 'joynr-gcd-1'
+    depends_on:
+      - joynr-gcd-db
+    network_mode: host
+    environment:
+      - joynr_messaging_mqtt_brokeruris=tcp://localhost:1883
+      - joynr_gcd_db_host=localhost
+      # optional ("joynrdefaultgbid" is the default value for the following properties)
+      - joynr_gcd_gbid=joynrdefaultgbid
+      - joynr_gcd_valid_gbids=joynrdefaultgbid
+      - joynr_messaging_gbids=joynrdefaultgbid
