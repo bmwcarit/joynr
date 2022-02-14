@@ -33,7 +33,6 @@ public class GcdTask {
 
     public final MODE mode;
     public final CallbackCreator callbackCreator;
-    public final CallbackWithModeledError<Void, DiscoveryError> callback;
     public final String participantId;
     public final GlobalDiscoveryEntry globalDiscoveryEntry;
     public final String[] gbids;
@@ -42,7 +41,6 @@ public class GcdTask {
 
     private GcdTask(MODE mode,
                     CallbackCreator callbackCreator,
-                    CallbackWithModeledError<Void, DiscoveryError> callback,
                     String participantId,
                     GlobalDiscoveryEntry globalDiscoveryEntry,
                     String[] gbids,
@@ -50,7 +48,6 @@ public class GcdTask {
                     boolean doRetry) {
         this.mode = mode;
         this.callbackCreator = callbackCreator;
-        this.callback = callback;
         this.participantId = participantId;
         this.globalDiscoveryEntry = globalDiscoveryEntry;
         this.gbids = gbids;
@@ -67,7 +64,6 @@ public class GcdTask {
         String participantId = "";
         return new GcdTask(MODE.ADD,
                            callbackCreator,
-                           null,
                            participantId,
                            globalDiscoveryEntry,
                            gbids,
@@ -76,12 +72,11 @@ public class GcdTask {
     }
 
     public static GcdTask createReaddTask() {
-        CallbackWithModeledError<Void, DiscoveryError> callback = null;
         String participantId = "";
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
         String[] gbids = null;
         long expiryDateMs = 0L;
-        return new GcdTask(MODE.READD, null, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs, false);
+        return new GcdTask(MODE.READD, null, participantId, globalDiscoveryEntry, gbids, expiryDateMs, false);
     }
 
     public static GcdTask createRemoveTask(CallbackCreator callbackCreator, String participantId) {
@@ -90,7 +85,6 @@ public class GcdTask {
         String[] gbids = null;
         return new GcdTask(MODE.REMOVE,
                            callbackCreator,
-                           null,
                            participantId,
                            globalDiscoveryEntry,
                            gbids,
