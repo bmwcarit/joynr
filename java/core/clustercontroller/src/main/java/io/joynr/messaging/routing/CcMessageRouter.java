@@ -109,7 +109,7 @@ public class CcMessageRouter
 
     @Inject
     @Singleton
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 8 LINES
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public CcMessageRouter(RoutingTable routingTable,
                            @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                            @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
