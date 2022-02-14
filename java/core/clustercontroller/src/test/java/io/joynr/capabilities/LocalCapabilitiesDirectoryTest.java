@@ -49,6 +49,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -176,6 +177,8 @@ public class LocalCapabilitiesDirectoryTest {
 
     private GcdTaskSequencer gcdTaskSequencerSpy;
 
+    private GcdTaskSequencer gcdTaskSequencer;
+
     private Thread addRemoveWorker;
 
     private static class DiscoveryEntryWithUpdatedLastSeenDateMsMatcher implements ArgumentMatcher<DiscoveryEntry> {
@@ -244,20 +247,6 @@ public class LocalCapabilitiesDirectoryTest {
         Field result = null;
         try {
             result = privateClass.getDeclaredField(fieldName);
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-        return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T getFieldValue(Object object, String fieldName) {
-        Field objectField = getPrivateField(object.getClass(), fieldName);
-        assertNotNull(objectField);
-        objectField.setAccessible(true);
-        T result = null;
-        try {
-            result = (T) objectField.get(object);
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -336,11 +325,10 @@ public class LocalCapabilitiesDirectoryTest {
         verify(capabilitiesFreshnessUpdateExecutor).schedule(addRemoveQueueRunnableCaptor.capture(),
                                                              anyLong(),
                                                              eq(TimeUnit.MILLISECONDS));
-        GcdTaskSequencer runnable = addRemoveQueueRunnableCaptor.getValue();
-        addRemoveWorker = new Thread(runnable);
+        gcdTaskSequencer = addRemoveQueueRunnableCaptor.getValue();
+        gcdTaskSequencerSpy = Mockito.spy(gcdTaskSequencer);
+        addRemoveWorker = new Thread(gcdTaskSequencer);
         addRemoveWorker.start();
-
-        gcdTaskSequencerSpy = Mockito.spy(runnable);
 
         ProviderQos providerQos = new ProviderQos();
         CustomParameter[] parameterList = { new CustomParameter("key1", "value1"),
@@ -368,8 +356,7 @@ public class LocalCapabilitiesDirectoryTest {
 
     @After
     public void tearDown() throws Exception {
-        GcdTaskSequencer runnable = (GcdTaskSequencer) addRemoveQueueRunnableCaptor.getValue();
-        runnable.stop();
+        gcdTaskSequencer.stop();
         addRemoveWorker.join();
     }
 
@@ -454,82 +441,149 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void checkAddCallbackIsNotCalledTwiceOnSuccess() throws InterruptedException, IllegalAccessException {
+    public void taskSequencerNotReleasedAfterAddSuccess() throws InterruptedException, IllegalAccessException {
         String[] expectedGbids = knownGbids.clone();
         final boolean awaitGlobalRegistration = true;
         reset(globalCapabilitiesDirectoryClient);
-        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                cdl.countDown();
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryClient).add(any(), any(), anyLong(), any());
         localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
         ArgumentCaptor<CallbackWithModeledError<Void, DiscoveryError>> callbackCapture = ArgumentCaptor.forClass(CallbackWithModeledError.class);
-        Thread.sleep(1000);
-        verify(globalCapabilitiesDirectoryClient, atLeast(1)).add(callbackCapture.capture(),
-                                                                  any(),
-                                                                  anyLong(),
-                                                                  eq(expectedGbids));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS * 100, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(1)).add(callbackCapture.capture(),
+                                                                any(),
+                                                                anyLong(),
+                                                                eq(expectedGbids));
 
-        verify(localDiscoveryEntryStoreMock).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
-        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
-
+        gcdTaskSequencer.stop();
+        addRemoveWorker.join();
+        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
         callbackCapture.getValue().onSuccess(null);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        verify(gcdTaskSequencerSpy).taskFinished();
         callbackCapture.getValue().onSuccess(null);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
         callbackCapture.getValue().onFailure(new JoynrRuntimeException());
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
         callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient, gcdTaskSequencerSpy);
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void checkAddCallbackCanBeCalledMultipleTimesOnJoynrTimeoutExceptionOnly() throws InterruptedException,
-                                                                                      IllegalAccessException {
+    public void taskSequencerNotReleasedAfterAddTimeoutOnDisabledRetry() throws InterruptedException,
+                                                                         IllegalAccessException {
+        String[] expectedGbids = knownGbids.clone();
+        // Retries are disabled when awaitGlobalRegistration is true
+        final boolean awaitGlobalRegistration = true;
+        reset(globalCapabilitiesDirectoryClient);
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                cdl.countDown();
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryClient).add(any(), any(), anyLong(), any());
+        localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
+        ArgumentCaptor<CallbackWithModeledError<Void, DiscoveryError>> callbackCapture = ArgumentCaptor.forClass(CallbackWithModeledError.class);
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(1)).add(callbackCapture.capture(),
+                                                                any(),
+                                                                anyLong(),
+                                                                eq(expectedGbids));
+
+        gcdTaskSequencer.stop();
+        addRemoveWorker.join();
+        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
+        callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
+        verify(gcdTaskSequencerSpy).taskFinished();
+        callbackCapture.getValue().onFailure(new JoynrRuntimeException());
+        callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
+        callbackCapture.getValue().onSuccess(null);
+        callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient, gcdTaskSequencerSpy);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void taskSequencerRetriesAddOnJoynrTimeoutExceptionOnly() throws InterruptedException,
+                                                                     IllegalAccessException {
         String[] expectedGbids = knownGbids.clone();
         final boolean awaitGlobalRegistration = false;
         reset(globalCapabilitiesDirectoryClient);
-        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
+        Semaphore semaphore = new Semaphore(0);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                semaphore.release();
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryClient).add(any(), any(), anyLong(), any());
         localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
         ArgumentCaptor<CallbackWithModeledError<Void, DiscoveryError>> callbackCapture = ArgumentCaptor.forClass(CallbackWithModeledError.class);
-        Thread.sleep(1000);
-        verify(globalCapabilitiesDirectoryClient, atLeast(1)).add(callbackCapture.capture(),
-                                                                  any(),
-                                                                  anyLong(),
-                                                                  eq(expectedGbids));
+        assertTrue(semaphore.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(1)).add(callbackCapture.capture(),
+                                                                any(),
+                                                                anyLong(),
+                                                                eq(expectedGbids));
 
         callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
-        verify(gcdTaskSequencerSpy, times(1)).retryTask();
-        verify(gcdTaskSequencerSpy, times(0)).taskFinished();
         callbackCapture.getValue().onFailure(new JoynrRuntimeException());
-        verify(gcdTaskSequencerSpy, times(1)).retryTask();
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
-        // After an non-timeout exception was handled was called, the callback is 'disabled'
+        callbackCapture.getValue().onSuccess(null);
+        callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
         callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
-        verify(gcdTaskSequencerSpy, times(1)).retryTask();
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        assertTrue(semaphore.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(2)).add(callbackCapture.capture(),
+                                                                any(),
+                                                                anyLong(),
+                                                                eq(expectedGbids));
+        callbackCapture.getValue().onFailure(new JoynrRuntimeException());
+        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
 
+        callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
+        callbackCapture.getValue().onFailure(new JoynrRuntimeException());
+        callbackCapture.getValue().onSuccess(null);
+        callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient, gcdTaskSequencerSpy);
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void checkAddCallbackIsNotCalledTwiceOnDiscoveryError() throws InterruptedException, IllegalAccessException {
-        String[] expectedGbids = knownGbids.clone();
+    public void taskSequencerNotReleasedAfterAddDiscoveryError() throws InterruptedException, IllegalAccessException {
+        String[] expectedGbids = new String[]{ knownGbids[0] };
         final boolean awaitGlobalRegistration = true;
         reset(globalCapabilitiesDirectoryClient);
-        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
-        localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                cdl.countDown();
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryClient).add(any(), any(), anyLong(), any());
+        localCapabilitiesDirectory.add(discoveryEntry, awaitGlobalRegistration, expectedGbids);
         ArgumentCaptor<CallbackWithModeledError<Void, DiscoveryError>> callbackCapture = ArgumentCaptor.forClass(CallbackWithModeledError.class);
-        Thread.sleep(1000);
-        verify(globalCapabilitiesDirectoryClient, atLeast(1)).add(callbackCapture.capture(),
-                                                                  any(),
-                                                                  anyLong(),
-                                                                  eq(expectedGbids));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(1)).add(callbackCapture.capture(),
+                                                                any(),
+                                                                anyLong(),
+                                                                eq(expectedGbids));
 
+        gcdTaskSequencer.stop();
+        addRemoveWorker.join();
+        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
         callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        verify(gcdTaskSequencerSpy).taskFinished();
+
         callbackCapture.getValue().onSuccess(null);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
         callbackCapture.getValue().onFailure(new JoynrRuntimeException());
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
         callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient, gcdTaskSequencerSpy);
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -4282,100 +4336,148 @@ public class LocalCapabilitiesDirectoryTest {
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void checkRemoveCallbackIsNotCalledTwiceOnSuccess() throws InterruptedException, IllegalAccessException {
+    public void taskSequencerNotReleasedAfterRemoveSuccess() throws InterruptedException, IllegalAccessException {
+        /// We have to add before we can remove anything
         String[] expectedGbids = knownGbids.clone();
         final boolean awaitGlobalRegistration = true;
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
                                                                                 awaitGlobalRegistration);
         checkPromiseSuccess(promise, "add failed");
         verify(globalCapabilitiesDirectoryClient,
-               atLeast(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                               any(),
-                               anyLong(),
-                               eq(expectedGbids));
+               times(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             any(),
+                             anyLong(),
+                             eq(expectedGbids));
         reset(globalCapabilitiesDirectoryClient);
+        ///
+        ///The real test starts here
         setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                cdl.countDown();
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryClient).remove(any(), any(), any());
         localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
+        verify(gcdTaskSequencerSpy).addTask(any());
         ArgumentCaptor<CallbackWithModeledError<Void, DiscoveryError>> callbackCapture = ArgumentCaptor.forClass(CallbackWithModeledError.class);
-        Thread.sleep(1000);
-        verify(globalCapabilitiesDirectoryClient, atLeast(1)).remove(callbackCapture.capture(),
-                                                                     eq(discoveryEntry.getParticipantId()),
-                                                                     eq(expectedGbids));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(1)).remove(callbackCapture.capture(),
+                                                                   eq(discoveryEntry.getParticipantId()),
+                                                                   eq(expectedGbids));
 
         callbackCapture.getValue().onSuccess(null);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        verify(gcdTaskSequencerSpy).taskFinished();
         callbackCapture.getValue().onSuccess(null);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
         callbackCapture.getValue().onFailure(new JoynrRuntimeException());
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
         callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient, gcdTaskSequencerSpy);
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void checkRemoveCallbackCanBeCalledMultipleTimesOnJoynrTimeoutExceptionOnly() throws InterruptedException,
-                                                                                         IllegalAccessException {
+    public void taskSequencerRetriesRemoveOnJoynrTimeoutExceptionOnly() throws InterruptedException,
+                                                                        IllegalAccessException {
+        ///We need to add before we can remove
         String[] expectedGbids = knownGbids.clone();
         final boolean awaitGlobalRegistration = true;
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
                                                                                 awaitGlobalRegistration);
         checkPromiseSuccess(promise, "add failed");
         verify(globalCapabilitiesDirectoryClient,
-               atLeast(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                               any(),
-                               anyLong(),
-                               eq(expectedGbids));
+               times(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             any(),
+                             anyLong(),
+                             eq(expectedGbids));
         reset(globalCapabilitiesDirectoryClient);
-        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
+        ///
+        ///The real test starts here
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                cdl.countDown();
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryClient).remove(any(), any(), any());
         localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
         ArgumentCaptor<CallbackWithModeledError<Void, DiscoveryError>> callbackCapture = ArgumentCaptor.forClass(CallbackWithModeledError.class);
-        Thread.sleep(1000);
-        verify(globalCapabilitiesDirectoryClient, atLeast(1)).remove(callbackCapture.capture(),
-                                                                     eq(discoveryEntry.getParticipantId()),
-                                                                     eq(expectedGbids));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(1)).remove(callbackCapture.capture(),
+                                                                   eq(discoveryEntry.getParticipantId()),
+                                                                   eq(expectedGbids));
 
+        CountDownLatch cdl2 = new CountDownLatch(1);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                cdl2.countDown();
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryClient).remove(any(), any(), any());
+        ArgumentCaptor<CallbackWithModeledError<Void, DiscoveryError>> callbackCapture2 = ArgumentCaptor.forClass(CallbackWithModeledError.class);
         callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
-        verify(gcdTaskSequencerSpy, times(1)).retryTask();
-        verify(gcdTaskSequencerSpy, times(0)).taskFinished();
+        callbackCapture.getValue().onSuccess(null);
+        callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
         callbackCapture.getValue().onFailure(new JoynrRuntimeException());
-        verify(gcdTaskSequencerSpy, times(1)).retryTask();
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
-        // After an non-timeout exception was handled was called, the callback is 'disabled'
         callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
-        verify(gcdTaskSequencerSpy, times(1)).retryTask();
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        assertTrue(cdl2.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(2)).remove(callbackCapture2.capture(),
+                                                                   eq(discoveryEntry.getParticipantId()),
+                                                                   eq(expectedGbids));
+        callbackCapture2.getValue().onFailure(new JoynrRuntimeException());
+        setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
+        // After handling a non-timeout exception, the callback is 'disabled'
+        callbackCapture2.getValue().onFailure(new JoynrTimeoutException(12345));
+        callbackCapture2.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+        callbackCapture2.getValue().onSuccess(null);
+        callbackCapture2.getValue().onFailure(new JoynrRuntimeException());
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient, gcdTaskSequencerSpy);
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void checkRemoveCallbackIsNotCalledTwiceOnDiscoveryError() throws InterruptedException,
-                                                                      IllegalAccessException {
+    public void taskSequencerNotReleasedAfterRemoveDiscoveryError() throws InterruptedException,
+                                                                    IllegalAccessException {
+        ///We need to add before we can remove
         String[] expectedGbids = knownGbids.clone();
         final boolean awaitGlobalRegistration = true;
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
                                                                                 awaitGlobalRegistration);
         checkPromiseSuccess(promise, "add failed");
         verify(globalCapabilitiesDirectoryClient,
-               atLeast(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                               any(),
-                               anyLong(),
-                               eq(expectedGbids));
+               times(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             any(),
+                             anyLong(),
+                             eq(expectedGbids));
         reset(globalCapabilitiesDirectoryClient);
+        ///
+        ///The real test starts here
         setFieldValue(localCapabilitiesDirectory, "gcdTaskSequencer", gcdTaskSequencerSpy);
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                cdl.countDown();
+                return null;
+            }
+        }).when(globalCapabilitiesDirectoryClient).remove(any(), any(), any());
         localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
+        verify(gcdTaskSequencerSpy).addTask(any());
         ArgumentCaptor<CallbackWithModeledError<Void, DiscoveryError>> callbackCapture = ArgumentCaptor.forClass(CallbackWithModeledError.class);
-        Thread.sleep(1000);
-        verify(globalCapabilitiesDirectoryClient, atLeast(1)).remove(callbackCapture.capture(),
-                                                                     eq(discoveryEntry.getParticipantId()),
-                                                                     eq(expectedGbids));
+        assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient, times(1)).remove(callbackCapture.capture(),
+                                                                   eq(discoveryEntry.getParticipantId()),
+                                                                   eq(expectedGbids));
 
         callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        verify(gcdTaskSequencerSpy).taskFinished();
+        callbackCapture.getValue().onFailure(new JoynrTimeoutException(12345));
         callbackCapture.getValue().onSuccess(null);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
         callbackCapture.getValue().onFailure(new JoynrRuntimeException());
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
         callbackCapture.getValue().onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-        verify(gcdTaskSequencerSpy, times(1)).taskFinished();
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient, gcdTaskSequencerSpy);
     }
 
     @Test(timeout = TEST_TIMEOUT)
