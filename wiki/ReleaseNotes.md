@@ -19,7 +19,12 @@ None.
 None.
 
 ## Bug Fixes
-None.
+* **[Java]** Prevented repeated delivery of the same multicast publication:  
+  In case of multiple subscriptions for the same multicast from the same runtime, the multicast was
+  delivered multiple times to all subscribers in this runtime.
+* **[Java]** Fixed unregistration for multicast subscriptions: unregistration was not implemented
+  correctly which could cause error logs for non deliverable or expired messages as well as repeated
+  delivery of the same multicast publication.
 
 # joynr 1.19.6
 
