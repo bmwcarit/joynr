@@ -1,6 +1,6 @@
 {
   "name": "joynr-generator-test",
-  "version": "1.19.7-SNAPSHOT",
+  "version": "1.19.7",
   "description": "Code generator for joynr",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
