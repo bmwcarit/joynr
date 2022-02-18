@@ -24,8 +24,12 @@ import TestWithVersionProvider from "../../../generated/joynr/tests/TestWithVers
 import TestWithVersionProxy from "../../../generated/joynr/tests/TestWithVersionProxy";
 import * as IntegrationUtils from "../IntegrationUtils";
 import provisioning from "../../../resources/joynr/provisioning/provisioning_cc";
+import DiscoveryException from "../../../../main/js/joynr/exceptions/DiscoveryException";
 import DiscoveryQos from "../../../../main/js/joynr/proxy/DiscoveryQos";
+import DiscoveryScope from "../../../../main/js/generated/joynr/types/DiscoveryScope";
 import InProcessRuntime = require("joynr/joynr/start/InProcessRuntime");
+import { FixedParticipant } from "../../../../main/js/joynr/types/ArbitrationStrategyCollection";
+import { FIXED_PARTICIPANT_PARAMETER } from "../../../../main/js/joynr/types/ArbitrationConstants";
 
 describe("libjoynr-js.integration.localDiscoveryTest", () => {
     let provisioningSuffix: any;
@@ -71,6 +75,66 @@ describe("libjoynr-js.integration.localDiscoveryTest", () => {
             discoveryQos: new DiscoveryQos()
         });
     }
+
+    it("arbitration strategy FixedParticipant", async () => {
+        const providerQos = new joynr.types.ProviderQos({
+            customParameters: [],
+            priority: Date.now(),
+            scope: joynr.types.ProviderScope.LOCAL,
+            supportsOnChangeSubscriptions: true
+        });
+
+        const testWithVersionProviderImpl = new MyTestWithVersionProvider();
+        const testWithVersionProvider = joynr.providerBuilder.build(
+            TestWithVersionProvider,
+            testWithVersionProviderImpl
+        );
+
+        const participantId = await joynr.registration.registerProvider(domain, testWithVersionProvider, providerQos);
+
+        const proxy1 = await joynr.proxyBuilder.build(TestWithVersionProxy, {
+            domain,
+            messagingQos: new joynr.messaging.MessagingQos(),
+            discoveryQos: new DiscoveryQos({
+                discoveryTimeoutMs: 1000,
+                arbitrationStrategy: FixedParticipant,
+                discoveryScope: DiscoveryScope.LOCAL_ONLY,
+                additionalParameters: { [FIXED_PARTICIPANT_PARAMETER]: participantId }
+            })
+        });
+
+        expect((proxy1.providerDiscoveryEntry as any).participantId).toBeDefined();
+        expect((proxy1.providerDiscoveryEntry as any).participantId).toEqual(participantId);
+
+        try {
+            await joynr.proxyBuilder.build(TestWithVersionProxy, {
+                domain,
+                messagingQos: new joynr.messaging.MessagingQos(),
+                discoveryQos: new DiscoveryQos({
+                    discoveryTimeoutMs: 1000,
+                    arbitrationStrategy: FixedParticipant,
+                    discoveryScope: DiscoveryScope.LOCAL_ONLY,
+                    additionalParameters: { [FIXED_PARTICIPANT_PARAMETER]: "otherParticipantId" }
+                })
+            });
+            throw new Error("unexpected success");
+        } catch (e) {
+            expect(e instanceof DiscoveryException).toBe(true);
+        }
+
+        const proxy2 = await joynr.proxyBuilder.build(TestWithVersionProxy, {
+            domain,
+            messagingQos: new joynr.messaging.MessagingQos(),
+            discoveryQos: new DiscoveryQos({
+                discoveryTimeoutMs: 1000,
+                discoveryScope: DiscoveryScope.LOCAL_ONLY,
+                additionalParameters: { [FIXED_PARTICIPANT_PARAMETER]: "otherParticipantId" }
+            })
+        });
+        expect(proxy1.providerDiscoveryEntry).toEqual(proxy2.providerDiscoveryEntry);
+
+        await joynr.registration.unregisterProvider(domain, testWithVersionProvider);
+    });
 
     it("local discovery entry is forwarded to proxy", async () => {
         const providerQos = new joynr.types.ProviderQos({

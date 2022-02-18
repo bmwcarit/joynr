@@ -33,7 +33,6 @@ import DiscoveryQos = require("../../proxy/DiscoveryQos");
 import ApplicationException = require("../../exceptions/ApplicationException");
 import * as ArbitrationStrategyCollection from "../../../joynr/types/ArbitrationStrategyCollection";
 import { FIXED_PARTICIPANT_PARAMETER } from "../../types/ArbitrationConstants";
-import { isEqual } from "lodash";
 
 const log = LoggingManager.getLogger("joynr.capabilities.arbitration.Arbitrator");
 
@@ -199,10 +198,8 @@ class Arbitrator {
         let errorMsg: string | null = null;
         let firstLoop = true;
         let participantId: string;
-        const isArbitrationStrategyFixedParticipant = isEqual(
-            discoveryQos.arbitrationStrategy,
-            ArbitrationStrategyCollection.FixedParticipant
-        );
+        const isArbitrationStrategyFixedParticipant =
+            discoveryQos.arbitrationStrategy === ArbitrationStrategyCollection.FixedParticipant;
         participantId = "";
         if (isArbitrationStrategyFixedParticipant) {
             if (!discoveryQos.additionalParameters.hasOwnProperty(FIXED_PARTICIPANT_PARAMETER)) {
