@@ -31,7 +31,7 @@
     "lint": "../../node_modules/.bin/eslint $npm_package_config_glob --max-warnings 0",
     "lint:fix": "../../node_modules/.bin/eslint $npm_package_config_glob --fix",
     "test": "npm run ts:test:ci && npm run ts:test:sit",
-    "build:doc": "typedoc --exclude 'src/main/js/node_modules/**/*.ts' --excludeExternals --out wiki/typedoc src/main/js",
+    "build:doc": "typedoc --exclude '**/node_modules/**/*.ts' --excludeExternals --out wiki/typedoc src/main/js",
     "build:fast": "npm run build:install && npm run build:skip && npm run test",
     "build": "npm run clean && npm run build:fast && npm run build:doc",
     "build:install": "npm --prefix src/main/js i && npm --prefix ../.. i && npm i",
