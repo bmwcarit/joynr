@@ -34,7 +34,7 @@ import TypeRegistrySingleton from "../../../../main/js/joynr/types/TypeRegistryS
 import DiscoveryEntryWithMetaInfo from "../../../../main/js/generated/joynr/types/DiscoveryEntryWithMetaInfo";
 import Version from "../../../../main/js/generated/joynr/types/Version";
 import ProviderQos from "../../../../main/js/generated/joynr/types/ProviderQos";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import TestEnum from "../../../generated/joynr/tests/testTypes/TestEnum";
 
 import Dispatcher from "../../../../main/js/joynr/dispatching/Dispatcher";

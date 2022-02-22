@@ -35,7 +35,7 @@ import DiscoveryEntryWithMetaInfo, {
     DiscoveryEntryWithMetaInfoMembers
 } from "../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
 import * as UtilInternal from "../util/UtilInternal";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import loggingManager from "../system/LoggingManager";
 import { ShutdownSettings, WebSocketLibjoynrProvisioning } from "./interface/Provisioning";
 import defaultWebSocketSettings from "./settings/defaultWebSocketSettings";
