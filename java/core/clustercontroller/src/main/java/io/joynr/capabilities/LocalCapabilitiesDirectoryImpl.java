@@ -47,6 +47,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import io.joynr.capabilities.GcdTask.CallbackCreator;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -506,61 +507,81 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
             boolean doRetry = !awaitGlobalRegistration;
             long expiryDateMs = doRetry ? Long.MAX_VALUE : System.currentTimeMillis() + defaultTtlAddAndRemove;
 
-            CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
+            CallbackCreator callbackCreator = new CallbackCreator() {
 
                 @Override
-                public void onSuccess(Void nothing) {
-                    logger.info("Global provider registration succeeded: participantId {}, domain {}, interface {}, {}",
-                                globalDiscoveryEntry.getParticipantId(),
-                                globalDiscoveryEntry.getDomain(),
-                                globalDiscoveryEntry.getInterfaceName(),
-                                globalDiscoveryEntry.getProviderVersion());
-                    gcdTaskSequencer.taskFinished();
-                    deferred.resolve();
-                }
+                public CallbackWithModeledError<Void, DiscoveryError> createCallback() {
 
-                @Override
-                public void onFailure(JoynrRuntimeException exception) {
-                    if (doRetry && exception instanceof JoynrTimeoutException) {
-                        logger.warn("Global provider registration failed due to timeout, retrying: participantId {}, domain {}, interface {}, {}",
-                                    globalDiscoveryEntry.getParticipantId(),
-                                    globalDiscoveryEntry.getDomain(),
-                                    globalDiscoveryEntry.getInterfaceName(),
-                                    globalDiscoveryEntry.getProviderVersion(),
-                                    exception);
-                        gcdTaskSequencer.retryTask();
-                    } else {
-                        logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
-                                     globalDiscoveryEntry.getParticipantId(),
-                                     globalDiscoveryEntry.getDomain(),
-                                     globalDiscoveryEntry.getInterfaceName(),
-                                     globalDiscoveryEntry.getProviderVersion(),
-                                     exception);
-                        if (awaitGlobalRegistration == true) {
-                            globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
-                            localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
+                    return new CallbackWithModeledError<Void, DiscoveryError>() {
+                        private AtomicBoolean callbackCalled = new AtomicBoolean();
+
+                        @Override
+                        public void onSuccess(Void nothing) {
+                            if (!callbackCalled.getAndSet(true)) {
+                                logger.info("Global provider registration succeeded: participantId {}, domain {}, interface {}, {}",
+                                            globalDiscoveryEntry.getParticipantId(),
+                                            globalDiscoveryEntry.getDomain(),
+                                            globalDiscoveryEntry.getInterfaceName(),
+                                            globalDiscoveryEntry.getProviderVersion());
+                                gcdTaskSequencer.taskFinished();
+                                deferred.resolve();
+                            }
                         }
-                        gcdTaskSequencer.taskFinished();
-                        deferred.reject(new ProviderRuntimeException(exception.toString()));
-                    }
+
+                        @Override
+                        public void onFailure(JoynrRuntimeException exception) {
+                            if (!callbackCalled.getAndSet(true)) {
+                                if (doRetry && exception instanceof JoynrTimeoutException) {
+                                    logger.warn("Global provider registration failed due to timeout, retrying: participantId {}, domain {}, interface {}, {}",
+                                                globalDiscoveryEntry.getParticipantId(),
+                                                globalDiscoveryEntry.getDomain(),
+                                                globalDiscoveryEntry.getInterfaceName(),
+                                                globalDiscoveryEntry.getProviderVersion(),
+                                                exception);
+                                    gcdTaskSequencer.retryTask();
+                                } else {
+                                    logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
+                                                 globalDiscoveryEntry.getParticipantId(),
+                                                 globalDiscoveryEntry.getDomain(),
+                                                 globalDiscoveryEntry.getInterfaceName(),
+                                                 globalDiscoveryEntry.getProviderVersion(),
+                                                 exception);
+                                    if (awaitGlobalRegistration == true) {
+                                        globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
+                                        localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
+                                    }
+                                    gcdTaskSequencer.taskFinished();
+                                    deferred.reject(new ProviderRuntimeException(exception.toString()));
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(DiscoveryError errorEnum) {
+                            if (!callbackCalled.getAndSet(true)) {
+                                logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
+                                             globalDiscoveryEntry.getParticipantId(),
+                                             globalDiscoveryEntry.getDomain(),
+                                             globalDiscoveryEntry.getInterfaceName(),
+                                             globalDiscoveryEntry.getProviderVersion());
+                                if (awaitGlobalRegistration == true) {
+                                    globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
+                                    localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
+                                }
+                                gcdTaskSequencer.taskFinished();
+                                deferred.reject(errorEnum);
+                            }
+                        }
+
+                    };
                 }
 
-                @Override
-                public void onFailure(DiscoveryError errorEnum) {
-                    logger.error("Global provider registration failed: participantId {}, domain {}, interface {}, {}",
-                                 globalDiscoveryEntry.getParticipantId(),
-                                 globalDiscoveryEntry.getDomain(),
-                                 globalDiscoveryEntry.getInterfaceName(),
-                                 globalDiscoveryEntry.getProviderVersion());
-                    if (awaitGlobalRegistration == true) {
-                        globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
-                        localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
-                    }
-                    gcdTaskSequencer.taskFinished();
-                    deferred.reject(errorEnum);
-                }
             };
-            GcdTask addTask = GcdTask.createAddTask(callback, globalDiscoveryEntry, expiryDateMs, gbids, doRetry);
+            GcdTask addTask = GcdTask.createAddTask(callbackCreator,
+                                                    globalDiscoveryEntry,
+                                                    expiryDateMs,
+                                                    gbids,
+                                                    doRetry);
             logger.debug("Global provider registration scheduled: participantId {}, domain {}, interface {}, {}, awaitGlobalRegistration {}",
                          globalDiscoveryEntry.getParticipantId(),
                          globalDiscoveryEntry.getDomain(),
@@ -591,55 +612,72 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
             localDiscoveryEntryStore.remove(participantId);
             logger.info("Removed locally registered participantId {}", participantId);
         } else {
-            CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
+            CallbackCreator callbackCreator = new CallbackCreator() {
 
                 @Override
-                public void onSuccess(Void result) {
-                    synchronized (globalDiscoveryEntryCache) {
-                        globalProviderParticipantIdToGbidListMap.remove(participantId);
-                        localDiscoveryEntryStore.remove(participantId);
-                    }
-                    logger.info("Removed globally registered participantId {}", participantId);
-                    gcdTaskSequencer.taskFinished();
-                }
+                public CallbackWithModeledError<Void, DiscoveryError> createCallback() {
 
-                @Override
-                public void onFailure(JoynrRuntimeException error) {
-                    //check for instance of JoynrTimeoutException for retrying
-                    if (error instanceof JoynrTimeoutException) {
-                        logger.warn("Failed to remove participantId {} due to timeout, retrying", participantId, error);
-                        gcdTaskSequencer.retryTask();
-                    } else {
-                        logger.warn("Failed to remove participantId {}: {}", participantId, error);
-                        gcdTaskSequencer.taskFinished();
-                    }
-                }
+                    return new CallbackWithModeledError<Void, DiscoveryError>() {
 
-                @Override
-                public void onFailure(DiscoveryError errorEnum) {
-                    switch (errorEnum) {
-                    case NO_ENTRY_FOR_PARTICIPANT:
-                    case NO_ENTRY_FOR_SELECTED_BACKENDS:
-                        // already removed globally
-                        logger.warn("Error removing participantId {} globally: {}. Removing local entry.",
-                                    participantId,
-                                    errorEnum);
-                        synchronized (globalDiscoveryEntryCache) {
-                            globalProviderParticipantIdToGbidListMap.remove(participantId);
-                            localDiscoveryEntryStore.remove(participantId);
+                        private AtomicBoolean callbackCalled = new AtomicBoolean();
+
+                        @Override
+                        public void onSuccess(Void result) {
+                            if (!callbackCalled.getAndSet(true)) {
+                                synchronized (globalDiscoveryEntryCache) {
+                                    globalProviderParticipantIdToGbidListMap.remove(participantId);
+                                    localDiscoveryEntryStore.remove(participantId);
+                                }
+                                logger.info("Removed globally registered participantId {}", participantId);
+                                gcdTaskSequencer.taskFinished();
+                            }
                         }
-                        break;
-                    case INVALID_GBID:
-                    case UNKNOWN_GBID:
-                    case INTERNAL_ERROR:
-                    default:
-                        // do nothing
-                        logger.warn("Failed to remove participantId {}: {}", participantId, errorEnum);
-                    }
-                    gcdTaskSequencer.taskFinished();
+
+                        @Override
+                        public void onFailure(JoynrRuntimeException error) {
+                            if (!callbackCalled.getAndSet(true)) {
+                                //check for instance of JoynrTimeoutException for retrying
+                                if (error instanceof JoynrTimeoutException) {
+                                    logger.warn("Failed to remove participantId {} due to timeout, retrying",
+                                                participantId,
+                                                error);
+                                    gcdTaskSequencer.retryTask();
+                                } else {
+                                    logger.warn("Failed to remove participantId {}: {}", participantId, error);
+                                    gcdTaskSequencer.taskFinished();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(DiscoveryError errorEnum) {
+                            if (!callbackCalled.getAndSet(true)) {
+                                switch (errorEnum) {
+                                case NO_ENTRY_FOR_PARTICIPANT:
+                                case NO_ENTRY_FOR_SELECTED_BACKENDS:
+                                    // already removed globally
+                                    logger.warn("Error removing participantId {} globally: {}. Removing local entry.",
+                                                participantId,
+                                                errorEnum);
+                                    synchronized (globalDiscoveryEntryCache) {
+                                        globalProviderParticipantIdToGbidListMap.remove(participantId);
+                                        localDiscoveryEntryStore.remove(participantId);
+                                    }
+                                    break;
+                                case INVALID_GBID:
+                                case UNKNOWN_GBID:
+                                case INTERNAL_ERROR:
+                                default:
+                                    // do nothing
+                                    logger.warn("Failed to remove participantId {}: {}", participantId, errorEnum);
+                                }
+                                gcdTaskSequencer.taskFinished();
+                            }
+                        }
+                    };
                 }
             };
-            GcdTask removeTask = GcdTask.createRemoveTask(callback, participantId);
+            GcdTask removeTask = GcdTask.createRemoveTask(callbackCreator, participantId);
             logger.debug("Global remove scheduled, participantId {}", participantId);
             gcdTaskSequencer.addTask(removeTask);
         }
@@ -1402,7 +1440,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 }
                 if (foundExpiredEntry) {
                     queueSemaphore.acquireUninterruptibly();
-                    expiredTask.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                    expiredTask.callbackCreator.createCallback()
+                                               .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
                     workerSemaphore.acquireUninterruptibly();
                     taskQueue.remove(expiredTask);
                     continue;
@@ -1457,7 +1496,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                     }
                     long remainingTtl = task.expiryDateMs - System.currentTimeMillis();
                     if (task.expiryDateMs < System.currentTimeMillis()) {
-                        task.callback.onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                        task.callbackCreator.createCallback()
+                                            .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
                         continue;
                     }
                     performAdd(remainingTtl);
@@ -1481,14 +1521,14 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                          task.globalDiscoveryEntry.getDomain(),
                          task.globalDiscoveryEntry.getInterfaceName(),
                          task.globalDiscoveryEntry.getProviderVersion());
+            CallbackWithModeledError<Void, DiscoveryError> cb = task.callbackCreator.createCallback();
             try {
-                globalCapabilitiesDirectoryClient.add(task.callback, task.globalDiscoveryEntry, ttlMs, task.gbids);
+                globalCapabilitiesDirectoryClient.add(cb, task.globalDiscoveryEntry, ttlMs, task.gbids);
             } catch (Exception exception) {
                 if (exception instanceof JoynrRuntimeException) {
-                    task.callback.onFailure((JoynrRuntimeException) exception);
+                    cb.onFailure((JoynrRuntimeException) exception);
                 } else {
-                    task.callback.onFailure(new JoynrRuntimeException("Global registration failed: "
-                            + exception.toString()));
+                    cb.onFailure(new JoynrRuntimeException("Global registration failed: " + exception.toString()));
                 }
             }
         }
@@ -1584,16 +1624,16 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                     logger.info("Removing globally registered participantId {} for GBIDs {}",
                                 task.participantId,
                                 gbidsToRemove);
+                    CallbackWithModeledError<Void, DiscoveryError> cb = task.callbackCreator.createCallback();
                     try {
-                        globalCapabilitiesDirectoryClient.remove(task.callback,
+                        globalCapabilitiesDirectoryClient.remove(cb,
                                                                  task.participantId,
                                                                  gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
                     } catch (Exception exception) {
                         if (exception instanceof JoynrRuntimeException) {
-                            task.callback.onFailure((JoynrRuntimeException) exception);
+                            cb.onFailure((JoynrRuntimeException) exception);
                         } else {
-                            task.callback.onFailure(new JoynrRuntimeException("Global remove failed: "
-                                    + exception.toString()));
+                            cb.onFailure(new JoynrRuntimeException("Global remove failed: " + exception.toString()));
                         }
                     }
                 } else {
