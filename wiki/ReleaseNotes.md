@@ -2,6 +2,89 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.18.3
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Docker]** Examples and tests now use the Docker image `hivemq/hivemq-ce:latest` instead of
+  `hivemq/hivemq-ce:2021.2`.
+* **[Java]** In case of embedded clustercontroller runtime, reply messages
+  now contain the same customheaders as were contained in the request message
+  (i.e. derived from MQTT user properties and regular customHeaders for requests
+  received via MQTT).In the Reply message the merged headers are provided as regular
+  customHeaders which are then also additionally sent as MQTT user properties.
+* **[Java]** Return empty GBID in results when lookup was called with empty GBID.
+  In case of bad provisioning, the only known GBID is the empty GBID.
+  On a successful lookup, if the received address contained a non-empty GBID,
+  communication with the discovered provider would not be possible since the GBID
+  is not known.
+* **[Java]** Updated net.sf.ehcache:ehcache to 2.10.9.2.
+* **[Java]** Removed deprecated calls to `Method.isAccessible()`.
+* **[Java]** Updated org.jacoco:jacoco-maven-plugin to 0.8.7
+* **[Java]** Updated Mockito dependency to `mockito-core` 4.2.0 and removed `mockito-all`.
+* **[Java]** Updated Maven plugin `build-helper-maven-plugin` to version 3.2.0.
+* **[Java]** Updated `org.eclipse.jetty.websocket` dependencies to version `11.0.7`.
+* **[C++]** Requests (joynr RPC calls) are now aborted with an exception if the corresponding
+  request message is dropped because the queue limit is reached. A message is queued when the
+  recipient or the required transport, e.g. MQTT, is currently not available. Joynr creates a
+  reply message with an exception for each dropped request message.
+* **[C++]** Fixed the MQTT maximum message size check to correctly detect too large messages before
+  trying to publish the message to the MQTT Broker. The whole MQTT packet is now taken into account
+  instead of just the size of the payload.
+* **[C++]** Fixed some clang compiler warnings.
+
+## Configuration Property Changes
+* **[Java]** The optional MqttModule property
+  `PROPERTY_KEY_MQTT_DISABLE_HOSTNAME_VERIFICATION` has been added (default: false).
+  See the [Java Configuration Reference](JavaSettings.md) for details about this property.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Fixed log implementation to also log throwables if present as additional parameter.
+* **[Java]** Added missing Maven configuration to allow JavaDoc generation by executing
+  `mvn javadoc:jar`.
+* **[Java]** Fixed log statements in HivemqMqttClient and HivemqMqttClientFactory: exceptions are
+  now logged correctly with stack trace.
+* **[Java]** Provider registration was not thread safe which could cause `NullPointerException` when
+  multiple registrations were executed in parallel.
+* **[Java]** Prevented repeated delivery of the same multicast publication:  
+  In case of multiple subscriptions for the same multicast from the same runtime, the multicast was
+  delivered multiple times to all subscribers in this runtime.
+* **[Java]** Fixed unregistration for multicast subscriptions: unregistration was not implemented
+  correctly which could cause error logs for non deliverable or expired messages as well as repeated
+  delivery of the same multicast publication.
+* **[Java]** Fixed a bug in 'GcdTaskSequencer` that could lead to a crash. No further global
+  provider registration and and provider unregistration is possible afterwards.
+* **[Java]** Fixed a bug in `GcdTaskSequencer` that could lead to parallel task execution with 
+  unpredictable behaviour for global provider registration and unregistration.
+* **[Java,C++]** Fixed a bug where GuidedProxyBuilder failed to creata a proxy if interface minor
+  number of provider was greater than interface minor number of proxy while major number was
+  identical on both sides meaning the provider should have been considered to be compatible.
+* **[C++]** Fixed memory leak in `Directory.h`.
+* **[C++]** Fixed `CMakeLists.txt` of radio-app example.
+* **[C++]** Fixed a race condition that could cause unreachable providers when removal and
+  registration of a provider overlapped in the cluster controller (the routing entry of the provider
+  was erroneously removed by the callback of the asynchronous remove task in the cluster controller
+  after the provider had been registered again).
+* **[C++]** When ACL checks were enabled, it was possible that:
+  * incoming request messages to the cluster controller caused unnecessary error logs
+  * outgoing request messages were dropped if a provider discovery was required to perform the ACL
+    check (this could happen only if a lot of providers had been discovered before and the required
+    DiscoveryEntry had to be dropped from the cache because the size limit of 1000 entries had been
+    exceeded)
+
+  Discoveries for ACL checks now use a TTL of 60 seconds instead of invalid -1 seconds.
+* **[TS]** Remove undocumented dependency to '@types/nanoid'.
+* **[TS]** `joynr.load` now also accepts `UdsLibJoynrProvisioning` interface in addition to
+  `WebSocketLibjoynrProvisioning` and `InProcessProvisioning` as provisioning parameter. See
+  [JavaScript Configuration Reference](/wiki/JavaScriptSettings.md) for details about the different
+  provisioning settings for the different runtimes (`UdsLibJoynrRuntime` and
+  `WebSocketLibjoynrRuntime`).
+
 # joynr 1.18.2
 
 ## API-relevant Changes
