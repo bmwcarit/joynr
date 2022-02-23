@@ -51,7 +51,6 @@ class UdsClient {
      */
     private readonly promisifyWriteToSocket: (marshalledMessage: Buffer) => Promise<void>;
 
-    private encodingConf = { binary: true };
     private reconnectTimer: any;
     private connected: boolean = false;
     private closed: boolean = false;
@@ -99,11 +98,7 @@ class UdsClient {
 
         log.info(`Client trying to connect to ${this.socketPath} with clientId=${this.clientId} ...`);
         this.promisifyWriteToSocket = util.promisify((marshaledMessage: Buffer, cb: any) =>
-            this.socket!.write(
-                MagicCookieUtil.writeMagicCookies(marshaledMessage, MagicCookieUtil.MESSAGE_COOKIE),
-                this.encodingConf,
-                cb
-            )
+            this.socket!.write(MagicCookieUtil.writeMagicCookies(marshaledMessage, MagicCookieUtil.MESSAGE_COOKIE), cb)
         );
 
         this.onClose = this.onClose.bind(this);
@@ -144,7 +139,7 @@ class UdsClient {
                 initMsgBuff
             ).toString()}`
         );
-        this.socket.write(initMsgBuff, this.encodingConf);
+        this.socket.write(initMsgBuff);
 
         this.sendQueuedMessages();
     };
@@ -371,10 +366,7 @@ class UdsClient {
     }
 
     private writeToSocket(marshaledMessage: Buffer): void {
-        this.socket!.write(
-            MagicCookieUtil.writeMagicCookies(marshaledMessage, MagicCookieUtil.MESSAGE_COOKIE),
-            this.encodingConf
-        );
+        this.socket!.write(MagicCookieUtil.writeMagicCookies(marshaledMessage, MagicCookieUtil.MESSAGE_COOKIE));
     }
 
     /**
