@@ -1387,7 +1387,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
         private Logger logger = LoggerFactory.getLogger(GcdTaskSequencer.class);
         private volatile boolean isStopped = false;
-        private volatile GcdTask task;
+        private AtomicBoolean retryTask = new AtomicBoolean();
+        private GcdTask task;
         private final ConcurrentLinkedQueue<GcdTask> taskQueue;
         private Semaphore queueSemaphore;
         private Semaphore workerSemaphore;
@@ -1411,11 +1412,11 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         }
 
         public void retryTask() {
+            retryTask.set(true);
             workerSemaphore.release();
         }
 
         public void taskFinished() {
-            task = null;
             workerSemaphore.release();
         }
 
@@ -1427,7 +1428,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 for (GcdTask task : taskQueue) {
                     if (task.getMode() == GcdTask.MODE.ADD) {
                         timeTillNextExpiration = task.getExpiryDateMs() - System.currentTimeMillis();
-                        if ((task.getExpiryDateMs()) <= System.currentTimeMillis()) {
+                        if (timeTillNextExpiration <= 0) {
                             expiredTask = task;
                             foundExpiredEntry = true;
                             break;
@@ -1454,66 +1455,70 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
         @Override
         public void run() {
-            while (!isStopped) {
-                long timeTillNextExpiration = removeExpiredAndGetNextWaitTime();
+            try {
+                while (!isStopped) {
+                    long timeTillNextExpiration = removeExpiredAndGetNextWaitTime();
 
-                try {
-                    if (!workerSemaphore.tryAcquire(timeTillNextExpiration, TimeUnit.MILLISECONDS)) {
-                        continue;
-                    }
-                } catch (InterruptedException e) {
-                    logger.error("workerSemaphore.acquire() interrupted", e);
-                    continue;
-                }
-                if (isStopped) {
-                    break;
-                }
-
-                if (task == null) {
-                    // get new task, else: retry previous task
                     try {
-                        queueSemaphore.acquire();
+                        if (!workerSemaphore.tryAcquire(timeTillNextExpiration, TimeUnit.MILLISECONDS)) {
+                            continue;
+                        }
                     } catch (InterruptedException e) {
-                        logger.error("queueSemaphore.acquire() interrupted", e);
-                        workerSemaphore.release();
+                        logger.error("workerSemaphore.acquire() interrupted", e);
                         continue;
                     }
                     if (isStopped) {
                         break;
                     }
-                    task = taskQueue.poll();
+
+                    if (!retryTask.getAndSet(false)) {
+                        // get new task, else: retry previous task
+                        try {
+                            queueSemaphore.acquire();
+                        } catch (InterruptedException e) {
+                            logger.error("queueSemaphore.acquire() interrupted", e);
+                            workerSemaphore.release();
+                            continue;
+                        }
+                        if (isStopped) {
+                            break;
+                        }
+                        task = taskQueue.poll();
+                    }
                     if (task == null) {
-                        logger.debug("Retrieved addRemoveQueueEntry is null. Skipping and continuing.");
+                        logger.debug("Task is null. Skipping and continuing.");
                         workerSemaphore.release();
                         continue;
                     }
-                }
 
-                switch (task.getMode()) {
-                case ADD:
-                    if (task.isDoRetry()) {
-                        performAdd(defaultTtlAddAndRemove);
+                    switch (task.getMode()) {
+                    case ADD:
+                        if (task.isDoRetry()) {
+                            performAdd(defaultTtlAddAndRemove);
+                            break;
+                        }
+                        long remainingTtl = task.getExpiryDateMs() - System.currentTimeMillis();
+                        if (remainingTtl <= 0) {
+                            task.getCallbackCreator()
+                                .createCallback()
+                                .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                            continue;
+                        }
+                        performAdd(remainingTtl);
                         break;
+                    case READD:
+                        performReAdd();
+                        break;
+                    case REMOVE:
+                        performRemove();
+                        break;
+                    default:
+                        logger.error("Unknown operation in GlobalAddRemoveQueue.");
+                        taskFinished();
                     }
-                    long remainingTtl = task.getExpiryDateMs() - System.currentTimeMillis();
-                    if (task.getExpiryDateMs() < System.currentTimeMillis()) {
-                        task.getCallbackCreator()
-                            .createCallback()
-                            .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
-                        continue;
-                    }
-                    performAdd(remainingTtl);
-                    break;
-                case READD:
-                    performReAdd();
-                    break;
-                case REMOVE:
-                    performRemove();
-                    break;
-                default:
-                    logger.error("Unknown operation in GlobalAddRemoveQueue.");
-                    taskFinished();
                 }
+            } catch (Exception e) {
+                logger.error("FATAL error: unexpected exception, stopping GcdTaskSequencer.", e);
             }
         }
 
