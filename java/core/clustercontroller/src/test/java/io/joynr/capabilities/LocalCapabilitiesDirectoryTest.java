@@ -34,6 +34,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -51,6 +52,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
@@ -66,6 +68,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl.GcdTaskSequencer;
 import io.joynr.dispatching.Dispatcher;
@@ -113,6 +117,9 @@ import joynr.types.Version;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryTest.class);
+
     private static final int TEST_TIMEOUT = 10000;
     private static final int DEFAULT_WAIT_TIME_MS = 5000; // value should be shorter than TEST_TIMEOUT
     private static final String INTERFACE_NAME = "interfaceName";
@@ -438,6 +445,86 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
                                                                                 awaitGlobalRegistration);
         checkAddGlobal_invokesLocalStoreAndGcd(promise, expectedGbids);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void taskSequencerDoesNotCrashOnExceptionAfterAddTaskFinished() throws InterruptedException,
+                                                                           IllegalAccessException {
+        String[] expectedGbids = knownGbids.clone();
+        final boolean awaitGlobalRegistration = true;
+        reset(globalCapabilitiesDirectoryClient);
+
+        CountDownLatch cdl1 = new CountDownLatch(1);
+        CountDownLatch cdl2 = new CountDownLatch(1);
+        @SuppressWarnings("serial")
+        class TestGde extends GlobalDiscoveryEntry {
+            TestGde(GlobalDiscoveryEntry gde) {
+                super(gde);
+            }
+
+            @Override
+            public Version getProviderVersion() {
+                cdl1.countDown();
+                try {
+                    // block GcdTaskSequencer until taskFinished has been called
+                    cdl2.await();
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+                return super.getProviderVersion();
+            }
+        }
+        AtomicBoolean cbCalled = new AtomicBoolean();
+        TestGde gde = new TestGde(globalDiscoveryEntry);
+        GcdTask.CallbackCreator callbackCreator = new GcdTask.CallbackCreator() {
+            @Override
+            public CallbackWithModeledError<Void, DiscoveryError> createCallback() {
+                return new CallbackWithModeledError<Void, DiscoveryError>() {
+                    @Override
+                    public void onFailure(DiscoveryError errorEnum) {
+                        // taskFinished is called manually
+                        logger.error("onFailure callback called, DiscoveryError {}", errorEnum);
+                        cbCalled.set(true);
+                    }
+
+                    @Override
+                    public void onFailure(JoynrRuntimeException runtimeException) {
+                        // taskFinished is called manually
+                        logger.error("onFailure callback called:", runtimeException);
+                        cbCalled.set(true);
+                    }
+
+                    @Override
+                    public void onSuccess(Void result) {
+                        // taskFinished is called manually
+                        logger.error("onSuccess callback called");
+                        cbCalled.set(true);
+                    }
+                };
+            }
+        };
+        GcdTask task = GcdTask.createAddTask(callbackCreator, gde, expiryDateMs, knownGbids, true);
+        gcdTaskSequencer.addTask(task);
+
+        assertTrue(cdl1.await(DEFAULT_WAIT_TIME_MS * 100, TimeUnit.MILLISECONDS));
+        // call taskFinished while task is processed
+        gcdTaskSequencer.taskFinished();
+        cdl2.countDown();
+
+        verify(globalCapabilitiesDirectoryClient, timeout(1000).times(1)).add(any(),
+                                                                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
+                                                                              anyLong(),
+                                                                              eq(expectedGbids));
+
+        // check that GcdTaskSequencer is still alive
+        localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
+        verify(globalCapabilitiesDirectoryClient, timeout(1000).times(2)).add(any(),
+                                                                              any(),
+                                                                              anyLong(),
+                                                                              eq(expectedGbids));
+
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient);
+        assertFalse(cbCalled.get());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -4333,6 +4420,93 @@ public class LocalCapabilitiesDirectoryTest {
         testRemoveUsesSameGbidOrderAsAdd(new String[]{ knownGbids[0], knownGbids[1] });
 
         testRemoveUsesSameGbidOrderAsAdd(new String[]{ knownGbids[1], knownGbids[0] });
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void taskSequencerDoesNotCrashOnExceptionAfterRemoveTaskFinished() throws InterruptedException,
+                                                                              IllegalAccessException {
+        /// We have to add before we can remove anything
+        String[] expectedGbids = knownGbids.clone();
+        final boolean awaitGlobalRegistration = true;
+        Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
+                                                                                awaitGlobalRegistration);
+        checkPromiseSuccess(promise, "add failed");
+        verify(globalCapabilitiesDirectoryClient,
+               times(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                             any(),
+                             anyLong(),
+                             eq(expectedGbids));
+        reset(globalCapabilitiesDirectoryClient);
+        ///
+        ///The real test starts here
+        CountDownLatch cdl1 = new CountDownLatch(1);
+        CountDownLatch cdl2 = new CountDownLatch(1);
+
+        AtomicBoolean cbCalled = new AtomicBoolean();
+        GcdTask.CallbackCreator callbackCreator = new GcdTask.CallbackCreator() {
+            @Override
+            public CallbackWithModeledError<Void, DiscoveryError> createCallback() {
+                return new CallbackWithModeledError<Void, DiscoveryError>() {
+                    @Override
+                    public void onFailure(DiscoveryError errorEnum) {
+                        // taskFinished is called manually
+                        logger.error("onFailure callback called, DiscoveryError {}", errorEnum);
+                        cbCalled.set(true);
+                    }
+
+                    @Override
+                    public void onFailure(JoynrRuntimeException runtimeException) {
+                        // taskFinished is called manually
+                        logger.error("onFailure callback called:", runtimeException);
+                        cbCalled.set(true);
+                    }
+
+                    @Override
+                    public void onSuccess(Void result) {
+                        // taskFinished is called manually
+                        logger.error("onSuccess callback called");
+                        cbCalled.set(true);
+                    }
+                };
+            }
+        };
+        class TestGcdRemoveTask extends GcdTask {
+            public TestGcdRemoveTask(CallbackCreator callbackCreator, String participantId) {
+                super(MODE.REMOVE, callbackCreator, participantId, null, null, 0l, true);
+            }
+
+            @Override
+            public String getParticipantId() {
+                cdl1.countDown();
+                try {
+                    // block GcdTaskSequencer until taskFinished has been called
+                    cdl2.await();
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+                return super.getParticipantId();
+            }
+        }
+        TestGcdRemoveTask task = new TestGcdRemoveTask(callbackCreator, globalDiscoveryEntry.getParticipantId());
+        gcdTaskSequencer.addTask(task);
+
+        assertTrue(cdl1.await(DEFAULT_WAIT_TIME_MS * 100, TimeUnit.MILLISECONDS));
+        // call taskFinished while task is processed
+        gcdTaskSequencer.taskFinished();
+        cdl2.countDown();
+
+        verify(globalCapabilitiesDirectoryClient,
+               timeout(1000).times(1)).remove(any(), eq(globalDiscoveryEntry.getParticipantId()), eq(expectedGbids));
+
+        // check that GcdTaskSequencer is still alive
+        localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
+        verify(globalCapabilitiesDirectoryClient, timeout(1000).times(1)).add(any(),
+                                                                              any(),
+                                                                              anyLong(),
+                                                                              eq(expectedGbids));
+
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient);
+        assertFalse(cbCalled.get());
     }
 
     @Test(timeout = TEST_TIMEOUT)
