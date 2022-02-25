@@ -1425,9 +1425,9 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 GcdTask expiredTask = null;
                 boolean foundExpiredEntry = false;
                 for (GcdTask task : taskQueue) {
-                    if (task.mode == GcdTask.MODE.ADD) {
-                        timeTillNextExpiration = task.expiryDateMs - System.currentTimeMillis();
-                        if ((task.expiryDateMs) <= System.currentTimeMillis()) {
+                    if (task.getMode() == GcdTask.MODE.ADD) {
+                        timeTillNextExpiration = task.getExpiryDateMs() - System.currentTimeMillis();
+                        if ((task.getExpiryDateMs()) <= System.currentTimeMillis()) {
                             expiredTask = task;
                             foundExpiredEntry = true;
                             break;
@@ -1440,8 +1440,9 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 }
                 if (foundExpiredEntry) {
                     queueSemaphore.acquireUninterruptibly();
-                    expiredTask.callbackCreator.createCallback()
-                                               .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                    expiredTask.getCallbackCreator()
+                               .createCallback()
+                               .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
                     workerSemaphore.acquireUninterruptibly();
                     taskQueue.remove(expiredTask);
                     continue;
@@ -1488,16 +1489,17 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                     }
                 }
 
-                switch (task.mode) {
+                switch (task.getMode()) {
                 case ADD:
-                    if (task.doRetry) {
+                    if (task.isDoRetry()) {
                         performAdd(defaultTtlAddAndRemove);
                         break;
                     }
-                    long remainingTtl = task.expiryDateMs - System.currentTimeMillis();
-                    if (task.expiryDateMs < System.currentTimeMillis()) {
-                        task.callbackCreator.createCallback()
-                                            .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                    long remainingTtl = task.getExpiryDateMs() - System.currentTimeMillis();
+                    if (task.getExpiryDateMs() < System.currentTimeMillis()) {
+                        task.getCallbackCreator()
+                            .createCallback()
+                            .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
                         continue;
                     }
                     performAdd(remainingTtl);
@@ -1517,13 +1519,13 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
         private void performAdd(long ttlMs) {
             logger.debug("Global provider registration started: participantId {}, domain {}, interface {}, {}",
-                         task.globalDiscoveryEntry.getParticipantId(),
-                         task.globalDiscoveryEntry.getDomain(),
-                         task.globalDiscoveryEntry.getInterfaceName(),
-                         task.globalDiscoveryEntry.getProviderVersion());
-            CallbackWithModeledError<Void, DiscoveryError> cb = task.callbackCreator.createCallback();
+                         task.getGlobalDiscoveryEntry().getParticipantId(),
+                         task.getGlobalDiscoveryEntry().getDomain(),
+                         task.getGlobalDiscoveryEntry().getInterfaceName(),
+                         task.getGlobalDiscoveryEntry().getProviderVersion());
+            CallbackWithModeledError<Void, DiscoveryError> cb = task.getCallbackCreator().createCallback();
             try {
-                globalCapabilitiesDirectoryClient.add(cb, task.globalDiscoveryEntry, ttlMs, task.gbids);
+                globalCapabilitiesDirectoryClient.add(cb, task.getGlobalDiscoveryEntry(), ttlMs, task.getGbids());
             } catch (Exception exception) {
                 if (exception instanceof JoynrRuntimeException) {
                     cb.onFailure((JoynrRuntimeException) exception);
@@ -1619,15 +1621,16 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
         private void performRemove() {
             synchronized (globalDiscoveryEntryCache) {
-                if (globalProviderParticipantIdToGbidListMap.containsKey(task.participantId)) {
-                    List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(task.participantId);
+                String participantId = task.getParticipantId();
+                if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
+                    List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(participantId);
                     logger.info("Removing globally registered participantId {} for GBIDs {}",
-                                task.participantId,
+                                participantId,
                                 gbidsToRemove);
-                    CallbackWithModeledError<Void, DiscoveryError> cb = task.callbackCreator.createCallback();
+                    CallbackWithModeledError<Void, DiscoveryError> cb = task.getCallbackCreator().createCallback();
                     try {
                         globalCapabilitiesDirectoryClient.remove(cb,
-                                                                 task.participantId,
+                                                                 participantId,
                                                                  gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
                     } catch (Exception exception) {
                         if (exception instanceof JoynrRuntimeException) {
@@ -1637,7 +1640,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                         }
                     }
                 } else {
-                    logger.warn("Participant {} is not registered globally and cannot be removed!", task.participantId);
+                    logger.warn("Participant {} is not registered globally and cannot be removed!", participantId);
                     taskFinished();
                 }
             }

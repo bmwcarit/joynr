@@ -31,21 +31,49 @@ public class GcdTask {
         public abstract CallbackWithModeledError<Void, DiscoveryError> createCallback();
     }
 
-    public final MODE mode;
-    public final CallbackCreator callbackCreator;
-    public final String participantId;
-    public final GlobalDiscoveryEntry globalDiscoveryEntry;
-    public final String[] gbids;
-    public final long expiryDateMs;
-    public final boolean doRetry;
+    private final MODE mode;
+    private final CallbackCreator callbackCreator;
+    private final String participantId;
+    private final GlobalDiscoveryEntry globalDiscoveryEntry;
+    private final String[] gbids;
+    private final long expiryDateMs;
+    private final boolean doRetry;
 
-    private GcdTask(MODE mode,
-                    CallbackCreator callbackCreator,
-                    String participantId,
-                    GlobalDiscoveryEntry globalDiscoveryEntry,
-                    String[] gbids,
-                    long expiryDateMs,
-                    boolean doRetry) {
+    public MODE getMode() {
+        return mode;
+    }
+
+    public CallbackCreator getCallbackCreator() {
+        return callbackCreator;
+    }
+
+    public String getParticipantId() {
+        return participantId;
+    }
+
+    public GlobalDiscoveryEntry getGlobalDiscoveryEntry() {
+        return globalDiscoveryEntry;
+    }
+
+    public String[] getGbids() {
+        return gbids;
+    }
+
+    public long getExpiryDateMs() {
+        return expiryDateMs;
+    }
+
+    public boolean isDoRetry() {
+        return doRetry;
+    }
+
+    protected GcdTask(MODE mode,
+                      CallbackCreator callbackCreator,
+                      String participantId,
+                      GlobalDiscoveryEntry globalDiscoveryEntry,
+                      String[] gbids,
+                      long expiryDateMs,
+                      boolean doRetry) {
         this.mode = mode;
         this.callbackCreator = callbackCreator;
         this.participantId = participantId;
