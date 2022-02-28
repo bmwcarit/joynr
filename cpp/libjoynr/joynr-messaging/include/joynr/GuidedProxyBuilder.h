@@ -67,8 +67,8 @@ public:
 private:
     DiscoveryResult createDiscoveryResultFromArbitrationResult(
             const ArbitrationResult& arbitrationResult);
-    bool checkProviderAndProxyVersions(const types::Version& providerVersion,
-                                       const types::Version& proxyVersion);
+    bool checkProviderAndProxyCompatibility(const types::Version& providerVersion,
+                                            const types::Version& proxyVersion);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(GuidedProxyBuilder);
@@ -132,7 +132,8 @@ std::shared_ptr<TProxy> GuidedProxyBuilder::buildProxy(const std::string& partic
     // Check version compatibility of proxy's interface and found discovery entry
     joynr::types::Version interfaceVersion =
             joynr::types::Version(TProxy::MAJOR_VERSION, TProxy::MINOR_VERSION);
-    if (!checkProviderAndProxyVersions(discoveryEntry.getProviderVersion(), interfaceVersion)) {
+    if (!checkProviderAndProxyCompatibility(
+                discoveryEntry.getProviderVersion(), interfaceVersion)) {
         throw exceptions::DiscoveryException("Interface " + _interfaceName +
                                              " and provider with participant ID" + participantId +
                                              " have incompatible versions!");

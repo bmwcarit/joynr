@@ -58,10 +58,70 @@ const std::string& MockDifferentVersionProvider::getInterfaceName() const
     return INTERFACE_NAME();
 }
 
+class MockSameMajorAndHigherMinorVersionProvider : public joynr::AbstractJoynrProvider {
+public:
+    static const std::int32_t MAJOR_VERSION;
+    static const std::int32_t MINOR_VERSION;
+    ~MockSameMajorAndHigherMinorVersionProvider() override = default;
+    const std::string& getInterfaceName() const override;
+    static const std::string& INTERFACE_NAME();
+};
+
+const std::int32_t MockSameMajorAndHigherMinorVersionProvider::MAJOR_VERSION = 47;
+const std::int32_t MockSameMajorAndHigherMinorVersionProvider::MINOR_VERSION = 42;
+
+const std::string& MockSameMajorAndHigherMinorVersionProvider::INTERFACE_NAME()
+{
+    static const std::string INTERFACE_NAME(tests::testProxy::INTERFACE_NAME());
+    return INTERFACE_NAME;
+}
+
+const std::string& MockSameMajorAndHigherMinorVersionProvider::getInterfaceName() const
+{
+    return INTERFACE_NAME();
+}
+
+class MockSameMajorAndLowerMinorVersionProvider : public joynr::AbstractJoynrProvider {
+public:
+    static const std::int32_t MAJOR_VERSION;
+    static const std::int32_t MINOR_VERSION;
+    ~MockSameMajorAndLowerMinorVersionProvider() override = default;
+    const std::string& getInterfaceName() const override;
+    static const std::string& INTERFACE_NAME();
+};
+
+const std::int32_t MockSameMajorAndLowerMinorVersionProvider::MAJOR_VERSION = 47;
+const std::int32_t MockSameMajorAndLowerMinorVersionProvider::MINOR_VERSION = 10;
+
+const std::string& MockSameMajorAndLowerMinorVersionProvider::INTERFACE_NAME()
+{
+    static const std::string INTERFACE_NAME(tests::testProxy::INTERFACE_NAME());
+    return INTERFACE_NAME;
+}
+
+const std::string& MockSameMajorAndLowerMinorVersionProvider::getInterfaceName() const
+{
+    return INTERFACE_NAME();
+}
+
 namespace joynr
 {
 template <>
 inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockDifferentVersionProvider>(std::shared_ptr<MockDifferentVersionProvider> provider)
+{
+    std::ignore = provider;
+    return std::shared_ptr<RequestCaller>(nullptr);
+}
+
+template <>
+inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockSameMajorAndHigherMinorVersionProvider>(std::shared_ptr<MockSameMajorAndHigherMinorVersionProvider> provider)
+{
+    std::ignore = provider;
+    return std::shared_ptr<RequestCaller>(nullptr);
+}
+
+template <>
+inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockSameMajorAndLowerMinorVersionProvider>(std::shared_ptr<MockSameMajorAndLowerMinorVersionProvider> provider)
 {
     std::ignore = provider;
     return std::shared_ptr<RequestCaller>(nullptr);
@@ -301,6 +361,59 @@ TEST_F(GuidedProxyBuilderTest, buildProxy_throwsException_whenVersionDoNotMatch)
     types::ProviderQos providerQos;
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
     std::string participantId = runtime->registerProvider<MockDifferentVersionProvider>(
+            domain, mockProvider, providerQos);
+
+    std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
+            runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
+            ->setMessagingQos(messagingQos)
+            ->setDiscoveryQos(discoveryQos);
+
+    JOYNR_EXPECT_NO_THROW(testGuidedProxyBuilder->discover());
+    bool exceptionThrown = false;
+    bool messageFound = false;
+    try {
+        std::shared_ptr<tests::testProxy> testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
+    } catch (const exceptions::DiscoveryException& e) {
+        exceptionThrown = true;
+        std::string exceptionMessage = e.getMessage();
+        std::string expectedSubstring = "have incompatible versions!";
+        messageFound = exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
+    }
+
+    EXPECT_TRUE(exceptionThrown);
+    EXPECT_TRUE(messageFound);
+
+    runtime->unregisterProvider(participantId);
+}
+
+TEST_F(GuidedProxyBuilderTest, buildProxy_succeeds_whenMinorProviderVersionHigher)
+{
+    const std::string domain = TEST_DOMAIN;
+    auto mockProvider = std::make_shared<MockSameMajorAndHigherMinorVersionProvider>();
+    types::ProviderQos providerQos;
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+    std::string participantId = runtime->registerProvider<MockSameMajorAndHigherMinorVersionProvider>(
+            domain, mockProvider, providerQos);
+
+    std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
+            runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
+            ->setMessagingQos(messagingQos)
+            ->setDiscoveryQos(discoveryQos);
+
+    JOYNR_EXPECT_NO_THROW(testGuidedProxyBuilder->discover());
+    std::shared_ptr<tests::testProxy> testProxy;
+    JOYNR_EXPECT_NO_THROW(testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId));
+    EXPECT_NE(testProxy, nullptr);
+    runtime->unregisterProvider(participantId);
+}
+
+TEST_F(GuidedProxyBuilderTest, buildProxy_throwsException_whenMinorProviderVersionLower)
+{
+    const std::string domain = TEST_DOMAIN;
+    auto mockProvider = std::make_shared<MockSameMajorAndLowerMinorVersionProvider>();
+    types::ProviderQos providerQos;
+    providerQos.setScope(joynr::types::ProviderScope::LOCAL);
+    std::string participantId = runtime->registerProvider<MockSameMajorAndLowerMinorVersionProvider>(
             domain, mockProvider, providerQos);
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =

@@ -183,13 +183,12 @@ DiscoveryResult GuidedProxyBuilder::createDiscoveryResultFromArbitrationResult(
     return DiscoveryResult(arbitrationResult.getDiscoveryEntries());
 }
 
-bool GuidedProxyBuilder::checkProviderAndProxyVersions(const joynr::types::Version& providerVersion,
-                                                       const types::Version& proxyVersion)
+bool GuidedProxyBuilder::checkProviderAndProxyCompatibility(
+        const joynr::types::Version& providerVersion,
+        const types::Version& proxyVersion)
 {
-    if (providerVersion.equals(proxyVersion, 1)) {
-        return true;
-    }
-    return false;
+    return (providerVersion.getMajorVersion() == proxyVersion.getMajorVersion() &&
+            providerVersion.getMinorVersion() >= proxyVersion.getMinorVersion());
 }
 
 } // namespace joynr
