@@ -162,11 +162,6 @@ RUN export VALGRIND_VERSION=3.15.0 \
         && rm -rf /tmp/valgrind-$VALGRIND_VERSION /tmp/valgrind-$VALGRIND_VERSION.tar.bz2
 
 ###################################################
-# Copy build scripts
-###################################################
-COPY scripts /data/scripts
-
-###################################################
 # setup build environment
 ###################################################
 RUN date -R > /data/timestamp

@@ -1,4 +1,4 @@
-FROM joynr-java:latest
+FROM joynr-base:latest
 
 USER root
 ###################################################
@@ -13,7 +13,7 @@ RUN dnf install -y \
     mesa-libGLU.i686 \
     && dnf clean all
 
-COPY scripts/build/* /data/scripts/build/
+COPY scripts/build/setup-android.sh /data/scripts/build/setup-android.sh
 RUN chmod 777 -R /data/scripts/build/
 
 ENV ANDROID_SDK_FILENAME commandlinetools-linux-7583922_latest.zip
