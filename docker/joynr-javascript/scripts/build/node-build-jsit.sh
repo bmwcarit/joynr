@@ -18,7 +18,7 @@
 # #L%
 ###
 
-source /data/src/docker/joynr-base/scripts/global.sh
+source /data/src/docker/joynr-base/scripts/ci/global.sh
 
 cd /data/src
 

@@ -19,7 +19,8 @@ RUN mkdir /home/joynr/build
 ###################################################
 # copy scripts and set start command
 ###################################################
-COPY scripts /data/scripts
+COPY scripts/docker/setup-proxy.sh /data/scripts/setup-proxy.sh
+COPY scripts/docker/setup-extra-certs.sh /data/scripts/setup-extra-certs.sh
 
 ###################################################
 # Setup dnf.conf

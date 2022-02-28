@@ -200,7 +200,7 @@ find  $CPP_BUILDDIR/smrf/package/RPM/x86_64/ -iregex ".*smrf-[0-9].*rpm" -exec c
 cp $JOYNR_REPODIR/docker/build/MoCOCrW.tar.gz $DOCKER_BUILDDIR/MoCOCrW.tar.gz
 cp $JOYNR_REPODIR/docker/build/mosquitto.tar.gz $DOCKER_BUILDDIR/mosquitto.tar.gz
 
-cp -R $JOYNR_REPODIR/docker/joynr-base/scripts/gen-certificates.sh ${DOCKER_BUILDDIR}
+cp -R $JOYNR_REPODIR/docker/joynr-base/scripts/docker/gen-certificates.sh ${DOCKER_BUILDDIR}
 cp -R $JOYNR_REPODIR/docker/joynr-base/openssl.conf ${DOCKER_BUILDDIR}
 
 CURRENTDATE=`date`

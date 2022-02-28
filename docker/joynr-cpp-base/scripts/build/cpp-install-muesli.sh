@@ -3,7 +3,7 @@
 # fail on first error
 set -e
 
-source /data/src/docker/joynr-base/scripts/global.sh
+source /data/src/docker/joynr-base/scripts/ci/global.sh
 
 START=$(date +%s)
 

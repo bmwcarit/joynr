@@ -9,7 +9,7 @@ if [ -z "$(docker version 2>/dev/null)" ]; then
 	exit 1
 fi
 
-DB_INIT_FILE=../joynr-base/scripts/init.sql
+DB_INIT_FILE=$(find ../ -name "init.sql")
 
 if [ ! -f $DB_INIT_FILE ]; then
     echo "ERROR: Missing $DB_INIT_FILE. Can't proceed."
