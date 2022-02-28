@@ -98,7 +98,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
     }
 
-    private static final long READD_INTERVAL_DAYS = 7L;
+    private static final long RE_ADD_INTERVAL_DAYS = 7L;
     private static final long REMOVESTALE_MAX_RETRY_MS = 3600000L;
 
     private ScheduledExecutorService scheduler;
@@ -1378,8 +1378,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
             }
         };
         reAddAllGlobalEntriesScheduledFuture = scheduler.scheduleAtFixedRate(command,
-                                                                             READD_INTERVAL_DAYS,
-                                                                             READD_INTERVAL_DAYS,
+                                                                             RE_ADD_INTERVAL_DAYS,
+                                                                             RE_ADD_INTERVAL_DAYS,
                                                                              TimeUnit.DAYS);
     }
 
@@ -1506,7 +1506,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                         }
                         performAdd(remainingTtl);
                         break;
-                    case READD:
+                    case RE_ADD:
                         performReAdd();
                         break;
                     case REMOVE:

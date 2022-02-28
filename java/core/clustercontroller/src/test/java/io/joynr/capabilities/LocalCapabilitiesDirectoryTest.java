@@ -127,7 +127,7 @@ public class LocalCapabilitiesDirectoryTest {
     private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
     private static final long freshnessUpdateIntervalMs = 300;
     private static final long DEFAULT_EXPIRY_TIME_MS = 3628800000l;
-    private static final long READD_INTERVAL_DAYS = 7l;
+    private static final long RE_ADD_INTERVAL_DAYS = 7l;
     private static final long defaultTtlAddAndRemove = MessagingQos.DEFAULT_TTL;
 
     private LocalCapabilitiesDirectory localCapabilitiesDirectory;
@@ -5233,8 +5233,8 @@ public class LocalCapabilitiesDirectoryTest {
         verify(globalCapabilitiesDirectoryClient, times(0)).add(any(), any(), anyLong(), any());
 
         verify(capabilitiesFreshnessUpdateExecutor).scheduleAtFixedRate(runnableCaptor.capture(),
-                                                                        eq(READD_INTERVAL_DAYS),
-                                                                        eq(READD_INTERVAL_DAYS),
+                                                                        eq(RE_ADD_INTERVAL_DAYS),
+                                                                        eq(RE_ADD_INTERVAL_DAYS),
                                                                         eq(TimeUnit.DAYS));
 
         // capture the runnable and execute it to schedule the re-add task
