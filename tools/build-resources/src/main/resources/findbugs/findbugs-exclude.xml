@@ -120,6 +120,10 @@
 		<Bug pattern="IS2_INCONSISTENT_SYNC"/>
 	</Match>
 	<Match>
+		<Class name="io.joynr.capabilities.GcdTask" />
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
 		<Class name="io.joynr.messaging.routing.LibJoynrMessageRouter" />
 		<Field name="ready"/>
 		<Bug pattern="IS2_INCONSISTENT_SYNC"/>

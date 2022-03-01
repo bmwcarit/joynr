@@ -98,7 +98,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         INCLUDE_GLOBAL_SCOPES.add(DiscoveryScope.LOCAL_THEN_GLOBAL);
     }
 
-    private static final long READD_INTERVAL_DAYS = 7L;
+    private static final long RE_ADD_INTERVAL_DAYS = 7L;
     private static final long REMOVESTALE_MAX_RETRY_MS = 3600000L;
 
     private ScheduledExecutorService scheduler;
@@ -1378,8 +1378,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
             }
         };
         reAddAllGlobalEntriesScheduledFuture = scheduler.scheduleAtFixedRate(command,
-                                                                             READD_INTERVAL_DAYS,
-                                                                             READD_INTERVAL_DAYS,
+                                                                             RE_ADD_INTERVAL_DAYS,
+                                                                             RE_ADD_INTERVAL_DAYS,
                                                                              TimeUnit.DAYS);
     }
 
@@ -1387,7 +1387,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
         private Logger logger = LoggerFactory.getLogger(GcdTaskSequencer.class);
         private volatile boolean isStopped = false;
-        private volatile GcdTask task;
+        private AtomicBoolean retryTask = new AtomicBoolean();
+        private GcdTask task;
         private final ConcurrentLinkedQueue<GcdTask> taskQueue;
         private Semaphore queueSemaphore;
         private Semaphore workerSemaphore;
@@ -1411,11 +1412,11 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         }
 
         public void retryTask() {
+            retryTask.set(true);
             workerSemaphore.release();
         }
 
         public void taskFinished() {
-            task = null;
             workerSemaphore.release();
         }
 
@@ -1425,9 +1426,9 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 GcdTask expiredTask = null;
                 boolean foundExpiredEntry = false;
                 for (GcdTask task : taskQueue) {
-                    if (task.mode == GcdTask.MODE.ADD) {
-                        timeTillNextExpiration = task.expiryDateMs - System.currentTimeMillis();
-                        if ((task.expiryDateMs) <= System.currentTimeMillis()) {
+                    if (task.getMode() == GcdTask.MODE.ADD) {
+                        timeTillNextExpiration = task.getExpiryDateMs() - System.currentTimeMillis();
+                        if (timeTillNextExpiration <= 0) {
                             expiredTask = task;
                             foundExpiredEntry = true;
                             break;
@@ -1440,8 +1441,9 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 }
                 if (foundExpiredEntry) {
                     queueSemaphore.acquireUninterruptibly();
-                    expiredTask.callbackCreator.createCallback()
-                                               .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                    expiredTask.getCallbackCreator()
+                               .createCallback()
+                               .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
                     workerSemaphore.acquireUninterruptibly();
                     taskQueue.remove(expiredTask);
                     continue;
@@ -1453,77 +1455,82 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
         @Override
         public void run() {
-            while (!isStopped) {
-                long timeTillNextExpiration = removeExpiredAndGetNextWaitTime();
+            try {
+                while (!isStopped) {
+                    long timeTillNextExpiration = removeExpiredAndGetNextWaitTime();
 
-                try {
-                    if (!workerSemaphore.tryAcquire(timeTillNextExpiration, TimeUnit.MILLISECONDS)) {
-                        continue;
-                    }
-                } catch (InterruptedException e) {
-                    logger.error("workerSemaphore.acquire() interrupted", e);
-                    continue;
-                }
-                if (isStopped) {
-                    break;
-                }
-
-                if (task == null) {
-                    // get new task, else: retry previous task
                     try {
-                        queueSemaphore.acquire();
+                        if (!workerSemaphore.tryAcquire(timeTillNextExpiration, TimeUnit.MILLISECONDS)) {
+                            continue;
+                        }
                     } catch (InterruptedException e) {
-                        logger.error("queueSemaphore.acquire() interrupted", e);
-                        workerSemaphore.release();
+                        logger.error("workerSemaphore.acquire() interrupted", e);
                         continue;
                     }
                     if (isStopped) {
                         break;
                     }
-                    task = taskQueue.poll();
+
+                    if (!retryTask.getAndSet(false)) {
+                        // get new task, else: retry previous task
+                        try {
+                            queueSemaphore.acquire();
+                        } catch (InterruptedException e) {
+                            logger.error("queueSemaphore.acquire() interrupted", e);
+                            workerSemaphore.release();
+                            continue;
+                        }
+                        if (isStopped) {
+                            break;
+                        }
+                        task = taskQueue.poll();
+                    }
                     if (task == null) {
-                        logger.debug("Retrieved addRemoveQueueEntry is null. Skipping and continuing.");
+                        logger.debug("Task is null. Skipping and continuing.");
                         workerSemaphore.release();
                         continue;
                     }
-                }
 
-                switch (task.mode) {
-                case ADD:
-                    if (task.doRetry) {
-                        performAdd(defaultTtlAddAndRemove);
+                    switch (task.getMode()) {
+                    case ADD:
+                        if (task.isDoRetry()) {
+                            performAdd(defaultTtlAddAndRemove);
+                            break;
+                        }
+                        long remainingTtl = task.getExpiryDateMs() - System.currentTimeMillis();
+                        if (remainingTtl <= 0) {
+                            task.getCallbackCreator()
+                                .createCallback()
+                                .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
+                            continue;
+                        }
+                        performAdd(remainingTtl);
                         break;
+                    case RE_ADD:
+                        performReAdd();
+                        break;
+                    case REMOVE:
+                        performRemove();
+                        break;
+                    default:
+                        logger.error("Unknown operation in GlobalAddRemoveQueue.");
+                        taskFinished();
                     }
-                    long remainingTtl = task.expiryDateMs - System.currentTimeMillis();
-                    if (task.expiryDateMs < System.currentTimeMillis()) {
-                        task.callbackCreator.createCallback()
-                                            .onFailure(new JoynrRuntimeException("Failed to process global registration in time, please try again"));
-                        continue;
-                    }
-                    performAdd(remainingTtl);
-                    break;
-                case READD:
-                    performReAdd();
-                    break;
-                case REMOVE:
-                    performRemove();
-                    break;
-                default:
-                    logger.error("Unknown operation in GlobalAddRemoveQueue.");
-                    taskFinished();
                 }
+            } catch (Exception e) {
+                logger.error("FATAL error: unexpected exception, stopping GcdTaskSequencer.", e);
             }
         }
 
         private void performAdd(long ttlMs) {
             logger.debug("Global provider registration started: participantId {}, domain {}, interface {}, {}",
-                         task.globalDiscoveryEntry.getParticipantId(),
-                         task.globalDiscoveryEntry.getDomain(),
-                         task.globalDiscoveryEntry.getInterfaceName(),
-                         task.globalDiscoveryEntry.getProviderVersion());
-            CallbackWithModeledError<Void, DiscoveryError> cb = task.callbackCreator.createCallback();
+                         task.getGlobalDiscoveryEntry().getParticipantId(),
+                         task.getGlobalDiscoveryEntry().getDomain(),
+                         task.getGlobalDiscoveryEntry().getInterfaceName(),
+                         task.getGlobalDiscoveryEntry().getProviderVersion());
+            CallbackWithModeledError<Void, DiscoveryError> cb = task.getCallbackCreator().createCallback();
             try {
-                globalCapabilitiesDirectoryClient.add(cb, task.globalDiscoveryEntry, ttlMs, task.gbids);
+                globalCapabilitiesDirectoryClient.add(cb, task.getGlobalDiscoveryEntry(), ttlMs, task.getGbids());
             } catch (Exception exception) {
                 if (exception instanceof JoynrRuntimeException) {
                     cb.onFailure((JoynrRuntimeException) exception);
@@ -1619,15 +1626,16 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
         private void performRemove() {
             synchronized (globalDiscoveryEntryCache) {
-                if (globalProviderParticipantIdToGbidListMap.containsKey(task.participantId)) {
-                    List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(task.participantId);
+                String participantId = task.getParticipantId();
+                if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
+                    List<String> gbidsToRemove = globalProviderParticipantIdToGbidListMap.get(participantId);
                     logger.info("Removing globally registered participantId {} for GBIDs {}",
-                                task.participantId,
+                                participantId,
                                 gbidsToRemove);
-                    CallbackWithModeledError<Void, DiscoveryError> cb = task.callbackCreator.createCallback();
+                    CallbackWithModeledError<Void, DiscoveryError> cb = task.getCallbackCreator().createCallback();
                     try {
                         globalCapabilitiesDirectoryClient.remove(cb,
-                                                                 task.participantId,
+                                                                 participantId,
                                                                  gbidsToRemove.toArray(new String[gbidsToRemove.size()]));
                     } catch (Exception exception) {
                         if (exception instanceof JoynrRuntimeException) {
@@ -1637,7 +1645,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                         }
                     }
                 } else {
-                    logger.warn("Participant {} is not registered globally and cannot be removed!", task.participantId);
+                    logger.warn("Participant {} is not registered globally and cannot be removed!", participantId);
                     taskFinished();
                 }
             }
