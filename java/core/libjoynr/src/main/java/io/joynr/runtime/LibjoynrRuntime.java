@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
@@ -50,6 +51,7 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            LocalDiscoveryAggregator localDiscoveryAggregator,
                            StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                            DiscoverySettingsStorage discoverySettingsStorage,
+                           VersionCompatibilityChecker versionCompatibilityChecker,
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) final Address ccMessagingAddress,
                            final LibJoynrMessageRouter messageRouter,
@@ -61,7 +63,8 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
               localDiscoveryAggregator,
               messageRouter,
               statelessAsyncCallbackDirectory,
-              discoverySettingsStorage);
+              discoverySettingsStorage,
+              versionCompatibilityChecker);
 
         final ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
 

@@ -32,6 +32,7 @@ import com.google.inject.Inject;
 
 import io.joynr.UsedBy;
 import io.joynr.arbitration.ArbitratorFactory;
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -77,22 +78,27 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     private DiscoverySettingsStorage discoverySettingsStorage;
 
+    private VersionCompatibilityChecker versionCompatibilityChecker;
+
     private final ProxyBuilderFactory proxyBuilderFactory;
 
     private Queue<Future<Void>> unregisterProviderQueue = new ConcurrentLinkedQueue<Future<Void>>();
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JoynrRuntimeImpl(ObjectMapper objectMapper,
                             ProxyBuilderFactory proxyBuilderFactory,
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
                             MessageRouter messageRouter,
                             StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
-                            DiscoverySettingsStorage discoverySettingsStorage) {
+                            DiscoverySettingsStorage discoverySettingsStorage,
+                            VersionCompatibilityChecker versionCompatibilityChecker) {
         this.messageRouter = messageRouter;
         this.objectMapper = objectMapper;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
         this.discoverySettingsStorage = discoverySettingsStorage;
+        this.versionCompatibilityChecker = versionCompatibilityChecker;
 
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
@@ -263,7 +269,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         GuidedProxyBuilder guidedProxyBuilder = new GuidedProxyBuilder(discoverySettingsStorage,
                                                                        domains,
                                                                        interfaceClass,
-                                                                       messageRouter);
+                                                                       messageRouter,
+                                                                       versionCompatibilityChecker);
         return guidedProxyBuilder;
     }
 

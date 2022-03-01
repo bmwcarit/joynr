@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.ParticipantIdStorage;
@@ -69,6 +70,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     RoutingTable routingTable,
                                     StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                                     DiscoverySettingsStorage discoverySettingsStorage,
+                                    VersionCompatibilityChecker versionCompatibilityChecker,
                                     ParticipantIdStorage participantIdStorage,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -85,7 +87,8 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               localDiscoveryAggregator,
               messageRouter,
               statelessAsyncCallbackDirectory,
-              discoverySettingsStorage);
+              discoverySettingsStorage,
+              versionCompatibilityChecker);
 
         if (dispatcherAddress instanceof InProcessAddress) {
             ((InProcessAddress) dispatcherAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
