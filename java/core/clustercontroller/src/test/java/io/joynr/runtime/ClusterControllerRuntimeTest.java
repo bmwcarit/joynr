@@ -35,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.arbitration.ArbitratorFactory;
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.ParticipantIdStorage;
@@ -72,6 +73,8 @@ public class ClusterControllerRuntimeTest {
     private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectoryMock;
     @Mock
     private DiscoverySettingsStorage discoverySettingsStorageMock;
+    @Mock
+    private VersionCompatibilityChecker versionCompatibilityChecker;
     @Mock
     ParticipantIdStorage participantIdStorageMock;
     @Mock
@@ -114,6 +117,7 @@ public class ClusterControllerRuntimeTest {
                                                  routingTableMock,
                                                  statelessAsyncCallbackDirectoryMock,
                                                  discoverySettingsStorageMock,
+                                                 versionCompatibilityChecker,
                                                  participantIdStorageMock,
                                                  systemServicesDomain,
                                                  dispatcherAddress,
