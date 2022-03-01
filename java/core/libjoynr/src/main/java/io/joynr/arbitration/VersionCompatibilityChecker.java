@@ -25,7 +25,7 @@ import joynr.types.Version;
 /**
  * Utility class to check whether two {@link Version versions} are compatible
  * with each other or not. Use the {@link #check(Version, Version)} method
- * to perform the version compatiblity check.
+ * to perform the version compatibility check.
  */
 public class VersionCompatibilityChecker {
 
