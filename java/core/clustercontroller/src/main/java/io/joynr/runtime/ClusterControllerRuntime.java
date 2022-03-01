@@ -59,8 +59,8 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> removeStaleScheduledFuture;
 
-    // CHECKSTYLE:OFF
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public ClusterControllerRuntime(ObjectMapper objectMapper,
                                     ProxyBuilderFactory proxyBuilderFactory,
                                     Dispatcher dispatcher,
@@ -83,15 +83,9 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               proxyBuilderFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
-              routingTable,
               messageRouter,
               statelessAsyncCallbackDirectory,
-              discoverySettingsStorage,
-              participantIdStorage,
-              systemServicesDomain,
-              dispatcherAddress,
-              discoveryProviderAddress);
-        // CHECKSTYLE:ON
+              discoverySettingsStorage);
 
         if (dispatcherAddress instanceof InProcessAddress) {
             ((InProcessAddress) dispatcherAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));
