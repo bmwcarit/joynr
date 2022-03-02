@@ -313,23 +313,18 @@ if(${BUILD_UNIT_TESTS})
     endif()
     GetSourceFiles(g_UnitTests_SOURCES INPUT_DIR unit-tests EXCLUDES ${excludedUnitTests})
 
-    AddTest(
-        g_UnitTests
-        ${test_HEADERS}
-        ${test_SOURCES}
-        ${g_UnitTests_SOURCES}
-    )
-
-    target_link_libraries(g_UnitTests PRIVATE
-        TestGenerated
-        ${test_TARGET_LIBRARIES}
-        JoynrMocks
-        Joynr::JoynrClusterControllerRuntime
-    )
-
-    target_include_directories(
-        g_UnitTests
-        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    RegisterToCtest(g_UnitTests
+        SOURCES
+            ${test_SOURCES}
+            ${test_HEADERS}
+            ${g_UnitTests_SOURCES}
+        LIBRARIES
+            TestGenerated
+            ${test_TARGET_LIBRARIES}
+            JoynrMocks
+            Joynr::JoynrClusterControllerRuntime
+        INCLUDES
+            "${CMAKE_CURRENT_SOURCE_DIR}/.."
     )
 
     install(TARGETS g_UnitTests TestGenerated
