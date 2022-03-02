@@ -29,7 +29,7 @@ import SubscriptionRequest from "../../../../main/js/joynr/dispatching/types/Sub
 import SubscriptionReply from "../../../../main/js/joynr/dispatching/types/SubscriptionReply";
 import SubscriptionStop from "../../../../main/js/joynr/dispatching/types/SubscriptionStop";
 import * as MulticastPublication from "../../../../main/js/joynr/dispatching/types/MulticastPublication";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 
 const providerId = "providerId";
 const providerDiscoveryEntry = new DiscoveryEntryWithMetaInfo({

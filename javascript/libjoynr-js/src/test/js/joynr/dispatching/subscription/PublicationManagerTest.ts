@@ -36,7 +36,7 @@ import * as SubscriptionPublication from "../../../../../main/js/joynr/dispatchi
 import * as SubscriptionUtil from "../../../../../main/js/joynr/dispatching/subscription/util/SubscriptionUtil";
 import SubscriptionException from "../../../../../main/js/joynr/exceptions/SubscriptionException";
 import LongTimer from "../../../../../main/js/joynr/util/LongTimer";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import testUtil = require("../../../testUtil");
 
 describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => {

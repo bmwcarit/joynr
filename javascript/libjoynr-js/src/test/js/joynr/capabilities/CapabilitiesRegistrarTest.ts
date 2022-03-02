@@ -22,7 +22,7 @@ import CapabilitiesRegistrar from "../../../../main/js/joynr/capabilities/Capabi
 import ProviderQos from "../../../../main/js/generated/joynr/types/ProviderQos";
 import * as ProviderAttribute from "../../../../main/js/joynr/provider/ProviderAttribute";
 import ProviderScope from "../../../../main/js/generated/joynr/types/ProviderScope";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 
 describe("libjoynr-js.joynr.capabilities.CapabilitiesRegistrar", () => {
     let capabilitiesRegistrar: CapabilitiesRegistrar;

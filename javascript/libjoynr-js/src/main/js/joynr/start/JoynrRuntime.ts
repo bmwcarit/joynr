@@ -36,7 +36,7 @@ import InProcessMessagingStub from "../messaging/inprocess/InProcessMessagingStu
 import InProcessAddress from "../messaging/inprocess/InProcessAddress";
 import DiscoveryQos from "../proxy/DiscoveryQos";
 import TypeRegistrySingleton from "../types/TypeRegistrySingleton";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import loggingManager from "../system/LoggingManager";
 import { Provisioning, ShutdownSettings } from "./interface/Provisioning";
 import defaultLibjoynrSettings from "./settings/defaultLibjoynrSettings";

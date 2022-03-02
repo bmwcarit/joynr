@@ -33,7 +33,7 @@ import DiscoveryEntryWithMetaInfo, {
     DiscoveryEntryWithMetaInfoMembers
 } from "../../generated/joynr/types/DiscoveryEntryWithMetaInfo";
 import defaultLibjoynrSettings from "./settings/defaultLibjoynrSettings";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 //import InProcessAddress from "../messaging/inprocess/InProcessAddress";
 //import InProcessMessagingStubFactory from "../messaging/inprocess/InProcessMessagingStubFactory";
 import MessagingStubFactory from "../messaging/MessagingStubFactory";

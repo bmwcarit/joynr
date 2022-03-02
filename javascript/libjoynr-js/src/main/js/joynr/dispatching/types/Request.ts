@@ -17,7 +17,7 @@
  * #L%
  */
 
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 
 const rrBase = nanoid();
 let rrIndex = 0;

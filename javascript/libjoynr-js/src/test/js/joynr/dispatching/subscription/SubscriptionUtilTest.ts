@@ -23,7 +23,7 @@ import SubscriptionRequest from "../../../../../main/js/joynr/dispatching/types/
 import PeriodicSubscriptionQos from "../../../../../main/js/joynr/proxy/PeriodicSubscriptionQos";
 import OnChangeSubscriptionQos from "../../../../../main/js/joynr/proxy/OnChangeSubscriptionQos";
 import OnChangeWithKeepAliveSubscriptionQos from "../../../../../main/js/joynr/proxy/OnChangeWithKeepAliveSubscriptionQos";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 
 describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", () => {
     let proxyId: any;

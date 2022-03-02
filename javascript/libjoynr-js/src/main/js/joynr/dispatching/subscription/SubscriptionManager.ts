@@ -32,7 +32,7 @@ import SubscriptionListener from "./SubscriptionListener";
 import * as SubscriptionUtil from "./util/SubscriptionUtil";
 import LongTimer from "../../util/LongTimer";
 import LoggingManager from "../../system/LoggingManager";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import * as UtilInternal from "../../util/UtilInternal";
 import * as Typing from "../../util/Typing";
 import PublicationMissedException from "../../exceptions/PublicationMissedException";

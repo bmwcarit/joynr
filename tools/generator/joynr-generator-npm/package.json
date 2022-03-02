@@ -8,8 +8,8 @@
   "dependencies": {
     "@types/node": "8.9.5",
     "glob": "7.1.3",
-    "handlebars": "4.1.1",
-    "lodash": "4.17.12",
+    "handlebars": "4.7.7",
+    "lodash": "4.17.21",
     "mkdirp": "0.5.1",
     "typescript": "3.5.2",
     "yargs": "13.2.2"
@@ -21,11 +21,11 @@
     "build": " tsc --listFiles --listEmittedFiles"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.123",
+    "@types/glob": "^7.1.1",
+    "@types/lodash": "^4.14.178",
+    "@types/mkdirp": "^0.5.2",
     "@types/rimraf": "^2.0.2",
     "@types/yargs": "^13.0.0",
-    "@types/glob": "^7.1.1",
-    "@types/mkdirp": "^0.5.2",
     "rimraf": "^2.6.3"
   },
   "files": [
@@ -33,7 +33,7 @@
     "jars/joynr-generator-standalone-1.19.8-SNAPSHOT.jar"
   ],
   "bin": {
-    "generate-joynr-sources": "./src/joynrGenerator.js"
+    "generate-joynr-sources": "src/joynrGenerator.js"
   },
   "repository": {
     "type": "git",

@@ -24,7 +24,7 @@ import InProcessAddress from "../../../../../main/js/joynr/messaging/inprocess/I
 import JoynrMessage from "../../../../../main/js/joynr/messaging/JoynrMessage";
 import TypeRegistry from "../../../../../main/js/joynr/start/TypeRegistry";
 import * as UtilInternal from "../../../../../main/js/joynr/util/UtilInternal";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import testUtil = require("../../../testUtil");
 import UdsAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/UdsAddress";
 import UdsClientAddress from "../../../../../main/js/generated/joynr/system/RoutingTypes/UdsClientAddress";

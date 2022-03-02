@@ -17,7 +17,7 @@
  * #L%
  */
 const MESSAGE_CUSTOM_HEADER_PREFIX = "c-";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 
 const jmBase = nanoid();
 let jmIndex = 0;

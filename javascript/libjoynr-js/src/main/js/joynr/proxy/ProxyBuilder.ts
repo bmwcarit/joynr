@@ -18,7 +18,7 @@
  */
 import Address from "../../generated/joynr/system/RoutingTypes/Address";
 
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import DiscoveryQos from "./DiscoveryQos";
 import JoynrRuntimeException from "../exceptions/JoynrRuntimeException";
 import MessagingQos from "../messaging/MessagingQos";

@@ -12,10 +12,9 @@
   },
   "devDependencies": {
     "@types/jscodeshift": "0.6.0",
-    "@types/nanoid": "1.2.1",
     "@types/ws": "7.4.5",
     "exit-hook": "1.1.1",
-    "nanoid": "2.0.1",
+    "nanoid": "3.3.1",
     "typedoc": "0.14.2"
   },
   "config": {
@@ -32,8 +31,8 @@
     "lint": "../../node_modules/.bin/eslint $npm_package_config_glob --max-warnings 0",
     "lint:fix": "../../node_modules/.bin/eslint $npm_package_config_glob --fix",
     "test": "npm run ts:test:ci && npm run ts:test:sit",
-    "build:doc": "typedoc --exclude 'src/main/js/node_modules/**/*.ts' --excludeExternals --out wiki/typedoc src/main/js",
-    "build:fast": "npm run build:install && npm run build:skip && npm run test",
+    "build:doc": "typedoc --exclude '**/node_modules/**/*.ts' --excludeExternals --out wiki/typedoc src/main/js",
+    "build:fast": "npm run build:skip && npm run test",
     "build": "npm run clean && npm run build:fast && npm run build:doc",
     "build:install": "npm --prefix src/main/js i && npm --prefix ../.. i && npm i",
     "build:skip": "npm run build:install && npm run sig && npm run lint && npm run fixRequire && npm run ts:package",

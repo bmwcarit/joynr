@@ -7,11 +7,11 @@
   "private": true,
   "dependencies": {
     "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
-    "lodash": "4.17.12",
+    "lodash": "4.17.21",
     "test-base": "file:../test-base"
   },
   "devDependencies": {
-    "@types/lodash": "4.14.123",
+    "@types/lodash": "4.14.178",
     "browserify": "16.3.0",
     "tsify": "4.0.1"
   },

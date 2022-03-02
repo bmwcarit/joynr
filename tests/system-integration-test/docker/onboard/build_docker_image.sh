@@ -23,7 +23,7 @@ SIT_DIR=$(pwd)/../..
 CPP_BUILDDIR=$JOYNR_REPODIR/build
 JOBS=4
 NVM_DIR="/usr/local/nvm"
-NODE_VERSION=8.11.1
+NODE_V8=8.16.2
 
 
 function print_usage {
@@ -281,26 +281,25 @@ cat > $DOCKER_BUILDDIR/Dockerfile <<-EOF
     # nvm environment variables
     ENV NVM_DIR $NVM_DIR
 
-    # node 8.11.1 is the current lts version
-    ENV NODE_VERSION $NODE_VERSION
+    ENV NODE_V8 $NODE_V8
 
     # install nvm
     RUN . /etc/profile \
         && mkdir -p $NVM_DIR \
-        && curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.34.0/install.sh | bash
+        && curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.39.1/install.sh | bash
 
     # install node and npm
     # having the nvm directory writable makes it possible to use nvm to change node versions manually
     RUN . /etc/profile \
         && source $NVM_DIR/nvm.sh \
-        && nvm install $NODE_VERSION \
-        && nvm alias default $NODE_VERSION \
+        && nvm install $NODE_V8 \
+        && nvm alias default $NODE_V8 \
         && nvm use default \
         && chmod -R a+rwx $NVM_DIR
 
     # add node and npm to path
-    ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
-    ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+    # (node will be available then without sourcing $NVM_DIR/nvm.sh)
+    ENV PATH $NVM_DIR/versions/node/v$NODE_V8/bin:$PATH
 
     ###################################################
     # Copy run script

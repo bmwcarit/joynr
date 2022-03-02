@@ -33,7 +33,7 @@ import InProcessAddress from "../messaging/inprocess/InProcessAddress";
 import * as UtilInternal from "../util/UtilInternal";
 import * as CapabilitiesUtil from "../util/CapabilitiesUtil";
 import loggingManager from "../system/LoggingManager";
-import nanoid from "nanoid";
+import { nanoid } from "nanoid";
 import { InProcessProvisioning, ShutdownSettings } from "./interface/Provisioning";
 import defaultLibjoynrSettings from "./settings/defaultLibjoynrSettings";
 import defaultClusterControllerSettings from "./settings/defaultClusterControllerSettings";
