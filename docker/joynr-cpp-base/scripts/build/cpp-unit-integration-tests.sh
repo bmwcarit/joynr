@@ -22,7 +22,9 @@ SUCCESS=0
     echo '# run C++ unit tests'
     echo '####################################################'
 
-    ./g_UnitTests --gtest_shuffle --gtest_output="xml:g_UnitTests.junit.xml"
+    cd ..
+    ctest
+
     CHECK=$?
     if [ "$CHECK" != "0" ]; then
         echo '########################################################'
@@ -30,6 +32,8 @@ SUCCESS=0
         echo '########################################################'
         exit $CHECK
     fi
+
+    cd -
 
     echo '####################################################'
     echo '# run C++ integration tests'
