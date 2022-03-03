@@ -39,9 +39,3 @@ ENV PATH $NVM_DIR/versions/node/v$NODE_V8/bin:$PATH
 RUN dnf install -y \
 	chromium \
     && dnf clean all
-
-###################################################
-# deploy the build scripts
-###################################################
-COPY scripts/build/* /data/scripts/build/
-RUN chmod 777 -R /data/scripts/build/

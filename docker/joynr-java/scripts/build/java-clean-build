@@ -1,6 +1,6 @@
 #/bin/bash
 
-source /data/src/docker/joynr-base/scripts/start-and-stop-gcd-service.sh
+source /data/src/docker/joynr-base/scripts/ci/start-and-stop-gcd-service.sh
 cd /data/src
 
 # fail on first error
@@ -47,7 +47,7 @@ echo '####################################################'
 echo '# start services'
 echo '####################################################'
 
-/data/src/docker/joynr-base/scripts/start-db.sh
+/data/src/docker/joynr-base/scripts/ci/start-db.sh
 
 mosquitto -c /data/src/docker/joynr-base/mosquitto.conf &
 MOSQUITTO_PID=$!
@@ -59,7 +59,7 @@ function stopservices
     echo "stop mosquitto"
     kill -TERM $MOSQUITTO_PID
     wait $MOSQUITTO_PID
-    /data/src/docker/joynr-base/scripts/stop-db.sh
+    /data/src/docker/joynr-base/scripts/ci/stop-db.sh
 }
 
 startGcd

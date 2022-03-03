@@ -130,9 +130,4 @@ RUN export VALGRIND_VERSION=3.15.0 \
 # DLT installs itself in /usr/local/lib64
 ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
 
-###################################################
-# Copy build scripts
-###################################################
-COPY scripts /data/scripts
-
 RUN date -R > /data/timestamp

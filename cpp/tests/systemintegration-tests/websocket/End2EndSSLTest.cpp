@@ -45,7 +45,7 @@ using namespace joynr;
 
 /*********************************************************************************************************
 *
-* To run this test you must use {joynr}/docker/joynr-base/scripts/gen-certificates.sh with the
+* To run this test you must use {joynr}/docker/joynr-base/scripts/docker/gen-certificates.sh with the
 *config from
 * {joynr}/docker/joynr-base/openssl.conf to generate test certificates in /data/ssl-data as done in
 * {joynr}/docker/joynr-base/Dockerfile.
