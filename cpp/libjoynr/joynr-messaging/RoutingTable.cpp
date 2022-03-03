@@ -20,6 +20,7 @@
 #include "joynr/RoutingTable.h"
 
 #include <chrono>
+#include <ostream>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -185,5 +186,21 @@ size_t RoutingTable::AddressHash::operator()(
 {
     return address->hashCode();
 }
+
+namespace routingtable
+{
+
+void PrintTo(const RoutingEntry& routingEntry, ::std::ostream* os)
+{
+    *os << routingEntry.toString();
+}
+
+std::ostream& operator<<(std::ostream& os, const RoutingEntry& routingEntry)
+{
+    os << routingEntry.toString();
+    return os;
+}
+
+} // namespace routingtable
 
 } // namespace joynr

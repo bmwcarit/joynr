@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <iosfwd>
 #include <limits>
 #include <memory>
 #include <string>
@@ -131,7 +132,14 @@ struct RoutingEntry
     bool isGloballyVisible;
     std::int64_t _expiryDateMs;
     bool _isSticky; // true if entry should be protected from being purged
+
+    friend void PrintTo(const RoutingEntry& routingEntry, ::std::ostream* os);
 };
+
+void PrintTo(const RoutingEntry& messagingQos, ::std::ostream* os);
+
+std::ostream& operator<<(std::ostream& os, const RoutingEntry& messagingQos);
+
 } // namespace routingtable
 
 class RoutingTable

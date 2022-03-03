@@ -13,6 +13,7 @@ set(SOURCES
 
     CallContext.cpp
     MessagingQos.cpp
+    MessagingQosEffort.cpp
     SubscriptionQos.cpp
 )
 

@@ -23,6 +23,7 @@
 #include <memory>
 #include <vector>
 
+#include <boost/optional/optional_io.hpp>
 #include <gtest/gtest.h>
 
 #include "joynr/LocalDiscoveryAggregator.h"
