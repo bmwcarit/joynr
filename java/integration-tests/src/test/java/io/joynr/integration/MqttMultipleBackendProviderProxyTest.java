@@ -22,11 +22,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyMapOf;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -43,9 +43,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.JoynrVersion;
@@ -118,14 +118,14 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         testProxy proxy2 = buildProxyForGlobalDiscoveryEntry(globalDiscoveryEntry2);
         verify(joynrMqttClient1, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
                                                           any(FailureAction.class));
         verify(joynrMqttClient2, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
@@ -135,7 +135,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(joynrMqttClient1)
                                                                   .publishMessage(anyString(),
                                                                                   any(byte[].class),
-                                                                                  anyMapOf(String.class, String.class),
+                                                                                  anyMap(),
                                                                                   anyInt(),
                                                                                   anyLong(),
                                                                                   any(SuccessAction.class),
@@ -144,7 +144,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         assertTrue(publishCountDownLatch.await(100, TimeUnit.MILLISECONDS));
         verify(joynrMqttClient1).publishMessage(topicCaptor.capture(),
                                                 any(byte[].class),
-                                                anyMapOf(String.class, String.class),
+                                                anyMap(),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),
@@ -152,7 +152,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         assertTrue(topicCaptor.getValue().startsWith(TESTTOPIC));
         verify(joynrMqttClient2, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
@@ -165,7 +165,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         doAnswer(createVoidCountDownAnswer(publishCountDownLatch)).when(joynrMqttClient2)
                                                                   .publishMessage(anyString(),
                                                                                   any(byte[].class),
-                                                                                  anyMapOf(String.class, String.class),
+                                                                                  anyMap(),
                                                                                   anyInt(),
                                                                                   anyLong(),
                                                                                   any(SuccessAction.class),
@@ -174,14 +174,14 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         assertTrue(publishCountDownLatch.await(100, TimeUnit.MILLISECONDS));
         verify(joynrMqttClient1, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
                                                           any(FailureAction.class));
         verify(joynrMqttClient2).publishMessage(topicCaptor.capture(),
                                                 any(byte[].class),
-                                                anyMapOf(String.class, String.class),
+                                                anyMap(),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),
@@ -203,11 +203,12 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                 callback.onSuccess(globalDiscoveryEntryList);
                 return null;
             }
-        }).when(gcdClient).lookup(Matchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
-                                  any(String[].class),
-                                  anyString(),
-                                  anyLong(),
-                                  any(String[].class));
+        }).when(gcdClient)
+          .lookup(ArgumentMatchers.<CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>> any(),
+                  any(String[].class),
+                  anyString(),
+                  anyLong(),
+                  any(String[].class));
 
         ProxyBuilder<testProxy> proxyBuilder = joynrRuntime.getProxyBuilder(TESTDOMAIN, testProxy.class);
         proxyBuilder.setDiscoveryQos(discoveryQos);
@@ -242,7 +243,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                 callback.onSuccess(null);
                 return null;
             }
-        }).when(gcdClient).add(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+        }).when(gcdClient).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
                                gdeCaptor.capture(),
                                anyLong(),
                                any(String[].class));
@@ -294,8 +295,9 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                 removeCountDownLatch.countDown();
                 return null;
             }
-        }).when(gcdClient)
-          .remove(Matchers.<CallbackWithModeledError<Void, DiscoveryError>> any(), anyString(), any(String[].class));
+        }).when(gcdClient).remove(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                  anyString(),
+                                  any(String[].class));
 
         joynrRuntime.unregisterProvider(TESTDOMAIN, provider);
 
@@ -340,7 +342,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         doAnswer(createVoidCountDownAnswer(replyCountDownLatch)).when(expectedClient)
                                                                 .publishMessage(anyString(),
                                                                                 any(byte[].class),
-                                                                                anyMapOf(String.class, String.class),
+                                                                                anyMap(),
                                                                                 anyInt(),
                                                                                 anyLong(),
                                                                                 any(SuccessAction.class),
@@ -350,14 +352,14 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(expectedClient).publishMessage(anyString(),
                                               messageCaptor.capture(),
-                                              anyMapOf(String.class, String.class),
+                                              anyMap(),
                                               anyInt(),
                                               anyLong(),
                                               any(SuccessAction.class),
                                               any(FailureAction.class));
         verify(otherClient, times(0)).publishMessage(anyString(),
                                                      any(byte[].class),
-                                                     anyMapOf(String.class, String.class),
+                                                     anyMap(),
                                                      anyInt(),
                                                      anyLong(),
                                                      any(SuccessAction.class),
@@ -445,32 +447,32 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
 
         String providerParticipantId = registerProvider(testProvider);
 
-        fakeIncomingMessage(targetGbid,
-                            messageCreator.create(proxyParticipantId, providerParticipantId, requestReplyId));
-
         // expect initial publication and SubscriptionReply
         CountDownLatch replyCountDownLatch = new CountDownLatch(2);
         doAnswer(createVoidCountDownAnswer(replyCountDownLatch)).when(expectedClient)
                                                                 .publishMessage(anyString(),
                                                                                 any(byte[].class),
-                                                                                anyMapOf(String.class, String.class),
+                                                                                anyMap(),
                                                                                 anyInt(),
                                                                                 anyLong(),
                                                                                 any(SuccessAction.class),
                                                                                 any(FailureAction.class));
+        fakeIncomingMessage(targetGbid,
+                            messageCreator.create(proxyParticipantId, providerParticipantId, requestReplyId));
+
         assertTrue(replyCountDownLatch.await(1000, TimeUnit.MILLISECONDS));
 
         ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(expectedClient, times(2)).publishMessage(anyString(),
                                                         messageCaptor.capture(),
-                                                        anyMapOf(String.class, String.class),
+                                                        anyMap(),
                                                         anyInt(),
                                                         anyLong(),
                                                         any(SuccessAction.class),
                                                         any(FailureAction.class));
         verify(otherClient, times(0)).publishMessage(anyString(),
                                                      any(byte[].class),
-                                                     anyMapOf(String.class, String.class),
+                                                     anyMap(),
                                                      anyInt(),
                                                      anyLong(),
                                                      any(SuccessAction.class),
@@ -567,7 +569,7 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         doAnswer(createVoidCountDownAnswer(countDownLatch)).when(joynrMqttClient1)
                                                            .publishMessage(anyString(),
                                                                            any(byte[].class),
-                                                                           anyMapOf(String.class, String.class),
+                                                                           anyMap(),
                                                                            anyInt(),
                                                                            anyLong(),
                                                                            any(SuccessAction.class),
@@ -575,21 +577,21 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         doAnswer(createVoidCountDownAnswer(countDownLatch)).when(joynrMqttClient2)
                                                            .publishMessage(anyString(),
                                                                            any(byte[].class),
-                                                                           anyMapOf(String.class, String.class),
+                                                                           anyMap(),
                                                                            anyInt(),
                                                                            anyLong(),
                                                                            any(SuccessAction.class),
                                                                            any(FailureAction.class));
         verify(joynrMqttClient1, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
                                                           any(FailureAction.class));
         verify(joynrMqttClient2, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
@@ -602,14 +604,14 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
         ArgumentCaptor<byte[]> messageCaptor2 = ArgumentCaptor.forClass(byte[].class);
         verify(joynrMqttClient1, times(1)).publishMessage(anyString(),
                                                           messageCaptor1.capture(),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
                                                           any(FailureAction.class));
         verify(joynrMqttClient2, times(1)).publishMessage(anyString(),
                                                           messageCaptor2.capture(),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),

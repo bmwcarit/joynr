@@ -241,8 +241,8 @@ void JoynrClusterControllerRuntime::init()
 
     const BrokerUrl defaultBrokerUrl = _messagingSettings.getBrokerUrl();
 
-    // If the BrokerUrl is a mqtt url, MQTT is used instead of HTTP
-    const Url url = defaultBrokerUrl.getBrokerChannelsBaseUrl();
+    // Check broker url contains valid broker protocol
+    const Url url = defaultBrokerUrl.getBrokerBaseUrl();
     std::string brokerProtocol = url.getProtocol();
 
     std::transform(brokerProtocol.begin(), brokerProtocol.end(), brokerProtocol.begin(), ::toupper);

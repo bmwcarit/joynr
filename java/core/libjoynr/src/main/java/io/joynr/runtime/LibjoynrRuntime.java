@@ -24,11 +24,10 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-import io.joynr.capabilities.ParticipantIdStorage;
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.routing.DummyRoutingTable;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.proxy.DiscoverySettingsStorage;
@@ -44,19 +43,16 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
     public static final Logger logger = LoggerFactory.getLogger(LibjoynrRuntime.class);
 
-    // CHECKSTYLE:OFF
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LibjoynrRuntime(ObjectMapper objectMapper,
                            ProxyBuilderFactory proxyBuilderFactory,
                            MessagingSkeletonFactory messagingSkeletonFactory,
                            LocalDiscoveryAggregator localDiscoveryAggregator,
-                           DummyRoutingTable routingTable,
                            StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                            DiscoverySettingsStorage discoverySettingsStorage,
-                           ParticipantIdStorage participantIdStorage,
+                           VersionCompatibilityChecker versionCompatibilityChecker,
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                           @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
-                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address discoveryProviderAddress,
                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) final Address ccMessagingAddress,
                            final LibJoynrMessageRouter messageRouter,
                            final LibJoynrMessageSender messageSender,
@@ -65,15 +61,10 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
               proxyBuilderFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
-              routingTable,
               messageRouter,
               statelessAsyncCallbackDirectory,
               discoverySettingsStorage,
-              participantIdStorage,
-              systemServicesDomain,
-              dispatcherAddress,
-              discoveryProviderAddress);
-        // CHECKSTYLE:ON
+              versionCompatibilityChecker);
 
         final ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
 
@@ -81,16 +72,22 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
             @Override
             public void onProxyCreationFinished(RoutingProxy routingProxy) {
-                messageRouter.setParentRouter(routingProxy,
-                                              ccMessagingAddress,
-                                              parentRoutingProviderParticipantId,
-                                              proxyBuilder.getParticipantId());
-                messageSender.setReplyToAddress(routingProxy.getReplyToAddress(), routingProxy.getGlobalAddress());
+                try {
+                    messageRouter.setParentRouter(routingProxy,
+                                                  ccMessagingAddress,
+                                                  parentRoutingProviderParticipantId,
+                                                  proxyBuilder.getParticipantId());
+                    messageSender.setReplyToAddress(routingProxy.getReplyToAddress(), routingProxy.getGlobalAddress());
+                } catch (Exception e) {
+                    logger.error("Error during runtime creation, communication with other joynr runtimes might not be possible.",
+                                 e);
+                }
             }
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
-                logger.error("Routing proxy creation failed:", error);
+                logger.error("Fatal error during runtime creation, no communication with other joynr runtimes is possible:"
+                        + " Routing proxy creation failed:", error);
             }
         };
         proxyBuilder.build(routingProxyCreatedCallback);

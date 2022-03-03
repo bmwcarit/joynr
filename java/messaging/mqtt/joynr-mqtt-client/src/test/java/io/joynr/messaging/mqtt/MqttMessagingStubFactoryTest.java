@@ -20,11 +20,11 @@ package io.joynr.messaging.mqtt;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyMapOf;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.FailureAction;
@@ -103,14 +103,14 @@ public class MqttMessagingStubFactoryTest {
         messagingStub1.transmit(message, successAction, failureAction);
         verify(joynrMqttClient1).publishMessage(topicCaptor.capture(),
                                                 any(byte[].class),
-                                                anyMapOf(String.class, String.class),
+                                                anyMap(),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),
                                                 any(FailureAction.class));
         verify(joynrMqttClient2, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
@@ -121,14 +121,14 @@ public class MqttMessagingStubFactoryTest {
         messagingStub2.transmit(message, successAction, failureAction);
         verify(joynrMqttClient1, times(0)).publishMessage(anyString(),
                                                           any(byte[].class),
-                                                          anyMapOf(String.class, String.class),
+                                                          anyMap(),
                                                           anyInt(),
                                                           anyLong(),
                                                           any(SuccessAction.class),
                                                           any(FailureAction.class));
         verify(joynrMqttClient2).publishMessage(topicCaptor.capture(),
                                                 any(byte[].class),
-                                                anyMapOf(String.class, String.class),
+                                                anyMap(),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),

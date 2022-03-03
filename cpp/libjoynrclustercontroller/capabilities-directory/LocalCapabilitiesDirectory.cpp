@@ -1141,14 +1141,6 @@ void LocalCapabilitiesDirectory::remove(
                     _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->size(),
                     _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
                     _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
-            if (auto messageRouterSharedPtr = _messageRouter.lock()) {
-                messageRouterSharedPtr->removeNextHop(participantId);
-            } else {
-                JOYNR_LOG_FATAL(logger(),
-                                "could not removeNextHop for {} because messageRouter is "
-                                "not available",
-                                participantId);
-            }
             updatePersistedFile();
         } else {
             auto onGlobalRemoveSuccess = [
@@ -1173,14 +1165,6 @@ void LocalCapabilitiesDirectory::remove(
                                    lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->size(),
                                    lCDStoreSharedPtr->countGlobalCapabilities(),
                                    lCDStoreSharedPtr->getGlobalLookupCache()->size());
-                }
-                if (auto messageRouterSharedPtr = _messageRouter.lock()) {
-                    messageRouterSharedPtr->removeNextHop(participantId);
-                } else {
-                    JOYNR_LOG_FATAL(
-                            logger(),
-                            "could not removeNextHop for {} because messageRouter is not available",
-                            participantId);
                 }
                 updatePersistedFile();
             };
@@ -1216,14 +1200,6 @@ void LocalCapabilitiesDirectory::remove(
                                 lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->size(),
                                 lCDStoreSharedPtr->countGlobalCapabilities(),
                                 lCDStoreSharedPtr->getGlobalLookupCache()->size());
-                    }
-                    if (auto messageRouterSharedPtr = _messageRouter.lock()) {
-                        messageRouterSharedPtr->removeNextHop(participantId);
-                    } else {
-                        JOYNR_LOG_FATAL(logger(),
-                                        "could not removeNextHop for {} because messageRouter is "
-                                        "not available",
-                                        participantId);
                     }
                     updatePersistedFile();
                     break;
@@ -1525,7 +1501,7 @@ void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
 void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
         const std::int64_t& clusterControllerStartDateMs)
 {
-    for (const auto gbid : _knownGbids) {
+    for (const auto& gbid : _knownGbids) {
         removeStaleProvidersOfClusterController(clusterControllerStartDateMs, gbid);
     }
 }

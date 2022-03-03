@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 
@@ -109,4 +109,37 @@ public class InMemoryMulticastReceiverRegistryTest {
         assertEquals(participantId, result.iterator().next());
     }
 
+    @Test
+    public void testAddAndRemoveWithMultipleParticipantIds() {
+        // use real MulticastWildcardRegexFactory which returns
+        // different Pattern objects even when called with same regex
+        subject = new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory());
+        String multicastId = "multicastId";
+        String participantId1 = "participantId1";
+        String participantId2 = "participantId2";
+        String participantId3 = "participantId3";
+
+        subject.registerMulticastReceiver(multicastId, participantId1);
+        subject.registerMulticastReceiver(multicastId, participantId2);
+        subject.registerMulticastReceiver(multicastId, participantId3);
+
+        Set<String> result = subject.getReceivers(multicastId);
+        assertNotNull(result);
+        assertEquals(3, result.size());
+
+        subject.unregisterMulticastReceiver(multicastId, participantId2);
+        result = subject.getReceivers(multicastId);
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        subject.unregisterMulticastReceiver(multicastId, participantId3);
+        result = subject.getReceivers(multicastId);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        subject.unregisterMulticastReceiver(multicastId, participantId1);
+        result = subject.getReceivers(multicastId);
+        assertNotNull(result);
+        assertEquals(0, result.size());
+    }
 }

@@ -20,11 +20,11 @@ package io.joynr.integration;
 
 import static com.google.inject.util.Modules.override;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyMapOf;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
@@ -131,6 +131,8 @@ public abstract class AbstractMqttMultipleBackendTest {
 
     protected void createJoynrRuntimeWithMockedGcdClient() {
         shutdownRuntime();
+        // prevent invocation of removeStale when using unprepared mocked gcdClient
+        properties.put(SystemServicesSettings.PROPERTY_CC_REMOVE_STALE_DELAY_MS, String.valueOf(Long.MAX_VALUE));
 
         injector = Guice.createInjector(override(new CCInProcessRuntimeModule(),
                                                  new HivemqMqttClientModule()).with(new JoynrPropertiesModule(properties),
@@ -157,7 +159,7 @@ public abstract class AbstractMqttMultipleBackendTest {
             }
         }).when(joynrMqttClient).publishMessage(anyString(),
                                                 any(byte[].class),
-                                                anyMapOf(String.class, String.class),
+                                                anyMap(),
                                                 anyInt(),
                                                 anyLong(),
                                                 any(SuccessAction.class),

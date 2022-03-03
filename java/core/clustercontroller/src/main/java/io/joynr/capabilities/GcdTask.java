@@ -24,18 +24,58 @@ import joynr.types.GlobalDiscoveryEntry;
 
 public class GcdTask {
     public enum MODE {
-        ADD, REMOVE, READD
+        ADD, REMOVE, RE_ADD
     }
 
-    private GcdTask(MODE mode,
-                    CallbackWithModeledError<Void, DiscoveryError> callback,
-                    String participantId,
-                    GlobalDiscoveryEntry globalDiscoveryEntry,
-                    String[] gbids,
-                    long expiryDateMs,
-                    boolean doRetry) {
+    static abstract class CallbackCreator {
+        public abstract CallbackWithModeledError<Void, DiscoveryError> createCallback();
+    }
+
+    private final MODE mode;
+    private final CallbackCreator callbackCreator;
+    private final String participantId;
+    private final GlobalDiscoveryEntry globalDiscoveryEntry;
+    private final String[] gbids;
+    private final long expiryDateMs;
+    private final boolean doRetry;
+
+    public MODE getMode() {
+        return mode;
+    }
+
+    public CallbackCreator getCallbackCreator() {
+        return callbackCreator;
+    }
+
+    public String getParticipantId() {
+        return participantId;
+    }
+
+    public GlobalDiscoveryEntry getGlobalDiscoveryEntry() {
+        return globalDiscoveryEntry;
+    }
+
+    public String[] getGbids() {
+        return gbids;
+    }
+
+    public long getExpiryDateMs() {
+        return expiryDateMs;
+    }
+
+    public boolean isDoRetry() {
+        return doRetry;
+    }
+
+    protected GcdTask(MODE mode,
+                      CallbackCreator callbackCreator,
+                      String participantId,
+                      GlobalDiscoveryEntry globalDiscoveryEntry,
+                      String[] gbids,
+                      long expiryDateMs,
+                      boolean doRetry) {
         this.mode = mode;
-        this.callback = callback;
+        this.callbackCreator = callbackCreator;
         this.participantId = participantId;
         this.globalDiscoveryEntry = globalDiscoveryEntry;
         this.gbids = gbids;
@@ -43,38 +83,40 @@ public class GcdTask {
         this.doRetry = doRetry;
     }
 
-    public static GcdTask createAddTask(CallbackWithModeledError<Void, DiscoveryError> callback,
+    public static GcdTask createAddTask(CallbackCreator callbackCreator,
                                         GlobalDiscoveryEntry globalDiscoveryEntry,
                                         long expiryDateMs,
                                         String[] gbids,
                                         boolean doRetry) {
 
         String participantId = "";
-        return new GcdTask(MODE.ADD, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs, doRetry);
+        return new GcdTask(MODE.ADD,
+                           callbackCreator,
+                           participantId,
+                           globalDiscoveryEntry,
+                           gbids,
+                           expiryDateMs,
+                           doRetry);
     }
 
     public static GcdTask createReaddTask() {
-        CallbackWithModeledError<Void, DiscoveryError> callback = null;
         String participantId = "";
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
         String[] gbids = null;
         long expiryDateMs = 0L;
-        return new GcdTask(MODE.READD, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs, false);
+        return new GcdTask(MODE.RE_ADD, null, participantId, globalDiscoveryEntry, gbids, expiryDateMs, false);
     }
 
-    public static GcdTask createRemoveTask(CallbackWithModeledError<Void, DiscoveryError> callback,
-                                           String participantId) {
+    public static GcdTask createRemoveTask(CallbackCreator callbackCreator, String participantId) {
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
         long expiryDateMs = 0L;
         String[] gbids = null;
-        return new GcdTask(MODE.REMOVE, callback, participantId, globalDiscoveryEntry, gbids, expiryDateMs, true);
+        return new GcdTask(MODE.REMOVE,
+                           callbackCreator,
+                           participantId,
+                           globalDiscoveryEntry,
+                           gbids,
+                           expiryDateMs,
+                           true);
     }
-
-    public final MODE mode;
-    public final CallbackWithModeledError<Void, DiscoveryError> callback;
-    public final String participantId;
-    public final GlobalDiscoveryEntry globalDiscoveryEntry;
-    public final String[] gbids;
-    public final long expiryDateMs;
-    public final boolean doRetry;
 }

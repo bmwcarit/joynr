@@ -37,9 +37,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
@@ -123,6 +125,10 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_PASSWORD)
     private String password = "";
+
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_DISABLE_HOSTNAME_VERIFICATION)
+    private Boolean disableHostnameVerification = false;
 
     @Inject
     @Named(MqttModule.MQTT_CIPHERSUITE_LIST)
@@ -306,6 +312,15 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                     TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                     trustManagerFactory.init(trustStore);
                     sslConfig.trustManagerFactory(trustManagerFactory);
+                    if (disableHostnameVerification) {
+                        sslConfig.hostnameVerifier(new HostnameVerifier() {
+                            public boolean verify(String hostname, SSLSession session) {
+                                logger.info("Skipping regular hostname verification");
+                                return true;
+                            }
+                        });
+                        logger.info("Hostname verification disabled.");
+                    }
                 } catch (NoSuchAlgorithmException | KeyStoreException e) {
                     logger.error("Unable to create trust store factory:", e);
                 }
@@ -412,7 +427,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
         @Override
         public void onDisconnected(MqttClientDisconnectedContext context) {
-            logger.info("{}: HiveMQ MQTT client disconnected: source: {}, cause: {}",
+            logger.info("{}: HiveMQ MQTT client disconnected: source: {}",
                         clientInformation,
                         context.getSource(),
                         context.getCause());

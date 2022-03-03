@@ -24,9 +24,9 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
@@ -44,6 +44,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -64,7 +65,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.google.inject.AbstractModule;
@@ -357,6 +358,22 @@ public class CcMessageRouterTest {
     }
 
     @Test
+    public void testNoMessageDuplicationForMulticastReceiversWithSameAddress() throws Exception {
+        MqttAddress receiverAddress1 = new MqttAddress("what", "ever1");
+        prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress1);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        ccMessageRouter.routeOut(immutableMessage);
+
+        Thread.sleep(1000);
+
+        verify(messagingStubMock, times(1)).transmit(eq(immutableMessage),
+                                                     any(SuccessAction.class),
+                                                     any(FailureAction.class));
+        verify(mqttMessagingStubFactoryMock, times(1)).create(receiverAddress1);
+    }
+
+    @Test
     public void testNoMessageDuplicationForMulticastForMultipleAddressesWithErrorFromStubForAllAddresses() throws Exception {
         MqttAddress receiverAddress1 = new MqttAddress("what", "ever1");
         MqttAddress receiverAddress2 = new MqttAddress("what", "ever2");
@@ -368,7 +385,7 @@ public class CcMessageRouterTest {
 
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                FailureAction failureAction = invocation.getArgumentAt(2, FailureAction.class);
+                FailureAction failureAction = invocation.getArgument(2);
                 if (callCount < 2) {
                     callCount++;
                     failureAction.execute(new JoynrDelayMessageException(10, "first retry"));
@@ -405,7 +422,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                SuccessAction successAction = invocation.getArgumentAt(1, SuccessAction.class);
+                SuccessAction successAction = invocation.getArgument(1);
                 successAction.execute();
                 return null;
             }
@@ -417,7 +434,7 @@ public class CcMessageRouterTest {
 
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                FailureAction failureAction = invocation.getArgumentAt(2, FailureAction.class);
+                FailureAction failureAction = invocation.getArgument(2);
                 if (callCount < 2) {
                     callCount++;
                     failureAction.execute(new JoynrDelayMessageException(10, "first retry"));
@@ -439,7 +456,7 @@ public class CcMessageRouterTest {
         verify(failingMessagingStubMock, times(3)).transmit(eq(immutableMessage),
                                                             any(SuccessAction.class),
                                                             any(FailureAction.class));
-        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, times(1)).getParticipantIdMap(immutableMessage);
         verify(addressManager, atLeast(4)).getAddressForDelayableImmutableMessage(any());
         verify(mqttMessagingStubFactoryMock, times(1)).create(receiverAddress1);
         verify(mqttMessagingStubFactoryMock, times(3)).create(receiverAddress2);
@@ -527,7 +544,7 @@ public class CcMessageRouterTest {
                     previousInvocationTimeMs = now;
                 }
 
-                invocation.getArgumentAt(2, FailureAction.class).execute(new Exception());
+                ((FailureAction) invocation.getArgument(2)).execute(new Exception());
 
                 return null;
             }
@@ -572,7 +589,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
-                invocation.getArgumentAt(2, FailureAction.class).execute(new Exception());
+                ((FailureAction) invocation.getArgument(2)).execute(new Exception());
                 return null;
             }
         }).when(messagingStubMock)
@@ -611,7 +628,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -647,7 +664,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -678,7 +695,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -717,7 +734,7 @@ public class CcMessageRouterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
                 verify(routingTable, times(0)).remove(toParticipantId);
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -754,7 +771,7 @@ public class CcMessageRouterTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
                 verify(routingTable, times(0)).remove(toParticipantId);
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -899,7 +916,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 verify(mockMessageProcessedListener, times(0)).messageProcessed(eq(immutableMessage.getId()));
-                invocation.getArgumentAt(1, SuccessAction.class).execute();
+                ((SuccessAction) invocation.getArgument(1)).execute();
                 semaphore.release();
                 return null;
             }
@@ -920,11 +937,10 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        final Set<String> recipientSet = new HashSet<>();
-        recipientSet.add(joynrMessage.getImmutableMessage().getRecipient());
-        doReturn(recipientSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        final HashMap<Address, Set<String>> recipientSet = new HashMap<>();
+        recipientSet.put(new Address(), Set.of(joynrMessage.getImmutableMessage().getRecipient()));
+        doReturn(recipientSet).when(addressManager).getParticipantIdMap(immutableMessage);
 
-        when(websocketClientMessagingStubFactoryMock.create(any(WebSocketClientAddress.class))).thenReturn(messagingStubMock);
         doThrow(new JoynrDelayMessageException(100, "test")).when(messagingStubMock)
                                                             .transmit(any(ImmutableMessage.class),
                                                                       any(SuccessAction.class),
@@ -933,7 +949,7 @@ public class CcMessageRouterTest {
         ccMessageRouter.routeOut(immutableMessage);
         Thread.sleep(500);
 
-        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, times(1)).getParticipantIdMap(immutableMessage);
         verify(addressManager, atLeast(2)).getAddressForDelayableImmutableMessage(any());
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
@@ -959,9 +975,9 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        final Set<String> participantIdSet = new HashSet<>();
-        participantIdSet.add(AddressManager.multicastAddressCalculatorParticipantId);
-        doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        final HashMap<Address, Set<String>> participantIdSet = new HashMap<>();
+        participantIdSet.put(new Address(), Set.of(AddressManager.multicastAddressCalculatorParticipantId));
+        doReturn(participantIdSet).when(addressManager).getParticipantIdMap(immutableMessage);
         doReturn(Optional.of(mqttAddress)).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         doThrow(new JoynrDelayMessageException(200, "test42")).when(messagingStubMock)
@@ -972,7 +988,7 @@ public class CcMessageRouterTest {
         ccMessageRouter.routeOut(immutableMessage);
         Thread.sleep(550);
 
-        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, times(1)).getParticipantIdMap(immutableMessage);
         verify(addressManager, atLeast(2)).getAddressForDelayableImmutableMessage(any());
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
@@ -993,9 +1009,9 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        final Set<String> participantIdSet = new HashSet<>();
-        participantIdSet.add(joynrMessage.getImmutableMessage().getRecipient());
-        doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        final HashMap<Address, Set<String>> participantIdSet = new HashMap<>();
+        participantIdSet.put(new Address(), Set.of(joynrMessage.getImmutableMessage().getRecipient()));
+        doReturn(participantIdSet).when(addressManager).getParticipantIdMap(immutableMessage);
         doReturn(Optional.of(address)).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         doThrow(new JoynrDelayMessageException(200, "test")).when(messagingStubMock)
@@ -1006,7 +1022,7 @@ public class CcMessageRouterTest {
         ccMessageRouter.routeIn(immutableMessage);
         Thread.sleep(ttlMs);
 
-        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, times(1)).getParticipantIdMap(immutableMessage);
         verify(addressManager, atLeast(2)).getAddressForDelayableImmutableMessage(any());
         final ArgumentCaptor<DelayableImmutableMessage> passedDelayableMessage = ArgumentCaptor.forClass(DelayableImmutableMessage.class);
         verify(messageQueue, atLeast(2)).put(passedDelayableMessage.capture());
@@ -1040,9 +1056,9 @@ public class CcMessageRouterTest {
     private void testNotRoutableMessageIsDropped(final MutableMessage mutableMessage) throws Exception {
         final ImmutableMessage immutableMessage = mutableMessage.getImmutableMessage();
 
-        final Set<String> recipientSet = new HashSet<>();
-        recipientSet.add(mutableMessage.getImmutableMessage().getRecipient());
-        doReturn(recipientSet).when(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        final HashMap<Address, Set<String>> recipientSet = new HashMap<>();
+        recipientSet.put(new Address(), Set.of(mutableMessage.getImmutableMessage().getRecipient()));
+        doReturn(recipientSet).when(addressManager).getParticipantIdMap(immutableMessage);
         doReturn(Optional.empty()).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -1059,7 +1075,7 @@ public class CcMessageRouterTest {
         ccMessageRouter.routeOut(immutableMessage);
         assertTrue(countDownLatch.await(3000, TimeUnit.MILLISECONDS));
         verify(messageQueue, times(1)).put(any(DelayableImmutableMessage.class));
-        verify(addressManager, times(1)).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager, times(1)).getParticipantIdMap(immutableMessage);
         verify(addressManager, times(1)).getAddressForDelayableImmutableMessage(any(DelayableImmutableMessage.class));
         verifyNoMoreInteractions(messagingStubMock);
     }
@@ -1115,7 +1131,7 @@ public class CcMessageRouterTest {
         assertTrue(countDownLatch.await(3000, TimeUnit.MILLISECONDS));
         verify(messageQueue, times(0)).put(any(DelayableImmutableMessage.class));
 
-        verify(addressManager).getParticipantIdsForImmutableMessage(immutableMessage);
+        verify(addressManager).getParticipantIdMap(immutableMessage);
         verifyNoMoreInteractions(messagingStubMock);
     }
 
@@ -1160,10 +1176,10 @@ public class CcMessageRouterTest {
         when(failingMessage.getRecipient()).thenReturn(recipient);
         when(failingMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
 
-        Set<String> participantIdSet = new HashSet<>();
-        participantIdSet.add(recipient);
+        final HashMap<Address, Set<String>> participantIdSet = new HashMap<>();
+        participantIdSet.put(new Address(), Set.of(recipient));
 
-        doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(failingMessage);
+        doReturn(participantIdSet).when(addressManager).getParticipantIdMap(failingMessage);
         doReturn(Optional.of(mqttAddress)).when(addressManager).getAddressForDelayableImmutableMessage(any());
 
         doAnswer(new Answer<Object>() {
@@ -1190,7 +1206,7 @@ public class CcMessageRouterTest {
         when(anotherMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
         when(anotherMessage.getRecipient()).thenReturn("to");
         when(anotherMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
-        doReturn(participantIdSet).when(addressManager).getParticipantIdsForImmutableMessage(anotherMessage);
+        doReturn(participantIdSet).when(addressManager).getParticipantIdMap(anotherMessage);
 
         final Semaphore semaphore = new Semaphore(0);
         doAnswer(new Answer<Object>() {
@@ -1233,7 +1249,7 @@ public class CcMessageRouterTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 callCount++;
-                FailureAction failureAction = invocation.getArgumentAt(2, FailureAction.class);
+                FailureAction failureAction = invocation.getArgument(2);
                 switch (callCount) {
                 case 1:
                     failureAction.execute(new JoynrDelayMessageException(32, "first stub call, failureAction"));
@@ -1299,8 +1315,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
-                                                                                  HasConsumerPermissionCallback.class);
+                HasConsumerPermissionCallback callback = invocation.getArgument(1);
                 callback.hasConsumerPermission(true);
                 return null;
             }
@@ -1333,8 +1348,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
-                                                                                  HasConsumerPermissionCallback.class);
+                HasConsumerPermissionCallback callback = invocation.getArgument(1);
                 callback.hasConsumerPermission(true);
                 return null;
             }
@@ -1366,8 +1380,7 @@ public class CcMessageRouterTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                HasConsumerPermissionCallback callback = invocation.getArgumentAt(1,
-                                                                                  HasConsumerPermissionCallback.class);
+                HasConsumerPermissionCallback callback = invocation.getArgument(1);
                 callback.hasConsumerPermission(false);
                 return null;
             }

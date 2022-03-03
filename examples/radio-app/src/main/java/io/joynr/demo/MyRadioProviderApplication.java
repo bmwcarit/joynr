@@ -294,7 +294,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             Module backendTransportModules = Modules.EMPTY_MODULE;
 
             if (transport.contains("mqtt")) {
-                configureMqtt(joynrConfig);
+                joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }
             return Modules.override(runtimeModule).with(backendTransportModules);
@@ -306,12 +306,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, host);
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + port);
         joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
-    }
-
-    private static void configureMqtt(Properties joynrConfig) {
-        joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
-        joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
+        joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "/");
     }
 
     @Override

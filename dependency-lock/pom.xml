@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.18.2</version>
+		<version>1.18.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -309,6 +309,12 @@
 				<version>2.11.3</version>
 			</dependency>
 			<dependency>
+				<groupId>com.google.android</groupId>
+				<artifactId>android</artifactId>
+				<type>jar</type>
+				<version>28</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.auto.value</groupId>
 				<artifactId>auto-value-annotations</artifactId>
 				<type>jar</type>
@@ -489,12 +495,6 @@
 				<version>2.4</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
-				<type>jar</type>
-				<version>2.6</version>
-			</dependency>
-			<dependency>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
 				<type>jar</type>
@@ -573,10 +573,22 @@
 				<version>7.2.0</version>
 			</dependency>
 			<dependency>
+				<groupId>jakarta.annotation</groupId>
+				<artifactId>jakarta.annotation-api</artifactId>
+				<type>jar</type>
+				<version>2.0.0</version>
+			</dependency>
+			<dependency>
 				<groupId>jakarta.platform</groupId>
 				<artifactId>jakarta.jakartaee-api</artifactId>
 				<type>jar</type>
 				<version>8.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.transaction</groupId>
+				<artifactId>jakarta.transaction-api</artifactId>
+				<type>jar</type>
+				<version>2.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.activation</groupId>
@@ -624,7 +636,13 @@
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy</artifactId>
 				<type>jar</type>
-				<version>1.11.12</version>
+				<version>1.12.4</version>
+			</dependency>
+			<dependency>
+				<groupId>net.bytebuddy</groupId>
+				<artifactId>byte-buddy-agent</artifactId>
+				<type>jar</type>
+				<version>1.12.4</version>
 			</dependency>
 			<dependency>
 				<groupId>net.jcip</groupId>
@@ -636,7 +654,7 @@
 				<groupId>net.sf.ehcache</groupId>
 				<artifactId>ehcache</artifactId>
 				<type>jar</type>
-				<version>2.8.1</version>
+				<version>2.10.9.2</version>
 			</dependency>
 			<dependency>
 				<groupId>net.sf.jopt-simple</groupId>
@@ -712,12 +730,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-aether-provider</artifactId>
-				<type>jar</type>
-				<version>3.2.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-artifact</artifactId>
 				<type>jar</type>
 				<version>3.6.3</version>
@@ -730,19 +742,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-builder-support</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-model</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-model-builder</artifactId>
 				<type>jar</type>
 				<version>3.6.3</version>
 			</dependency>
@@ -781,30 +781,6 @@
 				<artifactId>maven-settings</artifactId>
 				<type>jar</type>
 				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-settings-builder</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-file</artifactId>
-				<type>jar</type>
-				<version>3.3.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-http-lightweight</artifactId>
-				<type>jar</type>
-				<version>2.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-http-shared</artifactId>
-				<type>jar</type>
-				<version>2.6</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.wagon</groupId>
@@ -849,42 +825,6 @@
 				<version>3.2.1</version>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-api</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-connector-basic</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-impl</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-spi</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-transport-wagon</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-util</artifactId>
-				<type>jar</type>
-				<version>1.0.0.v20140518</version>
-			</dependency>
-			<dependency>
 				<groupId>org.eclipse.emf</groupId>
 				<artifactId>org.eclipse.emf.common</artifactId>
 				<type>jar</type>
@@ -922,69 +862,129 @@
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-alpn-client</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-annotations</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-client</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-http</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-io</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-jndi</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-plus</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-security</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-server</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-servlet</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-util</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-webapp</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-xml</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.toolchain</groupId>
+				<artifactId>jetty-jakarta-servlet-api</artifactId>
+				<type>jar</type>
+				<version>5.0.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-api</artifactId>
+				<artifactId>websocket-core-client</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-client</artifactId>
+				<artifactId>websocket-core-common</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-common</artifactId>
+				<artifactId>websocket-core-server</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-server</artifactId>
+				<artifactId>websocket-jetty-api</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-servlet</artifactId>
+				<artifactId>websocket-jetty-client</artifactId>
 				<type>jar</type>
-				<version>9.2.13.v20150730</version>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-jetty-common</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-jetty-server</artifactId>
+				<type>jar</type>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
@@ -1063,12 +1063,6 @@
 				<artifactId>org.eclipse.text</artifactId>
 				<type>jar</type>
 				<version>3.8.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.sisu</groupId>
-				<artifactId>org.eclipse.sisu.inject</artifactId>
-				<type>jar</type>
-				<version>0.3.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.xtend</groupId>
@@ -1182,7 +1176,7 @@
 				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
 				<type>jar</type>
-				<version>3.19.0-GA</version>
+				<version>3.27.0-GA</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss</groupId>
@@ -1239,12 +1233,6 @@
 				<version>1.6.0.Final</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.arquillian.container</groupId>
-				<artifactId>arquillian-glassfish-embedded-3.1</artifactId>
-				<type>jar</type>
-				<version>1.0.2</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.arquillian.core</groupId>
 				<artifactId>arquillian-core-api</artifactId>
 				<type>jar</type>
@@ -1261,30 +1249,6 @@
 				<artifactId>arquillian-core-spi</artifactId>
 				<type>jar</type>
 				<version>1.6.0.Final</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-api</artifactId>
-				<type>jar</type>
-				<version>1.0.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-impl-base</artifactId>
-				<type>jar</type>
-				<version>1.0.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-jta</artifactId>
-				<type>jar</type>
-				<version>1.0.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian.extension</groupId>
-				<artifactId>arquillian-transaction-spi</artifactId>
-				<type>jar</type>
-				<version>1.0.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.junit</groupId>
@@ -1383,36 +1347,6 @@
 				<version>2.0.0</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-api</artifactId>
-				<type>jar</type>
-				<version>3.1.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-api-maven</artifactId>
-				<type>jar</type>
-				<version>3.1.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-				<type>jar</type>
-				<version>2.2.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-spi</artifactId>
-				<type>jar</type>
-				<version>3.1.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap.resolver</groupId>
-				<artifactId>shrinkwrap-resolver-spi-maven</artifactId>
-				<type>jar</type>
-				<version>3.1.4</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.spec.javax.transaction</groupId>
 				<artifactId>jboss-transaction-api_1.2_spec</artifactId>
 				<type>jar</type>
@@ -1479,12 +1413,6 @@
 				<version>20180813</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jsoup</groupId>
-				<artifactId>jsoup</artifactId>
-				<type>jar</type>
-				<version>1.12.1</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jvnet.staxex</groupId>
 				<artifactId>stax-ex</artifactId>
 				<type>jar</type>
@@ -1492,45 +1420,39 @@
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<type>jar</type>
-				<version>1.10.19</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
 				<type>jar</type>
-				<version>1.9.5</version>
+				<version>4.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.objenesis</groupId>
 				<artifactId>objenesis</artifactId>
 				<type>jar</type>
-				<version>1.0</version>
+				<version>3.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm</artifactId>
 				<type>jar</type>
-				<version>7.0</version>
+				<version>9.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-analysis</artifactId>
 				<type>jar</type>
-				<version>7.0</version>
+				<version>9.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-commons</artifactId>
 				<type>jar</type>
-				<version>7.0</version>
+				<version>9.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-tree</artifactId>
 				<type>jar</type>
-				<version>7.0</version>
+				<version>9.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
@@ -1573,18 +1495,6 @@
 				<artifactId>slf4j-log4j12</artifactId>
 				<type>jar</type>
 				<version>1.7.28</version>
-			</dependency>
-			<dependency>
-				<groupId>org.sonatype.plexus</groupId>
-				<artifactId>plexus-cipher</artifactId>
-				<type>jar</type>
-				<version>1.7</version>
-			</dependency>
-			<dependency>
-				<groupId>org.sonatype.plexus</groupId>
-				<artifactId>plexus-sec-dispatcher</artifactId>
-				<type>jar</type>
-				<version>1.4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

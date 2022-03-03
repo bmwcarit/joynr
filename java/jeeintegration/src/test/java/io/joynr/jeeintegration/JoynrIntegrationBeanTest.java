@@ -20,10 +20,10 @@ package io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.google.inject.AbstractModule;
@@ -337,7 +337,7 @@ public class JoynrIntegrationBeanTest {
         for (String gbid : GBIDS) {
             verify(messagingSkeletonFactory).getSkeleton(argThat(new ArgumentMatcher<Address>() {
                 @Override
-                public boolean matches(Object argument) {
+                public boolean matches(Address argument) {
                     if (!MqttAddress.class.isInstance(argument)) {
                         return false;
                     }
@@ -384,7 +384,7 @@ public class JoynrIntegrationBeanTest {
         for (String gbid : GBIDS) {
             verify(messagingSkeletonFactory).getSkeleton(argThat(new ArgumentMatcher<Address>() {
                 @Override
-                public boolean matches(Object argument) {
+                public boolean matches(Address argument) {
                     if (!MqttAddress.class.isInstance(argument)) {
                         return false;
                     }
@@ -443,7 +443,6 @@ public class JoynrIntegrationBeanTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 @SuppressWarnings("rawtypes")
                 Bean factoryAsBean = mock(Bean.class);
-                when(factoryAsBean.getBeanClass()).thenReturn(MyProviderSettingsFactoryBase.class);
                 when(factoryAsBean.create(null)).thenReturn(settingsFactory);
 
                 Set<Bean<?>> providerSettingsFactoryBeans = new HashSet<>();
@@ -482,7 +481,6 @@ public class JoynrIntegrationBeanTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 @SuppressWarnings("rawtypes")
                 Bean factoryAsBean = mock(Bean.class);
-                when(factoryAsBean.getBeanClass()).thenReturn(MyProviderSettingsFactoryWithCorrectProvidesForBeanClass.class);
                 when(factoryAsBean.create(null)).thenReturn(settingsFactory);
 
                 Set<Bean<?>> providerSettingsFactoryBeans = new HashSet<>();
@@ -521,7 +519,6 @@ public class JoynrIntegrationBeanTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 @SuppressWarnings("rawtypes")
                 Bean factoryAsBean = mock(Bean.class);
-                when(factoryAsBean.getBeanClass()).thenReturn(MyProviderSettingsFactoryWithIncorrectProvidesForBeanClass.class);
                 when(factoryAsBean.create(null)).thenReturn(settingsFactory);
 
                 Set<Bean<?>> providerSettingsFactoryBeans = new HashSet<>();

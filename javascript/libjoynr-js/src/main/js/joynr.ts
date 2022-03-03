@@ -22,6 +22,7 @@
 import {
     InProcessProvisioning,
     Provisioning,
+    UdsLibJoynrProvisioning,
     WebSocketLibjoynrProvisioning
 } from "./joynr/start/interface/Provisioning";
 import JoynrObject from "./joynr/types/JoynrObject";
@@ -89,7 +90,7 @@ class Joynr extends JoynrApi implements Pick<JoynrRuntime<Provisioning>, JoynrKe
      * @param onFatalRuntimeError Called in case a runtime error prevents further communication
      * @return Promise object being resolved in case all libjoynr dependencies are loaded
      */
-    public async load(provisioning: InProcessProvisioning | WebSocketLibjoynrProvisioning, onFatalRuntimeError? : (error: JoynrRuntimeException) => void): Promise<Joynr> {
+    public async load(provisioning: UdsLibJoynrProvisioning | InProcessProvisioning | WebSocketLibjoynrProvisioning, onFatalRuntimeError? : (error: JoynrRuntimeException) => void): Promise<Joynr> {
         this.loaded = true;
         if(!onFatalRuntimeError) {
             onFatalRuntimeError = (error: JoynrRuntimeException) => {

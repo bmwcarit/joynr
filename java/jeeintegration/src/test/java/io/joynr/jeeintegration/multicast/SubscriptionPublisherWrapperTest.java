@@ -19,14 +19,14 @@
 package io.joynr.jeeintegration.multicast;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherWrapper;

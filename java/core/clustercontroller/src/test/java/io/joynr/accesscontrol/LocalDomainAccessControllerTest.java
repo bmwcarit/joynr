@@ -21,8 +21,9 @@ package io.joynr.accesscontrol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,7 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.discovery.LocalDiscoveryAggregator;
@@ -98,13 +99,14 @@ public class LocalDomainAccessControllerTest {
         domainAccessControlStore = new DomainAccessControlStoreEhCache(cacheManager,
                                                                        new DefaultDomainAccessControlProvisioning());
 
-        when(proxyInvocationHandlerFactoryMock.create(any(Set.class),
-                                                      any(String.class),
-                                                      any(String.class),
-                                                      any(DiscoveryQos.class),
-                                                      any(MessagingQos.class),
-                                                      any(ShutdownNotifier.class),
-                                                      any())).thenReturn(proxyInvocationHandlerMock);
+        lenient().when(proxyInvocationHandlerFactoryMock.create(any(Set.class),
+                                                                any(String.class),
+                                                                any(String.class),
+                                                                any(DiscoveryQos.class),
+                                                                any(MessagingQos.class),
+                                                                any(ShutdownNotifier.class),
+                                                                any()))
+                 .thenReturn(proxyInvocationHandlerMock);
         GlobalDiscoveryEntry accessControlDomain = mock(GlobalDiscoveryEntry.class);
         when(accessControlDomain.getDomain()).thenReturn("accessControlDomain");
         localDomainAccessController = new LocalDomainAccessControllerImpl(accessControlDomain,

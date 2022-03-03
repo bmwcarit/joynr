@@ -20,10 +20,13 @@ package io.joynr.messaging.websocket.server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.http.HttpVersion;
@@ -31,17 +34,14 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
-import org.eclipse.jetty.websocket.api.WebSocketException;
 import org.eclipse.jetty.websocket.api.WriteCallback;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest;
-import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
-import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.eclipse.jetty.websocket.api.exceptions.WebSocketException;
+import org.eclipse.jetty.websocket.server.JettyServerUpgradeRequest;
+import org.eclipse.jetty.websocket.server.JettyServerUpgradeResponse;
+import org.eclipse.jetty.websocket.server.JettyWebSocketCreator;
+import org.eclipse.jetty.websocket.server.config.JettyWebSocketServletContainerInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +63,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     private Server server;
     private WebSocketAddress address;
     private int maxMessageSize;
+    private long websocketIdleTimeout;
     private Map<String, Session> sessionMap = new HashMap<>();
     private List<CCWebSocketMessagingSkeletonSocket> openSockets = new ArrayList<>();
 
@@ -72,10 +73,14 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
 
     private boolean shutdown = false;
 
-    public WebSocketJettyServer(WebSocketAddress address, ObjectMapper objectMapper, int maxMessageSize) {
+    public WebSocketJettyServer(WebSocketAddress address,
+                                ObjectMapper objectMapper,
+                                int maxMessageSize,
+                                long websocketIdleTimeout) {
         this.address = address;
         this.objectMapper = objectMapper;
         this.maxMessageSize = maxMessageSize;
+        this.websocketIdleTimeout = websocketIdleTimeout;
     }
 
     @Override
@@ -97,9 +102,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         ServerConnector connector;
 
         if (address.getProtocol().equals(WebSocketProtocol.WSS)) {
-            SslContextFactory sslContextFactory = new SslContextFactory();
-            SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory,
-                                                                                 HttpVersion.HTTP_1_1.asString());
+            SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(HttpVersion.HTTP_1_1.asString());
             connector = new ServerConnector(server, sslConnectionFactory);
         } else {
             connector = new ServerConnector(server);
@@ -111,31 +114,28 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         context.setContextPath("/");
         server.setHandler(context);
 
-        ServletHolder holderEvents = new ServletHolder("ws-events", new WebSocketServlet() {
+        JettyWebSocketServletContainerInitializer.configure(context, (servletContext, wsContainer) -> {
+            wsContainer.setMaxTextMessageSize(maxMessageSize);
+            wsContainer.setMaxBinaryMessageSize(maxMessageSize);
+            wsContainer.setIdleTimeout(Duration.ofMillis(websocketIdleTimeout));
 
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void configure(WebSocketServletFactory webSocketServletFactory) {
-                webSocketServletFactory.getPolicy().setMaxBinaryMessageSize(maxMessageSize);
-                webSocketServletFactory.getPolicy().setMaxTextMessageSize(maxMessageSize);
-                webSocketServletFactory.setCreator(new WebSocketCreator() {
-
-                    @Override
-                    public Object createWebSocket(ServletUpgradeRequest servletUpgradeRequest,
-                                                  ServletUpgradeResponse servletUpgradeResponse) {
-                        CCWebSocketMessagingSkeletonSocket socket = new CCWebSocketMessagingSkeletonSocket(WebSocketJettyServer.this);
-                        openSockets.add(socket);
-                        return socket;
-                    }
-                });
-            }
+            // Add CCWebSocketMessagingSkeletonSocket
+            wsContainer.addMapping(address.getPath(), new JettyWebSocketCreator() {
+                @Override
+                public Object createWebSocket(JettyServerUpgradeRequest req, JettyServerUpgradeResponse resp) {
+                    logger.trace("Creating CCWebSocketMessagingSkeletonSocket ...");
+                    CCWebSocketMessagingSkeletonSocket socket = new CCWebSocketMessagingSkeletonSocket(WebSocketJettyServer.this);
+                    openSockets.add(socket);
+                    logger.trace("CCWebSocketMessagingSkeletonSocket created");
+                    return socket;
+                }
+            });
         });
 
-        context.addServlet(holderEvents, address.getPath());
-
         try {
+            logger.info("Starting WebSocket server ...");
             server.start();
+            logger.info("WebSocket server started");
         } catch (Exception t) {
             logger.error("Error while starting websocket server: ", t);
         }
@@ -149,11 +149,11 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
     @Override
     public void shutdown() {
         shutdown = true;
-        for (Session session : sessionMap.values()) {
+        for (Entry<String, Session> session : sessionMap.entrySet()) {
             try {
-                session.disconnect();
-            } catch (IOException e) {
-                logger.error("Error: ", e);
+                session.getValue().disconnect();
+            } catch (Exception e) {
+                logger.error("Error closing session: {}", session.getKey(), e);
             }
         }
         try {
@@ -222,8 +222,14 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         }
 
         @Override
+        public void onWebSocketText(String message) {
+            logger.error("Received text Message: {}", message);
+        }
+
+        @Override
         public void onWebSocketBinary(byte[] payload, int offset, int len) {
             String serializedMessage = new String(payload, offset, len, CHARSET);
+            logger.trace("Received message: {}", serializedMessage);
             if (isInitializationMessage(serializedMessage)) {
                 try {
                     WebSocketClientAddress webSocketClientAddress = objectMapper.readValue(serializedMessage,
@@ -234,7 +240,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     logger.error("Error parsing WebSocketClientAddress: ", e);
                 }
             } else {
-                messageArrivedListener.messageArrived(payload);
+                messageArrivedListener.messageArrived(Arrays.copyOfRange(payload, offset, offset + len));
             }
         }
 
@@ -242,6 +248,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
         public void onWebSocketClose(int statusCode, String reason) {
             super.onWebSocketClose(statusCode, reason);
             openSockets.remove(CCWebSocketMessagingSkeletonSocket.this);
+            // TODO remove address from routing table???
         }
     }
 

@@ -210,12 +210,12 @@ public class ProviderApplication extends AbstractJoynrApplication {
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4245");
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "/");
         } else {
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, "localhost");
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "4242");
             joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+            joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "/");
         }
     }
 
@@ -270,6 +270,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
                 registrationFuture.get(30000);
             } catch (Exception e) {
                 logger.info("SIT RESULT success: Java provider failed as expected!");
+                provider = null;
                 return;
             }
         }
@@ -279,6 +280,7 @@ public class ProviderApplication extends AbstractJoynrApplication {
                 logger.info("SIT RESULT failure: Java provider did not fail as expected!");
             } else {
                 logger.info("SIT RESULT success: Java provider failed as expected!");
+                provider = null;
                 return;
             }
         }

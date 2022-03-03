@@ -20,8 +20,8 @@ package io.joynr.integration.websocket;
 
 import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,7 +41,7 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,6 +109,7 @@ public class WebSocketTest {
                            Set<JoynrMessageProcessor> messageProcessor) {
         ObjectMapper objectMapper = new ObjectMapper();
         WebSocketEndpointFactory webSocketJettyServerFactory = new WebSocketJettyServerFactory(maxMessageSize,
+                                                                                               websocketIdleTimeout,
                                                                                                objectMapper);
         ccWebSocketMessagingSkeleton = new WebSocketMessagingSkeleton(serverAddress,
                                                                       webSocketJettyServerFactory,
@@ -203,7 +204,7 @@ public class WebSocketTest {
         Mockito.verify(successAction).execute();
     }
 
-    static class SerializedDataOfImmutableMessageMatcher extends ArgumentMatcher<ImmutableMessage> {
+    static class SerializedDataOfImmutableMessageMatcher implements ArgumentMatcher<ImmutableMessage> {
         private final byte[] expectedSerializedData;
 
         public SerializedDataOfImmutableMessageMatcher(ImmutableMessage message) {
@@ -211,10 +212,7 @@ public class WebSocketTest {
         }
 
         @Override
-        public boolean matches(Object argument) {
-            if (!(argument instanceof ImmutableMessage)) {
-                return false;
-            }
+        public boolean matches(ImmutableMessage argument) {
             return Arrays.equals(expectedSerializedData, ((ImmutableMessage) argument).getSerializedMessage());
         }
 

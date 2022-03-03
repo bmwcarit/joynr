@@ -19,6 +19,8 @@
 package io.joynr.provider;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -27,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.dispatching.RequestCallerFactory;
 import joynr.tests.DefaulttestProvider;
@@ -62,6 +64,27 @@ public class ProviderContainerFactoryTest {
         providerContainerFactory.create(providerSpy);
         assertFalse("Expected exception didn't arrive when calling ProviderContainerFactory.create "
                 + "with wrong parameter", true);
+    }
+
+    @Test
+    public void testCreateTwice() throws Exception {
+        JoynrProvider provider = new DefaulttestProvider();
+        ProviderContainer container1 = providerContainerFactory.create(provider);
+        ProviderContainer container2 = providerContainerFactory.create(provider);
+        assertSame(container1, container2);
+        verify(subscriptionPublisherFactory, times(1)).create(provider);
+        verify(requestCallerFactory, times(1)).create(provider);
+    }
+
+    @Test
+    public void testRemove() throws Exception {
+        JoynrProvider provider = new DefaulttestProvider();
+        ProviderContainer container1 = providerContainerFactory.create(provider);
+        providerContainerFactory.removeProviderContainer(provider);
+        ProviderContainer container2 = providerContainerFactory.create(provider);
+        assertNotSame(container1, container2);
+        verify(subscriptionPublisherFactory, times(2)).create(provider);
+        verify(requestCallerFactory, times(2)).create(provider);
     }
 
 }

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.ParticipantIdStorage;
@@ -59,8 +60,8 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> removeStaleScheduledFuture;
 
-    // CHECKSTYLE:OFF
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public ClusterControllerRuntime(ObjectMapper objectMapper,
                                     ProxyBuilderFactory proxyBuilderFactory,
                                     Dispatcher dispatcher,
@@ -69,6 +70,7 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                     RoutingTable routingTable,
                                     StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                                     DiscoverySettingsStorage discoverySettingsStorage,
+                                    VersionCompatibilityChecker versionCompatibilityChecker,
                                     ParticipantIdStorage participantIdStorage,
                                     @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
@@ -83,15 +85,10 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
               proxyBuilderFactory,
               messagingSkeletonFactory,
               localDiscoveryAggregator,
-              routingTable,
               messageRouter,
               statelessAsyncCallbackDirectory,
               discoverySettingsStorage,
-              participantIdStorage,
-              systemServicesDomain,
-              dispatcherAddress,
-              discoveryProviderAddress);
-        // CHECKSTYLE:ON
+              versionCompatibilityChecker);
 
         if (dispatcherAddress instanceof InProcessAddress) {
             ((InProcessAddress) dispatcherAddress).setSkeleton(new InProcessLibjoynrMessagingSkeleton(dispatcher));

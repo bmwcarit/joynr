@@ -3,7 +3,7 @@ version: '3'
 services:
 
   hivemq:
-    image: 'hivemq/hivemq-ce:2021.2'
+    image: 'hivemq/hivemq-ce:latest'
     container_name: mqttbroker
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
@@ -13,7 +13,7 @@ services:
     container_name: "joynr-gcd-db"
 
   joynr-gcd:
-    image: "joynr-gcd-db:latest"
+    image: "joynr-gcd:latest"
     container_name: joynr-gcd
     depends_on:
       - "hivemq"

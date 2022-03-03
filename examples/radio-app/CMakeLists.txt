@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
-project(radio-app VERSION 1.18.2 LANGUAGES CXX)
+project(radio-app VERSION 1.18.3 LANGUAGES CXX)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -48,7 +48,7 @@ endif(ENABLE_CCACHE)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.18.2 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
+find_package(Joynr 1.18.3 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
@@ -181,6 +181,20 @@ if(TARGET Joynr::JoynrUdsRuntime)
     )
 endif()
 
+get_target_property(
+    LibJoynr_INCLUDE_DIRS
+    Joynr::JoynrLib
+    INTERFACE_INCLUDE_DIRECTORIES
+)
+
+# Use LibJoynr's definitions for compilation of joynr/Logger.h within radio-app
+# to get log output to the same destinations (e.g. stdout).
+get_target_property(
+    LibJoynr_COMPILE_DEFINITIONS
+    Joynr::JoynrLib
+    INTERFACE_COMPILE_DEFINITIONS
+)
+
 # Provider objects are independent of cluster controller communication
 add_library(radio-app-provider-common OBJECT
     ${radio-app-provider_HEADERS}
@@ -188,10 +202,12 @@ add_library(radio-app-provider-common OBJECT
 )
 
 target_include_directories(radio-app-provider-common
+    PUBLIC ${LibJoynr_INCLUDE_DIRS}
     PUBLIC ${LibJoynrRuntime_INCLUDE_DIRS}
 )
-target_link_libraries(radio-app-provider-common
-    radio-app
+
+target_compile_definitions(radio-app-provider-common
+    PUBLIC ${LibJoynr_COMPILE_DEFINITIONS}
 )
 
 # Consumer objects are independent of cluster controller communication
@@ -201,10 +217,12 @@ add_library(radio-app-consumer-common OBJECT
 )
 
 target_include_directories(radio-app-consumer-common
+    PUBLIC ${LibJoynr_INCLUDE_DIRS}
     PUBLIC ${LibJoynrRuntime_INCLUDE_DIRS}
 )
-target_link_libraries(radio-app-consumer-common
-    radio-app
+
+target_compile_definitions(radio-app-consumer-common
+    PUBLIC ${LibJoynr_COMPILE_DEFINITIONS}
 )
 
 function(create_apps TYPE RUNTIME)

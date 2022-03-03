@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>1.18.2</version>
+	<version>1.18.3</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
@@ -399,7 +399,7 @@
 		<jackson.version>2.11.3</jackson.version>
 		<netty.version>4.1.48.Final</netty.version>
 		<guice.version>3.0</guice.version>
-		<jetty.version>9.2.13.v20150730</jetty.version>
+		<jetty.version>11.0.7</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
 		<hibernate.version>5.5.7.Final</hibernate.version>
 		<android.platform.version>9_r6</android.platform.version>
@@ -410,7 +410,7 @@
 		<xtext.version>2.16.0</xtext.version>
 		<slf4j.version>1.7.28</slf4j.version>
 		<smrf.version>0.3.3</smrf.version>
-		<jacoco.version>0.8.4</jacoco.version>
+		<jacoco.version>0.8.7</jacoco.version>
 		<surefire.version>3.0.0-M3</surefire.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
 	</properties>
@@ -485,22 +485,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-io</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-security</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-server</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-util</artifactId>
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
@@ -510,27 +495,17 @@
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-api</artifactId>
+				<artifactId>websocket-jetty-api</artifactId>
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-client</artifactId>
+				<artifactId>websocket-jetty-client</artifactId>
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-common</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-server</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.jetty.websocket</groupId>
-				<artifactId>websocket-servlet</artifactId>
+				<artifactId>websocket-jetty-server</artifactId>
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
@@ -673,12 +648,6 @@
 				<version>1.7.19</version>
 			</dependency>
 			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<scope>test</scope>
-				<version>1.10.19</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<!-- Manage arquillian and shrinkwrap dependencies -->
 				<artifactId>arquillian-bom</artifactId>
@@ -728,7 +697,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>1.9.5</version>
+				<version>4.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.franca</groupId>
@@ -748,7 +717,7 @@
 			<dependency>
 				<groupId>net.sf.ehcache</groupId>
 				<artifactId>ehcache</artifactId>
-				<version>2.8.1</version>
+				<version>2.10.9.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hibernate</groupId>
@@ -924,134 +893,6 @@
 					<version>1.0-alpha-2</version>
 				</plugin>
 				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-enforcer-plugin</artifactId>
-										<versionRange>[1.0.0,)</versionRange>
-										<goals>
-											<goal>enforce</goal>
-											<goal>display-info</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>net.revelc.code.formatter</groupId>
-										<artifactId>formatter-maven-plugin</artifactId>
-										<versionRange>[2.8.1,)</versionRange>
-										<goals>
-											<goal>format</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-dependency-plugin</artifactId>
-										<versionRange>[3.1.1,)</versionRange>
-										<goals>
-											<goal>unpack</goal>
-											<goal>copy</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-antrun-plugin</artifactId>
-										<versionRange>[1.7,)</versionRange>
-										<goals>
-											<goal>run</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-install-plugin</artifactId>
-										<versionRange>[2.5,)</versionRange>
-										<goals>
-											<goal>install-file</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>io.joynr.tools.generator</groupId>
-										<artifactId>joynr-generator-maven-plugin</artifactId>
-										<versionRange>[0.5.0,)</versionRange>
-										<goals>
-											<goal>generate</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-											<runOnIncremental>false</runOnIncremental>
-											<runOnConfiguration>true</runOnConfiguration>
-										</execute>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-clean-plugin</artifactId>
-										<versionRange>[2.5,)</versionRange>
-										<goals>
-											<goal>clean</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<execute>
-											<runOnIncremental>false</runOnIncremental>
-										</execute>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.simpligility.maven.plugins
-										</groupId>
-										<artifactId>
-											android-maven-plugin
-										</artifactId>
-										<versionRange>
-											[4.1.0,)
-										</versionRange>
-										<goals>
-											<goal>emma</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${surefire.version}</version>
@@ -1083,9 +924,10 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.3.1</version>
 					<configuration>
 						<source>${generic.maven.compiler.source}</source>
+						<sourcepath>src/main</sourcepath>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -1154,7 +996,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.10</version>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.xtend</groupId>
@@ -1559,6 +1401,11 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-plugin-plugin</artifactId>
 					<version>3.6.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>3.2.4</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>

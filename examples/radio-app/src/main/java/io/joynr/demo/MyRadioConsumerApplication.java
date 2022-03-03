@@ -291,7 +291,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                 joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_HOST, host);
                 joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PORT, "" + port);
                 joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PROTOCOL, "ws");
-                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "");
+                joynrConfig.setProperty(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_PATH, "/");
                 runtimeModule = new LibjoynrWebSocketRuntimeModule();
             } else {
                 runtimeModule = new CCInProcessRuntimeModule();
@@ -300,7 +300,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             Module backendTransportModules = Modules.EMPTY_MODULE;
 
             if (transport.contains("mqtt")) {
-                joynrConfig.put("joynr.messaging.mqtt.brokerUri", "tcp://localhost:1883");
                 joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }

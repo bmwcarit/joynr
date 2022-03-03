@@ -3,14 +3,12 @@ version: '3'
 services:
 
   hivemq:
-    image: "hivemq/hivemq-ce:2021.2"
+    image: "hivemq/hivemq-ce:latest"
     container_name: mqttbroker
     networks:
       - statelessAsyncNetwork
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
-    ports:
-      - "1883:1883"
 
   joynr-gcd-db:
     # build: run "cd ../../docker/joynr-gcd-db && ./build_docker_image.sh"

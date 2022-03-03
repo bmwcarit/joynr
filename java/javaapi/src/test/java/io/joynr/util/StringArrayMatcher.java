@@ -21,7 +21,7 @@ package io.joynr.util;
 import java.util.Arrays;
 import org.mockito.ArgumentMatcher;
 
-public class StringArrayMatcher extends ArgumentMatcher<String[]> {
+public class StringArrayMatcher implements ArgumentMatcher<String[]> {
     private String[] stringArray;
 
     public StringArrayMatcher(final String[] stringArray) {
@@ -29,11 +29,7 @@ public class StringArrayMatcher extends ArgumentMatcher<String[]> {
     }
 
     @Override
-    public boolean matches(Object argument) {
-        if (!(argument instanceof String[])) {
-            return false;
-        }
-
+    public boolean matches(String[] argument) {
         return Arrays.equals((String[]) argument, stringArray);
     }
 }

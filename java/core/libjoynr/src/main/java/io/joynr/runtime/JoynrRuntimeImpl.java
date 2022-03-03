@@ -29,17 +29,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import io.joynr.UsedBy;
 import io.joynr.arbitration.ArbitratorFactory;
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.capabilities.CapabilitiesRegistrar;
-import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.DiscoverySettingsStorage;
@@ -59,7 +57,6 @@ import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.exceptions.ApplicationException;
-import joynr.system.RoutingTypes.Address;
 import joynr.types.ProviderQos;
 
 abstract public class JoynrRuntimeImpl implements JoynrRuntime {
@@ -81,6 +78,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
 
     private DiscoverySettingsStorage discoverySettingsStorage;
 
+    private VersionCompatibilityChecker versionCompatibilityChecker;
+
     private final ProxyBuilderFactory proxyBuilderFactory;
 
     private Queue<Future<Void>> unregisterProviderQueue = new ConcurrentLinkedQueue<Future<Void>>();
@@ -91,19 +90,15 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             ProxyBuilderFactory proxyBuilderFactory,
                             MessagingSkeletonFactory messagingSkeletonFactory,
                             LocalDiscoveryAggregator localDiscoveryAggregator,
-                            RoutingTable routingTable,
                             MessageRouter messageRouter,
                             StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
                             DiscoverySettingsStorage discoverySettingsStorage,
-                            ParticipantIdStorage participantIdStorage,
-                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                            @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
-                            @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address ccMessagingAddress) {
-        // CHECKSTYLE:ON
+                            VersionCompatibilityChecker versionCompatibilityChecker) {
         this.messageRouter = messageRouter;
         this.objectMapper = objectMapper;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
         this.discoverySettingsStorage = discoverySettingsStorage;
+        this.versionCompatibilityChecker = versionCompatibilityChecker;
 
         Class<?>[] messageTypes = new Class[]{ Request.class, Reply.class, SubscriptionRequest.class,
                 SubscriptionStop.class, SubscriptionPublication.class, BroadcastSubscriptionRequest.class };
@@ -274,7 +269,8 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
         GuidedProxyBuilder guidedProxyBuilder = new GuidedProxyBuilder(discoverySettingsStorage,
                                                                        domains,
                                                                        interfaceClass,
-                                                                       messageRouter);
+                                                                       messageRouter,
+                                                                       versionCompatibilityChecker);
         return guidedProxyBuilder;
     }
 

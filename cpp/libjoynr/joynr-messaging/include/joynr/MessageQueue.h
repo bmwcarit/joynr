@@ -21,6 +21,8 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <deque>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -31,10 +33,10 @@
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 
+#include "joynr/ImmutableMessage.h"
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/ImmutableMessage.h"
 
 namespace joynr
 {
@@ -55,6 +57,7 @@ public:
                  std::uint64_t messageQueueLimitBytes = 0)
             : _queue(),
               _queueMutex(),
+              _onMsgsDropped([](std::deque<std::shared_ptr<ImmutableMessage>>&) {}),
               _messageQueueLimit(messageQueueLimit),
               _messageQueueLimitBytes(messageQueueLimitBytes),
               _perKeyMessageQueueLimit(perKeyMessageQueueLimit),
@@ -62,19 +65,29 @@ public:
     {
     }
 
-    std::size_t getQueueLength() const
+    virtual ~MessageQueue()
+    {
+    }
+
+    virtual void setOnMsgsDropped(
+            std::function<void(std::deque<std::shared_ptr<ImmutableMessage>>&)> onMsgsDroppedFunc)
+    {
+        _onMsgsDropped = std::move(onMsgsDroppedFunc);
+    }
+
+    virtual std::size_t getQueueLength() const
     {
         std::lock_guard<std::mutex> lock(_queueMutex);
         return getQueueLengthUnlocked();
     }
 
-    std::size_t getQueueSizeBytes() const
+    virtual std::size_t getQueueSizeBytes() const
     {
         std::lock_guard<std::mutex> lock(_queueMutex);
         return _queueSizeBytes;
     }
 
-    void queueMessage(const T key, std::shared_ptr<ImmutableMessage> message)
+    virtual void queueMessage(const T key, std::shared_ptr<ImmutableMessage> message)
     {
 
         MessageQueueItem item;
@@ -82,30 +95,38 @@ public:
         item._ttlAbsolute = message->getExpiryDate();
         item._message = std::move(message);
 
-        std::lock_guard<std::mutex> lock(_queueMutex);
-        ensureFreeQueueSlot(item._key);
-        if (!ensureFreeQueueBytes(item._message->getMessageSize())) {
-            JOYNR_LOG_WARN(logger(),
-                           "queueMessage: messageSize exceeds messageQueueLimitBytes {}, "
-                           "discarding message {}; queueSize(bytes) = {}, "
-                           "#msgs = {}",
-                           _messageQueueLimitBytes,
-                           item._message->getTrackingInfo(),
-                           _queueSizeBytes,
-                           getQueueLengthUnlocked());
-            return;
+        std::deque<std::shared_ptr<ImmutableMessage>> droppedMessagesToBeReplied{};
+        // scope protected by the mutex
+        {
+            std::lock_guard<std::mutex> lock(_queueMutex);
+            ensureFreeQueueSlot(item._key, droppedMessagesToBeReplied);
+            if (!ensureFreeQueueBytes(
+                        item._message->getMessageSize(), droppedMessagesToBeReplied)) {
+                JOYNR_LOG_WARN(logger(),
+                               "queueMessage: messageSize exceeds messageQueueLimitBytes {}, "
+                               "discarding message {}; queueSize(bytes) = {}, "
+                               "#msgs = {}",
+                               _messageQueueLimitBytes,
+                               item._message->getTrackingInfo(),
+                               _queueSizeBytes,
+                               getQueueLengthUnlocked());
+                return;
+            }
+            _queueSizeBytes += item._message->getMessageSize();
+            std::string trackingInfo = item._message->getTrackingInfo();
+            _queue.insert(std::move(item));
+            JOYNR_LOG_TRACE(logger(),
+                            "queueMessage: message {}, new queueSize(bytes) = {}, #msgs = {}",
+                            trackingInfo,
+                            _queueSizeBytes,
+                            getQueueLengthUnlocked());
         }
-        _queueSizeBytes += item._message->getMessageSize();
-        std::string trackingInfo = item._message->getTrackingInfo();
-        _queue.insert(std::move(item));
-        JOYNR_LOG_TRACE(logger(),
-                        "queueMessage: message {}, new queueSize(bytes) = {}, #msgs = {}",
-                        trackingInfo,
-                        _queueSizeBytes,
-                        getQueueLengthUnlocked());
+        if (!droppedMessagesToBeReplied.empty()) {
+            _onMsgsDropped(droppedMessagesToBeReplied);
+        }
     }
 
-    std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
+    virtual std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
     {
         std::lock_guard<std::mutex> lock(_queueMutex);
         auto& keyIndex = boost::multi_index::get<messagequeuetags::key>(_queue);
@@ -126,7 +147,7 @@ public:
         return nullptr;
     }
 
-    void removeOutdatedMessages()
+    virtual void removeOutdatedMessages()
     {
         std::lock_guard<std::mutex> lock(_queueMutex);
         int numberOfErasedMessages = 0;
@@ -192,6 +213,7 @@ protected:
 
     QueueMultiIndexContainer _queue;
     mutable std::mutex _queueMutex;
+    std::function<void(std::deque<std::shared_ptr<ImmutableMessage>>&)> _onMsgsDropped;
 
 private:
     const std::uint64_t _messageQueueLimit;
@@ -204,7 +226,9 @@ private:
         return boost::multi_index::get<messagequeuetags::key>(_queue).size();
     }
 
-    bool ensureFreeQueueBytes(const std::uint64_t messageLength)
+    bool ensureFreeQueueBytes(
+            const std::uint64_t messageLength,
+            std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessagesToBeReplied)
     {
         // queueMutex must have been acquired earlier
         const bool queueLimitBytesActive = _messageQueueLimitBytes > 0;
@@ -217,12 +241,14 @@ private:
         }
 
         while (_queueSizeBytes + messageLength > _messageQueueLimitBytes) {
-            removeMessageWithLeastTtl();
+            removeMessageWithLeastTtl(droppedMessagesToBeReplied);
         }
         return true;
     }
 
-    void ensureFreeQueueSlot(const T& key)
+    void ensureFreeQueueSlot(
+            const T& key,
+            std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessagesToBeReplied)
     {
         // queueMutex must have been acquired earlier
         const bool queueLimitActive = _messageQueueLimit > 0;
@@ -232,15 +258,17 @@ private:
 
         const bool perKeyQueueLimitActive = _perKeyMessageQueueLimit > 0;
         if (perKeyQueueLimitActive) {
-            ensureFreePerKeyQueueSlot(key);
+            ensureFreePerKeyQueueSlot(key, droppedMessagesToBeReplied);
         }
 
         while (getQueueLengthUnlocked() >= _messageQueueLimit) {
-            removeMessageWithLeastTtl();
+            removeMessageWithLeastTtl(droppedMessagesToBeReplied);
         }
     }
 
-    void ensureFreePerKeyQueueSlot(const T& key)
+    void ensureFreePerKeyQueueSlot(
+            const T& key,
+            std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessagesToBeReplied)
     {
         // queueMutex must have been locked already
         assert(_perKeyMessageQueueLimit > 0);
@@ -264,11 +292,13 @@ private:
                            range.first->_message->getTrackingInfo(),
                            _perKeyMessageQueueLimit);
             _queueSizeBytes -= range.first->_message->getMessageSize();
+            droppedMessagesToBeReplied.push_front(range.first->_message);
             keyAndTtlIndex.erase(range.first);
         }
     }
 
-    void removeMessageWithLeastTtl()
+    void removeMessageWithLeastTtl(
+            std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessagesToBeReplied)
     {
         // queueMutex must have been locked already
         if (_queue.empty()) {
@@ -290,6 +320,7 @@ private:
                        _queueSizeBytes);
 
         _queueSizeBytes -= msgWithLowestTtl->_message->getMessageSize();
+        droppedMessagesToBeReplied.push_front(msgWithLowestTtl->_message);
         ttlIndex.erase(msgWithLowestTtl);
     }
 };

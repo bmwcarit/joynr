@@ -21,15 +21,19 @@ package io.joynr.messaging;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -46,13 +50,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrMessageExpiredException;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
@@ -63,12 +68,12 @@ import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
-import joynr.Message;
 import joynr.MutableMessage;
 import joynr.Request;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingProxy;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.BinderAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
@@ -76,6 +81,7 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LibJoynrMessageRouterTest {
+    // TODO test queue for removeNextHop
 
     @Mock
     IMessagingStub messagingStub;
@@ -100,8 +106,6 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private AddressManager addressManager;
     @Mock
-    private ImmutableMessage message;
-    @Mock
     private ShutdownNotifier shutdownNotifier;
     @Mock
     RoutingTable routingTableMock;
@@ -111,7 +115,6 @@ public class LibJoynrMessageRouterTest {
     private LibJoynrMessageRouter messageRouter;
     private LibJoynrMessageRouter messageRouterForUdsAddresses;
     private String unknownParticipantId = "unknownParticipantId";
-    private String unknownSenderParticipantId = "unknownSenderParticipantId";
     private int maxParallelSends = 2;
 
     private MutableMessageFactory messageFactory;
@@ -125,17 +128,10 @@ public class LibJoynrMessageRouterTest {
     public void setUp() {
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder()));
-        when(message.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000000).getValue());
-        when(message.isTtlAbsolute()).thenReturn(true);
-        when(message.getRecipient()).thenReturn(unknownParticipantId);
-        when(message.getSender()).thenReturn(unknownSenderParticipantId);
-        when(message.isLocalMessage()).thenReturn(false);
-        when(message.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
-
-        when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
+        lenient().when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
-        when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");
-        when(messagingSkeletonFactory.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
+        lenient().when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");
+        lenient().when(messagingSkeletonFactory.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
 
         messageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                   provideMessageSchedulerThreadPoolExecutor(),
@@ -298,7 +294,7 @@ public class LibJoynrMessageRouterTest {
     }
 
     @Test
-    public void deferredRegistrationsHappenAfterParentRouterSet() {
+    public void queuedParentHopCallsHappenAfterParentRouterSet() {
         LibJoynrMessageRouter deferredMessageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                                                 provideMessageSchedulerThreadPoolExecutor(),
                                                                                 maxParallelSends,
@@ -306,20 +302,41 @@ public class LibJoynrMessageRouterTest {
                                                                                 messageQueue,
                                                                                 shutdownNotifier,
                                                                                 dispatcherMock);
-        deferredMessageRouter.addNextHop("participant1", new WebSocketAddress(), true);
-        deferredMessageRouter.addNextHop("participant2", new WebSocketAddress(), true);
-        deferredMessageRouter.addNextHop("participant3", new WebSocketAddress(), true);
-        verify(deferredMessageRouterParent, never()).addNextHop(any(), any(WebSocketClientAddress.class), any());
+        String routingProxyParticipantId = "proxyParticipantId";
+        String[] participantIdsAdd = new String[]{ "participant0", "participant1", "participant2", "participant3" };
+        String[] participantIdsRemove = new String[]{ "particpantIdRemoveOnly", "participant1", "participant3",
+                "participant2" };
+        deferredMessageRouter.addNextHop(participantIdsAdd[0], new WebSocketAddress(), true);
+        deferredMessageRouter.addNextHop(participantIdsAdd[1], new InProcessAddress(), false);
+        deferredMessageRouter.removeNextHop(participantIdsRemove[0]);
+        deferredMessageRouter.addNextHop(participantIdsAdd[2], new BinderAddress(), true);
+        deferredMessageRouter.removeNextHop(participantIdsRemove[1]);
+        deferredMessageRouter.addNextHop(participantIdsAdd[3], new WebSocketClientAddress(), true);
+        deferredMessageRouter.removeNextHop(participantIdsRemove[2]);
+        deferredMessageRouter.removeNextHop(participantIdsRemove[3]);
+        verifyNoInteractions(deferredMessageRouterParent);
         deferredMessageRouter.setParentRouter(deferredMessageRouterParent,
                                               parentAddress,
                                               "parentParticipantId",
-                                              "proxyParticipantId");
-        //parent called 4 times because of addNextHop call for the application itself
-        verify(deferredMessageRouterParent, times(4)).addNextHop(any(), any(WebSocketClientAddress.class), any());
+                                              routingProxyParticipantId);
+        InOrder inOrder = inOrder(deferredMessageRouterParent);
+        inOrder.verify(deferredMessageRouterParent)
+               .addNextHop(eq(routingProxyParticipantId), eq(incomingAddress), eq(false));
+        inOrder.verify(deferredMessageRouterParent).addNextHop(eq(participantIdsAdd[0]), eq(incomingAddress), eq(true));
+        inOrder.verify(deferredMessageRouterParent)
+               .addNextHop(eq(participantIdsAdd[1]), eq(incomingAddress), eq(false));
+        inOrder.verify(deferredMessageRouterParent).removeNextHop(eq(participantIdsRemove[0]));
+        inOrder.verify(deferredMessageRouterParent).addNextHop(eq(participantIdsAdd[2]), eq(incomingAddress), eq(true));
+        inOrder.verify(deferredMessageRouterParent).removeNextHop(eq(participantIdsRemove[1]));
+        inOrder.verify(deferredMessageRouterParent).addNextHop(eq(participantIdsAdd[3]), eq(incomingAddress), eq(true));
+        inOrder.verify(deferredMessageRouterParent).removeNextHop(eq(participantIdsRemove[2]));
+        inOrder.verify(deferredMessageRouterParent).removeNextHop(eq(participantIdsRemove[3]));
+        verifyNoMoreInteractions(deferredMessageRouterParent);
     }
 
     @Test
-    public void deferredMulticastReceiversRegisteredAfterParentRouterSet() {
+    public void queuedMulticastReceiversRegisteredAfterParentRouterSet() {
+        String routingProxyParticipantId = "proxyParticipantId";
         LibJoynrMessageRouter deferredMessageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                                                 provideMessageSchedulerThreadPoolExecutor(),
                                                                                 maxParallelSends,
@@ -327,22 +344,48 @@ public class LibJoynrMessageRouterTest {
                                                                                 messageQueue,
                                                                                 shutdownNotifier,
                                                                                 dispatcherMock);
-        deferredMessageRouter.addMulticastReceiver("multicastId1",
-                                                   "subscriberParticipantId1",
-                                                   "providerParticipantId1");
-        deferredMessageRouter.addMulticastReceiver("multicastId2",
-                                                   "subscriberParticipantId2",
-                                                   "providerParticipantId2");
-        deferredMessageRouter.addMulticastReceiver("multicastId3",
-                                                   "subscriberParticipantId3",
-                                                   "providerParticipantId3");
-        verify(deferredMessageRouterParent, never()).addMulticastReceiver(any(), any(), any());
+        String[] multicastIds = new String[]{ "multicastId1", "multicastId2", "multicastId3" };
+        String[] subscriberParticipantIds = new String[]{ "subscriberParticipantId1", "subscriberParticipantId2",
+                "subscriberParticipantId3" };
+        String[] providerParticipantIds = new String[]{ "providerParticipantId1", "providerParticipantId2",
+                "providerParticipantId3" };
+        deferredMessageRouter.addMulticastReceiver("multicastId0",
+                                                   "subscriberParticipantId0",
+                                                   "providerParticipantId0");
+        deferredMessageRouter.addMulticastReceiver(multicastIds[0],
+                                                   subscriberParticipantIds[0],
+                                                   providerParticipantIds[0]);
+        deferredMessageRouter.addMulticastReceiver(multicastIds[1],
+                                                   subscriberParticipantIds[1],
+                                                   providerParticipantIds[1]);
+        deferredMessageRouter.removeMulticastReceiver("multicastId0",
+                                                      "subscriberParticipantId0",
+                                                      "providerParticipantId0");
+        deferredMessageRouter.addMulticastReceiver(multicastIds[2],
+                                                   subscriberParticipantIds[2],
+                                                   providerParticipantIds[2]);
+        verifyNoInteractions(deferredMessageRouterParent);
         deferredMessageRouter.setParentRouter(deferredMessageRouterParent,
                                               parentAddress,
                                               "parentParticipantId",
-                                              "proxyParticipantId");
-        //parent called 4 times because of addNextHop call for the application itself
-        verify(deferredMessageRouterParent, times(3)).addMulticastReceiver(any(), any(), any());
+                                              routingProxyParticipantId);
+        verify(deferredMessageRouterParent).addNextHop(eq(routingProxyParticipantId), eq(incomingAddress), eq(false));
+        verify(deferredMessageRouterParent).addMulticastReceiver(eq(multicastIds[0]),
+                                                                 eq(subscriberParticipantIds[0]),
+                                                                 eq(providerParticipantIds[0]));
+        verify(deferredMessageRouterParent).addMulticastReceiver(eq(multicastIds[1]),
+                                                                 eq(subscriberParticipantIds[1]),
+                                                                 eq(providerParticipantIds[1]));
+        verify(deferredMessageRouterParent).addMulticastReceiver(eq(multicastIds[2]),
+                                                                 eq(subscriberParticipantIds[2]),
+                                                                 eq(providerParticipantIds[2]));
+        verifyNoMoreInteractions(deferredMessageRouterParent);
+        deferredMessageRouter.removeMulticastReceiver(multicastIds[2],
+                                                      subscriberParticipantIds[2],
+                                                      providerParticipantIds[2]);
+        verify(deferredMessageRouterParent).removeMulticastReceiver(eq(multicastIds[2]),
+                                                                    eq(subscriberParticipantIds[2]),
+                                                                    eq(providerParticipantIds[2]));
     }
 
     @Test

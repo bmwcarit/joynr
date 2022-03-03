@@ -20,6 +20,7 @@ package io.joynr.android.contentprovider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -27,20 +28,16 @@ import android.net.Uri;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import io.joynr.android.AndroidBinderRuntime;
-import io.joynr.capabilities.PropertiesFileParticipantIdStorage;
 import io.joynr.provider.AbstractJoynrProvider;
-import io.joynr.provider.ProviderContainer;
-import io.joynr.provider.ProviderContainerFactory;
-import io.joynr.runtime.PropertyLoader;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 
-import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
-import static io.joynr.messaging.MessagingPropertyKeys.DEFAULT_MESSAGING_PROPERTIES_FILE;
-import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
+import static io.joynr.android.contentprovider.PersistentProviderUtils.generatePrimitiveDiscoveryEntry;
+import static io.joynr.android.contentprovider.PersistentProviderUtils.getDefaultExpiryTimeMs;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that users can inherit in order to abstract from the process of initial persistent
@@ -48,8 +45,10 @@ import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
  */
 public abstract class PersistentJoynrContentProvider extends ContentProvider {
 
-    private final int INIT_URL = 1;
-    private final String[] CURSOR_COLUMN_NAMES = {
+    private static final Logger logger = LoggerFactory.getLogger(PersistentJoynrContentProvider.class);
+
+    private static final int INIT_URL = 1;
+    private static final String[] CURSOR_COLUMN_NAMES = {
             "providerVersionMajor",
             "providerVersionMinor",
             "domain",
@@ -64,11 +63,13 @@ public abstract class PersistentJoynrContentProvider extends ContentProvider {
             "publicKeyId"
     };
 
-    private long defaultExpiryTimeMs = 0L;
+    protected long defaultExpiryTimeMs = 0L;
 
-    private List<PersistentProvider> providers;
+    protected List<PersistentProvider> providers;
 
-    static UriMatcher uriMatcher;
+    protected UriMatcher uriMatcher;
+
+    private String packageName;
 
     public PersistentJoynrContentProvider() {
         providers = new ArrayList<>();
@@ -76,14 +77,37 @@ public abstract class PersistentJoynrContentProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        String contentProviderName = getContext().getPackageName() + ".provider";
+        return init(getContext());
+    }
+
+    /**
+     * Initializes variables for the Persistent Provider Content Provider functionality
+     *
+     * @param context Application Context
+     * @return true if successful, false if something is wrong
+     */
+    protected boolean init(Context context) {
+        packageName = context.getPackageName();
+        String contentProviderName = packageName + ".provider";
         String queryString = "init";
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(contentProviderName, queryString, INIT_URL);
-        providers = registerPersistentProvider();
         defaultExpiryTimeMs = getDefaultExpiryTimeMs();
+        providers = registerPersistentProvider();
 
-        return true;
+        logger.info("Initializing Content Provider on " + contentProviderName + "/" + queryString
+                + " with expiryTime " + defaultExpiryTimeMs);
+
+        boolean providersIsNull = providers != null;
+
+        if (providersIsNull) {
+            logger.info("Successfully initialized PersistentJoynrContentProvider on "
+                    + packageName);
+        } else {
+            logger.error("Error initializing PersistentJoynrContentProvider on "
+                    + packageName + ". Joynr Persistent Provider is null");
+        }
+        return providersIsNull;
     }
 
     @Override
@@ -101,69 +125,56 @@ public abstract class PersistentJoynrContentProvider extends ContentProvider {
         return null;
     }
 
+    /**
+     * Gets the DiscoveryEntry for the Persistent Provider
+     *
+     * @param uri           of the Persistent Provider Content Provider
+     * @param projection    not relevant
+     * @param selection     not relevant
+     * @param selectionArgs not relevant
+     * @param sortOrder     not relevant
+     * @return MatrixCursor with DiscoveryEntry info
+     */
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
         MatrixCursor mc = null;
-        switch (uriMatcher.match(uri)) {
-            case INIT_URL:
-                mc = new MatrixCursor(CURSOR_COLUMN_NAMES);
-                for (PersistentProvider persistentProvider : providers) {
-                    DiscoveryEntry discoveryEntry = generatePrimitiveDiscoveryEntry(persistentProvider);
-                    mc.newRow()
-                            .add(CURSOR_COLUMN_NAMES[0], discoveryEntry.getProviderVersion().getMajorVersion())
-                            .add(CURSOR_COLUMN_NAMES[1], discoveryEntry.getProviderVersion().getMinorVersion())
-                            .add(CURSOR_COLUMN_NAMES[2], discoveryEntry.getDomain())
-                            .add(CURSOR_COLUMN_NAMES[3], discoveryEntry.getInterfaceName())
-                            .add(CURSOR_COLUMN_NAMES[4], discoveryEntry.getParticipantId())
-                            .add(CURSOR_COLUMN_NAMES[5], discoveryEntry.getQos().getCustomParameters())
-                            .add(CURSOR_COLUMN_NAMES[6], discoveryEntry.getQos().getPriority())
-                            .add(CURSOR_COLUMN_NAMES[7], discoveryEntry.getQos().getScope())
-                            .add(CURSOR_COLUMN_NAMES[8], discoveryEntry.getQos().getSupportsOnChangeSubscriptions())
-                            .add(CURSOR_COLUMN_NAMES[9], discoveryEntry.getLastSeenDateMs())
-                            .add(CURSOR_COLUMN_NAMES[10], discoveryEntry.getExpiryDateMs())
-                            .add(CURSOR_COLUMN_NAMES[11], discoveryEntry.getPublicKeyId());
-                }
-            default:
-                // no-op
+
+        if (providers != null) {
+            switch (uriMatcher.match(uri)) {
+                case INIT_URL:
+                    mc = new MatrixCursor(CURSOR_COLUMN_NAMES);
+                    for (PersistentProvider persistentProvider : providers) {
+                        DiscoveryEntry discoveryEntry = generatePrimitiveDiscoveryEntry(persistentProvider, defaultExpiryTimeMs);
+
+                        mc.newRow()
+                                .add(CURSOR_COLUMN_NAMES[0], discoveryEntry.getProviderVersion().getMajorVersion())
+                                .add(CURSOR_COLUMN_NAMES[1], discoveryEntry.getProviderVersion().getMinorVersion())
+                                .add(CURSOR_COLUMN_NAMES[2], discoveryEntry.getDomain())
+                                .add(CURSOR_COLUMN_NAMES[3], discoveryEntry.getInterfaceName())
+                                .add(CURSOR_COLUMN_NAMES[4], discoveryEntry.getParticipantId())
+                                .add(CURSOR_COLUMN_NAMES[5], discoveryEntry.getQos().getCustomParameters())
+                                .add(CURSOR_COLUMN_NAMES[6], discoveryEntry.getQos().getPriority())
+                                .add(CURSOR_COLUMN_NAMES[7], discoveryEntry.getQos().getScope())
+                                .add(CURSOR_COLUMN_NAMES[8], discoveryEntry.getQos().getSupportsOnChangeSubscriptions())
+                                .add(CURSOR_COLUMN_NAMES[9], discoveryEntry.getLastSeenDateMs())
+                                .add(CURSOR_COLUMN_NAMES[10], discoveryEntry.getExpiryDateMs())
+                                .add(CURSOR_COLUMN_NAMES[11], discoveryEntry.getPublicKeyId());
+
+                        logger.info("Returning DiscoveryEntry " + discoveryEntry
+                                + "from PersistentJoynrContentProvider query on " + packageName);
+                    }
+
+                default:
+                    logger.error("Error querying PersistentJoynrContentProvider on "
+                            + packageName + ". Uri doesn't match.");
+            }
+        } else {
+            logger.error("Error querying PersistentJoynrContentProvider on "
+                    + packageName + ". Joynr Persistent Provider is null");
         }
         return mc;
-    }
-
-    private DiscoveryEntry generatePrimitiveDiscoveryEntry(
-            PersistentProvider provider
-    ) {
-
-        ProviderContainerFactory providerContainerFactory = AndroidBinderRuntime.getInjector().getInstance(ProviderContainerFactory.class);
-        ProviderContainer providerContainer = providerContainerFactory.create(provider.joynrProvider);
-        PropertiesFileParticipantIdStorage participantIdStorage =
-                AndroidBinderRuntime
-                        .getInjector()
-                        .getInstance(PropertiesFileParticipantIdStorage.class);
-
-        String participantId = participantIdStorage.getProviderParticipantId(
-                provider.domain,
-                providerContainer.getInterfaceName(),
-                providerContainer.getMajorVersion());
-
-        String defaultPublicKeyId = "";
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(
-                getVersionFromAnnotation(provider.joynrProvider.getClass()),
-                provider.domain,
-                providerContainer.getInterfaceName(),
-                participantId,
-                provider.providerQos,
-                System.currentTimeMillis(),
-                System.currentTimeMillis() + defaultExpiryTimeMs,
-                defaultPublicKeyId);
-
-        return discoveryEntry;
-    }
-
-    private long getDefaultExpiryTimeMs() {
-        Properties defaultMessagingProperties = PropertyLoader.loadProperties(DEFAULT_MESSAGING_PROPERTIES_FILE);
-        return Long.parseLong(defaultMessagingProperties.getProperty(PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS));
     }
 
     @Override
@@ -181,7 +192,7 @@ public abstract class PersistentJoynrContentProvider extends ContentProvider {
      */
     public abstract List<PersistentProvider> registerPersistentProvider();
 
-    public class PersistentProvider {
+    public static class PersistentProvider {
         private AbstractJoynrProvider joynrProvider;
         private String domain;
         private ProviderQos providerQos;

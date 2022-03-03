@@ -20,26 +20,22 @@ package io.joynr.proxy;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
@@ -48,7 +44,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.arbitration.ArbitrationCallback;
@@ -57,12 +53,12 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.proxy.ProxyTest.TestInterface;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
 import io.joynr.util.VersionUtil;
@@ -81,9 +77,6 @@ public class GuidedProxyBuilderTest {
     private LocalDiscoveryAggregator localDiscoveryAggregator;
 
     @Mock
-    private ProxyInvocationHandlerFactory proxyInvocationHandlerFactory;
-
-    @Mock
     private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory;
 
     @Mock
@@ -100,6 +93,9 @@ public class GuidedProxyBuilderTest {
     private MessageRouter messageRouter;
 
     @Mock
+    private VersionCompatibilityChecker versionCompatibilityChecker;
+
+    @Mock
     private ShutdownNotifier shutdownNotifier;
 
     @Mock
@@ -112,20 +108,13 @@ public class GuidedProxyBuilderTest {
     private static final long DEFAULT_DISCOVERY_TIMEOUT_MS = 10000L;
     private static final long DEFAULT_RETRY_INTERVAL_MS = 5000L;
 
-    @SuppressWarnings("unchecked")
     public void setup() throws Exception {
         initializeSubject();
         Field arbitratorField = GuidedProxyBuilder.class.getDeclaredField("arbitrator");
         arbitratorField.setAccessible(true);
         arbitratorField.set(subject, arbitrator);
-        when(proxyBuilderFactory.get(Mockito.<Set<String>> any(), any())).thenReturn(proxyBuilder);
-        when(proxyInvocationHandlerFactory.create(Mockito.<Set<String>> any(),
-                                                  eq(TestInterface.INTERFACE_NAME),
-                                                  Mockito.<String> any(),
-                                                  Mockito.<DiscoveryQos> any(),
-                                                  Mockito.<MessagingQos> any(),
-                                                  Mockito.<ShutdownNotifier> any(),
-                                                  Mockito.<Optional<StatelessAsyncCallback>> any())).thenReturn(proxyInvocationHandler);
+        doReturn(proxyBuilder).when(proxyBuilderFactory).get(Mockito.<Set<String>> any(), any());
+        doReturn(true).when(versionCompatibilityChecker).check(any(), any());
     }
 
     private void initializeSubject() {
@@ -138,7 +127,11 @@ public class GuidedProxyBuilderTest {
                                                                                          MAX_MESSAGE_TTL,
                                                                                          DEFAULT_DISCOVERY_TIMEOUT_MS,
                                                                                          DEFAULT_RETRY_INTERVAL_MS);
-        subject = new GuidedProxyBuilder(discoverySettingsStorage, domains, testProxy.class, messageRouter);
+        subject = new GuidedProxyBuilder(discoverySettingsStorage,
+                                         domains,
+                                         testProxy.class,
+                                         messageRouter,
+                                         versionCompatibilityChecker);
     }
 
     @Test
@@ -548,6 +541,7 @@ public class GuidedProxyBuilderTest {
         mockedDiscoveryEntry.setProviderVersion(new Version(500, 600));
         mockSuccessfulDiscovery(mockedDiscoveryEntry);
 
+        doReturn(false).when(versionCompatibilityChecker).check(any(), any());
         subject.buildProxy(testProxy.class, testParticipantId);
     }
 

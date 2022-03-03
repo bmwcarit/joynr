@@ -25,7 +25,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<parent>
 		<groupId>io.joynr.examples</groupId>
 		<artifactId>radio-jee</artifactId>
-		<version>1.18.2</version>
+		<version>1.18.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -73,7 +73,6 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.10</version>
 				<executions>
 					<execution>
 						<id>add-source</id>

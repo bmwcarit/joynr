@@ -18,8 +18,8 @@
  */
 package io.joynr.runtime;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,9 +32,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.arbitration.ArbitratorFactory;
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.capabilities.CapabilitiesRegistrar;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.ParticipantIdStorage;
@@ -72,6 +73,8 @@ public class ClusterControllerRuntimeTest {
     private StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectoryMock;
     @Mock
     private DiscoverySettingsStorage discoverySettingsStorageMock;
+    @Mock
+    private VersionCompatibilityChecker versionCompatibilityChecker;
     @Mock
     ParticipantIdStorage participantIdStorageMock;
     @Mock
@@ -114,6 +117,7 @@ public class ClusterControllerRuntimeTest {
                                                  routingTableMock,
                                                  statelessAsyncCallbackDirectoryMock,
                                                  discoverySettingsStorageMock,
+                                                 versionCompatibilityChecker,
                                                  participantIdStorageMock,
                                                  systemServicesDomain,
                                                  dispatcherAddress,

@@ -22,7 +22,6 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,30 +77,23 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     private List<MessageWorker> messageWorkers;
 
-    private static interface DeferrableRegistration {
-        void register();
+    private static interface QueuedParentRoutingUpdate {
+        void execute();
     }
 
-    private static class ParticipantIdAndIsGloballyVisibleHolder {
-        final String participantId;
-        final boolean isGloballyVisible;
-
-        public ParticipantIdAndIsGloballyVisibleHolder(String participantId, boolean isGloballyVisible) {
-            this.participantId = participantId;
-            this.isGloballyVisible = isGloballyVisible;
-        }
+    private static interface QueuedMulticastRegistration {
+        void register();
     }
 
     private Address parentRouterMessagingAddress;
     private RoutingProxy parentRouter;
     private Address incomingAddress;
     private Dispatcher dispatcher;
-    private Set<ParticipantIdAndIsGloballyVisibleHolder> deferredParentHopsParticipantIds = new HashSet<>();
-    private Map<String, DeferrableRegistration> deferredMulticastRegistrations = new HashMap<>();
+    private List<QueuedParentRoutingUpdate> queuedParentRoutingUpdates = new ArrayList<>();
+    private Map<String, QueuedMulticastRegistration> queuedMulticastRegistrations = new HashMap<>();
     private boolean ready = false;
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LibJoynrMessageRouter(@Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
@@ -109,7 +101,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                                  MessageQueue messageQueue,
                                  ShutdownNotifier shutdownNotifier,
                                  Dispatcher dispatcher) {
-        // CHECKSTYLE:ON
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.scheduler = scheduler;
         this.dispatcher = dispatcher;
@@ -139,11 +130,21 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     @Override
     public void addNextHop(final String participantId, final Address address, final boolean isGloballyVisible) {
-        synchronized (this) {
-            if (!ready) {
-                deferredParentHopsParticipantIds.add(new ParticipantIdAndIsGloballyVisibleHolder(participantId,
-                                                                                                 isGloballyVisible));
-                return;
+        if (!ready) {
+            // lazy synchronization: synchronization is only required if message router is not yet ready, i.e.
+            // proxy for parent router is not ready. Once ready == true, it will never be set to false again.
+            synchronized (this) {
+                if (!ready) {
+                    QueuedParentRoutingUpdate queuedAdd = new QueuedParentRoutingUpdate() {
+                        @Override
+                        public void execute() {
+                            addNextHopToParent(participantId, isGloballyVisible);
+                        }
+                    };
+                    logger.debug("Queuing addNextHop for participantId {}", participantId);
+                    queuedParentRoutingUpdates.add(queuedAdd);
+                    return;
+                }
             }
         }
         addNextHopToParent(participantId, isGloballyVisible);
@@ -151,9 +152,24 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     @Override
     public void removeNextHop(final String participantId) {
-        if (parentRouter != null) {
-            removeNextHopFromParent(participantId);
+        if (!ready) {
+            // lazy synchronization: synchronization is only required if message router is not yet ready, i.e.
+            // proxy for parent router is not ready. Once ready == true, it will never be set to false again.
+            synchronized (this) {
+                if (!ready) {
+                    QueuedParentRoutingUpdate queuedAdd = new QueuedParentRoutingUpdate() {
+                        @Override
+                        public void execute() {
+                            removeNextHopFromParent(participantId);
+                        }
+                    };
+                    logger.debug("Queuing removeNextHop for participantId {}", participantId);
+                    queuedParentRoutingUpdates.add(queuedAdd);
+                    return;
+                }
+            }
         }
+        removeNextHopFromParent(participantId);
     }
 
     private void addNextHopToParent(String participantId, boolean isGloballyVisible) {
@@ -179,21 +195,29 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     public void addMulticastReceiver(final String multicastId,
                                      final String subscriberParticipantId,
                                      final String providerParticipantId) {
-        logger.trace("Adding multicast receiver {} for multicast {} on provider {}",
-                     subscriberParticipantId,
-                     multicastId,
-                     providerParticipantId);
-        DeferrableRegistration registerWithParent = new DeferrableRegistration() {
+        QueuedMulticastRegistration registerWithParent = new QueuedMulticastRegistration() {
             @Override
             public void register() {
+                logger.trace("Adding multicast receiver {} for multicast {} on provider {}",
+                             subscriberParticipantId,
+                             multicastId,
+                             providerParticipantId);
                 parentRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
             }
         };
-        synchronized (this) {
-            if (!ready) {
-                deferredMulticastRegistrations.put(multicastId + subscriberParticipantId + providerParticipantId,
-                                                   registerWithParent);
-                return;
+        if (!ready) {
+            // lazy synchronization: synchronization is only required if message router is not yet ready, i.e.
+            // proxy for parent router is not ready. Once ready == true, it will never be set to false again.
+            synchronized (this) {
+                if (!ready) {
+                    logger.debug("Queuing addMulticastReceiver for participantId {} for multicast {} on provider {}",
+                                 subscriberParticipantId,
+                                 multicastId,
+                                 providerParticipantId);
+                    queuedMulticastRegistrations.put(multicastId + subscriberParticipantId + providerParticipantId,
+                                                     registerWithParent);
+                    return;
+                }
             }
         }
         registerWithParent.register();
@@ -203,10 +227,18 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     public void removeMulticastReceiver(String multicastId,
                                         String subscriberParticipantId,
                                         String providerParticipantId) {
-        synchronized (this) {
-            if (!ready) {
-                deferredMulticastRegistrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
-                return;
+        logger.trace("Removing multicast receiver {} for multicast {} on provider {}",
+                     subscriberParticipantId,
+                     multicastId,
+                     providerParticipantId);
+        if (!ready) {
+            // lazy synchronization: synchronization is only required if message router is not yet ready, i.e.
+            // proxy for parent router is not ready. Once ready == true, it will never be set to false again.
+            synchronized (this) {
+                if (!ready) {
+                    queuedMulticastRegistrations.remove(multicastId + subscriberParticipantId + providerParticipantId);
+                    return;
+                }
             }
         }
         parentRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
@@ -223,14 +255,14 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         final boolean isGloballyVisible = false;
         addNextHopToParent(routingProxyParticipantId, isGloballyVisible);
         synchronized (this) {
-            for (ParticipantIdAndIsGloballyVisibleHolder participantIds : deferredParentHopsParticipantIds) {
-                addNextHopToParent(participantIds.participantId, participantIds.isGloballyVisible);
+            for (QueuedParentRoutingUpdate queuedParentHopCall : queuedParentRoutingUpdates) {
+                queuedParentHopCall.execute();
             }
-            deferredParentHopsParticipantIds.clear();
-            for (DeferrableRegistration registerWithParent : deferredMulticastRegistrations.values()) {
+            queuedParentRoutingUpdates = new ArrayList<>();
+            for (QueuedMulticastRegistration registerWithParent : queuedMulticastRegistrations.values()) {
                 registerWithParent.register();
             }
-            deferredMulticastRegistrations.clear();
+            queuedMulticastRegistrations.clear();
             ready = true;
         }
     }
@@ -238,7 +270,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     @Override
     public void routeIn(ImmutableMessage message) {
         checkExpiry(message);
-        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, "incoming", 0);
+        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, Set.of("incoming"), 0);
         messageQueue.put(delayableMessage);
     }
 
@@ -246,7 +278,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     public void routeOut(ImmutableMessage message) {
         checkExpiry(message);
         logger.trace("Scheduling outgoing message {} with delay {} and retries {}", message, 0, 0);
-        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, "outgoing", 0);
+        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, Set.of("outgoing"), 0);
         scheduleOutgoingMessage(delayableMessage);
     }
 

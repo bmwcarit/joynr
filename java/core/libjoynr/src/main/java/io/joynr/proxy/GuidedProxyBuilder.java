@@ -35,6 +35,7 @@ import io.joynr.arbitration.ArbitrationResult;
 import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.ArbitratorFactory;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -102,6 +103,7 @@ public class GuidedProxyBuilder {
     private boolean discoveryInProgress;
 
     private final MessageRouter messageRouter;
+    private final VersionCompatibilityChecker versionCompatibilityChecker;
 
     /**
      * Constructor for internal use only.
@@ -117,7 +119,8 @@ public class GuidedProxyBuilder {
     public GuidedProxyBuilder(DiscoverySettingsStorage discoverySettingsStorage,
                               Set<String> domains,
                               Class<?> interfaceClass,
-                              MessageRouter messageRouter) {
+                              MessageRouter messageRouter,
+                              VersionCompatibilityChecker versionCompatibilityChecker) {
         this.proxyBuilderFactory = discoverySettingsStorage.getProxyBuilderFactory();
         this.objectMapper = discoverySettingsStorage.getObjectMapper();
         this.localDiscoveryAggregator = discoverySettingsStorage.getLocalDiscoveryAggregator();
@@ -126,6 +129,7 @@ public class GuidedProxyBuilder {
         this.defaultDiscoveryRetryIntervalMs = discoverySettingsStorage.getDefaultDiscoveryRetryIntervalMs();
         this.domains = domains;
         this.messageRouter = messageRouter;
+        this.versionCompatibilityChecker = versionCompatibilityChecker;
         try {
             interfaceName = (String) interfaceClass.getField("INTERFACE_NAME").get(String.class);
         } catch (Exception e) {
@@ -397,9 +401,9 @@ public class GuidedProxyBuilder {
         }
         Version interfaceVersion = VersionUtil.getVersionFromAnnotation(interfaceClass);
         Version providerVersion = discoveryEntryForProxy.getProviderVersion();
-        if (!interfaceVersion.equals(providerVersion)) {
-            throw new IllegalArgumentException("Provider Version " + providerVersion
-                    + " does not match interface version " + interfaceVersion + " !");
+        if (!versionCompatibilityChecker.check(interfaceVersion, providerVersion)) {
+            throw new IllegalArgumentException("Provider Version " + providerVersion + " and proxy interface version "
+                    + interfaceVersion + " are not compatible!");
         }
         Set<DiscoveryEntryWithMetaInfo> discoveryEntriesForProxy = new HashSet<>(Arrays.asList(discoveryEntryForProxy));
 
