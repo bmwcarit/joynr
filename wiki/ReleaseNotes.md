@@ -2,6 +2,39 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.8
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[TS]** Removed dependency to `lodash` from libjoynr-js.
+* **[TS]** Updated `nanoid` dependency to version 3.3.1.
+* **[TS]** Updated `mqtt` dependency to version 4.3.6.
+* **[TS]** Updated `lodash` / `@types/lodash` dependencies (still used in `joynr-generator-npm` and
+  tests) to versions 4.17.21 / 4.14.178.
+* **[TS]** Updated `handlebars` dependency of `joynr-generator-npm` to version 4.7.7.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java,C++]** Fixed a bug where GuidedProxyBuilder failed to creata a proxy if interface minor
+  number of provider was greater than interface minor number of proxy while major number was
+  identical on both sides meaning the provider should have been considered to be compatible.
+* **[Java]** Fixed a bug in 'GcdTaskSequencer` that could lead to a crash. No further global
+  provider registration and provider unregistration is possible afterwards.
+* **[Java]** Fixed a bug in `GcdTaskSequencer` that could lead to parallel task execution with
+  unpredictable behaviour for global provider registration and unregistration.
+* **[TS]** `joynr.load` now also accepts `UdsLibJoynrProvisioning` interface in addition to
+  `WebSocketLibjoynrProvisioning` and `InProcessProvisioning` as provisioning parameter. See
+  [JavaScript Configuration Reference](/wiki/JavaScriptSettings.md) for details about the different
+  provisioning settings for the different runtimes (`UdsLibJoynrRuntime` and
+  `WebSocketLibjoynrRuntime`).
+
 # joynr 1.19.7
 
 ## API-relevant Changes
