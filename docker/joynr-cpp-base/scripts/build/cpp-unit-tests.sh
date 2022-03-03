@@ -17,13 +17,17 @@ rm -f *.junit.xml
 
 START=$(date +%s)
 
-./g_UnitTests --gtest_shuffle --gtest_output="xml:g_UnitTests.junit.xml"
+cd ..
+ctest
+
 SUCCESS=$?
 if [ "$SUCCESS" != "0" ]; then
     echo '########################################################'
     echo '# C++ Unit Tests failed with exit code:' $SUCCESS
     echo '########################################################'
 fi
+
+cd -
 
 END=$(date +%s)
 DIFF=$(( $END - $START ))

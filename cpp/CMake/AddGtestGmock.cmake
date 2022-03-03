@@ -83,16 +83,37 @@ else (USE_PLATFORM_GTEST_GMOCK)
     set(GMOCK_LIBRARIES ${googlemock_binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${CMAKE_STATIC_LIBRARY_SUFFIX})
 endif(USE_PLATFORM_GTEST_GMOCK)
 
+function(RegisterToCtest TARGET ${ARGN})
+    # required function parameters
+    set(PARAMS "INCLUDES;LIBRARIES;SOURCES")
+    cmake_parse_arguments(JOYNR "" "" "${PARAMS}" ${ARGN})
+
+    add_executable(${TARGET} ${JOYNR_SOURCES})
+
+    set(output_directory "${CMAKE_BINARY_DIR}/bin")
+    set_target_properties(${TARGET} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${output_directory}
+    )
+
+    target_link_libraries(${TARGET} PRIVATE
+        ${JOYNR_LIBRARIES}
+    )
+
+    target_include_directories(
+        ${TARGET}
+        PRIVATE ${JOYNR_INCLUDES}
+    )
+
+    gtest_discover_tests(${TARGET}
+        WORKING_DIRECTORY ${output_directory}
+    )
+endfunction(RegisterToCtest)
+
 function(AddTest TARGET)
     add_executable(
         ${TARGET}
         ${ARGN}
     )
-#    set_target_properties(
-#        ${TARGET}
-#        PROPERTIES
-#        COMPILE_FLAGS "-Wno-effc++ -Wno-unused-parameter"
-#    )
     if(NOT USE_PLATFORM_GTEST_GMOCK)
         add_dependencies(${TARGET} googletest)
         add_dependencies(${TARGET} googlemock)

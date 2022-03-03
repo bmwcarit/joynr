@@ -298,6 +298,8 @@ endif(${BUILD_CLUSTER_CONTROLLER})
 
 option(BUILD_TESTS "Build test binaries?" ON)
 if(${BUILD_TESTS})
+    include(CTest)
+    enable_testing()
     add_subdirectory(tests)
 endif(${BUILD_TESTS})
 
