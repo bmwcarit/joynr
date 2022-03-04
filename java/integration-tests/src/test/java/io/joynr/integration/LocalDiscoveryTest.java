@@ -44,8 +44,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -181,6 +181,8 @@ public class LocalDiscoveryTest {
     @Rule
     public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
+    private Injector injector;
+
     private JoynrRuntime runtime;
 
     @Mock
@@ -214,8 +216,7 @@ public class LocalDiscoveryTest {
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
+        MockitoAnnotations.openMocks(this);
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         final long defaultExpiryTime = 3628800000l;
         final LocalCapabilitiesDirectoryImpl localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioningMock,
@@ -246,9 +247,8 @@ public class LocalDiscoveryTest {
                                                                                       }
                                                                                   });
         Properties joynrProperties = new Properties();
-        Injector injector = new JoynrInjectorFactory(new JoynrBaseModule(joynrProperties, testModule)).getInjector();
+        injector = new JoynrInjectorFactory(new JoynrBaseModule(joynrProperties, testModule)).getInjector();
 
-        runtime = injector.getInstance(JoynrRuntime.class);
         globalAddress = new MqttAddress(defaultGbids[0], "testOwnTopic");
     }
 
@@ -256,6 +256,7 @@ public class LocalDiscoveryTest {
     public void testLocalDiscoveryEntries() {
         String testDomain = "testDomain";
         String interfaceName = testProxy.INTERFACE_NAME;
+        doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
         Collection<DiscoveryEntry> discoveryEntries = new HashSet<>();
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
                                                            testDomain,
@@ -271,6 +272,7 @@ public class LocalDiscoveryTest {
 
         doReturn(discoveryEntries).when(localDiscoveryEntryStoreMock).lookup(any(String[].class), eq(interfaceName));
 
+        runtime = injector.getInstance(JoynrRuntime.class);
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomain, testProxy.class);
         final Future<Void> future = new Future<Void>();
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -326,6 +328,7 @@ public class LocalDiscoveryTest {
     public void testCachedGlobalDiscoveryEntries() {
         String testDomain = "testDomain";
         String interfaceName = testProxy.INTERFACE_NAME;
+        doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
         Collection<DiscoveryEntry> discoveryEntries = new HashSet<>();
         GlobalDiscoveryEntry cachedEntry = new GlobalDiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
                                                                     testDomain,
@@ -348,6 +351,7 @@ public class LocalDiscoveryTest {
                                                     eq(cachedEntry.getInterfaceName()),
                                                     eq(discoveryQos.getCacheMaxAgeMs()));
 
+        runtime = injector.getInstance(JoynrRuntime.class);
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomain, testProxy.class);
         final Future<Void> future = new Future<Void>();
 
@@ -385,6 +389,7 @@ public class LocalDiscoveryTest {
         String testDomain = "testDomain";
         String[] testDomains = { testDomain };
         String interfaceName = testProxy.INTERFACE_NAME;
+        doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
         final List<GlobalDiscoveryEntry> globalDiscoveryEntries = new ArrayList<>();
         final Set<DiscoveryEntryWithMetaInfo> discoveryEntriesWithMetaInfo = new HashSet<>();
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(VersionUtil.getVersionFromAnnotation(testProxy.class),
@@ -408,6 +413,7 @@ public class LocalDiscoveryTest {
                                                                     anyLong(),
                                                                     any(String[].class));
 
+        runtime = injector.getInstance(JoynrRuntime.class);
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomain, testProxy.class);
         final Future<Void> future = new Future<Void>();
         DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -446,6 +452,7 @@ public class LocalDiscoveryTest {
         Set<String> testDomains = new HashSet<>();
         testDomains.add(localAndCacheDomain);
         testDomains.add(remoteDomain);
+        doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(any(DiscoveryEntry.class));
         String interfaceName = testProxy.INTERFACE_NAME;
         ArbitrationStrategyFunction arbitrationStrategyFunction = new ArbitrationStrategyFunction() {
             @Override
@@ -515,6 +522,7 @@ public class LocalDiscoveryTest {
                                                                     anyLong(),
                                                                     any(String[].class));
 
+        runtime = injector.getInstance(JoynrRuntime.class);
         ProxyBuilder<testProxy> proxyBuilder = runtime.getProxyBuilder(testDomains, testProxy.class);
         final Future<Void> future = new Future<Void>();
 
