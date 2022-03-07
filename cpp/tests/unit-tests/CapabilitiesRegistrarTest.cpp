@@ -40,13 +40,15 @@
 #include "tests/mock/MockParticipantIdStorage.h"
 #include "tests/mock/MockMessageSender.h"
 
+using ::testing::_;
 using ::testing::DoAll;
+using ::testing::Eq;
+using ::testing::InSequence;
 using ::testing::InvokeArgument;
 using ::testing::Mock;
-using ::testing::Return;
-using ::testing::Eq;
-using ::testing::_;
 using ::testing::Property;
+using ::testing::Return;
+using ::testing::Sequence;
 
 using namespace joynr;
 
@@ -222,15 +224,24 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
 
 TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject)
 {
+    Sequence s;
     EXPECT_CALL(*_mockParticipantIdStorage,
                 getProviderParticipantId(_domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
             .Times(1)
+            .InSequence(s)
             .WillOnce(Return(_expectedParticipantId));
-    EXPECT_CALL(*_mockDispatcher, removeRequestCaller(_expectedParticipantId)).Times(1);
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(*_mockDiscovery, removeAsyncMock(_expectedParticipantId, _, _, _)).Times(1).WillOnce(
-            DoAll(InvokeArgument<1>(), Return(mockFuture)));
+    EXPECT_CALL(*_mockDiscovery, removeAsyncMock(_expectedParticipantId, _, _, _))
+            .Times(1)
+            .InSequence(s)
+            .WillOnce(DoAll(InvokeArgument<1>(), Return(mockFuture)));
+    EXPECT_CALL(*_mockMessageRouter, removeNextHop(Eq(_expectedParticipantId), _, _))
+            .Times(1)
+            .InSequence(s);
+    EXPECT_CALL(*_mockDispatcher, removeRequestCaller(_expectedParticipantId))
+            .Times(1)
+            .InSequence(s);
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -247,12 +258,19 @@ TEST_F(CapabilitiesRegistrarTest, removeWithDomainAndProviderObject)
 
 TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId)
 {
-    EXPECT_CALL(*_mockDispatcher, removeRequestCaller(_expectedParticipantId)).Times(1);
-
+    Sequence s;
     auto mockFuture = std::make_shared<joynr::Future<void>>();
     mockFuture->onSuccess();
-    EXPECT_CALL(*_mockDiscovery, removeAsyncMock(_expectedParticipantId, _, _, _)).Times(1).WillOnce(
-            DoAll(InvokeArgument<1>(), Return(mockFuture)));
+    EXPECT_CALL(*_mockDiscovery, removeAsyncMock(_expectedParticipantId, _, _, _))
+            .Times(1)
+            .InSequence(s)
+            .WillOnce(DoAll(InvokeArgument<1>(), Return(mockFuture)));
+    EXPECT_CALL(*_mockMessageRouter, removeNextHop(Eq(_expectedParticipantId), _, _))
+            .Times(1)
+            .InSequence(s);
+    EXPECT_CALL(*_mockDispatcher, removeRequestCaller(_expectedParticipantId))
+            .Times(1)
+            .InSequence(s);
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
