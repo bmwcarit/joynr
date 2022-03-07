@@ -56,12 +56,17 @@ void CapabilitiesRegistrar::removeAsync(
         onError
     ]()
     {
-        for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
-            currentDispatcher->removeRequestCaller(participantId);
-        }
+        auto onSuccessWrapper =
+                [ dispatcherList, participantId, onSuccess = std::move(onSuccess) ]()
+        {
+            for (std::shared_ptr<IDispatcher> currentDispatcher : dispatcherList) {
+                currentDispatcher->removeRequestCaller(participantId);
+            }
+            onSuccess();
+        };
 
         if (auto ptr = messageRouter.lock()) {
-            ptr->removeNextHop(participantId, std::move(onSuccess), std::move(onError));
+            ptr->removeNextHop(participantId, std::move(onSuccessWrapper), std::move(onError));
         }
     };
 
