@@ -2,12 +2,6 @@ option(BUILD_UNIT_TESTS "Build unit tests?" ON)
 option(BUILD_INTEGRATION_TESTS "Build integration tests?" ON)
 option(BUILD_SYSTEM_INTEGRATION_TESTS "Build system integration tests?" ON)
 
-option(
-    USE_PLATFORM_GTEST_GMOCK
-    "Resolve dependency to gtest and gmock from the system?"
-    ON
-)
-
 include(AddGtestGmock)
 
 ### copy test resources and settings ##########################################
@@ -263,8 +257,10 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
     add_library(JoynrMocks STATIC ${MOCK_SOURCES})
 
     if(NOT USE_PLATFORM_GTEST_GMOCK)
-        add_dependencies(JoynrMocks googletest)
-        add_dependencies(JoynrMocks googlemock)
+        # gtestLib already has a dependency to googletest and
+        # gmockLib already has a dependency to googlemock
+        add_dependencies(JoynrMocks gtestLib)
+        add_dependencies(JoynrMocks gmockLib)
     endif(NOT USE_PLATFORM_GTEST_GMOCK)
 
     target_link_libraries(JoynrMocks
