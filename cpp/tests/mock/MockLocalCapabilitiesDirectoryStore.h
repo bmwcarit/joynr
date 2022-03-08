@@ -47,20 +47,22 @@ public:
                                                           const joynr::types::DiscoveryQos& discoveryQos,
                                                           const std::vector<std::string>& gbids,
                                                           std::shared_ptr<ILocalCapabilitiesCallback> callback));
-    MOCK_METHOD1(getGbidsForParticipantId, std::vector<std::string> (const std::string& participantId));
+    MOCK_METHOD2(getGbidsForParticipantId, std::vector<std::string> (const std::string& participantId,
+                                                                     const std::unique_lock<std::recursive_mutex>& cacheLock));
     MOCK_CONST_METHOD0(getAllGlobalCapabilities, std::vector<types::DiscoveryEntry> ());
-    MOCK_METHOD1(eraseParticipantIdToGbidMapping, void(const std::string& participantId));
-    std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache() override {
+    MOCK_METHOD2(eraseParticipantIdToGbidMapping, void(const std::string& participantId,
+                                                       const std::unique_lock<std::recursive_mutex>& cacheLock));
+    std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache(const std::unique_lock<std::recursive_mutex>& cacheLock) override {
         if(_globalLookupCache) {
             return _globalLookupCache;
         }
-        return joynr::LocalCapabilitiesDirectoryStore::getGlobalLookupCache();
+        return joynr::LocalCapabilitiesDirectoryStore::getGlobalLookupCache(cacheLock);
     }
-    std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities() override {
+    std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities(const std::unique_lock<std::recursive_mutex>& cacheLock) override {
         if(_locallyRegisteredCapabilities) {
             return _locallyRegisteredCapabilities;
         }
-        return joynr::LocalCapabilitiesDirectoryStore::getLocallyRegisteredCapabilities();
+        return joynr::LocalCapabilitiesDirectoryStore::getLocallyRegisteredCapabilities(cacheLock);
     }
 private:
     std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;

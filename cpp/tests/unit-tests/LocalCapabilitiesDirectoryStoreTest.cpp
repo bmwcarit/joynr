@@ -18,6 +18,7 @@
  */
 #include <climits>
 #include <functional>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -116,30 +117,34 @@ protected:
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getGlobalLookupCache)
 {
-    ASSERT_NE(nullptr, _localCapabilitiesDirectoryStore.getGlobalLookupCache());
+    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_NE(nullptr, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocallyRegisteredCapabilities)
 {
-    ASSERT_NE(nullptr, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities());
+    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_NE(nullptr, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, insertInLocalCapabilitiesStorage)
 {
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
+    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocalCapabilities(_participantId).size());
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, insertInGlobalLookupCache)
 {
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
+    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_localEntry, gbids);
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries().size());
-    ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId));
+    ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, updateEntryInGlobalLookupCacheIfItExists)
@@ -147,12 +152,14 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, updateEntryInGlobalLookupCacheIfItEx
     const std::vector<std::string> gbids1 = {"gbid1", "gbid2"};
     const std::vector<std::string> expectedGbids1 = {gbids1};
     const std::vector<types::DiscoveryEntry> expectedDiscoveryEntries1 = {_localEntry};
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
+    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
 
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_localEntry, gbids1);
 
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
-    ASSERT_EQ(expectedGbids1, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId));
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
+    ASSERT_EQ(expectedGbids1, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
+    cacheLock.unlock();
     ASSERT_EQ(expectedDiscoveryEntries1,
               _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries());
 
@@ -165,9 +172,11 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, updateEntryInGlobalLookupCacheIfItEx
 
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_localEntry, gbids2);
 
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache()->size());
+    cacheLock.lock();
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries().size());
-    ASSERT_EQ(expectedGbids2, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId));
+    ASSERT_EQ(expectedGbids2, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
+    cacheLock.unlock();
 
     // check that the entry is updated
     ASSERT_EQ(expectedDiscoveryEntries2,
@@ -212,11 +221,12 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getAllGlobalCapabilities)
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, clear)
 {
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
+    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
     _localCapabilitiesDirectoryStore.clear();
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities()->size());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, countGlobalCapabilities)
@@ -248,15 +258,18 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, handlingOfGbidMappings)
 {
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal).size());
+    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal, cacheLock).size());
+    cacheLock.unlock();
 
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
-    ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal));
+    cacheLock.lock();
+    ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal, cacheLock));
 
-    _localCapabilitiesDirectoryStore.eraseParticipantIdToGbidMapping(_participantIdGlobal);
+    _localCapabilitiesDirectoryStore.eraseParticipantIdToGbidMapping(_participantIdGlobal, cacheLock);
 
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal).size());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal, cacheLock).size());
 
 }
 
