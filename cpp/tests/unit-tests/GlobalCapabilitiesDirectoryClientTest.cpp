@@ -262,11 +262,11 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
                .WillOnce(Return(allGlobalEntries));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()))).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _)).Times(1)
             .WillOnce(Return(gbids));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()))).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _)).Times(1)
             .WillOnce(Return(gbids));
 
     std::function<void()> onSuccessOfAddGlobalEntry1;
@@ -357,15 +357,15 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
                .WillOnce(Return(allGlobalEntries));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()))).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _)).Times(1)
             .WillOnce(Return(gbids));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()))).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _)).Times(1)
             .WillOnce(Return(gbids));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry3.getParticipantId()))).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry3.getParticipantId()), _)).Times(1)
             .WillOnce(Return(gbids));
 
     std::function<void()> onSuccessOfAddGlobalEntry1;
@@ -461,7 +461,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_noEntries_resultFutu
                 getAllGlobalCapabilities())
                .WillOnce(Return(allGlobalEntries));
 
-    EXPECT_CALL(*mockLCDStore, getGbidsForParticipantId(_)).Times(0);
+    EXPECT_CALL(*mockLCDStore, getGbidsForParticipantId(_, _)).Times(0);
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(_, _, _, _, _, _))
@@ -510,11 +510,11 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_re
 
     std::vector<std::string> emptyGbids {};
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()))).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _)).Times(1)
             .WillOnce(Return(emptyGbids));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()))).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _)).Times(1)
             .WillOnce(Return(gbids));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
@@ -759,7 +759,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
     Semaphore semaphore;
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId))).Times(1)
+                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
             .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(gbids)));
 
@@ -805,7 +805,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveUsesCorrectTtl)
     Semaphore semaphore;
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId))).Times(1)
+                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
             .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(gbids)));
 
@@ -827,7 +827,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterSuccess)
     Semaphore semaphore;
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId))).Times(1)
+                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
             .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
@@ -849,7 +849,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveRetryAfterTimeout)
     constexpr unsigned int numberOfTimeouts = 10;
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId))).Times(numberOfTimeouts + 1)
+                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(numberOfTimeouts + 1)
             .WillRepeatedly(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
@@ -877,7 +877,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterRuntimeExcep
     Semaphore semaphore;
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId))).Times(1)
+                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
             .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(gbids)));
 
@@ -899,7 +899,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterApplicationE
     Semaphore semaphore;
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId))).Times(1)
+                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
             .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(gbids)));
 
@@ -920,7 +920,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveDeletionWhileRetry)
     std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
     Semaphore semaphore;
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId))).Times(2)
+                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(2)
             .WillRepeatedly(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
                             Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
@@ -943,7 +943,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveParticipantNotRegistered
     Semaphore lcdStoreSemaphore;
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId))).Times(1)
+                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
             .WillOnce(DoAll(InvokeWithoutArgs(&lcdStoreSemaphore, &Semaphore::notify),
                             Return(expectedGbids)));
 

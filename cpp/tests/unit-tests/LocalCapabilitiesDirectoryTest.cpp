@@ -21,6 +21,7 @@
 #include <chrono>
 #include <cstdint>
 #include <functional>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -391,7 +392,9 @@ public:
         _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0], _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
         EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
-        std::vector<std::string> capturedGbids = capturedLCDStore->getGbidsForParticipantId(_dummyParticipantIdsVector[0]);
+        std::unique_lock<std::recursive_mutex> cacheLock(capturedLCDStore->getCacheLock());
+        std::vector<std::string> capturedGbids = capturedLCDStore->getGbidsForParticipantId(_dummyParticipantIdsVector[0], cacheLock);
+        cacheLock.unlock();
         EXPECT_EQ(expectedGbids, capturedGbids);
 
         Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
@@ -2006,7 +2009,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(1);
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _)).Times(1);
     EXPECT_CALL(*_mockGlobalLookupCache,
                 removeByParticipantId(_dummyParticipantIdsVector[0])).Times(1);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
@@ -2029,7 +2032,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(1);
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _)).Times(1);
     EXPECT_CALL(*_mockGlobalLookupCache,
                 removeByParticipantId(_dummyParticipantIdsVector[0])).Times(1);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
@@ -2052,7 +2055,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _)).Times(0);
     EXPECT_CALL(*_mockGlobalLookupCache,
                 removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
@@ -2075,7 +2078,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _)).Times(0);
     EXPECT_CALL(*_mockGlobalLookupCache,
                 removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
@@ -2098,7 +2101,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
                             InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
 
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(_dummyParticipantIdsVector[0])).Times(0);
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _)).Times(0);
     EXPECT_CALL(*_mockGlobalLookupCache,
                 removeByParticipantId(_dummyParticipantIdsVector[0])).Times(0);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
@@ -4778,14 +4781,17 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUses
 
     ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getLastSeenDateMs());
     ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getExpiryDateMs());
-    ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId1));
+    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore->getCacheLock());
+    ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)->lookupByParticipantId(participantId1));
+    cacheLock.unlock();
 
     ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getLastSeenDateMs());
     ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getExpiryDateMs());
+    cacheLock.lock();
     ASSERT_TRUE(oldLastSeenDate <
-                _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
     ASSERT_TRUE(oldExpiryDate <
-                _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(participantId2).get().getExpiryDateMs());
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)->lookupByParticipantId(participantId2).get().getExpiryDateMs());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGlobal)

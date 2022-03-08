@@ -22,6 +22,7 @@
  */
 
 #include <atomic>
+#include <mutex>
 #include <boost/algorithm/string/join.hpp>
 
 #include "GlobalCapabilitiesDirectoryClient.h"
@@ -149,8 +150,12 @@ void GlobalCapabilitiesDirectoryClient::reAdd(
 
         for (const auto& discoveryEntry : discoveryEntries) {
             const std::string participantId = discoveryEntry.getParticipantId();
+            std::unique_lock<std::recursive_mutex> cacheLock(
+                    localCapabilitiesDirectoryStore->getCacheLock());
             std::vector<std::string> gbids =
-                    localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantId);
+                    localCapabilitiesDirectoryStore->getGbidsForParticipantId(
+                            participantId, cacheLock);
+            cacheLock.unlock();
             if (gbids.empty()) {
                 JOYNR_LOG_WARN(logger(), "Re-Add: no GBIDs found for {}", participantId);
                 onAddCompleted();
@@ -340,8 +345,11 @@ void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::execute()
         std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore =
                 _localCapabilitiesDirectoryStore.lock();
         if (localCapabilitiesDirectoryStore) {
-            auto foundGbids =
-                    localCapabilitiesDirectoryStore->getGbidsForParticipantId(_participantId);
+            std::unique_lock<std::recursive_mutex> cacheLock(
+                    localCapabilitiesDirectoryStore->getCacheLock());
+            auto foundGbids = localCapabilitiesDirectoryStore->getGbidsForParticipantId(
+                    _participantId, cacheLock);
+            cacheLock.unlock();
             if (!foundGbids.empty()) {
                 _qos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), foundGbids[0]);
                 std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>

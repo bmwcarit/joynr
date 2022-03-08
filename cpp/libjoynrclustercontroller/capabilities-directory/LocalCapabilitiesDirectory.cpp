@@ -23,6 +23,7 @@
 #include <cassert>
 #include <chrono>
 #include <limits>
+#include <mutex>
 #include <tuple>
 #include <unordered_set>
 #include <ostream>
@@ -169,8 +170,11 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
     }
 
     for (const std::string& participantIdToTouch : participantIds) {
-        std::vector<std::string> gbids =
-                _localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantIdToTouch);
+        std::unique_lock<std::recursive_mutex> cacheLock(
+                _localCapabilitiesDirectoryStore->getCacheLock());
+        std::vector<std::string> gbids = _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
+                participantIdToTouch, cacheLock);
+        cacheLock.unlock();
 
         if (gbids.empty()) {
             JOYNR_LOG_WARN(logger(),
@@ -444,7 +448,7 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
     std::ignore = onError;
 
     {
-        std::lock_guard<std::recursive_mutex> providerReregistrationLock(
+        std::unique_lock<std::recursive_mutex> providerReregistrationLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
         JOYNR_LOG_DEBUG(logger(), "triggerGlobalProviderReregistration");
         std::vector<types::DiscoveryEntry> entries;
@@ -456,8 +460,8 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         // copy existing global entries, update lastSeenDateMs and
         // increase expiryDateMs unless it already references a time
         // which is beyond newExpiryDate/updatedExpiryDate
-        for (auto capability :
-             *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
+        for (auto capability : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                     providerReregistrationLock))) {
             if (capability.getExpiryDateMs() < newExpiryDateMs) {
                 capability.setExpiryDateMs(newExpiryDateMs);
             }
@@ -469,14 +473,17 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
         for (const auto& capability : entries) {
             if (capability.getQos().getScope() == types::ProviderScope::GLOBAL) {
                 const std::string& participantId = capability.getParticipantId();
-                auto foundGbids =
-                        _localCapabilitiesDirectoryStore->getGbidsForParticipantId(participantId);
+                auto foundGbids = _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
+                        participantId, providerReregistrationLock);
                 if (!foundGbids.empty()) {
                     // update local store
-                    _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->insert(
-                            capability, foundGbids);
+                    _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                                                              providerReregistrationLock)
+                            ->insert(capability, foundGbids);
                     // update global cache
-                    _localCapabilitiesDirectoryStore->getGlobalLookupCache()->insert(capability);
+                    _localCapabilitiesDirectoryStore->getGlobalLookupCache(
+                                                              providerReregistrationLock)
+                            ->insert(capability);
                     // send entries to JDS again
                     auto onApplicationError =
                             [participantId, foundGbids](const types::DiscoveryError::Enum& error) {
@@ -512,8 +519,9 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                 }
             } else {
                 // update local cache
-                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->insert(
-                        capability);
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                                                          providerReregistrationLock)
+                        ->insert(capability);
             }
         }
     }
@@ -1123,24 +1131,25 @@ void LocalCapabilitiesDirectory::remove(
 {
     std::ignore = onError;
     {
-        std::lock_guard<std::recursive_mutex> removeLock(
+        std::unique_lock<std::recursive_mutex> removeLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
 
         boost::optional<types::DiscoveryEntry> optionalEntry =
-                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(removeLock)
                         ->lookupByParticipantId(participantId);
 
         if (optionalEntry && !LCDUtil::isGlobal(optionalEntry.get())) {
-            _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
+            _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(removeLock)
                     ->removeByParticipantId(participantId);
             JOYNR_LOG_INFO(
                     logger(),
                     "Removed locally registered participantId {}: #localCapabilities {}, "
                     "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
                     participantId,
-                    _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()->size(),
+                    _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(removeLock)
+                            ->size(),
                     _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
-                    _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
+                    _localCapabilitiesDirectoryStore->getGlobalLookupCache(removeLock)->size());
             updatePersistedFile();
         } else {
             auto onGlobalRemoveSuccess = [
@@ -1150,21 +1159,26 @@ void LocalCapabilitiesDirectory::remove(
             ]()
             {
                 if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                    std::unique_lock<std::recursive_mutex> cacheLock(
+                            lCDStoreSharedPtr->getCacheLock());
                     const std::string gbidString = boost::algorithm::join(
-                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
-                    lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId);
-                    lCDStoreSharedPtr->getGlobalLookupCache()->removeByParticipantId(participantId);
-                    lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->removeByParticipantId(
-                            participantId);
-                    JOYNR_LOG_INFO(logger(),
-                                   "Removed globally registered participantId: {} from GBIDs: >{}< "
-                                   "#localCapabilities {}, "
-                                   "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
-                                   participantId,
-                                   gbidString,
-                                   lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->size(),
-                                   lCDStoreSharedPtr->countGlobalCapabilities(),
-                                   lCDStoreSharedPtr->getGlobalLookupCache()->size());
+                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId, cacheLock),
+                            ", ");
+                    lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId, cacheLock);
+                    lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)
+                            ->removeByParticipantId(participantId);
+                    lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)
+                            ->removeByParticipantId(participantId);
+                    JOYNR_LOG_INFO(
+                            logger(),
+                            "Removed globally registered participantId: {} from GBIDs: >{}< "
+                            "#localCapabilities {}, "
+                            "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
+                            participantId,
+                            gbidString,
+                            lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)->size(),
+                            lCDStoreSharedPtr->countGlobalCapabilities(),
+                            lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->size());
                 }
                 updatePersistedFile();
             };
@@ -1179,27 +1193,32 @@ void LocalCapabilitiesDirectory::remove(
                 case DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT:
                 case DiscoveryError::Enum::NO_ENTRY_FOR_SELECTED_BACKENDS:
                     if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
-                        const std::string gbidString = boost::algorithm::join(
-                                lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
+                        std::unique_lock<std::recursive_mutex> cacheLock(
+                                lCDStoreSharedPtr->getCacheLock());
+                        const std::string gbidString =
+                                boost::algorithm::join(lCDStoreSharedPtr->getGbidsForParticipantId(
+                                                               participantId, cacheLock),
+                                                       ", ");
                         JOYNR_LOG_WARN(logger(),
                                        "Error removing participantId {} globally for GBIDs >{}<: "
                                        "{}. Removing local entry.",
                                        participantId,
                                        gbidString,
                                        types::DiscoveryError::getLiteral(error));
-                        lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId);
-                        lCDStoreSharedPtr->getGlobalLookupCache()->removeByParticipantId(
-                                participantId);
-                        lCDStoreSharedPtr->getLocallyRegisteredCapabilities()
+                        lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(
+                                participantId, cacheLock);
+                        lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)
                                 ->removeByParticipantId(participantId);
-                        JOYNR_LOG_INFO(
-                                logger(),
-                                "After removal of participantId {}: #localCapabilities {}, "
-                                "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
-                                participantId,
-                                lCDStoreSharedPtr->getLocallyRegisteredCapabilities()->size(),
-                                lCDStoreSharedPtr->countGlobalCapabilities(),
-                                lCDStoreSharedPtr->getGlobalLookupCache()->size());
+                        lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)
+                                ->removeByParticipantId(participantId);
+                        JOYNR_LOG_INFO(logger(),
+                                       "After removal of participantId {}: #localCapabilities {}, "
+                                       "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
+                                       participantId,
+                                       lCDStoreSharedPtr->getLocallyRegisteredCapabilities(
+                                                                  cacheLock)->size(),
+                                       lCDStoreSharedPtr->countGlobalCapabilities(),
+                                       lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->size());
                     }
                     updatePersistedFile();
                     break;
@@ -1208,8 +1227,12 @@ void LocalCapabilitiesDirectory::remove(
                 case DiscoveryError::Enum::INTERNAL_ERROR:
                 default:
                     if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
-                        const std::string gbidString = boost::algorithm::join(
-                                lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
+                        std::unique_lock<std::recursive_mutex> cacheLock(
+                                lCDStoreSharedPtr->getCacheLock());
+                        const std::string gbidString =
+                                boost::algorithm::join(lCDStoreSharedPtr->getGbidsForParticipantId(
+                                                               participantId, cacheLock),
+                                                       ", ");
                         JOYNR_LOG_WARN(
                                 logger(),
                                 "Error removing participantId {} globally for GBIDs >{}<: {}",
@@ -1226,8 +1249,11 @@ void LocalCapabilitiesDirectory::remove(
             ](const exceptions::JoynrRuntimeException& exception)
             {
                 if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                    std::unique_lock<std::recursive_mutex> cacheLock(
+                            lCDStoreSharedPtr->getCacheLock());
                     const std::string gbidString = boost::algorithm::join(
-                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId), ", ");
+                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId, cacheLock),
+                            ", ");
                     JOYNR_LOG_WARN(
                             logger(),
                             "Failed to remove participantId {} globally for GBIDs >{}<: {} ({})",
@@ -1267,12 +1293,13 @@ void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& 
     }
 
     try {
-        std::lock_guard<std::recursive_mutex> filePersistencyStorageLock(
+        std::unique_lock<std::recursive_mutex> filePersistencyStorageLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
         joynr::util::saveStringToFile(
                 fileName,
                 joynr::serializer::serializeToJson(
-                        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()));
+                        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                                filePersistencyStorageLock)));
     } catch (const std::runtime_error& ex) {
         JOYNR_LOG_ERROR(logger(), ex.what());
     }
@@ -1302,20 +1329,21 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
         return;
     }
 
-    std::lock_guard<std::recursive_mutex> filePersistencyRetrievalLock(
+    std::unique_lock<std::recursive_mutex> filePersistencyRetrievalLock(
             _localCapabilitiesDirectoryStore->getCacheLock());
 
     try {
         std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities =
-                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities();
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                        filePersistencyRetrievalLock);
         joynr::serializer::deserializeFromJson(locallyRegisteredCapabilities, jsonString);
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger(), ex.what());
     }
 
     // insert all global capability entries into global cache
-    for (const auto& entry :
-         *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
+    for (const auto& entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                 filePersistencyRetrievalLock))) {
         if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
             _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(entry, entry.gbids);
         }
@@ -1406,32 +1434,39 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
 
     bool fileUpdateRequired = false;
     {
-        std::lock_guard<std::recursive_mutex> discoveryEntryExpiryCheckLock(
+        std::unique_lock<std::recursive_mutex> discoveryEntryExpiryCheckLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
 
         auto removedLocalCapabilities =
-                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                                                          discoveryEntryExpiryCheckLock)
                         ->removeExpired();
         auto removedGlobalCapabilities =
-                _localCapabilitiesDirectoryStore->getGlobalLookupCache()->removeExpired();
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache(
+                                                          discoveryEntryExpiryCheckLock)
+                        ->removeExpired();
 
         if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
             fileUpdateRequired = true;
             if (auto messageRouterSharedPtr = _messageRouter.lock()) {
-                JOYNR_LOG_INFO(logger(),
-                               "Following discovery entries expired: local: {}, "
-                               "#localCapabilities: {}, global: {}, #globalLookupCache: {}",
-                               LCDUtil::joinToString(removedLocalCapabilities),
-                               _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities()
-                                       ->size(),
-                               LCDUtil::joinToString(removedGlobalCapabilities),
-                               _localCapabilitiesDirectoryStore->getGlobalLookupCache()->size());
+                JOYNR_LOG_INFO(
+                        logger(),
+                        "Following discovery entries expired: local: {}, "
+                        "#localCapabilities: {}, global: {}, #globalLookupCache: {}",
+                        LCDUtil::joinToString(removedLocalCapabilities),
+                        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                                                                  discoveryEntryExpiryCheckLock)
+                                ->size(),
+                        LCDUtil::joinToString(removedGlobalCapabilities),
+                        _localCapabilitiesDirectoryStore->getGlobalLookupCache(
+                                                                  discoveryEntryExpiryCheckLock)
+                                ->size());
 
                 for (const auto& capability :
                      boost::join(removedLocalCapabilities, removedGlobalCapabilities)) {
                     messageRouterSharedPtr->removeNextHop(capability.getParticipantId());
                     _localCapabilitiesDirectoryStore->eraseParticipantIdToGbidMapping(
-                            capability.getParticipantId());
+                            capability.getParticipantId(), discoveryEntryExpiryCheckLock);
                 }
             } else {
                 JOYNR_LOG_FATAL(logger(),
@@ -1513,9 +1548,10 @@ std::vector<std::string> LocalCapabilitiesDirectory::getParticipantIdsToTouch()
                                      std::chrono::system_clock::now().time_since_epoch()).count();
     const std::int64_t newExpiryDateMs = now + _defaultExpiryIntervalMs;
     {
-        std::lock_guard<std::recursive_mutex> expiryDateUpdateLock(
+        std::unique_lock<std::recursive_mutex> expiryDateUpdateLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
-        for (auto entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities())) {
+        for (auto entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                     expiryDateUpdateLock))) {
             bool refresh_entry = false;
             if (now > entry.getLastSeenDateMs()) {
                 entry.setLastSeenDateMs(now);
@@ -1534,8 +1570,8 @@ std::vector<std::string> LocalCapabilitiesDirectory::getParticipantIdsToTouch()
         }
         for (auto participantId : participantIds) {
             auto globalEntry =
-                    _localCapabilitiesDirectoryStore->getGlobalLookupCache()->lookupByParticipantId(
-                            participantId);
+                    _localCapabilitiesDirectoryStore->getGlobalLookupCache(expiryDateUpdateLock)
+                            ->lookupByParticipantId(participantId);
             if (!globalEntry) {
                 continue;
             }
@@ -1552,7 +1588,7 @@ std::vector<std::string> LocalCapabilitiesDirectory::getParticipantIdsToTouch()
                 _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
                         *globalEntry,
                         _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
-                                globalEntry->getParticipantId()));
+                                globalEntry->getParticipantId(), expiryDateUpdateLock));
             }
         }
     }

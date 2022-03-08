@@ -333,14 +333,20 @@ std::recursive_mutex& LocalCapabilitiesDirectoryStore::getCacheLock()
 }
 
 void LocalCapabilitiesDirectoryStore::eraseParticipantIdToGbidMapping(
-        const std::string& participantId)
+        const std::string& participantId,
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
 {
+    assert(cacheLock.owns_lock());
+    std::ignore = cacheLock;
     _globalParticipantIdsToGbidsMap.erase(participantId);
 }
 
 std::vector<std::string> LocalCapabilitiesDirectoryStore::getGbidsForParticipantId(
-        const std::string& participantId)
+        const std::string& participantId,
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
 {
+    assert(cacheLock.owns_lock());
+    std::ignore = cacheLock;
     auto foundGbids = _globalParticipantIdsToGbidsMap.find(participantId);
     if (foundGbids == _globalParticipantIdsToGbidsMap.cend()) {
         return {};
@@ -348,15 +354,19 @@ std::vector<std::string> LocalCapabilitiesDirectoryStore::getGbidsForParticipant
     return foundGbids->second;
 }
 
-std::shared_ptr<capabilities::CachingStorage> LocalCapabilitiesDirectoryStore::
-        getGlobalLookupCache()
+std::shared_ptr<capabilities::CachingStorage> LocalCapabilitiesDirectoryStore::getGlobalLookupCache(
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
 {
+    assert(cacheLock.owns_lock());
+    std::ignore = cacheLock;
     return _globalLookupCache;
 }
 
 std::shared_ptr<capabilities::Storage> LocalCapabilitiesDirectoryStore::
-        getLocallyRegisteredCapabilities()
+        getLocallyRegisteredCapabilities(const std::unique_lock<std::recursive_mutex>& cacheLock)
 {
+    assert(cacheLock.owns_lock());
+    std::ignore = cacheLock;
     return _locallyRegisteredCapabilities;
 }
 }

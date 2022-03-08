@@ -90,14 +90,20 @@ public:
     virtual void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
                                            const std::vector<std::string>& gbids);
 
-    virtual std::vector<std::string> getGbidsForParticipantId(const std::string& participantId);
+    virtual std::vector<std::string> getGbidsForParticipantId(
+            const std::string& participantId,
+            const std::unique_lock<std::recursive_mutex>& cacheLock);
     std::vector<types::DiscoveryEntry> searchLocalCache(
             const std::vector<InterfaceAddress>& interfaceAddress);
 
     std::recursive_mutex& getCacheLock();
-    virtual void eraseParticipantIdToGbidMapping(const std::string& participantId);
-    virtual std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache();
-    virtual std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities();
+    virtual void eraseParticipantIdToGbidMapping(
+            const std::string& participantId,
+            const std::unique_lock<std::recursive_mutex>& cacheLock);
+    virtual std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache(
+            const std::unique_lock<std::recursive_mutex>& cacheLock);
+    virtual std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities(
+            const std::unique_lock<std::recursive_mutex>& cacheLock);
 
 private:
     boost::optional<types::DiscoveryEntry> searchCaches(const std::string& participantId,
