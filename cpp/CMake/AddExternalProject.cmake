@@ -57,7 +57,7 @@ function(AddExternalProject NAME)
         # otherwise, BUILD_BYPRODUCTS and the following value from the argument list is removed
         list(FIND INPUT_ARGS "BUILD_BYPRODUCTS" BUILD_BYPRODUCTS_INDEX)
         if (BUILD_BYPRODUCTS_INDEX GREATER -1)
-            if(CMAKE_VERSION LESS 3.2)
+            if(CMAKE_VERSION VERSION_LESS 3.2)
                 list(REMOVE_AT INPUT_ARGS ${BUILD_BYPRODUCTS_INDEX})
                 list(REMOVE_AT INPUT_ARGS ${BUILD_BYPRODUCTS_INDEX})
             endif()
