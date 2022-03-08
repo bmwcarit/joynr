@@ -53,22 +53,6 @@ RUN cd /opt \
     && rm -rf muesli
 
 ###################################################
-# install googletest & googlemock
-###################################################
-
-RUN cd /opt \
-    && . /etc/profile \
-    && git clone https://github.com/google/googletest.git \
-    && cd googletest \
-    && git checkout ddb8012e \
-    && mkdir build \
-    && cd build \
-    && cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. \
-    && make install -j"$(nproc)" \
-    && cd /opt/ \
-    && rm -rf googletest
-
-###################################################
 # install smrf
 ###################################################
 
