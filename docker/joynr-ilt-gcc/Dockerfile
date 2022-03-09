@@ -13,6 +13,7 @@ RUN dnf update -y \
     lcov \
     boost \
     boost-devel \
+    ninja-build \
     psmisc \
     && dnf clean all \
     && pip install gcovr
