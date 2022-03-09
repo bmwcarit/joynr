@@ -43,13 +43,6 @@
 				<module>radio-node</module>
 			</modules>
 		</profile>
-		<!-- Only include Android examples when Android is available -->
-		<profile>
-			<id>android</id>
-			<modules>
-				<module>android</module>
-			</modules>
-		</profile>
 		<profile>
 			<id>spotbugs</id>
 			<build>

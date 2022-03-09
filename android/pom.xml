@@ -35,6 +35,7 @@
 		<module>joynr-android-binder-runtime</module>
 		<module>libjoynr-android-websocket-runtime</module>
 		<module>libjoynr-android-integration-tests</module>
+		<module>examples</module>
 	</modules>
 
 	<build>
