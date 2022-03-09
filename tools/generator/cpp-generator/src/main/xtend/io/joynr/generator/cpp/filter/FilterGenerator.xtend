@@ -35,6 +35,10 @@ class FilterGenerator {
 	extension NamingUtil
 
 	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT)
+	public boolean versioningComment;
+
+	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -51,7 +55,7 @@ class FilterGenerator {
 		String headerContainerPath
 	) {
 		for(fInterface: model.interfaces){
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(fInterface) else packageWithVersion
 			val headerPath = headerContainerPath + 
 				getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersioning) + File::separator
 			var serviceName = fInterface.joynrName

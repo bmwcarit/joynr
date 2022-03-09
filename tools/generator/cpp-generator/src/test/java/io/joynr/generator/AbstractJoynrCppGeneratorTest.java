@@ -70,7 +70,10 @@ public abstract class AbstractJoynrCppGeneratorTest {
     @Inject
     private IFileSystemAccess outputFileSystem;
 
-    public void setup(boolean generateProxy, boolean generateProvider, boolean packageVersioning) throws Exception {
+    public void setup(boolean generateProxy,
+                      boolean generateProvider,
+                      boolean generateVersion,
+                      boolean useComment) throws Exception {
         temporaryOutputDirectory = Files.createTempDirectory(null).toFile();
         temporaryOutputDirectory.deleteOnExit();
         InvocationArguments arguments = new InvocationArguments();
@@ -93,7 +96,9 @@ public abstract class AbstractJoynrCppGeneratorTest {
                                                                         bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE))
                                                                                       .to(true);
                                                                         bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION))
-                                                                                      .to(packageVersioning);
+                                                                                      .to(generateVersion);
+                                                                        bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT))
+                                                                                      .to(useComment);
                                                                         bindConstant().annotatedWith(Names.named("generationId"))
                                                                                       .to("5");
                                                                         bindConstant().annotatedWith(Names.named("generateProxyCode"))

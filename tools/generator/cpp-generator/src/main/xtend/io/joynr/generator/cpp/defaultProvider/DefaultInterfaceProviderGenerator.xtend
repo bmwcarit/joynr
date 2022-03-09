@@ -35,6 +35,10 @@ class DefaultInterfaceProviderGenerator {
 	@Inject CppTemplateFactory templateFactory;
 
 	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT)
+	public boolean versioningComment;
+
+	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -46,7 +50,7 @@ class DefaultInterfaceProviderGenerator {
 	){
 
 		for(serviceInterface: fModel.interfaces){
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(serviceInterface) else packageWithVersion
 			val sourcepath = sourceContainerPath + getPackageSourceDirectory(serviceInterface, generateVersioning) + File::separator
 			val headerpath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersioning) + File::separator
 			val serviceName = serviceInterface.joynrName;

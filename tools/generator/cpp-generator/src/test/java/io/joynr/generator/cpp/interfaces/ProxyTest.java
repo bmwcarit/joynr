@@ -32,9 +32,10 @@ public class ProxyTest extends AbstractJoynrCppGeneratorTest {
 
     private final boolean generateProxy = true;
     private final boolean generateProvider = false;
+    private final boolean useComment = false;
 
     private void testOnlyProxyCodeFound(final boolean generateVersion) throws Exception {
-        super.setup(generateProxy, generateProvider, generateVersion);
+        super.setup(generateProxy, generateProvider, generateVersion, useComment);
 
         Map<String, String> result = generate("multi-out-method-test" + (generateVersion ? "" : "_noversiongeneration")
                 + ".fidl");

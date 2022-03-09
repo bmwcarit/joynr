@@ -51,6 +51,10 @@ class JoynrJSGenerator implements IJoynrGenerator {
 	@Inject extension JoynrJSGeneratorExtensions
 
 	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT)
+	public boolean versioningComment;
+
+	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -84,7 +88,7 @@ class JoynrJSGenerator implements IJoynrGenerator {
 		}
 		for (fInterface : fModel.interfaces) {
 			checkVersioningOption(fInterface, packageWithVersion)
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(fInterface) else packageWithVersion
 			if (generateVersioning) {
 				generateVersionedCommunicationModel = true
 			} else {
@@ -104,7 +108,7 @@ class JoynrJSGenerator implements IJoynrGenerator {
 
 		for (francaIntf : fModel.interfaces) {
 			checkVersioningOption(francaIntf, packageWithVersion)
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(francaIntf) else packageWithVersion
 
 			// since the proxy code at the moment contains exported interfaces
 			// required to implement a provider, we have to create the proxy code

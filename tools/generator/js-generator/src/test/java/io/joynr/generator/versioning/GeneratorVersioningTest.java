@@ -66,7 +66,8 @@ public class GeneratorVersioningTest extends AbstractJoynrTSGeneratorTest {
         final boolean generateProxy = true;
         final boolean generateProvider = true;
         final boolean packageVersioning = false;
-        super.setup(generateProxy, generateProvider, packageVersioning);
+        final boolean useComment = false;
+        super.setup(generateProxy, generateProvider, packageVersioning, useComment);
 
         Map<String, String> result = generate("test-with-noversiongeneration-comment.fidl", true);
         expectNoVersioning(result, "NoVersionGenerationTypeCollection");
@@ -77,7 +78,8 @@ public class GeneratorVersioningTest extends AbstractJoynrTSGeneratorTest {
         final boolean generateProxy = true;
         final boolean generateProvider = true;
         final boolean packageVersioning = false;
-        super.setup(generateProxy, generateProvider, packageVersioning);
+        final boolean useComment = false;
+        super.setup(generateProxy, generateProvider, packageVersioning, useComment);
 
         Map<String, String> result = generate("test-without-noversiongeneration-comment.fidl", true);
         expectNoVersioning(result, "PackageVersionedTypeCollection");
@@ -88,7 +90,8 @@ public class GeneratorVersioningTest extends AbstractJoynrTSGeneratorTest {
         final boolean generateProxy = true;
         final boolean generateProvider = true;
         final boolean packageVersioning = true;
-        super.setup(generateProxy, generateProvider, packageVersioning);
+        final boolean useComment = false;
+        super.setup(generateProxy, generateProvider, packageVersioning, useComment);
 
         Map<String, String> result = generate("test-without-noversiongeneration-comment.fidl", true);
         expectVersioning(result, "PackageVersionedTypeCollection");
@@ -99,9 +102,34 @@ public class GeneratorVersioningTest extends AbstractJoynrTSGeneratorTest {
         final boolean generateProxy = true;
         final boolean generateProvider = true;
         final boolean packageVersioning = true;
-        super.setup(generateProxy, generateProvider, packageVersioning);
+        final boolean useComment = false;
+        super.setup(generateProxy, generateProvider, packageVersioning, useComment);
 
         Map<String, String> result = generate("test-with-noversiongeneration-comment.fidl", true);
         expectVersioning(result, "NoVersionGenerationTypeCollection");
+    }
+
+    @Test
+    public void generateWithoutNoVersionComment_useComment() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        final boolean packageVersioning = false;
+        final boolean useComment = true;
+        super.setup(generateProxy, generateProvider, packageVersioning, useComment);
+
+        Map<String, String> result = generate("test-without-noversiongeneration-comment.fidl", true);
+        expectVersioning(result, "PackageVersionedTypeCollection");
+    }
+
+    @Test
+    public void generateWithNoVersionComment_useComment() throws Exception {
+        final boolean generateProxy = true;
+        final boolean generateProvider = true;
+        final boolean packageVersioning = true;
+        final boolean useComment = true;
+        super.setup(generateProxy, generateProvider, packageVersioning, useComment);
+
+        Map<String, String> result = generate("test-with-noversiongeneration-comment.fidl", true);
+        expectNoVersioning(result, "NoVersionGenerationTypeCollection");
     }
 }

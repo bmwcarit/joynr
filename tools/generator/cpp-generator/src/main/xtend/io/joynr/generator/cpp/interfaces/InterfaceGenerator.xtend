@@ -38,6 +38,10 @@ class InterfaceGenerator {
 	@Inject extension InterfaceUtil
 
 	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT)
+	public boolean versioningComment;
+
+	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -58,7 +62,7 @@ class InterfaceGenerator {
 				headerContainerPath
 
 		for(serviceInterface: fModel.interfaces){
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(serviceInterface) else packageWithVersion
 			val sourcepath = interfacePath + getPackageSourceDirectory(serviceInterface, generateVersioning) + File::separator 
 			val headerpath = headerInterfacePath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersioning) + File::separator 
 

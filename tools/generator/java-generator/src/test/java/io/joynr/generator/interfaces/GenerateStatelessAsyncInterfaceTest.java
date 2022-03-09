@@ -30,9 +30,10 @@ public class GenerateStatelessAsyncInterfaceTest extends AbstractJoynrJavaGenera
 
     private final boolean generateProxy = true;
     private final boolean generateProvider = true;
+    private final boolean useComment = false;
 
     private void testGeneratesStatelessAsyncInterfaceWithAllMethods(final boolean generateVersion) throws Exception {
-        super.setup(generateProxy, generateProvider, generateVersion);
+        super.setup(generateProxy, generateProvider, generateVersion, useComment);
 
         Map<String, String> result = generate("stateless-async-test" + (generateVersion ? "" : "_noversiongeneration")
                 + ".fidl");

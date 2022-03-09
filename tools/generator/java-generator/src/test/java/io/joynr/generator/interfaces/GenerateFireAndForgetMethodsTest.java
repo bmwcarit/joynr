@@ -36,9 +36,10 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
 
     private final boolean generateProxy = true;
     private final boolean generateProvider = true;
+    private final boolean useComment = false;
 
     private void testGenerateFireAndForgetMethod(final boolean generateVersion) throws Exception {
-        super.setup(generateProxy, generateProvider, generateVersion);
+        super.setup(generateProxy, generateProvider, generateVersion, useComment);
 
         Map<String, String> result = generate("fire-and-forget-test" + (generateVersion ? "" : "_noversiongeneration")
                 + ".fidl");
@@ -78,7 +79,7 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
     }
 
     private void testDontGenerateFireAndForgetMethod(final boolean generateVersion) throws Exception {
-        super.setup(generateProxy, generateProvider, generateVersion);
+        super.setup(generateProxy, generateProvider, generateVersion, useComment);
 
         Map<String, String> result = generate("no-fire-and-forget-test"
                 + (generateVersion ? "" : "_noversiongeneration") + ".fidl");
@@ -101,7 +102,7 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
     }
 
     private void testGenerateMixedFireAndForgetMethod(final boolean generateVersion) throws Exception {
-        super.setup(generateProxy, generateProvider, generateVersion);
+        super.setup(generateProxy, generateProvider, generateVersion, useComment);
 
         Map<String, String> result = generate("fire-and-forget-mixed-test"
                 + (generateVersion ? "" : "_noversiongeneration") + ".fidl");
@@ -134,7 +135,7 @@ public class GenerateFireAndForgetMethodsTest extends AbstractJoynrJavaGenerator
     }
 
     private void testGenerateFireAndForgetWithTypes(final boolean generateVersion) throws Exception {
-        super.setup(generateProxy, generateProvider, generateVersion);
+        super.setup(generateProxy, generateProvider, generateVersion, useComment);
 
         Map<String, String> result = generate("fire-and-forget-with-types"
                 + (generateVersion ? "" : "_noversiongeneration") + ".fidl");

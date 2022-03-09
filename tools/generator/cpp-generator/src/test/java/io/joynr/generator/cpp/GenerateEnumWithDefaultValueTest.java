@@ -30,10 +30,11 @@ public class GenerateEnumWithDefaultValueTest extends AbstractJoynrCppGeneratorT
 
     private final boolean generateProxy = true;
     private final boolean generateProvider = true;
+    private final boolean useComment = false;
 
     @Test
     public void testGeneratesEnumwithDefaultValue() throws Exception {
-        super.setup(generateProxy, generateProvider, true);
+        super.setup(generateProxy, generateProvider, true, useComment);
         Map<String, String> result = generate("test-struct-with-default-enum-value.fidl");
         TestResult testResult = new TestResult();
         result.forEach((filename, fileContent) -> {

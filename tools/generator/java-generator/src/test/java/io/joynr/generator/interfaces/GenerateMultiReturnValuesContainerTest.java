@@ -31,9 +31,10 @@ public class GenerateMultiReturnValuesContainerTest extends AbstractJoynrJavaGen
 
     private final boolean generateProxy = true;
     private final boolean generateProvider = true;
+    private final boolean useComment = false;
 
     private void testGenerateMultiReturnMethod(final boolean generateVersion) throws Exception {
-        super.setup(generateProxy, generateProvider, generateVersion);
+        super.setup(generateProxy, generateProvider, generateVersion, useComment);
 
         Map<String, String> result = generate("multi-out-method-test" + (generateVersion ? "" : "_noversiongeneration")
                 + ".fidl");

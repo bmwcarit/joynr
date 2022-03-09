@@ -33,6 +33,10 @@ class JoynrMessagingGenerator {
 	@Inject CppTemplateFactory templateFactory;
 
 	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT)
+	public boolean versioningComment;
+
+	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -44,7 +48,7 @@ class JoynrMessagingGenerator {
 	){
 
 		for(serviceInterface: model.interfaces){
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(serviceInterface) else packageWithVersion
 			val sourcePath = sourceContainerPath + getPackageSourceDirectory(serviceInterface, generateVersioning) + File::separator
 			val headerPath = headerContainerPath + getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersioning) + File::separator
 			val serviceName = serviceInterface.joynrName
