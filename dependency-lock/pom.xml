@@ -51,12 +51,6 @@
 				<module>../javascript</module>
 			</modules>
 		</profile>
-		<profile>
-			<id>android</id>
-			<modules>
-				<module>../android</module>
-			</modules>
-		</profile>
 	</profiles>
 
 	<dependencyManagement>

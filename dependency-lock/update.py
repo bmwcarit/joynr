@@ -124,7 +124,7 @@ class ProjectDependency(object):
     DEFAULT_POM_FILENAME = 'pom.xml'
     MVN_EXEC = 'mvn'
     MVN_SCOPES = ['compile', 'provided', 'runtime', 'test', 'system', 'import']
-    ADDITIONAL_PROFILES = ['javascript', 'android']
+    ADDITIONAL_PROFILES = ['javascript']
 
     def __init__(self, pomDir=DEFAULT_POM_DIR, pomFile=DEFAULT_POM_FILENAME):
         object.__init__(self)
