@@ -44,6 +44,15 @@ namespace joynr
 namespace util
 {
 
+class FileBufWithFileno : public std::filebuf
+{
+public:
+    int fileno()
+    {
+        return _M_file.fd();
+    }
+};
+
 bool fileExists(const std::string& fileName)
 {
     std::ifstream fileToTest(fileName);
@@ -52,7 +61,8 @@ bool fileExists(const std::string& fileName)
 
 void writeToFile(const std::string& fileName,
                  const std::string& strToSave,
-                 std::ios_base::openmode mode)
+                 std::ios_base::openmode mode,
+                 bool syncFile)
 {
     std::ofstream file;
     file.open(fileName, mode);
@@ -63,16 +73,24 @@ void writeToFile(const std::string& fileName,
 
     // append input string to file
     file << strToSave;
+    if (syncFile) {
+        file.flush();
+        int fd = static_cast<FileBufWithFileno*>(file.rdbuf())->fileno();
+        if (fsync(fd) == -1) {
+            throw std::runtime_error("Could not fsync file " + fileName + ": " +
+                                     std::strerror(errno));
+        }
+    }
 }
 
-void saveStringToFile(const std::string& fileName, const std::string& strToSave)
+void saveStringToFile(const std::string& fileName, const std::string& strToSave, bool syncFile)
 {
-    writeToFile(fileName, strToSave, std::ios::out);
+    writeToFile(fileName, strToSave, std::ios::out, syncFile);
 }
 
-void appendStringToFile(const std::string& fileName, const std::string& strToSave)
+void appendStringToFile(const std::string& fileName, const std::string& strToSave, bool syncFile)
 {
-    writeToFile(fileName, strToSave, std::ios::app);
+    writeToFile(fileName, strToSave, std::ios::app, syncFile);
 }
 
 std::string loadStringFromFile(const std::string& fileName)

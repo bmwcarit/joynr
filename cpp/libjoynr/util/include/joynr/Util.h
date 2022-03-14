@@ -98,19 +98,24 @@ std::string loadStringFromFile(const std::string& fileName);
  */
 void writeToFile(const std::string& fileName,
                  const std::string& strToSave,
-                 std::ios_base::openmode mode);
+                 std::ios_base::openmode mode,
+                 bool syncFile);
 
 /*
  * It saves strToSave to the specified fileName.
  * The file does not need to exists.
  */
-void saveStringToFile(const std::string& fileName, const std::string& strToSave);
+void saveStringToFile(const std::string& fileName,
+                      const std::string& strToSave,
+                      bool syncFile = false);
 
 /*
  * It appends strToSave to the specified file.
  * The file does not need to exist.
  */
-void appendStringToFile(const std::string& fileName, const std::string& strToSave);
+void appendStringToFile(const std::string& fileName,
+                        const std::string& strToSave,
+                        bool syncFile = false);
 
 /**
  * Create a Uuid for use in Joynr.
