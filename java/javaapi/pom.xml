@@ -154,16 +154,29 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>testSourcesWithPackageVersion</id>
+						<id>testSourcesWithPackageVersion1</id>
 						<phase>generate-test-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions1.fidl</model>
 							<generationLanguage>java</generationLanguage>
 							<outputPath>${basedir}/src/test/generated</outputPath>
 							<addVersionTo>package</addVersionTo>
+						</configuration>
+					</execution>
+					<execution>
+						<id>testSourcesWithPackageVersion2</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions2.fidl</model>
+							<generationLanguage>java</generationLanguage>
+							<outputPath>${basedir}/src/test/generated</outputPath>
+							<addVersionTo>comment</addVersionTo>
 						</configuration>
 					</execution>
 					<execution>

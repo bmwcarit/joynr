@@ -63,6 +63,10 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 	@Inject extension JoynrJavaGeneratorExtensions
 
 	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT)
+	public boolean versioningComment;
+
+	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -97,7 +101,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		}
 		for (fInterface : fModel.interfaces) {
 			checkVersioningOption(fInterface, packageWithVersion)
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(fInterface) else packageWithVersion
 			if (generateVersioning) {
 				generateVersionedCommunicationModel = true
 			} else {
@@ -119,7 +123,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 		SupportedFrancaFeatureChecker.checkModel(fModel)
 
 		for (fInterface : fModel.interfaces) {
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(fInterface) else packageWithVersion
 			checkVersioningOption(fInterface, packageWithVersion)
 			interfacesGenerator.doGenerate(fInterface, fsa, generateVersioning)
 			if (generateProxyCode) {

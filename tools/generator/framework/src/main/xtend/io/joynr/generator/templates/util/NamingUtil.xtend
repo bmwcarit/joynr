@@ -38,6 +38,7 @@ import org.franca.core.franca.FTypedElement
 class NamingUtil {
 
 	public final static String JOYNR_GENERATOR_PACKAGEWITHVERSION = "JOYNR_GENERATOR_PACKAGEWITHVERSION";
+	public final static String JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT = "JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT";
 
 	@Inject extension TypeUtil;
 

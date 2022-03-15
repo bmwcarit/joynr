@@ -117,13 +117,14 @@ public class InvocationArguments {
         usageString.append("       -templatesEncoding <encoding of templates>\n");
         usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("       " + dumpVersionDefinition() + "\n");
-        usageString.append("         DEPRECATED! Set the #noVersionGeneration comment in the .fidl file instead. See generator documentation for more information.\n");
-        usageString.append("         If this option is 'package' when #noVersionGeneration is set, this leads to an Exception, and the generation will be aborted.\n");
-        usageString.append("         If #noVersionGeneration is not set, this option has to be absent or 'package', else an Exception as well as an abort will occur as well.\n");
-        usageString.append("         Generally, it's best not to use this setting at all since it will be removed very soon.\n");
-        usageString.append("         package: interface/typecollection major versions (if existing) are added as an additional package \"v<version>\"\n");
-        usageString.append("         none: interface/typecollection versions do not affect the generated name and package of interfaces and types\n");
-        usageString.append("         default: none\n");
+        usageString.append("         DEPRECATED! Set the #noVersionGeneration comment in the .fidl file. See generator documentation for more information.\n");
+        usageString.append("         If this option is 'package' when #noVersionGeneration is set, this leads to an error log message.\n");
+        usageString.append("         If #noVersionGeneration is not set, this option has to be absent or 'package', else an error will be logged.\n");
+        usageString.append("         \"package\": interface/typecollection major versions (if existing) are added as an additional package \"v<major version>\"\n");
+        usageString.append("         \"none\": interface/typecollection versions do not affect the generated name and package of interfaces and types\n");
+        usageString.append("         \"comment\": evaluate the #noVersionGeneration comment\n");
+        usageString.append("         default value: \"none\"\n");
+        usageString.append("         Generally, it's best to set the #noVersionGeneration comment and use \"comment\" for this setting.\n");
         usageString.append("         Note:\n");
         usageString.append("           - Consumer and provider applications of one interface have to use the same versioning scheme to be able to communicate with each other.\n");
         usageString.append("           - The feature has been fully tested to work in Java, in C++ and JS only the versioning of interfaces has been tested so far but the versioning of types is expected to work as well.\n");
@@ -148,7 +149,7 @@ public class InvocationArguments {
     }
 
     private static String dumpVersionDefinition() {
-        return "-addVersionTo <package, none>";
+        return "-addVersionTo <package, none, comment>";
     }
 
     private static String dumpGenerationLanguageDefinition() {
@@ -227,6 +228,10 @@ public class InvocationArguments {
         this.generate = generate;
     }
 
+    public void setUseNoVersionGenerationComment() {
+        addVersionTo = "comment";
+    }
+
     public void setAddVersionTo(String addVersionTo) {
         this.addVersionTo = addVersionTo;
     }
@@ -250,6 +255,10 @@ public class InvocationArguments {
 
     public boolean addVersionToPackage() {
         return "package".equalsIgnoreCase(addVersionTo);
+    }
+
+    public boolean useNoVersionGenerationComment() {
+        return "comment".equalsIgnoreCase(addVersionTo);
     }
 
     public void checkArguments() {
@@ -277,8 +286,8 @@ public class InvocationArguments {
                     + dumpRootGeneratorDefinition() + " OR " + dumpGenerationLanguageDefinition());
             errorMessages.append(newLine);
         }
-        if (addVersionTo != null
-                && !(addVersionTo.equalsIgnoreCase("package") || addVersionTo.equalsIgnoreCase("none"))) {
+        if (addVersionTo != null && !("package".equalsIgnoreCase(addVersionTo) || "none".equalsIgnoreCase(addVersionTo)
+                || "comment".equalsIgnoreCase(addVersionTo))) {
             errorMessages.append("- Version inclusion specifier was invalid. Please invoke the generator with the following argument: "
                     + dumpVersionDefinition());
             errorMessages.append(newLine);

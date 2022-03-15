@@ -244,7 +244,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>generate-common-test-classes-with-package-version1</id>
+						<id>generate-common-test-classes-with-package-version-1</id>
 						<phase>generate-test-sources</phase>
 						<goals>
 							<goal>generate</goal>
@@ -256,7 +256,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>generate-common-test-classes-with-package-version2</id>
+						<id>generate-common-test-classes-with-package-version-2</id>
 						<phase>generate-test-sources</phase>
 						<goals>
 							<goal>generate</goal>
@@ -264,7 +264,7 @@
 						<configuration>
 							<model>TestMultipleInterfaceVersions2.fidl</model>
 							<outputPath>${basedir}/src/test/generated</outputPath>
-						        <addVersionTo>package</addVersionTo>
+						        <addVersionTo>comment</addVersionTo>
 						</configuration>
 					</execution>
 					<execution>

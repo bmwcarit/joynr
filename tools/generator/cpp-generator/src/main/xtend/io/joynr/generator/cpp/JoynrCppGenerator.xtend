@@ -64,6 +64,10 @@ class JoynrCppGenerator implements IJoynrGenerator{
 	protected extension JoynrGeneratorExtensions;
 
 	@Inject
+	@Named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT)
+	public boolean versioningComment;
+
+	@Inject
 	@Named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)
 	public boolean packageWithVersion;
 
@@ -105,7 +109,7 @@ class JoynrCppGenerator implements IJoynrGenerator{
 		}
 		for (fInterface : fModel.interfaces) {
 			checkVersioningOption(fInterface, packageWithVersion)
-			val generateVersioning = packageWithVersion
+			val generateVersioning = if (versioningComment) !commentContainsNoVersionGeneration(fInterface) else packageWithVersion
 			if (generateVersioning) {
 				generateVersionedCommunicationModel = true
 			} else {

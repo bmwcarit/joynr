@@ -31,9 +31,10 @@ public class ProviderTest extends AbstractJoynrTSGeneratorTest {
 
     private final boolean generateProxy = false;
     private final boolean generateProvider = true;
+    private final boolean useComment = false;
 
     private void testProviderAndProxyCodeFound(final boolean generateVersion) throws Exception {
-        super.setup(generateProxy, generateProvider, generateVersion);
+        super.setup(generateProxy, generateProvider, generateVersion, useComment);
 
         Map<String, String> result = generate("multi-out-method-test" + (generateVersion ? "" : "_noversiongeneration")
                 + ".fidl");

@@ -51,15 +51,27 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>generate-common-test-classes-with-package-version</id>
+						<id>generate-common-test-classes-with-package-version-1</id>
 						<phase>generate-test-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<model>${basedir}/../../basemodel/src/test/franca-with-version</model>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions1.fidl</model>
 							<outputPath>${basedir}/gen-with-version</outputPath>
 							<addVersionTo>package</addVersionTo>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-common-test-classes-with-package-version-2</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<model>${basedir}/../../basemodel/src/test/franca-with-version/TestMultipleInterfaceVersions2.fidl</model>
+							<outputPath>${basedir}/gen-with-version</outputPath>
+							<addVersionTo>comment</addVersionTo>
 						</configuration>
 					</execution>
 					<execution>

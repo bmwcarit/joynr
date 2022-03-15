@@ -345,9 +345,9 @@ class JoynrGeneratorExtensions {
 	def checkVersioningOption(FInterface fInterface, boolean packageWithVersion) {
 		if(commentContainsNoVersionGeneration(fInterface) && (packageWithVersion)) {
 			println(
-				"ERROR: --addVersionTo option is set " +
+				"ERROR: --addVersionTo option is set" +
 				" despite #noVersionGeneration being set for interface "
-				+ fInterface.name + ". Please decide whether you want to generate versioning and " +
+				+ fInterface.name + ". Please decide whether you want to generate versioning and" +
 				" adjust your settings accordingly (Only package versioning is supported)."
 			)
 		}
