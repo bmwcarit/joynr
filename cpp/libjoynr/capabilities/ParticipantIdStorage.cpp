@@ -151,7 +151,8 @@ void ParticipantIdStorage::writeStoreToFile()
         for (size_t i = entriesWrittenToDisk; i < entries; ++i, ++writtenToDisk) {
             auto entry = writeIndex[i];
             try {
-                joynr::util::appendStringToFile(fileName, entry.toIniForm());
+                // append to file and fsync it
+                joynr::util::appendStringToFile(fileName, entry.toIniForm(), true);
             } catch (const std::runtime_error& ex) {
                 JOYNR_LOG_ERROR(logger(),
                                 "Cannot save ParticipantId to file {}. Next application lifecycle "
