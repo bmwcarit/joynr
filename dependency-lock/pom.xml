@@ -34,9 +34,8 @@
 	<description>joynr.io Dependency lock file</description>
 
 	<modules>
-		<!-- ATTENTION: Order of modules matters! Tools must be build first in
+		<!-- ATTENTION: Order of modules matters! Basemodel must be build first in
 			order to have build-resources available right at the beginning of the build. -->
-		<module>../tools</module>
 		<module>../basemodel</module>
 		<module>../java</module>
 		<module>../cpp</module>

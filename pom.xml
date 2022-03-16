@@ -47,6 +47,9 @@
 	</licenses>
 
 	<modules>
+		<!-- ATTENTION: Order of modules matters! Tools must be build first in
+			order to have build-resources available right at the beginning of the build. -->
+		<module>tools</module>
 		<!-- Lock dependency versions. Modules are included by dependency lock. -->
 		<module>dependency-lock</module>
 	</modules>
