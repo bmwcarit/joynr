@@ -56,18 +56,6 @@
 		<!-- Generated content -->
 		<dependencies>
 			<dependency>
-				<groupId>androidx.databinding</groupId>
-				<artifactId>databinding-common</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>androidx.databinding</groupId>
-				<artifactId>databinding-compiler-common</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
 				<groupId>antlr</groupId>
 				<artifactId>antlr</artifactId>
 				<type>jar</type>
@@ -78,204 +66,6 @@
 				<artifactId>aopalliance</artifactId>
 				<type>jar</type>
 				<version>1.0</version>
-			</dependency>
-			<dependency>
-				<groupId>backport-util-concurrent</groupId>
-				<artifactId>backport-util-concurrent</artifactId>
-				<type>jar</type>
-				<version>3.1</version>
-			</dependency>
-			<dependency>
-				<groupId>classworlds</groupId>
-				<artifactId>classworlds</artifactId>
-				<type>jar</type>
-				<version>1.1-alpha-2</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android</groupId>
-				<artifactId>signflinger</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android</groupId>
-				<artifactId>zipflinger</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.databinding</groupId>
-				<artifactId>baseLibrary</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.support</groupId>
-				<artifactId>support-annotations</artifactId>
-				<type>jar</type>
-				<version>28.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools</groupId>
-				<artifactId>annotations</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools</groupId>
-				<artifactId>common</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools</groupId>
-				<artifactId>dvlib</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools</groupId>
-				<artifactId>repository</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools</groupId>
-				<artifactId>sdk-common</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools</groupId>
-				<artifactId>sdklib</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.analytics-library</groupId>
-				<artifactId>crash</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.analytics-library</groupId>
-				<artifactId>protos</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.analytics-library</groupId>
-				<artifactId>shared</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.analytics-library</groupId>
-				<artifactId>tracker</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>aapt2-proto</artifactId>
-				<type>jar</type>
-				<version>4.0.0-6051327</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>aaptcompiler</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>apksig</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>apkzlib</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>builder</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>builder-model</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>builder-test-api</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>bundletool</artifactId>
-				<type>jar</type>
-				<version>0.13.2</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>gradle</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>gradle-api</artifactId>
-				<type>jar</type>
-				<version>4.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>manifest-merger</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build</groupId>
-				<artifactId>transform-api</artifactId>
-				<type>jar</type>
-				<version>2.0.0-deprecated-use-gradle-api</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build.jetifier</groupId>
-				<artifactId>jetifier-core</artifactId>
-				<type>jar</type>
-				<version>1.0.0-beta09</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.build.jetifier</groupId>
-				<artifactId>jetifier-processor</artifactId>
-				<type>jar</type>
-				<version>1.0.0-beta09</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.ddms</groupId>
-				<artifactId>ddmlib</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.layoutlib</groupId>
-				<artifactId>layoutlib-api</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.android.tools.lint</groupId>
-				<artifactId>lint-gradle-api</artifactId>
-				<type>jar</type>
-				<version>27.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml</groupId>
@@ -302,76 +92,16 @@
 				<version>2.11.3</version>
 			</dependency>
 			<dependency>
-				<groupId>com.google.android</groupId>
-				<artifactId>android</artifactId>
-				<type>jar</type>
-				<version>28</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.auto.value</groupId>
-				<artifactId>auto-value-annotations</artifactId>
-				<type>jar</type>
-				<version>1.6.2</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.code.findbugs</groupId>
-				<artifactId>annotations</artifactId>
-				<type>jar</type>
-				<version>3.0.1u2</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.code.findbugs</groupId>
-				<artifactId>jsr305</artifactId>
-				<type>jar</type>
-				<version>3.0.2</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.code.gson</groupId>
-				<artifactId>gson</artifactId>
-				<type>jar</type>
-				<version>2.8.5</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.crypto.tink</groupId>
-				<artifactId>tink</artifactId>
-				<type>jar</type>
-				<version>1.3.0-rc2</version>
-			</dependency>
-			<dependency>
 				<groupId>com.google.dagger</groupId>
 				<artifactId>dagger</artifactId>
 				<type>jar</type>
 				<version>2.27</version>
 			</dependency>
 			<dependency>
-				<groupId>com.google.errorprone</groupId>
-				<artifactId>error_prone_annotations</artifactId>
-				<type>jar</type>
-				<version>2.3.4</version>
-			</dependency>
-			<dependency>
 				<groupId>com.google.flatbuffers</groupId>
 				<artifactId>flatbuffers-java</artifactId>
 				<type>jar</type>
 				<version>1.10.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>failureaccess</artifactId>
-				<type>jar</type>
-				<version>1.0.1</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<type>jar</type>
-				<version>30.1-jre</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>listenablefuture</artifactId>
-				<type>jar</type>
-				<version>9999.0-empty-to-avoid-conflict-with-guava</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject</groupId>
@@ -398,64 +128,10 @@
 				<version>3.0</version>
 			</dependency>
 			<dependency>
-				<groupId>com.google.j2objc</groupId>
-				<artifactId>j2objc-annotations</artifactId>
-				<type>jar</type>
-				<version>1.3</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.jimfs</groupId>
-				<artifactId>jimfs</artifactId>
-				<type>jar</type>
-				<version>1.1</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.protobuf</groupId>
-				<artifactId>protobuf-java</artifactId>
-				<type>jar</type>
-				<version>3.10.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.protobuf</groupId>
-				<artifactId>protobuf-java-util</artifactId>
-				<type>jar</type>
-				<version>3.10.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.googlecode.json-simple</groupId>
-				<artifactId>json-simple</artifactId>
-				<type>jar</type>
-				<version>1.1</version>
-			</dependency>
-			<dependency>
-				<groupId>com.googlecode.juniversalchardet</groupId>
-				<artifactId>juniversalchardet</artifactId>
-				<type>jar</type>
-				<version>1.0.3</version>
-			</dependency>
-			<dependency>
 				<groupId>com.hivemq</groupId>
 				<artifactId>hivemq-mqtt-client</artifactId>
 				<type>jar</type>
 				<version>1.2.2</version>
-			</dependency>
-			<dependency>
-				<groupId>com.squareup</groupId>
-				<artifactId>javapoet</artifactId>
-				<type>jar</type>
-				<version>1.10.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.squareup</groupId>
-				<artifactId>javawriter</artifactId>
-				<type>jar</type>
-				<version>2.5.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.activation</groupId>
-				<artifactId>javax.activation</artifactId>
-				<type>jar</type>
-				<version>1.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.istack</groupId>
@@ -480,12 +156,6 @@
 				<artifactId>commons-codec</artifactId>
 				<type>jar</type>
 				<version>1.6</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<type>jar</type>
-				<version>2.4</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-logging</groupId>
@@ -560,12 +230,6 @@
 				<version>2.2.19</version>
 			</dependency>
 			<dependency>
-				<groupId>it.unimi.dsi</groupId>
-				<artifactId>fastutil</artifactId>
-				<type>jar</type>
-				<version>7.2.0</version>
-			</dependency>
-			<dependency>
 				<groupId>jakarta.annotation</groupId>
 				<artifactId>jakarta.annotation-api</artifactId>
 				<type>jar</type>
@@ -638,220 +302,10 @@
 				<version>1.12.4</version>
 			</dependency>
 			<dependency>
-				<groupId>net.jcip</groupId>
-				<artifactId>jcip-annotations</artifactId>
-				<type>jar</type>
-				<version>1.0</version>
-			</dependency>
-			<dependency>
 				<groupId>net.sf.ehcache</groupId>
 				<artifactId>ehcache</artifactId>
 				<type>jar</type>
 				<version>2.10.9.2</version>
-			</dependency>
-			<dependency>
-				<groupId>net.sf.jopt-simple</groupId>
-				<artifactId>jopt-simple</artifactId>
-				<type>jar</type>
-				<version>4.9</version>
-			</dependency>
-			<dependency>
-				<groupId>net.sf.kxml</groupId>
-				<artifactId>kxml2</artifactId>
-				<type>jar</type>
-				<version>2.3.0</version>
-			</dependency>
-			<dependency>
-				<groupId>net.sf.proguard</groupId>
-				<artifactId>proguard-base</artifactId>
-				<type>jar</type>
-				<version>6.0.3</version>
-			</dependency>
-			<dependency>
-				<groupId>net.sf.proguard</groupId>
-				<artifactId>proguard-gradle</artifactId>
-				<type>jar</type>
-				<version>6.0.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.antlr</groupId>
-				<artifactId>antlr-runtime</artifactId>
-				<type>jar</type>
-				<version>3.2</version>
-			</dependency>
-			<dependency>
-				<groupId>org.antlr</groupId>
-				<artifactId>antlr4</artifactId>
-				<type>jar</type>
-				<version>4.5.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.antlr</groupId>
-				<artifactId>stringtemplate</artifactId>
-				<type>jar</type>
-				<version>3.2</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-compress</artifactId>
-				<type>jar</type>
-				<version>1.12</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<type>jar</type>
-				<version>3.8.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpclient</artifactId>
-				<type>jar</type>
-				<version>4.5.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpcore</artifactId>
-				<type>jar</type>
-				<version>4.4.10</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpmime</artifactId>
-				<type>jar</type>
-				<version>4.5.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-artifact</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-artifact-manager</artifactId>
-				<type>jar</type>
-				<version>2.2.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-model</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-plugin-api</artifactId>
-				<type>jar</type>
-				<version>2.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-plugin-registry</artifactId>
-				<type>jar</type>
-				<version>2.2.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-profile</artifactId>
-				<type>jar</type>
-				<version>2.2.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-project</artifactId>
-				<type>jar</type>
-				<version>2.2.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-repository-metadata</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven</groupId>
-				<artifactId>maven-settings</artifactId>
-				<type>jar</type>
-				<version>3.6.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-provider-api</artifactId>
-				<type>jar</type>
-				<version>3.3.4</version>
-			</dependency>
-			<dependency>
-				<groupId>org.bouncycastle</groupId>
-				<artifactId>bcpkix-jdk15on</artifactId>
-				<type>jar</type>
-				<version>1.56</version>
-			</dependency>
-			<dependency>
-				<groupId>org.bouncycastle</groupId>
-				<artifactId>bcprov-jdk15on</artifactId>
-				<type>jar</type>
-				<version>1.56</version>
-			</dependency>
-			<dependency>
-				<groupId>org.checkerframework</groupId>
-				<artifactId>checker-qual</artifactId>
-				<type>jar</type>
-				<version>3.5.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.codehaus.plexus</groupId>
-				<artifactId>plexus-container-default</artifactId>
-				<type>jar</type>
-				<version>1.0-alpha-9-stable-1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.codehaus.plexus</groupId>
-				<artifactId>plexus-interpolation</artifactId>
-				<type>jar</type>
-				<version>1.25</version>
-			</dependency>
-			<dependency>
-				<groupId>org.codehaus.plexus</groupId>
-				<artifactId>plexus-utils</artifactId>
-				<type>jar</type>
-				<version>3.2.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.emf</groupId>
-				<artifactId>org.eclipse.emf.common</artifactId>
-				<type>jar</type>
-				<version>2.12.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.emf</groupId>
-				<artifactId>org.eclipse.emf.ecore</artifactId>
-				<type>jar</type>
-				<version>2.12.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.emf</groupId>
-				<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
-				<type>jar</type>
-				<version>2.12.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.jdt</groupId>
-				<artifactId>org.eclipse.jdt.compiler.apt</artifactId>
-				<type>jar</type>
-				<version>1.3.110</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.jdt</groupId>
-				<artifactId>org.eclipse.jdt.compiler.tool</artifactId>
-				<type>jar</type>
-				<version>1.2.101</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.jdt</groupId>
-				<artifactId>org.eclipse.jdt.core</artifactId>
-				<type>jar</type>
-				<version>3.13.102</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
@@ -980,148 +434,10 @@
 				<version>11.0.7</version>
 			</dependency>
 			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.core.commands</artifactId>
+				<groupId>org.eclipse.jetty.websocket</groupId>
+				<artifactId>websocket-servlet</artifactId>
 				<type>jar</type>
-				<version>3.9.200</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.core.contenttype</artifactId>
-				<type>jar</type>
-				<version>3.7.200</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.core.expressions</artifactId>
-				<type>jar</type>
-				<version>3.6.200</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.core.filesystem</artifactId>
-				<type>jar</type>
-				<version>1.7.200</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.core.jobs</artifactId>
-				<type>jar</type>
-				<version>3.10.200</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.core.resources</artifactId>
-				<type>jar</type>
-				<version>3.13.200</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.core.runtime</artifactId>
-				<type>jar</type>
-				<version>3.13.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.equinox.app</artifactId>
-				<type>jar</type>
-				<version>1.4.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.equinox.common</artifactId>
-				<type>jar</type>
-				<version>3.9.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.equinox.preferences</artifactId>
-				<type>jar</type>
-				<version>3.7.200</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.equinox.registry</artifactId>
-				<type>jar</type>
-				<version>3.9.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.osgi</artifactId>
-				<type>jar</type>
-				<version>3.13.200</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.text</artifactId>
-				<type>jar</type>
-				<version>3.8.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>org.eclipse.xtend.core</artifactId>
-				<type>jar</type>
-				<version>2.16.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>org.eclipse.xtend.lib</artifactId>
-				<type>jar</type>
-				<version>2.16.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtend</groupId>
-				<artifactId>org.eclipse.xtend.lib.macro</artifactId>
-				<type>jar</type>
-				<version>2.16.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>org.eclipse.xtext</artifactId>
-				<type>jar</type>
-				<version>2.16.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>org.eclipse.xtext.common.types</artifactId>
-				<type>jar</type>
-				<version>2.16.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>org.eclipse.xtext.util</artifactId>
-				<type>jar</type>
-				<version>2.16.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>org.eclipse.xtext.xbase</artifactId>
-				<type>jar</type>
-				<version>2.16.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.xtext</groupId>
-				<artifactId>org.eclipse.xtext.xbase.lib</artifactId>
-				<type>jar</type>
-				<version>2.16.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.franca</groupId>
-				<artifactId>org.franca.core</artifactId>
-				<type>jar</type>
-				<version>0.13.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.franca</groupId>
-				<artifactId>org.franca.core.dsl</artifactId>
-				<type>jar</type>
-				<version>0.13.1</version>
-			</dependency>
-			<dependency>
-				<groupId>org.franca</groupId>
-				<artifactId>org.franca.deploymodel.dsl</artifactId>
-				<type>jar</type>
-				<version>0.13.1</version>
+				<version>11.0.7</version>
 			</dependency>
 			<dependency>
 				<groupId>org.glassfish.jaxb</groupId>
@@ -1352,58 +668,10 @@
 				<version>2.1.2</version>
 			</dependency>
 			<dependency>
-				<groupId>org.jdom</groupId>
-				<artifactId>jdom2</artifactId>
-				<type>jar</type>
-				<version>2.0.6</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jetbrains</groupId>
 				<artifactId>annotations</artifactId>
 				<type>jar</type>
 				<version>16.0.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jetbrains.kotlin</groupId>
-				<artifactId>kotlin-reflect</artifactId>
-				<type>jar</type>
-				<version>1.3.72</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jetbrains.kotlin</groupId>
-				<artifactId>kotlin-stdlib</artifactId>
-				<type>jar</type>
-				<version>1.3.61</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jetbrains.kotlin</groupId>
-				<artifactId>kotlin-stdlib-common</artifactId>
-				<type>jar</type>
-				<version>1.3.61</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jetbrains.kotlin</groupId>
-				<artifactId>kotlin-stdlib-jdk7</artifactId>
-				<type>jar</type>
-				<version>1.3.61</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jetbrains.kotlin</groupId>
-				<artifactId>kotlin-stdlib-jdk8</artifactId>
-				<type>jar</type>
-				<version>1.3.61</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jetbrains.trove4j</groupId>
-				<artifactId>trove4j</artifactId>
-				<type>jar</type>
-				<version>20160824</version>
-			</dependency>
-			<dependency>
-				<groupId>org.json</groupId>
-				<artifactId>json</artifactId>
-				<type>jar</type>
-				<version>20180813</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jvnet.staxex</groupId>
@@ -1448,12 +716,6 @@
 				<version>9.2</version>
 			</dependency>
 			<dependency>
-				<groupId>org.ow2.asm</groupId>
-				<artifactId>asm-util</artifactId>
-				<type>jar</type>
-				<version>7.0</version>
-			</dependency>
-			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
 				<type>jar</type>
@@ -1464,12 +726,6 @@
 				<artifactId>reactive-streams</artifactId>
 				<type>jar</type>
 				<version>1.0.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.reflections</groupId>
-				<artifactId>reflections</artifactId>
-				<type>jar</type>
-				<version>0.9.10</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
