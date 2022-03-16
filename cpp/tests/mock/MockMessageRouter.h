@@ -52,16 +52,16 @@ public:
     {
         std::ignore = ioService;
         using ::testing::_;
-        EXPECT_CALL(
+        ON_CALL(
                 *this,
                 addNextHop(_,_,_,_,_,_,_)
         )
-                .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
-        EXPECT_CALL(
+                .WillByDefault(testing::Invoke(this, &MockMessageRouter::invokeAddNextHopOnSuccessFct));
+        ON_CALL(
                 *this,
                 removeNextHop(_,_,_)
         )
-                .WillRepeatedly(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
+                .WillByDefault(testing::Invoke(this, &MockMessageRouter::invokeRemoveNextHopOnSuccessFct));
     }
 
     MOCK_METHOD2(route, void(std::shared_ptr<joynr::ImmutableMessage> message, std::uint32_t tryCount));
