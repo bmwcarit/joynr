@@ -124,7 +124,7 @@ class ProjectDependency(object):
     DEFAULT_POM_FILENAME = 'pom.xml'
     MVN_EXEC = 'mvn'
     MVN_SCOPES = ['compile', 'provided', 'runtime', 'test', 'system', 'import']
-    ADDITIONAL_PROFILES = ['javascript', 'android']
+    ADDITIONAL_PROFILES = ['javascript']
 
     def __init__(self, pomDir=DEFAULT_POM_DIR, pomFile=DEFAULT_POM_FILENAME):
         object.__init__(self)
@@ -145,7 +145,19 @@ class ProjectDependency(object):
                     ProjectDependency.MVN_EXEC, mvnCall.stdout, mvnCall.stderr))
 
             self.__cmd = [ProjectDependency.MVN_EXEC, '-f', pomFile,
-                          '-pl', '"-io.joynr.examples:radio-app"',
+                          '-pl', '"-io.joynr.examples:radio-app'
+                          ',-io.joynr:tools'
+                          ',-io.joynr.tools:build-resources'
+                          ',-io.joynr.tools:license-check'
+                          ',-io.joynr.tools:generator'
+                          ',-io.joynr.tools.generator:generator-framework'
+                          ',-io.joynr.tools.generator:cpp-generator'
+                          ',-io.joynr.tools.generator:java-generator'
+                          ',-io.joynr.tools.generator:js-generator'
+                          ',-io.joynr.tools.generator:joynr-generator-maven-plugin'
+                          ',-io.joynr.tools.generator:joynr-generator-standalone'
+                          ',-io.joynr.tools.generator:joynr-generator-npm'
+                          ',-io.joynr.tools.generator:joynr-generator-npm-test"',
                           '-P', ','.join(ProjectDependency.ADDITIONAL_PROFILES)]
         except Exception as e:
             self.__log.error(

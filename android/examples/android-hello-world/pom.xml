@@ -20,20 +20,21 @@
 	xmlns="http://maven.apache.org/POM/4.0.0"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<groupId>io.joynr.examples</groupId>
-	<artifactId>android</artifactId>
+	<artifactId>android-hello-world</artifactId>
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
-		<groupId>io.joynr</groupId>
+		<groupId>io.joynr.android</groupId>
 		<artifactId>examples</artifactId>
 		<version>1.19.9-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modules>
-		<module>android-hello-world</module>
-		<module>android-hello-world-binder</module>
+		<module>android-hello-world-consumer</module>
+		<module>android-hello-world-provider</module>
 	</modules>
+
 </project>

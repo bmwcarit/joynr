@@ -25,9 +25,9 @@
 
 	<parent>
 		<groupId>io.joynr</groupId>
-		<artifactId>dependency-lock</artifactId>
+		<artifactId>joynr</artifactId>
 		<version>1.19.9-SNAPSHOT</version>
-		<relativePath>../dependency-lock/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<modules>
@@ -35,6 +35,7 @@
 		<module>joynr-android-binder-runtime</module>
 		<module>libjoynr-android-websocket-runtime</module>
 		<module>libjoynr-android-integration-tests</module>
+		<module>examples</module>
 	</modules>
 
 	<build>
