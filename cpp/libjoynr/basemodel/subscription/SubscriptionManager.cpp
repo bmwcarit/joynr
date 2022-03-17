@@ -392,9 +392,8 @@ void SubscriptionManager::touchSubscriptionState(const std::string& subscription
         return;
     }
     std::shared_ptr<Subscription> subscription(_subscriptions.value(subscriptionId));
-    assert(subscription);
     if (!subscription) {
-        JOYNR_LOG_FATAL(
+        JOYNR_LOG_ERROR(
                 logger(),
                 "touchSubscriptionState: internal error, nullptr found for subscription with id {}",
                 subscriptionId);
@@ -421,9 +420,8 @@ std::shared_ptr<ISubscriptionCallback> SubscriptionManager::getSubscriptionCallb
     }
 
     std::shared_ptr<Subscription> subscription(_subscriptions.value(subscriptionId));
-    assert(subscription);
     if (!subscription) {
-        JOYNR_LOG_FATAL(logger(),
+        JOYNR_LOG_ERROR(logger(),
                         "getSubscriptionCallback: internal error, nullptr found for subscription "
                         "with id {}",
                         subscriptionId);
