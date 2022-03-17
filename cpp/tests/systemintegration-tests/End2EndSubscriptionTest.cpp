@@ -215,8 +215,8 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration)
     // Use a semaphore to wait for calls to the mock listener
     std::string subscriptionIdFromListener;
     std::string subscriptionIdFromFuture;
-    ON_CALL(*mockListener, onSubscribed(_)).WillByDefault(
-            DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+    EXPECT_CALL(*mockListener, onSubscribed(_))
+                .WillOnce(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
 
@@ -255,8 +255,9 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate)
     // Use a semaphore to wait for calls to the mock listener
     std::string subscriptionIdFromListener;
     std::string subscriptionIdFromFuture;
-    ON_CALL(*mockListener, onSubscribed(_)).WillByDefault(
-            DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+    EXPECT_CALL(*mockListener, onSubscribed(_))
+                .Times(2)
+                .WillRepeatedly(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
 
