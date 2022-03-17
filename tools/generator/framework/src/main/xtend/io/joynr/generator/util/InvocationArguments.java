@@ -113,26 +113,27 @@ public class InvocationArguments {
         usageString.append("       " + dumpRootGeneratorDefinition() + " OR\n");
         usageString.append("       " + dumpGenerationLanguageDefinition() + "\n");
         usageString.append("      Optional: \n");
-        usageString.append("       -templatesDir <folder name of templates directory>\n");
-        usageString.append("       -templatesEncoding <encoding of templates>\n");
-        usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("       " + dumpVersionDefinition() + "\n");
-        usageString.append("         DEPRECATED! Set the #noVersionGeneration comment in the .fidl file. See generator documentation for more information.\n");
-        usageString.append("         If this option is 'package' when #noVersionGeneration is set, this leads to an error log message.\n");
-        usageString.append("         If #noVersionGeneration is not set, this option has to be absent or 'package', else an error will be logged.\n");
-        usageString.append("         \"package\": interface/typecollection major versions (if existing) are added as an additional package \"v<major version>\"\n");
-        usageString.append("         \"none\": interface/typecollection versions do not affect the generated name and package of interfaces and types\n");
+        usageString.append("         specify how the major version of Franca interfaces and typecollections\n");
+        usageString.append("             shall affect the generated package of interfaces and types:\n");
         usageString.append("         \"comment\": evaluate the #noVersionGeneration comment\n");
-        usageString.append("         default value: \"none\"\n");
-        usageString.append("         Generally, it's best to set the #noVersionGeneration comment and use \"comment\" for this setting.\n");
-        usageString.append("         Note:\n");
-        usageString.append("           - Consumer and provider applications of one interface have to use the same versioning scheme to be able to communicate with each other.\n");
-        usageString.append("           - The feature has been fully tested to work in Java, in C++ and JS only the versioning of interfaces has been tested so far but the versioning of types is expected to work as well.\n");
+        usageString.append("         \"package\": interface/typecollection major versions (if existing) are\n");
+        usageString.append("             added as an additional package \"v<major version>\"\n");
+        usageString.append("         \"none\": interface/typecollection versions do not affect the generated\n");
+        usageString.append("             name and package of interfaces and types\n");
+        usageString.append("         default value: \"none\" (for backwards compatibility)\n");
+        usageString.append("         NOTES:\n");
+        usageString.append("           - Please use addVersionTo=comment and set the #noVersionGeneration\n");
+        usageString.append("             comment in your Franca interfaces (.fidl files) where appropriate.\n");
+        usageString.append("             The evaluation of the #noVersionGeneration comment will become the\n");
+        usageString.append("             default soon.\n");
+        usageString.append("           - Consumer and provider applications of one interface have to use the\n");
+        usageString.append("             same versioning scheme to be able to communicate with each other.\n");
+        usageString.append("       -target proxy|provider|both:\n");
+        usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("      Optional, C++ only: \n");
         usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
         usageString.append("       -includePrefix <prefix to use in include statements>\n");
-        usageString.append("      Optional:\n");
-        usageString.append("       -target proxy|provider|both:\n");
         return usageString.toString();
     }
 
@@ -149,7 +150,7 @@ public class InvocationArguments {
     }
 
     private static String dumpVersionDefinition() {
-        return "-addVersionTo <package, none, comment>";
+        return "-addVersionTo <comment, package, none>";
     }
 
     private static String dumpGenerationLanguageDefinition() {
@@ -167,9 +168,6 @@ public class InvocationArguments {
                 setGenerate(args[i + 1].equalsIgnoreCase("true"));
                 i++;
             } else if (args[i].equalsIgnoreCase("-addVersionTo")) {
-                // Warning temporarily disabled as --addVersionTo is supposed to be set again
-                // logger.warn("DEPRECATION WARNING: Usage of outdated -addVersionTo option detected."
-                //        + " Set the #noVersionGeneration comment in fidl files instead.");
                 setAddVersionTo(args[i + 1]);
                 i++;
             } else if (args[i].equalsIgnoreCase("-generationId")) {
