@@ -37,7 +37,7 @@ android {
 }
 
 ext {
-    joynr_version = '1.19.9-SNAPSHOT'
+    joynr_version = '1.19.9'
 }
 
 dependencies {
