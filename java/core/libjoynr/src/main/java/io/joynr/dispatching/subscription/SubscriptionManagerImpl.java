@@ -25,9 +25,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -538,13 +538,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
      * @return Returns true if further action is required (i.e. sending of SubscriptionStop
      *         in case of UnicastBroadcast), false otherwise (in case of Multicast)
      */
-    private boolean removeSubscription(String subscriptionId) {
+    private boolean removeSubscription(String subscriptionId, boolean cancelSubscriptionEndFuture) {
         if (missedPublicationTimers.containsKey(subscriptionId)) {
             missedPublicationTimers.get(subscriptionId).cancel();
             missedPublicationTimers.remove(subscriptionId);
         }
         ScheduledFuture<?> future = subscriptionEndFutures.remove(subscriptionId);
-        if (future != null) {
+        if (cancelSubscriptionEndFuture && future != null) {
             future.cancel(true);
         }
         subscriptionStates.remove(subscriptionId);
@@ -571,6 +571,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
             return false;
         }
         return true;
+    }
+
+    private boolean removeSubscription(String subscriptionId) {
+        return removeSubscription(subscriptionId, true);
     }
 
     private Class<?>[] getParameterTypesForBroadcastPublication(Object[] broadcastValues) {
@@ -602,7 +606,13 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         @Override
         public void run() {
             // subscription expired, stop the missed publication timer and remove it from the maps
-            removeSubscription(subscriptionId);
+            try {
+                // do not cancel/interrupt the SubscriptionEndRunnable
+                removeSubscription(subscriptionId, false);
+                logger.trace("SubscriptionEndRunnable removed expired subscription id={}", subscriptionId);
+            } catch (Exception e) {
+                logger.error("Error running SubscriptionEndRunnable for subscription id={}", subscriptionId, e);
+            }
         }
 
     }
