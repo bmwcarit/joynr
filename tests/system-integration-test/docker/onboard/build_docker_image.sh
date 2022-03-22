@@ -109,7 +109,7 @@ do
 	shift
 done
 
-JAVA_CPP_BUILD_DOCKER_IMAGE=joynr-cpp-gcc:${DOCKER_IMAGE_VERSION}
+JAVA_CPP_BUILD_DOCKER_IMAGE=joynr-ilt-gcc:${DOCKER_IMAGE_VERSION}
 JS_BUILD_DOCKER_IMAGE=joynr-ilt-gcc:${DOCKER_IMAGE_VERSION}
 
 function execute_in_docker {
@@ -145,15 +145,15 @@ if [ $NO_CPP_BUILD ]; then
 else
 	# assume joynr JAVA and joynr-generator-standalone are already built and C++ code has been generated
 
-	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-MoCOCrW-package.sh 2>&1"'
+	execute_in_docker '"echo \"Building and packaging MoCOCrW\" && . /etc/profile && /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-build-MoCOCrW-package.sh 2>&1"'
 
-	execute_in_docker '"echo \"Building and packaging mosquitto\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-mosquitto-package.sh 2>&1"'
+	execute_in_docker '"echo \"Building and packaging mosquitto\" && . /etc/profile && /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-build-mosquitto-package.sh 2>&1"'
 
-	execute_in_docker '"echo \"Building and packaging smrf\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"'
+	execute_in_docker '"echo \"Building and packaging smrf\" && . /etc/profile && /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-build-smrf-rpm-package.sh 2>&1"'
 
-	execute_in_docker '"echo \"Building joynr c++\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs '"${JOBS}"' --enableclangformatter OFF --buildtests OFF 2>&1"'
+	execute_in_docker '"echo \"Building joynr c++\" && . /etc/profile && /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-clean-build.sh --additionalcmakeargs \"-DUSE_PLATFORM_MUESLI=OFF\" --jobs '"${JOBS}"' --enableclangformatter OFF --buildtests OFF 2>&1"'
 
-	execute_in_docker '"echo \"Packaging joynr c++\" && . /etc/profile && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"'
+	execute_in_docker '"echo \"Packaging joynr c++\" && . /etc/profile && /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-build-rpm-package.sh --rpm-spec tests/system-integration-test/docker/onboard/joynr-without-test.spec 2>&1"'
 
 fi
 
@@ -161,7 +161,7 @@ if [ $NO_CPP_TEST_BUILD ]; then
 	echo "Skipping C++ test build ..."
 else
 	# dummyKeychain is also built here
-	execute_in_docker '"echo \"Building C++ System Integration Tests\" && . /etc/profile && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-cpp-base/scripts/build/cpp-build-tests.sh system-integration-test --jobs '"${JOBS}"' --clangformatter OFF 2>&1"'
+	execute_in_docker '"echo \"Building C++ System Integration Tests\" && . /etc/profile && export JOYNR_INSTALL_DIR=/data/build/joynr && echo \"dir: \$JOYNR_INSTALL_DIR\" && /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-build-tests.sh system-integration-test --jobs '"${JOBS}"' --clangformatter OFF 2>&1"'
 fi
 
 if [ $NO_NODE_BUILD ]; then
@@ -200,8 +200,8 @@ find  $CPP_BUILDDIR/smrf/package/RPM/x86_64/ -iregex ".*smrf-[0-9].*rpm" -exec c
 cp $JOYNR_REPODIR/docker/build/MoCOCrW.tar.gz $DOCKER_BUILDDIR/MoCOCrW.tar.gz
 cp $JOYNR_REPODIR/docker/build/mosquitto.tar.gz $DOCKER_BUILDDIR/mosquitto.tar.gz
 
-cp -R $JOYNR_REPODIR/docker/joynr-base/scripts/docker/gen-certificates.sh ${DOCKER_BUILDDIR}
-cp -R $JOYNR_REPODIR/docker/joynr-base/openssl.conf ${DOCKER_BUILDDIR}
+cp -R $JOYNR_REPODIR/docker/joynr-ilt-gcc/scripts/docker/gen-certificates.sh ${DOCKER_BUILDDIR}
+cp -R $JOYNR_REPODIR/docker/joynr-ilt-gcc/openssl.conf ${DOCKER_BUILDDIR}
 
 CURRENTDATE=`date`
 cp onboard-cc-messaging.settings ${DOCKER_BUILDDIR}
