@@ -59,11 +59,6 @@
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	<build>
 		<pluginManagement>
@@ -77,11 +72,6 @@
 							<goals>
 								<goal>analyze-only</goal>
 							</goals>
-							<configuration>
-								<ignoredUnusedDeclaredDependencies>
-									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-log4j12</ignoredUnusedDeclaredDependency>
-								</ignoredUnusedDeclaredDependencies>
-							</configuration>
 						</execution>
 					</executions>
 				</plugin>

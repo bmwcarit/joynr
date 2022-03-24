@@ -414,7 +414,8 @@
 		<franca.version>0.13.1</franca.version>
 		<xtend.version>2.16.0</xtend.version>
 		<xtext.version>2.16.0</xtext.version>
-		<slf4j.version>1.7.28</slf4j.version>
+		<slf4j.version>1.7.36</slf4j.version>
+		<log4j.version>2.17.2</log4j.version>
 		<smrf.version>0.3.3</smrf.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		<surefire.version>3.0.0-M3</surefire.version>
@@ -629,24 +630,29 @@
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>net.logstash.log4j</groupId>
-				<artifactId>jsonevent-layout</artifactId>
-				<version>1.5</version>
-			</dependency>
-			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${slf4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-log4j12</artifactId>
+				<artifactId>slf4j-jdk14</artifactId>
 				<version>${slf4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-jdk14</artifactId>
-				<version>${slf4j.version}</version>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-slf4j-impl</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-core</artifactId>
+				<version>${log4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<version>${log4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.ning</groupId>
