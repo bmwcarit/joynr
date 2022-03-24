@@ -149,7 +149,7 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
     }
 
     private void cancelExistingSubscriptionEndRunnable(String subscriptionId) {
-        ScheduledFuture<?> scheduledFuture = subscriptionEndFutures.get(subscriptionId);
+        ScheduledFuture<?> scheduledFuture = subscriptionEndFutures.remove(subscriptionId);
         if (scheduledFuture != null) {
             scheduledFuture.cancel(false);
         }
