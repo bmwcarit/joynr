@@ -21,10 +21,14 @@ package io.joynr.dispatching.subscription;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -54,7 +58,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -218,13 +224,11 @@ public class SubscriptionManagerTest {
         };
     }
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void registerSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
-                                       JsonGenerationException, JsonMappingException, IOException {
+    private void registerAttributeSubscription() {
         class IntegerReference extends TypeReference<Integer> {
         }
 
+        @SuppressWarnings("unchecked")
         Future<String> future = mock(Future.class);
         AttributeSubscribeInvocation subscriptionRequest = new AttributeSubscribeInvocation(attributeName,
                                                                                             IntegerReference.class,
@@ -236,6 +240,12 @@ public class SubscriptionManagerTest {
                                                           new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry)),
                                                           subscriptionRequest);
         subscriptionId = subscriptionRequest.getSubscriptionId();
+    }
+
+    @Test
+    public void registerSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
+                                       JsonGenerationException, JsonMappingException, IOException {
+        registerAttributeSubscription();
 
         verify(attributeSubscriptionDirectory).put(Mockito.anyString(), Mockito.eq(attributeSubscriptionCallback));
         verify(subscriptionStates).put(Mockito.anyString(), argThat(matchesSubscriptionStateContainingProxy));
@@ -253,6 +263,39 @@ public class SubscriptionManagerTest {
                                                    eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
                                                    any(SubscriptionRequest.class),
                                                    any(MessagingQos.class));
+    }
+
+    @Test
+    public void subscriptionEndRunnableDoesNotInterruptItself() throws JoynrSendBufferFullException,
+                                                                JoynrMessageNotSentException, JsonGenerationException,
+                                                                JsonMappingException, IOException {
+        ScheduledFuture<?> future = mock(ScheduledFuture.class);
+        //doReturn(future).when(subscriptionEndFutures).remove(eq(subscriptionId));
+        doAnswer(new Answer<ScheduledFuture<?>>() {
+            int call = 0;
+
+            @Override
+            public ScheduledFuture<?> answer(InvocationOnMock invocation) throws Throwable {
+                call++;
+                if (call == 2) {
+                    return future;
+                }
+                return null;
+            }
+
+        }).when(subscriptionEndFutures).remove(anyString());
+
+        registerAttributeSubscription();
+        verify(subscriptionEndFutures).remove(eq(subscriptionId));
+
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(subscriptionEndFutures, Mockito.times(1)).put(Mockito.eq(subscriptionId), any());
+        verify(cleanupScheduler).schedule(runnableCaptor.capture(), anyLong(), Mockito.eq(TimeUnit.MILLISECONDS));
+
+        Runnable r = runnableCaptor.getValue();
+        r.run();
+        verify(subscriptionEndFutures, times(2)).remove(eq(subscriptionId));
+        verify(future, times(0)).cancel(anyBoolean());
     }
 
     @Test
@@ -340,7 +383,6 @@ public class SubscriptionManagerTest {
         testRegisterMulticastSubscription(null, "one", "two", "three");
     }
 
-    @SuppressWarnings("unchecked")
     private void testRegisterMulticastSubscription(String subscriptionId, String... partitions) throws Exception {
         Method method = TestMulticastSubscriptionInterface.class.getMethod("subscribeToMyMulticast", new Class[0]);
         BroadcastSubscriptionListener listener = spy(new BroadcastSubscriptionListener() {
@@ -398,6 +440,8 @@ public class SubscriptionManagerTest {
     @Test
     public void unregisterSubscription() throws JoynrSendBufferFullException, JoynrMessageNotSentException,
                                          JsonGenerationException, JsonMappingException, IOException {
+        ScheduledFuture<?> future = mock(ScheduledFuture.class);
+        doReturn(future).when(subscriptionEndFutures).remove(eq(subscriptionId));
 
         when(subscriptionStates.get(subscriptionId)).thenReturn(subscriptionState);
         when(missedPublicationTimers.containsKey(subscriptionId)).thenReturn(true);
@@ -409,6 +453,8 @@ public class SubscriptionManagerTest {
 
         verify(subscriptionStates).remove(eq(subscriptionId));
         verify(subscriptionState).stop();
+        verify(subscriptionEndFutures).remove(eq(subscriptionId));
+        verify(future).cancel(eq(true));
 
         verify(dispatcher,
                times(1)).sendSubscriptionStop(Mockito.eq(fromParticipantId),

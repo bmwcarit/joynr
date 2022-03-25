@@ -180,7 +180,7 @@ public class RequestReplyManagerImpl
             try {
                 response = responseFuture.get();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("Request {} interrupted unexpectedly.", request.getRequestReplyId(), e);
                 throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
                         + " interrupted unexpectedly.");
             } catch (ExecutionException e) {
