@@ -11,7 +11,7 @@ images which are used by the `docker-compose.yml` script contained in this direc
 Joynr has a variety of docker images. The standalone test needs `joynr-complete-with-joynr` image.
 Because joynr, its libraries/runtimes along with joynr dependencies are already installed in it.
 However, the images `joynr-complete-with-joynr` depends on another image, namely
-`joynr-complete-deps`, which depends on other images.
+`joynr-ilt-gcc`, which depends on other images.
 
 The easiest way to build all necessary images is to run the `joynr-docker` script with the `build`
 parameter: `$JOYNR_HOME/docker/joynr-docker build`. Afterwards, the `joynr-complete-with-joynr`
