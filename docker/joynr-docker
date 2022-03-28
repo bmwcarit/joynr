@@ -55,7 +55,6 @@ declare -a normalBuildImages=(
     "joynr-cpp-gcc"
     "joynr-cpp-clang"
     "joynr-ilt-gcc"
-    "joynr-complete-deps"
     "joynr-runtime-environment-base"
     "joynr-java-8"
 )

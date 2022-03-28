@@ -15,14 +15,14 @@ sudo docker run --rm --sig-proxy -e DEV_UID="$(id -u)" \
     -v <FULL_PATH_TO_MAVEN_DIRECTORY>:/home/joynr/.m2 \
     -v <FULL_PATH_TO_BUILD_DIRECTORY>:/data/build \
     joynr-cpp-gcc \
-    /data/src/docker/joynr-cpp-base/scripts/build/cpp-generate.sh
+    /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-generate.sh
 
 sudo docker run --rm --sig-proxy -e DEV_UID="$(id -u)" \
     -v <FULL_PATH_TO_JOYNR_SOURCES>:/data/src \
     -v <FULL_PATH_TO_MAVEN_DIRECTORY>:/home/joynr/.m2 \
     -v <FULL_PATH_TO_BUILD_DIRECTORY>:/data/build \
     joynr-cpp-gcc \
-    /data/src/docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh --jobs 4
+    /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-clean-build.sh --jobs 4
 
 sudo docker run --rm --sig-proxy -e DEV_UID="$(id -u)" \
     -e JOYNR_INSTALL_DIR=/data/build/joynr \
@@ -30,12 +30,12 @@ sudo docker run --rm --sig-proxy -e DEV_UID="$(id -u)" \
     -v <FULL_PATH_TO_MAVEN_DIRECTORY>:/home/joynr/.m2 \
     -v <FULL_PATH_TO_BUILD_DIRECTORY>:/data/build \
     joynr-cpp-gcc \
-    /data/src/docker/joynr-cpp-base/scripts/build/cpp-radio-app.sh --jobs 4
+    /data/src/docker/joynr-ilt-gcc/scripts/build/cpp-radio-app.sh --jobs 4
 ```
 
-As an alternative you can also use the joynr-cpp-clang docker image.
+As an alternative you can also use the joynr-ilt-gcc docker image.
 
-This will start the docker container **joynr-cpp-gcc** or **joynr-cpp-clang** and execute the scripts **docker/joynr-cpp-base/scripts/build/cpp-generate.sh** and **docker/joynr-cpp-base/scripts/build/cpp-clean-build.sh**. Optionally you can also run **docker/joynr-cpp-base/scripts/build/cpp-radio-app.sh** to build the C++ radio app example.
+This will start the docker container **joynr-ilt-gcc** and execute the scripts **docker/joynr-ilt-gcc/scripts/build/cpp-generate.sh** and **docker/joynr-ilt-gcc/scripts/build/cpp-clean-build.sh**. Optionally you can also run **docker/joynr-ilt-gcc/scripts/build/cpp-radio-app.sh** to build the C++ radio app example.
 
 joynr uses Maven for generating C++ code. You can use your own local Maven repository within the docker container by replacing **&lt;FULL_PATH_TO_HOST_MAVEN_DIRECTORY&gt;** with the absolute path to your Maven repo. This will then be made available to the build job, mounted at **/home/joynr/.m2** in the docker container. As for building joynr Java, the path to the joynr sources **&lt;FULL_PATH_TO_JOYNR_SOURCES&gt;** has to be provided to be accessible from the docker container at **/data/src**. Additionally, a directory for the build results **&lt;FULL_PATH_TO_BUILD_DIRECTORY&gt;** has to be provided.
 
