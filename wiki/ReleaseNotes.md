@@ -2,6 +2,26 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.18.2.1 **[C++ only version]**
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed a bug where GuidedProxyBuilder failed to creata a proxy if interface minor
+  number of provider was greater than interface minor number of proxy while major number was
+  identical on both sides meaning the provider should have been considered to be compatible.
+* **[C++]** Fixed memory leak in `Directory.h`
+
 # joynr 1.18.2
 
 ## API-relevant Changes
