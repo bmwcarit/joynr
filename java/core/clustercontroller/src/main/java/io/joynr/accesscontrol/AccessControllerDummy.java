@@ -20,6 +20,7 @@ package io.joynr.accesscontrol;
 
 import joynr.ImmutableMessage;
 import joynr.infrastructure.DacTypes.TrustLevel;
+import joynr.types.DiscoveryEntry;
 
 /**
  * Will allow all permission checks on libjoynr side
@@ -33,7 +34,7 @@ public class AccessControllerDummy implements AccessController {
     }
 
     @Override
-    public boolean hasProviderPermission(String userId, TrustLevel trustLevel, String domain, String interfaceName) {
+    public boolean hasProviderPermission(String userId, TrustLevel trustLevel, DiscoveryEntry discoveryEntry) {
         return true;
     }
 }

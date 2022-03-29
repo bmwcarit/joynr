@@ -129,10 +129,6 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                       final String interfaceName,
                                       final TrustLevel trustLevel,
                                       final GetConsumerPermissionCallback callback) {
-        final UserDomainInterfaceOperationKey subscriptionKey = new UserDomainInterfaceOperationKey(null,
-                                                                                                    domain,
-                                                                                                    interfaceName,
-                                                                                                    null);
         logger.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
 
         // Handle special cases which should not require a lookup or a subscription
@@ -142,11 +138,8 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
             return;
         }
 
-        if (subscriptionsMap.get(subscriptionKey) == null) {
+        getConsumerPermissionWithCachedEntries(userId, domain, interfaceName, trustLevel, callback);
 
-        } else {
-            getConsumerPermissionWithCachedEntries(userId, domain, interfaceName, trustLevel, callback);
-        }
     }
 
     private void getConsumerPermissionWithCachedEntries(String userId,
@@ -192,23 +185,26 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                             String operation,
                                             TrustLevel trustLevel) {
         logger.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
-        MasterAccessControlEntry masterAce;
-        MasterAccessControlEntry mediatorAce;
-        OwnerAccessControlEntry ownerAce;
+        Optional<MasterAccessControlEntry> masterAce;
+        Optional<MasterAccessControlEntry> mediatorAce;
+        Optional<OwnerAccessControlEntry> ownerAce;
 
         synchronized (localDomainAccessStore) {
-            masterAce = localDomainAccessStore.getMasterAccessControlEntry(userId, domain, interfaceName, operation);
-            mediatorAce = localDomainAccessStore.getMediatorAccessControlEntry(userId,
-                                                                               domain,
-                                                                               interfaceName,
-                                                                               operation);
-            ownerAce = localDomainAccessStore.getOwnerAccessControlEntry(userId, domain, interfaceName, operation);
+            masterAce = Optional.ofNullable(localDomainAccessStore.getMasterAccessControlEntry(userId,
+                                                                                               domain,
+                                                                                               interfaceName,
+                                                                                               operation));
+            mediatorAce = Optional.ofNullable(localDomainAccessStore.getMediatorAccessControlEntry(userId,
+                                                                                                   domain,
+                                                                                                   interfaceName,
+                                                                                                   operation));
+            ownerAce = Optional.ofNullable(localDomainAccessStore.getOwnerAccessControlEntry(userId,
+                                                                                             domain,
+                                                                                             interfaceName,
+                                                                                             operation));
         }
 
-        return accessControlAlgorithm.getConsumerPermission(Optional.ofNullable(masterAce),
-                                                            Optional.ofNullable(mediatorAce),
-                                                            Optional.ofNullable(ownerAce),
-                                                            trustLevel);
+        return accessControlAlgorithm.getConsumerPermission(masterAce, mediatorAce, ownerAce, trustLevel);
     }
 
     @Override
@@ -258,8 +254,24 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
     @Override
     public Permission getProviderPermission(String uid, String domain, String interfaceName, TrustLevel trustLevel) {
-        throw new UnsupportedOperationException("Provider registration permission check is not implemented yet.");
-        //        return accessControlAlgorithm.getProviderPermission(null, null, null, trustLevel);
+        logger.debug("getProviderPermission on domain {}, interface {}", domain, interfaceName);
+        Optional<MasterRegistrationControlEntry> masterRce;
+        Optional<MasterRegistrationControlEntry> mediatorRce;
+        Optional<OwnerRegistrationControlEntry> ownerRce;
+
+        synchronized (localDomainAccessStore) {
+            masterRce = Optional.ofNullable(localDomainAccessStore.getMasterRegistrationControlEntry(uid,
+                                                                                                     domain,
+                                                                                                     interfaceName));
+            mediatorRce = Optional.ofNullable(localDomainAccessStore.getMediatorRegistrationControlEntry(uid,
+                                                                                                         domain,
+                                                                                                         interfaceName));
+            ownerRce = Optional.ofNullable(localDomainAccessStore.getOwnerRegistrationControlEntry(uid,
+                                                                                                   domain,
+                                                                                                   interfaceName));
+        }
+
+        return accessControlAlgorithm.getProviderPermission(masterRce, mediatorRce, ownerRce, trustLevel);
     }
 
     @Override

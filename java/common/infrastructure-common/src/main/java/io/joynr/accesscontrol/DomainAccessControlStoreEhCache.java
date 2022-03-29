@@ -32,7 +32,9 @@ import io.joynr.accesscontrol.primarykey.UserRoleKey;
 import joynr.infrastructure.DacTypes.ControlEntry;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Role;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheException;
@@ -59,7 +61,8 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     public enum CacheId {
 
         MASTER_ACL("io.joynr.MasterACL"), OWNER_ACL("io.joynr.OwnerACL"), MEDIATOR_ACL(
-                "io.joynr.MediatorACL"), DOMAIN_ROLES("io.joynr.DomainRoleTable");
+                "io.joynr.MediatorACL"), DOMAIN_ROLES("io.joynr.DomainRoleTable"), MASTER_RCL(
+                        "io.joynr.MasterRCL"), OWNER_RCL("io.joynr.OwnerRCL"), MEDIATOR_RCL("io.joynr.MediatorRCL");
 
         private final String idAsString;
 
@@ -69,6 +72,11 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
         public String getIdAsString() {
             return idAsString;
+        }
+
+        public boolean isACL() {
+            return this.equals(CacheId.MASTER_ACL) || this.equals(CacheId.OWNER_ACL)
+                    || this.equals(CacheId.MEDIATOR_ACL);
         }
     }
 
@@ -336,6 +344,191 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         return removeAce(CacheId.OWNER_ACL, aceKey);
     }
 
+    @Override
+    public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid) {
+        return getAces(uid, CacheId.MASTER_RCL);
+    }
+
+    @Override
+    public List<MasterRegistrationControlEntry> getEditableMasterRegistrationControlEntries(String uid) {
+        return getEditableAces(uid, CacheId.MASTER_RCL, Role.MASTER);
+    }
+
+    @Override
+    public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String domain,
+                                                                                    String interfaceName) {
+        return getAces(domain, interfaceName, CacheId.MASTER_RCL);
+    }
+
+    @Override
+    public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid,
+                                                                                    String domain,
+                                                                                    String interfaceName) {
+        return getAces(CacheId.MASTER_RCL, uid, domain, interfaceName);
+    }
+
+    @Override
+    public MasterRegistrationControlEntry getMasterRegistrationControlEntry(String uid,
+                                                                            String domain,
+                                                                            String interfaceName) {
+        MasterRegistrationControlEntry masterRce = getAce(CacheId.MASTER_RCL, uid, domain, interfaceName, WILDCARD);
+        if (masterRce == null) {
+            masterRce = getAce(CacheId.MASTER_RCL, uid, domain, interfaceName, WILDCARD);
+        }
+
+        return masterRce;
+    }
+
+    @Override
+    public Boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
+        boolean updateSuccess = false;
+        UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(updatedMasterRce.getUid(),
+                                                                                     updatedMasterRce.getDomain(),
+                                                                                     updatedMasterRce.getInterfaceName(),
+                                                                                     WILDCARD);
+        updateSuccess = updateAce(updatedMasterRce, CacheId.MASTER_RCL, rceKey);
+
+        return updateSuccess;
+    }
+
+    @Override
+    public Boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName) {
+        UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(uid,
+                                                                                     domain,
+                                                                                     interfaceName,
+                                                                                     WILDCARD);
+        return removeAce(CacheId.MASTER_RCL, rceKey);
+    }
+
+    @Override
+    public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid) {
+        return getAces(uid, CacheId.MEDIATOR_RCL);
+    }
+
+    @Override
+    public List<MasterRegistrationControlEntry> getEditableMediatorRegistrationControlEntries(String uid) {
+        return getEditableAces(uid, CacheId.MEDIATOR_RCL, Role.MASTER);
+    }
+
+    @Override
+    public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String domain,
+                                                                                      String interfaceName) {
+        return getAces(domain, interfaceName, CacheId.MEDIATOR_RCL);
+    }
+
+    @Override
+    public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid,
+                                                                                      String domain,
+                                                                                      String interfaceName) {
+        return getAces(CacheId.MEDIATOR_RCL, uid, domain, interfaceName);
+    }
+
+    @Override
+    public MasterRegistrationControlEntry getMediatorRegistrationControlEntry(String uid,
+                                                                              String domain,
+                                                                              String interfaceName) {
+        MasterRegistrationControlEntry mediatorRce = getAce(CacheId.MEDIATOR_RCL, uid, domain, interfaceName, WILDCARD);
+        if (mediatorRce == null) {
+            mediatorRce = getAce(CacheId.MEDIATOR_RCL, uid, domain, interfaceName, WILDCARD);
+        }
+
+        return mediatorRce;
+    }
+
+    @Override
+    public Boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
+        boolean updateSuccess = false;
+        MasterRegistrationControlEntry masterRce = getMasterRegistrationControlEntry(updatedMediatorRce.getUid(),
+                                                                                     updatedMediatorRce.getDomain(),
+                                                                                     updatedMediatorRce.getInterfaceName());
+
+        RceValidator rceValidator = new RceValidator(masterRce, updatedMediatorRce, null);
+        if (rceValidator.isMediatorValid()) {
+            UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(updatedMediatorRce.getUid(),
+                                                                                         updatedMediatorRce.getDomain(),
+                                                                                         updatedMediatorRce.getInterfaceName(),
+                                                                                         WILDCARD);
+            updateSuccess = updateAce(updatedMediatorRce, CacheId.MASTER_RCL, rceKey);
+        }
+
+        return updateSuccess;
+    }
+
+    @Override
+    public Boolean removeMediatorRegistrationControlEntry(String uid, String domain, String interfaceName) {
+        UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(uid,
+                                                                                     domain,
+                                                                                     interfaceName,
+                                                                                     WILDCARD);
+        return removeAce(CacheId.MEDIATOR_RCL, rceKey);
+    }
+
+    @Override
+    public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid) {
+        return getAces(uid, CacheId.OWNER_RCL);
+    }
+
+    @Override
+    public List<OwnerRegistrationControlEntry> getEditableOwnerRegistrationControlEntries(String uid) {
+        return getEditableAces(uid, CacheId.OWNER_RCL, Role.OWNER);
+    }
+
+    @Override
+    public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String domain, String interfaceName) {
+        return getAces(domain, interfaceName, CacheId.OWNER_RCL);
+    }
+
+    @Override
+    public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid,
+                                                                                  String domain,
+                                                                                  String interfaceName) {
+        return getAces(CacheId.OWNER_RCL, uid, domain, interfaceName);
+    }
+
+    @Override
+    public OwnerRegistrationControlEntry getOwnerRegistrationControlEntry(String uid,
+                                                                          String domain,
+                                                                          String interfaceName) {
+        OwnerRegistrationControlEntry ownerRce = getAce(CacheId.OWNER_RCL, uid, domain, interfaceName, WILDCARD);
+        if (ownerRce == null) {
+            ownerRce = getAce(CacheId.OWNER_RCL, uid, domain, interfaceName, WILDCARD);
+        }
+
+        return ownerRce;
+    }
+
+    @Override
+    public Boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
+        boolean updateSuccess = false;
+        MasterRegistrationControlEntry masterRce = getMasterRegistrationControlEntry(updatedOwnerRce.getUid(),
+                                                                                     updatedOwnerRce.getDomain(),
+                                                                                     updatedOwnerRce.getInterfaceName());
+
+        MasterRegistrationControlEntry mediatorRce = getMediatorRegistrationControlEntry(updatedOwnerRce.getUid(),
+                                                                                         updatedOwnerRce.getDomain(),
+                                                                                         updatedOwnerRce.getInterfaceName());
+
+        RceValidator rceValidator = new RceValidator(masterRce, mediatorRce, updatedOwnerRce);
+        if (rceValidator.isOwnerValid()) {
+            UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(updatedOwnerRce.getUid(),
+                                                                                         updatedOwnerRce.getDomain(),
+                                                                                         updatedOwnerRce.getInterfaceName(),
+                                                                                         WILDCARD);
+            updateSuccess = updateAce(updatedOwnerRce, CacheId.OWNER_RCL, rceKey);
+        }
+
+        return updateSuccess;
+    }
+
+    @Override
+    public Boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName) {
+        UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(uid,
+                                                                                     domain,
+                                                                                     interfaceName,
+                                                                                     WILDCARD);
+        return removeAce(CacheId.OWNER_RCL, rceKey);
+    }
+
     private <T extends ControlEntry> T getAce(CacheId cacheId,
                                               String uid,
                                               String domain,
@@ -349,12 +542,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         Query queryAllOperations = cache.createQuery()
                                         .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
                                         .addCriteria(domainAttribute.eq(domain))
-                                        .addCriteria(interfaceAttribute.eq(interfaceName))
-                                        .addCriteria(operationAttribute.eq(operation))
-                                        // have specific user ids appear before wildcards
-                                        .addOrderBy(uidAttribute, Direction.DESCENDING)
-                                        .includeKeys()
-                                        .end();
+                                        .addCriteria(interfaceAttribute.eq(interfaceName));
+        if (cacheId.isACL()) {
+            queryAllOperations.addCriteria(operationAttribute.eq(operation));
+        }
+        // have specific user ids appear before wildcards
+        queryAllOperations.addOrderBy(uidAttribute, Direction.DESCENDING).includeKeys().end();
         Results results = queryAllOperations.execute();
         T ace = null;
         if (!results.all().isEmpty()) {
@@ -370,12 +563,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         // here search on uid take place
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         // query is the fastest if you search for keys and if you need value then call Cache.get(key)
-        Query queryRequestedUid = cache.createQuery()
-                                       .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
-                                       // have specific user ids appear before wildcards
-                                       .addOrderBy(uidAttribute, Direction.DESCENDING)
-                                       .includeKeys()
-                                       .end();
+        Query queryRequestedUid = cache.createQuery();
+        if (cacheId.isACL()) {
+            queryRequestedUid.addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)));
+        } else {
+            queryRequestedUid.addCriteria(uidAttribute.eq(uid));
+        }
+        // have specific user ids appear before wildcards
+        queryRequestedUid.addOrderBy(uidAttribute, Direction.DESCENDING).includeKeys().end();
         Results results = queryRequestedUid.execute();
         for (Result result : results.all()) {
             aces.add(DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey())));
@@ -410,14 +605,18 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         Attribute<String> domainAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.DOMAIN);
         Attribute<String> interfaceAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.INTERFACE);
-        Query queryAllOperations = cache.createQuery()
-                                        .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
-                                        .addCriteria(domainAttribute.eq(domain))
-                                        .addCriteria(interfaceAttribute.eq(interfaceName))
-                                        // have specific user ids appear before wildcards
-                                        .addOrderBy(uidAttribute, Direction.DESCENDING)
-                                        .includeKeys()
-                                        .end();
+        Query queryAllOperations = cache.createQuery();
+        if (cacheId.isACL()) {
+            queryAllOperations.addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)));
+        } else {
+            queryAllOperations.addCriteria(uidAttribute.eq(uid));
+        }
+        queryAllOperations.addCriteria(domainAttribute.eq(domain))
+                          .addCriteria(interfaceAttribute.eq(interfaceName))
+                          // have specific user ids appear before wildcards
+                          .addOrderBy(uidAttribute, Direction.DESCENDING)
+                          .includeKeys()
+                          .end();
         Results results = queryAllOperations.execute();
         List<T> aces = new ArrayList<T>();
         String currentUid = null;
@@ -502,6 +701,9 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         if (cache == null) {
             switch (cacheId) {
             case MASTER_ACL:
+            case MASTER_RCL:
+            case MEDIATOR_RCL:
+            case OWNER_RCL:
             case MEDIATOR_ACL:
             case OWNER_ACL: {
                 cache = createAclCache(cacheId);
