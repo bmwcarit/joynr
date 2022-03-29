@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>1.18.2</version>
+		<version>1.18.2.1</version>
 	</parent>
 
 	<dependencies>
@@ -95,6 +95,20 @@
 							<executable>npm</executable>
 							<arguments>
 								<argument>install</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>npm:build:workaround</id>
+						<phase>test</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>npm</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>workaround</argument>
 							</arguments>
 						</configuration>
 					</execution>
