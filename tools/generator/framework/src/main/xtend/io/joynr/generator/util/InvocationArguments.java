@@ -130,8 +130,9 @@ public class InvocationArguments {
         usageString.append("           - Consumer and provider applications of one interface have to use the\n");
         usageString.append("             same versioning scheme to be able to communicate with each other.\n");
         usageString.append("       -target proxy|provider|both:\n");
-        usageString.append("       -generationId <name of what is being generated>\n");
+        usageString.append("         specify which code shall be generated.\n");
         usageString.append("      Optional, C++ only: \n");
+        usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
         usageString.append("       -includePrefix <prefix to use in include statements>\n");
         return usageString.toString();
@@ -196,9 +197,6 @@ public class InvocationArguments {
                 i++;
             } else if (args[i].equalsIgnoreCase("-target")) {
                 setTarget(args[i + 1]);
-                i++;
-            } else if (args[i].equalsIgnoreCase("-requireJSSupport")) {
-                setParameterElement("requireJSSupport", args[i + 1].replace("\"", ""));
                 i++;
             }
         }

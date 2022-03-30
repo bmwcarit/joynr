@@ -12,9 +12,10 @@
   "scripts": {
     "clean": "rm -rf node_modules generated",
     "build": "cd .. && npm run build && cd - && npm i",
-    "test": "npm run test:model && npm run test:json",
+    "test": "npm run test:model && npm run test:json && npm run test:versioning",
     "test:model": "generate-joynr-sources -o generated -m model/hello-world.fidl -m model/joynr-campaign.fidl -m ../../../../basemodel/src/test/ -i -js",
-    "test:json": "generate-joynr-sources -o generated -f fidlfiles.json -js"
+    "test:json": "generate-joynr-sources -o generated -f fidlfiles.json -js",
+    "test:versioning": "generate-joynr-sources -o generated -f fidlfiles.json --addVersionTo comment"
   },
   "repository": {
     "type": "git",

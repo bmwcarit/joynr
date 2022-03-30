@@ -346,8 +346,8 @@ to *gen*.
         Restrict code generation to only proxy or provider relevant parts or create 'both' parts.
         If not provided, code for both proxy and provider will be generated.
         For Jee code generation use value 'both' or omit this command line argument.
-      -generationId <name of what is being generated>
     Optional, C++ only:
+      -generationId <name of what is being generated>
       -outputHeaderPath <path to directory containing header files>
       -includePrefix <prefix to use in include statements>
     Optional, JS only:

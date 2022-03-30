@@ -43,6 +43,22 @@ Automatically sets -i option.
 interface FidlFilesJson {
     interfaces: Record<string (fidlFileGroup), string[] (relative Paths to fidl files)>;
 }`;
+const addVersionToDesc = `specify how the major version of Franca interfaces and typecollections
+shall affect the generated package of interfaces and types:
+- "comment": evaluate the #noVersionGeneration comment
+- "package": interface/typecollection major versions (if existing) are
+  added as an additional package "v<major version>"
+- "none": interface/typecollection versions do not affect the generated
+  name and package of interfaces and types
+- default value: "none" (for backwards compatibility)
+NOTES:
+- Please use addVersionTo=comment and set the #noVersionGeneration
+  comment in your Franca interfaces (.fidl files) where appropriate.
+  The evaluation of the #noVersionGeneration comment will become the
+  default soon.
+- Consumer and provider applications of one interface have to use the
+  same versioning scheme to be able to communicate with each other.
+`;
 
 // eslint-disable-next-line no-console
 const log = console.log;
@@ -81,9 +97,15 @@ async function main(): Promise<void> {
             boolean: true,
             desc: "create joynr includes"
         })
+        .option("addVersionTo", {
+            alias: "v",
+            choices: ["comment", "package", "none"],
+            desc: addVersionToDesc
+        })
         .option("target", {
             alias: "t",
-            desc: "target is proxy|provider|both code"
+            choices: ["proxy", "provider", "both"],
+            desc: "specify which code shall be generated (default: both)"
         })
         .help()
         .wrap(yargs.terminalWidth()).argv;
@@ -92,9 +114,13 @@ async function main(): Promise<void> {
     const modelPath = argv.modelPath as string | undefined;
     const fidlFile = argv.fidlFile as string | undefined;
     let target = argv.target as string | undefined;
+    let addVersionTo = argv.addVersionTo as string | undefined;
 
     if (!target) {
         target = "";
+    }
+    if (!addVersionTo) {
+        addVersionTo = "";
     }
 
     if (!modelPath && !fidlFile) {
@@ -114,7 +140,7 @@ async function main(): Promise<void> {
         });
     }
 
-    await generateTSSources(modelPathArray, outputPath, target);
+    await generateTSSources(modelPathArray, outputPath, target, addVersionTo);
     if (fidlFile) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         Object.entries(parsedJson!.interfaces).forEach(([fidlFileGroup, fidlFiles]) => {
@@ -140,17 +166,26 @@ async function main(): Promise<void> {
     process.exit(0);
 }
 
-async function generateTSSources(modelPaths: string | string[], outputPath: string, target: string): Promise<void> {
+async function generateTSSources(
+    modelPaths: string | string[],
+    outputPath: string,
+    target: string,
+    addVersionTo: string): Promise<void> {
     ([] as string[]).concat(modelPaths).forEach(path => {
-        let targetCommandParameter = "";
+        let addVersionToParameter = "";
+        if (addVersionTo != "") {
+            addVersionToParameter = ` -addVersionTo ${addVersionTo}`;
+        }
+        let targetParameter = "";
         if (target != "") {
-            targetCommandParameter = ` -target ${target}`;
+            targetParameter = ` -target ${target}`;
         }
         const command =
             `java -jar ${generatorPath}` +
             ` -modelPath ${path} -outputPath ${outputPath}` +
             ` -generationLanguage javascript` +
-            `${targetCommandParameter}`;
+            `${targetParameter}` +
+            `${addVersionToParameter}`;
         log(`executing command: ${command}`);
         execSync(command);
     });
