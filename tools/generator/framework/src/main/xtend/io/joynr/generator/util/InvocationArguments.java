@@ -197,9 +197,6 @@ public class InvocationArguments {
             } else if (args[i].equalsIgnoreCase("-target")) {
                 setTarget(args[i + 1]);
                 i++;
-            } else if (args[i].equalsIgnoreCase("-requireJSSupport")) {
-                setParameterElement("requireJSSupport", args[i + 1].replace("\"", ""));
-                i++;
             }
         }
     }
