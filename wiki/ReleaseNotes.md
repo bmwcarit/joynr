@@ -2,6 +2,30 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.10
+
+## API-relevant Changes
+* **[TS]** `joynr-generator-npm` now also supports the `addVersionTo` options. See the
+  [Generator documentation](/wiki/generator.md) for details.  
+  RECOMMENDATION: use `addVersionTo=comment` whenever possible and make sure that all your Franca
+  interfaces that shall be generated without version information have the #noVersionGeneration
+  comment in their @description comment.
+
+## Other Changes
+* **[Docker]** Removed Docker image `joynr-complete-deps`. `joynr-ilt-gcc` now includes everything
+  from `joynr-complete-deps`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Updated `log4j` dependencies to version 2.17.2 (only tests, examples and
+  `joynr-generator-standalone` were affected).
+
+## Bug Fixes
+* **[Java]** Fixed automatic unsubscribe of expired subscriptions (attribute, broadcast): no more
+  `InterruptedException` is emitted and `SubscriptionEndRunnable` now handles unexpected exceptions.
+
 # joynr 1.19.9
 
 ## API-relevant Changes
