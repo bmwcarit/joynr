@@ -3,7 +3,7 @@
 
 buildscript {
     ext {
-        joynrVersion = "1.19.10-SNAPSHOT"
+        joynrVersion = "1.19.10"
     }
     repositories {
         google()
