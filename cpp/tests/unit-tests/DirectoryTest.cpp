@@ -60,12 +60,31 @@ private:
 
 std::atomic_int TrackableObject::instances;
 
+template <typename Key, typename T>
+class TestDirectory : public Directory<Key, T>
+{
+public:
+    TestDirectory(const std::string& directoryName, boost::asio::io_service& ioService)
+        : Directory<Key, T>(directoryName, ioService)
+    {
+    }
+
+    ~TestDirectory() = default;
+
+    bool containsTimer(const Key& keyId)
+    {
+        std::lock_guard<std::mutex> lock(Directory<Key, T>::_mutex);
+        return Directory<Key, T>::_timeoutTimerMap.find(keyId) != Directory<Key, T>::_timeoutTimerMap.cend();
+    }
+};
+
 class DirectoryTest : public ::testing::Test
 {
 public:
     DirectoryTest()
             : _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _directory("Directory", _singleThreadedIOService->getIOService()),
+              _testDirectory("TestDirectory", _singleThreadedIOService->getIOService()),
               _testValue(nullptr),
               _secondTestValue(nullptr),
               _firstKey(""),
@@ -90,6 +109,7 @@ public:
 protected:
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
     Directory<std::string, std::string> _directory;
+    TestDirectory<std::string, std::string> _testDirectory;
     std::shared_ptr<std::string> _testValue;
     std::shared_ptr<std::string> _secondTestValue;
     std::string _firstKey;
@@ -208,10 +228,60 @@ TEST_F(DirectoryTest, take)
     ASSERT_EQ(_directory.lookup(_firstKey), _testValue);
     ASSERT_EQ(_directory.lookup(_secondKey), _secondTestValue);
 
-    // remove key from the dictionary with take()
+    // remove key from the directory with take()
     ASSERT_EQ(_directory.take(_secondKey), _secondTestValue);
 
-    // only one key is left in the dictionary
+    // only one key is left in the directory
     ASSERT_EQ(_directory.lookup(_firstKey), _testValue);
     ASSERT_FALSE(_directory.lookup(_secondKey));
+}
+
+TEST_F(DirectoryTest, takeDeletesTimer)
+{
+    _testDirectory.add(_firstKey, _testValue, 100000);
+    _testDirectory.add(_secondKey, _secondTestValue, 100000);
+
+    // both keys exist
+    ASSERT_TRUE(_testDirectory.contains(_firstKey));
+    ASSERT_TRUE(_testDirectory.contains(_secondKey));
+
+    // both timers exist
+    ASSERT_TRUE(_testDirectory.containsTimer(_firstKey));
+    ASSERT_TRUE(_testDirectory.containsTimer(_secondKey));
+
+    // remove key from the directory with take()
+    ASSERT_EQ(_testDirectory.take(_secondKey), _secondTestValue);
+
+    // only one key is left in the directory
+    ASSERT_EQ(_testDirectory.lookup(_firstKey), _testValue);
+    ASSERT_FALSE(_testDirectory.lookup(_secondKey));
+
+    // only one timer is left in the directory
+    ASSERT_TRUE(_testDirectory.containsTimer(_firstKey));
+    ASSERT_FALSE(_testDirectory.containsTimer(_secondKey));
+}
+
+TEST_F(DirectoryTest, removeDeletesTimer)
+{
+    _testDirectory.add(_firstKey, _testValue, 100000);
+    _testDirectory.add(_secondKey, _secondTestValue, 100000);
+
+    // both keys exist
+    ASSERT_TRUE(_testDirectory.contains(_firstKey));
+    ASSERT_TRUE(_testDirectory.contains(_secondKey));
+
+    // both timers exist
+    ASSERT_TRUE(_testDirectory.containsTimer(_firstKey));
+    ASSERT_TRUE(_testDirectory.containsTimer(_secondKey));
+
+    // remove key from the directory with remove()
+    _testDirectory.remove(_firstKey);
+
+    // only one key is left in the directory
+    ASSERT_FALSE(_testDirectory.contains(_firstKey));
+    ASSERT_TRUE(_testDirectory.contains(_secondKey));
+
+    // only one timer is left in the directory
+    ASSERT_FALSE(_testDirectory.containsTimer(_firstKey));
+    ASSERT_TRUE(_testDirectory.containsTimer(_secondKey));
 }

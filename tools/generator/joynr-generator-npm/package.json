@@ -18,7 +18,8 @@
     "joynr": "1.18.2"
   },
   "scripts": {
-    "build": " tsc --listFiles --listEmittedFiles"
+    "workaround": "mv jars/joynr-generator-standalone-1.18.2.1.jar jars/joynr-generator-standalone-1.18.2.jar",
+    "build": "tsc --listFiles --listEmittedFiles"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.123",
