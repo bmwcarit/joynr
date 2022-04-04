@@ -1,0 +1,37 @@
+From 525cd5c851cc525594568ddad73ded9856aef292 Mon Sep 17 00:00:00 2001
+From: Guido Ostkamp <Guido.Ostkamp@partner.bmw.de>
+Date: Thu, 26 Nov 2020 15:37:59 +0100
+Subject: Added reconnect_session_expiry_interval to struct mosquitto_internal
+
+---
+ lib/mosquitto.c          | 1 +
+ lib/mosquitto_internal.h | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/lib/mosquitto.c b/lib/mosquitto.c
+index 25a4441b..2a7a1911 100644
+--- a/lib/mosquitto.c
++++ b/lib/mosquitto.c
+@@ -185,6 +185,7 @@ int mosquitto_reinitialise(struct mosquitto *mosq, const char *id, bool clean_st
+ 	mosq->host = NULL;
+ 	mosq->port = 1883;
+ 	mosq->in_callback = false;
++	mosq->reconnect_session_expiry_interval = 0;
+ 	mosq->reconnect_delay = 1;
+ 	mosq->reconnect_delay_max = 1;
+ 	mosq->reconnect_exponential_backoff = false;
+diff --git a/lib/mosquitto_internal.h b/lib/mosquitto_internal.h
+index 2a97506b..5ebbd3bf 100644
+--- a/lib/mosquitto_internal.h
++++ b/lib/mosquitto_internal.h
+@@ -325,6 +325,7 @@ struct mosquitto {
+ 	int port;
+ 	char *bind_address;
+ 	unsigned int reconnects;
++	int reconnect_session_expiry_interval;
+ 	unsigned int reconnect_delay;
+ 	unsigned int reconnect_delay_max;
+ 	bool reconnect_exponential_backoff;
+-- 
+2.25.1
+

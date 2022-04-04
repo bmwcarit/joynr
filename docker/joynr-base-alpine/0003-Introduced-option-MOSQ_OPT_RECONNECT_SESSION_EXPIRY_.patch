@@ -1,0 +1,43 @@
+From fb686d13f4c3d1fb19616cb25e3806e880cbab32 Mon Sep 17 00:00:00 2001
+From: Guido Ostkamp <Guido.Ostkamp@partner.bmw.de>
+Date: Thu, 26 Nov 2020 15:39:26 +0100
+Subject: Introduced option MOSQ_OPT_RECONNECT_SESSION_EXPIRY_INTERVAL
+
+The API mosquitto_int_option(...) allows to set the
+reconnect_session_expiry_interval using enum value
+MOSQ_OPT_RECONNECT_SESSION_EXPIRY_INTERVAL.
+---
+ lib/mosquitto.h | 1 +
+ lib/options.c   | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/lib/mosquitto.h b/lib/mosquitto.h
+index c8cb3674..8b755a12 100644
+--- a/lib/mosquitto.h
++++ b/lib/mosquitto.h
+@@ -112,6 +112,7 @@ enum mosq_opt_t {
+ 	MOSQ_OPT_TLS_ENGINE_KPASS_SHA1 = 8,
+ 	MOSQ_OPT_TLS_OCSP_REQUIRED = 9,
+ 	MOSQ_OPT_TLS_ALPN = 10,
++	MOSQ_OPT_RECONNECT_SESSION_EXPIRY_INTERVAL = 11
+ };
+ 
+ 
+diff --git a/lib/options.c b/lib/options.c
+index a971f450..23e6e418 100644
+--- a/lib/options.c
++++ b/lib/options.c
+@@ -448,6 +448,10 @@ int mosquitto_int_option(struct mosquitto *mosq, enum mosq_opt_t option, int val
+ #endif
+ 			break;
+ 
++		case MOSQ_OPT_RECONNECT_SESSION_EXPIRY_INTERVAL:
++			mosq->reconnect_session_expiry_interval = value;
++			break;
++
+ 		default:
+ 			return MOSQ_ERR_INVAL;
+ 	}
+-- 
+2.25.1
+

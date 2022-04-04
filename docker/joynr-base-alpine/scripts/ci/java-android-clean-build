@@ -1,0 +1,134 @@
+#/bin/bash
+
+source /data/src/docker/joynr-base-alpine/scripts/ci/start-and-stop-gcd-service.sh
+cd /data/src
+
+# fail on first error
+# exit immediately if a command exits with a non-zero status
+# print commands before they are executed
+set -e
+
+GOAL='install'
+
+while [ "$1" != "" ]; do
+    case $1 in
+        package )               GOAL='package'
+                                ;;
+        install )               GOAL='install'
+                                ;;
+        * )                     echo "invalid argument"
+                                exit 1
+    esac
+    shift
+done
+
+echo '####################################################'
+echo '# create keystore and truststore'
+echo '####################################################'
+
+CERT_PATH='/data/ssl-data/certs'
+PRIVATE_KEY_PATH='/data/ssl-data/private'
+KEYSTORE_PASSWORD='password'
+
+mkdir -p /data/src/java/messaging/mqtt/hivemq-mqtt-client/src/test/resources
+
+cd /data/src/java/messaging/mqtt/hivemq-mqtt-client/src/test/resources/
+
+# create JKS truststore
+keytool -keystore catruststore.jks -importcert -file $CERT_PATH/ca.cert.pem -storepass $KEYSTORE_PASSWORD -trustcacerts -noprompt
+
+# list the truststore contents
+keytool -list -keystore catruststore.jks -storepass $KEYSTORE_PASSWORD
+
+# create PKCS12 truststore
+keytool -importkeystore -srckeystore catruststore.jks -srcstorepass $KEYSTORE_PASSWORD -destkeystore catruststore.p12 -deststorepass $KEYSTORE_PASSWORD -srcstoretype JKS -deststoretype PKCS12
+
+# merge and import client certificate and private key into pkcs12 keystore
+openssl pkcs12 -export -in $CERT_PATH/client.cert.pem -inkey $PRIVATE_KEY_PATH/client.key.pem -out clientkeystore.p12 -password pass:$KEYSTORE_PASSWORD
+
+# convert pkcs12 keystore into java keystore
+keytool -importkeystore -deststorepass $KEYSTORE_PASSWORD -destkeypass $KEYSTORE_PASSWORD -destkeystore clientkeystore.jks -srckeystore clientkeystore.p12 -srcstoretype PKCS12 -srcstorepass $KEYSTORE_PASSWORD -alias 1 -storepass $KEYSTORE_PASSWORD
+
+# list the keystore contents
+keytool -list -keystore clientkeystore.jks -storepass $KEYSTORE_PASSWORD
+
+echo '####################################################'
+echo '# start tests'
+echo '####################################################'
+
+cd /data/src
+
+# 1st run; just build without tests to provide JAR file for GCD
+mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+-DskipTests \
+-Dmaven.test.failure.ignore=true \
+-Denforcer.skip=true \
+-Dmaven.compile.fork=true \
+-Dmaven.junit.fork=true
+
+echo '####################################################'
+echo '# start services'
+echo '####################################################'
+
+/data/src/docker/joynr-base-alpine/scripts/ci/start-db.sh
+
+cp /data/src/docker/joynr-base-alpine/mosquitto.conf /home/joynr/mosquitto.conf
+if [ -d "/data/logs" ]
+then
+    echo "log_dest file /data/logs/mosquitto.log" >> /home/joynr/mosquitto.conf
+fi
+mosquitto -c /home/joynr/mosquitto.conf &
+MOSQUITTO_PID=$!
+
+function stopservices
+{
+    stopGcd
+
+    echo "stop mosquitto"
+    kill -TERM $MOSQUITTO_PID
+    wait $MOSQUITTO_PID
+    /data/src/docker/joynr-base-alpine/scripts/ci/stop-db.sh
+}
+
+set +e # stop services even if there are failing tests or startGcd fails
+startGcd
+SUCCESS=$?
+if [ "$SUCCESS" != "0" ]; then
+    echo '########################################################'
+    echo '# Start GCD failed with exit code:' $SUCCESS
+    echo '########################################################'
+
+    stopservices
+    exit $SUCCESS
+fi
+
+echo '####################################################'
+echo '# start tests'
+echo '####################################################'
+
+# Assume that mosquitto and GCD have sufficient time to startup before reaching
+# any test code that requires it;
+# also assume that it is safe to remove and recreate JAR file once GCD got started
+
+# 2nd run; now including test execution which requires mosquitto / GCD
+# generate site report
+mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+-DskipTests=false \
+-DshowSuccess=true \
+-Dmaven.test.failure.ignore=true \
+-Denforcer.skip=true \
+-Dmaven.compile.fork=true \
+-Dmaven.junit.fork=true \
+--fail-at-end
+EXIT_CODE=$?
+set -e
+
+echo '####################################################'
+echo '# stop services'
+echo '####################################################'
+
+stopservices
+
+exit $EXIT_CODE
