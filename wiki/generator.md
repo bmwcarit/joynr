@@ -45,7 +45,7 @@ have to be provided in the Maven configuration:
                           of the #noVersionGeneration comment will become the default soon, see
                           section "Disable versioning of generated files" below.
                         - Consumer and provider applications of one interface have to use the same
-                          versioning scheme to be able to communicate with each other!
+                          versioning scheme to be able to communicate with each other! -->
                 <addVersionTo>comment|package|none</addVersionTo>
                 <parameter>
                     <!-- For Java/Jee code generation with null values in
