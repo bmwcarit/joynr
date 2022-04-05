@@ -55,7 +55,6 @@ message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
 
 find_package(mosquitto 1.6.8 REQUIRED)
 include(CheckMosquittoImportTargets)
-find_package(CURL REQUIRED)
 
 if(${GENERATE_SOURCES})
     find_package(JoynrGenerator ${Joynr_VERSION} EXACT REQUIRED)
