@@ -110,8 +110,8 @@ do
 	shift
 done
 
-JAVA_CPP_BUILD_DOCKER_IMAGE=joynr-ilt-gcc:${DOCKER_IMAGE_VERSION}
-JS_BUILD_DOCKER_IMAGE=joynr-ilt-gcc:${DOCKER_IMAGE_VERSION}
+JAVA_CPP_BUILD_DOCKER_IMAGE=joynr-base:${DOCKER_IMAGE_VERSION}
+JS_BUILD_DOCKER_IMAGE=joynr-base:${DOCKER_IMAGE_VERSION}
 
 function execute_in_docker {
 	if [ -z "$2" ]; then
