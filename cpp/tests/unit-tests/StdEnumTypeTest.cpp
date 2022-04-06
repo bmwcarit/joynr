@@ -129,6 +129,7 @@ TEST_F(StdEnumTypeTest, baseAndExtendedOrdinalsAreEqual)
 // disable GCC enum-compare warning
 // This test is to see if in principle comparison of base enums with extended enums is possible.
 #pragma GCC diagnostic ignored "-Wenum-compare"
+#pragma GCC diagnostic ignored "-Wsign-compare"
     EXPECT_TRUE(TestEnum::ZERO == TestEnumExtended::ZERO);
     EXPECT_TRUE(testEnumZero == exZero);
 // restore previous state of GCC diagnostics

@@ -94,10 +94,26 @@ endif()
 set(JOYNR_SPDLOG_REQUIRED_VERSION 1.4.2)
 find_package(spdlog ${JOYNR_SPDLOG_REQUIRED_VERSION} REQUIRED)
 
-set(JOYNR_WEBSOCKETPP_REQUIRED_VERSION 0.8.0)
 # websocketpp-config.cmake iw not guarding target addition; workaround: check it here.
 if(NOT TARGET websocketpp::websocketpp)
-    find_package(websocketpp ${JOYNR_WEBSOCKETPP_REQUIRED_VERSION} REQUIRED)
+    # since e.g. websocket 0.8.2 will not be taken into account when searching for 0.8.0
+    # due to EXACT match policy in websocketpp although 0.8.2 is still compatible,
+    # manually checking for newest version is required. New versions contain required
+    # compatibility fixes for newer boost versions.
+    set(JOYNR_WEBSOCKETPP_REQUIRED_VERSION 0.8.2)
+    find_package(websocketpp ${JOYNR_WEBSOCKETPP_REQUIRED_VERSION})
+    if(NOT ${websocketpp_FOUND})
+        set(JOYNR_WEBSOCKETPP_REQUIRED_VERSION 0.8.1)
+        find_package(websocketpp ${JOYNR_WEBSOCKETPP_REQUIRED_VERSION})
+        if(NOT ${websocketpp_FOUND})
+            set(JOYNR_WEBSOCKETPP_REQUIRED_VERSION 0.8.0)
+            find_package(websocketpp ${JOYNR_WEBSOCKETPP_REQUIRED_VERSION})
+            if(NOT ${websocketpp_FOUND})
+                MESSAGE(FATAL_ERROR "No compatible websocketpp version found")
+            endif(NOT ${websocketpp_FOUND})
+        endif(NOT ${websocketpp_FOUND})
+    endif(NOT ${websocketpp_FOUND})
+    MESSAGE(STATUS "Found websocketpp (found suitable version \"${JOYNR_WEBSOCKETPP_REQUIRED_VERSION}\", minimum required is \"0.8.0\")")
 endif()
 
 set(JOYNR_MOCOCRW_REQUIRED_VERSION 0.1.0)

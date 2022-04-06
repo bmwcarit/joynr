@@ -17,7 +17,6 @@ include(GNUInstallDirs)
 
 # Pull in the Joynr configuration
 find_package(Joynr 1.19.11 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
-find_package(CURL REQUIRED)
 find_package(mosquitto 1.6.8)
 include(CheckMosquittoImportTargets)
 
