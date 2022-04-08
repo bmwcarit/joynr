@@ -33,6 +33,8 @@ bool GeocastBroadcastFilter::filter(
         const joynr::vehicle::GeoPosition& geoPosition,
         const vehicle::RadioNewStationDiscoveredBroadcastFilterParameters& filterParameters)
 {
+    std::ignore = discoveredStation;
+
     if (filterParameters.getPositionOfInterest().empty() ||
         filterParameters.getRadiusOfInterestArea().empty()) {
         // filter parameter not set, so we do no filtering
