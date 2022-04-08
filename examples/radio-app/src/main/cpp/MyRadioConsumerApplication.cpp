@@ -50,9 +50,9 @@ class RadioStationListener : public SubscriptionListener<vehicle::RadioStation>
 public:
     RadioStationListener() = default;
 
-    ~RadioStationListener() = default;
+    ~RadioStationListener() override = default;
 
-    void onSubscribed(const std::string& subscriptionId)
+    void onSubscribed(const std::string& subscriptionId) override
     {
         MyRadioHelper::prettyLog(
                 logger(),
@@ -60,13 +60,13 @@ public:
                         subscriptionId);
     }
 
-    void onReceive(const vehicle::RadioStation& value)
+    void onReceive(const vehicle::RadioStation& value) override
     {
         MyRadioHelper::prettyLog(
                 logger(), "ATTRIBUTE SUBSCRIPTION current station: " + value.toString());
     }
 
-    void onError(const exceptions::JoynrRuntimeException& error)
+    void onError(const exceptions::JoynrRuntimeException& error) override
     {
         if (error.getTypeName() == exceptions::PublicationMissedException::TYPE_NAME()) {
             MyRadioHelper::prettyLog(logger(),
@@ -88,16 +88,16 @@ class WeakSignalBroadcastListener : public SubscriptionListener<vehicle::RadioSt
 public:
     WeakSignalBroadcastListener() = default;
 
-    ~WeakSignalBroadcastListener() = default;
+    ~WeakSignalBroadcastListener() override = default;
 
-    void onSubscribed(const std::string& subscriptionId)
+    void onSubscribed(const std::string& subscriptionId) override
     {
         MyRadioHelper::prettyLog(
                 logger(),
                 "BROADCAST SUBSCRIPTION weak signal successful, subscriptionId: " + subscriptionId);
     }
 
-    void onReceive(const vehicle::RadioStation& value)
+    void onReceive(const vehicle::RadioStation& value) override
     {
         MyRadioHelper::prettyLog(
                 logger(), "BROADCAST SUBSCRIPTION weak signal: " + value.toString());
@@ -114,9 +114,9 @@ class NewStationDiscoveredBroadcastListener
 public:
     NewStationDiscoveredBroadcastListener() = default;
 
-    ~NewStationDiscoveredBroadcastListener() = default;
+    ~NewStationDiscoveredBroadcastListener() override = default;
 
-    void onSubscribed(const std::string& subscriptionId)
+    void onSubscribed(const std::string& subscriptionId) override
     {
         MyRadioHelper::prettyLog(
                 logger(),
@@ -125,7 +125,7 @@ public:
     }
 
     void onReceive(const vehicle::RadioStation& discoveredStation,
-                   const vehicle::GeoPosition& geoPosition)
+                   const vehicle::GeoPosition& geoPosition) override
     {
         MyRadioHelper::prettyLog(logger(),
                                  "BROADCAST SUBSCRIPTION new station discovered: " +
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
             runtime->createProxyBuilder<vehicle::RadioProxy>(providerDomain);
 
     // Messaging Quality of service
-    std::int64_t qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
+    std::int64_t qosMsgTtl = 30000; // Time to live is 30 secs in one direction
 
     // Find the provider with the highest priority set in ProviderQos
     DiscoveryQos discoveryQos;
