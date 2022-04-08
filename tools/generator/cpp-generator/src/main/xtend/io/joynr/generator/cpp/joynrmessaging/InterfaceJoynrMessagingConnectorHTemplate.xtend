@@ -75,7 +75,7 @@ namespace joynr {
 		class MulticastSubscriptionRequest;
 	«ENDIF»
 	template <class ... Ts> class Future;
-	template <typename... Ts> class ISubscriptionListener;
+	template <typename T, typename... Ts> class ISubscriptionListener;
 
 namespace types
 {

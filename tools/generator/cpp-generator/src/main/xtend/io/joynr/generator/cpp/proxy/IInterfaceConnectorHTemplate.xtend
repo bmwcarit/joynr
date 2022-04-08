@@ -53,7 +53,7 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #include <memory>
 
 namespace joynr {
-	template <class ... Ts> class ISubscriptionListener;
+	template <class T, class ... Ts> class ISubscriptionListener;
 	class ISubscriptionCallback;
 	class SubscriptionQos;
 	class OnChangeSubscriptionQos;
