@@ -62,7 +62,7 @@ public:
      * @param value First output parameter of the broadcast | attribute value
      * @param values Optional 2nd..nth output parameter in case of a broadcast
      */
-    virtual void onReceive(const T& value, Ts&... values) override
+    virtual void onReceive(const T& value, const Ts&...) override
     {
         std::ignore = value;
     }
