@@ -128,7 +128,7 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
                                                          std::move(prefixedCustomHeaders),
                                                          reply);
 
-    std::shared_ptr<ImmutableMessage> immutableReplyMsg = std::move(replyMessage.getImmutableMessage());
+    std::shared_ptr<ImmutableMessage> immutableReplyMsg = replyMessage.getImmutableMessage();
 
     std::deque<std::shared_ptr<ImmutableMessage>> droppedMessages{immutableReplyMsg};
     EXPECT_EQ(1, droppedMessages.size());
@@ -146,7 +146,7 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
     MutableMessage requestMessage = messageFactory.createRequest(
             senderId, receiverId, actualQos, request, isLocalMessage);
     requestMessage.setCustomHeader(customHeaderKey, customHeaderValue);
-    std::shared_ptr<ImmutableMessage> immutableRequestMessage = std::move(requestMessage.getImmutableMessage());
+    std::shared_ptr<ImmutableMessage> immutableRequestMessage = requestMessage.getImmutableMessage();
     droppedMessages.push_front(immutableRequestMessage);
     EXPECT_EQ(1, droppedMessages.size());
 
@@ -219,7 +219,7 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
                                                          std::move(prefixedCustomHeaders),
                                                          reply);
 
-    std::shared_ptr<ImmutableMessage> immutableReplyMsg = std::move(replyMessage.getImmutableMessage());
+    std::shared_ptr<ImmutableMessage> immutableReplyMsg = replyMessage.getImmutableMessage();
 
     std::deque<std::shared_ptr<ImmutableMessage>> droppedMessages{immutableReplyMsg};
     EXPECT_EQ(1, droppedMessages.size());
@@ -237,7 +237,7 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
     MutableMessage requestMessage = messageFactory.createRequest(
             senderId, receiverId, actualQos, request, isLocalMessage);
     requestMessage.setCustomHeader(customHeaderKey, customHeaderValue);
-    std::shared_ptr<ImmutableMessage> immutableRequestMessage = std::move(requestMessage.getImmutableMessage());
+    std::shared_ptr<ImmutableMessage> immutableRequestMessage = requestMessage.getImmutableMessage();
     droppedMessages.push_front(immutableRequestMessage);
     EXPECT_EQ(1, droppedMessages.size());
 
