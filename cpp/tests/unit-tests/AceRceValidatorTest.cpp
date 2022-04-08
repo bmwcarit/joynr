@@ -156,7 +156,7 @@ template <typename Tag>
 const std::string AceRceValidatorTest<Tag>::_TEST_USER("testUser");
 
 using TagTypes = ::testing::Types<tags::Access, tags::Registration>;
-TYPED_TEST_CASE(AceRceValidatorTest, TagTypes);
+TYPED_TEST_SUITE(AceRceValidatorTest, TagTypes,);
 
 TYPED_TEST(AceRceValidatorTest, TestMediatorInvalidPossiblePermissions)
 {

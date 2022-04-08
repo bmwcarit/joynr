@@ -660,10 +660,10 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, doNotReceivePublicationsForOtherPar
     });
 }
 
-INSTANTIATE_TEST_CASE_P(NoPartitions,
-                        IltConsumerBroadcastSubscriptionTest,
-                        ::testing::Values(std::vector<std::string>()));
+INSTANTIATE_TEST_SUITE_P(NoPartitions,
+                         IltConsumerBroadcastSubscriptionTest,
+                         ::testing::Values(std::vector<std::string>()));
 
-INSTANTIATE_TEST_CASE_P(WithPartitions,
-                        IltConsumerBroadcastSubscriptionTest,
-                        ::testing::Values(std::vector<std::string>({"partition0", "partition1"})));
+INSTANTIATE_TEST_SUITE_P(WithPartitions,
+                         IltConsumerBroadcastSubscriptionTest,
+                         ::testing::Values(std::vector<std::string>({"partition0", "partition1"})));

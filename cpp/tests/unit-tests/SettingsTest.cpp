@@ -64,6 +64,6 @@ TEST_P(SettingsTest, settingsFileUpdate)
     EXPECT_EQ(settingsFileChanged, secondWritePerformed);
 }
 
-INSTANTIATE_TEST_CASE_P(SettingsTest,
+INSTANTIATE_TEST_SUITE_P(SettingsTest,
                         SettingsTest,
                         testing::Values(std::make_tuple(0, 0, false), std::make_tuple(0, 1, true)));

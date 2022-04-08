@@ -1938,7 +1938,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
     arbitrator->stopArbitration();
 }
 
-INSTANTIATE_TEST_CASE_P(changeArbitrationStrategy,
+INSTANTIATE_TEST_SUITE_P(changeArbitrationStrategy,
                         ArbitratorTestWithParams,
                         ::testing::Values(DiscoveryQos::ArbitrationStrategy::LAST_SEEN,
                                           DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT,

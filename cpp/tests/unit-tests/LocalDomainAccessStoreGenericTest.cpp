@@ -350,7 +350,7 @@ struct LocalDomainAccessStoreGenericTypedTest : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE(LocalDomainAccessStoreGenericTypedTest, TagTypes);
+TYPED_TEST_SUITE(LocalDomainAccessStoreGenericTypedTest, TagTypes,);
 TYPED_TEST(LocalDomainAccessStoreGenericTypedTest, updateAndRemoveDomainOrInterfaceWithWildCard)
 {
     // ===============================================================

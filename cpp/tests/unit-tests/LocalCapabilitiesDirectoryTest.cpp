@@ -4906,7 +4906,7 @@ std::tuple<bool, bool> const LCDWithAC_UseCases[] = {
         make_tuple(true, false),
         make_tuple(true, true)};
 
-INSTANTIATE_TEST_CASE_P(WithAC,
+INSTANTIATE_TEST_SUITE_P(WithAC,
                         LocalCapabilitiesDirectoryACMockTest,
                         ::testing::ValuesIn(LCDWithAC_UseCases));
 
@@ -5078,7 +5078,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControll
     _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
 }
 
-INSTANTIATE_TEST_CASE_P(changeProviderScope,
+INSTANTIATE_TEST_SUITE_P(changeProviderScope,
                         LocalCapabilitiesDirectoryWithProviderScope,
                         ::testing::Values(types::ProviderScope::LOCAL,
                                           types::ProviderScope::GLOBAL));

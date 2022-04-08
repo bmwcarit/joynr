@@ -89,7 +89,7 @@ class CapabilitiesStorageTest : public CapabilitiesStorageTestBase
 
 using StorageTypes = ::testing::Types<capabilities::Storage, capabilities::CachingStorage>;
 
-TYPED_TEST_CASE(CapabilitiesStorageTest, StorageTypes);
+TYPED_TEST_SUITE(CapabilitiesStorageTest, StorageTypes,);
 
 TYPED_TEST(CapabilitiesStorageTest, initiallyEmpty)
 {
