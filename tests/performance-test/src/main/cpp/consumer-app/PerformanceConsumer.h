@@ -40,6 +40,7 @@ namespace joynr
 
 struct IPerformanceConsumer
 {
+    virtual ~IPerformanceConsumer() = default;
     virtual void runByteArray() = 0;
     virtual void runByteArrayWithSizeTimesK() = 0;
     virtual void runString() = 0;
@@ -93,6 +94,8 @@ public:
             exit(EXIT_FAILURE);
         }
     }
+
+    virtual ~PerformanceConsumer() override = default;
 
     void runByteArray() override
     {
