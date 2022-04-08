@@ -54,6 +54,7 @@ public:
      */
     virtual void onSubscribed(const std::string& subscriptionId)
     {
+        std::ignore = subscriptionId;
     }
 
     /**
@@ -63,6 +64,8 @@ public:
      */
     virtual void onReceive(T value, Ts... values)
     {
+        std::ignore = value;
+        std::ignore = values;
     }
 
     /**
@@ -70,6 +73,7 @@ public:
      */
     virtual void onError(const exceptions::JoynrRuntimeException& error)
     {
+        std::ignore = error;
     }
 };
 
