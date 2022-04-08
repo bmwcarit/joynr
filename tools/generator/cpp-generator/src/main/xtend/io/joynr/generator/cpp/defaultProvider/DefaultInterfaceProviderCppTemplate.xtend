@@ -160,7 +160,11 @@ Default«interfaceName»Provider::~Default«interfaceName»Provider() = default;
 					«outputParamType» «argument.joynrName»;
 				«ENDIF»
 			«ELSE»
-				«outputParamType» «argument.joynrName»;
+				«IF !argument.isArray && isEnum(argumentType)»
+					«outputParamType» «argument.joynrName»(«argument.getDefaultValue(generateVersion)»);
+				«ELSE»
+					«outputParamType» «argument.joynrName»;
+				«ENDIF»
 			«ENDIF»
 		«ENDFOR»
 		JOYNR_LOG_WARN(logger(), "**********************************************");
