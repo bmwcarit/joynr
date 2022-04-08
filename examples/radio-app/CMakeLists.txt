@@ -10,6 +10,12 @@ set(CMAKE_CXX_STANDARD 14)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+add_compile_options(
+    -Wall -Wextra -pedantic
+    "$<$<CONFIG:Debug>:-ggdb;-O0>"
+    "$<IF:$<CXX_COMPILER_ID:GNU>,,-Wno-unknown-warning-option>" # For: #pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
+)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
 include(AddClangFormat)
 
