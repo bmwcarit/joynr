@@ -198,7 +198,6 @@ int main(int argc, char* argv[])
 
     // Messaging Quality of service
     std::int64_t qosMsgTtl = 30000;                // Time to live is 30 secs in one direction
-    std::int64_t qosCacheDataFreshnessMs = 400000; // Only consider data cached for < 400 secs
 
     // Find the provider with the highest priority set in ProviderQos
     DiscoveryQos discoveryQos;
