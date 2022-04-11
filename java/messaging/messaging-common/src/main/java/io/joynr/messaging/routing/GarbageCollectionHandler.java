@@ -35,12 +35,14 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.inject.Singleton;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 
+@Singleton
 public class GarbageCollectionHandler implements ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(GarbageCollectionHandler.class);
 
