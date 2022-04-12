@@ -387,6 +387,20 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         return null;
     }
 
+    private void addLocal(final DiscoveryEntry discoveryEntry, final String[] gbids) {
+        // check for duplicate participantId
+        Optional<GlobalDiscoveryEntry> cachedEntry = globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
+                                                                                      Long.MAX_VALUE);
+        if (cachedEntry.isPresent()) {
+            logger.warn("Add participantId {} removes cached entry with the same participantId: {}",
+                        discoveryEntry.getParticipantId(),
+                        cachedEntry.get());
+            globalDiscoveryEntryCache.remove(discoveryEntry.getParticipantId());
+        }
+        mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
+        localDiscoveryEntryStore.add(discoveryEntry);
+    }
+
     @Override
     public Promise<Add1Deferred> add(DiscoveryEntry discoveryEntry, Boolean awaitGlobalRegistration, String[] gbids) {
         final Add1Deferred deferred = new Add1Deferred();
@@ -414,19 +428,9 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                     return new Promise<>(deferred);
                 }
             }
-            // check for duplicate participantId
-            Optional<GlobalDiscoveryEntry> cachedEntry = globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
-                                                                                          Long.MAX_VALUE);
-            if (cachedEntry.isPresent()) {
-                logger.warn("Add participantId {} removes cached entry with the same participantId: {}",
-                            discoveryEntry.getParticipantId(),
-                            cachedEntry.get());
-                globalDiscoveryEntryCache.remove(discoveryEntry.getParticipantId());
+            if (!ProviderScope.GLOBAL.equals(discoveryEntry.getQos().getScope()) || awaitGlobalRegistration == false) {
+                addLocal(discoveryEntry, gbids);
             }
-            if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
-                mapGbidsToGlobalProviderParticipantId(discoveryEntry.getParticipantId(), gbids);
-            }
-            localDiscoveryEntryStore.add(discoveryEntry);
         }
 
         /*
@@ -518,11 +522,17 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                         @Override
                         public void onSuccess(Void nothing) {
                             if (!callbackCalled.getAndSet(true)) {
-                                logger.info("Global provider registration succeeded: participantId {}, domain {}, interface {}, {}",
+                                logger.info("Global provider registration succeeded: participantId {}, domain {}, interface {}, {}, GBIDs {}",
                                             globalDiscoveryEntry.getParticipantId(),
                                             globalDiscoveryEntry.getDomain(),
                                             globalDiscoveryEntry.getInterfaceName(),
-                                            globalDiscoveryEntry.getProviderVersion());
+                                            globalDiscoveryEntry.getProviderVersion(),
+                                            Arrays.toString(gbids));
+                                if (awaitGlobalRegistration == true) {
+                                    synchronized (globalDiscoveryEntryCache) {
+                                        addLocal(discoveryEntry, gbids);
+                                    }
+                                }
                                 gcdTaskSequencer.taskFinished();
                                 deferred.resolve();
                             }
@@ -546,10 +556,6 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                                  globalDiscoveryEntry.getInterfaceName(),
                                                  globalDiscoveryEntry.getProviderVersion(),
                                                  exception);
-                                    if (awaitGlobalRegistration == true) {
-                                        globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
-                                        localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
-                                    }
                                     gcdTaskSequencer.taskFinished();
                                     deferred.reject(new ProviderRuntimeException(exception.toString()));
                                 }
@@ -564,10 +570,6 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                              globalDiscoveryEntry.getDomain(),
                                              globalDiscoveryEntry.getInterfaceName(),
                                              globalDiscoveryEntry.getProviderVersion());
-                                if (awaitGlobalRegistration == true) {
-                                    globalProviderParticipantIdToGbidListMap.remove(globalDiscoveryEntry.getParticipantId());
-                                    localDiscoveryEntryStore.remove(globalDiscoveryEntry.getParticipantId());
-                                }
                                 gcdTaskSequencer.taskFinished();
                                 deferred.reject(errorEnum);
                             }

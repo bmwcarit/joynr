@@ -154,6 +154,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
             // update participantId to capability mapping
 
             participantIdToCapabilityMapping.put(participantId, discoveryEntryId);
+            logger.info("Added entry for participantId {} to DiscoveryEntryStore.", participantId);
         }
     }
 
@@ -175,6 +176,8 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
         }
         if (!removedSuccessfully) {
             logger.error("Could not find discoveryEntry to remove with Id: {}", participantId);
+        } else {
+            logger.info("Removed entry for participantId {} from DiscoveryEntryStore.", participantId);
         }
         return removedSuccessfully;
     }
