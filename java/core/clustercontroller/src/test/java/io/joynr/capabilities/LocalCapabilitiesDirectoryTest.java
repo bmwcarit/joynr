@@ -785,9 +785,8 @@ public class LocalCapabilitiesDirectoryTest {
         checkRemainingTtl(remainingTtlCaptor);
 
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
-        verify(localDiscoveryEntryStoreMock,
-               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
-        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(expectedDiscoveryEntry.getParticipantId()));
+        verify(localDiscoveryEntryStoreMock, times(0)).add(any(DiscoveryEntry.class));
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
 
         reset(globalCapabilitiesDirectoryClient, localDiscoveryEntryStoreMock);
 
@@ -950,7 +949,8 @@ public class LocalCapabilitiesDirectoryTest {
                              argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
                              anyLong(),
                              any());
-        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(globalDiscoveryEntry.getParticipantId()));
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
+        verify(localDiscoveryEntryStoreMock, times(0)).add(any(DiscoveryEntry.class));
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -1371,7 +1371,8 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
 
         checkPromiseException(promise, expectedException);
-        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(discoveryEntry.getParticipantId()));
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
+        verify(localDiscoveryEntryStoreMock, times(0)).add(any(DiscoveryEntry.class));
     }
 
     private void testAddToAllIsProperlyRejected(DiscoveryError expectedError) throws InterruptedException {
@@ -1384,7 +1385,8 @@ public class LocalCapabilitiesDirectoryTest {
         Promise<AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry, true);
 
         checkPromiseError(promise, expectedError);
-        verify(localDiscoveryEntryStoreMock, times(1)).remove(eq(globalDiscoveryEntry.getParticipantId()));
+        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
+        verify(localDiscoveryEntryStoreMock, times(0)).add(any(DiscoveryEntry.class));
 
     }
 
