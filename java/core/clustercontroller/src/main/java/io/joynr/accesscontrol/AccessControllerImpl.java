@@ -157,13 +157,17 @@ public class AccessControllerImpl implements AccessController {
     }
 
     @Override
-    public boolean hasProviderPermission(String userId, TrustLevel trustLevel, DiscoveryEntry discoveryEntry) {
-        if (whitelistedParticipantIds.contains(discoveryEntry.getParticipantId())) {
+    public boolean hasProviderPermission(String userId,
+                                         TrustLevel trustLevel,
+                                         String domain,
+                                         String interfaceName,
+                                         String participantId) {
+        if (whitelistedParticipantIds.contains(participantId)) {
             return true;
         }
         return localDomainAccessController.getProviderPermission(userId,
-                                                                 discoveryEntry.getDomain(),
-                                                                 discoveryEntry.getInterfaceName(),
+                                                                 domain,
+                                                                 interfaceName,
                                                                  trustLevel) == Permission.YES;
     }
 

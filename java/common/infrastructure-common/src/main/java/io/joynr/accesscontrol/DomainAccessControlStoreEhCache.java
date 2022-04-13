@@ -563,14 +563,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         // here search on uid take place
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         // query is the fastest if you search for keys and if you need value then call Cache.get(key)
-        Query queryRequestedUid = cache.createQuery();
-        if (cacheId.isACL()) {
-            queryRequestedUid.addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)));
-        } else {
-            queryRequestedUid.addCriteria(uidAttribute.eq(uid));
-        }
-        // have specific user ids appear before wildcards
-        queryRequestedUid.addOrderBy(uidAttribute, Direction.DESCENDING).includeKeys().end();
+        Query queryRequestedUid = cache.createQuery()
+                                       .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
+                                       // have specific user ids appear before wildcards
+                                       .addOrderBy(uidAttribute, Direction.DESCENDING)
+                                       .includeKeys()
+                                       .end();
         Results results = queryRequestedUid.execute();
         for (Result result : results.all()) {
             aces.add(DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey())));
@@ -605,18 +603,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         Attribute<String> domainAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.DOMAIN);
         Attribute<String> interfaceAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.INTERFACE);
-        Query queryAllOperations = cache.createQuery();
-        if (cacheId.isACL()) {
-            queryAllOperations.addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)));
-        } else {
-            queryAllOperations.addCriteria(uidAttribute.eq(uid));
-        }
-        queryAllOperations.addCriteria(domainAttribute.eq(domain))
-                          .addCriteria(interfaceAttribute.eq(interfaceName))
-                          // have specific user ids appear before wildcards
-                          .addOrderBy(uidAttribute, Direction.DESCENDING)
-                          .includeKeys()
-                          .end();
+        Query queryAllOperations = cache.createQuery()
+                                        .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
+                                        .addCriteria(domainAttribute.eq(domain))
+                                        .addCriteria(interfaceAttribute.eq(interfaceName))
+                                        // have specific user ids appear before wildcards
+                                        .addOrderBy(uidAttribute, Direction.DESCENDING)
+                                        .includeKeys()
+                                        .end();
         Results results = queryAllOperations.execute();
         List<T> aces = new ArrayList<T>();
         String currentUid = null;

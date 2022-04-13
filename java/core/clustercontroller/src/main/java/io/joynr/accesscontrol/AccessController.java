@@ -20,7 +20,6 @@ package io.joynr.accesscontrol;
 
 import joynr.ImmutableMessage;
 import joynr.infrastructure.DacTypes.TrustLevel;
-import joynr.types.DiscoveryEntry;
 
 /**
  * Checks incoming messages permissions
@@ -39,8 +38,14 @@ public interface AccessController {
      *
      * @param userId The provider userId
      * @param trustLevel The trustLevel for given userId
-     * @param discoveryEntry The discovery entry of the provider interface
+     * @param domain The domain where provider interface belongs to
+     * @param interfaceName The interface provider wants to register
+     * @param participantId The participantId of the provider who wants to register
      * @return true if the message has permission, false otherwise
      */
-    boolean hasProviderPermission(String userId, TrustLevel trustLevel, DiscoveryEntry discoveryEntry);
+    boolean hasProviderPermission(String userId,
+                                  TrustLevel trustLevel,
+                                  String domain,
+                                  String interfaceName,
+                                  String participantId);
 }

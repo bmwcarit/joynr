@@ -53,6 +53,8 @@ import joynr.MulticastSubscriptionQos;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -77,6 +79,8 @@ public class LocalDomainAccessControllerTest {
     private LocalDomainAccessController localDomainAccessController;
     private MasterAccessControlEntry masterAce;
     private OwnerAccessControlEntry ownerAce;
+    private MasterRegistrationControlEntry masterRce;
+    private OwnerRegistrationControlEntry ownerRce;
     private DomainRoleEntry userDre;
 
     @Mock
@@ -140,6 +144,21 @@ public class LocalDomainAccessControllerTest {
                                                TrustLevel.LOW,
                                                OPEARATION1,
                                                Permission.YES);
+        masterRce = new MasterRegistrationControlEntry(UID1,
+                                                       DOMAIN1,
+                                                       INTERFACE1,
+                                                       TrustLevel.LOW,
+                                                       new TrustLevel[]{ TrustLevel.MID, TrustLevel.LOW },
+                                                       TrustLevel.LOW,
+                                                       new TrustLevel[]{ TrustLevel.MID, TrustLevel.LOW },
+                                                       Permission.NO,
+                                                       new Permission[]{ Permission.ASK, Permission.NO });
+        ownerRce = new OwnerRegistrationControlEntry(UID1,
+                                                     DOMAIN1,
+                                                     INTERFACE1,
+                                                     TrustLevel.LOW,
+                                                     TrustLevel.LOW,
+                                                     Permission.YES);
     }
 
     @After
@@ -156,6 +175,8 @@ public class LocalDomainAccessControllerTest {
         assertFalse("UID1 should not have role MASTER in DRT",
                     localDomainAccessController.hasRole(UID1, DOMAIN1, Role.MASTER));
     }
+
+    // getConsumerPermission
 
     @Test
     public void testConsumerPermission() throws Exception {
@@ -219,5 +240,42 @@ public class LocalDomainAccessControllerTest {
                                                                        INTERFACE1,
                                                                        OPEARATION1,
                                                                        TrustLevel.HIGH));
+    }
+
+    // getProviderPermission
+
+    @Test
+    public void testProviderPermission() throws Exception {
+        domainAccessControlStore.updateOwnerRegistrationControlEntry(ownerRce);
+
+        assertEquals("UID1 should have Permission YES",
+                     Permission.YES,
+                     localDomainAccessController.getProviderPermission(UID1, DOMAIN1, INTERFACE1, TrustLevel.HIGH));
+    }
+
+    @Test
+    public void testProviderPermissionInvalidOwnerRce() throws Exception {
+        masterRce.setDefaultProviderPermission(Permission.ASK);
+        domainAccessControlStore.updateOwnerRegistrationControlEntry(ownerRce);
+        domainAccessControlStore.updateMasterRegistrationControlEntry(masterRce);
+
+        assertEquals("UID1 should have Permission NO",
+                     Permission.NO,
+                     localDomainAccessController.getProviderPermission(UID1, DOMAIN1, INTERFACE1, TrustLevel.HIGH));
+    }
+
+    @Test
+    public void testProviderPermissionOwnerRceOverrulesMaster() throws Exception {
+        ownerRce.setRequiredTrustLevel(TrustLevel.MID);
+        ownerRce.setProviderPermission(Permission.ASK);
+        domainAccessControlStore.updateOwnerRegistrationControlEntry(ownerRce);
+        domainAccessControlStore.updateMasterRegistrationControlEntry(masterRce);
+
+        assertEquals("UID1 should have Permission ASK",
+                     Permission.ASK,
+                     localDomainAccessController.getProviderPermission(UID1, DOMAIN1, INTERFACE1, TrustLevel.HIGH));
+        assertEquals("UID1 should have Permission NO",
+                     Permission.NO,
+                     localDomainAccessController.getProviderPermission(UID1, DOMAIN1, INTERFACE1, TrustLevel.LOW));
     }
 }
