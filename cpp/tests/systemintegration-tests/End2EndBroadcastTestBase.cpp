@@ -66,7 +66,6 @@ public:
     Semaphore altSemaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter;
-    std::uint16_t registerProviderWait;
     std::uint16_t subscribeToAttributeWait;
     std::uint16_t subscribeToBroadcastWait;
     joynr::types::Localisation::GpsLocation gpsLocation;
@@ -83,7 +82,6 @@ public:
               semaphore(0),
               altSemaphore(0),
               filter(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
-              registerProviderWait(1000),
               subscribeToAttributeWait(2000),
               subscribeToBroadcastWait(2000),
               gpsLocation(types::Localisation::GpsLocation()),
@@ -188,6 +186,8 @@ protected:
             std::shared_ptr<JoynrClusterControllerRuntime> runtime)
     {
         auto testProvider = std::make_shared<MyTestProvider>();
+        constexpr bool persist {true};
+        constexpr bool awaitGlobalRegistration {true};
         types::ProviderQos providerQos;
         std::chrono::milliseconds millisSinceEpoch =
                 std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -196,11 +196,7 @@ protected:
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
         providerQos.setSupportsOnChangeSubscriptions(true);
         providerParticipantId = runtime->registerProvider<tests::testProvider>(
-                domainName, testProvider, providerQos);
-
-        // This wait is necessary, because registerProvider is async, and a lookup could occur
-        // before the register has finished.
-        std::this_thread::sleep_for(std::chrono::milliseconds(registerProviderWait));
+                domainName, testProvider, providerQos, persist, awaitGlobalRegistration);
 
         return testProvider;
     }
@@ -239,8 +235,8 @@ protected:
         auto mockListener = std::make_shared<MockSubscriptionListenerOneType<T>>();
 
         // Use a semaphore to count and wait on calls to the mock listener
-        ON_CALL(*mockListener, onReceive(Eq(expectedValue)))
-                .WillByDefault(ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*mockListener, onReceive(Eq(expectedValue)))
+                .WillOnce(ReleaseSemaphore(&semaphore));
 
         testOneShotBroadcastSubscription(
                 mockListener, subscribeTo, unsubscribeFrom, fireBroadcast, expectedValue);

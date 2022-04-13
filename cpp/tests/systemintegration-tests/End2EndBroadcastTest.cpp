@@ -563,7 +563,7 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_MultipleOutput)
 
 TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
 {
-    std::int64_t receiveBroadcastWait = 2000;
+    std::int64_t receiveBroadcastWait = 3000;
 
     std::shared_ptr<MockGpsSubscriptionListener> mockListenerAttribute =
             std::make_shared<MockGpsSubscriptionListener>();
@@ -573,15 +573,21 @@ TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
 
     unregisterProvider();
 
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
     std::int64_t minInterval_ms = 50;
-    std::int64_t publicationTtl = 500;
+    std::int64_t publicationTtl = 3000;
     auto subscriptionQosAttribute =
             std::make_shared<OnChangeSubscriptionQos>(500000, // validity_ms
                                                       publicationTtl,
                                                       minInterval_ms); // minInterval_ms
 
-    // Initial attribute publication on subscription
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation))).Times(1);
+    // Initial attribute publication on subscription + one publication
+    // Use a semaphore to count and wait on calls to the mock listener attribute
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation))).WillOnce(ReleaseSemaphore(&semaphore));
+
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(&semaphore));
+
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult =
             testProxy->subscribeToLocation(mockListenerAttribute, subscriptionQosAttribute);
@@ -596,12 +602,18 @@ TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
     JOYNR_EXPECT_NO_THROW(
             subscriptionAttributeResult->get(subscribeToAttributeWait, subscriptionIdAttribute));
 
+    // Wait for initial publication to arrive
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+
+    // Waiting between broadcast occurences for at least the minInterval is neccessary because
+    // otherwise the publications could be omitted
+    std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
+
     // Expect to get notified if attribute changed
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2)))
-            .WillOnce(ReleaseSemaphore(&semaphore));
     testProvider->locationChanged(gpsLocation2);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
+    // Wait for 1 subscription messages to arrive
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(receiveBroadcastWait)));
 
     JOYNR_ASSERT_NO_THROW(testProxy->unsubscribeFromLocation(subscriptionIdAttribute));
 }
