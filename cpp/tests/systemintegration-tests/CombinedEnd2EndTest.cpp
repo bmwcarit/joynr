@@ -684,10 +684,8 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
         location.setDeviceTime(value);
         testProvider->setLocation(location, onSuccess, nullptr);
     };
-    // Change the location once
-    invokeSetter(-1);
 
-    // Wait for a subscription message to arrive
+    // Wait for initial publication to arrive
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
 
     // Change the location multiple times
