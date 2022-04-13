@@ -151,7 +151,9 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializerEmptyStruct)
     // Create a PublicationMissedException
     using namespace joynr::system::RoutingTypes;
 
-    Address expectedAddress;
+    // fully qualified type required here to avoid ambiguity with
+    // gtest/gmock Address
+    joynr::system::RoutingTypes::Address expectedAddress;
 
     // Serialize into JSON
     std::string json = joynr::serializer::serializeToJson(expectedAddress);
@@ -159,7 +161,9 @@ TEST_F(JoynrJsonSerializerTest, serializeDeserializerEmptyStruct)
 
     // Deserialize from JSON
 
-    Address actualAddress;
+    // fully qualified type required here to avoid ambiguity with
+    // gtest/gmock Address
+    joynr::system::RoutingTypes::Address actualAddress;
     joynr::serializer::deserializeFromJson(actualAddress, json);
     EXPECT_EQ(expectedAddress, actualAddress);
 }

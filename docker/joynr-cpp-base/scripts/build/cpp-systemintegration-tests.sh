@@ -1,7 +1,7 @@
 #!/bin/bash
 
-source /data/scripts/global.sh
-source /data/src/docker/joynr-base/scripts/start-and-stop-gcd-service.sh
+source /data/src/docker/joynr-base/scripts/ci/global.sh
+source /data/src/docker/joynr-base/scripts/ci/start-and-stop-gcd-service.sh
 
 log "ENVIRONMENT"
 env
@@ -13,7 +13,7 @@ echo '# start services'
 echo '# This script assumes mvn was run.'
 echo '####################################################'
 
-/data/src/docker/joynr-base/scripts/start-db.sh
+/data/src/docker/joynr-base/scripts/ci/start-db.sh
 
 log "start mosquitto"
 mosquitto -c /data/src/docker/joynr-base/mosquitto.conf &
@@ -30,7 +30,7 @@ function stopservices
     log "stop mosquitto"
     kill -TERM $MOSQUITTO_PID
     wait $MOSQUITTO_PID
-    /data/src/docker/joynr-base/scripts/stop-db.sh
+    /data/src/docker/joynr-base/scripts/ci/stop-db.sh
 }
 
 startGcd

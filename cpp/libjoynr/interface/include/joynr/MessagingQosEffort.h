@@ -20,6 +20,8 @@
 #ifndef MESSAGINGQOS_EFFORT_H
 #define MESSAGINGQOS_EFFORT_H
 
+#include <iosfwd>
+
 #include "joynr/exceptions/JoynrException.h"
 
 namespace joynr
@@ -53,7 +55,12 @@ struct MessagingQosEffort
         errorMessage << " is unknown literal for MessagingQosEffort";
         throw std::invalid_argument(errorMessage.str());
     }
+
+    friend void PrintTo(const MessagingQosEffort::Enum& messagingQosEffortEnum, ::std::ostream* os);
 };
+
+void PrintTo(const MessagingQosEffort::Enum& messagingQosEffortEnum, ::std::ostream* os);
+std::ostream& operator<<(std::ostream& os, const MessagingQosEffort::Enum& messagingQosEffortEnum);
 
 } // namespace joynr
 

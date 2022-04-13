@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /data/scripts/global.sh
+source /data/src/docker/joynr-ilt-gcc/scripts/ci/global.sh
 
 log "ENVIRONMENT"
 env

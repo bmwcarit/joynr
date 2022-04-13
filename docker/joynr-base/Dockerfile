@@ -29,7 +29,7 @@ RUN mkdir /home/joynr/build
 ###################################################
 # copy scripts and set start command
 ###################################################
-COPY scripts /data/scripts
+COPY scripts/docker /data/scripts
 
 ###################################################
 # Setup dnf.conf
@@ -208,7 +208,5 @@ RUN cd /tmp \
     && curl -o gosu -sSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64" \
     && mv gosu /usr/local/bin/gosu \
     && chmod 4755 /usr/local/bin/gosu
-
-COPY scripts/boot2user.sh /data/scripts/boot2user.sh
 
 ENTRYPOINT ["/tini", "-g", "--", "/data/scripts/boot2user.sh"]

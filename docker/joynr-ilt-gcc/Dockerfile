@@ -3,7 +3,12 @@ FROM joynr-javascript:latest
 ENV PKG_CONFIG_PATH /usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 
 ###################################################
-# install clang 3.5 for formatting
+# enable gold linker
+###################################################
+RUN  update-alternatives  --set ld /usr/bin/ld.gold
+
+###################################################
+# install dnf packages
 ###################################################
 RUN dnf update -y \
     && . /etc/profile \
@@ -13,6 +18,7 @@ RUN dnf update -y \
     lcov \
     boost \
     boost-devel \
+    ninja-build \
     psmisc \
     && dnf clean all \
     && pip install gcovr
@@ -82,20 +88,24 @@ RUN cd /opt \
     && rm -rf websocketpp
 
 ###################################################
-# install googletest & googlemock
+# install DLT
 ###################################################
 
 RUN cd /opt \
     && . /etc/profile \
-    && git clone https://github.com/google/googletest.git \
-    && cd googletest \
-    && git checkout ddb8012e \
+    && git clone https://github.com/GENIVI/dlt-daemon \
+    && cd dlt-daemon \
+    && git checkout v2.18.3 \
+    && sed -i 's/libdir=${exec_prefix}\/lib/libdir=@CMAKE_INSTALL_FULL_LIBDIR@/' automotive-dlt.pc.in \
+    && sed -i 's/includedir=${exec_prefix}\/include/includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@/' automotive-dlt.pc.in \
+    && sed -i 's/-Werror/-Wno-error/' src/console/logstorage/CMakeLists.txt \
     && mkdir build \
     && cd build \
-    && cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON .. \
+    && cmake .. -DWITH_DLT_DBUS=OFF -DWITH_DLT_TESTS=OFF -DWITH_DLT_EXAMPLES=OFF \
     && make install -j"$(nproc)" \
     && cd /opt/ \
-    && rm -rf googletest
+    && rm -rf dlt-daemon \
+    && echo '/usr/local/lib64' > /etc/ld.so.conf.d/dlt.conf
 
 ###################################################
 # install flatbuffers
@@ -162,9 +172,50 @@ RUN export VALGRIND_VERSION=3.15.0 \
         && rm -rf /tmp/valgrind-$VALGRIND_VERSION /tmp/valgrind-$VALGRIND_VERSION.tar.bz2
 
 ###################################################
-# Copy build scripts
+# install gcovr for code coverage reports
 ###################################################
-COPY scripts /data/scripts
+RUN . /etc/profile \
+    && dnf update -y \
+    && dnf install -y \
+    lcov \
+    python-pip \
+    && dnf clean all \
+    && pip install gcovr
+
+###################################################
+# install rapidjson
+###################################################
+
+RUN cd /opt \
+    && . /etc/profile \
+    && git clone https://github.com/miloyip/rapidjson.git rapidjson \
+    && cd rapidjson \
+    && git checkout v1.1.0 \
+    && mkdir build \
+    && cd build \
+    && cmake -DRAPIDJSON_BUILD_DOC=OFF \
+    -DRAPIDJSON_BUILD_EXAMPLES=OFF \
+    -DRAPIDJSON_BUILD_TESTS=OFF \
+    -DRAPIDJSON_BUILD_THIRDPARTY_GTEST=OFF .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf rapidjson
+
+###################################################
+# install muesli
+###################################################
+
+RUN cd /opt \
+    && . /etc/profile \
+    && git clone https://github.com/bmwcarit/muesli.git \
+    && cd muesli \
+    && git checkout 1.0.2 \
+    && mkdir build \
+    && cd build \
+    && cmake -DBUILD_MUESLI_TESTS=Off -DUSE_PLATFORM_RAPIDJSON=On .. \
+    && make install -j"$(nproc)" \
+    && cd /opt \
+    && rm -rf muesli
 
 ###################################################
 # setup build environment

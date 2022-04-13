@@ -2,6 +2,25 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.18.4
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Docker]** Removed Docker image `joynr-complete-deps`. `joynr-ilt-gcc` now includes everything
+from `joynr-complete-deps`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed a memory and cpu leak occurring when a large amount of proxies
+  was being built.
+
 # joynr 1.18.3
 
 ## API-relevant Changes

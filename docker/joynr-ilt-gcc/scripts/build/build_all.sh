@@ -32,7 +32,6 @@ set -e
   mvn clean install
 )
 
-./cpp-install-muesli.sh --default
 ./cpp-clean-build.sh --buildtests OFF --enableclangformatter OFF
 ./cpp-build-tests.sh inter-language-test
 

@@ -46,12 +46,7 @@ then
 fi
 
 # source global.sh
-if [ -f /data/scripts/global.sh ]
-then
-	source /data/scripts/global.sh
-else
-	source $JOYNR_SOURCE_DIR/docker/joynr-base/scripts/global.sh
-fi
+source $JOYNR_SOURCE_DIR/docker/joynr-ilt-gcc/scripts/ci/global.sh
 
 if [ -z "$CC_LANGUAGE" ]
 then
@@ -222,8 +217,8 @@ function stop_services
 		MOSQUITTO_PID=""
 	fi
 
-	if [ -f /data/src/docker/joynr-base/scripts/stop-db.sh ]; then
-		/data/src/docker/joynr-base/scripts/stop-db.sh
+	if [ -f /data/src/docker/joynr-ilt-gcc/scripts/ci/stop-db.sh ]; then
+		/data/src/docker/joynr-ilt-gcc/scripts/ci/stop-db.sh
 	fi
 
 }
@@ -235,8 +230,8 @@ function start_services {
 
 	log '# start services'
 
-	if [ -f /data/src/docker/joynr-base/scripts/start-db.sh ]; then
-		/data/src/docker/joynr-base/scripts/start-db.sh
+	if [ -f /data/src/docker/joynr-ilt-gcc/scripts/ci/start-db.sh ]; then
+		/data/src/docker/joynr-ilt-gcc/scripts/ci/start-db.sh
 	fi
 
 	echo "Starting mosquitto"

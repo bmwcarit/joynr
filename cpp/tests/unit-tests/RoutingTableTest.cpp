@@ -23,6 +23,7 @@
 #include <thread>
 #include <vector>
 
+#include <boost/optional/optional_io.hpp>
 #include <gtest/gtest.h>
 
 #include "joynr/RoutingTable.h"

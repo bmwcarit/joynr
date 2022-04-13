@@ -499,16 +499,16 @@ function stopServices {
         stopMosquitto
     fi
 
-    if [ -f /data/src/docker/joynr-base/scripts/stop-db.sh ]; then
-        /data/src/docker/joynr-base/scripts/stop-db.sh
+    if [ -f /data/src/docker/joynr-ilt-gcc/scripts/ci/stop-db.sh ]; then
+        /data/src/docker/joynr-ilt-gcc/scripts/ci/stop-db.sh
     fi
 }
 
 function startServices {
     startMosquitto
     echo '# starting services'
-    if [ -f /data/src/docker/joynr-base/scripts/start-db.sh ]; then
-        /data/src/docker/joynr-base/scripts/start-db.sh
+    if [ -f /data/src/docker/joynr-ilt-gcc/scripts/ci/start-db.sh ]; then
+        /data/src/docker/joynr-ilt-gcc/scripts/ci/start-db.sh
     fi
     startGcd
     SUCCESS=$?

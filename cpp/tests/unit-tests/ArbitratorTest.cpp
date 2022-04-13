@@ -23,6 +23,7 @@
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/none.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
