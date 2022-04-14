@@ -2,6 +2,32 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.11
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[C++]** Fixed compilation error with g++ 10.3.1 (sign comparison errors on comparison of two
+  enums values assigned to 0).
+* **[C++]** CMake now accepts websocketpp versions `0.8.1` and `0.8.2` in addition to version
+  `0.8.0`.
+* **[C++]** Removed unused dependency to `CURL`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Generator, C++]** Enums in generated Default<Interface>Provider code are now initialized
+  properly.
+* **[C++]** Fixed inheritance in `SubscriptionListener` and `ISubscriptionListener` to fix
+  compilation errors and warnings with Clang compiler.
+* **[Java]** Fixed a memory and cpu leak occurring when a large amount of proxies
+  was being built.
+
 # joynr 1.19.10
 
 ## API-relevant Changes
@@ -277,6 +303,25 @@ None.
 * **[Java]** Fixed log statements in HivemqMqttClient and HivemqMqttClientFactory: exceptions are
   now logged correctly with stack trace.
 * **[TS]** Remove undocumented dependency to '@types/nanoid'.
+
+# joynr 1.18.4
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Docker]** Removed Docker image `joynr-complete-deps`. `joynr-ilt-gcc` now includes everything
+from `joynr-complete-deps`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed a memory and cpu leak occurring when a large amount of proxies
+  was being built.
 
 # joynr 1.18.3
 
