@@ -4906,7 +4906,7 @@ std::tuple<bool, bool> const LCDWithAC_UseCases[] = {
         make_tuple(true, false),
         make_tuple(true, true)};
 
-INSTANTIATE_TEST_CASE_P(WithAC,
+INSTANTIATE_TEST_SUITE_P(WithAC,
                         LocalCapabilitiesDirectoryACMockTest,
                         ::testing::ValuesIn(LCDWithAC_UseCases));
 
@@ -5043,7 +5043,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
 TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterController)
 {
     std::int64_t maxLastSeenMs = 100000;
-    for (const auto gbid : _KNOWN_GBIDS) {
+    for (const auto &gbid : _KNOWN_GBIDS) {
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, removeStale(
                         Eq(_clusterControllerId),
                         Eq(maxLastSeenMs),
@@ -5058,7 +5058,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControll
 TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControllerRetry)
 {
     std::int64_t maxLastSeenMs = TimePoint::now().toMilliseconds() - 10000;
-    for (const auto gbid : _KNOWN_GBIDS) {
+    for (const auto &gbid : _KNOWN_GBIDS) {
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                     removeStale(Eq(_clusterControllerId), Eq(maxLastSeenMs), Eq(gbid), _, _))
                 .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientRemoveStaleWithException))
@@ -5070,7 +5070,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControll
 TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControllerNoRetry)
 {
     std::int64_t maxLastSeenMs = TimePoint::now().toMilliseconds() - 3600100;
-    for (const auto gbid : _KNOWN_GBIDS) {
+    for (const auto &gbid : _KNOWN_GBIDS) {
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                     removeStale(Eq(_clusterControllerId), Eq(maxLastSeenMs), Eq(gbid), _, _))
                 .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientRemoveStaleWithException));
@@ -5078,7 +5078,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControll
     _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
 }
 
-INSTANTIATE_TEST_CASE_P(changeProviderScope,
+INSTANTIATE_TEST_SUITE_P(changeProviderScope,
                         LocalCapabilitiesDirectoryWithProviderScope,
                         ::testing::Values(types::ProviderScope::LOCAL,
                                           types::ProviderScope::GLOBAL));

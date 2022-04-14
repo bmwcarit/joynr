@@ -258,7 +258,7 @@ TEST_F(MessageQueueWithLimitTest, queueLimitExceeded_onMsgsDroppedInvoked)
 
     const std::string recipient[messageCount] = {"TEST1", "TEST2", "TEST3", "TEST4", "TEST5"};
 
-    auto onMsgsDropped = [&recipient, &messageQueue, &semaphore] (std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessages) {
+    auto onMsgsDropped = [&recipient, &semaphore] (std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessages) {
             EXPECT_EQ(1, droppedMessages.size());
             EXPECT_EQ(droppedMessages[0]->getRecipient(), recipient[2]);
             semaphore.notify();

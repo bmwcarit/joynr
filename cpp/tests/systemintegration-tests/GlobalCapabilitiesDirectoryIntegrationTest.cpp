@@ -477,6 +477,6 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegi
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(Mqtt,
+INSTANTIATE_TEST_SUITE_P(Mqtt,
                         GlobalCapabilitiesDirectoryIntegrationTest,
                         testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));

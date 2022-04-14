@@ -289,4 +289,4 @@ private:
 
 typedef ::testing::Types<LibJoynrMessageRouter, CcMessageRouter> MessageRouterTypes;
 
-TYPED_TEST_CASE(MessageRouterTest, MessageRouterTypes);
+TYPED_TEST_SUITE(MessageRouterTest, MessageRouterTypes,);

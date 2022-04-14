@@ -1078,13 +1078,13 @@ TEST_P(CombinedEnd2EndTest, call_async_void_operation_failure)
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
         Mqtt,
         CombinedEnd2EndTest,
         testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,
                                         "test-resources/MqttSystemIntegrationTest2.settings"s)));
 
-INSTANTIATE_TEST_CASE_P(MqttOverTLS,
+INSTANTIATE_TEST_SUITE_P(MqttOverTLS,
                         CombinedEnd2EndTest,
                         testing::Values(std::make_tuple(
                                 "test-resources/MqttOverTLSSystemIntegrationTest1.settings"s,

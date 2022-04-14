@@ -127,7 +127,7 @@ std::tuple<std::string, std::string, std::uint32_t> const stringValues[] = {
         std::make_tuple("dom/ain", "interfa.ceName", 10),
         std::make_tuple("dömain", "interßäceName", 1890),
         std::make_tuple("0123456789012345678912", "0123456789012345678912", 1234567890)};
-INSTANTIATE_TEST_CASE_P(checkStrings, ParticipantIdStorageTest, ::testing::ValuesIn(stringValues));
+INSTANTIATE_TEST_SUITE_P(checkStrings, ParticipantIdStorageTest, ::testing::ValuesIn(stringValues));
 
 TEST_P(ParticipantIdStorageAssertTest, assertOnGetProviderParticipantId)
 {
@@ -149,7 +149,7 @@ std::tuple<std::string, std::string, std::uint32_t> const failingStrings[] = {
         std::make_tuple("", "", 1),
         std::make_tuple("", "interfaceName", 1),
         std::make_tuple("domain", "", 1)};
-INSTANTIATE_TEST_CASE_P(failingStrings,
+INSTANTIATE_TEST_SUITE_P(failingStrings,
                         ParticipantIdStorageAssertTest,
                         ::testing::ValuesIn(failingStrings));
 

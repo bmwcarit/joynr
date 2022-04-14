@@ -315,7 +315,7 @@ TEST_P(LocalDomainAccessControllerTest, consumerPermissionAmbigious)
 
 // true: with persist file
 // false: without
-INSTANTIATE_TEST_CASE_P(WithOrWithoutPersistFile, LocalDomainAccessControllerTest, Bool());
+INSTANTIATE_TEST_SUITE_P(WithOrWithoutPersistFile, LocalDomainAccessControllerTest, Bool());
 
 TEST(LocalDomainAccessControllerPersistedTest, persistedAcesAreUsed)
 {

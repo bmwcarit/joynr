@@ -267,7 +267,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail)
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
         Mqtt,
         End2EndSelectiveBroadcastTest,
         testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,

@@ -104,10 +104,10 @@ struct GetId<NonExistingTag>
 };
 
 using SuceedingTags = ::testing::Types<GetId<muesli::tags::json>, GetId<tag::mock>>;
-TYPED_TEST_CASE(RuntimeArchiveSelectionTestMustSucceed, SuceedingTags);
+TYPED_TEST_SUITE(RuntimeArchiveSelectionTestMustSucceed, SuceedingTags,);
 
 using FailingTags = ::testing::Types<GetId<NonExistingTag>>;
-TYPED_TEST_CASE(RuntimeArchiveSelectionTestMustFail, FailingTags);
+TYPED_TEST_SUITE(RuntimeArchiveSelectionTestMustFail, FailingTags,);
 
 TYPED_TEST(RuntimeArchiveSelectionTestMustSucceed, getOutputArchive)
 {

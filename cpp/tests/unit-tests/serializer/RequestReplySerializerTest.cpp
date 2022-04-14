@@ -238,7 +238,7 @@ struct JsonSerializer
 // typelist of serializers which shall be tested in the following tests
 using Serializers = ::testing::Types<JsonSerializer>;
 
-TYPED_TEST_CASE(RequestReplySerializerTest, Serializers);
+TYPED_TEST_SUITE(RequestReplySerializerTest, Serializers,);
 
 TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithProviderRuntimeException)
 {

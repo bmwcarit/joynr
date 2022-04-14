@@ -204,6 +204,6 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize)
     EXPECT_EQ(expectedMessage, receivedMessage);
 }
 
-INSTANTIATE_TEST_CASE_P(WebsocketTransmitMessagesWithIncreasingSize,
+INSTANTIATE_TEST_SUITE_P(WebsocketTransmitMessagesWithIncreasingSize,
                         WebSocketMessagingStubTest,
                         ::testing::Values<std::size_t>(256 * 1024, 512 * 1024, 1024 * 1024));

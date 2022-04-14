@@ -77,7 +77,7 @@ protected:
 typedef ::testing::Types<MulticastSubscriptionCallback<std::string>,
                          UnicastSubscriptionCallback<std::string>> SubscriptionCallbackTypes;
 
-TYPED_TEST_CASE(SubscriptionCallbackTest, SubscriptionCallbackTypes);
+TYPED_TEST_SUITE(SubscriptionCallbackTest, SubscriptionCallbackTypes,);
 
 TYPED_TEST(SubscriptionCallbackTest, forwardSubscriptionReplyToFutureAndListener)
 {

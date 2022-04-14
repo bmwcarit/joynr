@@ -38,8 +38,7 @@ public:
         JOYNR_LOG_DEBUG(logger(), "I am being destroyed");
     }
 
-    MOCK_METHOD1(getLocation, void(joynr::types::Localisation::GpsLocation& result) );
-    MOCK_METHOD1(setLocation, void(joynr::types::Localisation::GpsLocation gpsLocation));
+    MOCK_METHOD2(getLocation, void(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess, std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError));
 
     std::string getParticipantId() const
     {

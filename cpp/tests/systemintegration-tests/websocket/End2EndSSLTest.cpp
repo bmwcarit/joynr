@@ -263,14 +263,14 @@ TEST_P(End2EndSSLTest, localconnection_call_rpc_method_with_invalid_message_sign
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
         TLS,
         End2EndSSLTest,
         testing::Values(std::make_tuple("test-resources/websocket-cc-tls.settings"s,
                                         "test-resources/websocket-libjoynr-tls.settings"s,
                                         true)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
         NonTLS,
         End2EndSSLTest,
         testing::Values(std::make_tuple("test-resources/websocket-cc-tls.settings"s,

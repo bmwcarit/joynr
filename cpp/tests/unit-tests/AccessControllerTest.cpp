@@ -447,7 +447,7 @@ public:
     }
 };
 
-TYPED_TEST_CASE(AccessControllerSubscriptionTest, SubscriptionTypes);
+TYPED_TEST_SUITE(AccessControllerSubscriptionTest, SubscriptionTypes,);
 
 TYPED_TEST(AccessControllerSubscriptionTest, hasNoConsumerPermission)
 {

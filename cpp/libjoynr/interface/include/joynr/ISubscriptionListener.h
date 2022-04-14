@@ -58,7 +58,7 @@ public:
 /**
  * @brief Class interface to be extended by attribute or broadcast subscription listeners
  */
-template <typename... Ts>
+template <typename T, typename... Ts>
 class ISubscriptionListener : public ISubscriptionListenerBase
 {
 public:
@@ -69,7 +69,7 @@ public:
      * be blocked, wait for user interaction, or do larger computation.
      * @param values associated with the subscription this listener is listening to
      */
-    virtual void onReceive(const Ts&... values) = 0;
+    virtual void onReceive(const T& value, const Ts&... values) = 0;
 };
 
 template <>

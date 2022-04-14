@@ -224,7 +224,7 @@ TEST_F(TaskSequencerTest, cancelReleasesFutureMemory)
     TestTaskSequencer test;
     auto sharedPromise = std::make_shared<std::uint64_t>(42);
     std::weak_ptr<std::uint64_t> refPromise(sharedPromise);
-    test.add({[this, sharedPromise]() {
+    test.add({[sharedPromise]() {
         auto newFuture = std::make_shared<TestFuture>();
         newFuture->_memorySharedByPromise = sharedPromise;
         return newFuture;

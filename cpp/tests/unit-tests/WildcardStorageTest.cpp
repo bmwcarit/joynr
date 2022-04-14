@@ -142,11 +142,11 @@ const std::vector<std::tuple<std::string, std::string, int, int>> testData_Child
         std::make_tuple("*", "joynr.*", 1, 2),
         std::make_tuple("joynr.*", "*", 2, 1)};
 
-INSTANTIATE_TEST_CASE_P(lookupChildOfChild,
+INSTANTIATE_TEST_SUITE_P(lookupChildOfChild,
                         WildcardStorageTestP,
                         ::testing::ValuesIn(testData_ChildOfChild));
 
-INSTANTIATE_TEST_CASE_P(lookupTwoChildrenOfParent,
+INSTANTIATE_TEST_SUITE_P(lookupTwoChildrenOfParent,
                         WildcardStorageTestP,
                         ::testing::ValuesIn(testData_TwoChildrenOfParent));
 
@@ -161,7 +161,7 @@ using AccessControlTestTypes = ::testing::Types<dac::MasterAccessControlEntry,
                                                 dac::MasterRegistrationControlEntry,
                                                 dac::MediatorRegistrationControlEntry,
                                                 dac::OwnerRegistrationControlEntry>;
-TYPED_TEST_CASE(WildcardStorageTestTypedTest, AccessControlTestTypes);
+TYPED_TEST_SUITE(WildcardStorageTestTypedTest, AccessControlTestTypes,);
 
 TYPED_TEST(WildcardStorageTestTypedTest, insertAndLookupOptionalSet)
 {
