@@ -175,7 +175,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
     mutableMessage.setSender("testSender");
     mutableMessage.setRecipient("testRecipient");
     mutableMessage.setPayload("shortMessage");
-    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(60700)); // 60,7 sec will be rounded to 61 sec
+    mutableMessage.setExpiryDate(now + std::chrono::milliseconds(60800)); // 60,8 sec will be rounded to 61 sec
 
     std::shared_ptr<joynr::ImmutableMessage> immutableMessage1 =
             mutableMessage.getImmutableMessage();
@@ -193,7 +193,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
 
     auto relativeTtl1 = immutableMessage1->getExpiryDate().relativeFromNow().count();
 
-    ASSERT_TRUE(relativeTtl1 % 1000 > 600 && relativeTtl1 % 1000 < 800);
+    ASSERT_TRUE(relativeTtl1 % 1000 > 500 && relativeTtl1 % 1000 < 800);
 
     // Second message with different expiry date
     mutableMessage.setExpiryDate(now + std::chrono::milliseconds(60200)); // 60,2 sec will be rounded to 61 sec
@@ -214,7 +214,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
 
     auto relativeTtl2 = immutableMessage2->getExpiryDate().relativeFromNow().count();
 
-    ASSERT_TRUE(relativeTtl2 % 1000 > 100 && relativeTtl2 % 1000 < 300);
+    ASSERT_TRUE(relativeTtl2 % 1000 > 0 && relativeTtl2 % 1000 < 300);
 }
 
 TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecGreaterThanMaxIntervalAlwaysSetToMaxInterval)

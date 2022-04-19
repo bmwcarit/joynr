@@ -22,6 +22,7 @@
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/PeriodicSubscriptionQos.h"
 
+#ifndef NDEBUG
 TEST(BroadcastSubscriptionRequestTest, assertsWhenWrongQosTypeIsPassed)
 {
     using namespace joynr;
@@ -29,3 +30,4 @@ TEST(BroadcastSubscriptionRequestTest, assertsWhenWrongQosTypeIsPassed)
     auto qos = std::make_shared<PeriodicSubscriptionQos>();
     EXPECT_DEATH(subscriptionRequest.setQos(qos), "Assertion.*");
 }
+#endif

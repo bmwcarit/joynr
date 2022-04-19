@@ -129,6 +129,8 @@ std::tuple<std::string, std::string, std::uint32_t> const stringValues[] = {
         std::make_tuple("0123456789012345678912", "0123456789012345678912", 1234567890)};
 INSTANTIATE_TEST_CASE_P(checkStrings, ParticipantIdStorageTest, ::testing::ValuesIn(stringValues));
 
+
+#ifndef NDEBUG
 TEST_P(ParticipantIdStorageAssertTest, assertOnGetProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
@@ -152,6 +154,7 @@ std::tuple<std::string, std::string, std::uint32_t> const failingStrings[] = {
 INSTANTIATE_TEST_CASE_P(failingStrings,
                         ParticipantIdStorageAssertTest,
                         ::testing::ValuesIn(failingStrings));
+#endif
 
 TEST(ParticipantIdStorageTest, writeIniFile)
 {
