@@ -54,7 +54,7 @@ $ docker run --rm --sig-proxy -e DEV_UID="$(id -u)"  \
     -v <FULL_PATH_TO_JOYNR_SOURCES>:/data/src \
     -v <FULL_PATH_TO_MAVEN_DIRECTORY>:/home/joynr/.m2 \
     joynr-base \
-    /data/src/docker/joynr-base/scripts/test/java-clean-build
+    /data/src/docker/joynr-base/scripts/test/java-clean-build skipTests
 ```
 
 This will start the docker container **joynr-base** and execute the script
