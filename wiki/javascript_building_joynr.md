@@ -13,13 +13,13 @@ sudo docker run --rm --sig-proxy -e DEV_UID="$(id -u)"
     -v <FULL_PATH_TO_JOYNR_JAVASCRIPT_REPOSITORY>:/data/src
     -v <FULL_PATH_TO_MAVEN_DIRECTORY>:/home/joynr/.m2
     joynr-javascript
-    /data/src/docker/joynr-javascript/scripts/build/javascript-clean-build
+    /data/src/docker/joynr-base/scripts/ci/javascript-clean-build
 ```
 
 
 
 This will start the docker container **joynr-javascript** and execute the script
-**docker/joynr-javascript/scripts/build/javascript-clean-build.sh** in the joynr repository.
+**docker/joynr-base/scripts/ci/javascript-clean-build.sh** in the joynr repository.
 This script builds joynr JavaScript.
 
 The joynr artifacts necessary for building joynr JavaScript are taken from the local Maven

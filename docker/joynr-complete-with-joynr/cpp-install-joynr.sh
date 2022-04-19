@@ -24,8 +24,8 @@ echo "END Listing $HOME/.m2"
 cat > /root/.mavenrc << EOF
 export JAVA_HOME=/usr/lib/jvm/java-openjdk
 EOF
-/data/src/docker/joynr-ilt-gcc/scripts/build/cpp-generate.sh
-/data/src/docker/joynr-ilt-gcc/scripts/build/cpp-clean-build.sh --jobs 16 --buildtests OFF --enableclangformatter OFF
+/data/src/docker/joynr-base/scripts/ci/cpp-generate.sh
+/data/src/docker/joynr-base/scripts/ci/cpp-clean-build.sh --jobs 16 --buildtests OFF --enableclangformatter OFF
 cd /data/build/joynr
 make install
 echo "/usr/lib" > /etc/ld.so.conf.d/usr-lib.conf

@@ -14,7 +14,7 @@ FROM joynr-runtime-environment-base:latest
 # install the c++ executables which are provided
 # as rpm files. The rpm files are created by using
 # following shell script:
-# docker/joynr-ilt-gcc/scripts/build/cpp-build-rpm-package.sh
+# docker/joynr-base/scripts/test/cpp-build-rpm-package.sh
 # The created rpm files must be copied to the docker
 # build context beforehand.
 ###################################################

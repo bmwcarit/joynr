@@ -29,9 +29,9 @@ mvn install checkstyle:checkstyle \
 -DskipTests
 
 set +e
-./docker/joynr-java/scripts/build/report_spotbugs.py
+./docker/joynr-base/scripts/ci/report_spotbugs.py
 SPOTBUGS_EXITCODE=$?
-./docker/joynr-java/scripts/build/report_checkstyle.py
+./docker/joynr-base/scripts/ci/report_checkstyle.py
 CHECKSTYLE_EXITCODE=$?
 if [ $SPOTBUGS_EXITCODE -ne 0 -o $CHECKSTYLE_EXITCODE -ne 0 ]
 then
