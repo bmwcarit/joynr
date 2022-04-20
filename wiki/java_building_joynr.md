@@ -54,11 +54,11 @@ $ docker run --rm --sig-proxy -e DEV_UID="$(id -u)"  \
     -v <FULL_PATH_TO_JOYNR_SOURCES>:/data/src \
     -v <FULL_PATH_TO_MAVEN_DIRECTORY>:/home/joynr/.m2 \
     joynr-base \
-    /data/src/docker/joynr-java/scripts/build/java-clean-build
+    /data/src/docker/joynr-base/scripts/test/java-clean-build skipTests
 ```
 
 This will start the docker container **joynr-base** and execute the script
-**docker/joynr-java/scripts/build/java-clean-build**, which builds joynr Java and the common
+**docker/joynr-base/scripts/test/java-clean-build**, which builds joynr Java and the common
 components. The resulting artifacts are stored in the local Maven repository. 
 The Maven directory **&lt;FULL_PATH_TO_HOST_MAVEN_DIRECTORY&gt;** which contains the
 local Maven repository is mounted at **/home/joynr/.m2** in the docker container. In the same way,

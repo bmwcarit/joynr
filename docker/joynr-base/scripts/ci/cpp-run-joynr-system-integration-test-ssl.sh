@@ -26,7 +26,7 @@ CC_BINDIR=/data/build/tests/bin
 
 function usage
 {
-    echo "usage: cpp-build-tests.sh [--cluster-controller-bin-dir <bin directory to cluster-controller>]"
+    echo "usage: cpp-run-joynr-system-integration-test-ssl.sh [--cluster-controller-bin-dir <bin directory to cluster-controller>]"
 }
 
 function createCACertAndPrivateKey() {

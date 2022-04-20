@@ -2,7 +2,7 @@
 set -x
 . /etc/profile
 
-/data/src/docker/joynr-ilt-gcc/scripts/build/cpp-build-tests.sh standalone-pt --jobs 16
+/data/src/docker/joynr-base/scripts/ci/cpp-build-tests.sh standalone-pt --jobs 16
 
 # install dummykeyChain so performance test apps can link against it
 cd /data/build/dummyKeychain

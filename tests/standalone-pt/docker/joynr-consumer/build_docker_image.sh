@@ -1,7 +1,7 @@
 #!/bin/bash
 set -Eeuxo pipefail
 
-base_image=joynr-complete-with-joynr
+base_image=joynr-base
 intermediate_container=joynr-consumer-tmp
 output_image=joynr-consumer
 current_work_dir=$(cd $(dirname $0) && pwd)

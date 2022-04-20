@@ -7,7 +7,6 @@ cd /data/src
 # print commands before they are executed
 set -e
 
-
 mvn install -N
 
 (
@@ -25,13 +24,13 @@ mvn install -N
 )
 
 mvn install checkstyle:checkstyle \
--P spotbugs,no-license-and-notice,no-java-formatter,android \
+-P spotbugs,no-license-and-notice,no-java-formatter \
 -DskipTests
 
 set +e
-./docker/joynr-java/scripts/build/report_spotbugs.py
+./docker/joynr-base/scripts/ci/report_spotbugs.py
 SPOTBUGS_EXITCODE=$?
-./docker/joynr-java/scripts/build/report_checkstyle.py
+./docker/joynr-base/scripts/ci/report_checkstyle.py
 CHECKSTYLE_EXITCODE=$?
 if [ $SPOTBUGS_EXITCODE -ne 0 -o $CHECKSTYLE_EXITCODE -ne 0 ]
 then
@@ -40,5 +39,6 @@ fi
 set -e
 
 (
-  mvn javadoc:jar -P android
+  cd java
+  mvn javadoc:aggregate-jar
 )

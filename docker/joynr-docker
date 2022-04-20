@@ -49,12 +49,6 @@ done
 #list of available images
 declare -a normalBuildImages=(
     "joynr-base"
-    "joynr-android"
-    "joynr-javascript"
-    "joynr-cpp-base"
-    "joynr-cpp-gcc"
-    "joynr-cpp-clang"
-    "joynr-ilt-gcc"
     "joynr-runtime-environment-base"
     "joynr-java-8"
 )

@@ -2,7 +2,7 @@
 set -x
 
 dockerRepository=""
-dockerImage=joynr-ilt-gcc
+dockerImage=joynr-base
 dockerTempImageName=joynr-complete-with-joynr-tmp
 qualifiedDockerImageName=${dockerRepository}${dockerImage}
 resultingDockerImage=joynr-complete-with-joynr
