@@ -51,6 +51,36 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>sonarsource-scanner-maven</id>
+				<properties>
+					<java.version>1.11</java.version>
+					<sonar.language>java</sonar.language>
+					<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+					<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+					<sonar.coverage.jacoco.xmlReportPaths>**/src/**/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+					<sonar.java.binaries>**/src/**/target/classes/**/*.class</sonar.java.binaries>
+					<sonar.java.libraries>**/src/**/target/**/*SNAPSHOT.jar</sonar.java.libraries>
+					<sonar.java.test.binaries>**/src/**/target/**/*SNAPSHOT-tests.jar</sonar.java.test.binaries>
+					<sonar.jacoco.reportsPaths>**/src/**/target/site/jacoco/jacoco.xml</sonar.jacoco.reportsPaths>
+					<sonar.tests>**/src/test/java</sonar.tests>
+					<sonar.exclusions>
+						**/src/**/ClusterController.java,
+						**/src/**/StaticDomainAccessControlProvisioning.java,
+						**/src/**/LowerCaseProperties.java,
+						**/src/**/CCInProcessRuntimeModule.java,
+						**/src/**/CCWebSocketRuntimeModule.java,
+						**/src/**/LibjoynrWebSocketRuntimeModule.java,
+						**/src/**/WebSocketJettyClient.java,
+						**/src/**/WebSocketJettyServer.java,
+						**/target/test-classes/**/*,
+						**/test/**
+					</sonar.exclusions>
+					<sonar.test.exclusions>
+						**/test/**
+					</sonar.test.exclusions>
+				</properties>
+		</profile>
 	</profiles>
 	<dependencies>
 	</dependencies>

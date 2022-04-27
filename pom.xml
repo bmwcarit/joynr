@@ -418,6 +418,7 @@
 		<log4j.version>2.17.2</log4j.version>
 		<smrf.version>0.3.3</smrf.version>
 		<jacoco.version>0.8.7</jacoco.version>
+		<sonarsource.version>3.7.0.1746</sonarsource.version>
 		<surefire.version>3.0.0-M3</surefire.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
 	</properties>
@@ -927,6 +928,11 @@
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
 					<version>${jacoco.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.sonarsource.scanner.maven</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>${sonarsource.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
