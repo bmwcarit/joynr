@@ -2,6 +2,34 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.12
+
+## API-relevant Changes
+None.
+
+## Other Changes
+* **[Docker]** Consolidated joynr Docker images to new Docker image `joynr-base`.
+  Removed obsolete Docker images `joynr-android`. `joynr-cpp-base`, `joynr-cpp-clang`,
+  `joynr-cpp-gcc`, `joynr-ilt-gcc`, `joynr-javascript`. Scripts and references in documentation
+  have been updated: [Building joynr Java](/wiki/java_building_joynr.md),
+  [Building joynr C++](/wiki/cpp_building_joynr.md),
+  [Building joynr JavaScript](/wiki/javascript_building_joynr.md).
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed a bug in the provider registration with `awaitGlobalRegistration=true`. The
+  behavior is now the same as in C++. Before, multiple registration attempts for the same provider
+  could overlap and result in a locally (within the local store of the cluster controller) not
+  registered provider. This could happen if the global registration of the first registration
+  attempt failed and the second global registration succeeded. Without the fix, the provider was
+  still registered globally but the freshness update ("touch") to extend the provider's lifetime and
+  update the lastSeenDate did not work.
+
 # joynr 1.19.11
 
 ## API-relevant Changes
