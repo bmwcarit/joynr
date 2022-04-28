@@ -4,7 +4,7 @@
 cd $JOYNR_REPOSITORY
 mvn clean install
 cd java/backend-services/capabilities-directory
-java -Dlog4j.configuration="file:target/deploy/log4j2.properties" -jar target/deploy/capabilities-directory-jar-with-dependencies.jar
+java -Dlog4j2.configurationFile="file:target/deploy/log4j2.properties" -jar target/deploy/capabilities-directory-jar-with-dependencies.jar
 ```
 
 This will connect to a MQTT broker on localhost:1883.

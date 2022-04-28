@@ -27,9 +27,9 @@ function startGcd {
     echo 'start GCD'
     if [ -d "/data/logs" ]
     then
-        java -Dlog4j.configuration="file:${JAR_PATH}/log4j2.properties" -jar ${JAR_PATH}/capabilities-directory-jar-with-dependencies.jar 2>&1 > /data/logs/gcd.log &
+        java -Dlog4j2.configurationFile="file:${JAR_PATH}/log4j2.properties" -jar ${JAR_PATH}/capabilities-directory-jar-with-dependencies.jar 2>&1 > /data/logs/gcd.log &
     else
-        java -Dlog4j.configuration="file:${JAR_PATH}/log4j2.properties" -jar ${JAR_PATH}/capabilities-directory-jar-with-dependencies.jar &
+        java -Dlog4j2.configurationFile="file:${JAR_PATH}/log4j2.properties" -jar ${JAR_PATH}/capabilities-directory-jar-with-dependencies.jar &
     fi
 
     GCD_PID=$!
