@@ -536,17 +536,17 @@ public class LocalCapabilitiesDirectoryTest {
         cdl2.countDown();
 
         verify(globalCapabilitiesDirectoryClient,
-               timeout(1000).times(1)).add(any(),
-                                           argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
-                                           anyLong(),
-                                           eq(expectedGbids));
+               timeout(DEFAULT_WAIT_TIME_MS).times(1)).add(any(),
+                                                           argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedGlobalDiscoveryEntry)),
+                                                           anyLong(),
+                                                           eq(expectedGbids));
 
         // check that GcdTaskSequencer is still alive
         localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
-        verify(globalCapabilitiesDirectoryClient, timeout(1000).times(2)).add(any(),
-                                                                              any(),
-                                                                              anyLong(),
-                                                                              eq(expectedGbids));
+        verify(globalCapabilitiesDirectoryClient, timeout(DEFAULT_WAIT_TIME_MS).times(2)).add(any(),
+                                                                                              any(),
+                                                                                              anyLong(),
+                                                                                              eq(expectedGbids));
 
         verifyNoMoreInteractions(globalCapabilitiesDirectoryClient);
         assertFalse(cbCalled.get());
@@ -753,7 +753,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(localDiscoveryEntryStoreMock, times(0)).remove(eq(participantId));
         removeSemaphore2.release();
         checkPromiseSuccess(promiseRemove, "remove failed");
-        verify(localDiscoveryEntryStoreMock, timeout(1000).times(1)).remove(eq(participantId));
+        verify(localDiscoveryEntryStoreMock, timeout(DEFAULT_WAIT_TIME_MS).times(1)).remove(eq(participantId));
 
         // add2
         assertTrue(addSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
@@ -853,7 +853,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                          any(String[].class));
         verify(localDiscoveryEntryStoreMock, times(0)).remove(eq(participantId));
         removeSemaphore2.release();
-        verify(localDiscoveryEntryStoreMock, timeout(1000).times(1)).remove(eq(participantId));
+        verify(localDiscoveryEntryStoreMock, timeout(DEFAULT_WAIT_TIME_MS).times(1)).remove(eq(participantId));
 
         // add2
         assertTrue(addSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
@@ -1076,10 +1076,11 @@ public class LocalCapabilitiesDirectoryTest {
             checkPromiseSuccess(promise, "add withoud awaitGlobalRegistration failed");
         }
 
-        verify(globalCapabilitiesDirectoryClient).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
-                                                      argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
-                                                      anyLong(),
-                                                      eq(expectedGbids));
+        verify(globalCapabilitiesDirectoryClient,
+               timeout(DEFAULT_WAIT_TIME_MS).times(1)).add(ArgumentMatchers.<CallbackWithModeledError<Void, DiscoveryError>> any(),
+                                                           argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                           anyLong(),
+                                                           eq(expectedGbids));
         verify(localDiscoveryEntryStoreMock, times(awaitGlobalRegistration ? 0 : 1)).add(any(DiscoveryEntry.class));
         verify(localDiscoveryEntryStoreMock, times(0)).remove(any(String.class));
         verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
@@ -4781,14 +4782,16 @@ public class LocalCapabilitiesDirectoryTest {
         cdl2.countDown();
 
         verify(globalCapabilitiesDirectoryClient,
-               timeout(1000).times(1)).remove(any(), eq(globalDiscoveryEntry.getParticipantId()), eq(expectedGbids));
+               timeout(DEFAULT_WAIT_TIME_MS).times(1)).remove(any(),
+                                                              eq(globalDiscoveryEntry.getParticipantId()),
+                                                              eq(expectedGbids));
 
         // check that GcdTaskSequencer is still alive
         localCapabilitiesDirectory.addToAll(discoveryEntry, awaitGlobalRegistration);
-        verify(globalCapabilitiesDirectoryClient, timeout(1000).times(1)).add(any(),
-                                                                              any(),
-                                                                              anyLong(),
-                                                                              eq(expectedGbids));
+        verify(globalCapabilitiesDirectoryClient, timeout(DEFAULT_WAIT_TIME_MS).times(1)).add(any(),
+                                                                                              any(),
+                                                                                              anyLong(),
+                                                                                              eq(expectedGbids));
 
         verifyNoMoreInteractions(globalCapabilitiesDirectoryClient);
         assertFalse(cbCalled.get());
