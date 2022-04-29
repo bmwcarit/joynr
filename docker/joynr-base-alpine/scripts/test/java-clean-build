@@ -1,0 +1,97 @@
+#/bin/bash
+
+source /data/src/docker/joynr-base-alpine/scripts/ci/start-and-stop-gcd-service.sh
+cd /data/src
+
+# fail on first error
+# exit immediately if a command exits with a non-zero status
+# print commands before they are executed
+set -e
+
+function usage
+{
+    echo "usage: java-clean-build [package|install][skipTests]"
+}
+
+GOAL='install'
+SKIPTESTS='false'
+
+while [ "$1" != "" ]; do
+    case $1 in
+        package )               GOAL='package'
+                                ;;
+        install )               GOAL='install'
+                                ;;
+        skipTests )             SKIPTESTS='true'
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+echo '####################################################'
+echo '# start tests'
+echo '####################################################'
+
+cd /data/src
+
+# 1st run; just build without tests to provide JAR file for GCD
+mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
+-DskipTests=true \
+-Dmaven.test.failure.ignore=true \
+-Denforcer.skip=true -Dmaven.compile.fork=true \
+-Dmaven.junit.fork=true
+
+echo '####################################################'
+echo '# start services'
+echo '####################################################'
+
+/data/src/docker/joynr-base-alpine/scripts/ci/start-db.sh
+
+mosquitto -c /data/src/docker/joynr-base-alpine/mosquitto.conf &
+MOSQUITTO_PID=$!
+
+function stopservices
+{
+    stopGcd
+
+    echo "stop mosquitto"
+    kill -TERM $MOSQUITTO_PID
+    wait $MOSQUITTO_PID
+    /data/src/docker/joynr-base-alpine/scripts/ci/stop-db.sh
+}
+
+startGcd
+SUCCESS=$?
+if [ "$SUCCESS" != "0" ]; then
+    echo '########################################################'
+    echo '# Start GCD failed with exit code:' $SUCCESS
+    echo '########################################################'
+
+    stopservices
+    exit $SUCCESS
+fi
+
+echo '####################################################'
+echo '# start tests'
+echo '####################################################'
+
+# Assume that mosquitto and GCD have sufficient time to startup before reaching
+# any test code that requires it;
+# also assume that it is safe to remove and recreate JAR file once GCD got started
+
+# 2nd run; now including test execution which requires mosquitto / GCD
+mvn clean $GOAL -P no-license-and-notice,no-java-formatter,no-checkstyle \
+-DskipTests=$SKIPTESTS \
+-Dmaven.test.failure.ignore=true \
+-Denforcer.skip=true -Dmaven.compile.fork=true \
+-Dmaven.junit.fork=true
+
+echo '####################################################'
+echo '# stop services'
+echo '####################################################'
+
+stopservices
+
+exit 0
