@@ -238,10 +238,10 @@ protected:
         MockUdsClientCallbacks callbacks;
         joynr::exceptions::JoynrRuntimeException capturedException;
         auto client = createClient(callbacks);
-        client->start();
         EXPECT_CALL(callbacks, fatalRuntimeError(testing::_)).WillOnce(
                 testing::DoAll(testing::SaveArg<0>(&capturedException),
                                testing::InvokeWithoutArgs(&semaphore, &joynr::Semaphore::notify)));
+        client->start();
         ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
                 << std::string("No fatalRuntimeError callback received.");
         errorMessage = capturedException.getMessage();

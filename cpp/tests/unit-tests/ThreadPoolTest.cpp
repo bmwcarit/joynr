@@ -21,8 +21,10 @@
 
 #include <gtest/gtest.h>
 
+#include "joynr/Semaphore.h"
 #include "joynr/ThreadPool.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/mock/MockRunnable.h"
 #include "tests/mock/MockRunnableBlocking.h"
 
@@ -49,18 +51,21 @@ TEST(ThreadPoolTest, startAndShutdown_callDtorOfRunnablesCorrect)
     // Dtor called after the test
     auto runnable2 = std::make_shared<StrictMock<MockRunnable>>();
 
-    EXPECT_CALL(*runnable2, run()).Times(1);
+    joynr::Semaphore semaphore2(0);
+    EXPECT_CALL(*runnable2, run()).Times(1).WillOnce(ReleaseSemaphore(&semaphore2));
     pool->execute(runnable2);
 
-    EXPECT_CALL(*runnable1, run()).Times(1);
+    joynr::Semaphore semaphore1(0);
+    EXPECT_CALL(*runnable1, run()).Times(1).WillOnce(ReleaseSemaphore(&semaphore1));
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
     pool->execute(runnable1);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    EXPECT_TRUE(semaphore2.waitFor(std::chrono::milliseconds(50)));
+    EXPECT_TRUE(semaphore1.waitFor(std::chrono::milliseconds(50)));
 
     pool->shutdown();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
     EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
 }
@@ -72,12 +77,14 @@ TEST(ThreadPoolTest, callDtorOfRunnabeAfterWorkHasDone)
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
-    EXPECT_CALL(*runnable1, run()).Times(1);
+    joynr::Semaphore semaphore(0);
+
+    EXPECT_CALL(*runnable1, run()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
 
     pool->execute(runnable1);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(100)));
 
     pool->shutdown();
 }
@@ -92,7 +99,7 @@ TEST(ThreadPoolTest, testEndlessRunningRunnableToQuitWithShutdownCall)
     EXPECT_CALL(*runnable1, runEntry()).Times(1);
     pool->execute(runnable1);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable1, shutdownCalled()).Times(1);
     EXPECT_CALL(*runnable1, runExit()).Times(1);
@@ -113,7 +120,7 @@ TEST(ThreadPoolTest, shutdownThreadPoolWhileRunnableIsInQueue)
     pool->execute(runnable1);
     pool->execute(runnable2);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable1, shutdownCalled()).Times(1);
     EXPECT_CALL(*runnable1, runExit()).Times(1);
@@ -131,24 +138,26 @@ TEST(ThreadPoolTest, finishWorkWhileAnotherRunnableIsInTheQueue)
     auto runnable1 = std::make_shared<StrictMock<MockRunnableBlocking>>();
     auto runnable2 = std::make_shared<StrictMock<MockRunnableBlocking>>();
 
-    EXPECT_CALL(*runnable1, runEntry()).Times(1);
+    joynr::Semaphore semaphore1(0);
+    EXPECT_CALL(*runnable1, runEntry()).Times(1).WillOnce(ReleaseSemaphore(&semaphore1));
     pool->execute(runnable1);
     pool->execute(runnable2);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_TRUE(semaphore1.waitFor(std::chrono::milliseconds(100)));
 
+    joynr::Semaphore semaphore2(0);
     // Shutdown will not be called because we do it manually here
     EXPECT_CALL(*runnable1, runExit()).Times(1);
-    EXPECT_CALL(*runnable2, runEntry()).Times(1);
+    EXPECT_CALL(*runnable2, runEntry()).Times(1).WillOnce(ReleaseSemaphore(&semaphore2));
     runnable1->manualShutdown();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    EXPECT_TRUE(semaphore2.waitFor(std::chrono::milliseconds(100)));
 
     EXPECT_CALL(*runnable2, shutdownCalled()).Times(1);
     EXPECT_CALL(*runnable2, runExit()).Times(1);
     pool->shutdown();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);

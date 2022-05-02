@@ -162,6 +162,7 @@ public:
     {
         std::vector<std::int32_t> result;
         assert(upperBound<7);
+        std::ignore = upperBound;
         result.clear();
         result.push_back(2);
         result.push_back(3);
