@@ -62,10 +62,16 @@ RUN dnf update -y \
     glibc-devel.i686 \
     icecream \
     iputils \
+    libasan \
+    libasan-static \
     libcurl \
     libcurl-devel \
     libstdc++.i686 \
     libtool \
+    libtsan \
+    libtsan-static \
+    libubsan \
+    libubsan-static \
     libuuid-devel \
     libwebsockets-devel \
     libX11-devel \
