@@ -1,9 +1,9 @@
-FROM fedora:30
+FROM fedora:36
 
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2022-04-19-16-00
+ENV REFRESHED_AT 2022-05-02-15-00
 
 ###################################################
 # create data directories and volumes
@@ -73,7 +73,6 @@ RUN dnf update -y \
     libubsan \
     libubsan-static \
     libuuid-devel \
-    libwebsockets-devel \
     libX11-devel \
     libxcb \
     libxcb-devel \
@@ -83,7 +82,8 @@ RUN dnf update -y \
     ncurses-devel.i686 \
     net-tools \
     openssl \
-    openssl-devel \
+    openssl1.1 \
+    openssl1.1-devel \
     patch \
     perl-version \
     python \
@@ -196,7 +196,7 @@ RUN . /etc/profile \
     && git am -k /tmp/0002-Added-reconnect_session_expiry_interval-to-struct-mo.patch \
     && git am -k /tmp/0003-Introduced-option-MOSQ_OPT_RECONNECT_SESSION_EXPIRY_.patch \
     && git am -k /tmp/0004-mosquitto_reconnect-supports-MQTTv5-session-expiry.patch \
-    && make WITH_WEBSOCKETS=yes DOCDIRS= prefix=/usr install -j4
+    && make WITH_WEBSOCKETS=no DOCDIRS= prefix=/usr install -j4
 
 ###################################################
 # copy mosquitto.conf
@@ -322,7 +322,7 @@ RUN cd /opt \
     && git checkout v1.4.2 \
     && mkdir build \
     && cd build \
-    && cmake -DSPDLOG_BUILD_BENCH=OFF .. \
+    && cmake -DSPDLOG_BUILD_BENCH=OFF -DSPDLOG_BUILD_TESTS=OFF .. \
     && make install -j"$(nproc)" \
     && cd /opt/ \
     && rm -rf spdlog
@@ -335,7 +335,7 @@ RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/zaphoyd/websocketpp.git \
     && cd websocketpp \
-    && git checkout 0.8.1 \
+    && git checkout 0.8.2 \
     && mkdir build \
     && cd build \
     && cmake .. \
@@ -351,7 +351,7 @@ RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/GENIVI/dlt-daemon \
     && cd dlt-daemon \
-    && git checkout v2.18.3 \
+    && git checkout v2.18.8 \
     && sed -i 's/libdir=${exec_prefix}\/lib/libdir=@CMAKE_INSTALL_FULL_LIBDIR@/' automotive-dlt.pc.in \
     && sed -i 's/includedir=${exec_prefix}\/include/includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@/' automotive-dlt.pc.in \
     && sed -i 's/-Werror/-Wno-error/' src/console/logstorage/CMakeLists.txt \
@@ -370,7 +370,7 @@ ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib64/pkgconfig
 # install flatbuffers
 ###################################################
 
-RUN export FLATBUFFERS_VERSION=v1.10.0 \
+RUN export FLATBUFFERS_VERSION=v1.12.1 \
         && . /etc/profile \
         && cd /tmp \
         && git clone https://github.com/google/flatbuffers.git \
@@ -420,7 +420,7 @@ RUN export MoCOCrW_VERSION=c5609ccc1f3da552b4354b747bdc445e4ecfc7de \
 # install valgrind
 ###################################################
 
-RUN export VALGRIND_VERSION=3.15.0 \
+RUN export VALGRIND_VERSION=3.19.0 \
         && . /etc/profile \
         && cd /tmp \
         && wget https://sourceware.org/pub/valgrind/valgrind-$VALGRIND_VERSION.tar.bz2 \
