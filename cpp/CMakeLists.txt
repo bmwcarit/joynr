@@ -131,30 +131,11 @@ include(CheckMosquittoImportTargets)
 
 #### END Globally required dependencies ####
 
-option(
-    ENABLE_GCOV
-    "Use GCOV to meassure test code coverage?"
-    OFF
-)
-if(${ENABLE_GCOV})
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/code-coverage")
-    include(CodeCoverage)
-    setup_target_for_coverage("UnitCoverageHtml" g_UnitTests "coverage")
-    setup_target_for_coverage_cobertura("UnitCoverageTarget" g_UnitTests "coverage" "--gtest_output=xml:g_UnitTests.junit.xml" "'.*/libs/.*|.*/build/.*|.*/tests/.*|.*/generated/.*'")
-    # copy the resource folder to the build folder, because some files are required for the tests
-    add_custom_target(CopyResourceFolderToBuildDir
-        cp -r bin/resources . && cp -r bin/test-resources .
-
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Copy resources to build directory."
-    )
-    add_dependencies(UnitCoverageTarget CopyResourceFolderToBuildDir)
-    #setup_target_for_coverage_cobertura("IntegrationCoverageTarget" g_IntegrationTests "integrationCoverage.xml")
-    message(STATUS "setting flags to measure test coverage.")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
-    #set(LDFLAGS "{$LDFLAGS} -fprofile-arcs -ftest-coverage")
-endif(${ENABLE_GCOV})
+######## Include coverage target when required ########
+if(CMAKE_BUILD_TYPE MATCHES "Coverage")
+    set(COVERAGE_EXCLUDES "tests")
+    include(CoverageTarget)
+endif(CMAKE_BUILD_TYPE MATCHES "Coverage")
 
 # Doxygen documentation build
 option(
