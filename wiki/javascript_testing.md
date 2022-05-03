@@ -19,7 +19,7 @@ cd javascript/libjoynr-js
 ```
 
 In addition, a MQTT broker (e.g. [Mosquitto](http://mosquitto.org)) must be running locally
-supporting web socket connections on port 9001. An example mosquitto configuration can be found
+An example mosquitto configuration can be found
 under javascript/libjoynr-js/src/test/resources/mosquitto-test.conf, allowing to start the broker
 via the following command:
 
