@@ -73,10 +73,10 @@ public class AccessControlAlgorithm {
     /**
      * Get the provider permission for given combination of control entries and with the given trust level.
      *
-     * @param masterRce     The master access control entry
-     * @param mediatorRce   The mediator access control entry
-     * @param ownerRce      The owner access control entry
-     * @param trustLevel The trust level of the user sending the message
+     * @param masterRce     The master registration control entry
+     * @param mediatorRce   The mediator registration control entry
+     * @param ownerRce      The owner registration control entry
+     * @param trustLevel    The trust level of the user providing the message
      * @return provider permission
      */
     public Permission getProviderPermission(Optional<MasterRegistrationControlEntry> masterRce,

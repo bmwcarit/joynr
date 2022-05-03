@@ -50,7 +50,7 @@ import net.sf.ehcache.search.Result;
 import net.sf.ehcache.search.Results;
 
 /**
- * Uses EhCache to implement a GlobalDomainAccessStore.
+ * Uses EhCache to implement a DomainAccessControlStore.
  * Add/Remove operations can be expensive. Get operations should be fast.
  */
 public class DomainAccessControlStoreEhCache implements DomainAccessControlStore {
@@ -153,12 +153,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     @Override
     public Boolean removeDomainRole(String uid, Role role) {
         UserRoleKey dreKey = new UserRoleKey(uid, role);
-        return removeAce(CacheId.DOMAIN_ROLES, dreKey);
+        return removeControlEntry(CacheId.DOMAIN_ROLES, dreKey);
     }
 
     @Override
     public List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid) {
-        return getAces(uid, CacheId.MASTER_ACL);
+        return getControlEntries(uid, CacheId.MASTER_ACL);
     }
 
     @Override
@@ -168,14 +168,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
     @Override
     public List<MasterAccessControlEntry> getMasterAccessControlEntries(String domain, String interfaceName) {
-        return getAces(domain, interfaceName, CacheId.MASTER_ACL);
+        return getControlEntries(domain, interfaceName, CacheId.MASTER_ACL);
     }
 
     @Override
     public List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid,
                                                                         String domain,
                                                                         String interfaceName) {
-        return getAces(CacheId.MASTER_ACL, uid, domain, interfaceName);
+        return getControlEntries(CacheId.MASTER_ACL, uid, domain, interfaceName);
     }
 
     @Override
@@ -183,9 +183,9 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                 String domain,
                                                                 String interfaceName,
                                                                 String operation) {
-        MasterAccessControlEntry masterAce = getAce(CacheId.MASTER_ACL, uid, domain, interfaceName, operation);
+        MasterAccessControlEntry masterAce = getControlEntry(CacheId.MASTER_ACL, uid, domain, interfaceName, operation);
         if (masterAce == null) {
-            masterAce = getAce(CacheId.MASTER_ACL, uid, domain, interfaceName, WILDCARD);
+            masterAce = getControlEntry(CacheId.MASTER_ACL, uid, domain, interfaceName, WILDCARD);
         }
 
         return masterAce;
@@ -198,7 +198,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                      updatedMasterAce.getDomain(),
                                                                                      updatedMasterAce.getInterfaceName(),
                                                                                      updatedMasterAce.getOperation());
-        updateSuccess = updateAce(updatedMasterAce, CacheId.MASTER_ACL, aceKey);
+        updateSuccess = updateControlEntry(updatedMasterAce, CacheId.MASTER_ACL, aceKey);
 
         return updateSuccess;
     }
@@ -209,12 +209,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                      domain,
                                                                                      interfaceName,
                                                                                      operation);
-        return removeAce(CacheId.MASTER_ACL, aceKey);
+        return removeControlEntry(CacheId.MASTER_ACL, aceKey);
     }
 
     @Override
     public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid) {
-        return getAces(uid, CacheId.MEDIATOR_ACL);
+        return getControlEntries(uid, CacheId.MEDIATOR_ACL);
     }
 
     @Override
@@ -224,14 +224,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
     @Override
     public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String domain, String interfaceName) {
-        return getAces(domain, interfaceName, CacheId.MEDIATOR_ACL);
+        return getControlEntries(domain, interfaceName, CacheId.MEDIATOR_ACL);
     }
 
     @Override
     public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid,
                                                                           String domain,
                                                                           String interfaceName) {
-        return getAces(CacheId.MEDIATOR_ACL, uid, domain, interfaceName);
+        return getControlEntries(CacheId.MEDIATOR_ACL, uid, domain, interfaceName);
     }
 
     @Override
@@ -239,9 +239,13 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                   String domain,
                                                                   String interfaceName,
                                                                   String operation) {
-        MasterAccessControlEntry mediatorAce = getAce(CacheId.MEDIATOR_ACL, uid, domain, interfaceName, operation);
+        MasterAccessControlEntry mediatorAce = getControlEntry(CacheId.MEDIATOR_ACL,
+                                                               uid,
+                                                               domain,
+                                                               interfaceName,
+                                                               operation);
         if (mediatorAce == null) {
-            mediatorAce = getAce(CacheId.MEDIATOR_ACL, uid, domain, interfaceName, WILDCARD);
+            mediatorAce = getControlEntry(CacheId.MEDIATOR_ACL, uid, domain, interfaceName, WILDCARD);
         }
 
         return mediatorAce;
@@ -262,7 +266,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                          updatedMediatorAce.getDomain(),
                                                                                          updatedMediatorAce.getInterfaceName(),
                                                                                          updatedMediatorAce.getOperation());
-            updateSuccess = updateAce(updatedMediatorAce, CacheId.MASTER_ACL, aceKey);
+            updateSuccess = updateControlEntry(updatedMediatorAce, CacheId.MEDIATOR_ACL, aceKey);
         }
 
         return updateSuccess;
@@ -274,12 +278,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                      domain,
                                                                                      interfaceName,
                                                                                      operation);
-        return removeAce(CacheId.MEDIATOR_ACL, aceKey);
+        return removeControlEntry(CacheId.MEDIATOR_ACL, aceKey);
     }
 
     @Override
     public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid) {
-        return getAces(uid, CacheId.OWNER_ACL);
+        return getControlEntries(uid, CacheId.OWNER_ACL);
     }
 
     @Override
@@ -289,12 +293,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
     @Override
     public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String domain, String interfaceName) {
-        return getAces(domain, interfaceName, CacheId.OWNER_ACL);
+        return getControlEntries(domain, interfaceName, CacheId.OWNER_ACL);
     }
 
     @Override
     public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid, String domain, String interfaceName) {
-        return getAces(CacheId.OWNER_ACL, uid, domain, interfaceName);
+        return getControlEntries(CacheId.OWNER_ACL, uid, domain, interfaceName);
     }
 
     @Override
@@ -302,9 +306,9 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                               String domain,
                                                               String interfaceName,
                                                               String operation) {
-        OwnerAccessControlEntry ownerAce = getAce(CacheId.OWNER_ACL, uid, domain, interfaceName, operation);
+        OwnerAccessControlEntry ownerAce = getControlEntry(CacheId.OWNER_ACL, uid, domain, interfaceName, operation);
         if (ownerAce == null) {
-            ownerAce = getAce(CacheId.OWNER_ACL, uid, domain, interfaceName, WILDCARD);
+            ownerAce = getControlEntry(CacheId.OWNER_ACL, uid, domain, interfaceName, WILDCARD);
         }
 
         return ownerAce;
@@ -329,7 +333,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                          updatedOwnerAce.getDomain(),
                                                                                          updatedOwnerAce.getInterfaceName(),
                                                                                          updatedOwnerAce.getOperation());
-            updateSuccess = updateAce(updatedOwnerAce, CacheId.OWNER_ACL, aceKey);
+            updateSuccess = updateControlEntry(updatedOwnerAce, CacheId.OWNER_ACL, aceKey);
         }
 
         return updateSuccess;
@@ -341,12 +345,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                      domain,
                                                                                      interfaceName,
                                                                                      operation);
-        return removeAce(CacheId.OWNER_ACL, aceKey);
+        return removeControlEntry(CacheId.OWNER_ACL, aceKey);
     }
 
     @Override
     public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid) {
-        return getAces(uid, CacheId.MASTER_RCL);
+        return getControlEntries(uid, CacheId.MASTER_RCL);
     }
 
     @Override
@@ -357,26 +361,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     @Override
     public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String domain,
                                                                                     String interfaceName) {
-        return getAces(domain, interfaceName, CacheId.MASTER_RCL);
-    }
-
-    @Override
-    public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid,
-                                                                                    String domain,
-                                                                                    String interfaceName) {
-        return getAces(CacheId.MASTER_RCL, uid, domain, interfaceName);
+        return getControlEntries(domain, interfaceName, CacheId.MASTER_RCL);
     }
 
     @Override
     public MasterRegistrationControlEntry getMasterRegistrationControlEntry(String uid,
                                                                             String domain,
                                                                             String interfaceName) {
-        MasterRegistrationControlEntry masterRce = getAce(CacheId.MASTER_RCL, uid, domain, interfaceName, WILDCARD);
-        if (masterRce == null) {
-            masterRce = getAce(CacheId.MASTER_RCL, uid, domain, interfaceName, WILDCARD);
-        }
-
-        return masterRce;
+        return getControlEntry(CacheId.MASTER_RCL, uid, domain, interfaceName, WILDCARD);
     }
 
     @Override
@@ -386,7 +378,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                      updatedMasterRce.getDomain(),
                                                                                      updatedMasterRce.getInterfaceName(),
                                                                                      WILDCARD);
-        updateSuccess = updateAce(updatedMasterRce, CacheId.MASTER_RCL, rceKey);
+        updateSuccess = updateControlEntry(updatedMasterRce, CacheId.MASTER_RCL, rceKey);
 
         return updateSuccess;
     }
@@ -397,12 +389,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                      domain,
                                                                                      interfaceName,
                                                                                      WILDCARD);
-        return removeAce(CacheId.MASTER_RCL, rceKey);
+        return removeControlEntry(CacheId.MASTER_RCL, rceKey);
     }
 
     @Override
     public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid) {
-        return getAces(uid, CacheId.MEDIATOR_RCL);
+        return getControlEntries(uid, CacheId.MEDIATOR_RCL);
     }
 
     @Override
@@ -413,26 +405,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     @Override
     public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String domain,
                                                                                       String interfaceName) {
-        return getAces(domain, interfaceName, CacheId.MEDIATOR_RCL);
-    }
-
-    @Override
-    public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid,
-                                                                                      String domain,
-                                                                                      String interfaceName) {
-        return getAces(CacheId.MEDIATOR_RCL, uid, domain, interfaceName);
+        return getControlEntries(domain, interfaceName, CacheId.MEDIATOR_RCL);
     }
 
     @Override
     public MasterRegistrationControlEntry getMediatorRegistrationControlEntry(String uid,
                                                                               String domain,
                                                                               String interfaceName) {
-        MasterRegistrationControlEntry mediatorRce = getAce(CacheId.MEDIATOR_RCL, uid, domain, interfaceName, WILDCARD);
-        if (mediatorRce == null) {
-            mediatorRce = getAce(CacheId.MEDIATOR_RCL, uid, domain, interfaceName, WILDCARD);
-        }
-
-        return mediatorRce;
+        return getControlEntry(CacheId.MEDIATOR_RCL, uid, domain, interfaceName, WILDCARD);
     }
 
     @Override
@@ -448,7 +428,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                          updatedMediatorRce.getDomain(),
                                                                                          updatedMediatorRce.getInterfaceName(),
                                                                                          WILDCARD);
-            updateSuccess = updateAce(updatedMediatorRce, CacheId.MASTER_RCL, rceKey);
+            updateSuccess = updateControlEntry(updatedMediatorRce, CacheId.MEDIATOR_RCL, rceKey);
         }
 
         return updateSuccess;
@@ -460,12 +440,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                      domain,
                                                                                      interfaceName,
                                                                                      WILDCARD);
-        return removeAce(CacheId.MEDIATOR_RCL, rceKey);
+        return removeControlEntry(CacheId.MEDIATOR_RCL, rceKey);
     }
 
     @Override
     public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid) {
-        return getAces(uid, CacheId.OWNER_RCL);
+        return getControlEntries(uid, CacheId.OWNER_RCL);
     }
 
     @Override
@@ -475,26 +455,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
 
     @Override
     public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String domain, String interfaceName) {
-        return getAces(domain, interfaceName, CacheId.OWNER_RCL);
-    }
-
-    @Override
-    public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid,
-                                                                                  String domain,
-                                                                                  String interfaceName) {
-        return getAces(CacheId.OWNER_RCL, uid, domain, interfaceName);
+        return getControlEntries(domain, interfaceName, CacheId.OWNER_RCL);
     }
 
     @Override
     public OwnerRegistrationControlEntry getOwnerRegistrationControlEntry(String uid,
                                                                           String domain,
                                                                           String interfaceName) {
-        OwnerRegistrationControlEntry ownerRce = getAce(CacheId.OWNER_RCL, uid, domain, interfaceName, WILDCARD);
-        if (ownerRce == null) {
-            ownerRce = getAce(CacheId.OWNER_RCL, uid, domain, interfaceName, WILDCARD);
-        }
-
-        return ownerRce;
+        return getControlEntry(CacheId.OWNER_RCL, uid, domain, interfaceName, WILDCARD);
     }
 
     @Override
@@ -514,7 +482,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                          updatedOwnerRce.getDomain(),
                                                                                          updatedOwnerRce.getInterfaceName(),
                                                                                          WILDCARD);
-            updateSuccess = updateAce(updatedOwnerRce, CacheId.OWNER_RCL, rceKey);
+            updateSuccess = updateControlEntry(updatedOwnerRce, CacheId.OWNER_RCL, rceKey);
         }
 
         return updateSuccess;
@@ -526,14 +494,14 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                                                                      domain,
                                                                                      interfaceName,
                                                                                      WILDCARD);
-        return removeAce(CacheId.OWNER_RCL, rceKey);
+        return removeControlEntry(CacheId.OWNER_RCL, rceKey);
     }
 
-    private <T extends ControlEntry> T getAce(CacheId cacheId,
-                                              String uid,
-                                              String domain,
-                                              String interfaceName,
-                                              String operation) {
+    private <T extends ControlEntry> T getControlEntry(CacheId cacheId,
+                                                       String uid,
+                                                       String domain,
+                                                       String interfaceName,
+                                                       String operation) {
         Cache cache = getCache(cacheId);
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         Attribute<String> domainAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.DOMAIN);
@@ -549,17 +517,19 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         // have specific user ids appear before wildcards
         queryAllOperations.addOrderBy(uidAttribute, Direction.DESCENDING).includeKeys().end();
         Results results = queryAllOperations.execute();
-        T ace = null;
+        T controlEntry = null;
         if (!results.all().isEmpty()) {
-            ace = DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(results.all().get(0).getKey()));
+            controlEntry = DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(results.all()
+                                                                                                .get(0)
+                                                                                                .getKey()));
         }
 
-        return ace;
+        return controlEntry;
     }
 
-    private <T extends ControlEntry> List<T> getAces(String uid, CacheId cacheId) {
+    private <T extends ControlEntry> List<T> getControlEntries(String uid, CacheId cacheId) {
         Cache cache = getCache(cacheId);
-        List<T> aces = new ArrayList<T>();
+        List<T> controlEntries = new ArrayList<T>();
         // here search on uid take place
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         // query is the fastest if you search for keys and if you need value then call Cache.get(key)
@@ -571,15 +541,15 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                        .end();
         Results results = queryRequestedUid.execute();
         for (Result result : results.all()) {
-            aces.add(DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey())));
+            controlEntries.add(DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey())));
         }
 
-        return aces;
+        return controlEntries;
     }
 
-    private <T extends ControlEntry> List<T> getAces(String domain, String interfaceName, CacheId cacheId) {
+    private <T extends ControlEntry> List<T> getControlEntries(String domain, String interfaceName, CacheId cacheId) {
         Cache cache = getCache(cacheId);
-        List<T> aces = new ArrayList<T>();
+        List<T> controlEntries = new ArrayList<T>();
         // here search on domain and interface take place
         Attribute<String> domainAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.DOMAIN);
         Attribute<String> interfaceAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.INTERFACE);
@@ -591,14 +561,17 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                           .end();
         Results results = queryDomainInterface.execute();
         for (Result result : results.all()) {
-            T ace = DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey()));
-            aces.add(ace);
+            T controlEntry = DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey()));
+            controlEntries.add(controlEntry);
         }
 
-        return aces;
+        return controlEntries;
     }
 
-    private <T extends ControlEntry> List<T> getAces(CacheId cacheId, String uid, String domain, String interfaceName) {
+    private <T extends ControlEntry> List<T> getControlEntries(CacheId cacheId,
+                                                               String uid,
+                                                               String domain,
+                                                               String interfaceName) {
         Cache cache = getCache(cacheId);
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         Attribute<String> domainAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.DOMAIN);
@@ -612,26 +585,26 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                         .includeKeys()
                                         .end();
         Results results = queryAllOperations.execute();
-        List<T> aces = new ArrayList<T>();
+        List<T> controlEntries = new ArrayList<T>();
         String currentUid = null;
         for (Result result : results.all()) {
-            T ace = DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey()));
+            T controlEntry = DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey()));
 
             // Don't add uid wildcards if a specific uid has been added to the results
             if (currentUid == null) {
-                currentUid = ace.getUid();
-            } else if (!currentUid.equals(ace.getUid())) {
+                currentUid = controlEntry.getUid();
+            } else if (!currentUid.equals(controlEntry.getUid())) {
                 break;
             }
 
-            aces.add(ace);
+            controlEntries.add(controlEntry);
         }
 
-        return aces;
+        return controlEntries;
     }
 
     private <T extends ControlEntry> List<T> getEditableAces(String uid, CacheId cacheId, Role role) {
-        List<T> aces = new ArrayList<T>();
+        List<T> controlEntries = new ArrayList<T>();
         // find out first on which domains uid has specified role
         Cache drtCache = getCache(CacheId.DOMAIN_ROLES);
         UserRoleKey dreKey = new UserRoleKey(uid, role);
@@ -643,7 +616,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         }
         // if uid has no domains with specified role return empty list
         if (uidDomains == null || uidDomains.length == 0) {
-            return aces;
+            return controlEntries;
         }
 
         Cache cache = getCache(cacheId);
@@ -657,19 +630,21 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
                                .end();
             Results results = query.execute();
             for (Result result : results.all()) {
-                aces.add(DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey())));
+                controlEntries.add(DomainAccessControlStoreEhCache.<T> getElementValue(cache.get(result.getKey())));
             }
 
         }
 
-        return aces;
+        return controlEntries;
     }
 
-    private <T extends ControlEntry> Boolean updateAce(T accessControlEntry, CacheId cacheId, Object aceKey) {
+    private <T extends ControlEntry> Boolean updateControlEntry(T accessControlEntry,
+                                                                CacheId cacheId,
+                                                                Object controlEntryKey) {
         Cache cache = getCache(cacheId);
         boolean updateSuccess = false;
         try {
-            cache.put(new Element(aceKey, accessControlEntry));
+            cache.put(new Element(controlEntryKey, accessControlEntry));
             updateSuccess = true;
         } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
             logger.error("Update {} failed:", cacheId, e);
@@ -678,11 +653,11 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         return updateSuccess;
     }
 
-    private boolean removeAce(CacheId cacheId, Object aceKey) {
+    private boolean removeControlEntry(CacheId cacheId, Object controlEntryKey) {
         Cache cache = getCache(cacheId);
         boolean removeResult = false;
         try {
-            removeResult = cache.remove(aceKey);
+            removeResult = cache.remove(controlEntryKey);
         } catch (IllegalArgumentException | IllegalStateException | CacheException e) {
             logger.error("Remove {} failed.", cacheId, e);
         }

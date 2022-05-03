@@ -159,6 +159,9 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
 
         if ((masterAces != null && masterAces.size() > 1) || (mediatorAces != null && mediatorAces.size() > 1)
                 || (ownerAces != null && ownerAces.size() > 1)) {
+            logger.error("getConsumerPermission on domain {}, interface {} : ACL entries for non wildcard operations are not supported yet",
+                         domain,
+                         interfaceName);
             callback.getConsumerPermission(null);
         } else {
             callback.getConsumerPermission(getConsumerPermission(userId, domain, interfaceName, WILDCARD, trustLevel));
