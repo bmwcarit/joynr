@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -47,6 +48,8 @@ namespace joynr
 
 class ICapabilities;
 class JoynrRuntimeImpl;
+
+static std::atomic<std::uint64_t> _proxyBuilderCnt;
 
 /**
  * @brief Class to build a proxy object for the given interface T.
@@ -79,7 +82,7 @@ public:
                  MessagingSettings& messagingSettings);
 
     /** Destructor */
-    ~ProxyBuilder() override = default;
+    ~ProxyBuilder() override;
 
     /**
      * @brief Build the proxy object
@@ -94,11 +97,19 @@ public:
     {
         std::lock_guard<std::mutex> lock(_arbitratorsMutex);
         _shuttingDown = true;
-        for (auto arbitrator : _arbitrators) {
+
+        for (auto const& entry : _arbitrators) {
+            JOYNR_LOG_INFO(logger(), "Stopping arbitrator with id {}", entry.first);
+            auto arbitrator = entry.second;
             arbitrator->stopArbitration();
             arbitrator.reset();
         }
+        JOYNR_LOG_INFO(logger(), "Arbitrators stopped");
         _arbitrators.clear();
+        std::unique_lock<std::mutex> lock2(_finishedArbitratorIdsMutex);
+        _finishedArbitratorIds.clear();
+        lock2.unlock();
+        JOYNR_LOG_INFO(logger(), "stop finished");
     }
 
     /**
@@ -161,13 +172,18 @@ private:
             std::function<void(std::shared_ptr<T> proxy)> onSuccess,
             std::function<void(const exceptions::DiscoveryException&)> onError) noexcept;
 
+    void reapFinishedArbitrators();
+
     DISALLOW_COPY_AND_ASSIGN(ProxyBuilder);
 
     std::weak_ptr<JoynrRuntimeImpl> _runtime;
     ProxyFactory& _proxyFactory;
     std::weak_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
-    std::vector<std::shared_ptr<Arbitrator>> _arbitrators;
+    std::uint32_t _arbitratorId;
+    std::deque<std::uint32_t> _finishedArbitratorIds;
+    std::unordered_map<std::uint32_t, std::shared_ptr<Arbitrator>> _arbitrators;
     std::mutex _arbitratorsMutex;
+    std::mutex _finishedArbitratorIdsMutex;
     bool _shuttingDown;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress;
     std::shared_ptr<IMessageRouter> _messageRouter;
@@ -179,6 +195,7 @@ private:
     std::int64_t _discoveryDefaultRetryIntervalMs;
     DiscoveryQos _discoveryQos;
     std::vector<std::string> _gbids;
+    std::uint64_t _proxyBuilderId;
 
     static const std::string _runtimeAlreadyDestroyed;
 
@@ -197,8 +214,11 @@ ProxyBuilder<T>::ProxyBuilder(
         : _runtime(std::move(runtime)),
           _proxyFactory(proxyFactory),
           _discoveryProxy(discoveryProxy),
+          _arbitratorId(0),
+          _finishedArbitratorIds(),
           _arbitrators(),
           _arbitratorsMutex(),
+          _finishedArbitratorIdsMutex(),
           _shuttingDown(false),
           _dispatcherAddress(dispatcherAddress),
           _messageRouter(messageRouter),
@@ -212,6 +232,13 @@ ProxyBuilder<T>::ProxyBuilder(
 {
     _discoveryQos.setDiscoveryTimeoutMs(_discoveryDefaultTimeoutMs);
     _discoveryQos.setRetryIntervalMs(_discoveryDefaultRetryIntervalMs);
+    _proxyBuilderId = _proxyBuilderCnt++;
+}
+
+template <class T>
+ProxyBuilder<T>::~ProxyBuilder()
+{
+    stop();
 }
 
 template <class T>
@@ -255,16 +282,26 @@ void ProxyBuilder<T>::buildAsync(
         onError(error);
     }
 
+    reapFinishedArbitrators();
+
     joynr::types::Version interfaceVersion(T::MAJOR_VERSION, T::MINOR_VERSION);
+
+    std::uint32_t currentArbitratorId = _arbitratorId++;
 
     std::shared_ptr<ProxyBuilder<T>> thisSharedPtr = this->shared_from_this();
     auto arbitrationSucceeds = [
         thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
         this,
+        currentArbitratorId,
+        proxyBuilderId = _proxyBuilderId,
         onSuccess = std::move(onSuccess),
         onError
     ](const joynr::ArbitrationResult& arbitrationResult) mutable
     {
+        JOYNR_LOG_TRACE(logger(),
+                        "ProxyBuilderId {}, ArbitratorId {}: arbitrationSucceeds",
+                        proxyBuilderId,
+                        currentArbitratorId);
         // need to make sure own instance still exists before
         // accesssing internal inherited member runtime
         auto proxyBuilderSharedPtr = thisWeakPtr.lock();
@@ -275,6 +312,7 @@ void ProxyBuilder<T>::buildAsync(
 
         auto onSuccessBuildInternalAsync =
                 [onSuccess](std::shared_ptr<T> proxy) { onSuccess(std::move(proxy)); };
+
         auto onErrorBuildInternalAsync =
                 [onError](const exceptions::DiscoveryException& discoveryRuntimeException) {
             if (onError) {
@@ -284,12 +322,115 @@ void ProxyBuilder<T>::buildAsync(
 
         buildInternalAsync(
                 arbitrationResult, onSuccessBuildInternalAsync, onErrorBuildInternalAsync);
+
+        std::unique_lock<std::mutex> lock3(_finishedArbitratorIdsMutex);
+        this->_finishedArbitratorIds.push_back(currentArbitratorId);
+        lock3.unlock();
+        JOYNR_LOG_TRACE(logger(),
+                        "ProxyBuilderId {}, ArbitratorId {}: end of arbitrationSucceeds",
+                        proxyBuilderId,
+                        currentArbitratorId);
+    };
+
+    auto arbitrationFails = [
+        thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
+        this,
+        currentArbitratorId,
+        proxyBuilderId = _proxyBuilderId,
+        onError
+    ](const exceptions::DiscoveryException& exception)
+    {
+        JOYNR_LOG_TRACE(logger(),
+                        "ProxyBuilderId {}, ArbitratorId {}: arbitrationFails",
+                        proxyBuilderId,
+                        currentArbitratorId);
+        // need to make sure own instance still exists before
+        // accesssing internal inherited member runtime
+        auto proxyBuilderSharedPtr = thisWeakPtr.lock();
+        if (proxyBuilderSharedPtr == nullptr) {
+            onError(exceptions::DiscoveryException(_runtimeAlreadyDestroyed));
+            return;
+        }
+
+        if (onError) {
+            onError(exception);
+        }
+
+        std::unique_lock<std::mutex> lock3(_finishedArbitratorIdsMutex);
+        this->_finishedArbitratorIds.push_back(currentArbitratorId);
+        lock3.unlock();
+        JOYNR_LOG_TRACE(logger(),
+                        "ProxyBuilderId {}, ArbitratorId {}: end of arbitrationFails",
+                        proxyBuilderId,
+                        currentArbitratorId);
     };
 
     auto arbitrator = ArbitratorFactory::createArbitrator(
             _domain, T::INTERFACE_NAME(), interfaceVersion, _discoveryProxy, _discoveryQos, _gbids);
-    arbitrator->startArbitration(std::move(arbitrationSucceeds), std::move(onError));
-    _arbitrators.push_back(std::move(arbitrator));
+    arbitrator->startArbitration(std::move(arbitrationSucceeds), std::move(arbitrationFails));
+    _arbitrators[currentArbitratorId] = std::move(arbitrator);
+    JOYNR_LOG_TRACE(logger(),
+                    "ProxyBuilderId {}, ArbitratorId {}: end of buildAsync",
+                    _proxyBuilderId,
+                    currentArbitratorId);
+}
+
+template <class T>
+void ProxyBuilder<T>::reapFinishedArbitrators()
+{
+    // Try to reap earlier invocation arbitrators, if they got finished
+    JOYNR_LOG_TRACE(logger(),
+                    "ProxyBuilderId {}: begin reaping old arbitrators, _arbitrators.size() = {}, "
+                    "_finishedArbitratorIds.size() = {}",
+                    _proxyBuilderId,
+                    _arbitrators.size(),
+                    _finishedArbitratorIds.size());
+
+    std::deque<std::uint32_t> _unhandledArbitratorIds;
+    for (;;) {
+        std::unique_lock<std::mutex> lock2(_finishedArbitratorIdsMutex);
+        if (_finishedArbitratorIds.empty()) {
+            lock2.unlock();
+            break;
+        }
+        auto id = _finishedArbitratorIds.front();
+        _finishedArbitratorIds.pop_front();
+        lock2.unlock();
+
+        auto arbitrator = _arbitrators.at(id);
+
+        // attempt to stop arbitrator; this could theoretically fail if the stop is attempted from
+        // within the arbitrator thread since a thread cannot join itself. In that case we would
+        // receive an execption; the arbitrator is then not erased and put back into queue for later
+        // handling. It is unclear whether this case can ever occur, so code is just here for
+        // safety.
+        try {
+            JOYNR_LOG_TRACE(
+                    logger(),
+                    "ProxyBuilderId {}: calling stopArbitration() for finished arbitrator id {}",
+                    _proxyBuilderId,
+                    id);
+            arbitrator->stopArbitration();
+            JOYNR_LOG_TRACE(
+                    logger(), "ProxyBuilderId {}: erasing arbitrator id {}", _proxyBuilderId, id);
+            _arbitrators.erase(id);
+        } catch (std::exception& e) {
+            JOYNR_LOG_TRACE(logger(),
+                            "ProxyBuilderId {}: failed to stop arbitrator id {}",
+                            _proxyBuilderId,
+                            id);
+            _unhandledArbitratorIds.push_back(id);
+        }
+    }
+    // move arbitrators which we could not stop yet back onto main queue
+    while (!_unhandledArbitratorIds.empty()) {
+        auto id = _unhandledArbitratorIds.front();
+        _unhandledArbitratorIds.pop_front();
+        std::unique_lock<std::mutex> lock2(_finishedArbitratorIdsMutex);
+        _finishedArbitratorIds.push_back(id);
+        lock2.unlock();
+    }
+    JOYNR_LOG_TRACE(logger(), "ProxyBuilderId {}: end reaping old arbitrators.", _proxyBuilderId);
 }
 
 template <class T>
@@ -326,11 +467,12 @@ void ProxyBuilder<T>::buildInternalAsync(
     JOYNR_LOG_INFO(logger(),
                    "DISCOVERY proxy: participantId {} created for provider participantId: {}, "
                    "domain: [{}], "
-                   "interface: {}",
+                   "interface: {}, ProxyBuilderId {}",
                    proxy->getProxyParticipantId(),
                    discoveryEntry.getParticipantId(),
                    _domain,
-                   T::INTERFACE_NAME());
+                   T::INTERFACE_NAME(),
+                   _proxyBuilderId);
 
     bool isGloballyVisible = !discoveryEntry.getIsLocal();
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
