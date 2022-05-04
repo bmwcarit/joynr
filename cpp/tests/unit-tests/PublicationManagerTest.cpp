@@ -408,6 +408,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
     expectedPublication.setResponse(std::move(attributeValue));
     // Expect a single attribute change to send a publication + one publication when registering sub
     // request -> 2
+    joynr::Semaphore semaphore(0);
     EXPECT_CALL(
             *mockPublicationSender,
             sendSubscriptionPublicationMock(
@@ -415,7 +416,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(2);
+                    )).Times(2).WillOnce(ReleaseSemaphore(&semaphore));
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -447,7 +448,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
             senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(200)));
 
     // Fake many attribute changes - but expect only one publication to be sent by this loop
     for (int i = 0; i < 10; i++) {
@@ -455,7 +456,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
     }
 
     // Wait for the subscription to finish
-    std::this_thread::sleep_for(std::chrono::milliseconds(700));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1400));
     publicationManager->shutdown();
 }
 
@@ -1099,7 +1100,10 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription)
             .Times(1)
             .WillRepeatedly(testing::SaveArg<1>(&attributeListener));
 
-    EXPECT_CALL(*requestCaller, unregisterAttributeListener(attributeName, _)).Times(1);
+    joynr::Semaphore semaphore(0);
+    EXPECT_CALL(*requestCaller, unregisterAttributeListener(attributeName, _))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
     auto publicationManager = std::make_shared<PublicationManager>(
             _singleThreadedIOService->getIOService(), _messageSender);
@@ -1109,7 +1113,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription)
     std::string receiverId = "ReceiverId";
     // SubscriptionQos
     std::int64_t minInterval_ms = 1;
-    std::int64_t validity_ms = 100;
+    std::int64_t validity_ms = 200;
     std::int64_t publicationTtl_ms = 1000;
     auto qos = std::make_shared<OnChangeSubscriptionQos>(
             validity_ms, publicationTtl_ms, minInterval_ms);
@@ -1123,7 +1127,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription)
             senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // Wait for the subscription to expire
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(400)));
     publicationManager->shutdown();
 }
 
