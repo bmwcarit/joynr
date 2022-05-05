@@ -131,7 +131,6 @@ public class ClusterController {
                         System.exit(1);
                     }
                     ccConfig.put("joynr.messaging.mqtt.brokerUri", brokerUri);
-                    ccConfig.put("joynr.messaging.primaryglobaltransport", "mqtt");
                 }
                 backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }

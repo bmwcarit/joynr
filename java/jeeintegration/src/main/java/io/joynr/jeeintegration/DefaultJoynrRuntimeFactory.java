@@ -65,8 +65,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.statusmetrics.JoynrStatusMetrics;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -74,6 +72,8 @@ import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
+import io.joynr.statusmetrics.JoynrStatusMetrics;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.util.ObjectMapper;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
@@ -286,7 +286,6 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
     private Properties prepareJoynrProperties(Properties configuredProperties) {
         Properties defaultJoynrProperties = new Properties();
         defaultJoynrProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
-        defaultJoynrProperties.setProperty(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, MQTT);
         defaultJoynrProperties.putAll(configuredProperties);
         return defaultJoynrProperties;
     }

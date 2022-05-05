@@ -37,7 +37,6 @@ import com.google.inject.util.Modules;
 
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.integration.util.DummyJoynrApplication;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
@@ -60,8 +59,6 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     protected JoynrRuntime getRuntime(Properties joynrConfig, Module... modules) {
         mqttConfig = new Properties();
         mqttConfig.put(MqttModule.PROPERTY_MQTT_BROKER_URIS, MQTT_BROKER_URL);
-        // test is using 2 global address types, so need to set one of them as primary
-        mqttConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");

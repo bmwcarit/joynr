@@ -11,8 +11,9 @@ None.
 None.
 
 ## Configuration Property Changes
-* **[Java]** Property `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT` has been removed since it is
-  no longer used. The `mqtt` which was the only allowed value has now become default.
+* **[Java]** Property `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT` / `joynr.messaging.primaryglobaltransport`
+  has been removed since it is no longer used. The `mqtt` which was the only allowed value has now
+  become default.
 
 ## Security Fixes
 None.

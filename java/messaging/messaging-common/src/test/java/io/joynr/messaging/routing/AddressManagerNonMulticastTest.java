@@ -49,7 +49,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(Parameterized.class)
 public class AddressManagerNonMulticastTest {
-    private static final String NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED = null;
     private static final String PARTICIPANT_ID = "participantId";
 
     @Parameters(name = "{index}: MessageType={0}")
@@ -82,7 +81,6 @@ public class AddressManagerNonMulticastTest {
     public void setup() {
         initMocks(this);
         subject = new AddressManager(routingTable,
-                                     new AddressManager.PrimaryGlobalTransportHolder(NO_PRIMARY_GLOBAL_TRANSPORT_SELECTED),
                                      new HashSet<MulticastAddressCalculator>(),
                                      multicastReceiverRegistry);
         when(joynrMessage.getType()).thenReturn(messageTypeParameter);

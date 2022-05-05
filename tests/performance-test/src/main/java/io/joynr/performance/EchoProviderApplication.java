@@ -115,7 +115,6 @@ public class EchoProviderApplication extends AbstractJoynrApplication {
 
         if (invocationParams.getBackendTransportMode() == BackendConfig.MQTT) {
             joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParams.getMqttBrokerUri());
-            joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         }
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);

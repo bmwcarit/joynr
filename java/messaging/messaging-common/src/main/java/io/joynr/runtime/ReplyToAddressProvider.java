@@ -26,7 +26,6 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
-import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoBackendGlobalAddressFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.TransportReadyListener;
@@ -35,15 +34,9 @@ import joynr.system.RoutingTypes.Address;
 public class ReplyToAddressProvider implements Provider<Address> {
     public static final String REPLY_TO_ADDRESS_FACTORIES = "reply_to_address_factories";
 
-    private Set<GlobalAddressFactory<? extends Address>> replyToAddressFactories;
+    private static final String GLOBAL_TRANSPORT_MQTT = "mqtt";
 
-    @Inject(optional = true)
-    @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT)
-    /**
-     * primaryGlobalTransport is optional, but must be set if more than one GlobalAddressFactory is registered.
-     * The primary address is how remote cluster controllers can reach this cluster controller's providers
-     */
-    String primaryGlobalTransport;
+    private Set<GlobalAddressFactory<? extends Address>> replyToAddressFactories;
 
     @Inject
     public ReplyToAddressProvider(@Named(REPLY_TO_ADDRESS_FACTORIES) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
@@ -89,10 +82,10 @@ public class ReplyToAddressProvider implements Provider<Address> {
     }
 
     private GlobalAddressFactory<? extends Address> getPrimaryReplyToAddressFactory() {
-        GlobalAddressFactory<? extends Address> addressFactory = getAddressFactoryForTransport(primaryGlobalTransport);
+        GlobalAddressFactory<? extends Address> addressFactory = getAddressFactoryForTransport(GLOBAL_TRANSPORT_MQTT);
         if (addressFactory == null) {
             // no need to set the primary global transport if only one possible transport is registered
-            if (replyToAddressFactories.size() == 1) {
+            if (replyToAddressFactories.size() >= 1) {
                 addressFactory = replyToAddressFactories.iterator().next();
             } else if (replyToAddressFactories.size() == 0) {
                 throw new IllegalStateException("no global transport was registered");
@@ -100,12 +93,6 @@ public class ReplyToAddressProvider implements Provider<Address> {
                 replyToAddressFactories = replyToAddressFactories.stream()
                                                                  .filter(factory -> !NoBackendGlobalAddressFactory.class.isInstance(factory))
                                                                  .collect(Collectors.toSet());
-            }
-            if (replyToAddressFactories.size() > 1) {
-                throw new IllegalStateException("multiple global transports were registered but "
-                        + MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT + " was not set.");
-            } else {
-                addressFactory = replyToAddressFactories.iterator().next();
             }
         }
         return addressFactory;

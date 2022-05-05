@@ -97,7 +97,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             runtimeModule = new CCInProcessRuntimeModule();
             if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
                 joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
-                joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }
         }
@@ -471,7 +470,6 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
         if (invocationParameters.getBackendTransportMode() == BackendConfig.MQTT) {
             joynrConfig.put("joynr.messaging.mqtt.brokerUri", invocationParameters.getMqttBrokerUri());
-            joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
         }
 
         joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, STATIC_PERSISTENCE_FILE);
