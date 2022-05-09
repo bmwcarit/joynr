@@ -200,6 +200,8 @@ private:
     static const std::string _runtimeAlreadyDestroyed;
 
     ADD_LOGGER(ProxyBuilder)
+
+    friend class End2EndProxyBuilderRobustnessTest;
 };
 
 template <class T>
