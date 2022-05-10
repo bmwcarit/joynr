@@ -18,9 +18,7 @@
  */
 package io.joynr.runtime;
 
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -34,67 +32,29 @@ import joynr.system.RoutingTypes.Address;
 public class ReplyToAddressProvider implements Provider<Address> {
     public static final String REPLY_TO_ADDRESS_FACTORIES = "reply_to_address_factories";
 
-    private static final String GLOBAL_TRANSPORT_MQTT = "mqtt";
-
-    private Set<GlobalAddressFactory<? extends Address>> replyToAddressFactories;
+    private GlobalAddressFactory<? extends Address> replyToAddressFactory;
 
     @Inject
     public ReplyToAddressProvider(@Named(REPLY_TO_ADDRESS_FACTORIES) Set<GlobalAddressFactory<? extends Address>> addressFactories) {
-        this.replyToAddressFactories = addressFactories;
+        if (addressFactories.size() == 1) {
+            replyToAddressFactory = addressFactories.iterator().next();
+        } else if (addressFactories.size() == 0) {
+            replyToAddressFactory = new NoBackendGlobalAddressFactory();
+        } else {
+            throw new IllegalStateException("Multiple global transports were registered");
+        }
     }
 
     public void registerGlobalAddressesReadyListener(TransportReadyListener listener) {
-        GlobalAddressFactory<? extends Address> addressFactory = getPrimaryReplyToAddressFactory();
-        addressFactory.registerGlobalAddressReady(listener);
-    }
-
-    public GlobalAddressFactory<? extends Address> getAddressFactoryForTransport(String transport) {
-        for (GlobalAddressFactory<? extends Address> addressFactory : replyToAddressFactories) {
-            if (addressFactory.supportsTransport(Optional.ofNullable(transport))) {
-                return addressFactory;
-            }
-        }
-        return null;
-    }
-
-    public GlobalAddressFactory<? extends Address> getAddressFactoryByClass(Class<GlobalAddressFactory<? extends Address>> targetAddressFactoryClass) {
-        if (targetAddressFactoryClass == null) {
-            return null;
-        }
-
-        for (GlobalAddressFactory<? extends Address> addressFactory : replyToAddressFactories) {
-            if (addressFactory.getClass().isAssignableFrom(targetAddressFactoryClass)) {
-                return addressFactory;
-            }
-        }
-
-        return null;
+        replyToAddressFactory.registerGlobalAddressReady(listener);
     }
 
     @Override
     public Address get() {
         try {
-            GlobalAddressFactory<? extends Address> addressFactory = getPrimaryReplyToAddressFactory();
-            return addressFactory.create();
+            return replyToAddressFactory.create();
         } catch (IllegalStateException e) {
             return null;
         }
-    }
-
-    private GlobalAddressFactory<? extends Address> getPrimaryReplyToAddressFactory() {
-        GlobalAddressFactory<? extends Address> addressFactory = getAddressFactoryForTransport(GLOBAL_TRANSPORT_MQTT);
-        if (addressFactory == null) {
-            // no need to set the primary global transport if only one possible transport is registered
-            if (replyToAddressFactories.size() >= 1) {
-                addressFactory = replyToAddressFactories.iterator().next();
-            } else if (replyToAddressFactories.size() == 0) {
-                throw new IllegalStateException("no global transport was registered");
-            } else {
-                replyToAddressFactories = replyToAddressFactories.stream()
-                                                                 .filter(factory -> !NoBackendGlobalAddressFactory.class.isInstance(factory))
-                                                                 .collect(Collectors.toSet());
-            }
-        }
-        return addressFactory;
     }
 }

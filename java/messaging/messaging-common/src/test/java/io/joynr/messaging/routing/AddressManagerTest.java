@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -108,30 +109,10 @@ public class AddressManagerTest {
         assertEquals(Optional.of(multicastAddress), subject.getAddressForDelayableImmutableMessage(delayablemessage));
     }
 
-    @Test
+    @Test(expected = JoynrIllegalStateException.class)
     public void testMultipleCalculators() {
         MulticastAddressCalculator anotherMulticastAddressCalculator = mock(MulticastAddressCalculator.class);
         createAddressManager(multicastAddressCalculator, anotherMulticastAddressCalculator);
-    }
-
-    @Test
-    public void testGetAddressFromMultipleCalculators() {
-        MulticastAddressCalculator anotherMulticastAddressCalculator = mock(MulticastAddressCalculator.class);
-        when(anotherMulticastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)).thenReturn(true);
-        when(anotherMulticastAddressCalculator.calculate(joynrMessage)).thenReturn(multicastAddresses);
-        createAddressManager(multicastAddressCalculator, anotherMulticastAddressCalculator);
-
-        when(joynrMessage.getRecipient()).thenReturn(participantId + "/multicastname");
-
-        Map<Address, Set<String>> result = subject.getParticipantIdMap(joynrMessage);
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(1, result.values().iterator().next().size());
-
-        DelayableImmutableMessage delayablemessage = new DelayableImmutableMessage(joynrMessage,
-                                                                                   1000,
-                                                                                   result.values().iterator().next());
-        assertEquals(Optional.of(multicastAddress), subject.getAddressForDelayableImmutableMessage(delayablemessage));
     }
 
     @Test

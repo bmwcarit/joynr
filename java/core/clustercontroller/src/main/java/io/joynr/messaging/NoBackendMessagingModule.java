@@ -19,34 +19,11 @@
 package io.joynr.messaging;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Names;
-
-import io.joynr.messaging.routing.GlobalAddressFactory;
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
-import joynr.system.RoutingTypes.Address;
 
 public class NoBackendMessagingModule extends AbstractModule {
 
     @Override
     protected void configure() {
         bind(MessageReceiver.class).to(NoBackendMessagingReceiver.class);
-
-        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
-        globalAddresses = Multibinder.newSetBinder(binder(),
-                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                   },
-                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
-        globalAddresses.addBinding().to(NoBackendGlobalAddressFactory.class);
-
-        Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
-        replyToAddresses = Multibinder.newSetBinder(binder(),
-                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                    },
-                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
-        replyToAddresses.addBinding().to(NoBackendGlobalAddressFactory.class);
-
     }
 }

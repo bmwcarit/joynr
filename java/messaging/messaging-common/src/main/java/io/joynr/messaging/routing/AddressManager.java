@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -39,7 +40,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 public class AddressManager {
     private static final Logger logger = LoggerFactory.getLogger(AddressManager.class);
     public static final String multicastAddressCalculatorParticipantId = "joynr.internal.multicastAddressCalculatorParticipantId";
-    private static final String GLOBAL_TRANSPORT_MQTT = "mqtt";
 
     private final MulticastReceiverRegistry multicastReceiversRegistry;
 
@@ -58,13 +58,10 @@ public class AddressManager {
         this.multicastReceiversRegistry = multicastReceiverRegistry;
         if (multicastAddressCalculators.size() == 1) {
             this.multicastAddressCalculator = multicastAddressCalculators.iterator().next();
+        } else if (multicastAddressCalculators.size() > 1) {
+            throw new JoynrIllegalStateException("Multiple multicast address calculators registered.");
         } else {
-            for (MulticastAddressCalculator multicastAddressCalculator : multicastAddressCalculators) {
-                if (multicastAddressCalculator.supports(GLOBAL_TRANSPORT_MQTT)) {
-                    this.multicastAddressCalculator = multicastAddressCalculator;
-                    break;
-                }
-            }
+            this.multicastAddressCalculator = null;
         }
     }
 
