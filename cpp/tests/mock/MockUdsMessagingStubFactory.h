@@ -22,7 +22,7 @@
 #include <functional>
 #include <memory>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/exceptions/JoynrException.h"
 #include "libjoynr/uds/UdsMessagingStubFactory.h"

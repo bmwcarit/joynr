@@ -17,8 +17,8 @@
  * #L%
  */
 #include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 #include <memory>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/MessageSender.h"

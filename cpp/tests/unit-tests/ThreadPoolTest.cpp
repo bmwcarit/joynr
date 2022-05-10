@@ -19,7 +19,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Semaphore.h"
 #include "joynr/ThreadPool.h"

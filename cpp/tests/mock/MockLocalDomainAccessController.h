@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKLOCALDOMAINACCESSCONTROLLER_H
 #define TESTS_MOCK_MOCKLOCALDOMAINACCESSCONTROLLER_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 

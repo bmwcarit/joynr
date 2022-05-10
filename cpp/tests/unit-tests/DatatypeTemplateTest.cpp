@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 using namespace ::testing;
 #include "joynr/types/Localisation/Trip.h"
 #include "joynr/types/Localisation/GpsLocation.h"

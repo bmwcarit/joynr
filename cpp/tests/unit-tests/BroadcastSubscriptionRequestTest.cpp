@@ -17,7 +17,7 @@
  * #L%
  */
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/PeriodicSubscriptionQos.h"

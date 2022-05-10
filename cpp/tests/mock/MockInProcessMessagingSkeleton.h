@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKINPROCESSMESSAGINGSKELETON_H
 #define TESTS_MOCK_MOCKINPROCESSMESSAGINGSKELETON_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 

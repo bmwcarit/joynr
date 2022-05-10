@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKACCESSCONTROLLER_H
 #define TESTS_MOCK_MOCKACCESSCONTROLLER_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/access-control/IAccessController.h"
 

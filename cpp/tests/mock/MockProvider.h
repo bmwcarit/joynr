@@ -21,7 +21,7 @@
 
 #include <cstdint>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/AbstractJoynrProvider.h"
 #include "joynr/RequestCallerFactory.h"

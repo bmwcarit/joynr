@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/IDispatcher.h"

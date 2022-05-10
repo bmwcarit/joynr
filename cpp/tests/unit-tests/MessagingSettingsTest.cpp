@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <limits>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "tests/PrettyPrint.h"
 #include "joynr/MessagingSettings.h"

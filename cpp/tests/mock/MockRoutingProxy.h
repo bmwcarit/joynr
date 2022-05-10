@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKROUTINGPROXY_H
 #define TESTS_MOCK_MOCKROUTINGPROXY_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/MessagingQos.h"
 #include "joynr/system/RoutingProxy.h"

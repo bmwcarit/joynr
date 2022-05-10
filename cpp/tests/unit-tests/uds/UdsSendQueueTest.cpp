@@ -22,8 +22,8 @@
 #include <utility>
 #include <vector>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "libjoynr/uds/UdsSendQueue.h"
 #include "libjoynr/uds/UdsFrameBufferV1.h"

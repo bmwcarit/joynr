@@ -19,8 +19,8 @@
 #ifndef TESTS_MOCK_MOCKJOYNRRUNTIME_H
 #define TESTS_MOCK_MOCKJOYNRRUNTIME_H
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/JoynrRuntimeImpl.h"
 #include "tests/JoynrTest.h"

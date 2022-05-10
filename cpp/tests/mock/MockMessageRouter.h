@@ -21,7 +21,7 @@
 
 #include <cstdint>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 #include <boost/asio.hpp>
 
 #include "joynr/IMessageRouter.h"

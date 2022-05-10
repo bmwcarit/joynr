@@ -24,9 +24,6 @@
 #include <memory>
 #include <string>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
 #include "joynr/ImmutableMessage.h"
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Semaphore.h"

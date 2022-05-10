@@ -22,7 +22,7 @@
 #include <memory>
 #include <chrono>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/IKeychain.h"
 #include "joynr/Semaphore.h"

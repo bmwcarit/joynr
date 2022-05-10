@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKWEBSOCKETCLIENT_H
 #define TESTS_MOCK_MOCKWEBSOCKETCLIENT_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "libjoynr/websocket/IWebSocketPpClient.h"
 

@@ -21,7 +21,7 @@
 #include <tuple>
 #include <vector>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/CapabilitiesStorage.h"
 #include "joynr/ClusterControllerSettings.h"

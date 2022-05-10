@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKPARTICIPANTIDSTORAGE_H
 #define TESTS_MOCK_MOCKPARTICIPANTIDSTORAGE_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/ParticipantIdStorage.h"
 

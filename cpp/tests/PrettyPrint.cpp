@@ -18,8 +18,6 @@
  */
 #include "tests/PrettyPrint.h"
 
-#include <gtest/gtest.h>
-
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/NoCompatibleProviderFoundException.h"
 #include "joynr/exceptions/MethodInvocationException.h"

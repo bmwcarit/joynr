@@ -20,7 +20,7 @@
 #include <unordered_set>
 
 #include <boost/math/special_functions/next.hpp>
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/ByteBuffer.h"
 #include "joynr/types/TestTypes/Word.h"

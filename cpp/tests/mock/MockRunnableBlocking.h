@@ -22,7 +22,7 @@
 #include <condition_variable>
 #include <mutex>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/Runnable.h"
 

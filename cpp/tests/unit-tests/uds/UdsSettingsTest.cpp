@@ -19,7 +19,7 @@
 #include <chrono>
 #include <cstdio>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/UdsSettings.h"
 #include "joynr/Settings.h"

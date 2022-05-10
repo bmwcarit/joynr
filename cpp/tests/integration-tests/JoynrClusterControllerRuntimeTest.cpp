@@ -21,8 +21,8 @@
 #include <string>
 #include <vector>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/ClusterControllerSettings.h"

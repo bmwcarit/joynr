@@ -18,7 +18,7 @@
  */
 
 #include "joynr/PrivateCopyAssign.h"
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 #include "libjoynrclustercontroller/access-control/AccessControlAlgorithm.h"
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"

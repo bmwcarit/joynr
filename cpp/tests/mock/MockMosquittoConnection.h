@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKMOSQUITTOCONNECTION_H
 #define TESTS_MOCK_MOCKMOSQUITTOCONNECTION_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 

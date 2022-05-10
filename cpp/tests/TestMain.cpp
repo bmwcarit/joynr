@@ -19,8 +19,8 @@
 
 #include <boost/config.hpp>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "utils/Gtest.h"
+#include "utils/Gmock.h"
 
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>

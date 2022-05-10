@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/Logger.h"
 #include "joynr/vehicle/DefaultGpsProvider.h"

@@ -20,8 +20,8 @@
 #include <string>
 #include <cstdint>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "joynr/Future.h"
 #include "joynr/JoynrClusterControllerRuntime.h"

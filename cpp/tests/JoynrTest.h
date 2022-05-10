@@ -21,8 +21,8 @@
 
 #include <exception>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "utils/Gtest.h"
+#include "utils/Gmock.h"
 
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MutableMessage.h"

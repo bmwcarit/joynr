@@ -21,7 +21,7 @@
 
 #include <cstdint>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/Runnable.h"
 #include "joynr/Logger.h"

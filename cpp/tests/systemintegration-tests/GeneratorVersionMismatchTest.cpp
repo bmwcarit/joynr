@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Settings.h"
 #include "joynr/tests/v1/DefaultMultipleVersionsInterfaceProvider.h"

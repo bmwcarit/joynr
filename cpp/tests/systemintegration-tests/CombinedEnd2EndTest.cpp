@@ -22,8 +22,8 @@
 #include <string>
 #include <tuple>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "tests/mock/MockSubscriptionListener.h"
 #include "joynr/JoynrRuntime.h"

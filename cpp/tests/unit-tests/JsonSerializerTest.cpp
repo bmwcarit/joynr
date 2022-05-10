@@ -21,7 +21,7 @@
 #include <chrono>
 #include <sstream>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 #include <boost/algorithm/string/predicate.hpp>
 
 #include "joynr/Util.h"

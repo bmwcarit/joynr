@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKSUBSCRIPTIONLISTENER_H
 #define TESTS_MOCK_MOCKSUBSCRIPTIONLISTENER_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/ISubscriptionListener.h"

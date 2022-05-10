@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 #include <boost/optional.hpp>
 
 #include "joynr/CapabilitiesStorage.h"

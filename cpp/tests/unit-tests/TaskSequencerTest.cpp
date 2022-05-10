@@ -23,8 +23,8 @@
 #include <set>
 #include <vector>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "joynr/TaskSequencer.h"
 #include "joynr/TimePoint.h"

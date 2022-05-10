@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/tests/DefaulttestProvider.h"
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/Logger.h"
 #include <chrono>

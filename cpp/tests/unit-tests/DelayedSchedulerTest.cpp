@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/DelayedScheduler.h"
 #include "joynr/Logger.h"

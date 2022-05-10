@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include <mutex>
 #include <string>

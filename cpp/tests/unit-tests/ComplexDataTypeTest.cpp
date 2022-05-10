@@ -20,7 +20,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 

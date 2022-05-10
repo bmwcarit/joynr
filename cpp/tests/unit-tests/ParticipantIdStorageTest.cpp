@@ -27,7 +27,7 @@
 #include <thread>
 #include <tuple>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/Util.h"

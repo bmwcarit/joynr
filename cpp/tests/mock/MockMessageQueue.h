@@ -25,7 +25,7 @@
 #include <memory>
 #include <string>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MessageQueue.h"

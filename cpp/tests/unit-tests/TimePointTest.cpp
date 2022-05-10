@@ -19,7 +19,7 @@
 
 #include <cstdint>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/TimePoint.h"
 
