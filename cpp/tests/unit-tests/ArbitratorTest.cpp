@@ -1546,9 +1546,9 @@ TEST_F(ArbitratorTest, arbitrationStarted_localDiscoveryAggregatorLookupCalledWi
     const std::uint64_t capturedMessagingQosTtlAtStart = capturedMessagingQosStarted.value().getTtl();
     const std::uint64_t capturedMessagingQosTtlAtRetry = capturedMessagingQosRetried.value().getTtl();
     EXPECT_LE(capturedMessagingQosTtlAtStart, discoveryTimeoutMs + epsilon);
-    EXPECT_GT(capturedMessagingQosTtlAtStart, discoveryTimeoutMs - (retryIntervalMs / 2) + epsilon);
+    EXPECT_GE(capturedMessagingQosTtlAtStart, discoveryTimeoutMs - (retryIntervalMs / 2) + epsilon);
     EXPECT_LE(capturedMessagingQosTtlAtRetry, discoveryTimeoutMs - retryIntervalMs + epsilon);
-    EXPECT_GT(capturedMessagingQosTtlAtRetry, epsilon);
+    EXPECT_GE(capturedMessagingQosTtlAtRetry, epsilon);
     arbitrator->stopArbitration();
 }
 
