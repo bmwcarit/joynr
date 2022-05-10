@@ -28,11 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.MessagingPropertyKeys;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.Message.MessageType;
@@ -48,48 +46,22 @@ public class AddressManager {
     private RoutingTable routingTable;
     private MulticastAddressCalculator multicastAddressCalculator;
 
-    protected static class PrimaryGlobalTransportHolder {
-        @Inject(optional = true)
-        @Named(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT)
-        private String primaryGlobalTransport;
-
-        public PrimaryGlobalTransportHolder() {
-        }
-
-        // For testing only
-        protected PrimaryGlobalTransportHolder(String primaryGlobalTransport) {
-            this.primaryGlobalTransport = primaryGlobalTransport;
-        }
-
-        public String get() {
-            return primaryGlobalTransport;
-        }
-    }
-
     @Inject
     public AddressManager(RoutingTable routingTable,
-                          PrimaryGlobalTransportHolder primaryGlobalTransport,
                           Set<MulticastAddressCalculator> multicastAddressCalculators,
                           MulticastReceiverRegistry multicastReceiverRegistry) {
-        logger.trace("Initialised with routingTable: {}, primaryGlobalTransport: {}, multicastAddressCalculators: {}, multicastReceiverRegistry: {}",
+        logger.trace("Initialised with routingTable: {}, multicastAddressCalculators: {}, multicastReceiverRegistry: {}",
                      routingTable,
-                     primaryGlobalTransport.get(),
                      multicastAddressCalculators,
                      multicastReceiverRegistry);
         this.routingTable = routingTable;
         this.multicastReceiversRegistry = multicastReceiverRegistry;
-        if (multicastAddressCalculators.size() > 1 && primaryGlobalTransport.get() == null) {
-            throw new JoynrIllegalStateException("Multiple multicast address calculators registered, but no primary global transport set.");
-        }
         if (multicastAddressCalculators.size() == 1) {
             this.multicastAddressCalculator = multicastAddressCalculators.iterator().next();
+        } else if (multicastAddressCalculators.size() > 1) {
+            throw new JoynrIllegalStateException("Multiple multicast address calculators registered.");
         } else {
-            for (MulticastAddressCalculator multicastAddressCalculator : multicastAddressCalculators) {
-                if (multicastAddressCalculator.supports(primaryGlobalTransport.get())) {
-                    this.multicastAddressCalculator = multicastAddressCalculator;
-                    break;
-                }
-            }
+            this.multicastAddressCalculator = null;
         }
     }
 

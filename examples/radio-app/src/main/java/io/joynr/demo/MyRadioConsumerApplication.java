@@ -300,7 +300,6 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
             Module backendTransportModules = Modules.EMPTY_MODULE;
 
             if (transport.contains("mqtt")) {
-                joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
                 backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
             }
 

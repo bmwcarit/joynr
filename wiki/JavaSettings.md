@@ -418,17 +418,6 @@ Enables or disables access control checks.
 
 
 ## MessagingPropertyKeys
-
-### `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT`
-Select primary global transport middleware which will be used to register providers. The provider
-will be reachable via the selected global transport middleware.
-Possible values: `mqtt`
-
-* **REQUIRED if using more than one global transport**
-* **Type**: String
-* **User property**: `joynr.messaging.primaryglobaltransport`
-* **Default value**: NOT SET
-
 ### `PROPERTY_MESSAGING_COMPRESS_REPLIES`
 compress all outgoing replies by default, even if the request was not compressed.
 If the property set to be false then replies are only compressed if the corresponding request is set to be compressed.

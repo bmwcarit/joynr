@@ -2,6 +2,25 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.19.13
+
+## API relevant changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+* **[Java]** Property `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT` / `joynr.messaging.primaryglobaltransport`
+  has been removed since it is no longer used. The `mqtt` which was the only allowed value has now
+  become default.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.19.12
 
 ## API-relevant Changes

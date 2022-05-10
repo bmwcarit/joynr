@@ -182,7 +182,6 @@ public class CcMessageRouterTest {
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder()));
         addressManager = spy(new AddressManager(routingTable,
-                                                new AddressManager.PrimaryGlobalTransportHolder(null),
                                                 new HashSet<MulticastAddressCalculator>(),
                                                 multicastReceiverRegistry));
 

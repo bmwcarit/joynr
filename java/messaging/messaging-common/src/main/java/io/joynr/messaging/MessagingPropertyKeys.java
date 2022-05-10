@@ -30,7 +30,6 @@ public final class MessagingPropertyKeys {
 
     public static final String JOYNR_PROPERTIES = "joynr.properties";
 
-    public static final String PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT = "joynr.messaging.primaryglobaltransport";
     public static final String PROPERTY_MESSAGING_COMPRESS_REPLIES = "joynr.messaging.compressreplies";
 
     public static final String MQTT_TOPIC_PREFIX_REPLYTO = "joynr.messaging.mqtt.topicprefix.sharedsubscriptionsreplyto";

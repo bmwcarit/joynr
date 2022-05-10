@@ -42,8 +42,8 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.messaging.websocket.WebsocketModule;
-import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.proxy.ProxyBuilder;
+import io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
@@ -117,7 +117,6 @@ public abstract class IltConsumerTest {
 
         if (transport.contains("mqtt")) {
             logger.info("getRuntimeModule: using HivemqMqttClientModule");
-            joynrConfig.put(MessagingPropertyKeys.PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT, "mqtt");
             backendTransportModules = Modules.combine(backendTransportModules, new HivemqMqttClientModule());
         }
 
