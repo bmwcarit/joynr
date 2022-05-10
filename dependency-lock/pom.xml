@@ -107,25 +107,25 @@
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<type>jar</type>
-				<version>3.0</version>
+				<version>5.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
 				<artifactId>guice-assistedinject</artifactId>
 				<type>jar</type>
-				<version>3.0</version>
+				<version>5.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
 				<artifactId>guice-multibindings</artifactId>
 				<type>jar</type>
-				<version>3.0</version>
+				<version>5.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
 				<artifactId>guice-persist</artifactId>
 				<type>jar</type>
-				<version>3.0</version>
+				<version>5.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.hivemq</groupId>

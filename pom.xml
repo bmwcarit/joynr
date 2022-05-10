@@ -404,7 +404,7 @@
 		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.13.3</jackson.version>
 		<netty.version>4.1.48.Final</netty.version>
-		<guice.version>3.0</guice.version>
+		<guice.version>5.1.0</guice.version>
 		<jetty.version>11.0.7</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
 		<hibernate.version>5.5.7.Final</hibernate.version>
@@ -530,11 +530,6 @@
 				<artifactId>guice</artifactId>
 				<version>${guice.version}</version>
 				<classifier>no_aop</classifier>
-			</dependency>
-			<dependency>
-				<groupId>com.google.inject.extensions</groupId>
-				<artifactId>guice-multibindings</artifactId>
-				<version>${guice.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>

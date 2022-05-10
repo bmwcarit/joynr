@@ -356,6 +356,42 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>animal-sniffer-annotations</artifactId>
+			<version>1.17</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>failureaccess</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.checkerframework</groupId>
+			<artifactId>checker-qual</artifactId>
+			<version>2.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.errorprone</groupId>
+			<artifactId>error_prone_annotations</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.j2objc</groupId>
+			<artifactId>j2objc-annotations</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>27.1-jre</version>
+		</dependency>
+>>>>>>> [Java] Update Google Guice to 5.1.0
 	</dependencies>
 
 	<build>
@@ -380,6 +416,11 @@
 					<excludeArtifactIds></excludeArtifactIds>
 				</configuration>
 				<executions>
+					<!-- run analyze before unpack-dependencies to not include transitive dependencies -->
+					<execution>
+						<id>analyze</id>
+						<phase>prepare-package</phase>
+					</execution>
 					<!-- unpack all non-runnable files into WEB-INF/lib -->
 					<execution>
 						<id>unpack-dependency-info</id>
