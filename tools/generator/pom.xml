@@ -212,6 +212,11 @@
 				<artifactId>aapt2-proto</artifactId>
 				<version>4.0.0-6051327</version>
 			</dependency>
+			<dependency>
+				<groupId>io.github.classgraph</groupId>
+				<artifactId>classgraph</artifactId>
+				<version>4.8.138</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
