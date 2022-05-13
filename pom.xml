@@ -402,7 +402,7 @@
 			are referenced.
 		-->
 		<jersey.version>1.19.4</jersey.version>
-		<jackson.version>2.11.3</jackson.version>
+		<jackson.version>2.13.3</jackson.version>
 		<netty.version>4.1.48.Final</netty.version>
 		<guice.version>3.0</guice.version>
 		<jetty.version>11.0.7</jetty.version>
