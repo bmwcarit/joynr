@@ -8,12 +8,14 @@ the versioning scheme [here](JoynrVersioning.md).
 None.
 
 ## Other Changes
-None.
+* **[Docker]** Updated joynr Docker image `joynr-base` to use the latest fedora version 36 as base
+  image.
+* **[Docker]** Added sanitizers (ASAN, TSAN, UBSAN) to Docker image `joynr-base`.
 
 ## Configuration Property Changes
 * **[Java]** Property `PROPERTY_MESSAGING_PRIMARYGLOBALTRANSPORT` / `joynr.messaging.primaryglobaltransport`
-  has been removed since it is no longer used. The `mqtt` which was the only allowed value has now
-  become default.
+  has been removed since it is no longer used. MQTT is the only available global transport since HTTP
+  support has been removed, a selection is not required.
 
 ## Security Fixes
 None.
