@@ -26,7 +26,6 @@ import io.joynr.generator.templates.util.BroadcastUtil
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
-import java.io.File
 import java.util.Date
 import org.eclipse.xtext.generator.IFileSystemAccess
 

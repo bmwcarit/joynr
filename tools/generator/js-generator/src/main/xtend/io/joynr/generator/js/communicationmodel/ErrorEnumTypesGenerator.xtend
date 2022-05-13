@@ -22,7 +22,6 @@ import com.google.inject.Inject
 import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.templates.util.InterfaceUtil
 import io.joynr.generator.templates.util.NamingUtil
-import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FInterface
 import org.franca.core.franca.FType

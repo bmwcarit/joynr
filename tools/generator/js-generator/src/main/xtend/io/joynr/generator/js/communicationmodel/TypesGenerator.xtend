@@ -23,7 +23,6 @@ import io.joynr.generator.js.util.JoynrJSGeneratorExtensions
 import io.joynr.generator.js.util.JsTemplateFactory
 import io.joynr.generator.templates.util.NamingUtil
 import io.joynr.generator.templates.util.TypeUtil
-import java.io.File
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.franca.FCompoundType
 import org.franca.core.franca.FEnumerationType
