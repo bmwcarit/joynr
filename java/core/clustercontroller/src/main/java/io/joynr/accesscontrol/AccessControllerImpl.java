@@ -157,9 +157,18 @@ public class AccessControllerImpl implements AccessController {
     }
 
     @Override
-    public boolean hasProviderPermission(String userId, TrustLevel trustLevel, String domain, String interfaceName) {
-        assert false : "Not yet implemented";
-        return true;
+    public boolean hasProviderPermission(String userId,
+                                         TrustLevel trustLevel,
+                                         String domain,
+                                         String interfaceName,
+                                         String participantId) {
+        if (whitelistedParticipantIds.contains(participantId)) {
+            return true;
+        }
+        return localDomainAccessController.getProviderPermission(userId,
+                                                                 domain,
+                                                                 interfaceName,
+                                                                 trustLevel) == Permission.YES;
     }
 
     // Get the capability entry for the given message

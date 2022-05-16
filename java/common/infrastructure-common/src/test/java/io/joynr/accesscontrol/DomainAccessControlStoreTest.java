@@ -29,6 +29,8 @@ import org.junit.Test;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
@@ -50,6 +52,8 @@ public class DomainAccessControlStoreTest {
     private static DomainAccessControlStore store;
     private MasterAccessControlEntry expectedMasterAccessControlEntry;
     private OwnerAccessControlEntry expectedOwnerAccessControlEntry;
+    private MasterRegistrationControlEntry expectedMasterRegistrationControlEntry;
+    private OwnerRegistrationControlEntry expectedOwnerRegistrationControlEntry;
     private DomainRoleEntry expectedUserDomainRoleEntry;
 
     @BeforeClass
@@ -82,6 +86,25 @@ public class DomainAccessControlStoreTest {
                                                                       TrustLevel.LOW,
                                                                       OPERATION1,
                                                                       Permission.NO);
+
+        expectedMasterRegistrationControlEntry = new MasterRegistrationControlEntry(UID1,
+                                                                                    DOMAIN1,
+                                                                                    INTERFACE1,
+                                                                                    TrustLevel.LOW,
+                                                                                    new TrustLevel[]{ TrustLevel.MID,
+                                                                                            TrustLevel.LOW },
+                                                                                    TrustLevel.LOW,
+                                                                                    new TrustLevel[]{ TrustLevel.MID,
+                                                                                            TrustLevel.LOW },
+                                                                                    Permission.NO,
+                                                                                    new Permission[]{ Permission.ASK,
+                                                                                            Permission.NO });
+        expectedOwnerRegistrationControlEntry = new OwnerRegistrationControlEntry(UID1,
+                                                                                  DOMAIN1,
+                                                                                  INTERFACE1,
+                                                                                  TrustLevel.LOW,
+                                                                                  TrustLevel.LOW,
+                                                                                  Permission.NO);
     }
 
     @After
@@ -184,9 +207,17 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testUpdateMasterAccessControlEntry() throws Exception {
-        expectedMasterAccessControlEntry.setDefaultConsumerPermission(Permission.YES);
         boolean expectedUpdateResult = true;
-
+        expectedMasterAccessControlEntry.setDefaultConsumerPermission(Permission.NO);
+        assertEquals("Insert master ACE should return true",
+                     expectedUpdateResult,
+                     store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry));
+        assertTrue("Before update master ACE for UID1 should have default Permission.NO",
+                   store.getMasterAccessControlEntries(UID1)
+                        .get(0)
+                        .getDefaultConsumerPermission()
+                        .equals(Permission.NO));
+        expectedMasterAccessControlEntry.setDefaultConsumerPermission(Permission.YES);
         assertEquals("Update master ACE should return true",
                      expectedUpdateResult,
                      store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry));
@@ -256,10 +287,18 @@ public class DomainAccessControlStoreTest {
 
     @Test
     public void testUpdateOwnerAccessControlEntry() throws Exception {
+        boolean expectedUpdateResult = true;
+        expectedOwnerAccessControlEntry.setConsumerPermission(Permission.NO);
+        assertEquals("Insert owner ACE should return true",
+                     expectedUpdateResult,
+                     store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry));
+        assertTrue("Before update owner ACE for UID1 should have default Permission.NO",
+                   store.getOwnerAccessControlEntries(UID1).get(0).getConsumerPermission().equals(Permission.NO));
         expectedOwnerAccessControlEntry.setConsumerPermission(Permission.YES);
-        store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry);
-
-        assertTrue("Owner ACE for UID1 should have Permission.YES",
+        assertEquals("Update owner ACE should return true",
+                     expectedUpdateResult,
+                     store.updateOwnerAccessControlEntry(expectedOwnerAccessControlEntry));
+        assertTrue("After update owner ACE for UID1 should have default Permission.YES",
                    store.getOwnerAccessControlEntries(UID1).get(0).getConsumerPermission().equals(Permission.YES));
     }
 
@@ -278,7 +317,7 @@ public class DomainAccessControlStoreTest {
     }
 
     @Test
-    public void testGetWildcardUser() throws Exception {
+    public void testGetWildcardOwnerAce() throws Exception {
         OwnerAccessControlEntry expectedOwnerAccessControlEntryWildcard = new OwnerAccessControlEntry(WILDCARD,
                                                                                                       DOMAIN1,
                                                                                                       INTERFACEX,
@@ -294,5 +333,230 @@ public class DomainAccessControlStoreTest {
                    store.getOwnerAccessControlEntries(UID2).get(0).getUid().equals(WILDCARD));
         assertTrue("Uid of returned owner ACEs associated to DOMAIN1 and INTERFACEX should be WILDCARD",
                    store.getOwnerAccessControlEntries(DOMAIN1, INTERFACEX).get(0).getUid().equals(WILDCARD));
+    }
+
+    @Test
+    public void testGetWildcardMasterAce() throws Exception {
+        MasterAccessControlEntry expectedMasterAccessControlEntryWildcard = new MasterAccessControlEntry(WILDCARD,
+                                                                                                         DOMAIN1,
+                                                                                                         INTERFACEX,
+                                                                                                         TrustLevel.LOW,
+                                                                                                         new TrustLevel[]{
+                                                                                                                 TrustLevel.MID,
+                                                                                                                 TrustLevel.LOW },
+                                                                                                         TrustLevel.LOW,
+                                                                                                         new TrustLevel[]{
+                                                                                                                 TrustLevel.MID,
+                                                                                                                 TrustLevel.LOW },
+                                                                                                         OPERATIONX,
+                                                                                                         Permission.NO,
+                                                                                                         new Permission[]{
+                                                                                                                 Permission.ASK,
+                                                                                                                 Permission.NO });
+        store.updateMasterAccessControlEntry(expectedMasterAccessControlEntryWildcard);
+
+        assertTrue("Exactly one master RCE for WILDCARD user should be in Master RCL",
+                   store.getMasterAccessControlEntries(WILDCARD).size() == 1);
+        assertTrue("In case no USER2_ID RCE found, WILDCARD user RCE should be returned",
+                   store.getMasterAccessControlEntries(UID2).get(0).getUid().equals(WILDCARD));
+        assertTrue("Uid of returned master RCEs associated to DOMAIN1 and INTERFACEX should be WILDCARD",
+                   store.getMasterAccessControlEntries(DOMAIN1, INTERFACEX).get(0).getUid().equals(WILDCARD));
+    }
+
+    // RCE
+
+    @Test
+    public void testGetMasterRce() throws Exception {
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+
+        assertEquals("Master RCE associated to UID1 from Master RCL should be the same as expectedMasterRegistrationControlEntry",
+                     expectedMasterRegistrationControlEntry,
+                     store.getMasterRegistrationControlEntries(UID1).get(0));
+        assertEquals("Master RCE associated to DOMAIN1 and INTERFACE1 should be the same as expectedMasterRegistrationControlEntry",
+                     expectedMasterRegistrationControlEntry,
+                     store.getMasterRegistrationControlEntries(DOMAIN1, INTERFACE1).get(0));
+        assertEquals("Master RCE associated to UID1, DOMAIN1 and INTERFACE1 should be the same as expectedMasterRegistrationControlEntry",
+                     expectedMasterRegistrationControlEntry,
+                     store.getMasterRegistrationControlEntry(UID1, DOMAIN1, INTERFACE1));
+    }
+
+    @Test
+    public void testGetEditableMasterRcl() throws Exception {
+        expectedUserDomainRoleEntry.setDomains(new String[]{ DOMAIN1 });
+        expectedUserDomainRoleEntry.setRole(Role.MASTER);
+        store.updateDomainRole(expectedUserDomainRoleEntry);
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+
+        assertEquals("Editable master RCE for UID1 should be equal to expectedMasterRegistrationControlEntry",
+                     expectedMasterRegistrationControlEntry,
+                     store.getEditableMasterRegistrationControlEntries(UID1).get(0));
+    }
+
+    @Test
+    public void testEditableMasterRegistrationControlEntryNoMatchingDre() throws Exception {
+        expectedMasterRegistrationControlEntry.setUid(UID2);
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+
+        assertTrue("There should be no editable master RCE for UID1 in Master RCL",
+                   store.getEditableMasterRegistrationControlEntries(UID1).isEmpty());
+    }
+
+    @Test
+    public void testUpdateMasterRegistrationControlEntry() throws Exception {
+        boolean expectedUpdateResult = true;
+        expectedMasterRegistrationControlEntry.setDefaultProviderPermission(Permission.NO);
+        assertEquals("Insert master RCE should return true",
+                     expectedUpdateResult,
+                     store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry));
+        assertTrue("Before update master RCE for UID1 should have default Permission.NO",
+                   store.getMasterRegistrationControlEntries(UID1)
+                        .get(0)
+                        .getDefaultProviderPermission()
+                        .equals(Permission.NO));
+        expectedMasterRegistrationControlEntry.setDefaultProviderPermission(Permission.YES);
+        assertEquals("Update master RCE should return true",
+                     expectedUpdateResult,
+                     store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry));
+        assertTrue("After update master RCE for UID1 should have default Permission.YES",
+                   store.getMasterRegistrationControlEntries(UID1)
+                        .get(0)
+                        .getDefaultProviderPermission()
+                        .equals(Permission.YES));
+
+    }
+
+    @Test
+    public void testRemoveMasterRegistrationControlEntry() throws Exception {
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+        boolean expectedRemoveResult = true;
+
+        assertEquals("Remove master RCE for given userId, domain and interface should return true",
+                     expectedRemoveResult,
+                     store.removeMasterRegistrationControlEntry(UID1, DOMAIN1, INTERFACE1));
+        assertTrue("In Master RCL no master RCE for given domain, interface should remain",
+                   store.getMasterRegistrationControlEntries(DOMAIN1, INTERFACE1).isEmpty());
+        assertTrue("In Master RCL no master RCE for UID1 should remain",
+                   store.getMasterRegistrationControlEntries(UID1).isEmpty());
+    }
+
+    @Test
+    public void testGetOwnerRegistrationControlEntry() throws Exception {
+        store.updateOwnerRegistrationControlEntry(expectedOwnerRegistrationControlEntry);
+
+        assertEquals("Owner RCE for UID1 should be equal to expectedOwnerRegistrationControlEntry",
+                     expectedOwnerRegistrationControlEntry,
+                     store.getOwnerRegistrationControlEntries(UID1).get(0));
+        assertEquals("Owner RCE associated to DOMAIN1 and INTERFACE1 should be the same as expectedOwnerRegistrationControlEntry",
+                     expectedOwnerRegistrationControlEntry,
+                     store.getOwnerRegistrationControlEntries(DOMAIN1, INTERFACE1).get(0));
+        assertEquals("Owner RCE associated to UID1, DOMAIN1 and INTERFACE1 should be the same as expectedOwnerRegistrationControlEntry",
+                     expectedOwnerRegistrationControlEntry,
+                     store.getOwnerRegistrationControlEntry(UID1, DOMAIN1, INTERFACE1));
+        OwnerRegistrationControlEntry returnedOwnerRce = store.getOwnerRegistrationControlEntry(UID1,
+                                                                                                DOMAIN1,
+                                                                                                INTERFACE1);
+        assertEquals("Owner RCE associated to UID1, DOMAIN1 and INTERFACE1 should be the same as expectedOwnerRegistrationControlEntry",
+                     expectedOwnerRegistrationControlEntry,
+                     returnedOwnerRce);
+    }
+
+    @Test
+    public void testEditableOwnerRegistrationControlEntry() throws Exception {
+        expectedUserDomainRoleEntry.setDomains(new String[]{ DOMAIN1 });
+        store.updateDomainRole(expectedUserDomainRoleEntry);
+        store.updateOwnerRegistrationControlEntry(expectedOwnerRegistrationControlEntry);
+
+        assertEquals("Editable Owner RCE for UID1 should be equal to expectedOwnerRegistrationControlEntry",
+                     expectedOwnerRegistrationControlEntry,
+                     store.getEditableOwnerRegistrationControlEntries(UID1).get(0));
+    }
+
+    @Test
+    public void testEditableOwnerRegistrationControlEntryNoMatchingDre() throws Exception {
+        store.updateDomainRole(expectedUserDomainRoleEntry);
+        expectedOwnerRegistrationControlEntry.setUid(UID2);
+        store.updateOwnerRegistrationControlEntry(expectedOwnerRegistrationControlEntry);
+
+        assertTrue("No editable owner RCEs for UID2 should be in Owner RCL",
+                   store.getEditableOwnerRegistrationControlEntries(UID2).isEmpty());
+    }
+
+    @Test
+    public void testUpdateOwnerRegistrationControlEntry() throws Exception {
+        boolean expectedUpdateResult = true;
+        expectedOwnerRegistrationControlEntry.setProviderPermission(Permission.NO);
+        assertEquals("Insert owner RCE should return true",
+                     expectedUpdateResult,
+                     store.updateOwnerRegistrationControlEntry(expectedOwnerRegistrationControlEntry));
+        assertTrue("Before update owner RCE for UID1 should have default Permission.NO",
+                   store.getOwnerRegistrationControlEntries(UID1).get(0).getProviderPermission().equals(Permission.NO));
+        expectedOwnerRegistrationControlEntry.setProviderPermission(Permission.YES);
+        assertEquals("Update owner RCE should return true",
+                     expectedUpdateResult,
+                     store.updateOwnerRegistrationControlEntry(expectedOwnerRegistrationControlEntry));
+        assertTrue("After update owner RCE for UID1 should have default Permission.YES",
+                   store.getOwnerRegistrationControlEntries(UID1)
+                        .get(0)
+                        .getProviderPermission()
+                        .equals(Permission.YES));
+    }
+
+    @Test
+    public void testRemoveOwnerRegistrationControlEntry() throws Exception {
+        store.updateOwnerRegistrationControlEntry(expectedOwnerRegistrationControlEntry);
+        boolean expectedRemoveResult = true;
+
+        assertEquals("Remove owner RCE for given userId, domain and interface should return true",
+                     expectedRemoveResult,
+                     store.removeOwnerRegistrationControlEntry(UID1, DOMAIN1, INTERFACE1));
+        assertTrue("In Owner RCL no owner RCE for given domain, interface should remain",
+                   store.getOwnerRegistrationControlEntries(DOMAIN1, INTERFACE1).isEmpty());
+        assertTrue("In Owner RCL no owner RCE for UID1 should remain",
+                   store.getOwnerRegistrationControlEntries(UID1).isEmpty());
+    }
+
+    @Test
+    public void testGetWildcardOwnerRce() throws Exception {
+        OwnerRegistrationControlEntry expectedOwnerRegistrationControlEntryWildcard = new OwnerRegistrationControlEntry(WILDCARD,
+                                                                                                                        DOMAIN1,
+                                                                                                                        INTERFACEX,
+                                                                                                                        TrustLevel.HIGH,
+                                                                                                                        TrustLevel.HIGH,
+                                                                                                                        Permission.YES);
+        store.updateOwnerRegistrationControlEntry(expectedOwnerRegistrationControlEntryWildcard);
+
+        assertTrue("Exactly one owner RCE for WILDCARD user should be in Owner RCL",
+                   store.getOwnerRegistrationControlEntries(WILDCARD).size() == 1);
+        assertTrue("In case no USER2_ID RCE found, WILDCARD user RCE should be returned",
+                   store.getOwnerRegistrationControlEntries(UID2).get(0).getUid().equals(WILDCARD));
+        assertTrue("Uid of returned owner RCEs associated to DOMAIN1 and INTERFACEX should be WILDCARD",
+                   store.getOwnerRegistrationControlEntries(DOMAIN1, INTERFACEX).get(0).getUid().equals(WILDCARD));
+    }
+
+    @Test
+    public void testGetWildcardMasterRce() throws Exception {
+        MasterRegistrationControlEntry expectedMasterRegistrationControlEntryWildcard = new MasterRegistrationControlEntry(WILDCARD,
+                                                                                                                           DOMAIN1,
+                                                                                                                           INTERFACEX,
+                                                                                                                           TrustLevel.LOW,
+                                                                                                                           new TrustLevel[]{
+                                                                                                                                   TrustLevel.MID,
+                                                                                                                                   TrustLevel.LOW },
+                                                                                                                           TrustLevel.LOW,
+                                                                                                                           new TrustLevel[]{
+                                                                                                                                   TrustLevel.MID,
+                                                                                                                                   TrustLevel.LOW },
+                                                                                                                           Permission.NO,
+                                                                                                                           new Permission[]{
+                                                                                                                                   Permission.ASK,
+                                                                                                                                   Permission.NO });
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntryWildcard);
+
+        assertTrue("Exactly one master RCE for WILDCARD user should be in Master RCL",
+                   store.getMasterRegistrationControlEntries(WILDCARD).size() == 1);
+        assertTrue("In case no USER2_ID RCE found, WILDCARD user RCE should be returned",
+                   store.getMasterRegistrationControlEntries(UID2).get(0).getUid().equals(WILDCARD));
+        assertTrue("Uid of returned master RCEs associated to DOMAIN1 and INTERFACEX should be WILDCARD",
+                   store.getMasterRegistrationControlEntries(DOMAIN1, INTERFACEX).get(0).getUid().equals(WILDCARD));
     }
 }

@@ -21,7 +21,9 @@ package io.joynr.accesscontrol;
 import java.util.Optional;
 
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
@@ -33,42 +35,16 @@ public class AccessControlAlgorithm {
     /**
      * Get the consumer permission for given combination of control entries and with the given trust level.
      *
-     * @param master     The master access control entry
-     * @param mediator   The mediator access control entry
-     * @param owner      The owner access control entry
+     * @param masterAce     The master access control entry
+     * @param mediatorAce   The mediator access control entry
+     * @param ownerAce      The owner access control entry
      * @param trustLevel The trust level of the user sending the message
      * @return consumer permission
      */
-    public Permission getConsumerPermission(Optional<MasterAccessControlEntry> master,
-                                            Optional<MasterAccessControlEntry> mediator,
-                                            Optional<OwnerAccessControlEntry> owner,
+    public Permission getConsumerPermission(Optional<MasterAccessControlEntry> masterAce,
+                                            Optional<MasterAccessControlEntry> mediatorAce,
+                                            Optional<OwnerAccessControlEntry> ownerAce,
                                             TrustLevel trustLevel) {
-
-        return getPermission(PermissionType.CONSUMER, master, mediator, owner, trustLevel);
-    }
-
-    /**
-     * Get the provider permission for given combination of control entries and with the given trust level.
-     *
-     * @param master     The master access control entry
-     * @param mediator   The mediator access control entry
-     * @param owner      The owner access control entry
-     * @param trustLevel The trust level of the user sending the message
-     * @return provider permission
-     */
-    public Permission getProviderPermission(Optional<MasterAccessControlEntry> master,
-                                            Optional<MasterAccessControlEntry> mediator,
-                                            Optional<OwnerAccessControlEntry> owner,
-                                            TrustLevel trustLevel) {
-        assert (false) : "Provider permission algorithm is not yet implemented!";
-        return getPermission(PermissionType.PROVIDER, master, mediator, owner, trustLevel);
-    }
-
-    private Permission getPermission(PermissionType type,
-                                     Optional<MasterAccessControlEntry> masterAce,
-                                     Optional<MasterAccessControlEntry> mediatorAce,
-                                     Optional<OwnerAccessControlEntry> ownerAce,
-                                     TrustLevel trustLevel) {
         AceValidator aceValidator = new AceValidator(masterAce.isPresent() ? masterAce.get() : null,
                                                      mediatorAce.isPresent() ? mediatorAce.get() : null,
                                                      ownerAce.isPresent() ? ownerAce.get() : null);
@@ -79,28 +55,56 @@ public class AccessControlAlgorithm {
         Permission permission = Permission.NO;
         if (ownerAce.isPresent()) {
             if (TrustLevelComparator.compare(trustLevel, ownerAce.get().getRequiredTrustLevel()) >= 0) {
-                if (type == PermissionType.CONSUMER) {
-                    permission = ownerAce.get().getConsumerPermission();
-                }
+                permission = ownerAce.get().getConsumerPermission();
             }
         } else if (mediatorAce.isPresent()) {
             if (TrustLevelComparator.compare(trustLevel, mediatorAce.get().getDefaultRequiredTrustLevel()) >= 0) {
-                if (type == PermissionType.CONSUMER) {
-                    permission = mediatorAce.get().getDefaultConsumerPermission();
-                }
+                permission = mediatorAce.get().getDefaultConsumerPermission();
             }
         } else if (masterAce.isPresent()) {
             if (TrustLevelComparator.compare(trustLevel, masterAce.get().getDefaultRequiredTrustLevel()) >= 0) {
-                if (type == PermissionType.CONSUMER) {
-                    permission = masterAce.get().getDefaultConsumerPermission();
-                }
+                permission = masterAce.get().getDefaultConsumerPermission();
             }
         }
 
         return permission;
     }
 
-    private enum PermissionType {
-        PROVIDER, CONSUMER
+    /**
+     * Get the provider permission for given combination of control entries and with the given trust level.
+     *
+     * @param masterRce     The master registration control entry
+     * @param mediatorRce   The mediator registration control entry
+     * @param ownerRce      The owner registration control entry
+     * @param trustLevel    The trust level of the user providing the message
+     * @return provider permission
+     */
+    public Permission getProviderPermission(Optional<MasterRegistrationControlEntry> masterRce,
+                                            Optional<MasterRegistrationControlEntry> mediatorRce,
+                                            Optional<OwnerRegistrationControlEntry> ownerRce,
+                                            TrustLevel trustLevel) {
+        RceValidator rceValidator = new RceValidator(masterRce.isPresent() ? masterRce.get() : null,
+                                                     mediatorRce.isPresent() ? mediatorRce.get() : null,
+                                                     ownerRce.isPresent() ? ownerRce.get() : null);
+        if (!rceValidator.isValid()) {
+            return Permission.NO;
+        }
+
+        Permission permission = Permission.NO;
+        if (ownerRce.isPresent()) {
+            if (TrustLevelComparator.compare(trustLevel, ownerRce.get().getRequiredTrustLevel()) >= 0) {
+                permission = ownerRce.get().getProviderPermission();
+            }
+        } else if (mediatorRce.isPresent()) {
+            if (TrustLevelComparator.compare(trustLevel, mediatorRce.get().getDefaultRequiredTrustLevel()) >= 0) {
+                permission = mediatorRce.get().getDefaultProviderPermission();
+            }
+        } else if (masterRce.isPresent()) {
+            if (TrustLevelComparator.compare(trustLevel, masterRce.get().getDefaultRequiredTrustLevel()) >= 0) {
+                permission = masterRce.get().getDefaultProviderPermission();
+            }
+        }
+
+        return permission;
     }
 }

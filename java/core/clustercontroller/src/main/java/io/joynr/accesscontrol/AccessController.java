@@ -40,7 +40,12 @@ public interface AccessController {
      * @param trustLevel The trustLevel for given userId
      * @param domain The domain where provider interface belongs to
      * @param interfaceName The interface provider wants to register
+     * @param participantId The participantId of the provider who wants to register
      * @return true if the message has permission, false otherwise
      */
-    boolean hasProviderPermission(String userId, TrustLevel trustLevel, String domain, String interfaceName);
+    boolean hasProviderPermission(String userId,
+                                  TrustLevel trustLevel,
+                                  String domain,
+                                  String interfaceName,
+                                  String participantId);
 }

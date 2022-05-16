@@ -26,6 +26,8 @@ import org.junit.Test;
 
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.TrustLevel;
 
@@ -42,6 +44,9 @@ public class AccessControlAlgorithmTest {
     private MasterAccessControlEntry masterAce;
     private MasterAccessControlEntry mediatorAce;
     private OwnerAccessControlEntry ownerAce;
+    private MasterRegistrationControlEntry masterRce;
+    private MasterRegistrationControlEntry mediatorRce;
+    private OwnerRegistrationControlEntry ownerRce;
 
     @Before
     public void setup() {
@@ -75,7 +80,37 @@ public class AccessControlAlgorithmTest {
                                                TrustLevel.LOW,
                                                null,
                                                Permission.NO);
+
+        masterRce = new MasterRegistrationControlEntry(UID,
+                                                       DOMAIN,
+                                                       INTERFACE,
+                                                       TrustLevel.LOW,
+                                                       allTrustLevels,
+                                                       TrustLevel.LOW,
+                                                       allTrustLevels,
+                                                       Permission.NO,
+                                                       allPermissions);
+
+        mediatorRce = new MasterRegistrationControlEntry(UID,
+                                                         DOMAIN,
+                                                         INTERFACE,
+                                                         TrustLevel.LOW,
+                                                         allTrustLevels,
+                                                         TrustLevel.LOW,
+                                                         allTrustLevels,
+                                                         Permission.NO,
+                                                         allPermissions);
+
+        ownerRce = new OwnerRegistrationControlEntry(UID,
+                                                     DOMAIN,
+                                                     INTERFACE,
+                                                     TrustLevel.LOW,
+                                                     TrustLevel.LOW,
+                                                     Permission.NO);
+
     }
+
+    // getConsumerPermission
 
     @Test
     public void testPermissionWithMasterAceOnly() {
@@ -225,5 +260,157 @@ public class AccessControlAlgorithmTest {
                                                                                      Optional.of(ownerAce),
                                                                                      TrustLevel.HIGH);
         Assert.assertEquals(Permission.NO, consumerPermission);
+    }
+
+    // getProviderPermission
+
+    @Test
+    public void testPermissionWithMasterRceOnly() {
+        masterRce.setDefaultProviderPermission(Permission.YES);
+        masterRce.setDefaultRequiredTrustLevel(TrustLevel.HIGH);
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.of(masterRce),
+                                                                                     Optional.empty(),
+                                                                                     Optional.empty(),
+                                                                                     TrustLevel.HIGH);
+        Assert.assertEquals(Permission.YES, providerPermission);
+    }
+
+    @Test
+    public void testPermissionMessageTrustLevelDoesntMatchRce() {
+        masterRce.setDefaultProviderPermission(Permission.YES);
+        masterRce.setDefaultRequiredTrustLevel(TrustLevel.MID);
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.of(masterRce),
+                                                                                     Optional.empty(),
+                                                                                     Optional.empty(),
+                                                                                     TrustLevel.LOW);
+        Assert.assertEquals(Permission.NO, providerPermission);
+    }
+
+    @Test
+    public void testPermissionWithAllRceNull() {
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.empty(),
+                                                                                     Optional.empty(),
+                                                                                     Optional.empty(),
+                                                                                     TrustLevel.HIGH);
+        Assert.assertEquals(Permission.NO, providerPermission);
+    }
+
+    //------ Mediator overrides master with -----------------------------
+
+    @Test
+    public void testPermissionWithMasterAndMediatorRce() {
+        masterRce.setDefaultProviderPermission(Permission.YES);
+        masterRce.setDefaultRequiredTrustLevel(TrustLevel.HIGH);
+        masterRce.setPossibleProviderPermissions(allPermissions);
+        masterRce.setPossibleRequiredTrustLevels(allTrustLevels);
+
+        mediatorRce.setDefaultProviderPermission(Permission.ASK);
+        mediatorRce.setDefaultRequiredTrustLevel(TrustLevel.LOW);
+
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.of(masterRce),
+                                                                                     Optional.of(mediatorRce),
+                                                                                     Optional.empty(),
+                                                                                     TrustLevel.LOW);
+        Assert.assertEquals(Permission.ASK, providerPermission);
+    }
+
+    @Test
+    public void testPermissionWithMediatorRceOnly() {
+        mediatorRce.setDefaultProviderPermission(Permission.YES);
+        mediatorRce.setDefaultRequiredTrustLevel(TrustLevel.MID);
+
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.empty(),
+                                                                                     Optional.of(mediatorRce),
+                                                                                     Optional.empty(),
+                                                                                     TrustLevel.HIGH);
+        Assert.assertEquals(Permission.YES, providerPermission);
+    }
+
+    @Test
+    public void testPermissionWithMasterAndInvalidMediatorRce() {
+        masterRce.setPossibleProviderPermissions(new Permission[]{ Permission.NO });
+
+        mediatorRce.setPossibleProviderPermissions(new Permission[]{ Permission.ASK, Permission.YES });
+        mediatorRce.setDefaultProviderPermission(Permission.YES);
+        mediatorRce.setDefaultRequiredTrustLevel(TrustLevel.MID);
+
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.of(masterRce),
+                                                                                     Optional.of(mediatorRce),
+                                                                                     Optional.empty(),
+                                                                                     TrustLevel.HIGH);
+        Assert.assertEquals(Permission.NO, providerPermission);
+    }
+
+    //------ Owner overrides master and mediator ---------------------------------
+
+    @Test
+    public void testPermissionWithMasterMediatorAndOwnerRce() {
+        masterRce.setDefaultProviderPermission(Permission.YES);
+        masterRce.setDefaultRequiredTrustLevel(TrustLevel.LOW);
+
+        mediatorRce.setDefaultProviderPermission(Permission.ASK);
+        mediatorRce.setDefaultRequiredTrustLevel(TrustLevel.HIGH);
+
+        ownerRce.setProviderPermission(Permission.YES);
+        ownerRce.setRequiredTrustLevel(TrustLevel.MID);
+
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.of(masterRce),
+                                                                                     Optional.of(mediatorRce),
+                                                                                     Optional.of(ownerRce),
+                                                                                     TrustLevel.MID);
+        Assert.assertEquals(Permission.YES, providerPermission);
+    }
+
+    @Test
+    public void testPermissionWithMasterAndOwnerRce() {
+        masterRce.setDefaultProviderPermission(Permission.ASK);
+        masterRce.setDefaultRequiredTrustLevel(TrustLevel.LOW);
+
+        ownerRce.setProviderPermission(Permission.YES);
+        ownerRce.setRequiredTrustLevel(TrustLevel.HIGH);
+
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.of(masterRce),
+                                                                                     Optional.empty(),
+                                                                                     Optional.of(ownerRce),
+                                                                                     TrustLevel.HIGH);
+        Assert.assertEquals(Permission.YES, providerPermission);
+    }
+
+    @Test
+    public void testPermissionWithOwnerRceOnly() {
+        ownerRce.setProviderPermission(Permission.YES);
+        ownerRce.setRequiredTrustLevel(TrustLevel.HIGH);
+
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.empty(),
+                                                                                     Optional.empty(),
+                                                                                     Optional.of(ownerRce),
+                                                                                     TrustLevel.HIGH);
+        Assert.assertEquals(Permission.YES, providerPermission);
+    }
+
+    @Test
+    public void testPermissionWithMediatorAndInvalidOwnerRce() {
+        mediatorRce.setPossibleProviderPermissions(new Permission[]{ Permission.NO });
+
+        ownerRce.setProviderPermission(Permission.ASK);
+
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.empty(),
+                                                                                     Optional.of(mediatorRce),
+                                                                                     Optional.of(ownerRce),
+                                                                                     TrustLevel.HIGH);
+        Assert.assertEquals(Permission.NO, providerPermission);
+    }
+
+    @Test
+    public void testPermissionWithMasterAndInvalidOwnerRce() {
+        masterRce.setPossibleProviderPermissions(new Permission[]{ Permission.NO });
+
+        ownerRce.setProviderPermission(Permission.ASK);
+
+        Permission providerPermission = accessControlAlgorithm.getProviderPermission(Optional.of(masterRce),
+                                                                                     Optional.empty(),
+                                                                                     Optional.of(ownerRce),
+                                                                                     TrustLevel.HIGH);
+        Assert.assertEquals(Permission.NO, providerPermission);
     }
 }

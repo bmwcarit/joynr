@@ -22,12 +22,13 @@ import java.util.List;
 
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
+import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
+import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Role;
 
 /**
- * The DomainAccessControlStore interface stores Access Control Lists.
- * At the first stage Registration Control Lists are not supported.
+ * The DomainAccessControlStore interface stores Access Control Lists and Registration Control Lists.
  */
 public interface DomainAccessControlStore {
 
@@ -78,12 +79,12 @@ public interface DomainAccessControlStore {
     List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid);
 
     /**
-     * Returns a list of maste ACEs applying to domains the user uid has role Master,
+     * Returns a list of master ACEs applying to domains the user uid has role Master,
      * i.e. the entries the user uid is allowed to edit. Used by an Master ACL editor app.
      *
      * @param uid The user id that owns the domains.
      * @return List of master ACEs with entries owned by the user.
-     * In case uid has no domains with role MASTER, this function returns emty list.
+     * In case uid has no domains with role MASTER, this function returns empty list.
      * In case when this uid owns no domains with role MASTER, should this function return master ACE for uid "*"?
      */
     List<MasterAccessControlEntry> getEditableMasterAccessControlEntries(String uid);
@@ -154,12 +155,12 @@ public interface DomainAccessControlStore {
     List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid);
 
     /**
-     * Returns a list of maste ACEs from Mediator ACL applying to domains the user uid has role Master,
+     * Returns a list of master ACEs from Mediator ACL applying to domains the user uid has role Master,
      * i.e. the entries the user uid is allowed to edit. Used by an Mediator ACL editor app.
      *
      * @param uid The user id that owns the domains.
      * @return List of master ACEs with entries owned by the user.
-     * In case uid has no domains with role MASTER, this function returns emty list.
+     * In case uid has no domains with role MASTER, this function returns empty list.
      * In case when this uid owns no domains with role MASTER, should this function return master ACE for uid "*"?
      */
     List<MasterAccessControlEntry> getEditableMediatorAccessControlEntries(String uid);
@@ -293,4 +294,175 @@ public interface DomainAccessControlStore {
      * @return false if remove fails or ownerAce ACE that match given parameters was not found.
      */
     Boolean removeOwnerAccessControlEntry(String uid, String domain, String interfaceName, String operation);
+
+    /**
+     * Returns a list of master registration control entries that define the registration rights
+     * of the provider uid.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of master RCEs for the specified uid.
+     */
+    List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of master RCEs applying to domains where the user uid has the Role MASTER, i.e. the entries the
+     * user uid is allowed to edit. Used by an Master RCL editor app.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of master entries applying to domains the user uid has role Master.
+     */
+    List<MasterRegistrationControlEntry> getEditableMasterRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of master registration entries that apply to the domain and interface
+     * combination.
+     *
+     * @param domain The domain you search RCEs for.
+     * @param interfaceName The interface you search RCEs for.
+     * @return List of master RCEs associated to given domain and interface.
+     */
+    List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String domain, String interfaceName);
+
+    /**
+     * Get the master registration control entry for the given uid, domain and interface
+     *
+     * @param uid The userId of the caller
+     * @param domain The domain you search an RCE for
+     * @param interfaceName The interface you search an RCE for
+     * @return Master RCE associated to given uid, domain and interface.
+     */
+    MasterRegistrationControlEntry getMasterRegistrationControlEntry(String uid, String domain, String interfaceName);
+
+    /**
+     * Updates an existing entry (according to primary key) or adds a new entry if not already
+     * existent.
+     *
+     * @param updatedMasterRce The master RCE to be updated.
+     * @return true if update succeeded, false otherwise.
+     */
+    Boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce);
+
+    /**
+     * Removes an existing entry (according to primary key).
+     *
+     * @param uid Provider userId.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded, false otherwise.
+     */
+    Boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName);
+
+    /**
+     * Returns a list of mediator registration control entries that define the registration rights
+     * of the provider uid.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of mediator RCEs for specified uid.
+     */
+    List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of mediator RCEs applying to domains where the user uid has the Role MASTER, i.e. the entries the
+     * user uid is allowed to edit. Used by an Mediator RCL editor app.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of mediator entries applying to domains the user uid has role Master.
+     */
+    List<MasterRegistrationControlEntry> getEditableMediatorRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of mediator registration entries that apply to the domain and interface
+     * combination.
+     *
+     * @param domain The domain you search RCEs for.
+     * @param interfaceName The interface you search RCEs for.
+     * @return List of master RCEs associated to given domain and interface.
+     */
+    List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String domain, String interfaceName);
+
+    /**
+     * Get the mediator registration control entry for the given uid, domain and interface.
+     *
+     * @param uid The userId of the caller.
+     * @param domain The domain you search an RCE for
+     * @param interfaceName The interface you search an RCE for
+     * @return Mediator RCE associated to given uid, domain, and interface.
+     */
+    MasterRegistrationControlEntry getMediatorRegistrationControlEntry(String uid, String domain, String interfaceName);
+
+    /**
+     * Updates an existing entry (according to primary key) or adds a new entry if not already
+     * existent.
+     *
+     * @param updatedMediatorRce The mediator RCE to be updated.
+     * @return true if update succeeded, false otherwise.
+     */
+    Boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce);
+
+    /**
+     * Removes an existing entry (according to primary key).
+     *
+     * @param uid The userId of the caller.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded, false otherwise.
+     */
+    Boolean removeMediatorRegistrationControlEntry(String uid, String domain, String interfaceName);
+
+    /**
+     * Returns a list of owner registration control entries that define the registration rights
+     * of the provider uid.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of owner RCEs for specified uid.
+     */
+    List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of owner RCEs applying to domains where the user uid has the Role OWNER, i.e. the entries the
+     * user uid is allowed to edit. Used by an Owner RCL editor app.
+     *
+     * @param uid The userId of the caller.
+     * @return A list of owner entries applying to domains the user uid has role Owner.
+     */
+    List<OwnerRegistrationControlEntry> getEditableOwnerRegistrationControlEntries(String uid);
+
+    /**
+     * Returns a list of owner registration entries that apply to the domain and interface
+     * combination.
+     *
+     * @param domain The domain you search RCEs for.
+     * @param interfaceName The interface you search RCEs for.
+     * @return List of owner RCEs associated to given domain and interface.
+     */
+    List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String domain, String interfaceName);
+
+    /**
+     * Get the Owner RCE for the given user, domain and interface.
+     *
+     * @param uid The userId of the caller
+     * @param domain The domain you search an RCE for
+     * @param interfaceName The interface you search an RCE for
+     * @return Owner RCE associated to given uid, domain, interface.
+     */
+    OwnerRegistrationControlEntry getOwnerRegistrationControlEntry(String uid, String domain, String interfaceName);
+
+    /**
+     * Updates an existing entry (according to primary key) or adds a new entry if not already
+     * existent.
+     *
+     * @param updatedOwnerRce The owner RCE to be updated.
+     * @return true if update succeeded, false otherwise.
+     */
+    Boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce);
+
+    /**
+     * Removes an existing entry (according to primary key).
+     *
+     * @param uid Provider userId.
+     * @param domain Domain where provider has been registered.
+     * @param interfaceName Provider interface.
+     * @return true if remove succeeded, false otherwise.
+     */
+    Boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName);
 }
