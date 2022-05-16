@@ -435,9 +435,9 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
     std::string senderId = "SenderId";
     std::string receiverId = "ReceiverId";
     // SubscriptionQos
-    std::int64_t minInterval_ms = 500;
-    std::int64_t validity_ms = 600;
-    std::int64_t publicationTtl_ms = 1000;
+    std::int64_t minInterval_ms = 1000;
+    std::int64_t validity_ms = 1500;
+    std::int64_t publicationTtl_ms = 2000;
     auto qos = std::make_shared<OnChangeSubscriptionQos>(
             validity_ms, publicationTtl_ms, minInterval_ms);
 
@@ -448,7 +448,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
             senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(200)));
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
 
     // Fake many attribute changes - but expect only one publication to be sent by this loop
     for (int i = 0; i < 10; i++) {
@@ -456,7 +456,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
     }
 
     // Wait for the subscription to finish
-    std::this_thread::sleep_for(std::chrono::milliseconds(1400));
+    std::this_thread::sleep_for(std::chrono::milliseconds(2800));
     publicationManager->shutdown();
 }
 
