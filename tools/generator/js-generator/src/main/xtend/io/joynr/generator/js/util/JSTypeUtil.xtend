@@ -23,7 +23,6 @@ import io.joynr.generator.templates.util.AbstractTypeUtil
 import io.joynr.generator.templates.util.InterfaceUtil.TypeSelector
 import io.joynr.generator.templates.util.MethodUtil
 import io.joynr.generator.templates.util.NamingUtil
-import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Collections

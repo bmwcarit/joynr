@@ -18,7 +18,6 @@ package io.joynr.generator.js.templates
  */
 
 import io.joynr.generator.templates.InterfaceTemplate
-import java.io.File
 import java.util.regex.Pattern
 
 /*
