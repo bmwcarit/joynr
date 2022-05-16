@@ -35,7 +35,7 @@ using namespace joynr;
 class TaskSequencerTest : public ::testing::Test
 {
 public:
-    TaskSequencerTest() : _creationCounter{0}, _executionCounter{0}, _actualTimeoutDateMs()
+    TaskSequencerTest() : _creationCounter{0}, _executionCounter{0}, _actualTimeoutDateMs(), _fulfillDelayedFuture(false)
     {
     }
 
@@ -132,7 +132,7 @@ protected:
 
     std::vector<std::int64_t> _actualTimeoutDateMs;
 
-    bool _fulfillDelayedFuture;
+    std::atomic<bool> _fulfillDelayedFuture;
     std::future<void> _fulfillFuture;
 };
 
