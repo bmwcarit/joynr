@@ -82,7 +82,7 @@ public:
      * of tasks added to the sequencer. The actual time to wait is calculated from the remaining ttl
      * of the task with the minimum expiry date in the queue.
      */
-    TaskSequencer(std::chrono::milliseconds maxTimeToWait = std::chrono::milliseconds::max())
+    TaskSequencer(std::chrono::milliseconds maxTimeToWait = std::chrono::milliseconds(60000))
             : _isRunning{true}, _future{nothingToDo()}, _maxTimeToWait{maxTimeToWait}
     {
         _worker = std::thread(&TaskSequencer::run, this);
