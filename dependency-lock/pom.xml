@@ -77,19 +77,19 @@
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
 				<type>jar</type>
-				<version>2.11.3</version>
+				<version>2.13.3</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
 				<type>jar</type>
-				<version>2.11.3</version>
+				<version>2.13.3</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
 				<type>jar</type>
-				<version>2.11.3</version>
+				<version>2.13.3</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.dagger</groupId>
