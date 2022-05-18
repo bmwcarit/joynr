@@ -19,8 +19,8 @@
 #ifndef MOCKCALLBACK_H_
 #define MOCKCALLBACK_H_
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "joynr/exceptions/JoynrException.h"
 

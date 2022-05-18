@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKTESTREQUESTCALLER_H
 #define TESTS_MOCK_MOCKTESTREQUESTCALLER_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/tests/testRequestCaller.h"
 

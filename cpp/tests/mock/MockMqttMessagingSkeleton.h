@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKMQTTMESSAGINGSKELETON_H
 #define TESTS_MOCK_MOCKMQTTMESSAGINGSKELETON_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/AbstractGlobalMessagingSkeleton.h"
 

@@ -24,8 +24,8 @@
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"

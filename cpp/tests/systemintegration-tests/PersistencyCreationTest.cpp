@@ -23,7 +23,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Settings.h"
 #include "joynr/tests/testProxy.h"

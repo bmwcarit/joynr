@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCKIUDSSENDER_H
 #define TESTS_MOCKIUDSSENDER_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/IUdsSender.h"
 

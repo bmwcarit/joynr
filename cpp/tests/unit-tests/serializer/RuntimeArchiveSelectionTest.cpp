@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "tests/unit-tests/serializer/MockArchive.h" // must be included prior to Serializer.h
 #include "joynr/serializer/Serializer.h"

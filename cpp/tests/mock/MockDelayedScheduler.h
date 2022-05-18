@@ -20,7 +20,7 @@
 #define TESTS_MOCK_MOCKDELAYEDSCHEDULER_H
 
 #include <boost/asio.hpp>
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/DelayedScheduler.h"
 

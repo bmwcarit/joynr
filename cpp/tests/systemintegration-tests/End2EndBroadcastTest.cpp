@@ -26,8 +26,8 @@
 #include <string>
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "joynr/Future.h"
 #include "joynr/MulticastSubscriptionQos.h"

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2022 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#ifndef TESTS_MOCK_MOCKRUNNABLE_H
-#define TESTS_MOCK_MOCKRUNNABLE_H
-
-#include "tests/utils/Gmock.h"
-
-#include "joynr/Runnable.h"
-
-class MockRunnable : public joynr::Runnable
-{
-public:
-    MockRunnable() : Runnable()
-    {
-    }
-
-    MOCK_CONST_METHOD0(dtorCalled, void ());
-    ~MockRunnable()
-    {
-        dtorCalled();
-    }
-
-    MOCK_METHOD0(shutdown, void ());
-    MOCK_METHOD0(run, void ());
-};
-
-#endif // TESTS_MOCK_MOCKRUNNABLE_H
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#include <gmock/gmock.h>
+#pragma GCC diagnostic pop

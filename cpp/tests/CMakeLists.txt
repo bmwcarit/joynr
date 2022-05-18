@@ -185,6 +185,8 @@ set(
     "utils/TestRunnable.h"
     "utils/TestLibJoynrWebSocketRuntime.h"
     "utils/MyTestProvider.h"
+    "utils/Gtest.h"
+    "utils/Gmock.h"
 )
 
 ## Collect common source files for tests

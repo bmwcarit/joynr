@@ -22,7 +22,7 @@
 
 #include <string>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/JoynrClusterControllerMqttConnectionData.h"
 #include "joynr/JoynrClusterControllerRuntime.h"

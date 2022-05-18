@@ -16,7 +16,7 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"

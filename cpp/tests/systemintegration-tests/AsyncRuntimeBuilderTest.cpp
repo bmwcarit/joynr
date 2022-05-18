@@ -23,7 +23,7 @@
 #include <memory>
 #include <thread>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Settings.h"

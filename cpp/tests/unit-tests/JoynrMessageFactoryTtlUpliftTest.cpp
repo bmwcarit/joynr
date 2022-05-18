@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <string>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/MutableMessageFactory.h"

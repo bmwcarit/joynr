@@ -18,7 +18,7 @@
  */
 
 #include <boost/optional/optional_io.hpp>
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"

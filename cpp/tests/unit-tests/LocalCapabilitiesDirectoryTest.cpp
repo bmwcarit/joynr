@@ -28,8 +28,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "../../libjoynrclustercontroller/access-control/AccessController.h"
 #include "../../libjoynrclustercontroller/access-control/LocalDomainAccessController.h"

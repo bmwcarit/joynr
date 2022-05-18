@@ -18,7 +18,7 @@
  */
 #include <thread>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Semaphore.h"
 #include "tests/utils/TimeUtils.h"

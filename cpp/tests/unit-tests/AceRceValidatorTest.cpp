@@ -17,7 +17,7 @@
  * #L%
  */
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/infrastructure/DacTypes/Permission.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"

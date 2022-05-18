@@ -19,7 +19,7 @@
 
 #include <atomic>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Directory.h"
 #include "joynr/PrivateCopyAssign.h"

@@ -22,7 +22,7 @@
 
 #include <string>
 #include <memory>
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include <muesli/BaseArchive.h>
 #include <muesli/ArchiveRegistry.h>

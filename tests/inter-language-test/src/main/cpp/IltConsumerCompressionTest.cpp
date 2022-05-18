@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "utils/Gtest.h"
+#include "utils/Gmock.h"
 
 #include "JoynrTest.h"
 #include "joynr/interlanguagetest/TestInterfaceProxy.h"

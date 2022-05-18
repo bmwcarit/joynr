@@ -22,7 +22,7 @@
 #include <tuple>
 #include <boost/filesystem.hpp>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 class SettingsTest : public ::testing::TestWithParam<std::tuple<int, int, bool>>
 {

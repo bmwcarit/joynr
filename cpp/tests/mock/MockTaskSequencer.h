@@ -19,7 +19,7 @@
 #ifndef MOCKTASKSEQUENCER_H
 #define MOCKTASKSEQUENCER_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/TaskSequencer.h"
 

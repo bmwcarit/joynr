@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKPUBLICATIONSENDER_H
 #define TESTS_MOCK_MOCKPUBLICATIONSENDER_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/IPublicationSender.h"
 

@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/DiscoveryQos.h"
 #include "joynr/DiscoveryResult.h"

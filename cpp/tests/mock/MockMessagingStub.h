@@ -19,7 +19,7 @@
 #ifndef TESTS_MOCK_MOCKMESSAGINGSTUB_H
 #define TESTS_MOCK_MOCKMESSAGINGSTUB_H
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "joynr/IMessagingStub.h"
 

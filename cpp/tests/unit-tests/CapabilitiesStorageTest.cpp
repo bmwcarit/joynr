@@ -22,7 +22,7 @@
 #include <thread>
 #include <chrono>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 #include <gmock/gmock-matchers.h>
 
 #include "joynr/CapabilitiesStorage.h"

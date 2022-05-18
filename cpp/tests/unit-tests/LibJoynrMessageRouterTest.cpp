@@ -22,9 +22,6 @@
 #include <chrono>
 #include <memory>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"

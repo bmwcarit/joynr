@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include <gmock/gmock.h>
+#include "tests/utils/Gmock.h"
 
 #include "libjoynrclustercontroller/capabilities-directory/IGlobalCapabilitiesDirectoryClient.h"
 #include "joynr/LocalCapabilitiesDirectoryStore.h"

@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <limits>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Settings.h"
 #include "joynr/ClusterControllerSettings.h"

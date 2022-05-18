@@ -19,7 +19,7 @@
 
 #include <type_traits>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 #include <muesli/detail/CartesianTypeProduct.h>
 
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"

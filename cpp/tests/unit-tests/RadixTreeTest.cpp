@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <numeric>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "libjoynrclustercontroller/access-control/RadixTree.h"
 

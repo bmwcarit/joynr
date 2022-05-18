@@ -19,7 +19,7 @@
 #ifndef PRETTYPRINT_H_
 #define PRETTYPRINT_H_
 
-#include <gtest/gtest.h>
+#include "utils/Gtest.h"
 #include <iostream>
 
 #include "joynr/StatusCode.h"

@@ -21,8 +21,8 @@
 #include <csignal>
 #include <memory>
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
+#include "tests/utils/Gtest.h"
+#include "tests/utils/Gmock.h"
 
 #include "runtimes/cluster-controller-runtime/signal-handler/PosixSignalHandler.h"
 #include "tests/mock/MockClusterControllerSignalHandler.h"

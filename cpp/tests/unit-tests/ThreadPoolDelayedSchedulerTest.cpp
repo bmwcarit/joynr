@@ -20,7 +20,7 @@
 #include <cassert>
 #include <chrono>
 
-#include <gtest/gtest.h>
+#include "tests/utils/Gtest.h"
 
 #include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Semaphore.h"
