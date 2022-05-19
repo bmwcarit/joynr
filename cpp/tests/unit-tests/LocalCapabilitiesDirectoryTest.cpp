@@ -179,7 +179,7 @@ public:
               _localCapabilitiesDirectory(),
               _localCapabilitiesDirectoryWithMockCapStorage(),
               _lastSeenDateMs(TimePoint::now().toMilliseconds()),
-              _defaultExpiryDateMs(60 * 60 * 1000),
+              _defaultExpiryIntervalMs(60 * 60 * 1000),
               _reAddInterval(500),
               _dummyParticipantIdsVector{util::createUuid(), util::createUuid(), util::createUuid()},
               _defaultOnSuccess([]() {}),
@@ -213,7 +213,7 @@ public:
                 _singleThreadedIOService->getIOService(),
                 _clusterControllerId,
                 _KNOWN_GBIDS,
-                _defaultExpiryDateMs,
+                _defaultExpiryIntervalMs,
                 _reAddInterval);
         _localCapabilitiesDirectory->init();
         _localCapabilitiesDirectoryWithMockCapStorage = std::make_shared<LocalCapabilitiesDirectory>(
@@ -225,7 +225,7 @@ public:
                 _singleThreadedIOService->getIOService(),
                 _clusterControllerId,
                 _KNOWN_GBIDS,
-                _defaultExpiryDateMs);
+                _defaultExpiryIntervalMs);
         _localCapabilitiesDirectoryWithMockCapStorage->init();
         _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         _discoveryQos.setCacheMaxAge(10000);
@@ -248,7 +248,7 @@ public:
                                       _dummyParticipantIdsVector[0],
                                       types::ProviderQos(),
                                       TimePoint::now().toMilliseconds(),
-                                      _defaultExpiryDateMs,
+                                      _defaultExpiryIntervalMs,
                                       _PUBLIC_KEY_ID);
         _expectedGlobalCapEntry = types::GlobalDiscoveryEntry(_entry.getProviderVersion(),
                                                              _entry.getDomain(),
@@ -775,7 +775,7 @@ protected:
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectory;
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectoryWithMockCapStorage;
     std::int64_t _lastSeenDateMs;
-    std::int64_t _defaultExpiryDateMs;
+    std::int64_t _defaultExpiryIntervalMs;
     const std::chrono::milliseconds _reAddInterval;
     std::vector<std::string> _dummyParticipantIdsVector;
     types::DiscoveryQos _discoveryQos;
@@ -1936,7 +1936,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilities_invokesGcdClient)
                                         _dummyParticipantIdsVector[0],
                                         providerQos,
                                         _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
+                                        _defaultExpiryIntervalMs,
                                         _PUBLIC_KEY_ID);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
@@ -1977,7 +1977,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemove_localProvider_GcdNotCalled)
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -2120,7 +2120,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
                                  _dummyParticipantIdsVector[0],
                                  types::ProviderQos(),
                                  _lastSeenDateMs,
-                                 TimePoint::now().toMilliseconds() + _defaultExpiryDateMs,
+                                 TimePoint::now().toMilliseconds() + _defaultExpiryIntervalMs,
                                  _PUBLIC_KEY_ID);
     types::DiscoveryEntry expectedEntry1(entry1);
 
@@ -2130,7 +2130,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
                                  _dummyParticipantIdsVector[1],
                                  types::ProviderQos(),
                                  _lastSeenDateMs,
-                                 TimePoint::now().toMilliseconds() + _defaultExpiryDateMs,
+                                 TimePoint::now().toMilliseconds() + _defaultExpiryIntervalMs,
                                  _PUBLIC_KEY_ID);
     types::DiscoveryEntry expectedEntry2(entry2);
 
@@ -2161,7 +2161,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     const std::int64_t newLastSeenDateMs = TimePoint::now().toMilliseconds();
-    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryDateMs;
+    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryIntervalMs;
 
     expectedEntry1.setLastSeenDateMs(newLastSeenDateMs);
     expectedEntry1.setExpiryDateMs(newExpiryDateMs);
@@ -2227,7 +2227,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                  _dummyParticipantIdsVector[0],
                                  types::ProviderQos(),
                                  _lastSeenDateMs,
-                                 TimePoint::now().toMilliseconds() + _defaultExpiryDateMs,
+                                 TimePoint::now().toMilliseconds() + _defaultExpiryIntervalMs,
                                  _PUBLIC_KEY_ID);
     types::DiscoveryEntry expectedEntry1(entry1);
 
@@ -2248,7 +2248,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                  _dummyParticipantIdsVector[1],
                                  types::ProviderQos(),
                                  _lastSeenDateMs,
-                                 _defaultExpiryDateMs,
+                                 _defaultExpiryIntervalMs,
                                  _PUBLIC_KEY_ID);
 
     _localCapabilitiesDirectory->registerReceivedCapabilities({{_EXTERNAL_ADDRESSES_VECTOR[0], entry2}});
@@ -2259,7 +2259,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     const std::int64_t newLastSeenDateMs = TimePoint::now().toMilliseconds();
-    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryDateMs;
+    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryIntervalMs;
 
     expectedEntry1.setLastSeenDateMs(newLastSeenDateMs);
     expectedEntry1.setExpiryDateMs(newExpiryDateMs);
@@ -2301,7 +2301,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                 _dummyParticipantIdsVector[0],
                                 localProviderQos,
                                 _lastSeenDateMs,
-                                _defaultExpiryDateMs,
+                                _defaultExpiryIntervalMs,
                                 _PUBLIC_KEY_ID);
 
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
@@ -2331,7 +2331,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                 _dummyParticipantIdsVector[0],
                                 localProviderQos,
                                 _lastSeenDateMs,
-                                _defaultExpiryDateMs,
+                                _defaultExpiryIntervalMs,
                                 _PUBLIC_KEY_ID);
     types::DiscoveryEntry expectedEntry(entry);
 
@@ -2345,7 +2345,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     const std::int64_t newLastSeenDateMs = TimePoint::now().toMilliseconds();
-    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryDateMs;
+    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryIntervalMs;
     expectedEntry.setLastSeenDateMs(newLastSeenDateMs);
     expectedEntry.setExpiryDateMs(newExpiryDateMs);
 
@@ -2392,7 +2392,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
                                        _dummyParticipantIdsVector[0],
                                        types::ProviderQos(),
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -2427,7 +2427,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -2661,7 +2661,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                                           _dummyParticipantIdsVector[0],
                                                           qos,
                                                           _lastSeenDateMs,
-                                                          _defaultExpiryDateMs,
+                                                          _defaultExpiryIntervalMs,
                                                           _PUBLIC_KEY_ID,
                                                           _LOCAL_ADDRESS);
 
@@ -2671,7 +2671,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                                           _dummyParticipantIdsVector[1],
                                                           qos,
                                                           _lastSeenDateMs,
-                                                          _defaultExpiryDateMs,
+                                                          _defaultExpiryIntervalMs,
                                                           _PUBLIC_KEY_ID,
                                                           _LOCAL_ADDRESS);
 
@@ -2687,7 +2687,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                        _dummyParticipantIdsVector[0],
                                        qos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     types::DiscoveryEntry entry2(_defaultProviderVersion,
@@ -2696,7 +2696,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                                         _dummyParticipantIdsVector[1],
                                         qos,
                                         _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
+                                        _defaultExpiryIntervalMs,
                                         _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry2, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 }
@@ -2722,7 +2722,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -2774,7 +2774,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     _localCapabilitiesDirectory->registerReceivedCapabilities(std::move(_globalCapEntryMap));
@@ -2815,7 +2815,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
@@ -2874,7 +2874,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
@@ -2950,7 +2950,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
@@ -3071,7 +3071,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
@@ -3155,7 +3155,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _dummyParticipantIdsVector[2],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
@@ -3194,7 +3194,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
@@ -3247,7 +3247,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
 
-    _defaultExpiryDateMs = TimePoint::now().toMilliseconds() +
+    _defaultExpiryIntervalMs = TimePoint::now().toMilliseconds() +
                    _purgeExpiredDiscoveryEntriesIntervalMs / 3;
 
     std::int64_t longerExpiryDateMs =
@@ -3270,7 +3270,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
                                         _dummyParticipantIdsVector[1],
                                         providerQos,
                                         _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
+                                        _defaultExpiryIntervalMs,
                                         _PUBLIC_KEY_ID,
                                         _EXTERNAL_ADDRESSES_VECTOR[0]);
 
@@ -3280,7 +3280,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
                                         _dummyParticipantIdsVector[2],
                                         providerQos,
                                         _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
+                                        _defaultExpiryIntervalMs,
                                         _PUBLIC_KEY_ID,
                                         _EXTERNAL_ADDRESSES_VECTOR[1]);
 
@@ -3389,7 +3389,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
@@ -3427,7 +3427,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _)).Times(0);
@@ -3465,7 +3465,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupMultipeDomainsReturnsResultForMulti
                                         multipleDomainName1ParticipantId,
                                         providerQos,
                                         _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
+                                        _defaultExpiryIntervalMs,
                                         _PUBLIC_KEY_ID);
     types::DiscoveryEntry entry2(_defaultProviderVersion,
                                         multipleDomainName2,
@@ -3473,7 +3473,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupMultipeDomainsReturnsResultForMulti
                                         multipleDomainName2ParticipantId,
                                         providerQos,
                                         _lastSeenDateMs,
-                                        _defaultExpiryDateMs,
+                                        _defaultExpiryIntervalMs,
                                         _PUBLIC_KEY_ID);
     types::DiscoveryEntry entry31(_defaultProviderVersion,
                                          multipleDomainName3,
@@ -3481,7 +3481,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupMultipeDomainsReturnsResultForMulti
                                          multipleDomainName3ParticipantId1,
                                          providerQos,
                                          _lastSeenDateMs,
-                                         _defaultExpiryDateMs,
+                                         _defaultExpiryIntervalMs,
                                          _PUBLIC_KEY_ID);
     types::DiscoveryEntry entry32(_defaultProviderVersion,
                                          multipleDomainName3,
@@ -3489,7 +3489,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupMultipeDomainsReturnsResultForMulti
                                          multipleDomainName3ParticipantId2,
                                          providerQos,
                                          _lastSeenDateMs,
-                                         _defaultExpiryDateMs,
+                                         _defaultExpiryIntervalMs,
                                          _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry1, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     _localCapabilitiesDirectory->add(entry2, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
@@ -3544,7 +3544,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                          participantId1,
                                          types::ProviderQos(),
                                          _lastSeenDateMs,
-                                         _defaultExpiryDateMs,
+                                         _defaultExpiryIntervalMs,
                                          _PUBLIC_KEY_ID);
 
     const std::vector<InterfaceAddress>& interfaceAddresses =
@@ -3717,7 +3717,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                          participantId1,
                                          types::ProviderQos(),
                                          _lastSeenDateMs,
-                                         _defaultExpiryDateMs,
+                                         _defaultExpiryIntervalMs,
                                          _PUBLIC_KEY_ID);
 
     types::GlobalDiscoveryEntry globalDiscoveryEntry =
@@ -3807,7 +3807,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                          participantId1,
                                          types::ProviderQos(),
                                          _lastSeenDateMs,
-                                         _defaultExpiryDateMs,
+                                         _defaultExpiryIntervalMs,
                                          _PUBLIC_KEY_ID);
 
     std::vector<std::string> domains = { discoveryEntry.getDomain() };
@@ -3904,7 +3904,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                                          participantId1,
                                          types::ProviderQos(),
                                          _lastSeenDateMs,
-                                         _defaultExpiryDateMs,
+                                         _defaultExpiryIntervalMs,
                                          _PUBLIC_KEY_ID);
 
     std::vector<std::string> domains = { discoveryEntry.getDomain() };
@@ -3992,7 +3992,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -4054,7 +4054,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     _localCapabilitiesDirectory->registerReceivedCapabilities(std::move(_globalCapEntryMap));
@@ -4092,7 +4092,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     _localCapabilitiesDirectory->registerReceivedCapabilities(std::move(_globalCapEntryMap));
@@ -4155,7 +4155,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -4202,7 +4202,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
             _singleThreadedIOService->getIOService(),
             _clusterControllerId,
             _KNOWN_GBIDS,
-            _defaultExpiryDateMs);
+            _defaultExpiryIntervalMs);
     _localCapabilitiesDirectory->init();
 
     // Attempt loading (action usually performed by cluster-controller runtime)
@@ -4226,7 +4226,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                               participantIds[0],
                                               localProviderQos,
                                               TimePoint::now().toMilliseconds(),
-                                              _defaultExpiryDateMs,
+                                              _defaultExpiryIntervalMs,
                                               _PUBLIC_KEY_ID);
     const types::DiscoveryEntry entry2(_defaultProviderVersion,
                                               DOMAIN_NAME,
@@ -4234,7 +4234,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                               participantIds[1],
                                               globalProviderQos,
                                               TimePoint::now().toMilliseconds(),
-                                              _defaultExpiryDateMs,
+                                              _defaultExpiryIntervalMs,
                                               _PUBLIC_KEY_ID);
     const types::DiscoveryEntry entry3(_defaultProviderVersion,
                                               DOMAIN_NAME,
@@ -4242,7 +4242,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
                                               participantIds[2],
                                               globalProviderQos,
                                               TimePoint::now().toMilliseconds(),
-                                              _defaultExpiryDateMs,
+                                              _defaultExpiryIntervalMs,
                                               _PUBLIC_KEY_ID);
     _localCapabilitiesDirectory->add(entry1,
                                      false,
@@ -4407,7 +4407,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        TimePoint::now().toMilliseconds(),
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, entry);
 
@@ -4448,7 +4448,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
                                        _dummyParticipantIdsVector[0],
                                        providerQos,
                                        TimePoint::now().toMilliseconds(),
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
     const types::DiscoveryEntryWithMetaInfo& expectedEntry = util::convert(true, entry);
     const types::GlobalDiscoveryEntry& globalEntry =
@@ -4804,7 +4804,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGloba
                                        _dummyParticipantIdsVector[0],
                                        qos,
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
 
     // trigger a failure on the first call and a success on the second
@@ -4873,7 +4873,7 @@ TEST_P(LocalCapabilitiesDirectoryACMockTest, checkPermissionToRegisterWithMock)
                                        _dummyParticipantIdsVector[0],
                                        types::ProviderQos(),
                                        _lastSeenDateMs,
-                                       _defaultExpiryDateMs,
+                                       _defaultExpiryIntervalMs,
                                        _PUBLIC_KEY_ID);
 
     try {
@@ -4939,7 +4939,7 @@ TEST_F(LocalCapabilitiesDirectoryACTest, checkPermissionToAdd)
                                           _dummyParticipantIdsVector[0],
                                           types::ProviderQos(),
                                           _lastSeenDateMs,
-                                          _defaultExpiryDateMs,
+                                          _defaultExpiryIntervalMs,
                                           _PUBLIC_KEY_ID);
 
     types::DiscoveryEntry NOT_OK_entry_1(
@@ -4949,7 +4949,7 @@ TEST_F(LocalCapabilitiesDirectoryACTest, checkPermissionToAdd)
             _dummyParticipantIdsVector[0],
             types::ProviderQos(),
             _lastSeenDateMs,
-            _defaultExpiryDateMs,
+            _defaultExpiryIntervalMs,
             _PUBLIC_KEY_ID);
 
     types::DiscoveryEntry NOT_OK_entry_2(
@@ -4959,7 +4959,7 @@ TEST_F(LocalCapabilitiesDirectoryACTest, checkPermissionToAdd)
             _dummyParticipantIdsVector[0],
             types::ProviderQos(),
             _lastSeenDateMs,
-            _defaultExpiryDateMs,
+            _defaultExpiryIntervalMs,
             _PUBLIC_KEY_ID);
 
     std::string principal = "testUser";
@@ -5018,7 +5018,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
     for (int i = 0; i < numberOfDuplicatedEntriesToAdd; ++i) {
         // change expiryDate and lastSeen so that entries are not exactly equal
         _lastSeenDateMs++;
-        _defaultExpiryDateMs++;
+        _defaultExpiryIntervalMs++;
 
         types::DiscoveryEntry entry(_defaultProviderVersion,
                                            _DOMAIN_1_NAME,
@@ -5026,7 +5026,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
                                            _dummyParticipantIdsVector[0],
                                            providerQos,
                                            _lastSeenDateMs,
-                                           _defaultExpiryDateMs,
+                                           _defaultExpiryIntervalMs,
                                            _PUBLIC_KEY_ID);
             _localCapabilitiesDirectory->add(_entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
     }
