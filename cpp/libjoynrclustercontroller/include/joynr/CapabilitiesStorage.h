@@ -203,6 +203,53 @@ public:
         return removedEntries;
     }
 
+    std::vector<std::string> touchAndReturnGlobalParticipantIds(
+            const std::int64_t newLastSeenDateMs,
+            const std::int64_t newExpiryDateMs)
+    {
+        std::vector<std::string> result;
+        auto modifier = [&result, newLastSeenDateMs, newExpiryDateMs](DiscoveryEntry& entry) {
+            bool refresh_entry = false;
+            if (newLastSeenDateMs > entry.getLastSeenDateMs()) {
+                entry.setLastSeenDateMs(newLastSeenDateMs);
+                refresh_entry = true;
+            }
+            if (newExpiryDateMs > entry.getExpiryDateMs()) {
+                entry.setExpiryDateMs(newExpiryDateMs);
+                refresh_entry = true;
+            }
+            if (refresh_entry && entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
+                result.push_back(entry.getParticipantId());
+            }
+        };
+        auto& index = _container.template get<tags::ParticipantId>();
+        for (auto it = index.begin(); it != index.end(); it++) {
+            index.modify(it, modifier);
+        }
+        return result;
+    }
+
+    void touchSelected(const std::vector<std::string> participantIds,
+                       const std::int64_t newLastSeenDateMs,
+                       const std::int64_t newExpiryDateMs)
+    {
+        auto modifier = [newLastSeenDateMs, newExpiryDateMs](DiscoveryEntry& entry) {
+            if (newLastSeenDateMs > entry.getLastSeenDateMs()) {
+                entry.setLastSeenDateMs(newLastSeenDateMs);
+            }
+            if (newExpiryDateMs > entry.getExpiryDateMs()) {
+                entry.setExpiryDateMs(newExpiryDateMs);
+            }
+        };
+        auto& index = _container.template get<tags::ParticipantId>();
+        for (const auto& participantId : participantIds) {
+            auto it = index.find(participantId);
+            if (it != index.end()) {
+                index.modify(it, modifier);
+            }
+        }
+    }
+
 protected:
     template <typename FilterFun>
     std::vector<DiscoveryEntry> lookupByDomainAndInterfaceFiltered(const std::string& domain,

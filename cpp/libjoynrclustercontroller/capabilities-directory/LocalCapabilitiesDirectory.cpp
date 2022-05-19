@@ -152,7 +152,21 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
                 timerError.message());
     }
 
-    std::vector<std::string> participantIds = getParticipantIdsToTouch();
+    std::vector<std::string> participantIds;
+    const std::int64_t newLastSeenDateMs =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
+    const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryIntervalMs;
+    {
+        std::unique_lock<std::recursive_mutex> expiryDateUpdateLock(
+                _localCapabilitiesDirectoryStore->getCacheLock());
+        participantIds =
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
+                                                          expiryDateUpdateLock)
+                        ->touchAndReturnGlobalParticipantIds(newLastSeenDateMs, newExpiryDateMs);
+        _localCapabilitiesDirectoryStore->getGlobalLookupCache(expiryDateUpdateLock)->touchSelected(
+                participantIds, newLastSeenDateMs, newExpiryDateMs);
+    }
 
     if (participantIds.empty()) {
         JOYNR_LOG_DEBUG(logger(),
@@ -1539,60 +1553,6 @@ void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
     for (const auto& gbid : _knownGbids) {
         removeStaleProvidersOfClusterController(clusterControllerStartDateMs, gbid);
     }
-}
-
-std::vector<std::string> LocalCapabilitiesDirectory::getParticipantIdsToTouch()
-{
-    std::vector<std::string> participantIds;
-    const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                     std::chrono::system_clock::now().time_since_epoch()).count();
-    const std::int64_t newExpiryDateMs = now + _defaultExpiryIntervalMs;
-    {
-        std::unique_lock<std::recursive_mutex> expiryDateUpdateLock(
-                _localCapabilitiesDirectoryStore->getCacheLock());
-        for (auto entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                     expiryDateUpdateLock))) {
-            bool refresh_entry = false;
-            if (now > entry.getLastSeenDateMs()) {
-                entry.setLastSeenDateMs(now);
-                refresh_entry = true;
-            }
-            if (newExpiryDateMs > entry.getExpiryDateMs()) {
-                entry.setExpiryDateMs(newExpiryDateMs);
-                refresh_entry = true;
-            }
-            if (refresh_entry) {
-                if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
-                    participantIds.push_back(entry.getParticipantId());
-                }
-                _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(entry);
-            }
-        }
-        for (auto participantId : participantIds) {
-            auto globalEntry =
-                    _localCapabilitiesDirectoryStore->getGlobalLookupCache(expiryDateUpdateLock)
-                            ->lookupByParticipantId(participantId);
-            if (!globalEntry) {
-                continue;
-            }
-            bool refresh_entry = false;
-            if (now > globalEntry->getLastSeenDateMs()) {
-                globalEntry->setLastSeenDateMs(now);
-                refresh_entry = true;
-            }
-            if (newExpiryDateMs > globalEntry->getExpiryDateMs()) {
-                globalEntry->setExpiryDateMs(newExpiryDateMs);
-                refresh_entry = true;
-            }
-            if (refresh_entry) {
-                _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
-                        *globalEntry,
-                        _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
-                                globalEntry->getParticipantId(), expiryDateUpdateLock));
-            }
-        }
-    }
-    return participantIds;
 }
 
 LocalCapabilitiesCallback::LocalCapabilitiesCallback(

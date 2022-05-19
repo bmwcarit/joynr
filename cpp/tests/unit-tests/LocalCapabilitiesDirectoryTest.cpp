@@ -4742,23 +4742,30 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUses
 {
     // make sure that there is only one runtime that is periodically calling touch
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _, _, _)).Times(0);
     // Fill the LCD
-    std::string participantId1 = "participantId1";
-    std::string participantId2 = "participantId2";
+    const std::string participantId1 = "participantId1";
+    const std::string participantId2 = "participantId2";
+    const std::string participantId3 = "participantId3";
+    const std::vector<std::string> expectedParticipantIds { participantId2, participantId3 };
+    // entry1 (local, touch will update entry in local store only)
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
     _entry.setQos(providerQos);
     _entry.setParticipantId(participantId1);
+    const std::int64_t oldLastSeenDateMs1 = _entry.getLastSeenDateMs();
+    const std::int64_t oldExpiryDateMs1 = _entry.getExpiryDateMs();
     _localCapabilitiesDirectory->add(
             _entry,
             createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
-    std::int64_t oldLastSeenDate = 0;
-    std::int64_t oldExpiryDate = 0;
+    // entry2 (global, touch will update entry in local store and global cache and call GCD)
+    const std::int64_t oldLastSeenDateMs2 = 0;
+    const std::int64_t oldExpiryDateMs2 = oldLastSeenDateMs2;
     providerQos.setScope(types::ProviderScope::GLOBAL);
-    _entry.setLastSeenDateMs(oldLastSeenDate);
-    _entry.setExpiryDateMs(oldLastSeenDate);
+    _entry.setLastSeenDateMs(oldLastSeenDateMs2);
+    _entry.setExpiryDateMs(oldExpiryDateMs2);
     _entry.setQos(providerQos);
     _entry.setParticipantId(participantId2);
     _localCapabilitiesDirectory->add(
@@ -4766,32 +4773,70 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUses
             createVoidOnSuccessFunction(),
             _unexpectedProviderRuntimeExceptionFunction);
 
-    std::vector<std::string> expectedParticipantIds { participantId2 };
+    // entry3 (global, with large expiryDateMs and large lastSeenDateMs,
+    // touch will not update the expiryDateMs to not reduce it,
+    // lastSeenDateMs is replaced during add and will be updated)
+    const std::int64_t oldLastSeenDateMs3 = TimePoint::now().toMilliseconds() + 2 * _defaultExpiryIntervalMs;
+    const std::int64_t oldExpiryDateMs3 = oldLastSeenDateMs3;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+    _entry.setLastSeenDateMs(oldLastSeenDateMs3);
+    _entry.setExpiryDateMs(oldExpiryDateMs3);
+    _entry.setQos(providerQos);
+    _entry.setParticipantId(participantId3);
+    _localCapabilitiesDirectory->add(
+            _entry,
+            createVoidOnSuccessFunction(),
+            _unexpectedProviderRuntimeExceptionFunction);
 
-    // wait for 2 add calls
+    // wait for 3 add calls
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(_TIMEOUT)));
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(_, _, _, _, _)).Times(0);
+    const std::int64_t minLastSeenDateMs = TimePoint::now().toMilliseconds();
+    const std::int64_t minExpiryDateMs = minLastSeenDateMs + _defaultExpiryIntervalMs;
+    // check test setup
+    ASSERT_GE(minLastSeenDateMs, oldLastSeenDateMs1);
+    ASSERT_GT(minLastSeenDateMs, oldLastSeenDateMs2);
+    ASSERT_LT(minLastSeenDateMs, oldLastSeenDateMs3);
+    ASSERT_GE(minExpiryDateMs, oldExpiryDateMs1);
+    ASSERT_GT(minExpiryDateMs, oldExpiryDateMs2);
+    ASSERT_LT(minExpiryDateMs, oldExpiryDateMs3);
+    // no touch yet
     Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
+
+    // check GCD touch
     Semaphore gcdSemaphore(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), UnorderedElementsAreArray(expectedParticipantIds), _, _, _))
             .WillOnce(ReleaseSemaphore(&gcdSemaphore));
-    EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
+    EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(350)));
 
-    ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getLastSeenDateMs());
-    ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getExpiryDateMs());
+    // check entry1
+    EXPECT_LT(minLastSeenDateMs, _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getLastSeenDateMs());
+    EXPECT_LT(minExpiryDateMs, _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId1)[0].getExpiryDateMs());
     std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore->getCacheLock());
     ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)->lookupByParticipantId(participantId1));
     cacheLock.unlock();
 
-    ASSERT_TRUE(oldLastSeenDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getLastSeenDateMs());
-    ASSERT_TRUE(oldExpiryDate < _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getExpiryDateMs());
+    // check entry2
+    const std::int64_t lastSeenDateMs2 = _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getLastSeenDateMs();
+    const std::int64_t expiryDateMs2 = _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId2)[0].getExpiryDateMs();
+    EXPECT_LT(minLastSeenDateMs, lastSeenDateMs2);
+    EXPECT_LT(minExpiryDateMs, expiryDateMs2);
     cacheLock.lock();
-    ASSERT_TRUE(oldLastSeenDate <
+    EXPECT_EQ(lastSeenDateMs2,
                 _localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)->lookupByParticipantId(participantId2).get().getLastSeenDateMs());
-    ASSERT_TRUE(oldExpiryDate <
+    EXPECT_EQ(expiryDateMs2,
                 _localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)->lookupByParticipantId(participantId2).get().getExpiryDateMs());
+
+    // check entry3
+    const std::int64_t lastSeenDateMs3 = _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId3)[0].getLastSeenDateMs();
+    EXPECT_LT(minLastSeenDateMs, lastSeenDateMs2);
+    EXPECT_EQ(oldExpiryDateMs3, _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId3)[0].getExpiryDateMs());
+    EXPECT_EQ(lastSeenDateMs3,
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)->lookupByParticipantId(participantId3).get().getLastSeenDateMs());
+    EXPECT_EQ(oldExpiryDateMs3,
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)->lookupByParticipantId(participantId3).get().getExpiryDateMs());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGlobal)
