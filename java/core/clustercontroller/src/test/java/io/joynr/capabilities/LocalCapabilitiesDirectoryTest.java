@@ -72,6 +72,7 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl.GcdTaskSequencer;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.exceptions.JoynrCommunicationException;
@@ -174,6 +175,8 @@ public class LocalCapabilitiesDirectoryTest {
     private ScheduledExecutorService capabilitiesFreshnessUpdateExecutor;
     @Mock
     private ShutdownNotifier shutdownNotifier;
+    @Mock
+    private AccessController accessController;
 
     @Captor
     private ArgumentCaptor<Collection<DiscoveryEntryWithMetaInfo>> capabilitiesCaptor;
@@ -188,7 +191,9 @@ public class LocalCapabilitiesDirectoryTest {
     private GcdTaskSequencer gcdTaskSequencer;
     private Thread addRemoveWorker;
 
-    private static class DiscoveryEntryWithUpdatedLastSeenDateMsMatcher implements ArgumentMatcher<DiscoveryEntry> {
+    private boolean enableAccessControl = false;
+
+    static class DiscoveryEntryWithUpdatedLastSeenDateMsMatcher implements ArgumentMatcher<DiscoveryEntry> {
 
         @Override
         public String toString() {
@@ -198,7 +203,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         private DiscoveryEntry expected;
 
-        private DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(DiscoveryEntry expected) {
+        DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(DiscoveryEntry expected) {
             this.expected = expected;
         }
 
@@ -210,12 +215,11 @@ public class LocalCapabilitiesDirectoryTest {
         }
     }
 
-    private static class GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher
-            implements ArgumentMatcher<GlobalDiscoveryEntry> {
+    static class GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher implements ArgumentMatcher<GlobalDiscoveryEntry> {
 
         private GlobalDiscoveryEntry expected;
 
-        private GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(GlobalDiscoveryEntry expected) {
+        GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(GlobalDiscoveryEntry expected) {
             this.expected = expected;
         }
 
@@ -327,7 +331,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                                         capabilitiesFreshnessUpdateExecutor,
                                                                         shutdownNotifier,
                                                                         knownGbids,
-                                                                        DEFAULT_EXPIRY_TIME_MS);
+                                                                        DEFAULT_EXPIRY_TIME_MS,
+                                                                        accessController,
+                                                                        enableAccessControl);
 
         verify(capabilitiesFreshnessUpdateExecutor).schedule(addRemoveQueueRunnableCaptor.capture(),
                                                              anyLong(),
@@ -406,6 +412,7 @@ public class LocalCapabilitiesDirectoryTest {
 
         verify(localDiscoveryEntryStoreMock).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
         verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
+        verifyNoMoreInteractions(accessController);
     }
 
     private void checkRemainingTtl(ArgumentCaptor<Long> remainingTtlCaptor) {
@@ -1707,7 +1714,7 @@ public class LocalCapabilitiesDirectoryTest {
         };
     }
 
-    private static Answer<Void> createAnswerWithSuccess() {
+    static Answer<Void> createAnswerWithSuccess() {
         return createAnswerWithSuccess((Semaphore) null, null);
     }
 
@@ -2241,7 +2248,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                                      capabilitiesFreshnessUpdateExecutor,
                                                                                                                      shutdownNotifier,
                                                                                                                      gbids,
-                                                                                                                     DEFAULT_EXPIRY_TIME_MS);
+                                                                                                                     DEFAULT_EXPIRY_TIME_MS,
+                                                                                                                     accessController,
+                                                                                                                     enableAccessControl);
 
         List<GlobalDiscoveryEntry> globalEntries = new ArrayList<GlobalDiscoveryEntry>();
 
@@ -2317,7 +2326,9 @@ public class LocalCapabilitiesDirectoryTest {
                                                                                                                      capabilitiesFreshnessUpdateExecutor,
                                                                                                                      shutdownNotifier,
                                                                                                                      gbids,
-                                                                                                                     DEFAULT_EXPIRY_TIME_MS);
+                                                                                                                     DEFAULT_EXPIRY_TIME_MS,
+                                                                                                                     accessController,
+                                                                                                                     enableAccessControl);
 
         String domain1 = "domain1";
         String interfaceName1 = "interfaceName1";
@@ -4383,8 +4394,7 @@ public class LocalCapabilitiesDirectoryTest {
         verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
     }
 
-    private static void checkPromiseException(Promise<?> promise,
-                                              Exception expectedException) throws InterruptedException {
+    static void checkPromiseException(Promise<?> promise, Exception expectedException) throws InterruptedException {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         promise.then(new PromiseListener() {
 
@@ -4450,8 +4460,8 @@ public class LocalCapabilitiesDirectoryTest {
         assertTrue(countDownLatch.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
     }
 
-    private static Object[] checkPromiseSuccess(Promise<? extends AbstractDeferred> promise,
-                                                String onRejectionMessage) throws InterruptedException {
+    static Object[] checkPromiseSuccess(Promise<? extends AbstractDeferred> promise,
+                                        String onRejectionMessage) throws InterruptedException {
         ArrayList<Object> result = new ArrayList<>();
         CountDownLatch countDownLatch = new CountDownLatch(1);
         promise.then(new PromiseListener() {

@@ -19,9 +19,7 @@
 package io.joynr.accesscontrol;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -31,15 +29,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import io.joynr.accesscontrol.primarykey.UserDomainInterfaceOperationKey;
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
-import joynr.exceptions.ApplicationException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
@@ -61,40 +55,9 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     private final String discoveryDirectoriesDomain;
     private AccessControlAlgorithm accessControlAlgorithm = new AccessControlAlgorithm();
     private static final String WILDCARD = "*";
-    private Map<UserDomainInterfaceOperationKey, AceSubscription> subscriptionsMap = new HashMap<UserDomainInterfaceOperationKey, AceSubscription>();
 
-    private DomainAccessControlStore localDomainAccessStore;
+    private final DomainAccessControlStore localDomainAccessStore;
     private String systemServicesDomain;
-
-    // Class that holds subscription ids.
-    static class AceSubscription {
-        private final Future<String> masterSubscriptionFuture;
-        private final Future<String> mediatorSubscriptionFuture;
-        private final Future<String> ownerSubscriptionFuture;
-
-        public AceSubscription(Future<String> masterSubscriptionFuture,
-                               Future<String> mediatorSubscriptionFuture,
-                               Future<String> ownerSubscriptionFuture) {
-            this.masterSubscriptionFuture = masterSubscriptionFuture;
-            this.mediatorSubscriptionFuture = mediatorSubscriptionFuture;
-            this.ownerSubscriptionFuture = ownerSubscriptionFuture;
-        }
-
-        public String getMasterSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
-                                                InterruptedException, ApplicationException {
-            return masterSubscriptionFuture.get(1337);
-        }
-
-        public String getMediatorSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
-                                                  InterruptedException, ApplicationException {
-            return mediatorSubscriptionFuture.get(1337);
-        }
-
-        public String getOwnerSubscriptionId() throws JoynrWaitExpiredException, JoynrRuntimeException,
-                                               InterruptedException, ApplicationException {
-            return ownerSubscriptionFuture.get(1337);
-        }
-    }
 
     @Inject
     public LocalDomainAccessControllerImpl(@Named(MessagingPropertyKeys.CAPABILITIES_DIRECTORY_DISCOVERY_ENTRY) GlobalDiscoveryEntry capabilitiesDirectoryEntry,
@@ -187,7 +150,6 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                             String interfaceName,
                                             String operation,
                                             TrustLevel trustLevel) {
-        logger.debug("getConsumerPermission on domain {}, interface {}", domain, interfaceName);
         Optional<MasterAccessControlEntry> masterAce;
         Optional<MasterAccessControlEntry> mediatorAce;
         Optional<OwnerAccessControlEntry> ownerAce;
@@ -207,7 +169,30 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
                                                                                              operation));
         }
 
-        return accessControlAlgorithm.getConsumerPermission(masterAce, mediatorAce, ownerAce, trustLevel);
+        Permission permission = accessControlAlgorithm.getConsumerPermission(masterAce,
+                                                                             mediatorAce,
+                                                                             ownerAce,
+                                                                             trustLevel);
+
+        logger.debug("getConsumerPermission on domain {}, interface {} result: {}",
+                     domain,
+                     interfaceName,
+                     getPermissionLogStatement(permission));
+
+        return permission;
+    }
+
+    private String getPermissionLogStatement(Permission permission) {
+        switch (permission) {
+        case YES:
+            return "permission granted";
+        case NO:
+            return "permission denied";
+        case ASK:
+            return "ask for permission";
+        default:
+            return "permission unknown";
+        }
     }
 
     @Override

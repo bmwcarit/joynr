@@ -506,12 +506,12 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.USER_ID);
         Attribute<String> domainAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.DOMAIN);
         Attribute<String> interfaceAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.INTERFACE);
-        Attribute<String> operationAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.OPERATION);
         Query queryAllOperations = cache.createQuery()
                                         .addCriteria(uidAttribute.eq(uid).or(uidAttribute.eq(WILDCARD)))
                                         .addCriteria(domainAttribute.eq(domain))
                                         .addCriteria(interfaceAttribute.eq(interfaceName));
         if (cacheId.isACL()) {
+            Attribute<String> operationAttribute = cache.getSearchAttribute(UserDomainInterfaceOperationKey.OPERATION);
             queryAllOperations.addCriteria(operationAttribute.eq(operation));
         }
         // have specific user ids appear before wildcards
@@ -669,10 +669,10 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         Cache cache = cacheManager.getCache(cacheId.getIdAsString());
         if (cache == null) {
             switch (cacheId) {
-            case MASTER_ACL:
             case MASTER_RCL:
             case MEDIATOR_RCL:
             case OWNER_RCL:
+            case MASTER_ACL:
             case MEDIATOR_ACL:
             case OWNER_ACL: {
                 cache = createAclCache(cacheId);
@@ -700,7 +700,9 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         searchable.addSearchAttribute(new SearchAttribute().name(UserDomainInterfaceOperationKey.USER_ID));
         searchable.addSearchAttribute(new SearchAttribute().name(UserDomainInterfaceOperationKey.DOMAIN));
         searchable.addSearchAttribute(new SearchAttribute().name(UserDomainInterfaceOperationKey.INTERFACE));
-        searchable.addSearchAttribute(new SearchAttribute().name(UserDomainInterfaceOperationKey.OPERATION));
+        if (cacheId.isACL()) {
+            searchable.addSearchAttribute(new SearchAttribute().name(UserDomainInterfaceOperationKey.OPERATION));
+        }
         cacheManager.addCache(new Cache(cacheConfig));
         return cacheManager.getCache(cacheId.getIdAsString());
     }

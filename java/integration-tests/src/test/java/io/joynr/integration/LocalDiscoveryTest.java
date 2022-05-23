@@ -63,6 +63,7 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.arbitration.ArbitrationStrategyFunction;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
@@ -205,6 +206,8 @@ public class LocalDiscoveryTest {
     private JoynrMessagingConnectorFactory joynrMessagingConnectorFactoryMock;
     @Mock
     private ShutdownNotifier shutdownNotifier;
+    @Mock
+    private AccessController accessController;
 
     @Captor
     private ArgumentCaptor<Set<DiscoveryEntryWithMetaInfo>> discoveryEntryWithMetaInfoArgumentCaptor;
@@ -213,6 +216,8 @@ public class LocalDiscoveryTest {
 
     private final String[] defaultGbids = { "testgbid1", "testgbid2" };
     private MqttAddress globalAddress;
+
+    private boolean enableAccessControl = false;
 
     @Before
     public void setUp() {
@@ -230,7 +235,9 @@ public class LocalDiscoveryTest {
                                                                                                              capabilitiesFreshnessUpdateExecutorMock,
                                                                                                              shutdownNotifier,
                                                                                                              defaultGbids,
-                                                                                                             defaultExpiryTime);
+                                                                                                             defaultExpiryTime,
+                                                                                                             accessController,
+                                                                                                             enableAccessControl);
 
         Module testModule = Modules.override(new CCInProcessRuntimeModule()).with(new TestGlobalAddressModule(),
                                                                                   new AbstractModule() {
