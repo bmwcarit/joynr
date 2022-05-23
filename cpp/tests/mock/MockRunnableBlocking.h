@@ -19,36 +19,35 @@
 #ifndef TESTS_MOCK_MOCKRUNNABLEBLOCKING_H
 #define TESTS_MOCK_MOCKRUNNABLEBLOCKING_H
 
-#include <condition_variable>
-#include <mutex>
-
 #include "tests/utils/Gmock.h"
 
 #include "joynr/Runnable.h"
+#include "joynr/Semaphore.h"
 
 class MockRunnableBlocking : public joynr::Runnable
 {
 public:
     MockRunnableBlocking()
         : Runnable(),
-          mutex(),
-          wait()
+          semaphore(0)
     {
     }
 
     MOCK_CONST_METHOD0(dtorCalled, void ());
-    ~MockRunnableBlocking() { dtorCalled(); }
+    ~MockRunnableBlocking() {
+        dtorCalled();
+    }
 
     MOCK_METHOD0(shutdownCalled, void ());
     void shutdown()
     {
-        wait.notify_all();
+        semaphore.notify();
         shutdownCalled();
     }
 
     void manualShutdown()
     {
-        wait.notify_all();
+        semaphore.notify();
     }
 
     MOCK_CONST_METHOD0(runEntry, void ());
@@ -56,14 +55,13 @@ public:
     void run()
     {
         runEntry();
-        std::unique_lock<std::mutex> lock(mutex);
-        wait.wait(lock);
+        semaphore.wait();
         runExit();
     }
 
 private:
-    std::mutex mutex;
-    std::condition_variable wait;
+    joynr::Semaphore semaphore;
+    ADD_LOGGER(MockRunnableBlocking)
 };
 
 #endif // TESTS_MOCK_MOCKRUNNABLEBLOCKING_H
