@@ -20,7 +20,6 @@ include(AddClangFormat)
 include(AddClangTidy)
 include(AddIncludeWhatYouUse)
 include(LocateProgram)
-include(Sanitizers)
 include(ObjectLibraryTargetUtils)
 include(OutofdirTargetSources)
 
@@ -299,6 +298,10 @@ if(${BUILD_TESTS})
     enable_testing()
     add_subdirectory(tests)
 endif(${BUILD_TESTS})
+
+if(CMAKE_BUILD_TYPE STREQUAL UBSAN)
+    include(UBSanitizerTarget)
+endif()
 
 ### Add Config files to project so that can be shown in the editor
 file(GLOB_RECURSE ADD_ALL_CMAKE_FILE_TO_PROJECT
