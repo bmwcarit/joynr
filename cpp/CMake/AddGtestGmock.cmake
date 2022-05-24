@@ -124,6 +124,12 @@ function(RegisterToCtest TARGET ${ARGN})
 
     add_executable(${TARGET} ${JOYNR_SOURCES})
 
+    if(CMAKE_BUILD_TYPE STREQUAL ASAN)
+        set_property(TARGET ${TARGET}
+                     PROPERTY
+                     ENVIRONMENT LD_PRELOAD=$(gcc -print-file-name=libasan.so))
+    endif()
+
     set(output_directory "${CMAKE_BINARY_DIR}/bin")
     set_target_properties(${TARGET} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${output_directory}
