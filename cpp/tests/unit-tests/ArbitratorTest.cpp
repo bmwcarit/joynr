@@ -675,8 +675,8 @@ TEST_F(ArbitratorTest, allowFourRetries_expectFiveDiscoveryAttempts)
             .WillRepeatedly(Return(mockFuture));
 
     DiscoveryQos discoveryQos;
-    discoveryQos.setRetryIntervalMs(100);
-    discoveryQos.setDiscoveryTimeoutMs(490);
+    discoveryQos.setRetryIntervalMs(200);
+    discoveryQos.setDiscoveryTimeoutMs(990);
     joynr::types::Version providerVersion(47, 11);
     auto lastSeenArbitrator =
             std::make_shared<Arbitrator>(_domain,
@@ -739,8 +739,8 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
 {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(500);
+    discoveryQos.setRetryIntervalMs(250);
     joynr::types::Version expectedVersion(47, 11);
     auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
                                                       _interfaceName,
@@ -833,8 +833,8 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
 
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(499);
+    discoveryQos.setRetryIntervalMs(250);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version expectedVersion(47, 11);
     auto keywordArbitrator = std::make_shared<Arbitrator>(_domain,
@@ -929,8 +929,8 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
 
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(499);
+    discoveryQos.setRetryIntervalMs(250);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     joynr::types::Version expectedVersion(47, 11);
     auto fixedParticipantArbitrator =
@@ -1005,8 +1005,8 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
 {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(499);
+    discoveryQos.setRetryIntervalMs(250);
     joynr::types::Version expectedVersion(47, 11);
     auto lastSeenArbitrator =
             std::make_shared<Arbitrator>(_domain,
@@ -1094,8 +1094,8 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
 TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEntryForParticipant_retries)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT;
-    const std::int64_t discoveryTimeoutMs = 199;
-    const std::int64_t retryIntervalMs = 100;
+    const std::int64_t discoveryTimeoutMs = 499;
+    const std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
@@ -1157,8 +1157,8 @@ TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEnt
 TEST_F(ArbitratorTest, discoveryException_discoveryErrorFromDiscoveryProxy_noEntryForSelectedBackends_retries)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS;
-    const std::int64_t discoveryTimeoutMs = 199;
-    const std::int64_t retryIntervalMs = 100;
+    const std::int64_t discoveryTimeoutMs = 499;
+    const std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
@@ -1303,8 +1303,8 @@ TEST_F(ArbitratorTest, filterByVersionAndArbitrationStrategy_disabled_versionAnd
 TEST_F(ArbitratorTest, arbitrationStarted_localDiscoveryAggregatorLookupCalledWithCorrectDiscoveryTimeout_fixedParticipantId)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT;
-    constexpr std::int64_t discoveryTimeoutMs = 199;
-    constexpr std::int64_t retryIntervalMs = 100;
+    constexpr std::int64_t discoveryTimeoutMs = 499;
+    constexpr std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
@@ -1366,8 +1366,8 @@ TEST_F(ArbitratorTest, arbitrationStarted_localDiscoveryAggregatorLookupCalledWi
 TEST_F(ArbitratorTest, arbitrationStarted_localDiscoveryAggregatorLookupCalledWithCorrectMessagingQos_fixedParticipantId)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT;
-    constexpr std::int64_t discoveryTimeoutMs = 199;
-    constexpr std::int64_t retryIntervalMs = 100;
+    constexpr std::int64_t discoveryTimeoutMs = 499;
+    constexpr std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
@@ -1432,8 +1432,8 @@ TEST_F(ArbitratorTest, arbitrationStarted_localDiscoveryAggregatorLookupCalledWi
 TEST_F(ArbitratorTest, arbitrationStarted_localDiscoveryAggregatorLookupCalledWithCorrectDiscoveryTimeout)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS;
-    constexpr std::int64_t discoveryTimeoutMs = 199;
-    constexpr std::int64_t retryIntervalMs = 100;
+    constexpr std::int64_t discoveryTimeoutMs = 499;
+    constexpr std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
@@ -1492,8 +1492,8 @@ TEST_F(ArbitratorTest, arbitrationStarted_localDiscoveryAggregatorLookupCalledWi
 TEST_F(ArbitratorTest, arbitrationStarted_localDiscoveryAggregatorLookupCalledWithCorrectMessagingQos)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS;
-    constexpr std::int64_t discoveryTimeoutMs = 199;
-    constexpr std::int64_t retryIntervalMs = 100;
+    constexpr std::int64_t discoveryTimeoutMs = 499;
+    constexpr std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
@@ -1646,10 +1646,10 @@ protected:
 
     void testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(const types::DiscoveryError::Enum& error)
     {
-        const std::int64_t retryIntervalMs = 100;
+        const std::int64_t retryIntervalMs = 250;
         DiscoveryQos discoveryQos;
         discoveryQos.setArbitrationStrategy(this->arbitrationStrategy);
-        discoveryQos.setDiscoveryTimeoutMs(199);
+        discoveryQos.setDiscoveryTimeoutMs(499);
         discoveryQos.setRetryIntervalMs(retryIntervalMs);
 
         auto exception = std::make_shared<exceptions::ApplicationException>(
@@ -1762,8 +1762,8 @@ TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
 {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(this->arbitrationStrategy);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(499);
+    discoveryQos.setRetryIntervalMs(250);
     joynr::types::Version version;
 
     const exceptions::JoynrRuntimeException exception("first exception");
@@ -1834,8 +1834,8 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
 {
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(this->arbitrationStrategy);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(499);
+    discoveryQos.setRetryIntervalMs(250);
     joynr::types::Version expectedVersion(47, 11);
 
     // discovery entries for first lookup
@@ -2000,19 +2000,19 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
     arbitrator->startArbitration(onSuccess, onError);
 
     // Wait for a time shorter than the discovery
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(250)));
 
     if (testRetry) {
         // wait some time shorter than retryIntervalMs
         // to assure semaphore.waitFor(retryIntervalMs) is called in arbitrator.startArbitration
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
     // stop arbitration before the discovery thread wakes up
     arbitrator->stopArbitration();
 
     // onError should be invoked
-    EXPECT_TRUE(onErrorSemaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(onErrorSemaphore.waitFor(std::chrono::milliseconds(250)));
 }
 
 TEST_F(ArbitratorTest, arbitrationStopsOnShutdown_noRetry)
@@ -2035,8 +2035,8 @@ TEST_F(ArbitratorTest, discoveryExceptionOnIncompatibleInterface)
     // build a generic arbitrator with FIXED_PARTICIPANT strategy
     DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
-    discoveryQos.setDiscoveryTimeoutMs(199);
-    discoveryQos.setRetryIntervalMs(100);
+    discoveryQos.setDiscoveryTimeoutMs(499);
+    discoveryQos.setRetryIntervalMs(250);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     joynr::types::Version expectedVersion(47, 11);
     auto fixedParticipantArbitrator =
