@@ -114,8 +114,7 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
         logger.debug("Replycaller with requestReplyId {} was removed because TTL expired", requestReplyId);
 
         // notify the caller that the request has expired now
-        outstandingReplyCaller.error(new JoynrTimeoutException(System.currentTimeMillis()));
-
+        outstandingReplyCaller.error(new JoynrTimeoutException(System.currentTimeMillis(), requestReplyId));
     }
 
     @Override
