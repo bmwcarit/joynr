@@ -40,6 +40,12 @@ public class JoynrTimeoutException extends JoynrRuntimeException {
         this.expiryDate = expiryDate;
     }
 
+    public JoynrTimeoutException(long expiryDate, String requestReplyId) {
+        super("ttl for request with requestReplyId " + requestReplyId + " expired on: "
+                + (new SimpleDateFormat("dd/MM HH:mm:ss:sss")).format(expiryDate));
+        this.expiryDate = expiryDate;
+    }
+
     public long getExpiryDate() {
         return expiryDate;
     }

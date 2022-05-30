@@ -674,6 +674,7 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
         // the provider waits ttl before responding, causing a ttl
         boolean timeoutExceptionThrown = false;
+        String timeoutExceptionText = "";
         // the ttl parameter tells the provider to wait this long before
         // replying, thereby forcing a ttl exception
         Future<String> waitTooLongFuture = proxyShortTll.waitTooLong(callback, ttl * 2);
@@ -685,8 +686,10 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             timeoutExceptionThrown = false;
         } catch (JoynrTimeoutException e) {
             timeoutExceptionThrown = true;
+            timeoutExceptionText = e.getMessage();
         }
         assertEquals(true, timeoutExceptionThrown);
+        assertEquals(true, timeoutExceptionText.contains("ttl for request with requestReplyId"));
         assertEquals(RequestStatusCode.ERROR, waitTooLongFuture.getStatus().getCode());
         verify(callback).onFailure(any(JoynrRuntimeException.class));
         verifyNoMoreInteractions(callback);
