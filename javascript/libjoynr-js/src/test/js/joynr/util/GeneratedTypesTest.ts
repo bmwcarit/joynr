@@ -23,7 +23,9 @@ import Country from "../../../generated/joynr/datatypes/exampleTypes/Country";
 import ExtendedComplexStruct from "../../../generated/joynr/datatypes/exampleTypes/ExtendedComplexStruct";
 import TestEnum from "../../../generated/joynr/tests/testTypes/TestEnum";
 
-beforeEach(() => {});
+beforeEach(() => {
+    // do nothing
+});
 
 describe("Enum type", () => {
     it("equals", () => {

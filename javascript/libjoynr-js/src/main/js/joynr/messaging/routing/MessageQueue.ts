@@ -34,7 +34,7 @@ const CHECK_TTL_ON_QUEUED_MESSAGES_INTERVAL_MS = 10000; // a very loose interval
 class MessageQueue {
     public static DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES = 10000;
     public cleanupInterval: NodeJS.Timer;
-    public currentQueueSize: number = 0;
+    public currentQueueSize = 0;
     private participantQueues: Record<string, any> = {};
     public maxQueueSizeInKBytes = MessageQueue.DEFAULT_MAX_QUEUE_SIZE_IN_KBYTES;
     /**
@@ -54,7 +54,7 @@ class MessageQueue {
             // TODO: we could call this way more lazy -> make an if and only call this if this.currentQueueSize > 100
             let newSize = 0;
             for (const id in this.participantQueues) {
-                if (this.participantQueues.hasOwnProperty(id)) {
+                if (Object.prototype.hasOwnProperty.call(this.participantQueues, id)) {
                     this.participantQueues[id].filterExpiredMessages();
                     const size = this.participantQueues[id].getSize();
                     newSize += size;

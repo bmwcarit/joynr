@@ -66,7 +66,7 @@ namespace MessageRouter {
 class MessageRouter {
     private settings: MessageRouter.MessageRouterSettings;
 
-    private started: boolean = true;
+    private started = true;
     private messagesWithoutReplyTo: JoynrMessage[];
     private messageReplyToAddressCalculator: MessageReplyToAddressCalculator;
     private replyToAddress!: string;
@@ -262,7 +262,7 @@ class MessageRouter {
 
         let multicastIdPattern, receivers;
         for (multicastIdPattern in this.multicastReceiversRegistry) {
-            if (this.multicastReceiversRegistry.hasOwnProperty(multicastIdPattern)) {
+            if (Object.prototype.hasOwnProperty.call(this.multicastReceiversRegistry, multicastIdPattern)) {
                 if (joynrMessage.to.match(new RegExp(multicastIdPattern)) !== null) {
                     receivers = this.multicastReceiversRegistry[multicastIdPattern];
                     if (receivers !== undefined) {

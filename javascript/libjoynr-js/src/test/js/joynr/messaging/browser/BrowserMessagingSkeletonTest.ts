@@ -72,7 +72,9 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", () => {
         }).toThrow(); // webMessagingSkeleton is of wrong type
 
         expect(() => {
-            browserMessagingSkeleton.registerListener(() => {});
+            browserMessagingSkeleton.registerListener(() => {
+                // do nothing
+            });
         }).not.toThrow(); // correct call
         expect(() => {
             browserMessagingSkeleton.registerListener("" as any);
@@ -82,7 +84,9 @@ describe("libjoynr-js.joynr.messaging.browser.BrowserMessagingSkeleton", () => {
         }).toThrow(); // listener is of wrong type
 
         expect(() => {
-            browserMessagingSkeleton.unregisterListener(() => {});
+            browserMessagingSkeleton.unregisterListener(() => {
+                // do nothing
+            });
         }).not.toThrow(); // correct call
         expect(() => {
             browserMessagingSkeleton.unregisterListener("" as any);

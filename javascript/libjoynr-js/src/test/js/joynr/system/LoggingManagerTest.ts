@@ -97,8 +97,12 @@ describe("libjoynr-js.joynr.util.LoggingManager", () => {
     });
 
     it("sets the output of JoynrLogger when an appenderClass is registered", () => {
-        function SomeObject() {}
-        SomeObject.prototype.append = function() {};
+        function SomeObject() {
+            // Do nothing
+        }
+        SomeObject.prototype.append = function() {
+            // Do nothing
+        };
         LoggingManager.configure({ appenderClasses: { someName: SomeObject } });
         expect(JoynrLogger.setOutput).toHaveBeenCalledWith(SomeObject.prototype.append);
     });

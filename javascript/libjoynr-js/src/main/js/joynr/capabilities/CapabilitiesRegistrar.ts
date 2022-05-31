@@ -53,7 +53,7 @@ interface MultipleBackendSettings {
 }
 
 class CapabilitiesRegistrar {
-    private started: boolean = true;
+    private started = true;
     private publicationManager: PublicationManager;
     private requestReplyManager: RequestReplyManager;
     private libjoynrMessagingAddress: Address;

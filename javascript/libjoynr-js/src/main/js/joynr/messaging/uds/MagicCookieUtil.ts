@@ -64,7 +64,7 @@ class MagicCookieUtil {
         const magicCookie: string = this.getMagicCookieBuff(internBuff).toString();
         log.debug(`received this MagicCookie: ${magicCookie}`);
         if (magicCookie !== this.MESSAGE_COOKIE) {
-            const errorMsg: string = `Invalid cookies. Cookie type must be ${
+            const errorMsg = `Invalid cookies. Cookie type must be ${
                 this.MESSAGE_COOKIE
             }, received : ${magicCookie}, connection closed`;
             log.fatal(errorMsg);

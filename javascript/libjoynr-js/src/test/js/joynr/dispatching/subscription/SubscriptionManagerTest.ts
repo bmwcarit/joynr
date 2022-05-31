@@ -242,8 +242,12 @@ describe("libjoynr-js.joynr.dispatching.subscription.SubscriptionManager", () =>
                 alertAfterIntervalMs: OnChangeWithKeepAliveSubscriptionQos.DEFAULT_MAX_INTERVAL_MS,
                 expiryDateMs: Date.now() + ttl
             }),
-            onReceive() {},
-            onError() {}
+            onReceive() {
+                // do nothing
+            },
+            onError() {
+                // do nothing
+            }
         };
 
         dispatcherSpy.sendSubscriptionRequest.mockClear();

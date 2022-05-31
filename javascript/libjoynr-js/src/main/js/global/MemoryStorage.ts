@@ -25,7 +25,9 @@ class MemoryStorage implements Storage {
      * but the logic relies on the persistency.
      * @constructor
      */
-    public constructor() {}
+    public constructor() {
+        // do nothing
+    }
 
     public setItem(key: string, value: any): void {
         this.map[key] = value;

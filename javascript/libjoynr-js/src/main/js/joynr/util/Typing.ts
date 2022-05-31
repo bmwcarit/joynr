@@ -108,7 +108,7 @@ export function augmentTypes(untyped: any, typeHint?: string): any {
                 const settings: Record<string, any> = {};
 
                 for (const i in untyped) {
-                    if (untyped.hasOwnProperty(i)) {
+                    if (Object.prototype.hasOwnProperty.call(untyped, i)) {
                         if (Constructor.getMemberType !== undefined) {
                             settings[i] = augmentTypes(untyped[i], Constructor.getMemberType(i));
                         } else {

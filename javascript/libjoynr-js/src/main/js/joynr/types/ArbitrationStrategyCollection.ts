@@ -68,11 +68,11 @@ export function Keyword(keyword: string, capabilities: DiscoveryEntryWithMetaInf
     }
 
     for (const capId in capabilities) {
-        if (capabilities.hasOwnProperty(capId)) {
+        if (Object.prototype.hasOwnProperty.call(capabilities, capId)) {
             const cap = capabilities[capId];
             if (cap.qos.customParameters && Array.isArray(cap.qos.customParameters)) {
                 for (const qosId in cap.qos.customParameters) {
-                    if (cap.qos.customParameters.hasOwnProperty(qosId)) {
+                    if (Object.prototype.hasOwnProperty.call(cap.qos.customParameters, qosId)) {
                         const qosParam = cap.qos.customParameters[qosId];
                         if (
                             qosParam &&

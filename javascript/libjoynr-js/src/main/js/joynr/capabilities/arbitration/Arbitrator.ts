@@ -49,8 +49,8 @@ function addToListIfNotExisting(list: Version[], providerVersion: Version): void
 }
 
 class Arbitrator {
-    private started: boolean = true;
-    private arbitrationId: number = 0;
+    private started = true;
+    private arbitrationId = 0;
     private pendingArbitrations: Record<string, Deferred> = {};
     private capabilityDiscoveryStub: DiscoveryStub;
     private staticCapabilities?: DiscoveryEntryWithMetaInfo[];
@@ -202,7 +202,7 @@ class Arbitrator {
             discoveryQos.arbitrationStrategy === ArbitrationStrategyCollection.FixedParticipant;
         participantId = "";
         if (isArbitrationStrategyFixedParticipant) {
-            if (!discoveryQos.additionalParameters.hasOwnProperty(FIXED_PARTICIPANT_PARAMETER)) {
+            if (!Object.prototype.hasOwnProperty.call(discoveryQos.additionalParameters, FIXED_PARTICIPANT_PARAMETER)) {
                 throw new Error(
                     "parameter FIXED_PARTICIPANT_PARAMETER does not exist in DiscoveryQos.additionalParameters"
                 );
@@ -399,7 +399,7 @@ class Arbitrator {
      */
     public shutdown(): void {
         for (const id in this.pendingArbitrations) {
-            if (this.pendingArbitrations.hasOwnProperty(id)) {
+            if (Object.prototype.hasOwnProperty.call(this.pendingArbitrations, id)) {
                 const pendingArbitration = this.pendingArbitrations[id];
                 pendingArbitration.reject(new Error("Arbitration is already shut down"));
             }

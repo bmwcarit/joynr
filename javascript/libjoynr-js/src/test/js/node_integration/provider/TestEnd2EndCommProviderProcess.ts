@@ -93,7 +93,7 @@ async function initializeTest(provisioningSuffix: string, providedDomain: string
             );
         }
         for (enumElement in opArgs.enumArrayInput) {
-            if (opArgs.enumArrayInput.hasOwnProperty(enumElement)) {
+            if (Object.prototype.hasOwnProperty.call(opArgs.enumArrayInput, enumElement)) {
                 if (!isCountryEnum(opArgs.enumArrayInput[enumElement])) {
                     throw new Error(
                         `Argument enumInput with value ${opArgs.enumArrayInput[enumElement]} is not correctly typed ${
@@ -279,7 +279,7 @@ async function initializeTest(provisioningSuffix: string, providedDomain: string
                 const stringArrayOut = [];
                 if (opArgs.doubleArrayArg !== undefined) {
                     for (const element in opArgs.doubleArrayArg) {
-                        if (opArgs.doubleArrayArg.hasOwnProperty(element)) {
+                        if (Object.prototype.hasOwnProperty.call(opArgs.doubleArrayArg, element)) {
                             stringArrayOut.push(opArgs.doubleArrayArg[element].toString());
                         }
                     }
