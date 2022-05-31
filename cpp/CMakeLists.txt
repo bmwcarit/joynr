@@ -299,6 +299,10 @@ if(${BUILD_TESTS})
     add_subdirectory(tests)
 endif(${BUILD_TESTS})
 
+if(CMAKE_BUILD_TYPE STREQUAL ASAN)
+    include(AddressSanitizerTarget)
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL UBSAN)
     include(UBSanitizerTarget)
 endif()
