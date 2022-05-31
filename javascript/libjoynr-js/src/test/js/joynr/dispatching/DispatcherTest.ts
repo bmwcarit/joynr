@@ -102,7 +102,9 @@ describe("libjoynr-js.joynr.dispatching.Dispatcher", () => {
         publicationManager = {
             handleSubscriptionRequest: sendSubscriptionReply,
             handleMulticastSubscriptionRequest: sendSubscriptionReply,
-            handleSubscriptionStop() {}
+            handleSubscriptionStop() {
+                // do nothing
+            }
         };
         jest.spyOn(publicationManager, "handleSubscriptionRequest");
         jest.spyOn(publicationManager, "handleMulticastSubscriptionRequest");

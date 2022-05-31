@@ -71,7 +71,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
         public checkMembers: any;
         public _typeName = "test.RadioStation";
         public static _typeName = "test.RadioStation";
-        public getMemberType(): void {}
+        public getMemberType(): void {
+            // do nothing
+        }
         public constructor(name: string, station: any, source: any) {
             this.name = name;
             this.station = station;
@@ -103,7 +105,9 @@ describe("libjoynr-js.joynr.dispatching.RequestReplyManager", () => {
                 value: jest.fn()
             });
         }
-        public getMemberType(): void {}
+        public getMemberType(): void {
+            // do nothing
+        }
     }
 
     /**

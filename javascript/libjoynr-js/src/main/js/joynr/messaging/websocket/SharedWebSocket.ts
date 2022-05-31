@@ -62,7 +62,7 @@ class SharedWebSocket {
 
     private sendConfig = { binary: true };
     private reconnectTimer: any;
-    private closed: boolean = false;
+    private closed = false;
     private queuedMessages: any = [];
     private onmessageCallback: any = null;
     private remoteUrl: any;

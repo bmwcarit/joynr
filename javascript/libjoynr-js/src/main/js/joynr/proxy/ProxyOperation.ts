@@ -31,7 +31,7 @@ const typeRegistry = TypeRegistrySingleton.getInstance();
 
 function checkArguments(operationArguments: Record<string, any>): void {
     for (const argumentName in operationArguments) {
-        if (operationArguments.hasOwnProperty(argumentName)) {
+        if (Object.prototype.hasOwnProperty.call(operationArguments, argumentName)) {
             const argumentValue = operationArguments[argumentName];
             // make sure types of complex type members are also ok
             if (!UtilInternal.checkNullUndefined(argumentValue)) {
@@ -57,7 +57,7 @@ function operationFunctionOnSuccess(settings: {
     if (foundValidOperationSignature.outputParameter && foundValidOperationSignature.outputParameter.length > 0) {
         argumentValue = {};
         for (const responseKey in response) {
-            if (response.hasOwnProperty(responseKey)) {
+            if (Object.prototype.hasOwnProperty.call(response, responseKey)) {
                 if (foundValidOperationSignature.outputParameter[responseKey] !== undefined) {
                     argumentValue[foundValidOperationSignature.outputParameter[responseKey].name] = Typing.augmentTypes(
                         response[responseKey],

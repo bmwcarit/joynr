@@ -49,7 +49,9 @@ class MyType {
 
     public _typeName = "MyTypeName";
     public static _typeName = "MyTypeName";
-    public static getMemberType() {}
+    public static getMemberType() {
+        // do nothing
+    }
 }
 
 class MySecondType {
@@ -68,7 +70,9 @@ class MySecondType {
 
     public _typeName = "MySecondTypeName";
     public static _typeName = "MySecondTypeName";
-    public static getMemberType() {}
+    public static getMemberType() {
+        // do nothing
+    }
 }
 
 const createSettings = (a: any, b?: any, c?: any, d?: any, e?: any) => ({ a, b, c, d, e });
@@ -104,7 +108,11 @@ describe(`libjoynr-js.joynr.Typing`, () => {
 
             expect(Typing.getObjectType("a string")).toEqual("String");
 
-            expect(Typing.getObjectType(() => {})).toEqual("Function");
+            expect(
+                Typing.getObjectType(() => {
+                    // do nothing
+                })
+            ).toEqual("Function");
 
             expect(Typing.getObjectType(new MyCustomObj())).toEqual("MyCustomObj");
             expect(Typing.getObjectType(new _TestConstructor123_())).toEqual("_TestConstructor123_");
@@ -314,7 +322,9 @@ describe(`libjoynr-js.joynr.Typing`, () => {
 
         it("throws when giving a function or an object with a custom type", () => {
             expect(() => {
-                Typing.augmentTypes(() => {});
+                Typing.augmentTypes(() => {
+                    // do nothing
+                });
             }).toThrow();
 
             expect(() => {
@@ -473,7 +483,18 @@ describe(`libjoynr-js.joynr.Typing`, () => {
     function testTypingCheckProperty(functionName: "checkProperty" | "checkPropertyIfDefined") {
         class CustomObj {}
         class AnotherCustomObj {}
-        const objects = [true, 1, "a string", [], {}, function() {}, new CustomObj(), new AnotherCustomObj()];
+        const objects = [
+            true,
+            1,
+            "a string",
+            [],
+            {},
+            function() {
+                // do nothing
+            },
+            new CustomObj(),
+            new AnotherCustomObj()
+        ];
         const types = ["Boolean", "Number", "String", "Array", "Object", "Function", CustomObj, AnotherCustomObj];
 
         it("provides the correct type information", () => {

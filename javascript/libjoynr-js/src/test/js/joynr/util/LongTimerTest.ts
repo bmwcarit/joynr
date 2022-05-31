@@ -58,7 +58,9 @@ describe("libjoynr-js.joynr.LongTimer.Timeout", () => {
     });
 
     it("provides a timeoutId", () => {
-        const timeoutId = LongTimer.setTimeout(() => {}, 0);
+        const timeoutId = LongTimer.setTimeout(() => {
+            // do nothing
+        }, 0);
         expect(timeoutId).toBeDefined();
         LongTimer.clearTimeout(timeoutId);
     });
@@ -159,7 +161,9 @@ describe("libjoynr-js.joynr.LongTimer.Interval", () => {
     });
 
     it("provides an intervalId", () => {
-        const intervalId = LongTimer.setInterval(() => {}, 0);
+        const intervalId = LongTimer.setInterval(() => {
+            // do nothing
+        }, 0);
         expect(intervalId).toBeDefined();
         expect(typeof intervalId).toEqual("number");
         LongTimer.clearInterval(intervalId);

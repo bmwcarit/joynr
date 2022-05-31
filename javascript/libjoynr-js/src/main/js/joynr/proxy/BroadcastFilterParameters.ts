@@ -52,7 +52,7 @@ class BroadcastFilterParameters {
             this.filterParameters = null;
         } else {
             for (const parameterName in filterParameterProperties) {
-                if (filterParameterProperties.hasOwnProperty(parameterName)) {
+                if (Object.prototype.hasOwnProperty.call(filterParameterProperties, parameterName)) {
                     const funcName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
                     //filter[funcName] = makeSetterFunction(filter, parameterName);
                     Object.defineProperty(this, funcName, {
