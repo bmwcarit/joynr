@@ -307,6 +307,10 @@ if(CMAKE_BUILD_TYPE STREQUAL UBSAN)
     include(UBSanitizerTarget)
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL TSAN)
+    include(ThreadSanitizerTarget)
+endif()
+
 ### Add Config files to project so that can be shown in the editor
 file(GLOB_RECURSE ADD_ALL_CMAKE_FILE_TO_PROJECT
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
