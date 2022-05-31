@@ -320,6 +320,7 @@ TEST_F(UdsServerTest, robustness_nonblockingWrite)
 TEST_F(UdsServerTest, sendToClientWhileClientDisconnection)
 {
     Semaphore semaphore;
+    Semaphore semaphoreStop;
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> sender;
     EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(1).WillOnce(
@@ -333,10 +334,17 @@ TEST_F(UdsServerTest, sendToClientWhileClientDisconnection)
     const unsigned int sendRequests = 100000;
     // Check that the stopping of the client occured while processing the send calls.
     EXPECT_CALL(mockUdsServerCallbacks, sendFailed(_)).Times(Between(1, sendRequests - 1));
-    auto doDisconnectAsync = std::async([this]() { stopClient(); });
+    auto doDisconnectAsync = std::async([this, &semaphoreStop]() {
+        semaphoreStop.wait();
+        stopClient();
+    });
     const smrf::ByteVector message;
+    waitClientConnected(true);
     for (unsigned int i = 0; i < sendRequests; i++) {
         sendToClient(sender, message, mockUdsServerCallbacks);
+        if (i == sendRequests / 2) {
+            semaphoreStop.notify();
+        }
     }
     doDisconnectAsync.get();
 }
