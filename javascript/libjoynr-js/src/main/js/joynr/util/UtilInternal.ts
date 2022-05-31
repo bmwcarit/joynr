@@ -292,7 +292,7 @@ export function augmentConfig(config: any): any {
             set(_, prop: string, value: any): boolean {
                 let level: any = config;
                 for (let i = 0; i < parts.length; i++) {
-                    if (!Object.prototype.hasOwnProperty.call(level, [parts[i]])) {
+                    if (!Object.prototype.hasOwnProperty.call(level, parts[i])) {
                         level[parts[i]] = {};
                     }
                     level = level[parts[i]];
