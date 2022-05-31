@@ -2,6 +2,30 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.20.0
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** `JoynrTimeoutException` now contains the `requestReplyId` of the expired request in the
+  exception's message.
+* **[C++]** Reduced resource usage of `ProxyBuilder` when the same instance is used for building
+  multiple proxies.
+* **[C++]** Fixed compilaton warnings with GCC 12.0.1 and Clang 14.0.0 with provided compilation
+  flags.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Updated `jackson` dependencies to version 2.13.3
+
+## Bug Fixes
+* **[C++]** Fixed a bug in `TaskSequencer` that could lead to high CPU usage when `TaskSequencer`
+  was constructed with the default `maxTimeToWait` parameter (no problem in the existing code
+  because the parameter is explicitly set to 60s).
+
 # joynr 1.19.13
 
 ## API relevant changes
