@@ -323,9 +323,6 @@ TEST_F(UdsClientTest, fatalErrorSocketDirDoesNotExist)
 
 TEST_F(UdsClientTest, fatalErrorSocketDirNotReadable)
 {
-    if(std::getenv("OECORE_SDK_VERSION") != nullptr) {
-        return;
-    }
     auto socketDir = _tmpDirectory / "noReadAccess";
     auto socketPath = socketDir / "someSocket";
     _udsSettings.setSocketPath(socketPath.string());
@@ -345,9 +342,6 @@ TEST_F(UdsClientTest, fatalErrorSocketDirNotReadable)
 
 TEST_F(UdsClientTest, fatalErrorSocketPathNotReadWriteable)
 {
-    if(std::getenv("OECORE_SDK_VERSION") != nullptr) {
-        return;
-    }
     auto socketDir = _tmpDirectory / "socketDir";
     auto socketPath = socketDir / "someSocket";
     _udsSettings.setSocketPath(socketPath.string());
