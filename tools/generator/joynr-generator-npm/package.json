@@ -6,7 +6,7 @@
   "homepage": "http://joynr.io",
   "bugs": "https://github.com/bmwcarit/joynr/issues",
   "dependencies": {
-    "@types/node": "8.9.5",
+    "@types/node": "8.10.66",
     "glob": "7.1.3",
     "handlebars": "4.7.7",
     "lodash": "4.17.21",
