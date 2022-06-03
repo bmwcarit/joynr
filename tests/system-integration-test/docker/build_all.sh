@@ -51,4 +51,7 @@ done
 
 # build joynr backend images
 cd ../../../docker/ && ./build_backend.sh
+
+echo "### end build_all.sh for system-integration-test ###"
+
 cd -
