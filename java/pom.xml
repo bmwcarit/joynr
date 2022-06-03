@@ -60,11 +60,21 @@
 					<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 					<sonar.coverage.jacoco.xmlReportPaths>**/src/**/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 					<sonar.java.binaries>**/src/**/target/classes/**/*.class</sonar.java.binaries>
-					<sonar.java.libraries>**/src/**/target/**/*SNAPSHOT.jar</sonar.java.libraries>
-					<sonar.java.test.binaries>**/src/**/target/**/*SNAPSHOT-tests.jar</sonar.java.test.binaries>
+					<sonar.java.libraries>
+							**/src/**/target/*.jar,
+							**/src/**/target/deploy/*.jar
+					</sonar.java.libraries>
+					<sonar.java.test.binaries>**/src/**/target/*-tests.jar</sonar.java.test.binaries>
 					<sonar.jacoco.reportsPaths>**/src/**/target/site/jacoco/jacoco.xml</sonar.jacoco.reportsPaths>
-					<sonar.tests>**/src/test/java</sonar.tests>
+					<sonar.tests>
+						**/src/test/java,
+						**/src/integrationTest/**
+					</sonar.tests>
 					<sonar.exclusions>
+						**/src/**/target/*-sources.jar,
+						**/target/test-classes/**/*,
+						**/test/**,
+						<!--The following classes are excluded from sonarqube analysis because they do not have tests -->
 						**/src/**/ClusterController.java,
 						**/src/**/StaticDomainAccessControlProvisioning.java,
 						**/src/**/LowerCaseProperties.java,
@@ -72,9 +82,7 @@
 						**/src/**/CCWebSocketRuntimeModule.java,
 						**/src/**/LibjoynrWebSocketRuntimeModule.java,
 						**/src/**/WebSocketJettyClient.java,
-						**/src/**/WebSocketJettyServer.java,
-						**/target/test-classes/**/*,
-						**/test/**
+						**/src/**/WebSocketJettyServer.java
 					</sonar.exclusions>
 					<sonar.test.exclusions>
 						**/test/**
