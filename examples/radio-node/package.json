@@ -9,7 +9,7 @@
     "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js"
   },
   "devDependencies": {
-    "ts-node": "^8.3.0"
+    "ts-node": "8.10.2"
   },
   "config": {
     "runtime": "uds",
