@@ -244,6 +244,7 @@ protected:
         EXPECT_CALL(callbacks, fatalRuntimeError(testing::_)).WillOnce(
                 testing::DoAll(testing::SaveArg<0>(&capturedException),
                                testing::InvokeWithoutArgs(&semaphore, &joynr::Semaphore::notify)));
+        EXPECT_CALL(callbacks, disconnected()).Times(testing::AtMost(1));
         client->start();
         ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
                 << std::string("No fatalRuntimeError callback received.");
