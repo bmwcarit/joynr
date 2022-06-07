@@ -332,6 +332,9 @@ TEST_F(UdsClientTest, fatalErrorSocketDirDoesNotExist)
 
 TEST_F(UdsClientTest, fatalErrorSocketDirNotReadable)
 {
+    // make sure server is not starting up late and then gets
+    // impacted by changes to shared socket path and dir / file permissions
+    stopServer();
     auto socketDir = _tmpDirectory / "noReadAccess";
     auto socketPath = socketDir / "someSocket";
     _udsSettings.setSocketPath(socketPath.string());
@@ -351,6 +354,9 @@ TEST_F(UdsClientTest, fatalErrorSocketDirNotReadable)
 
 TEST_F(UdsClientTest, fatalErrorSocketPathNotReadWriteable)
 {
+    // make sure server is not starting up late and then gets
+    // impacted by changes to shared socket path and dir / file permissions
+    stopServer();
     auto socketDir = _tmpDirectory / "socketDir";
     auto socketPath = socketDir / "someSocket";
     _udsSettings.setSocketPath(socketPath.string());
