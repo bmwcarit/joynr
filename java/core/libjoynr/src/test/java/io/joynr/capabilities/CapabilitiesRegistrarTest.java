@@ -22,10 +22,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Assert;
@@ -34,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -56,7 +60,9 @@ import io.joynr.provider.ProviderContainerFactory;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
+import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
+import joynr.types.DiscoveryError;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
 
@@ -78,6 +84,7 @@ public class CapabilitiesRegistrarTest {
 
     @Mock
     private Dispatcher dispatcher;
+    private Address dispatcherAddress;
 
     @Mock
     private TestProvider testProvider;
@@ -111,14 +118,14 @@ public class CapabilitiesRegistrarTest {
 
     @Before
     public void setUp() {
-
+        dispatcherAddress = new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
         registrar = new CapabilitiesRegistrarImpl(localDiscoveryAggregator,
                                                   providerContainerFactory,
                                                   messageRouter,
                                                   providerDirectory,
                                                   participantIdStorage,
                                                   ONE_DAY_IN_MS,
-                                                  new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher)));
+                                                  dispatcherAddress);
         currentJoynrVersion = (JoynrVersion) TestProvider.class.getAnnotation(JoynrVersion.class);
         testVersion = new Version(currentJoynrVersion.major(), currentJoynrVersion.minor());
 
@@ -132,8 +139,21 @@ public class CapabilitiesRegistrarTest {
         when(providerContainerFactory.create(testProvider)).thenReturn(providerContainer);
 
         discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);
+
+        // Trigger onSuccess by default to make sure that the onSuccess callback is invoked (for coverage)
+        doAnswer(new Answer<Future<Void>>() {
+            public Future<Void> answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                @SuppressWarnings("unchecked")
+                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+                callback.onSuccess(null);
+                return null;
+            }
+        }).when(localDiscoveryAggregator)
+          .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
     }
 
+    @SuppressWarnings("unchecked")
     private void verifyRegisterProviderResults(boolean awaitGlobalRegistration, String[] gbids) {
         verify(localDiscoveryAggregator).add(any(CallbackWithModeledError.class),
                                              discoveryEntryCaptor.capture(),
@@ -144,6 +164,7 @@ public class CapabilitiesRegistrarTest {
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
+    @SuppressWarnings("unchecked")
     @Deprecated
     private void verifyRegisterInallKnownBackendsResults(boolean awaitGlobalRegistration) {
         verify(localDiscoveryAggregator).addToAll(any(CallbackWithModeledError.class),
@@ -165,7 +186,6 @@ public class CapabilitiesRegistrarTest {
         Assert.assertEquals(discoveryEntry.getPublicKeyId(), publicKeyId);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void registerWithCapRegistrarWithoutAwaitGlobalRegistration() {
         boolean awaitGlobalRegistration = false;
@@ -173,12 +193,90 @@ public class CapabilitiesRegistrarTest {
         verifyRegisterProviderResults(awaitGlobalRegistration, new String[]{});
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void registerWithCapRegistrarWithAwaitGlobalRegistration() {
         boolean awaitGlobalRegistration = true;
         registrar.registerProvider(domain, testProvider, providerQos, new String[]{}, awaitGlobalRegistration);
         verifyRegisterProviderResults(awaitGlobalRegistration, new String[]{});
+    }
+
+    @SuppressWarnings("unchecked")
+    private void testRegistrationWithErrorFromAdd() {
+        registrar.registerProvider(domain, testProvider, providerQos, new String[]{}, true);
+        InOrder inOrder = inOrder(messageRouter, localDiscoveryAggregator);
+        inOrder.verify(messageRouter).addNextHop(eq(participantId), eq(dispatcherAddress), eq(true));
+        inOrder.verify(localDiscoveryAggregator).add(any(CallbackWithModeledError.class),
+                                                     any(DiscoveryEntry.class),
+                                                     any(Boolean.class),
+                                                     any(String[].class));
+        inOrder.verify(messageRouter).removeNextHop(eq(participantId));
+        verifyNoMoreInteractions(messageRouter, localDiscoveryAggregator);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void registerWithCapRegistrarWithRuntimeException() {
+        doAnswer(new Answer<Future<Void>>() {
+            public Future<Void> answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+                callback.onFailure(new JoynrRuntimeException("testException"));
+                return null;
+            }
+        }).when(localDiscoveryAggregator)
+          .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
+        testRegistrationWithErrorFromAdd();
+    }
+
+    //Just for coverage
+    @SuppressWarnings("unchecked")
+    @Test
+    public void registerWithCapRegistrarWithRuntimeException_removeNextHopGoesWrong() {
+        doAnswer(new Answer<Future<Void>>() {
+            public Future<Void> answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+                callback.onFailure(new JoynrRuntimeException("testException"));
+                return null;
+            }
+        }).when(localDiscoveryAggregator)
+          .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
+        //We don't care about the exception type here
+        doThrow(NullPointerException.class).when(messageRouter).removeNextHop(eq(participantId));
+        testRegistrationWithErrorFromAdd();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void registerWithCapRegistrarWithDiscoveryError() {
+        doAnswer(new Answer<Future<Void>>() {
+            public Future<Void> answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+                callback.onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                return null;
+            }
+        }).when(localDiscoveryAggregator)
+          .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
+        testRegistrationWithErrorFromAdd();
+    }
+
+    //Just for coverage
+    @SuppressWarnings("unchecked")
+    @Test
+    public void registerWithCapRegistrarWithDiscoveryError_removeNextHopGoesWrong() {
+        doAnswer(new Answer<Future<Void>>() {
+            public Future<Void> answer(InvocationOnMock invocation) {
+                Object[] args = invocation.getArguments();
+                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+                callback.onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+                return null;
+            }
+        }).when(localDiscoveryAggregator)
+          .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
+        //We don't care about the exception type here
+        doThrow(NullPointerException.class).when(messageRouter).removeNextHop(eq(participantId));
+        testRegistrationWithErrorFromAdd();
     }
 
     @Test
