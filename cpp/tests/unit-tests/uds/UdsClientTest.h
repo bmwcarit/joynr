@@ -32,6 +32,7 @@
 
 #include <smrf/ByteVector.h>
 
+#include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/UdsClient.h"
@@ -49,6 +50,7 @@ private:
 
     joynr::Settings _settingsDb;
     std::unique_ptr<joynr::UdsServer> _server;
+    bool _rootDetected = false;
 
 protected:
     struct ClientInfo
@@ -73,6 +75,7 @@ protected:
     static const std::chrono::milliseconds _retryIntervalDuringClientServerCommunication;
 
     joynr::UdsSettings _udsSettings;
+    std::string _socketPath;
     boost::filesystem::path _tmpDirectory;
     std::mutex _connectedClientsMutex;
     std::vector<ClientInfo> _connectedClients;
@@ -241,22 +244,39 @@ protected:
         EXPECT_CALL(callbacks, fatalRuntimeError(testing::_)).WillOnce(
                 testing::DoAll(testing::SaveArg<0>(&capturedException),
                                testing::InvokeWithoutArgs(&semaphore, &joynr::Semaphore::notify)));
+        EXPECT_CALL(callbacks, disconnected()).Times(testing::AtMost(1));
         client->start();
         ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
                 << std::string("No fatalRuntimeError callback received.");
         errorMessage = capturedException.getMessage();
     }
 
+    ADD_LOGGER(UdsClientTest)
+
 public:
     UdsClientTest() : _settingsDb(_settingsFile), _udsSettings(_settingsDb)
     {
-        _udsSettings.setSocketPath("./UdsClientTest.sock");
+        if (getuid() == 0) {
+            _rootDetected = true;
+            if (setresuid(1000, 1000, 0) == -1) {
+                JOYNR_LOG_DEBUG(logger(), "Could not drop privileges");
+            }
+        }
+        boost::filesystem::path tmpFile = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
+        _socketPath = tmpFile.string();
+        _udsSettings.setSocketPath(_socketPath);
     }
 
     ~UdsClientTest()
     {
         // Assure that server is stopped before deleting memory accessed by the registered callbacks
         _server.reset();
+        boost::filesystem::remove(_socketPath);
+        if (_rootDetected) {
+            if (setresuid(0, 0, 0) == -1) {
+                JOYNR_LOG_DEBUG(logger(), "Could not restore privileges");
+            }
+        }
     }
 
     void SetUp() override

@@ -207,6 +207,7 @@ TEST_F(UdsClientTest, sendException)
     auto client = createClient(mockUdsClientCallbacks);
     EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1).InSequence(sequence);
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(1).InSequence(sequence);
+    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(AtMost(1));
     client->start();
     ASSERT_EQ(countServerConnections(1), 1);
     constexpr std::size_t sizeViolatingLimit =
@@ -223,6 +224,8 @@ TEST_F(UdsClientTest, sendFailedCallbackException)
     EXPECT_CALL(mockUdsClientCallbacks, sendFailed(_)).Times(AtLeast(1)).WillRepeatedly(
             Throw(userException));
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(1);
+    EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1);
+    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(AtMost(1));
 
     _udsSettings.setSendingQueueSize(0);
     auto client = createClient(mockUdsClientCallbacks);
@@ -243,6 +246,7 @@ TEST_F(UdsClientTest, connectedCallbackException)
     EXPECT_CALL(mockUdsClientCallbacks, connected()).WillOnce(Throw(userException));
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
             .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(AtMost(1));
     auto client = createClient(mockUdsClientCallbacks);
     client->start();
     ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
@@ -258,6 +262,7 @@ TEST_F(UdsClientTest, disconnectedCallbackException)
     EXPECT_CALL(mockUdsClientCallbacks, disconnected()).WillOnce(Throw(userException));
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
             .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1);
     auto client = createClient(mockUdsClientCallbacks);
     client->start();
     ASSERT_EQ(countServerConnections(1), 1);
@@ -274,6 +279,8 @@ TEST_F(UdsClientTest, receivedCallbackException)
     EXPECT_CALL(mockUdsClientCallbacks, receivedMock(_)).WillOnce(Throw(userException));
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
             .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+    EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1);
+    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(1);
     auto client = createClient(mockUdsClientCallbacks);
     client->start();
     ASSERT_EQ(countServerConnections(1), 1);
@@ -290,6 +297,8 @@ TEST_F(UdsClientTest, fatalErrorCallbackException)
     EXPECT_CALL(mockUdsClientCallbacks, receivedMock(_)).WillOnce(Throw(triggerFatalErrorCallback));
     const std::logic_error userException("Test exception 2");
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).WillOnce(Throw(userException));
+    EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1);
+    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(1);
     auto client = createClient(mockUdsClientCallbacks);
     client->start();
     ASSERT_EQ(countServerConnections(1), 1);
@@ -323,9 +332,9 @@ TEST_F(UdsClientTest, fatalErrorSocketDirDoesNotExist)
 
 TEST_F(UdsClientTest, fatalErrorSocketDirNotReadable)
 {
-    if(std::getenv("OECORE_SDK_VERSION") != nullptr) {
-        return;
-    }
+    // make sure server is not starting up late and then gets
+    // impacted by changes to shared socket path and dir / file permissions
+    stopServer();
     auto socketDir = _tmpDirectory / "noReadAccess";
     auto socketPath = socketDir / "someSocket";
     _udsSettings.setSocketPath(socketPath.string());
@@ -345,9 +354,9 @@ TEST_F(UdsClientTest, fatalErrorSocketDirNotReadable)
 
 TEST_F(UdsClientTest, fatalErrorSocketPathNotReadWriteable)
 {
-    if(std::getenv("OECORE_SDK_VERSION") != nullptr) {
-        return;
-    }
+    // make sure server is not starting up late and then gets
+    // impacted by changes to shared socket path and dir / file permissions
+    stopServer();
     auto socketDir = _tmpDirectory / "socketDir";
     auto socketPath = socketDir / "someSocket";
     _udsSettings.setSocketPath(socketPath.string());
