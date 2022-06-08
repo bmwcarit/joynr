@@ -19,7 +19,7 @@ RUN dnf install -y \
 # installed. An attempt to remove it uninstalls
 # several other packages like maven etc.
 ###################################################
-RUN alternatives --set java /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-6.fc36.x86_64/jre/bin/java \
-    && alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-6.fc36.x86_64/bin/javac \
-    && alternatives --set jre_openjdk /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-6.fc36.x86_64/jre \
-    && alternatives --set java_sdk_openjdk /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-6.fc36.x86_64
+RUN alternatives --set java /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/jre/bin/java \
+    && alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/bin/javac \
+    && alternatives --set jre_openjdk /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/jre \
+    && alternatives --set java_sdk_openjdk /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64
