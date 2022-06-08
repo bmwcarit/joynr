@@ -91,7 +91,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                          String[] gbids,
                                          boolean awaitGlobalRegistration) {
         DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
-        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback(discoveryEntry);
+        CallbackWithModeledError<Void, DiscoveryError> callback = buildAddCallback(discoveryEntry);
         return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration, gbids);
     }
 
@@ -102,7 +102,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                    ProviderQos providerQos,
                                                    boolean awaitGlobalRegistration) {
         DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
-        CallbackWithModeledError<Void, DiscoveryError> callback = buildCallback(discoveryEntry);
+        CallbackWithModeledError<Void, DiscoveryError> callback = buildAddCallback(discoveryEntry);
         return localDiscoveryAggregator.addToAll(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
@@ -131,7 +131,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         return discoveryEntry;
     }
 
-    private CallbackWithModeledError<Void, DiscoveryError> buildCallback(final DiscoveryEntry discoveryEntry) {
+    private CallbackWithModeledError<Void, DiscoveryError> buildAddCallback(final DiscoveryEntry discoveryEntry) {
         return new CallbackWithModeledError<Void, DiscoveryError>() {
             @Override
             public void onSuccess(Void result) {
@@ -152,7 +152,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                              discoveryEntry.getProviderVersion().getMajorVersion(),
                              discoveryEntry.getProviderVersion().getMinorVersion(),
                              runtimeException);
-
+                handleFailedAdd(discoveryEntry);
             }
 
             @Override
@@ -164,6 +164,22 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                              discoveryEntry.getProviderVersion().getMajorVersion(),
                              discoveryEntry.getProviderVersion().getMinorVersion(),
                              errorEnum);
+                handleFailedAdd(discoveryEntry);
+            }
+
+            private void handleFailedAdd(final DiscoveryEntry discoveryEntry) {
+                try {
+                    messageRouter.removeNextHop(discoveryEntry.getParticipantId());
+                } catch (Exception error) {
+                    // removeNextHop throws only in case of libjoynr runtime if the communication with the CC fails
+                    logger.error("Error while removing routing entry of provider with participantId={} for domain={}, interfaceName={}, major={}, minor={} after failed registration: ",
+                                 discoveryEntry.getParticipantId(),
+                                 discoveryEntry.getDomain(),
+                                 discoveryEntry.getInterfaceName(),
+                                 discoveryEntry.getProviderVersion().getMajorVersion(),
+                                 discoveryEntry.getProviderVersion().getMinorVersion(),
+                                 error);
+                }
             }
         };
     }
@@ -188,7 +204,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                 try {
                     messageRouter.removeNextHop(participantId);
                 } catch (Exception error) {
-                    // removeNextHop throws only in case of libjoynr runtime if the communication with the CC fails or parentRouterProxy is not (yet) set
+                    // removeNextHop throws only in case of libjoynr runtime if the communication with the CC fails
                     logger.error("Error while removing routing entry of unregistered provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}: ",
                                  participantId,
                                  domain,
