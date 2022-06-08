@@ -1,4 +1,4 @@
-FROM fedora:30
+FROM fedora:36
 
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
@@ -89,26 +89,3 @@ RUN alternatives --set java /usr/lib/jvm/java-11-openjdk*.x86_64/bin/java \
 # setup extra certs
 ###################################################
 RUN /data/scripts/setup-extra-certs.sh
-
-###################################################
-# add git config
-###################################################
-#RUN git config --global user.email "dummy@dummy.com" \
-#    && git config --global user.name "Dummy"
-
-###################################################
-# install jetty
-###################################################
-RUN . /etc/profile \
-	&& wget -O /usr/local/jetty.tar.gz https://repo1.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.2.13.v20150730/jetty-distribution-9.2.13.v20150730.tar.gz \
-	&& cd /usr/local \
-	&& mkdir jetty \
-	&& tar xzf jetty.tar.gz --strip-components=1 -C /usr/local/jetty \
-	&& rm /usr/local/jetty.tar.gz
-
-ENV BACKEND_HOST localhost
-ENV JAVA_OPTS \
-	-Djoynr.servlet.hostpath=http://localhost:8080 \
-	-Djoynr.messaging.channelurldirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/ \
-	-Djoynr.messaging.bounceproxyurl=http://localhost:8080/bounceproxy \
-	-Djoynr.messaging.capabilitiesdirectoryurl=http://localhost:8080/discovery/channels/discoverydirectory_channelid/
