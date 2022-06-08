@@ -42,6 +42,7 @@ public:
 protected:
     void SetUp() override
     {
+        std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
         _actualTimeoutDateMs.clear();
         _fulfillDelayedFuture = false;
     }
@@ -71,6 +72,7 @@ protected:
         timeoutTask._task = createTestTask(fulfillPromise, fulfillDelayed);
         timeoutTask._expiryDate = expiryDate;
         timeoutTask._timeout = [&](){
+            std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
             _actualTimeoutDateMs.push_back(TimePoint::now().toMilliseconds());
         };
         return timeoutTask;
@@ -131,6 +133,7 @@ protected:
     std::vector<TaskState> _sequence;
 
     std::vector<std::int64_t> _actualTimeoutDateMs;
+    std::mutex _actualTimeoutDateMsMutex;
 
     std::atomic<bool> _fulfillDelayedFuture;
     std::future<void> _fulfillFuture;
@@ -253,12 +256,15 @@ TEST_F(TaskSequencerTest, runRobustness)
 void TaskSequencerTest::waitForTimeouts(size_t expectedNumberOfTimeouts, TimePoint expectedTimeout)
 {
     for (int i = 0; i < 10; i++) {
+        std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
         if (expectedNumberOfTimeouts == _actualTimeoutDateMs.size()) {
             break;
         }
+        lock.unlock();
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     EXPECT_EQ(expectedNumberOfTimeouts, _actualTimeoutDateMs.size());
+    std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
     for (size_t i = 0; i < expectedNumberOfTimeouts; i++) {
         EXPECT_TRUE(_actualTimeoutDateMs[i] - expectedTimeout.toMilliseconds() < 500);
         EXPECT_TRUE(_actualTimeoutDateMs[i] >= expectedTimeout.toMilliseconds());
@@ -290,7 +296,9 @@ TEST_F(TaskSequencerTest, taskTimeoutCalledForQueuedTasksWhenOtherTaskIsRunning)
     EXPECT_EQ(2, sequence.size());
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     // task3 and task4 are not yet expired
+    std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
     EXPECT_EQ(0, _actualTimeoutDateMs.size());
+    lock.unlock();
     // wait for expiration of task3 and task4
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     waitForTimeouts(2, expectedTimeoutDateMs);
@@ -317,7 +325,9 @@ TEST_F(TaskSequencerTest, taskTimeoutCalledForNewTasksWhenOtherTaskIsRunning)
     test.add(task3);
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     // task2 and task3 are not yet expired
+    std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
     EXPECT_EQ(0, _actualTimeoutDateMs.size());
+    lock.unlock();
     // wait for expiration of task2 and task3
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     waitForTimeouts(2, expectedTimeoutDateMs);
@@ -344,6 +354,7 @@ TEST_F(TaskSequencerTest, testTaskTimeoutNotCalledWithoutExpiredTasks)
     EXPECT_EQ(2, sequence.size());
     // none of tasks in queue are timeout because we waited less than the expiry
     // date of the enqueued tasks
+    std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
     EXPECT_EQ(0, _actualTimeoutDateMs.size());
 }
 
@@ -368,6 +379,7 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForTaskToBeExecutedNext)
     auto sequence = waitForTestFutureCreation(2, std::chrono::seconds{10});
     EXPECT_EQ(2, sequence.size());
     // task1 is timeout before the timeToWait calculation
+    std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
     EXPECT_EQ(1, _actualTimeoutDateMs.size());
     EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs.toMilliseconds() < 500);
     EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
@@ -392,6 +404,7 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksBeforeOtherTaskIsSt
     _fulfillDelayedFuture = true;
     sequence = waitForTestFutureCreation(3, std::chrono::seconds{10});
     EXPECT_EQ(3, sequence.size());
+    std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
     EXPECT_EQ(1, _actualTimeoutDateMs.size());
     EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs.toMilliseconds() < 500);
     EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
