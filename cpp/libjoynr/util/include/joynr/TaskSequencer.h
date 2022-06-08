@@ -34,6 +34,7 @@
 #include "joynr/Future.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/ReadWriteLock.h"
 #include "joynr/TimePoint.h"
 
 namespace joynr
@@ -117,11 +118,13 @@ public:
             return;
         }
 
+        ReadLocker futureReadLock(_futureReadWriteLock);
         if (std::future_status::ready !=
             _future->_resultFuture.wait_for(std::chrono::milliseconds(0))) {
             _future->onError(std::make_shared<exceptions::JoynrRuntimeException>(
                     "All tasks have been canceled."));
         }
+        futureReadLock.unlock();
 
         {
             std::unique_lock<std::mutex> lock(_tasksMutex);
@@ -132,13 +135,16 @@ public:
         _worker.join();
 
         auto releaseCurrentFutureMemory = nothingToDo();
+        WriteLocker futureWriteLock(_futureReadWriteLock);
         _future.swap(releaseCurrentFutureMemory);
+        // futureWriteLock will be auto unlocked when leaving section
     }
 
 private:
     std::atomic_bool _isRunning;
     FutureSP _future;
     std::mutex _tasksMutex;
+    ReadWriteLock _futureReadWriteLock;
     std::condition_variable _tasksChanged;
     std::vector<TaskWithExpiryDate> _tasks;
     std::thread _worker;
@@ -170,7 +176,10 @@ private:
                     }
                 }
             }
+
+            ReadLocker futureReadLock(_futureReadWriteLock);
             auto futureStatus = _future->_resultFuture.wait_for(timeToWaitMs);
+            futureReadLock.unlock();
 
             if (futureStatus != std::future_status::ready) {
                 // cancel expired tasks
@@ -185,8 +194,13 @@ private:
                 }
             } else {
                 // task finished, get and execute next task
+                WriteLocker futureWriteLock1(_futureReadWriteLock);
                 _future = nothingToDo();
+                futureWriteLock1.unlock();
                 try {
+                    // if something throws in this block we must make sure
+                    // that any locks are auto unlocked before reaching the
+                    // catch block. Thus we need to use different locks.
                     if (_isRunning.load()) {
                         std::unique_lock<std::mutex> lock(_tasksMutex);
                         if (_tasks.empty()) {
@@ -204,10 +218,13 @@ private:
                                 if (!nextTask._task) {
                                     throw std::runtime_error("Dropping null-task.");
                                 }
+                                WriteLocker futureWriteLock2(_futureReadWriteLock);
                                 _future = nextTask._task();
+                                // futureWriteLock2 is auto unlocked when leaving section
                             }
                         }
                     }
+                    ReadLocker futureReadLock3(_futureReadWriteLock);
                     if (!_future) {
                         throw std::runtime_error("Future factory created empty task.");
                     }
@@ -215,12 +232,16 @@ private:
                     JOYNR_LOG_ERROR(logger(),
                                     "Task creation failed, continue with next task: {}",
                                     e.what());
+                    WriteLocker futureWriteLock3(_futureReadWriteLock);
                     _future = nothingToDo();
+                    // futureWriteLock3 is auto unlocked when leaving section
                 } catch (...) {
                     JOYNR_LOG_ERROR(
                             logger(),
                             "Task creation failed for unknown reasons, continue with next task.");
+                    WriteLocker futureWriteLock4(_futureReadWriteLock);
                     _future = nothingToDo();
+                    // futureWriteLock4 is auto unlocked when leaving section
                 }
             }
         }
