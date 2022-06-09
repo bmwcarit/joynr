@@ -34,12 +34,14 @@ RUN /data/scripts/setup-proxy.sh
 # which is required by the run-performance-test script
 RUN dnf update -y \
 	&& dnf install -y \
-	tar \
-	wget \
-	procps \
-	java-1.8.0-openjdk-headless \
 	java-11-openjdk \
 	java-11-openjdk-devel \
+	openssl \
+	openssl1.1 \
+	openssl1.1-devel \
+	procps \
+	tar \
+	wget \
 	&& dnf clean all
 
 ###################################################
