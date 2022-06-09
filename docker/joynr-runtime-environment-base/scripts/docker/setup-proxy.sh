@@ -102,7 +102,7 @@ export CURL_HOME
 echo "Setting up npm configuration in \$HOME/.npmrc"
 cat > \$HOME/.npmrc << EOF2
 strict-ssl=false
-registry=http://registry.npmjs.org/
+registry=https://registry.npmjs.org/
 EOF2
 MAVEN_OPTS="-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Xms2048m -Xmx2048m"
 export MAVEN_OPTS

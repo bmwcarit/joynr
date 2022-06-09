@@ -79,7 +79,7 @@ export CURL_HOME
 echo "Setting up npm configuration in \$HOME/.npmrc"
 cat > \$HOME/.npmrc << EOF2
 strict-ssl=false
-registry=http://registry.npmjs.org/
+registry=https://registry.npmjs.org/
 EOF2
 echo "use-my-proxy.sh finished"
 EOF
