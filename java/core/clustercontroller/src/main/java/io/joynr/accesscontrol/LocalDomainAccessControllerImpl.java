@@ -30,8 +30,6 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.proxy.Callback;
-import io.joynr.proxy.Future;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.runtime.SystemServicesSettings;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
@@ -196,51 +194,6 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     }
 
     @Override
-    public List<MasterAccessControlEntry> getEditableMasterAccessControlEntries(String uid) {
-        throw new UnsupportedOperationException("Editing of access control entries is not implemented yet.");
-    }
-
-    @Override
-    public Future<List<MasterAccessControlEntry>> getEditableMasterAccessControlEntries(Callback<List<MasterAccessControlEntry>> callback,
-                                                                                        String uid) {
-        throw new UnsupportedOperationException("Editing of access control entries is not implemented yet.");
-    }
-
-    @Override
-    public Future<List<MasterAccessControlEntry>> getMediatorAccessControlEntries(Callback<List<MasterAccessControlEntry>> callback,
-                                                                                  String uid) {
-        return null;
-    }
-
-    @Override
-    public List<MasterAccessControlEntry> getEditableMediatorAccessControlEntries(String uid) {
-        return null;
-    }
-
-    @Override
-    public Future<List<MasterAccessControlEntry>> getEditableMediatorAccessControlEntries(Callback<List<MasterAccessControlEntry>> callback,
-                                                                                          String uid) {
-        return null;
-    }
-
-    @Override
-    public Future<List<OwnerAccessControlEntry>> getOwnerAccessControlEntries(Callback<List<OwnerAccessControlEntry>> callback,
-                                                                              String uid) {
-        throw new UnsupportedOperationException("Editing of access control entries is not implemented yet.");
-    }
-
-    @Override
-    public List<OwnerAccessControlEntry> getEditableOwnerAccessControlEntries(String uid) {
-        throw new UnsupportedOperationException("Editing of access control entries is not implemented yet.");
-    }
-
-    @Override
-    public Future<List<OwnerAccessControlEntry>> getEditableOwnerAccessControlEntries(Callback<List<OwnerAccessControlEntry>> callback,
-                                                                                      String uid) {
-        throw new UnsupportedOperationException("Editing of access control entries is not implemented yet.");
-    }
-
-    @Override
     public Permission getProviderPermission(String uid, String domain, String interfaceName, TrustLevel trustLevel) {
         logger.debug("getProviderPermission on domain {}, interface {}", domain, interfaceName);
         Optional<MasterRegistrationControlEntry> masterRce;
@@ -262,33 +215,4 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
         return accessControlAlgorithm.getProviderPermission(masterRce, mediatorRce, ownerRce, trustLevel);
     }
 
-    @Override
-    public boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
-        throw new UnsupportedOperationException("Provider registration permission check is not implemented yet.");
-    }
-
-    @Override
-    public boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        throw new UnsupportedOperationException("Provider registration permission check is not implemented yet.");
-    }
-
-    @Override
-    public boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
-        throw new UnsupportedOperationException("Provider registration permission check is not implemented yet.");
-    }
-
-    @Override
-    public boolean removeMediatorRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        throw new UnsupportedOperationException("Provider registration permission check is not implemented yet.");
-    }
-
-    @Override
-    public boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
-        throw new UnsupportedOperationException("Provider registration permission check is not implemented yet.");
-    }
-
-    @Override
-    public boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName) {
-        throw new UnsupportedOperationException("Provider registration permission check is not implemented yet.");
-    }
 }
