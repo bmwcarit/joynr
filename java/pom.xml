@@ -39,6 +39,9 @@
 		<module>integration-tests</module>
 		<module>coverage</module>
 	</modules>
+	<properties>
+		<sonar.moduleKey>${sonar.projectKey}:${project.groupId}:${project.artifactId}</sonar.moduleKey>
+	</properties>
 	<profiles>
 		<profile>
 			<id>spotbugs</id>
