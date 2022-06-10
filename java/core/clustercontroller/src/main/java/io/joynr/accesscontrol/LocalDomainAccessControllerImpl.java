@@ -71,9 +71,7 @@ public class LocalDomainAccessControllerImpl implements LocalDomainAccessControl
     public boolean hasRole(String userId, String domain, Role role) {
         boolean hasRole = false;
         DomainRoleEntry dre;
-        synchronized (localDomainAccessStore) {
-            dre = localDomainAccessStore.getDomainRole(userId, role);
-        }
+        dre = localDomainAccessStore.getDomainRole(userId, role);
         if (dre != null) {
             List<String> domains = Arrays.asList(dre.getDomains());
             if (domains.contains(domain)) {

@@ -96,7 +96,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public List<DomainRoleEntry> getDomainRoles(String uid) {
+    public synchronized List<DomainRoleEntry> getDomainRoles(String uid) {
         Cache cache = getCache(CacheId.DOMAIN_ROLES);
         List<DomainRoleEntry> domainRoles = new ArrayList<DomainRoleEntry>();
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserRoleKey.USER_ID);
@@ -111,7 +111,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public DomainRoleEntry getDomainRole(String uid, Role role) {
+    public synchronized DomainRoleEntry getDomainRole(String uid, Role role) {
         Cache cache = getCache(CacheId.DOMAIN_ROLES);
         Attribute<String> uidAttribute = cache.getSearchAttribute(UserRoleKey.USER_ID);
         Attribute<Role> roleAttribute = cache.getSearchAttribute(UserRoleKey.ROLE);
@@ -136,7 +136,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean updateDomainRole(DomainRoleEntry updatedEntry) {
+    public synchronized Boolean updateDomainRole(DomainRoleEntry updatedEntry) {
         boolean updateSuccess = false;
         Cache cache = getCache(CacheId.DOMAIN_ROLES);
         UserRoleKey dreKey = new UserRoleKey(updatedEntry.getUid(), updatedEntry.getRole());
@@ -151,38 +151,39 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean removeDomainRole(String uid, Role role) {
+    public synchronized Boolean removeDomainRole(String uid, Role role) {
         UserRoleKey dreKey = new UserRoleKey(uid, role);
         return removeControlEntry(CacheId.DOMAIN_ROLES, dreKey);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid) {
+    public synchronized List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid) {
         return getControlEntries(uid, CacheId.MASTER_ACL);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getEditableMasterAccessControlEntries(String uid) {
+    public synchronized List<MasterAccessControlEntry> getEditableMasterAccessControlEntries(String uid) {
         return getEditableAces(uid, CacheId.MASTER_ACL, Role.MASTER);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMasterAccessControlEntries(String domain, String interfaceName) {
+    public synchronized List<MasterAccessControlEntry> getMasterAccessControlEntries(String domain,
+                                                                                     String interfaceName) {
         return getControlEntries(domain, interfaceName, CacheId.MASTER_ACL);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid,
-                                                                        String domain,
-                                                                        String interfaceName) {
+    public synchronized List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid,
+                                                                                     String domain,
+                                                                                     String interfaceName) {
         return getControlEntries(CacheId.MASTER_ACL, uid, domain, interfaceName);
     }
 
     @Override
-    public MasterAccessControlEntry getMasterAccessControlEntry(String uid,
-                                                                String domain,
-                                                                String interfaceName,
-                                                                String operation) {
+    public synchronized MasterAccessControlEntry getMasterAccessControlEntry(String uid,
+                                                                             String domain,
+                                                                             String interfaceName,
+                                                                             String operation) {
         MasterAccessControlEntry masterAce = getControlEntry(CacheId.MASTER_ACL, uid, domain, interfaceName, operation);
         if (masterAce == null) {
             masterAce = getControlEntry(CacheId.MASTER_ACL, uid, domain, interfaceName, WILDCARD);
@@ -192,7 +193,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAce) {
+    public synchronized Boolean updateMasterAccessControlEntry(MasterAccessControlEntry updatedMasterAce) {
         boolean updateSuccess = false;
         UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(updatedMasterAce.getUid(),
                                                                                      updatedMasterAce.getDomain(),
@@ -204,7 +205,10 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean removeMasterAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
+    public synchronized Boolean removeMasterAccessControlEntry(String uid,
+                                                               String domain,
+                                                               String interfaceName,
+                                                               String operation) {
         UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(uid,
                                                                                      domain,
                                                                                      interfaceName,
@@ -213,32 +217,33 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid) {
+    public synchronized List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid) {
         return getControlEntries(uid, CacheId.MEDIATOR_ACL);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getEditableMediatorAccessControlEntries(String uid) {
+    public synchronized List<MasterAccessControlEntry> getEditableMediatorAccessControlEntries(String uid) {
         return getEditableAces(uid, CacheId.MEDIATOR_ACL, Role.MASTER);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String domain, String interfaceName) {
+    public synchronized List<MasterAccessControlEntry> getMediatorAccessControlEntries(String domain,
+                                                                                       String interfaceName) {
         return getControlEntries(domain, interfaceName, CacheId.MEDIATOR_ACL);
     }
 
     @Override
-    public List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid,
-                                                                          String domain,
-                                                                          String interfaceName) {
+    public synchronized List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid,
+                                                                                       String domain,
+                                                                                       String interfaceName) {
         return getControlEntries(CacheId.MEDIATOR_ACL, uid, domain, interfaceName);
     }
 
     @Override
-    public MasterAccessControlEntry getMediatorAccessControlEntry(String uid,
-                                                                  String domain,
-                                                                  String interfaceName,
-                                                                  String operation) {
+    public synchronized MasterAccessControlEntry getMediatorAccessControlEntry(String uid,
+                                                                               String domain,
+                                                                               String interfaceName,
+                                                                               String operation) {
         MasterAccessControlEntry mediatorAce = getControlEntry(CacheId.MEDIATOR_ACL,
                                                                uid,
                                                                domain,
@@ -252,7 +257,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAce) {
+    public synchronized Boolean updateMediatorAccessControlEntry(MasterAccessControlEntry updatedMediatorAce) {
 
         boolean updateSuccess = false;
         MasterAccessControlEntry masterAce = getMasterAccessControlEntry(updatedMediatorAce.getUid(),
@@ -273,7 +278,10 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean removeMediatorAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
+    public synchronized Boolean removeMediatorAccessControlEntry(String uid,
+                                                                 String domain,
+                                                                 String interfaceName,
+                                                                 String operation) {
         UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(uid,
                                                                                      domain,
                                                                                      interfaceName,
@@ -282,30 +290,33 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid) {
+    public synchronized List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid) {
         return getControlEntries(uid, CacheId.OWNER_ACL);
     }
 
     @Override
-    public List<OwnerAccessControlEntry> getEditableOwnerAccessControlEntries(String uid) {
+    public synchronized List<OwnerAccessControlEntry> getEditableOwnerAccessControlEntries(String uid) {
         return getEditableAces(uid, CacheId.OWNER_ACL, Role.OWNER);
     }
 
     @Override
-    public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String domain, String interfaceName) {
+    public synchronized List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String domain,
+                                                                                   String interfaceName) {
         return getControlEntries(domain, interfaceName, CacheId.OWNER_ACL);
     }
 
     @Override
-    public List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid, String domain, String interfaceName) {
+    public synchronized List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid,
+                                                                                   String domain,
+                                                                                   String interfaceName) {
         return getControlEntries(CacheId.OWNER_ACL, uid, domain, interfaceName);
     }
 
     @Override
-    public OwnerAccessControlEntry getOwnerAccessControlEntry(String uid,
-                                                              String domain,
-                                                              String interfaceName,
-                                                              String operation) {
+    public synchronized OwnerAccessControlEntry getOwnerAccessControlEntry(String uid,
+                                                                           String domain,
+                                                                           String interfaceName,
+                                                                           String operation) {
         OwnerAccessControlEntry ownerAce = getControlEntry(CacheId.OWNER_ACL, uid, domain, interfaceName, operation);
         if (ownerAce == null) {
             ownerAce = getControlEntry(CacheId.OWNER_ACL, uid, domain, interfaceName, WILDCARD);
@@ -315,7 +326,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAce) {
+    public synchronized Boolean updateOwnerAccessControlEntry(OwnerAccessControlEntry updatedOwnerAce) {
         boolean updateSuccess = false;
         MasterAccessControlEntry masterAce = getMasterAccessControlEntry(updatedOwnerAce.getUid(),
                                                                          updatedOwnerAce.getDomain(),
@@ -340,7 +351,10 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean removeOwnerAccessControlEntry(String uid, String domain, String interfaceName, String operation) {
+    public synchronized Boolean removeOwnerAccessControlEntry(String uid,
+                                                              String domain,
+                                                              String interfaceName,
+                                                              String operation) {
         UserDomainInterfaceOperationKey aceKey = new UserDomainInterfaceOperationKey(uid,
                                                                                      domain,
                                                                                      interfaceName,
@@ -349,30 +363,30 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid) {
+    public synchronized List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String uid) {
         return getControlEntries(uid, CacheId.MASTER_RCL);
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getEditableMasterRegistrationControlEntries(String uid) {
+    public synchronized List<MasterRegistrationControlEntry> getEditableMasterRegistrationControlEntries(String uid) {
         return getEditableAces(uid, CacheId.MASTER_RCL, Role.MASTER);
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String domain,
-                                                                                    String interfaceName) {
+    public synchronized List<MasterRegistrationControlEntry> getMasterRegistrationControlEntries(String domain,
+                                                                                                 String interfaceName) {
         return getControlEntries(domain, interfaceName, CacheId.MASTER_RCL);
     }
 
     @Override
-    public MasterRegistrationControlEntry getMasterRegistrationControlEntry(String uid,
-                                                                            String domain,
-                                                                            String interfaceName) {
+    public synchronized MasterRegistrationControlEntry getMasterRegistrationControlEntry(String uid,
+                                                                                         String domain,
+                                                                                         String interfaceName) {
         return getControlEntry(CacheId.MASTER_RCL, uid, domain, interfaceName, WILDCARD);
     }
 
     @Override
-    public Boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
+    public synchronized Boolean updateMasterRegistrationControlEntry(MasterRegistrationControlEntry updatedMasterRce) {
         boolean updateSuccess = false;
         UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(updatedMasterRce.getUid(),
                                                                                      updatedMasterRce.getDomain(),
@@ -384,7 +398,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName) {
+    public synchronized Boolean removeMasterRegistrationControlEntry(String uid, String domain, String interfaceName) {
         UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(uid,
                                                                                      domain,
                                                                                      interfaceName,
@@ -393,30 +407,30 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid) {
+    public synchronized List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String uid) {
         return getControlEntries(uid, CacheId.MEDIATOR_RCL);
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getEditableMediatorRegistrationControlEntries(String uid) {
+    public synchronized List<MasterRegistrationControlEntry> getEditableMediatorRegistrationControlEntries(String uid) {
         return getEditableAces(uid, CacheId.MEDIATOR_RCL, Role.MASTER);
     }
 
     @Override
-    public List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String domain,
-                                                                                      String interfaceName) {
+    public synchronized List<MasterRegistrationControlEntry> getMediatorRegistrationControlEntries(String domain,
+                                                                                                   String interfaceName) {
         return getControlEntries(domain, interfaceName, CacheId.MEDIATOR_RCL);
     }
 
     @Override
-    public MasterRegistrationControlEntry getMediatorRegistrationControlEntry(String uid,
-                                                                              String domain,
-                                                                              String interfaceName) {
+    public synchronized MasterRegistrationControlEntry getMediatorRegistrationControlEntry(String uid,
+                                                                                           String domain,
+                                                                                           String interfaceName) {
         return getControlEntry(CacheId.MEDIATOR_RCL, uid, domain, interfaceName, WILDCARD);
     }
 
     @Override
-    public Boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
+    public synchronized Boolean updateMediatorRegistrationControlEntry(MasterRegistrationControlEntry updatedMediatorRce) {
         boolean updateSuccess = false;
         MasterRegistrationControlEntry masterRce = getMasterRegistrationControlEntry(updatedMediatorRce.getUid(),
                                                                                      updatedMediatorRce.getDomain(),
@@ -435,7 +449,9 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean removeMediatorRegistrationControlEntry(String uid, String domain, String interfaceName) {
+    public synchronized Boolean removeMediatorRegistrationControlEntry(String uid,
+                                                                       String domain,
+                                                                       String interfaceName) {
         UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(uid,
                                                                                      domain,
                                                                                      interfaceName,
@@ -444,29 +460,30 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid) {
+    public synchronized List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String uid) {
         return getControlEntries(uid, CacheId.OWNER_RCL);
     }
 
     @Override
-    public List<OwnerRegistrationControlEntry> getEditableOwnerRegistrationControlEntries(String uid) {
+    public synchronized List<OwnerRegistrationControlEntry> getEditableOwnerRegistrationControlEntries(String uid) {
         return getEditableAces(uid, CacheId.OWNER_RCL, Role.OWNER);
     }
 
     @Override
-    public List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String domain, String interfaceName) {
+    public synchronized List<OwnerRegistrationControlEntry> getOwnerRegistrationControlEntries(String domain,
+                                                                                               String interfaceName) {
         return getControlEntries(domain, interfaceName, CacheId.OWNER_RCL);
     }
 
     @Override
-    public OwnerRegistrationControlEntry getOwnerRegistrationControlEntry(String uid,
-                                                                          String domain,
-                                                                          String interfaceName) {
+    public synchronized OwnerRegistrationControlEntry getOwnerRegistrationControlEntry(String uid,
+                                                                                       String domain,
+                                                                                       String interfaceName) {
         return getControlEntry(CacheId.OWNER_RCL, uid, domain, interfaceName, WILDCARD);
     }
 
     @Override
-    public Boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
+    public synchronized Boolean updateOwnerRegistrationControlEntry(OwnerRegistrationControlEntry updatedOwnerRce) {
         boolean updateSuccess = false;
         MasterRegistrationControlEntry masterRce = getMasterRegistrationControlEntry(updatedOwnerRce.getUid(),
                                                                                      updatedOwnerRce.getDomain(),
@@ -489,7 +506,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @Override
-    public Boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName) {
+    public synchronized Boolean removeOwnerRegistrationControlEntry(String uid, String domain, String interfaceName) {
         UserDomainInterfaceOperationKey rceKey = new UserDomainInterfaceOperationKey(uid,
                                                                                      domain,
                                                                                      interfaceName,
@@ -665,7 +682,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
         return removeResult;
     }
 
-    protected Cache getCache(CacheId cacheId) {
+    private Cache getCache(CacheId cacheId) {
         Cache cache = cacheManager.getCache(cacheId.getIdAsString());
         if (cache == null) {
             switch (cacheId) {
@@ -720,7 +737,7 @@ public class DomainAccessControlStoreEhCache implements DomainAccessControlStore
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T getElementValue(Element e) {
+    private static <T> T getElementValue(Element e) {
         return (T) e.getObjectValue();
     }
 }
