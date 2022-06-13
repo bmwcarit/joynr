@@ -116,9 +116,15 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
 
     it("subscribe calls subscriptionManager", async () => {
         const partitions = ["1", "2", "3"];
-        const onReceive = function() {};
-        const onError = function() {};
-        const onSubscribed = function() {};
+        const onReceive = function() {
+            // Do nothing
+        };
+        const onError = function() {
+            // Do nothing
+        };
+        const onSubscribed = function() {
+            // Do nothing
+        };
 
         const expectedPartitions = UtilInternal.extend([], partitions);
         const expectedSubscriptionQos = new MulticastSubscriptionQos(UtilInternal.extendDeep({}, subscriptionQos));
@@ -161,7 +167,9 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
     it("subscribe provides a subscriptionId", async () => {
         const passedId = await weakSignal.subscribe({
             subscriptionQos,
-            onReceive() {}
+            onReceive() {
+                // Do nothing
+            }
         });
         expect(passedId).toBeDefined();
         expect(typeof passedId === "string").toBeTruthy();
@@ -176,7 +184,9 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
 
         const passedSubscriptionId = await weakSignal.subscribe({
             subscriptionQos,
-            receive() {}
+            receive() {
+                // Do nothing
+            }
         });
         return weakSignal.unsubscribe({
             subscriptionId: passedSubscriptionId
@@ -190,13 +200,17 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
         weakSignal
             .subscribe({
                 subscriptionQos,
-                receive() {}
+                receive() {
+                    // Do nothing
+                }
             })
             .then(() => {
                 //subscribing with empty filter parameters should work
                 return weakSignal.subscribe({
                     subscriptionQos,
-                    receive() {},
+                    receive() {
+                        // Do nothing
+                    },
                     filterParameters: weakSignal.createFilterParameters()
                 });
             })
@@ -204,14 +218,18 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
                 //subscribing with filter parameters having value null should work
                 return weakSignal.subscribe({
                     subscriptionQos,
-                    receive() {}
+                    receive() {
+                        // Do nothing
+                    }
                 });
             })
             .then(() => {
                 //subscribing with filter parameters having value null should work
                 return weakSignal.subscribe({
                     subscriptionQos,
-                    receive() {},
+                    receive() {
+                        /// Do nothing
+                    },
                     filterParameters: null
                 });
             })
@@ -224,7 +242,9 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
                 return weakSignal
                     .subscribe({
                         subscriptionQos,
-                        receive() {},
+                        receive() {
+                            // Do nothing
+                        },
                         filterParameters
                     })
                     .then(() => done.fail())
@@ -244,7 +264,9 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
         weakSignal
             .subscribe({
                 subscriptionQos,
-                receive() {}
+                receive() {
+                    // Do nothing
+                }
             })
             .then(() => done.fail())
             .catch((error: any) => {
@@ -266,7 +288,9 @@ describe("libjoynr-js.joynr.proxy.ProxyEvent", () => {
 
         const passedSubscriptionId = await weakSignal.subscribe({
             subscriptionQos,
-            receive() {}
+            receive() {
+                // Do nothing
+            }
         });
         await expect(
             weakSignal.unsubscribe({

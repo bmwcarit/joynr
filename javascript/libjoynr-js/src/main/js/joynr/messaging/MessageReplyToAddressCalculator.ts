@@ -21,7 +21,7 @@ import JoynrMessage from "./JoynrMessage";
 type Address = any;
 
 class MessageReplyToAddressCalculator {
-    private checkExistingReplyAddress: boolean = true;
+    private checkExistingReplyAddress = true;
     private replyToAddress: Address;
     /**
      * @constructor

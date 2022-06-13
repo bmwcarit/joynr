@@ -17,7 +17,9 @@
  * #L%
  */
 /*eslint no-unused-vars: "off"*/
-const noop = function(): any {};
+const noop = function(): any {
+    // do nothing
+};
 
 export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal" | "off";
 type LoggingFunction = (message: string, object?: any) => void;
@@ -76,7 +78,7 @@ export default class JoynrLogger {
     private log!: Function;
     private format?: Function;
 
-    public constructor(name: string = "root") {
+    public constructor(name = "root") {
         this.name = name;
     }
 

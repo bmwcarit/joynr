@@ -134,7 +134,7 @@ class SubscriptionManager {
     public registerSubscription: (settings: SubscriptionSettings) => Promise<string>;
 
     private multicastSubscribers: any = {};
-    private started: boolean = true;
+    private started = true;
     private subscriptionReplyCallers: any;
 
     // stores the object which is returned by setTimeout mapped to the subscriptionId
@@ -266,7 +266,7 @@ class SubscriptionManager {
         } else {
             onReceiveWrapper = (response: any[]) => {
                 for (const responseKey in response) {
-                    if (response.hasOwnProperty(responseKey)) {
+                    if (Object.prototype.hasOwnProperty.call(response, responseKey)) {
                         response[responseKey] = Typing.augmentTypes(
                             response[responseKey],
                             settings.broadcastParameter[responseKey].type
@@ -307,7 +307,7 @@ class SubscriptionManager {
 
     private removeRequestFromMulticastSubscribers(_multicastId: string, subscriptionId: string): void {
         for (const multicastIdPattern in this.multicastSubscribers) {
-            if (this.multicastSubscribers.hasOwnProperty(multicastIdPattern)) {
+            if (Object.prototype.hasOwnProperty.call(this.multicastSubscribers, multicastIdPattern)) {
                 const subscribers = this.multicastSubscribers[multicastIdPattern];
                 for (let i = 0; i < subscribers.length; i++) {
                     if (subscribers[i] === subscriptionId) {
@@ -588,7 +588,7 @@ class SubscriptionManager {
     public handleMulticastPublication(publication: MulticastPublication): void {
         let subscribersFound = false;
         for (const multicastIdPattern in this.multicastSubscribers) {
-            if (this.multicastSubscribers.hasOwnProperty(multicastIdPattern)) {
+            if (Object.prototype.hasOwnProperty.call(this.multicastSubscribers, multicastIdPattern)) {
                 if (publication.multicastId.match(new RegExp(multicastIdPattern)) !== null) {
                     const subscribers = this.multicastSubscribers[multicastIdPattern];
                     if (subscribers !== undefined) {
@@ -764,7 +764,7 @@ class SubscriptionManager {
      */
     public shutdown(): void {
         for (const subscriptionId in this.publicationCheckTimerIds) {
-            if (this.publicationCheckTimerIds.hasOwnProperty(subscriptionId)) {
+            if (Object.prototype.hasOwnProperty.call(this.publicationCheckTimerIds, subscriptionId)) {
                 const timerId = this.publicationCheckTimerIds[subscriptionId];
                 if (timerId !== undefined) {
                     LongTimer.clearTimeout(timerId);

@@ -943,7 +943,7 @@ describe("libjoynr-js.joynr.capabilities.arbitration.Arbitrator", () => {
         }
 
         for (const capId in capabilities) {
-            if (capabilities.hasOwnProperty(capId)) {
+            if (Object.prototype.hasOwnProperty.call(capabilities, capId)) {
                 caps.push(capabilities[capId]);
                 return caps;
             }

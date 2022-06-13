@@ -45,7 +45,7 @@ const log = LoggingManager.getLogger("joynr.dispatching.subscription.Publication
 
 class PublicationManager {
     private dispatcher: Dispatcher;
-    private started: boolean = true;
+    private started = true;
     private multicastSubscriptions: Record<string, any> = {};
 
     // map: providerId+eventName -> subscriptionIds -> subscription
@@ -305,7 +305,7 @@ class PublicationManager {
         }
 
         for (const subscriptionId in subscriptions) {
-            if (subscriptions.hasOwnProperty(subscriptionId)) {
+            if (Object.prototype.hasOwnProperty.call(subscriptions, subscriptionId)) {
                 const subscriptionInfo = subscriptions[subscriptionId];
                 this.prepareAttributePublication(subscriptionInfo, value);
             }
@@ -401,7 +401,7 @@ class PublicationManager {
         }
 
         for (const subscriptionId in subscriptions) {
-            if (subscriptions.hasOwnProperty(subscriptionId)) {
+            if (Object.prototype.hasOwnProperty.call(subscriptions, subscriptionId)) {
                 const subscriptionInfo = subscriptions[subscriptionId];
                 // if any filters present, check them
                 let publish = true;
@@ -505,7 +505,7 @@ class PublicationManager {
             ];
             if (pendingSubscriptions !== undefined) {
                 for (pendingSubscription in pendingSubscriptions) {
-                    if (pendingSubscriptions.hasOwnProperty(pendingSubscription)) {
+                    if (Object.prototype.hasOwnProperty.call(pendingSubscriptions, pendingSubscription)) {
                         subscriptionObject = pendingSubscriptions[pendingSubscription];
                         if (
                             subscriptionObject !== undefined &&
@@ -613,7 +613,7 @@ class PublicationManager {
 
         if (subscriptions !== undefined) {
             for (const subscription in subscriptions) {
-                if (subscriptions.hasOwnProperty(subscription)) {
+                if (Object.prototype.hasOwnProperty.call(subscriptions, subscription)) {
                     this.handleSubscriptionStop(
                         new SubscriptionStop({
                             subscriptionId: subscription
@@ -640,7 +640,7 @@ class PublicationManager {
         const subscriptions = this.getSubscriptionsForProviderEvent(providerId, eventName);
         if (subscriptions !== undefined) {
             for (const subscription in subscriptions) {
-                if (subscriptions.hasOwnProperty(subscription)) {
+                if (Object.prototype.hasOwnProperty.call(subscriptions, subscription)) {
                     this.handleSubscriptionStop(
                         new SubscriptionStop({
                             subscriptionId: subscription
@@ -913,7 +913,7 @@ class PublicationManager {
         let subscriptionId;
         if (subscriptions !== undefined) {
             for (subscriptionId in subscriptions) {
-                if (subscriptions.hasOwnProperty(subscriptionId)) {
+                if (Object.prototype.hasOwnProperty.call(subscriptions, subscriptionId)) {
                     return true;
                 }
             }
@@ -931,7 +931,7 @@ class PublicationManager {
         let subscriptionId;
         if (subscriptions !== undefined) {
             for (subscriptionId in subscriptions) {
-                if (subscriptions.hasOwnProperty(subscriptionId)) {
+                if (Object.prototype.hasOwnProperty.call(subscriptions, subscriptionId)) {
                     return true;
                 }
             }
@@ -1230,7 +1230,7 @@ class PublicationManager {
 
         // cycles over all provider members
         for (propertyName in provider) {
-            if (provider.hasOwnProperty(propertyName)) {
+            if (Object.prototype.hasOwnProperty.call(provider, propertyName)) {
                 // checks whether the member is a notifiable provider attribute
                 // and adds it if this is the case
                 if (this.providerAttributeIsNotifiable(provider[propertyName])) {
@@ -1266,7 +1266,7 @@ class PublicationManager {
 
         // cycles over all provider members
         for (const propertyName in provider) {
-            if (provider.hasOwnProperty(propertyName)) {
+            if (Object.prototype.hasOwnProperty.call(provider, propertyName)) {
                 // checks whether the member is a notifiable provider attribute
                 // and adds it if this is the case
                 if (this.providerAttributeIsNotifiable(provider[propertyName])) {
@@ -1284,7 +1284,7 @@ class PublicationManager {
         const pendingSubscriptions = this.queuedProviderParticipantIdToSubscriptionRequestsMapping[participantId];
         if (pendingSubscriptions !== undefined) {
             for (pendingSubscription in pendingSubscriptions) {
-                if (pendingSubscriptions.hasOwnProperty(pendingSubscription)) {
+                if (Object.prototype.hasOwnProperty.call(pendingSubscriptions, pendingSubscription)) {
                     subscriptionObject = pendingSubscriptions[pendingSubscription];
                     delete pendingSubscriptions[pendingSubscription];
 
@@ -1349,7 +1349,7 @@ class PublicationManager {
     public shutdown(): void {
         let subscriptionId;
         for (subscriptionId in this.subscriptionInfos) {
-            if (this.subscriptionInfos.hasOwnProperty(subscriptionId)) {
+            if (Object.prototype.hasOwnProperty.call(this.subscriptionInfos, subscriptionId)) {
                 const subscriptionInfo = this.subscriptionInfos[subscriptionId];
                 if (subscriptionInfo.subscriptionInterval !== undefined) {
                     LongTimer.clearTimeout(subscriptionInfo.subscriptionInterval);

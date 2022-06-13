@@ -46,7 +46,17 @@ let attributeBaseStruct: any;
 let attributeExtendedExtendedBaseStruct: any;
 let attributeMapStringString: any;
 let attributeFireAndForget = 0;
-const typeDefValues = {
+const typeDefValues : {
+    attributeInt64: any,
+    attributeString: any,
+    attributeStruct: any,
+    attributeMap: any,
+    attributeEnum: any,
+    attributeByteBufferTypeDef: any,
+    attributeArrayTypeDef: any,
+    attributeByteBuffer: any,
+    attributeArray: any
+} = {
     attributeInt64: 1,
     attributeString: "TypeDefString",
     attributeStruct: IltUtil.create("BaseStruct"),

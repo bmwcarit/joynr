@@ -20,7 +20,7 @@ import * as UtilInternal from "../../util/UtilInternal";
 import JoynrMessage = require("../JoynrMessage");
 
 class ParticipantQueue {
-    public currentQueueSize: number = 0;
+    public currentQueueSize = 0;
     private queue: JoynrMessage[];
     /**
      * This is a helper class for MessageQueue. It manages the messages waiting for a single participant.

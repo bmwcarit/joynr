@@ -73,7 +73,7 @@ class RequestReplyManager {
     }>;
 
     private cleanupInterval: NodeJS.Timer;
-    private started: boolean = true;
+    private started = true;
     private replyCallers: Map<string, ReplyCaller>;
     private providers: Record<string, any> = {};
     /**

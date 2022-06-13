@@ -19,6 +19,8 @@
 /* istanbul ignore file */
 
 abstract class JoynrObject {
-    protected constructor() {}
+    protected constructor() {
+        /// do nothing
+    }
 }
 export = JoynrObject;

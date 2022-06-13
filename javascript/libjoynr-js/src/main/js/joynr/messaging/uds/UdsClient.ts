@@ -52,8 +52,8 @@ class UdsClient {
     private readonly promisifyWriteToSocket: (marshalledMessage: Buffer) => Promise<void>;
 
     private reconnectTimer: any;
-    private connected: boolean = false;
-    private closed: boolean = false;
+    private connected = false;
+    private closed = false;
     private queuedMessages: any = [];
     private readonly onMessageCallback: Function;
     private readonly onFatalRuntimeError: (error: JoynrRuntimeException) => void;
@@ -91,7 +91,7 @@ class UdsClient {
         );
 
         if (this.serializedUdsClientAddress === undefined || this.serializedUdsClientAddress === null) {
-            const errorMsg: string = `Error in serializing uds client address ${this.serializedUdsClientAddress}`;
+            const errorMsg = `Error in serializing uds client address ${this.serializedUdsClientAddress}`;
             log.debug(errorMsg);
             throw new Error(errorMsg);
         }
@@ -144,7 +144,7 @@ class UdsClient {
         this.sendQueuedMessages();
     };
 
-    private readonly onClose = (event: { hadError: boolean }) => {
+    private readonly onClose = (event: { hadError: boolean }): void => {
         if (this.closed) {
             log.info(`UdsClient.onClose called.`);
             return;
@@ -188,7 +188,7 @@ class UdsClient {
         this.shutdown();
     };
 
-    private readonly onEnd = () => {
+    private readonly onEnd = (): void => {
         if (this.closed) {
             log.info(`UdsClient.onEnd called.`);
         } else {
@@ -200,7 +200,7 @@ class UdsClient {
         }
     };
 
-    private readonly onError = (event: { err: Error }) => {
+    private readonly onError = (event: { err: Error }): void => {
         if (event.err) {
             const msg = `UdsClient.onError called: ${event.err}`;
             log.fatal(msg);

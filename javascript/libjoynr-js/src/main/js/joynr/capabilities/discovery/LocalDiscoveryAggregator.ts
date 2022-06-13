@@ -30,8 +30,10 @@ class LocalDiscoveryAggregator implements DiscoveryStub {
     // Epsilon is added to be sure that the proxy call `lookup` gets results, whatever it is rather than timing out with
     // JoynrTimeoutException. By adding this epsilon, we avoid race condition between local expiration timer and the
     // delivery of the reply.
-    private epsilonMs: number = 10000;
-    public constructor() {}
+    private epsilonMs = 10000;
+    public constructor() {
+        // do nothing
+    }
 
     public setDiscoveryProxy(discoveryProxy: DiscoveryProxy): void {
         this.discoveryProxy = discoveryProxy;

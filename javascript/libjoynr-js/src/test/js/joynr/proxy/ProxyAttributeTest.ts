@@ -304,16 +304,24 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
 
         await isOn.subscribe({
             subscriptionQos,
-            onReceive() {},
-            onError() {}
+            onReceive() {
+                // do nothing
+            },
+            onError() {
+                // do nothing
+            }
         });
     });
 
     it("subscribe provides a subscriptionId", done => {
         isOn.subscribe({
             subscriptionQos,
-            onReceive() {},
-            onError() {}
+            onReceive() {
+                // Do nothing
+            },
+            onError() {
+                // Do nothing
+            }
         })
             .then(id => {
                 expect(id).toEqual(subscriptionId);
@@ -349,8 +357,12 @@ describe("libjoynr-js.joynr.proxy.ProxyAttribute", () => {
 
         const subscriptionId = await isOn.subscribe({
             subscriptionQos,
-            onReceive() {},
-            onError() {}
+            onReceive() {
+                // do nothing
+            },
+            onError() {
+                // do nothing
+            }
         });
         await isOn.unsubscribe({
             subscriptionId

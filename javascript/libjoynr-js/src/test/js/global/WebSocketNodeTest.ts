@@ -23,7 +23,9 @@ jest.doMock("../../../main/js/node_modules/ws", () => websocketConstructor);
 
 import WebSocketNode = require("../../../main/js/global/WebSocketNode");
 
-function checkServerIdentity() {}
+function checkServerIdentity() {
+    // do nothing
+}
 
 describe("websocket node", () => {
     let websocketNode: WebSocketNode;
