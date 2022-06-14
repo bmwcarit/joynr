@@ -412,8 +412,8 @@
 		<android.platform.level>28</android.platform.level>
 		<skipTests>true</skipTests>
 		<franca.version>0.13.1</franca.version>
-		<xtend.version>2.26.0</xtend.version>
-		<xtext.version>2.26.0</xtext.version>
+		<xtend.version>2.27.0</xtend.version>
+		<xtext.version>2.27.0</xtext.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<log4j.version>2.17.2</log4j.version>
 		<smrf.version>0.3.3</smrf.version>
