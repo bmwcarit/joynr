@@ -30,7 +30,7 @@ public class AccessControlClientModule extends AbstractModule {
     protected void configure() {
         bind(AccessController.class).to(AccessControllerImpl.class).in(Singleton.class);
         bind(LocalDomainAccessController.class).to(LocalDomainAccessControllerImpl.class).in(Singleton.class);
-        bind(DomainAccessControlStore.class).to(DomainAccessControlStoreEhCache.class);
+        bind(DomainAccessControlStore.class).to(DomainAccessControlStoreEhCache.class).in(Singleton.class);
         bind(DomainAccessControlProvisioning.class).to(StaticDomainAccessControlProvisioning.class);
     }
 

@@ -47,6 +47,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import io.joynr.accesscontrol.AccessController;
 import io.joynr.capabilities.GcdTask.CallbackCreator;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -62,10 +63,12 @@ import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
+import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.system.DiscoveryAbstractProvider;
 import joynr.system.RoutingTypes.Address;
@@ -127,6 +130,9 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
     private final long defaultExpiryTimeMs;
     private final long defaultTtlAddAndRemove;
 
+    private AccessController accessController;
+    private boolean enableAccessControl;
+
     static class QueuedDiscoveryEntry {
         private DiscoveryEntry discoveryEntry;
         private String[] gbids;
@@ -173,7 +179,9 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                           @Named(JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS) ScheduledExecutorService freshnessUpdateScheduler,
                                           ShutdownNotifier shutdownNotifier,
                                           @Named(MessagingPropertyKeys.GBID_ARRAY) String[] knownGbids,
-                                          @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs) {
+                                          @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs,
+                                          AccessController accessController,
+                                          @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl) {
         // set up current date as the start time of the cluster controller
         this.ccStartUpDateInMs = System.currentTimeMillis();
         globalProviderParticipantIdToGbidListMap = new HashMap<>();
@@ -211,6 +219,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         setUpPeriodicFreshnessUpdate(freshnessUpdateIntervalMs);
         reAddAllGlobalDiscoveryEntriesPeriodically();
         shutdownNotifier.registerForShutdown(this);
+        this.accessController = accessController;
+        this.enableAccessControl = enableAccessControl;
     }
 
     private String[] getGbids(Address address) {
@@ -387,6 +397,18 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         return null;
     }
 
+    private boolean hasProviderPermission(DiscoveryEntry discoveryEntry) {
+        if (enableAccessControl) {
+            logger.info("LocalCapabilitiesDirectoryImpl hasProviderPermission PROVIDER REGISTERING: " + discoveryEntry);
+            return accessController.hasProviderPermission("creatorUserId", // TODO: Change this to actual useful creatorUserId
+                                                          TrustLevel.HIGH,
+                                                          discoveryEntry.getDomain(),
+                                                          discoveryEntry.getInterfaceName(),
+                                                          discoveryEntry.getParticipantId());
+        }
+        return true;
+    }
+
     private void addLocal(final DiscoveryEntry discoveryEntry, final String[] gbids) {
         // check for duplicate participantId
         Optional<GlobalDiscoveryEntry> cachedEntry = globalDiscoveryEntryCache.lookup(discoveryEntry.getParticipantId(),
@@ -416,6 +438,20 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         }
 
         discoveryEntry.setLastSeenDateMs(System.currentTimeMillis());
+
+        if (!hasProviderPermission(discoveryEntry)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Provider does not have permissions to register interface ")
+              .append(discoveryEntry.getInterfaceName())
+              .append(" on domain ")
+              .append(discoveryEntry.getDomain())
+              .append(" with participantId ")
+              .append(discoveryEntry.getParticipantId());
+
+            logger.warn(sb.toString());
+            deferred.reject(new ProviderRuntimeException(sb.toString()));
+            return new Promise<>(deferred);
+        }
 
         synchronized (globalDiscoveryEntryCache) {
             if (localDiscoveryEntryStore.hasDiscoveryEntry(discoveryEntry)) {

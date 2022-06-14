@@ -93,8 +93,8 @@ public interface DomainAccessControlStore {
      * Returns a list of master ACEs that apply to the domain and interface combination.
      * Used when a provider is registered to prefetch applying entries.
      *
-     * @param domain The domain you search ACE's for.
-     * @param interfaceName The interface you search ACE's for.
+     * @param domain The domain you search ACEs for.
+     * @param interfaceName The interface you search ACEs for.
      * @return List of master ACEs associated to given domain and interface.
      */
     List<MasterAccessControlEntry> getMasterAccessControlEntries(String domain, String interfaceName);
@@ -102,9 +102,9 @@ public interface DomainAccessControlStore {
     /**
      * Returns a list of master ACEs that apply to the userId, domain and interface combination.
      *
-     * @param uid The userId you search ACE's for.
-     * @param domain The domain you search ACE's for.
-     * @param interfaceName The interface you search ACE's for.
+     * @param uid The userId you search ACEs for.
+     * @param domain The domain you search ACEs for.
+     * @param interfaceName The interface you search ACEs for.
      * @return List of master ACEs associated to given domain and interface.
      */
     List<MasterAccessControlEntry> getMasterAccessControlEntries(String uid, String domain, String interfaceName);
@@ -169,8 +169,8 @@ public interface DomainAccessControlStore {
      * Returns a list of master ACEs from Mediator ACL that apply to the domain and interface combination.
      * Used when a provider is registered to prefetch applying entries.
      *
-     * @param domain The domain you search ACE's for.
-     * @param interfaceName The interface you search ACE's for.
+     * @param domain The domain you search ACEs for.
+     * @param interfaceName The interface you search ACEs for.
      * @return List of master ACEs associated to given domain and interface.
      */
     List<MasterAccessControlEntry> getMediatorAccessControlEntries(String domain, String interfaceName);
@@ -178,9 +178,9 @@ public interface DomainAccessControlStore {
     /**
      * Returns a list of master ACEs from Mediator ACL that apply to the userId, domain and interface combination.
      *
-     * @param uid The userId you search ACE's for.
-     * @param domain The domain you search ACE's for.
-     * @param interfaceName The interface you search ACE's for.
+     * @param uid The userId you search ACEs for.
+     * @param domain The domain you search ACEs for.
+     * @param interfaceName The interface you search ACEs for.
      * @return List of master ACEs from Mediator ACL associated to given userId, domain and interface.
      */
     List<MasterAccessControlEntry> getMediatorAccessControlEntries(String uid, String domain, String interfaceName);
@@ -245,8 +245,8 @@ public interface DomainAccessControlStore {
      * Returns a list of owner ACEs that apply to the domain and interface combination.
      * Used when a provider is registered to prefetch applying entries.
      *
-     * @param domain The domain you search ACE's for.
-     * @param interfaceName The interface you search ACE's for.
+     * @param domain The domain you search ACEs for.
+     * @param interfaceName The interface you search ACEs for.
      * @return List of owner ACEs associated to given domain and interface.
      */
     List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String domain, String interfaceName);
@@ -254,9 +254,9 @@ public interface DomainAccessControlStore {
     /**
      * Returns a list of owner ACEs that apply to the userId, domain and interface combination.
      *
-     * @param uid The userId you search ACE's for.
-     * @param domain The domain you search ACE's for.
-     * @param interfaceName The interface you search ACE's for.
+     * @param uid The userId you search ACEs for.
+     * @param domain The domain you search ACEs for.
+     * @param interfaceName The interface you search ACEs for.
      * @return List of owner ACEs associated to given userId, domain and interface.
      */
     List<OwnerAccessControlEntry> getOwnerAccessControlEntries(String uid, String domain, String interfaceName);
