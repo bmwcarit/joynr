@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>standalone-pt</artifactId>
-		<version>1.21.0</version>
+		<version>1.21.1-SNAPSHOT</version>
 	</parent>
 
 	<build>
