@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import sys
@@ -17,21 +17,21 @@ def func(abspath):
         errors = file.findall('error')
         for error in errors:
             if (bugCnt == 0):
-                print "*" * 80
-                print "Checkstyle report"
+                print("*" * 80)
+                print("Checkstyle report")
             if (bugSeen == False):
-                print "*" * 80
-                print "name      =", name
+                print("*" * 80)
+                print("name      =", name)
                 bugSeen = True
-            print "*" * 80
-            print "line       =", error.get('line')
-            print "column     =", error.get('column')
-            print "severity   =", error.get('severity')
-            print "message    =", error.get('message')
-            print "source     =", error.get('source')
+            print("*" * 80)
+            print("line       =", error.get('line'))
+            print("column     =", error.get('column'))
+            print("severity   =", error.get('severity'))
+            print("message    =", error.get('message'))
+            print("source     =", error.get('source'))
             bugCnt += 1
         if (bugSeen):
-            print "*" * 80
+            print("*" * 80)
 
 for dirpath, dirnames, filenames in os.walk("./"):
     for f in filenames:
