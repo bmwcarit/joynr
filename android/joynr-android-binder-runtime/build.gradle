@@ -121,7 +121,7 @@ android {
 
 dependencies {
 
-    implementation('com.google.inject:guice:5.1.0:no_aop')
+    implementation('com.google.inject:guice:5.1.0')
 
     implementation('com.google.inject.extensions:guice-assistedinject:5.1.0') {
         exclude(module: 'guice')
