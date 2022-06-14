@@ -305,7 +305,6 @@
 			<artifactId>guava</artifactId>
 			<version>30.1-jre</version>
 		</dependency>
->>>>>>> [Java] Update Google Guice to 5.1.0
 	</dependencies>
 
 	<build>
