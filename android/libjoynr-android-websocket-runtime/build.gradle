@@ -83,7 +83,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    api 'com.google.inject:guice:3.0:no_aop'
+    api 'com.google.inject:guice:5.1.0:no_aop'
     api(group: 'io.joynr.java.core', name: 'libjoynr-websocket-runtime', version: "$version") {
         exclude(module: 'guice')
         exclude(group: 'org.slf4j')
