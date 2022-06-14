@@ -2,6 +2,46 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.21.0
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Docker]** Updated joynr Docker image `joynr-runtime-environment-base` to use the latest fedora
+  version 36 as base image.
+* **[Docker]** Use secure connection to the npm registry.
+* **[Docker]** Fixed Java configuration in `joynr-java-8` Docker image.
+* **[Java]** AccessController will now also check provider registration permissions, if access
+  control is enabled.
+* **[TS]** Updated node engine version from `8.0.0` to `8.16.2`.
+* **[TS]** Updated devDependencies to latest compatible versions:
+```
+  * typescript:                       3.5.3 -> 3.8.3
+  * @types/jest:                    24.0.11 -> 25.1.5
+  * @types/node:                      8.9.4 -> 8.10.66
+  * jest:                            24.8.0 -> 25.5.4
+  * jest-circus:                     24.8.0 -> 25.5.4
+  * jest-diff:                       24.8.0 -> 25.5.0
+  * ts-jest:                         24.0.1 -> 25.5.1
+  * @typescript-eslint/eslint-plugin: 1.7.0 -> 2.14.0
+  * @typescript-eslint/parser:        1.7.0 -> 2.14.0
+  * eslint:                          5.16.0 -> 6.8.0
+  * typedoc:                         0.14.2 -> 0.17.8
+  * ts-node:                          8.3.0 -> 8.10.2
+  * mkdirp                            0.5.1 -> 0.5.6
+```
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed cleanup of routing entries after failed provider registration.
+* **[C++]** Fixed TSAN issues in `TaskSequencer`.
+
 # joynr 1.20.0
 
 ## API relevant changes
