@@ -1035,11 +1035,23 @@
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.contenttype</artifactId>
 							<version>3.7.1000</version>
+							<exclusions>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.equinox.preferences</artifactId>
+								</exclusion>
+							</exclusions>
 						</dependency>
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.expressions</artifactId>
 							<version>3.7.100</version>
+							<exclusions>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.core.runtime</artifactId>
+								</exclusion>
+							</exclusions>
 						</dependency>
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
@@ -1050,6 +1062,16 @@
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.resources</artifactId>
 							<version>3.14.0</version>
+							<exclusions>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.core.expressions</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.core.runtime</artifactId>
+								</exclusion>
+							</exclusions>
 						</dependency>
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
@@ -1059,6 +1081,10 @@
 								<exclusion>
 									<groupId>org.eclipse.platform</groupId>
 									<artifactId>org.eclipse.equinox.common</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.equinox.preferences</artifactId>
 								</exclusion>
 							</exclusions>
 						</dependency>
@@ -1091,6 +1117,14 @@
 									<groupId>org.eclipse.platform</groupId>
 									<artifactId>org.eclipse.core.commands</artifactId>
 								</exclusion>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.equinox.preferences</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.core.runtime</artifactId>
+								</exclusion>
 							</exclusions>
 						</dependency>
 						<dependency>
@@ -1105,6 +1139,29 @@
 								<exclusion>
 									<groupId>org.eclipse.platform</groupId>
 									<artifactId>org.eclipse.text</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.core.runtime</artifactId>
+								</exclusion>
+							</exclusions>
+						</dependency>
+						<dependency>
+							<groupId>org.eclipse.xtend</groupId>
+							<artifactId>org.eclipse.xtend.core</artifactId>
+							<version>${xtend.version}</version>
+							<exclusions>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.equinox.common</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>org.eclipse.platform</groupId>
+									<artifactId>org.eclipse.core.runtime</artifactId>
+								</exclusion>
+								<exclusion>
+									<groupId>org.eclipse.jdt</groupId>
+									<artifactId>org.eclipse.jdt.core</artifactId>
 								</exclusion>
 							</exclusions>
 						</dependency>
