@@ -216,9 +216,6 @@ public:
 
 private:
     struct AddressEqual
-            : std::binary_function<std::shared_ptr<const joynr::system::RoutingTypes::Address>,
-                                   std::shared_ptr<const joynr::system::RoutingTypes::Address>,
-                                   bool>
     {
     public:
         bool operator()(std::shared_ptr<const joynr::system::RoutingTypes::Address> lhs,
@@ -226,8 +223,6 @@ private:
     };
 
     struct AddressHash
-            : std::unary_function<std::shared_ptr<const joynr::system::RoutingTypes::Address>,
-                                  std::size_t>
     {
     public:
         size_t operator()(
