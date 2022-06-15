@@ -98,7 +98,7 @@ fi
     then
         log "building joynr npm generator"
         cd ../tools/generator/joynr-generator-npm
-        mvn clean install
+        mvn clean install -P no-java-formatter
         SUCCESS=$?
     fi
     exit $SUCCESS
