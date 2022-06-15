@@ -22,6 +22,7 @@ mvn clean install --projects io.joynr.tools.generator:joynr-generator-standalone
 -DskipTests=false \
 -Dmaven.test.failure.ignore=true \
 -Denforcer.skip=true -Dmaven.compile.fork=true \
--Dmaven.junit.fork=true
+-Dmaven.junit.fork=true \
+-Pno-java-formatter
 
 exit 0
