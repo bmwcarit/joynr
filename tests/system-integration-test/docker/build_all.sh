@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # change to the directory where this script resides
 # in order to make sure relative path specs work
 BASEDIR=$(dirname "$0")
