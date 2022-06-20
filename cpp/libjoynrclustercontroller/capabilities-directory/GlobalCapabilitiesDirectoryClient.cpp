@@ -471,6 +471,16 @@ void GlobalCapabilitiesDirectoryClient::AddOperation::execute()
                 onSuccess();
                 return;
             }
+            if (static_cast<std::uint64_t>(remainingAddTtl) > _qos.getTtl()) {
+                const exceptions::JoynrRuntimeException globalRegistrationFailed(
+                        "Failed to process global registration in time, operation aborted due to "
+                        "unsupported time jump");
+                if (_onRuntimeError) {
+                    _onRuntimeError(globalRegistrationFailed);
+                }
+                onSuccess();
+                return;
+            }
             _qos.setTtl(static_cast<std::uint64_t>(remainingAddTtl));
         }
 
