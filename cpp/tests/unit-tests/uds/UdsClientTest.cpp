@@ -133,7 +133,7 @@ TEST_F(UdsClientTest, sendFrom2Clients)
     EXPECT_EQ(messagesReceivedFromClient1[4], messageEmptyClient1);
 
     const auto& messagesReceivedFromClient2 = _connectedClients[1]._receivedMessages;
-    EXPECT_TRUE(messagesReceivedFromClient2.size() < numberOfMessagesWhileDisconnectingClient2 &&
+    EXPECT_TRUE(messagesReceivedFromClient2.size() <= numberOfMessagesWhileDisconnectingClient2 + 1 &&
                 messagesReceivedFromClient2.size() >= 1)
             << "Unexpected number of messages received for client 2 (which had been closed while "
                "sending): " << messagesReceivedFromClient2.size();
