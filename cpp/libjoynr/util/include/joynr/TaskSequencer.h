@@ -210,14 +210,16 @@ private:
                             TaskWithExpiryDate nextTask = std::move(_tasks.front());
                             if (nextTask._expiryDate.toMilliseconds() <=
                                 TimePoint::now().toMilliseconds()) {
-                                nextTask._timeout();
                                 _tasks.erase(_tasks.begin());
+                                lock.unlock();
+                                nextTask._timeout();
                                 continue;
                             } else {
                                 _tasks.erase(_tasks.begin());
                                 if (!nextTask._task) {
                                     throw std::runtime_error("Dropping null-task.");
                                 }
+                                lock.unlock();
                                 WriteLocker futureWriteLock2(_futureReadWriteLock);
                                 _future = nextTask._task();
                                 // futureWriteLock2 is auto unlocked when leaving section
