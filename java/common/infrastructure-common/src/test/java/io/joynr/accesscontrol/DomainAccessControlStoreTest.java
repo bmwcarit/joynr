@@ -49,7 +49,7 @@ public class DomainAccessControlStoreTest {
     private static final String OPERATIONX = "operationX";
 
     private static CacheManager cacheManager;
-    private static DomainAccessControlStore store;
+    private DomainAccessControlStore store;
     private MasterAccessControlEntry expectedMasterAccessControlEntry;
     private OwnerAccessControlEntry expectedOwnerAccessControlEntry;
     private MasterRegistrationControlEntry expectedMasterRegistrationControlEntry;
@@ -59,11 +59,11 @@ public class DomainAccessControlStoreTest {
     @BeforeClass
     public static void setupTestSuite() {
         cacheManager = CacheManager.create();
-        store = new DomainAccessControlStoreEhCache(cacheManager, new DefaultDomainAccessControlProvisioning());
     }
 
     @Before
     public void setup() {
+        store = new DomainAccessControlStoreCqEngine(new DefaultDomainAccessControlProvisioning());
         // instantiate some template objects
         expectedUserDomainRoleEntry = new DomainRoleEntry(UID1, new String[0], Role.OWNER);
         expectedMasterAccessControlEntry = new MasterAccessControlEntry(UID1,
