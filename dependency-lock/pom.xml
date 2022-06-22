@@ -152,12 +152,6 @@
 				<version>1.4</version>
 			</dependency>
 			<dependency>
-				<groupId>commons-codec</groupId>
-				<artifactId>commons-codec</artifactId>
-				<type>jar</type>
-				<version>1.6</version>
-			</dependency>
-			<dependency>
 				<groupId>fish.payara.arquillian</groupId>
 				<artifactId>arquillian-payara-server-embedded</artifactId>
 				<type>jar</type>
@@ -183,12 +177,6 @@
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
-				<artifactId>netty-codec-http</artifactId>
-				<type>jar</type>
-				<version>4.1.48.Final</version>
-			</dependency>
-			<dependency>
-				<groupId>io.netty</groupId>
 				<artifactId>netty-common</artifactId>
 				<type>jar</type>
 				<version>4.1.48.Final</version>
@@ -208,12 +196,6 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport</artifactId>
-				<type>jar</type>
-				<version>4.1.48.Final</version>
-			</dependency>
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty-transport-native-unix-common</artifactId>
 				<type>jar</type>
 				<version>4.1.48.Final</version>
 			</dependency>
@@ -258,12 +240,6 @@
 				<artifactId>javax.persistence-api</artifactId>
 				<type>jar</type>
 				<version>2.2</version>
-			</dependency>
-			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>javax.servlet-api</artifactId>
-				<type>jar</type>
-				<version>3.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.xml.bind</groupId>
