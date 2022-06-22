@@ -100,8 +100,7 @@ public class LocalDomainAccessControllerTest {
     @Before
     public void setup() {
         cacheManager = CacheManager.create();
-        domainAccessControlStore = new DomainAccessControlStoreEhCache(cacheManager,
-                                                                       new DefaultDomainAccessControlProvisioning());
+        domainAccessControlStore = new DomainAccessControlStoreCqEngine(new DefaultDomainAccessControlProvisioning());
 
         lenient().when(proxyInvocationHandlerFactoryMock.create(any(Set.class),
                                                                 any(String.class),

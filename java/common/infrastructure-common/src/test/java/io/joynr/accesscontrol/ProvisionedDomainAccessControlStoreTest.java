@@ -85,7 +85,7 @@ public class ProvisionedDomainAccessControlStoreTest {
             @Override
             protected void configure() {
                 bind(DomainAccessControlProvisioning.class).to(StaticDomainAccessControlProvisioning.class);
-                bind(DomainAccessControlStore.class).to(DomainAccessControlStoreEhCache.class);
+                bind(DomainAccessControlStore.class).to(DomainAccessControlStoreCqEngine.class);
             }
 
             @Provides
