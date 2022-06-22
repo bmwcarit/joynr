@@ -168,7 +168,7 @@ if [ $NO_NODE_BUILD ]; then
 	echo "Skipping Node test build ..."
 else
 	# only build joynr javascript, test-base and sit-node-app
-	execute_in_docker '"echo \"Building sit node app\" && . /etc/profile && cd /data/src && mvn clean install -P javascript -am --projects io.joynr.javascript:libjoynr-js,io.joynr.tests:test-base,io.joynr.tests.system-integration-test:sit-node-app && cd tests/system-integration-test/sit-node-app && npm -verbose install"' $JS_BUILD_DOCKER_IMAGE
+	execute_in_docker '"echo \"Building sit node app\" && . /etc/profile && cd /data/src && mvn clean install -P javascript,no-java-formatter -am --projects io.joynr.javascript:libjoynr-js,io.joynr.tests:test-base,io.joynr.tests.system-integration-test:sit-node-app && cd tests/system-integration-test/sit-node-app && npm -verbose install"' $JS_BUILD_DOCKER_IMAGE
 fi
 
 if [ -d ${DOCKER_BUILDDIR} ]; then
