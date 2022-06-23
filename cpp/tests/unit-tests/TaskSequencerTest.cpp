@@ -21,11 +21,13 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <thread>
 #include <vector>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "joynr/Semaphore.h"
 #include "joynr/TaskSequencer.h"
 #include "joynr/TimePoint.h"
 
@@ -408,4 +410,39 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksBeforeOtherTaskIsSt
     EXPECT_EQ(1, _actualTimeoutDateMs.size());
     EXPECT_TRUE(_actualTimeoutDateMs[0] - expectedTimeoutDateMs.toMilliseconds() < 500);
     EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
+}
+
+TEST_F(TaskSequencerTest, testStartedTaskDoesNotBlockTaskQueue) {
+    // This test verifies that already started tasks do not prevent new tasks from being inserted into the TaskQueue while running
+    auto test = std::make_shared<TestTaskSequencer>();
+    // First semaphore to signal tot the test that the running task reached the blocking point
+    auto semaphore1 = std::make_shared<joynr::Semaphore>(0);
+    // Second semaphore to actually block the running task
+    auto semaphore2 = std::make_shared<joynr::Semaphore>(0);
+    // Third semaphore to release the main test case thread
+    auto semaphore3 = std::make_shared<joynr::Semaphore>(0);
+
+    // Add task to tasksequencer that unblocks semaphore 1 awaits semaphore 2
+    test->add({[this, semaphore1, semaphore2, semaphore3]() {
+            semaphore1->notify();
+            semaphore2->wait();
+            semaphore3->notify();
+            return createTestFuture(43);
+    }, TimePoint::fromRelativeMs(5000), [](){}});
+
+    // Wait for semaphore 1 to be unblocked
+    ASSERT_TRUE(semaphore1->waitFor(std::chrono::milliseconds(5000)));
+    // Start a thread that tries to add any new task and then unblocks blocking semaphore 2
+    std::thread taskAddingThread([this, test, semaphore2]() {
+        test->add({[this]() {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            return createTestFuture(44);
+        }, TimePoint::fromRelativeMs(5000), [](){}});
+        semaphore2->notify();
+    });
+    // Expect that blocking semaphore 3 is released after a timeout
+    EXPECT_TRUE(semaphore3->waitFor(std::chrono::milliseconds(5000)));
+    // Safety mechanism to release the deadlock if it occurs (the test already failed through the expect)
+    semaphore2->notify();
+    taskAddingThread.join();
 }
