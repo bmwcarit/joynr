@@ -350,12 +350,6 @@
 				<version>3.5.0</version>
 			</dependency>
 			<dependency>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>animal-sniffer-annotations</artifactId>
-				<type>jar</type>
-				<version>1.17</version>
-			</dependency>
-			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-alpn-client</artifactId>
 				<type>jar</type>
