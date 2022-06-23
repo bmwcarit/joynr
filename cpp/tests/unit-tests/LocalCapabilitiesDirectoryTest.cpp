@@ -4533,6 +4533,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(250)));
     EXPECT_FALSE(gcdSemaphore.waitFor(std::chrono::milliseconds(150)));
     EXPECT_TRUE(gcdSemaphore.waitFor(std::chrono::milliseconds(100)));
+    Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, touchNotCalled_noParticipantIdsToTouch_entryHasLocalScope)
@@ -4604,10 +4605,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_multipleParticipantIdsFor
     std::vector<std::string> capturedParticipantIds;
     std::string capturedGbid;
 
-    Semaphore touchSemaphore(0);
+    auto touchSemaphore = std::make_shared<joynr::Semaphore>(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, _, _, _))
-            .WillOnce(DoAll(SaveArg<1>(&capturedParticipantIds), SaveArg<2>(&capturedGbid), ReleaseSemaphore(&touchSemaphore)));
-    EXPECT_TRUE(touchSemaphore.waitFor(std::chrono::milliseconds(250)));
+            .WillOnce(DoAll(SaveArg<1>(&capturedParticipantIds), SaveArg<2>(&capturedGbid), ReleaseSemaphore(touchSemaphore)));
+    EXPECT_TRUE(touchSemaphore->waitFor(std::chrono::milliseconds(250)));
 
     // Compare captured results with the given ones
     bool foundParticipantId1 = false;
@@ -4626,6 +4627,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_multipleParticipantIdsFor
     EXPECT_EQ(capturedGbid, gbid);
     EXPECT_TRUE(foundParticipantId1);
     EXPECT_TRUE(foundParticipantId2);
+    Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_singleParticipantIdForMultipleGbids)
@@ -4664,10 +4666,11 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_singleParticipantIdForMul
     Semaphore touchSemaphore(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, touch(Eq(_clusterControllerId), _, Eq(gbid1), _, _))
             .WillOnce(DoAll(SaveArg<1>(&capturedParticipantIds), ReleaseSemaphore(&touchSemaphore)));
-    EXPECT_TRUE(touchSemaphore.waitFor(std::chrono::milliseconds(250)));
+    EXPECT_TRUE(touchSemaphore.waitFor(std::chrono::milliseconds(399)));
 
     EXPECT_EQ(capturedParticipantIds.size(), 1);
     EXPECT_EQ(capturedParticipantIds[0], participantId1);
+    Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, touchCalledTwice_twoParticipantIdsForDifferentGbids)
