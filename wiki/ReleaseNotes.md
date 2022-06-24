@@ -2,6 +2,38 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.21.1
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** Dependency updates (including transitive dependencies):
+  * guice 3.0 -> 5.1.0
+  * xtend 2.16.0 -> 2.27.0
+  * xtext 2.16.0 -> 2.27.0
+  NOTE for Android:  
+  There is no longer a special `no_aop` version of Guice 5.1.0 for use with Android, see release
+  notes of Guice. The special flag `-Dguice_bytecode_gen_option=DISABLED` might be required for
+  Android.
+* **[C++]** Fixed deprecation warnings with GCC 12.0.1.
+* **[C++]** Protection for add operation against unsupported time jumps into the past:
+  TaskSequencer will abort the add operation if it detects a time jump that would block other
+  operations for a long time.
+* **[Maven]** Fixed build problems caused by an update of a transitive dependency of
+  `xtend-maven-plugin` and `formatter-maven-plugin`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed a deadlock that could occur in the cluster controller if a new remove task was
+  added while the TaskSequencer was processing another remove task. This could be caused by multiple
+  `unregisterProvider` calls from clients.
+
 # joynr 1.21.0
 
 ## API relevant changes
