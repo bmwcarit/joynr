@@ -281,7 +281,7 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<type>jar</type>
-				<version>4.13.1</version>
+				<version>4.13.2</version>
 			</dependency>
 			<dependency>
 				<groupId>net.bytebuddy</groupId>
