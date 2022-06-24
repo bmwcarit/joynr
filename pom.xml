@@ -404,7 +404,7 @@
 		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.13.3</jackson.version>
 		<netty.version>4.1.48.Final</netty.version>
-		<guice.version>3.0</guice.version>
+		<guice.version>5.1.0</guice.version>
 		<jetty.version>11.0.7</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
 		<hibernate.version>5.5.7.Final</hibernate.version>
@@ -412,8 +412,8 @@
 		<android.platform.level>28</android.platform.level>
 		<skipTests>true</skipTests>
 		<franca.version>0.13.1</franca.version>
-		<xtend.version>2.16.0</xtend.version>
-		<xtext.version>2.16.0</xtext.version>
+		<xtend.version>2.27.0</xtend.version>
+		<xtext.version>2.27.0</xtext.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<log4j.version>2.17.2</log4j.version>
 		<smrf.version>0.3.3</smrf.version>
@@ -531,11 +531,6 @@
 				<artifactId>guice</artifactId>
 				<version>${guice.version}</version>
 				<classifier>no_aop</classifier>
-			</dependency>
-			<dependency>
-				<groupId>com.google.inject.extensions</groupId>
-				<artifactId>guice-multibindings</artifactId>
-				<version>${guice.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
@@ -969,7 +964,7 @@
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>
 					<artifactId>spotbugs-maven-plugin</artifactId>
-					<version>3.1.8</version>
+					<version>4.1.4</version>
 					<configuration>
 						<failOnError>false</failOnError>
 						<threshold>Normal</threshold>

@@ -92,10 +92,22 @@
 				<version>2.13.3</version>
 			</dependency>
 			<dependency>
+				<groupId>com.google.code.findbugs</groupId>
+				<artifactId>jsr305</artifactId>
+				<type>jar</type>
+				<version>3.0.2</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.dagger</groupId>
 				<artifactId>dagger</artifactId>
 				<type>jar</type>
 				<version>2.27</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.errorprone</groupId>
+				<artifactId>error_prone_annotations</artifactId>
+				<type>jar</type>
+				<version>2.3.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.flatbuffers</groupId>
@@ -104,28 +116,46 @@
 				<version>1.10.0</version>
 			</dependency>
 			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>failureaccess</artifactId>
+				<type>jar</type>
+				<version>1.0.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<type>jar</type>
+				<version>30.1-jre</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>listenablefuture</artifactId>
+				<type>jar</type>
+				<version>9999.0-empty-to-avoid-conflict-with-guava</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<type>jar</type>
-				<version>3.0</version>
+				<version>5.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
 				<artifactId>guice-assistedinject</artifactId>
 				<type>jar</type>
-				<version>3.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.inject.extensions</groupId>
-				<artifactId>guice-multibindings</artifactId>
-				<type>jar</type>
-				<version>3.0</version>
+				<version>5.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
 				<artifactId>guice-persist</artifactId>
 				<type>jar</type>
-				<version>3.0</version>
+				<version>5.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.j2objc</groupId>
+				<artifactId>j2objc-annotations</artifactId>
+				<type>jar</type>
+				<version>1.3</version>
 			</dependency>
 			<dependency>
 				<groupId>com.hivemq</groupId>
@@ -288,6 +318,12 @@
 				<artifactId>log4j-slf4j-impl</artifactId>
 				<type>jar</type>
 				<version>2.17.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.checkerframework</groupId>
+				<artifactId>checker-qual</artifactId>
+				<type>jar</type>
+				<version>3.5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>

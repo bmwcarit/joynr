@@ -121,12 +121,9 @@ android {
 
 dependencies {
 
-    implementation('com.google.inject:guice:3.0:no_aop')
-    implementation('com.google.inject.extensions:guice-multibindings:3.0') {
-        exclude(module: 'guice')
-    }
+    implementation('com.google.inject:guice:5.1.0')
 
-    implementation('com.google.inject.extensions:guice-assistedinject:3.0') {
+    implementation('com.google.inject.extensions:guice-assistedinject:5.1.0') {
         exclude(module: 'guice')
     }
 

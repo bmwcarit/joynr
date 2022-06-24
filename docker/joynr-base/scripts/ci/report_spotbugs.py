@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import sys
@@ -14,21 +14,21 @@ def func(abspath):
     if (file == None):
         return
     if (bugCnt == 0):
-        print "*" * 80
-        print "Spotbugs report"
+        print("*" * 80)
+        print("Spotbugs report")
     classname = file.get('classname')
-    print "*" * 80
-    print "class      =", classname
+    print("*" * 80)
+    print("class      =", classname)
     bugInstances = file.findall('BugInstance')
     for bugInstance in bugInstances:
-        print "*" * 80
-        print "category   =", bugInstance.get('category')
-        print "lineNumber =", bugInstance.get('lineNumber')
-        print "message    =", bugInstance.get('message')
-        print "priority   =", bugInstance.get('priority')
-        print "type       =", bugInstance.get('type')
+        print("*" * 80)
+        print("category   =", bugInstance.get('category'))
+        print("lineNumber =", bugInstance.get('lineNumber'))
+        print("message    =", bugInstance.get('message'))
+        print("priority   =", bugInstance.get('priority'))
+        print("type       =", bugInstance.get('type'))
         bugCnt += 1
-    print "*" * 80
+    print("*" * 80)
 
 for dirpath, dirnames, filenames in os.walk("./"):
     for f in filenames:
