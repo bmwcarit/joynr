@@ -92,6 +92,8 @@ services:
     depends_on:
       - "joynr-gcd-1"
       - "joynr-gcd-2"
+    volumes:
+      - "./sit_onboard_logs:/tmp/logs"
 
   sit-jee-stateless-consumer-node-1:
     image: "sit-jee-stateless-consumer:latest"
