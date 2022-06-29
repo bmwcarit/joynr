@@ -6,6 +6,8 @@ echo "killing potentially existing containers, e.g. due to a previous failing bu
 docker-compose stop
 docker-compose rm -f
 
+mkdir -p sit_onboard_logs
+
 echo "starting the orchestra"
 docker-compose up -d
 if [ $? -ne 0 ]

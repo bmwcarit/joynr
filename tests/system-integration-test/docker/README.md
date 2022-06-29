@@ -88,7 +88,7 @@ expected to fail since no providers have been registered for those domains.
 
 ### The JEE app containers
 
-There are 3 JEE app containers named 'sit-jee-app-1`, `sit-jee-app-2`
+There are 3 JEE app containers named `sit-jee-app-1`, `sit-jee-app-2`
 and `sit-jee-app-3` configured for `joynrdefaultgbid`, `othergbid` or
 both.
 
