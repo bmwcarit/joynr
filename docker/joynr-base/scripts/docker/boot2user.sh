@@ -25,6 +25,11 @@ EOF
 usermod -a -G kvm joynr
 chown joynr:joynr /dev/kvm
 
+# permit the user to create a uds socket and write to it in this path
+mkdir -p /var/run/joynr
+chown $USER:$USER /var/run/joynr
+chmod 777 /var/run/joynr
+
 cd /home/$USER
 
 if [ $# -eq 0 ]; then
