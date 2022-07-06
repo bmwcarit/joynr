@@ -197,37 +197,43 @@
 				<groupId>io.netty</groupId>
 				<artifactId>netty-buffer</artifactId>
 				<type>jar</type>
-				<version>4.1.77.Final</version>
+				<version>4.1.78.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-codec</artifactId>
 				<type>jar</type>
-				<version>4.1.77.Final</version>
+				<version>4.1.78.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-common</artifactId>
 				<type>jar</type>
-				<version>4.1.77.Final</version>
+				<version>4.1.78.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-handler</artifactId>
 				<type>jar</type>
-				<version>4.1.77.Final</version>
+				<version>4.1.78.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-resolver</artifactId>
 				<type>jar</type>
-				<version>4.1.77.Final</version>
+				<version>4.1.78.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport</artifactId>
 				<type>jar</type>
-				<version>4.1.77.Final</version>
+				<version>4.1.78.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-transport-native-unix-common</artifactId>
+				<type>jar</type>
+				<version>4.1.78.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.reactivex.rxjava2</groupId>
@@ -737,7 +743,7 @@
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
 				<type>jar</type>
-				<version>42.3.3</version>
+				<version>42.4.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.reactivestreams</groupId>
