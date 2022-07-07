@@ -377,7 +377,7 @@
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-server</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.10</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
