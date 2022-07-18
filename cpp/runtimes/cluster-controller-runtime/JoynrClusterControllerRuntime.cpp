@@ -436,10 +436,17 @@ void JoynrClusterControllerRuntime::init()
     }
 
     if (_clusterControllerSettings.isUdsEnabled()) {
+        // setup CC Uds interface
         _udsMessagingStubFactory = std::make_unique<UdsMessagingStubFactory>();
-        _udsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-                const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
-                        destinationAddress) { messagingStubFactory->remove(destinationAddress); });
+        _udsMessagingStubFactory->registerOnMessagingStubClosedCallback([
+            messagingStubFactory,
+            ccMessageRouterWeakPtr = joynr::util::as_weak_ptr(_ccMessageRouter)
+        ](const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
+            if (auto ccMessageRouterSharedPtr = ccMessageRouterWeakPtr.lock()) {
+                ccMessageRouterSharedPtr->removeRoutingEntries(destinationAddress);
+            }
+            messagingStubFactory->remove(destinationAddress);
+        });
 
         messagingStubFactory->registerStubFactory(_udsMessagingStubFactory);
     }
