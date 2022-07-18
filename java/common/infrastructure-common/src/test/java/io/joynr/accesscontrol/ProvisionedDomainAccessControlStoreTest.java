@@ -28,7 +28,6 @@ import org.junit.Test;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Provides;
 
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.util.ObjectMapper;
@@ -37,9 +36,6 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.config.Configuration;
 
 public class ProvisionedDomainAccessControlStoreTest {
 
@@ -88,12 +84,6 @@ public class ProvisionedDomainAccessControlStoreTest {
                 bind(DomainAccessControlStore.class).to(DomainAccessControlStoreCqEngine.class);
             }
 
-            @Provides
-            CacheManager provideCacheManager() {
-                Configuration configuration = new Configuration();
-                configuration.setName("GDACEhCacheManager");
-                return CacheManager.create(configuration);
-            }
         });
         return injector;
     }
@@ -113,9 +103,6 @@ public class ProvisionedDomainAccessControlStoreTest {
         assertEquals("DRE for UID1 and Role.OWNER should be the same as expectedOwnerAccessControlEntry",
                      expectedUserDomainRoleEntry,
                      store.getDomainRole(UID1, Role.OWNER));
-
-        CacheManager cacheManager = injector.getInstance(CacheManager.class);
-        cacheManager.removeAllCaches();
     }
 
     @Test
@@ -137,8 +124,5 @@ public class ProvisionedDomainAccessControlStoreTest {
         assertEquals("Master ACE associated to UID1, DOMAIN1 and INTERFACE1 should be the same as expectedMasterAccessControlEntry",
                      expectedMasterAccessControlEntry,
                      store.getMasterAccessControlEntries(UID1, DOMAIN1, INTERFACE1).get(0));
-
-        CacheManager cacheManager = injector.getInstance(CacheManager.class);
-        cacheManager.removeAllCaches();
     }
 }

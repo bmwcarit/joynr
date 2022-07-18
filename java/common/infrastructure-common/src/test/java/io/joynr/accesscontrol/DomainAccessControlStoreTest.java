@@ -21,21 +21,17 @@ package io.joynr.accesscontrol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
-
-import net.sf.ehcache.CacheManager;
 
 public class DomainAccessControlStoreTest {
 
@@ -48,18 +44,12 @@ public class DomainAccessControlStoreTest {
     private static final String OPERATION1 = "operation1";
     private static final String OPERATIONX = "operationX";
 
-    private static CacheManager cacheManager;
     private DomainAccessControlStore store;
     private MasterAccessControlEntry expectedMasterAccessControlEntry;
     private OwnerAccessControlEntry expectedOwnerAccessControlEntry;
     private MasterRegistrationControlEntry expectedMasterRegistrationControlEntry;
     private OwnerRegistrationControlEntry expectedOwnerRegistrationControlEntry;
     private DomainRoleEntry expectedUserDomainRoleEntry;
-
-    @BeforeClass
-    public static void setupTestSuite() {
-        cacheManager = CacheManager.create();
-    }
 
     @Before
     public void setup() {
@@ -107,11 +97,6 @@ public class DomainAccessControlStoreTest {
                                                                                   Permission.NO);
     }
 
-    @After
-    public void tearDown() {
-        cacheManager.removeAllCaches();
-    }
-
     @Test
     public void testGetDomainRoles() throws Exception {
         store.updateDomainRole(expectedUserDomainRoleEntry);
@@ -132,7 +117,14 @@ public class DomainAccessControlStoreTest {
         dre.setRole(Role.MASTER);
         store.updateDomainRole(dre);
 
-        assertTrue("UID1 role should be MASTER", store.getDomainRoles(UID1).get(0).getRole().equals(Role.MASTER));
+        boolean found = false;
+        for (DomainRoleEntry entry : store.getDomainRoles(UID1)) {
+            if (entry.getRole().equals(Role.MASTER)) {
+                found = true;
+            }
+        }
+
+        assertTrue("DomainRoleEntry for UID1 with role MASTER should exist", found);
     }
 
     @Test
@@ -240,6 +232,125 @@ public class DomainAccessControlStoreTest {
                    store.getMasterAccessControlEntries(DOMAIN1, INTERFACE1).isEmpty());
         assertTrue("In Master ACL no master ACE for UID1 should remain",
                    store.getMasterAccessControlEntries(UID1).isEmpty());
+    }
+
+    // Mediator ACEs have the same datatype as master ACEs, which is why expectedMasterAccessControlEntry
+    // will be reused, but not renamed, in the following tests.
+
+    @Test
+    public void testGetMediatorAce() throws Exception {
+        store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
+        store.updateMediatorAccessControlEntry(expectedMasterAccessControlEntry);
+
+        assertEquals("Mediator ACE associated to UID1 from Mediator ACL should be the same as expectedMediatorAccessControlEntry",
+                     expectedMasterAccessControlEntry,
+                     store.getMediatorAccessControlEntries(UID1).get(0));
+        assertEquals("Mediator ACE associated to DOMAIN1 and INTERFACE1 should be the same as expectedMediatorAccessControlEntry",
+                     expectedMasterAccessControlEntry,
+                     store.getMediatorAccessControlEntries(DOMAIN1, INTERFACE1).get(0));
+        assertEquals("Mediator ACE associated to UID1, DOMAIN1 and INTERFACE1 should be the same as expectedMediatorAccessControlEntry",
+                     expectedMasterAccessControlEntry,
+                     store.getMediatorAccessControlEntries(UID1, DOMAIN1, INTERFACE1).get(0));
+
+        MasterAccessControlEntry mediatorAceWithWildcardOperation = new MasterAccessControlEntry(expectedMasterAccessControlEntry);
+        mediatorAceWithWildcardOperation.setOperation(WILDCARD);
+        store.updateMasterAccessControlEntry(mediatorAceWithWildcardOperation);
+        store.updateMediatorAccessControlEntry(mediatorAceWithWildcardOperation);
+        int expectedAceCount = 2;
+        assertEquals("There are two (2) mediator ACEs associated to UID1, DOMAIN1 and INTERFACE1",
+                     expectedAceCount,
+                     store.getMediatorAccessControlEntries(UID1, DOMAIN1, INTERFACE1).size());
+
+        MasterAccessControlEntry returnedMediatorAce = store.getMediatorAccessControlEntry(UID1,
+                                                                                           DOMAIN1,
+                                                                                           INTERFACE1,
+                                                                                           OPERATION1);
+        assertEquals("Mediator ACE associated to UID1, DOMAIN1, INTERFACE1 and OPERATION1 should be the same as expectedMediatorAccessControlEntry",
+                     expectedMasterAccessControlEntry,
+                     returnedMediatorAce);
+    }
+
+    @Test
+    public void testGetMediatorAceWithWildcardOperation() throws Exception {
+        expectedMasterAccessControlEntry.setOperation(WILDCARD);
+        store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
+        store.updateMediatorAccessControlEntry(expectedMasterAccessControlEntry);
+
+        assertEquals("Mediator ACE associated to UID1, DOMAIN1, INTERFACE1 and OPERATION1 should be the same as expectedMediatorAccessControlEntry",
+                     expectedMasterAccessControlEntry,
+                     store.getMediatorAccessControlEntry(UID1, DOMAIN1, INTERFACE1, OPERATION1));
+    }
+
+    @Test
+    public void testGetEditableMediatorAcl() throws Exception {
+        expectedUserDomainRoleEntry.setDomains(new String[]{ DOMAIN1 });
+        expectedUserDomainRoleEntry.setRole(Role.MASTER);
+        store.updateDomainRole(expectedUserDomainRoleEntry);
+        store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
+        store.updateMediatorAccessControlEntry(expectedMasterAccessControlEntry);
+
+        assertEquals("Editable mediator ACE for UID1 should be equal to expectedMediatorAccessControlEntry",
+                     expectedMasterAccessControlEntry,
+                     store.getEditableMasterAccessControlEntries(UID1).get(0));
+    }
+
+    @Test
+    public void testEditableMediatorAccessControlEntryNoMatchingDre() throws Exception {
+        expectedMasterAccessControlEntry.setUid(UID2);
+        store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
+        store.updateMediatorAccessControlEntry(expectedMasterAccessControlEntry);
+
+        assertTrue("There should be no editable mediator ACE for UID1 in Master ACL",
+                   store.getEditableMediatorAccessControlEntries(UID1).isEmpty());
+    }
+
+    @Test
+    public void testUpdateMediatorAccessControlEntry() throws Exception {
+        boolean expectedUpdateResult = true;
+        expectedMasterAccessControlEntry.setDefaultConsumerPermission(Permission.NO);
+        assertEquals("Insert master ACE should return true",
+                     expectedUpdateResult,
+                     store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry));
+        assertEquals("Insert mediator ACE should return true",
+                     expectedUpdateResult,
+                     store.updateMediatorAccessControlEntry(expectedMasterAccessControlEntry));
+        assertTrue("Before update mediator ACE for UID1 should have default Permission.NO",
+                   store.getMediatorAccessControlEntries(UID1)
+                        .get(0)
+                        .getDefaultConsumerPermission()
+                        .equals(Permission.NO));
+        expectedMasterAccessControlEntry.setDefaultConsumerPermission(Permission.YES);
+        assertEquals("Update mediator ACE should return false",
+                     false,
+                     store.updateMediatorAccessControlEntry(expectedMasterAccessControlEntry));
+        expectedMasterAccessControlEntry.setPossibleConsumerPermissions(new Permission[]{ Permission.ASK, Permission.NO,
+                Permission.YES });
+        assertEquals("Update master ACE should return true",
+                     expectedUpdateResult,
+                     store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry));
+        assertEquals("Update mediator ACE should return true",
+                     expectedUpdateResult,
+                     store.updateMediatorAccessControlEntry(expectedMasterAccessControlEntry));
+        assertTrue("After update mediator ACE for UID1 should have default Permission.YES",
+                   store.getMediatorAccessControlEntries(UID1)
+                        .get(0)
+                        .getDefaultConsumerPermission()
+                        .equals(Permission.YES));
+    }
+
+    @Test
+    public void testRemoveMediatorAccessControlEntry() throws Exception {
+        store.updateMasterAccessControlEntry(expectedMasterAccessControlEntry);
+        store.updateMediatorAccessControlEntry(expectedMasterAccessControlEntry);
+        boolean expectedRemoveResult = true;
+
+        assertEquals("Remove mediator ACE for given userId, domain, interface and operation should return true",
+                     expectedRemoveResult,
+                     store.removeMediatorAccessControlEntry(UID1, DOMAIN1, INTERFACE1, OPERATION1));
+        assertTrue("In Mediator ACL no mediator ACE for given domain, interface should remain",
+                   store.getMediatorAccessControlEntries(DOMAIN1, INTERFACE1).isEmpty());
+        assertTrue("In Mediator ACL no mediator ACE for UID1 should remain",
+                   store.getMediatorAccessControlEntries(UID1).isEmpty());
     }
 
     @Test
@@ -437,6 +548,94 @@ public class DomainAccessControlStoreTest {
                    store.getMasterRegistrationControlEntries(DOMAIN1, INTERFACE1).isEmpty());
         assertTrue("In Master RCL no master RCE for UID1 should remain",
                    store.getMasterRegistrationControlEntries(UID1).isEmpty());
+    }
+
+    @Test
+    public void testGetMediatorRce() throws Exception {
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+        store.updateMediatorRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+
+        assertEquals("Mediator RCE associated to UID1 from Mediator RCL should be the same as expectedMediatorRegistrationControlEntry",
+                     expectedMasterRegistrationControlEntry,
+                     store.getMediatorRegistrationControlEntries(UID1).get(0));
+        assertEquals("Mediator RCE associated to DOMAIN1 and INTERFACE1 should be the same as expectedMediatorRegistrationControlEntry",
+                     expectedMasterRegistrationControlEntry,
+                     store.getMediatorRegistrationControlEntries(DOMAIN1, INTERFACE1).get(0));
+        assertEquals("Mediator RCE associated to UID1, DOMAIN1 and INTERFACE1 should be the same as expectedMediatorRegistrationControlEntry",
+                     expectedMasterRegistrationControlEntry,
+                     store.getMediatorRegistrationControlEntry(UID1, DOMAIN1, INTERFACE1));
+    }
+
+    @Test
+    public void testGetEditableMediatorRcl() throws Exception {
+        expectedUserDomainRoleEntry.setDomains(new String[]{ DOMAIN1 });
+        expectedUserDomainRoleEntry.setRole(Role.MASTER);
+        store.updateDomainRole(expectedUserDomainRoleEntry);
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+        store.updateMediatorRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+
+        assertEquals("Editable mediator RCE for UID1 should be equal to expectedMediatorRegistrationControlEntry",
+                     expectedMasterRegistrationControlEntry,
+                     store.getEditableMediatorRegistrationControlEntries(UID1).get(0));
+    }
+
+    @Test
+    public void testEditableMediatorRegistrationControlEntryNoMatchingDre() throws Exception {
+        expectedMasterRegistrationControlEntry.setUid(UID2);
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+        store.updateMediatorRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+
+        assertTrue("There should be no editable mediator RCE for UID1 in Mediator RCL",
+                   store.getEditableMediatorRegistrationControlEntries(UID1).isEmpty());
+    }
+
+    @Test
+    public void testUpdateMediatorRegistrationControlEntry() throws Exception {
+        boolean expectedUpdateResult = true;
+        expectedMasterRegistrationControlEntry.setDefaultProviderPermission(Permission.NO);
+        assertEquals("Insert master RCE should return true",
+                     expectedUpdateResult,
+                     store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry));
+        assertEquals("Insert mediator RCE should return true",
+                     expectedUpdateResult,
+                     store.updateMediatorRegistrationControlEntry(expectedMasterRegistrationControlEntry));
+        assertTrue("Before update mediator RCE for UID1 should have default Permission.NO",
+                   store.getMediatorRegistrationControlEntries(UID1)
+                        .get(0)
+                        .getDefaultProviderPermission()
+                        .equals(Permission.NO));
+        expectedMasterRegistrationControlEntry.setDefaultProviderPermission(Permission.YES);
+        assertEquals("Update mediator RCE should return false",
+                     false,
+                     store.updateMediatorRegistrationControlEntry(expectedMasterRegistrationControlEntry));
+        expectedMasterRegistrationControlEntry.setPossibleProviderPermissions(new Permission[]{ Permission.ASK,
+                Permission.NO, Permission.YES });
+        assertEquals("Update master RCE should return true",
+                     expectedUpdateResult,
+                     store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry));
+        assertEquals("Update mediator RCE should return true",
+                     true,
+                     store.updateMediatorRegistrationControlEntry(expectedMasterRegistrationControlEntry));
+        assertTrue("After update mediator RCE for UID1 should have default Permission.YES",
+                   store.getMediatorRegistrationControlEntries(UID1)
+                        .get(0)
+                        .getDefaultProviderPermission()
+                        .equals(Permission.YES));
+    }
+
+    @Test
+    public void testRemoveMediatorRegistrationControlEntry() throws Exception {
+        store.updateMasterRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+        store.updateMediatorRegistrationControlEntry(expectedMasterRegistrationControlEntry);
+        boolean expectedRemoveResult = true;
+
+        assertEquals("Remove mediator RCE for given userId, domain and interface should return true",
+                     expectedRemoveResult,
+                     store.removeMediatorRegistrationControlEntry(UID1, DOMAIN1, INTERFACE1));
+        assertTrue("In Mediator RCL no mediator RCE for given domain, interface should remain",
+                   store.getMediatorRegistrationControlEntries(DOMAIN1, INTERFACE1).isEmpty());
+        assertTrue("In Mediator RCL no mediator RCE for UID1 should remain",
+                   store.getMediatorRegistrationControlEntries(UID1).isEmpty());
     }
 
     @Test
