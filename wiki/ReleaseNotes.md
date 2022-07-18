@@ -2,6 +2,64 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.20.1
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** DomainAccessControlStore now uses com.googlecode.cqEngine 3.6.0 instead of
+  net.sf.ehCache to get rid of ehCache dependency.
+* **[Java]** Fixed logging with log4j2 in radio-app example.
+* **[Java]** Dependency updates (including transitive dependencies):
+```
+  * maven-project       2.2.1 -> maven-core 3.8.6
+  * hivemq-mqtt-client  1.2.2 -> 1.3.0
+  * junit              4.13.1 -> 4.13.2
+  * kotlin-stdlib-jdk8 1.3.61 -> 1.7.0
+  * kotlin-stdlib      1.3.61 -> 1.7.0
+  * netty-*      4.1.48.Final -> 4.1.77.Final
+  * postgresql         42.2.4 -> 42.4.0
+  * protobuf-java*     3.10.0 -> 3.21.2
+  * gson                2.8.5 -> 2.9.0
+  * guice 3.0 -> 5.1.0
+  * xtend 2.16.0 -> 2.27.0
+  * xtext 2.16.0 -> 2.27.0
+```
+  NOTE for Android:  
+  There is no longer a special `no_aop` version of Guice 5.1.0 for use with Android, see release
+  notes of Guice. The special flag `-Dguice_bytecode_gen_option=DISABLED` might be required for
+  Android.
+* **[TS]** Updated devDependencies to latest compatible versions:
+```
+  * typescript:                       3.5.3 -> 3.8.3
+  * @types/jest:                    24.0.11 -> 25.1.5
+  * @types/node:                      8.9.4 -> 8.10.66
+  * jest:                            24.8.0 -> 25.5.4
+  * jest-circus:                     24.8.0 -> 25.5.4
+  * jest-diff:                       24.8.0 -> 25.5.0
+  * ts-jest:                         24.0.1 -> 25.5.1
+  * @typescript-eslint/eslint-plugin: 1.7.0 -> 2.14.0
+  * @typescript-eslint/parser:        1.7.0 -> 2.14.0
+  * eslint:                          5.16.0 -> 6.8.0
+  * typedoc:                         0.14.2 -> 0.17.8
+  * ts-node:                          8.3.0 -> 8.10.2
+  * mkdirp                            0.5.1 -> 0.5.6
+```
+* **[Maven]** Fixed build problems caused by an update of a transitive dependency of
+  `xtend-maven-plugin` and `formatter-maven-plugin`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Dependency to net.sf.ehCache removed, also removing transient dependencies
+  to vulnerable artifacts.
+* **[Java]** Updated dependencies, see list above.
+
+## Bug Fixes
+* **[Java]** Fixed cleanup of routing entries after failed provider registration.
+
 # joynr 1.20.0
 
 ## API relevant changes
