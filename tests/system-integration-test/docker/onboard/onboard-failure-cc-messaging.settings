@@ -36,7 +36,7 @@ mqtt-reconnect-sleep-time-ms=1000
 
 index=0
 send-msg-retry-interval=500
-persistence-file=joynr.settings
+persistence-file=joynr-failure.settings
 broker-timeout=
 max-send-ttl=
 
@@ -47,5 +47,10 @@ private-key-pem-filename=/data/ssl-data/private/server.key.pem
 cluster-controller-messaging-url=ws://localhost:4245
 
 [cluster-controller]
+local-capabilities-directory-persistence-file=LocalCapabilitiesDirectory-failure.persist
+local-domain-access-store-persistence-file=LocalDomainAccessStore-failure.persist
 ws-port=4245
 ws-tls-port=4246
+
+[lib-joynr]
+participant-ids-persistence-file=ParticipantIds-failure.persist
