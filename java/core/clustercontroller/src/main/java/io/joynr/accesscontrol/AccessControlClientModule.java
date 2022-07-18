@@ -19,11 +19,7 @@
 package io.joynr.accesscontrol;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
 import com.google.inject.Singleton;
-
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.config.Configuration;
 
 public class AccessControlClientModule extends AbstractModule {
     @Override
@@ -32,14 +28,5 @@ public class AccessControlClientModule extends AbstractModule {
         bind(LocalDomainAccessController.class).to(LocalDomainAccessControllerImpl.class).in(Singleton.class);
         bind(DomainAccessControlStore.class).to(DomainAccessControlStoreCqEngine.class).in(Singleton.class);
         bind(DomainAccessControlProvisioning.class).to(StaticDomainAccessControlProvisioning.class);
-    }
-
-    @Provides
-    @Singleton
-    public CacheManager provideCacheManager() {
-        Configuration configuration = new Configuration();
-        configuration.setName("LDACEhCacheManager");
-        configuration.setUpdateCheck(false);
-        return CacheManager.create(configuration);
     }
 }
