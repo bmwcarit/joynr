@@ -125,18 +125,18 @@ protected:
     {
     private:
         std::atomic_bool _blockReception;
-        std::atomic_uint64_t _receviedBytes;
+        std::atomic_uint64_t _receivedBytes;
 
     public:
         BlockReceptionClient(const joynr::UdsSettings& settings)
                 : joynr::UdsClient(settings,
                                    [](const joynr::exceptions::JoynrRuntimeException&) {}),
                   _blockReception{true},
-                  _receviedBytes{0}
+                  _receivedBytes{0}
         {
             setReceiveCallback([this](smrf::ByteVector&& payload) mutable {
-                const auto totalbytes = _receviedBytes.load() + payload.size();
-                _receviedBytes.store(totalbytes);
+                const auto totalbytes = _receivedBytes.load() + payload.size();
+                _receivedBytes.store(totalbytes);
                 while (_blockReception.load()) {
                     std::this_thread::yield();
                 }
@@ -155,7 +155,7 @@ protected:
             while (_waitPeriodForClientServerCommunication >
                    (std::chrono::steady_clock::now() - tbegin)) {
                 std::this_thread::sleep_for(_retryIntervalDuringClientServerCommunication);
-                if (bytesExpected == _receviedBytes.load()) {
+                if (bytesExpected == _receivedBytes.load()) {
                     return true;
                 }
             }
