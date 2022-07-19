@@ -230,7 +230,6 @@ private:
 
     void enableAccessController(
             const std::map<std::string, types::DiscoveryEntryWithMetaInfo>& provisionedEntries);
-    friend class ::JoynrClusterControllerRuntimeTest;
 
     Semaphore _lifetimeSemaphore;
 
@@ -252,6 +251,8 @@ private:
     static constexpr std::int64_t _defaultRemoveStaleDelayMs{300000};
     const std::int64_t _removeStaleDelay;
     boost::asio::steady_timer _removeStaleTimer;
+    friend class WebSocketEnd2EndProxyBuilderRobustnessTest;
+    friend class UdsEnd2EndProxyBuilderRobustnessTest;
 };
 
 } // namespace joynr

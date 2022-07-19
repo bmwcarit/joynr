@@ -25,6 +25,7 @@
 #include "tests/utils/Gmock.h"
 
 #include "joynr/BrokerUrl.h"
+#include "joynr/CcMessageRouter.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
@@ -48,11 +49,11 @@ using namespace joynr;
 namespace joynr
 {
 
-class End2EndProxyBuilderRobustnessTest : public Test
+class WebSocketEnd2EndProxyBuilderRobustnessTest : public Test
 {
 public:
-    End2EndProxyBuilderRobustnessTest()
-            : domain("cppEnd2EndProxyBuilderRobustnessTest" + util::createUuid()),
+    WebSocketEnd2EndProxyBuilderRobustnessTest()
+            : domain("cppWebSocketEnd2EndProxyBuilderRobustnessTest" + util::createUuid()),
               discoveryTimeoutMs(5000),
               retryIntervalMs(500),
               consumerRuntime(),
@@ -89,16 +90,38 @@ public:
         ASSERT_TRUE(providerRuntime->connect(std::chrono::milliseconds(10000)));
     }
 
-    ~End2EndProxyBuilderRobustnessTest() override
+    void checkResolveNextHop(const std::string& participantId, bool expectProviderResolved)
     {
+        Semaphore successCallbackCalled;
+        ccRuntime->_ccMessageRouter->resolveNextHop(
+            participantId,
+            [&successCallbackCalled, expectProviderResolved](const bool& resolved) {
+                if (resolved == expectProviderResolved) {
+                    successCallbackCalled.notify();
+                } else {
+                    FAIL() << "resolve delivered unexpected result";
+                    successCallbackCalled.notify();
+                }
+            },
+            [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
+                FAIL() << "resolveNextHop did not succeed.";
+                successCallbackCalled.notify();
+            });
+        EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
+    }
+
+    ~WebSocketEnd2EndProxyBuilderRobustnessTest() override
+    {
+        // shutdown consumer and provider runtime first to allow
+        // graceful termination of connections
+        consumerRuntime->shutdown();
+        test::util::resetAndWaitUntilDestroyed(consumerRuntime);
+
+        providerRuntime->shutdown();
+        test::util::resetAndWaitUntilDestroyed(providerRuntime);
 
         ccRuntime->shutdown();
-        consumerRuntime->shutdown();
-        providerRuntime->shutdown();
-
         test::util::resetAndWaitUntilDestroyed(ccRuntime);
-        test::util::resetAndWaitUntilDestroyed(consumerRuntime);
-        test::util::resetAndWaitUntilDestroyed(providerRuntime);
 
         // Delete persisted files
         test::util::removeAllCreatedSettingsAndPersistencyFiles();
@@ -116,16 +139,17 @@ protected:
 
     void buildMultipleProxiesUsingSameProxyBuilder();
     void attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder();
+    void buildProxiesAndVerifyShutdownRuntimeCleansUpCcRuntime();
     void attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime();
     void buildProxyBeforeProviderRegistration(const bool expectSuccess);
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(End2EndProxyBuilderRobustnessTest);
+    DISALLOW_COPY_AND_ASSIGN(WebSocketEnd2EndProxyBuilderRobustnessTest);
 };
 
 } // namespace joynr
 
-void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(
+void WebSocketEnd2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(
         const bool expectSuccess)
 {
     Semaphore semaphore(0);
@@ -185,7 +209,7 @@ void End2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(
     providerRuntime->unregisterProvider(participantId);
 }
 
-void End2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSameProxyBuilder()
+void WebSocketEnd2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSameProxyBuilder()
 {
     // prepare provider
     auto mockProvider = std::make_shared<MockGpsProvider>();
@@ -224,7 +248,7 @@ void End2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSameProxyBuilde
     providerRuntime->unregisterProvider(participantId);
 }
 
-void End2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder()
+void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder()
 {
     Semaphore semaphore(0);
 
@@ -300,7 +324,7 @@ void End2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSam
     EXPECT_EQ(1, gpsProxyBuilder->_finishedArbitratorIds.size());
 }
 
-void End2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime()
+void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime()
 {
     Semaphore semaphore(0);
     std::shared_ptr<TestLibJoynrWebSocketRuntime> ownConsumerRuntime;
@@ -352,8 +376,100 @@ void End2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSam
     }
 }
 
+void WebSocketEnd2EndProxyBuilderRobustnessTest::buildProxiesAndVerifyShutdownRuntimeCleansUpCcRuntime()
+{
+    // prepare provider
+    auto mockProvider = std::make_shared<MockGpsProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+
+    // register provider
+    std::string participantId = providerRuntime->registerProvider<vehicle::GpsProvider>(
+            domain, mockProvider, providerQos);
+
+    Semaphore semaphore(0);
+    std::shared_ptr<TestLibJoynrWebSocketRuntime> ownConsumerRuntime;
+
+    auto settings = std::make_unique<Settings>();
+    ownConsumerRuntime = std::make_shared<TestLibJoynrWebSocketRuntime>(std::move(settings));
+
+    ASSERT_TRUE(ownConsumerRuntime->connect(std::chrono::milliseconds(10000)));
+
+    // create ProxyBuilder
+    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
+            ownConsumerRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
+
+    discoveryQos.setDiscoveryTimeoutMs(600000);
+    discoveryQos.setCacheMaxAgeMs(0);
+    discoveryQos.setRetryIntervalMs(590000);
+
+    const int numberOfProxyBuilds = 10;
+    std::vector<std::string> proxyParticipantIds;
+    std::vector<std::shared_ptr<vehicle::GpsProxy>> gpsProxies;
+    std::mutex proxyLock;
+
+    // build some proxies asynchronously and keep their references
+    // (to protect against destruction) and store their proxy participantIds
+    // for later checking
+    for (int i = 0; i < numberOfProxyBuilds; i++) {
+        auto onSuccess = [&semaphore, &proxyParticipantIds, &gpsProxies, &proxyLock](std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
+            std::lock_guard<std::mutex> lock(proxyLock);
+            proxyParticipantIds.push_back(gpsProxy->getProxyParticipantId());
+            gpsProxies.push_back(gpsProxy);
+            semaphore.notify();
+            return;
+        };
+
+        auto onError = [&semaphore](const exceptions::DiscoveryException&) {
+            ADD_FAILURE() << "proxy building failed unexpectedly";
+            semaphore.notify();
+        };
+
+        gpsProxyBuilder->setDiscoveryQos(discoveryQos)
+                ->buildAsync(onSuccess, onError);
+    }
+    for (int i = 0; i < numberOfProxyBuilds; i++) {
+        EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
+    }
+
+    // allow the runtime to destruct proxyBuilder on shutdown by releasing own shared_ptr
+    gpsProxyBuilder.reset();
+
+    std::lock_guard<std::mutex> lock(proxyLock);
+    // check that the proxy participantIds exist in RoutingTable of ccMessageRouter at this time
+    for (auto participantId : proxyParticipantIds) {
+        checkResolveNextHop(participantId, true);
+    }
+
+    // release the references to the proxies
+    // this might cause there associated RoutingEntry records to be removed already from
+    // RoutingTable here and in CC at a later time, when this got implemented
+    gpsProxies.clear();
+
+    ownConsumerRuntime->shutdown();
+    test::util::resetAndWaitUntilDestroyed(ownConsumerRuntime);
+
+    // wait a while
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Now that the consumer runtime has been destructed and the connction to
+    // CC should have been closed. The CC should have detected this and invoked
+    // cleanup for all RoutingEntry records associated with the connection
+    // still existing at this time.
+    for (auto participantId : proxyParticipantIds) {
+        checkResolveNextHop(participantId, false);
+    }
+
+    // unregister provider
+    providerRuntime->unregisterProvider(participantId);
+}
+
 // as soon as the provider gets registered, the lookup returns successful
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
        buildProxyBeforeProviderRegistration_LocalThenGlobal_succeedsWithoutRetry)
 {
     const bool expectedSuccess = true;
@@ -363,7 +479,7 @@ TEST_F(End2EndProxyBuilderRobustnessTest,
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
        buildProxyBeforeProviderRegistration_LocalThenGlobal_succeedsWithRetry)
 {
     const bool expectedSuccess = true;
@@ -372,7 +488,7 @@ TEST_F(End2EndProxyBuilderRobustnessTest,
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
        buildProxyBeforeProviderRegistration_LocalAndGlobal_failsWithoutRetry)
 {
     const bool expectedSuccess = false;
@@ -383,7 +499,7 @@ TEST_F(End2EndProxyBuilderRobustnessTest,
 }
 
 // no retry until global lookup succeeds or times out
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
        buildProxyBeforeProviderRegistration_LocalAndGlobal_failsWithRetry)
 {
     const bool expectedSuccess = false;
@@ -392,7 +508,7 @@ TEST_F(End2EndProxyBuilderRobustnessTest,
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
        buildProxyBeforeProviderRegistration_LocalOnly_failsWithoutRetry)
 {
     const bool expectedSuccess = false;
@@ -402,7 +518,7 @@ TEST_F(End2EndProxyBuilderRobustnessTest,
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
        buildProxyBeforeProviderRegistration_LocalOnly_succeedsWithRetry)
 {
     const bool expectedSuccess = true;
@@ -411,7 +527,7 @@ TEST_F(End2EndProxyBuilderRobustnessTest,
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
        buildProxyBeforeProviderRegistration_GlobalOnly_failsWithoutRetry)
 {
     const bool expectedSuccess = false;
@@ -422,7 +538,7 @@ TEST_F(End2EndProxyBuilderRobustnessTest,
 }
 
 // no retry until global lookup succeeds or times out
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
        buildProxyBeforeProviderRegistration_GlobalOnly_failsWithRetry)
 {
     const bool expectedSuccess = false;
@@ -431,30 +547,35 @@ TEST_F(End2EndProxyBuilderRobustnessTest,
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
         ProxyBuilderReclaimsArbitrators)
 {
     buildMultipleProxiesUsingSameProxyBuilder();
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
         ProxyBuilderAsyncReclaimsArbitrators)
 {
     attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder();
 }
 
-TEST_F(End2EndProxyBuilderRobustnessTest,
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest,
         ProxyBuilderAsyncDoesNotCrashWhenRuntimeIsShutdown)
 {
     attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime();
 }
 
-class End2EndProxyBuild : public End2EndProxyBuilderRobustnessTest
+TEST_F(WebSocketEnd2EndProxyBuilderRobustnessTest, ConsumerRuntimeShutdownCleansRoutingTableOfCC)
+{
+    buildProxiesAndVerifyShutdownRuntimeCleansUpCcRuntime();
+}
+
+class WebSocketEnd2EndProxyBuild : public WebSocketEnd2EndProxyBuilderRobustnessTest
 {
 protected:
     void SetUp() override
     {
-        End2EndProxyBuilderRobustnessTest::SetUp();
+        WebSocketEnd2EndProxyBuilderRobustnessTest::SetUp();
 
         auto mockProvider = std::make_shared<MockGpsProvider>();
         types::ProviderQos providerQos;
@@ -478,14 +599,14 @@ protected:
     std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder;
 };
 
-TEST_F(End2EndProxyBuild, buildProxyWithoutSetMessagingQos)
+TEST_F(WebSocketEnd2EndProxyBuild, buildProxyWithoutSetMessagingQos)
 {
     std::shared_ptr<vehicle::GpsProxy> gpsProxy;
     JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->setDiscoveryQos(discoveryQos)->build());
     ASSERT_TRUE(gpsProxy);
 }
 
-TEST_F(End2EndProxyBuild, buildProxyWithoutSetDiscoveryQos)
+TEST_F(WebSocketEnd2EndProxyBuild, buildProxyWithoutSetDiscoveryQos)
 {
     const std::int64_t qosRoundTripTTL = 10000;
     std::shared_ptr<vehicle::GpsProxy> gpsProxy;
@@ -494,7 +615,7 @@ TEST_F(End2EndProxyBuild, buildProxyWithoutSetDiscoveryQos)
     ASSERT_TRUE(gpsProxy);
 }
 
-TEST_F(End2EndProxyBuild, buildProxyWithoutSetMessagingQosAndWithoutSetDiscoveryQos)
+TEST_F(WebSocketEnd2EndProxyBuild, buildProxyWithoutSetMessagingQosAndWithoutSetDiscoveryQos)
 {
     std::shared_ptr<vehicle::GpsProxy> gpsProxy;
     JOYNR_EXPECT_NO_THROW(gpsProxy = gpsProxyBuilder->build());
