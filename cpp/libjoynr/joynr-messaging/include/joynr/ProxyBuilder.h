@@ -201,7 +201,8 @@ private:
 
     ADD_LOGGER(ProxyBuilder)
 
-    friend class End2EndProxyBuilderRobustnessTest;
+    friend class WebSocketEnd2EndProxyBuilderRobustnessTest;
+    friend class UdsEnd2EndProxyBuilderRobustnessTest;
 };
 
 template <class T>
