@@ -2,6 +2,25 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.21.2
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** DomainAccessControlStore now uses com.googlecode.cqEngine 3.6.0 instead of
+  net.sf.ehCache
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Dependency to net.sf.ehCache removed, also removing transient dependencies
+  to vulnerable artifacts
+
+## Bug Fixes
+None.
+
 # joynr 1.21.1
 
 ## API relevant changes
