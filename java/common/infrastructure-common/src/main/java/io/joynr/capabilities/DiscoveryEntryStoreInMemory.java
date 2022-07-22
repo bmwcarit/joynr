@@ -52,7 +52,6 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     Map<String, List<String>> interfaceAddressToCapabilityMapping = new HashMap<String, List<String>>();
     Map<String, String> participantIdToCapabilityMapping = new HashMap<String, String>();
     Map<String, T> capabilityKeyToCapabilityMapping = new HashMap<String, T>();
-    Map<Address, List<String>> endPointAddressToCapabilityMapping = new HashMap<Address, List<String>>();
     // maps queueId -> participiantId, also ordered
     TreeMap<Long, String> queueIdToParticipantIdMapping = new TreeMap<>();
     // maps participiantId -> queueId
