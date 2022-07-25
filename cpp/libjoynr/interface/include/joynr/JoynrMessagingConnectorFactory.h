@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,13 +49,13 @@ public:
                                    std::shared_ptr<ISubscriptionManager> subscriptionManager);
 
     template <class T>
-    std::unique_ptr<T> create(const std::string& domain,
+    std::shared_ptr<T> create(const std::string& domain,
                               const std::string proxyParticipantId,
                               const MessagingQos& qosSettings,
                               const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry)
     {
         using Connector = typename JoynrMessagingTraits<T>::Connector;
-        return std::make_unique<Connector>(_messageSender,
+        return std::make_shared<Connector>(_messageSender,
                                            _subscriptionManager,
                                            domain,
                                            proxyParticipantId,

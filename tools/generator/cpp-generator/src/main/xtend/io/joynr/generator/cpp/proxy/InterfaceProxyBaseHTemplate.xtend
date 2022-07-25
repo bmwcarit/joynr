@@ -95,7 +95,7 @@ public:
 
 protected:
 	/** @brief The kind of connector */
-	std::unique_ptr<I«interfaceName»Connector> connector;
+	std::shared_ptr<I«interfaceName»Connector> connector;
 
 private:
 	DISALLOW_COPY_AND_ASSIGN(«className»);
