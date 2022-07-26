@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2022 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,21 @@
  */
 package io.joynr.arbitration;
 
-public class ArbitrationConstants {
+import static org.junit.Assert.assertEquals;
 
-    // This private constructor will hide the implicit public one. The class instantiation will be forbidden.
-    ArbitrationConstants() {
-        throw new IllegalStateException("ArbitrationConstants class");
+import org.junit.Test;
+
+public class ArbitrationConstantsTest {
+    @Test
+    public void testConstants() {
+        assertEquals("priority", ArbitrationConstants.PRIORITY_PARAMETER);
+        assertEquals("keyword", ArbitrationConstants.KEYWORD_PARAMETER);
+        assertEquals("fixedParticipantId", ArbitrationConstants.FIXEDPARTICIPANT_KEYWORD);
     }
 
-    public static final String PRIORITY_PARAMETER = "priority";
-    public static final String KEYWORD_PARAMETER = "keyword";
-    public static final String FIXEDPARTICIPANT_KEYWORD = "fixedParticipantId";
+    @Test(expected = IllegalStateException.class)
+    public void testInstantiation() {
+        new ArbitrationConstants();
+    }
 
 }
