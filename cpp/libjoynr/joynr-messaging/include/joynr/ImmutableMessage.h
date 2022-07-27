@@ -151,7 +151,7 @@ private:
     // receivedFromGlobal is a transient attribute which will not be serialized.
     // It is only used locally for routing decisions.
     bool receivedFromGlobal;
-    bool _accessControlChecked;
+    std::atomic<bool> _accessControlChecked;
 
     std::string creator;
     RequiredHeaders _requiredHeaders;
