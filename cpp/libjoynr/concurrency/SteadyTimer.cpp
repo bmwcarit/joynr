@@ -33,7 +33,7 @@ struct AsioSteadyTimer : boost::asio::steady_timer
 };
 
 SteadyTimer::SteadyTimer(boost::asio::io_service& io_service)
-        : _steady_timer(std::make_unique<AsioSteadyTimer>(io_service))
+        : _steady_timer_mutex(), _steady_timer(std::make_unique<AsioSteadyTimer>(io_service))
 {
 }
 
@@ -41,17 +41,20 @@ SteadyTimer::~SteadyTimer() = default;
 
 void SteadyTimer::cancel()
 {
+    std::lock_guard<std::mutex> lock(_steady_timer_mutex);
     _steady_timer->cancel();
 }
 
 void SteadyTimer::expiresFromNow(std::chrono::milliseconds duration)
 {
+    std::lock_guard<std::mutex> lock(_steady_timer_mutex);
     _steady_timer->expires_from_now(duration);
 }
 
 void SteadyTimer::asyncWait(std::function<void(const boost::system::error_code&)>&& callback)
 {
     assert(callback);
+    std::lock_guard<std::mutex> lock(_steady_timer_mutex);
     _steady_timer->async_wait(std::move(callback));
 }
 
