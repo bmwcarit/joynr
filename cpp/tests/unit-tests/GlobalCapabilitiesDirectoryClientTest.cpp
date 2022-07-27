@@ -30,6 +30,7 @@
 #include "joynr/Settings.h"
 #include "joynr/StatusCode.h"
 #include "libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h"
+#include "tests/JoynrTest.h"
 #include "tests/mock/MockGlobalCapabilitiesDirectoryProxy.h"
 #include "tests/mock/MockJoynrRuntime.h"
 #include "tests/mock/MockLocalCapabilitiesDirectoryStore.h"
@@ -161,7 +162,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskTimeoutFunctionCallsOnR
 
     EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+                            ReleaseSemaphore(&semaphore)));
 
     bool onRuntimeErrorCalled = false;
     bool exceptionMessageFound = false;
@@ -195,7 +196,7 @@ void GlobalCapabilitiesDirectoryClientTest::testAddTaskExpiryDateHasCorrectValue
 
     EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+                            ReleaseSemaphore(&semaphore)));
     gcdClient->add(
             globalDiscoveryEntry, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
@@ -240,7 +241,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture2;
     EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+                            ReleaseSemaphore(&semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -281,7 +282,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
                 )
             .WillOnce(DoAll(SaveArg<2>(&onSuccessOfAddGlobalEntry1),
                             SaveArg<5>(&messagingQosCapture1),
-                          InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry2),
@@ -293,7 +294,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
                 )
             .WillOnce(DoAll(SaveArg<2>(&onSuccessOfAddGlobalEntry2),
                             SaveArg<5>(&messagingQosCapture2),
-                          InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     std::shared_ptr<Future<void>> reAddResultFuture = capturedTask._task();
 
@@ -329,7 +330,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
     EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+                            ReleaseSemaphore(&semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -382,7 +383,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
                 )
             .WillOnce(DoAll(SaveArg<2>(&onSuccessOfAddGlobalEntry1),
                             SaveArg<5>(&messagingQosCapture1),
-                          InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry2),
@@ -394,7 +395,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
                 )
             .WillOnce(DoAll(SaveArg<3>(&onErrorOfAddGlobalEntry2),
                             SaveArg<5>(&messagingQosCapture2),
-                          InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry3),
@@ -406,7 +407,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
                 )
             .WillOnce(DoAll(SaveArg<4>(&onRuntimeErrorOfAddGlobalEntry3),
                             SaveArg<5>(&messagingQosCapture3),
-                          InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
 
     std::shared_ptr<Future<void>> reAddResultFuture = capturedTask._task();
@@ -449,7 +450,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_noEntries_resultFutu
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
     EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+                            ReleaseSemaphore(&semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -487,7 +488,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_re
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
     EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+                            ReleaseSemaphore(&semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -531,7 +532,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_re
                 )
             .WillOnce(DoAll(SaveArg<2>(&onSuccess),
                             SaveArg<5>(&messagingQosCapture),
-                          InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
 
     std::shared_ptr<Future<void>> reAddResultFuture = capturedTask._task();
@@ -552,7 +553,7 @@ void GlobalCapabilitiesDirectoryClientTest::testAdd(bool awaitGlobalRegistration
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
@@ -586,12 +587,12 @@ void GlobalCapabilitiesDirectoryClientTest::testAddUsesCorrectRemainingTtl(const
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<2>(&onSuccessCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry2), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
@@ -633,7 +634,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistra
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<2>(&onSuccessCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, false, gbids, onSuccess, onError, onRuntimeError);
@@ -651,7 +652,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistra
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .Times(numberOfTimeouts + 1)
             .WillRepeatedly(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, false, gbids, onSuccess, onError, onRuntimeError);
@@ -672,7 +673,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithAwaitGlobalRegistratio
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, true, gbids, onSuccess, onError, onRuntimeError);
@@ -689,7 +690,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistra
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, false, gbids, onSuccess, onError, onRuntimeError);
@@ -705,7 +706,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistra
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<3>(&onApplicationErrorCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, false, gbids, onSuccess, onError, onRuntimeError);
@@ -760,13 +761,13 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
                     getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+            .WillOnce(DoAll(ReleaseSemaphore(&semaphore),
                             Return(gbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
 
     globalCapabilitiesDirectoryClient->remove(
@@ -790,7 +791,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveTaskExpiryDateHasCorrect
 
     EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
             .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify)));
+                            ReleaseSemaphore(&semaphore)));
     gcdClient->remove(
             capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
@@ -806,13 +807,13 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveUsesCorrectTtl)
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
                     getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+            .WillOnce(DoAll(ReleaseSemaphore(&semaphore),
                             Return(gbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->remove(
             capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
@@ -828,12 +829,12 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterSuccess)
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
                     getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+            .WillOnce(DoAll(ReleaseSemaphore(&semaphore),
                             Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<2>(&onSuccessCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->remove(
             capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
@@ -850,13 +851,13 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveRetryAfterTimeout)
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
                     getGbidsForParticipantId(Eq(capParticipantId), _)).Times(numberOfTimeouts + 1)
-            .WillRepeatedly(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+            .WillRepeatedly(DoAll(ReleaseSemaphore(&semaphore),
                             Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .Times(numberOfTimeouts + 1)
             .WillRepeatedly(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
-                                  InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                                  ReleaseSemaphore(&semaphore),
                                   Return(mockFuture)));
     globalCapabilitiesDirectoryClient->remove(
             capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
@@ -878,13 +879,13 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterRuntimeExcep
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
                     getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+            .WillOnce(DoAll(ReleaseSemaphore(&semaphore),
                             Return(gbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->remove(
             capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
@@ -900,13 +901,13 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterApplicationE
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
                     getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+            .WillOnce(DoAll(ReleaseSemaphore(&semaphore),
                             Return(gbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<3>(&onApplicationErrorCallback),
-                            InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                            ReleaseSemaphore(&semaphore),
                             Return(mockFuture)));
     globalCapabilitiesDirectoryClient->remove(
             capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
@@ -921,13 +922,13 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveDeletionWhileRetry)
     Semaphore semaphore;
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
                     getGbidsForParticipantId(Eq(capParticipantId), _)).Times(2)
-            .WillRepeatedly(DoAll(InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+            .WillRepeatedly(DoAll(ReleaseSemaphore(&semaphore),
                             Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .Times(2)
             .WillRepeatedly(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
-                                  InvokeWithoutArgs(&semaphore, &Semaphore::notify),
+                                  ReleaseSemaphore(&semaphore),
                                   Return(mockFuture)));
     globalCapabilitiesDirectoryClient->remove(
             capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
@@ -944,7 +945,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveParticipantNotRegistered
 
     EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
                     getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(InvokeWithoutArgs(&lcdStoreSemaphore, &Semaphore::notify),
+            .WillOnce(DoAll(ReleaseSemaphore(&lcdStoreSemaphore),
                             Return(expectedGbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
