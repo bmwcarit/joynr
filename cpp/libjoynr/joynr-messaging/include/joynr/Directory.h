@@ -86,6 +86,7 @@ public:
 
     ~Directory()
     {
+        std::lock_guard<std::mutex> lock(_mutex);
         JOYNR_LOG_TRACE(logger(), "destructor: number of entries = {}", callbackMap.size());
     }
 
