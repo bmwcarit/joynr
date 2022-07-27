@@ -291,49 +291,48 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
                 subscriptionId);
         return;
     }
+
+    std::unique_lock<std::recursive_mutex> multicastSubscribersLocker(_multicastSubscribersMutex);
     std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->_mutex);
     JOYNR_LOG_TRACE(
             logger(), "Called unregister / unsubscribe on subscription id= {}", subscriptionId);
-    {
-        std::lock_guard<std::recursive_mutex> multicastSubscribersLocker(
-                _multicastSubscribersMutex);
-        std::string multicastId = subscription->_multicastId;
-        if (!multicastId.empty()) {
-            stopSubscription(subscription);
-            // remove multicast subscriber
-            if (!_multicastSubscribers.unregisterMulticastReceiver(multicastId, subscriptionId)) {
-                JOYNR_LOG_FATAL(
-                        logger(),
-                        "No multicast subscriber found for subscriptionId={}, multicastId={}",
-                        subscriptionId,
-                        multicastId);
-                return;
-            }
-            auto onSuccess = [subscriptionId, multicastId]() {
-                JOYNR_LOG_TRACE(logger(),
-                                "Multicast receiver unregistered. ID={}, multicastId={}",
-                                subscriptionId,
-                                multicastId);
-            };
-            std::shared_ptr<ISubscriptionListenerBase> subscriptionListener =
-                    subscription->_subscriptionListener;
-            auto onError = [subscriptionId, multicastId, subscriptionListener](
-                    const joynr::exceptions::ProviderRuntimeException& error) {
-                std::string message = "Unsubscribe from subscription (ID=" + subscriptionId +
-                                      ", multicastId=" + multicastId +
-                                      ") failed. Could not remove multicast receiver: " +
-                                      error.getMessage();
-                exceptions::SubscriptionException subscriptionException(message, subscriptionId);
-                subscriptionListener->onError(subscriptionException);
-            };
-            _messageRouter->removeMulticastReceiver(multicastId,
-                                                    subscription->_subscriberParticipantId,
-                                                    subscription->_providerParticipantId,
-                                                    std::move(onSuccess),
-                                                    std::move(onError));
+    std::string multicastId = subscription->_multicastId;
+    if (!multicastId.empty()) {
+        stopSubscription(subscription);
+        // remove multicast subscriber
+        if (!_multicastSubscribers.unregisterMulticastReceiver(multicastId, subscriptionId)) {
+            JOYNR_LOG_FATAL(logger(),
+                            "No multicast subscriber found for subscriptionId={}, multicastId={}",
+                            subscriptionId,
+                            multicastId);
             return;
         }
+        auto onSuccess = [subscriptionId, multicastId]() {
+            JOYNR_LOG_TRACE(logger(),
+                            "Multicast receiver unregistered. ID={}, multicastId={}",
+                            subscriptionId,
+                            multicastId);
+        };
+        std::shared_ptr<ISubscriptionListenerBase> subscriptionListener =
+                subscription->_subscriptionListener;
+        auto onError = [subscriptionId, multicastId, subscriptionListener](
+                const joynr::exceptions::ProviderRuntimeException& error) {
+            std::string message = "Unsubscribe from subscription (ID=" + subscriptionId +
+                                  ", multicastId=" + multicastId +
+                                  ") failed. Could not remove multicast receiver: " +
+                                  error.getMessage();
+            exceptions::SubscriptionException subscriptionException(message, subscriptionId);
+            subscriptionListener->onError(subscriptionException);
+        };
+        _messageRouter->removeMulticastReceiver(multicastId,
+                                                subscription->_subscriberParticipantId,
+                                                subscription->_providerParticipantId,
+                                                std::move(onSuccess),
+                                                std::move(onError));
+        return;
     }
+    multicastSubscribersLocker.unlock();
+
     stopSubscription(subscription);
 }
 
