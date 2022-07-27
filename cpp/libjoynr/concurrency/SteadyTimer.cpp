@@ -33,7 +33,7 @@ struct AsioSteadyTimer : boost::asio::steady_timer
 };
 
 SteadyTimer::SteadyTimer(boost::asio::io_service& io_service)
-        : steady_timer(std::make_unique<AsioSteadyTimer>(io_service))
+        : _steady_timer(std::make_unique<AsioSteadyTimer>(io_service))
 {
 }
 
@@ -41,18 +41,18 @@ SteadyTimer::~SteadyTimer() = default;
 
 void SteadyTimer::cancel()
 {
-    steady_timer->cancel();
+    _steady_timer->cancel();
 }
 
 void SteadyTimer::expiresFromNow(std::chrono::milliseconds duration)
 {
-    steady_timer->expires_from_now(duration);
+    _steady_timer->expires_from_now(duration);
 }
 
 void SteadyTimer::asyncWait(std::function<void(const boost::system::error_code&)>&& callback)
 {
     assert(callback);
-    steady_timer->async_wait(std::move(callback));
+    _steady_timer->async_wait(std::move(callback));
 }
 
 } // namespace joynr
