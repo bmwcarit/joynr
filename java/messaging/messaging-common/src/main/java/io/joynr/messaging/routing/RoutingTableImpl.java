@@ -38,6 +38,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.inprocess.InProcessAddress;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -153,24 +154,24 @@ public class RoutingTableImpl implements RoutingTable {
     }
 
     @Override
-    public void put(final String participantId,
-                    final Address address,
-                    final boolean isGloballyVisible,
-                    long expiryDateMs) {
+    public boolean put(final String participantId,
+                       final Address address,
+                       final boolean isGloballyVisible,
+                       long expiryDateMs) {
         final boolean sticky = false;
-        put(participantId, address, isGloballyVisible, expiryDateMs, sticky);
+        return put(participantId, address, isGloballyVisible, expiryDateMs, sticky);
 
     }
 
     @Override
-    public void put(final String participantId,
-                    final Address address,
-                    final boolean isGloballyVisible,
-                    long expiryDateMs,
-                    final boolean sticky) {
+    public boolean put(final String participantId,
+                       final Address address,
+                       final boolean isGloballyVisible,
+                       long expiryDateMs,
+                       final boolean sticky) {
         if (!addressValidator.isValidForRoutingTable(address)) {
             logger.trace("ParticipantId {} has an address unsupported within this process.", participantId);
-            return;
+            return false;
         }
         try {
             expiryDateMs = Math.addExact(expiryDateMs, routingTableGracePeriodMs);
@@ -191,7 +192,7 @@ public class RoutingTableImpl implements RoutingTable {
                              expiryDateMs,
                              sticky,
                              1);
-                return;
+                return true;
             }
             oldRoutingEntry.incRefCount();
             newRoutingEntry.setRefCount(oldRoutingEntry.getRefCount());
@@ -205,6 +206,11 @@ public class RoutingTableImpl implements RoutingTable {
 
             if (addressOrVisibilityOfRoutingEntryChanged) {
                 if (oldRoutingEntry.getIsSticky()) {
+                    if (gcdParticipantId.equals(participantId) && address instanceof InProcessAddress
+                            && oldRoutingEntry.address instanceof InProcessAddress) {
+                        // allow registration of GCD (ignore isSticky for inprocess GCD)
+                        return true;
+                    }
                     logger.error("Refused to update sticky routing entry participantId {}, address {}, isGloballyVisible {}, to address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, refCnt {}",
                                  participantId,
                                  oldRoutingEntry.getAddress(),
@@ -214,9 +220,9 @@ public class RoutingTableImpl implements RoutingTable {
                                  expiryDateMs,
                                  sticky,
                                  oldRoutingEntry.getRefCount());
-                } else if (addressValidator.allowUpdate(oldRoutingEntry, newRoutingEntry)) {
-                    updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
-                } else {
+                    return false;
+                }
+                if (!addressValidator.allowUpdate(oldRoutingEntry, newRoutingEntry)) {
                     logger.warn("Refused to update routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, to address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, refCnt {}",
                                 participantId,
                                 oldRoutingEntry.getAddress(),
@@ -228,7 +234,9 @@ public class RoutingTableImpl implements RoutingTable {
                                 expiryDateMs,
                                 sticky,
                                 oldRoutingEntry.getRefCount());
+                    return false;
                 }
+                updateRoutingEntry(participantId, oldRoutingEntry, newRoutingEntry);
             } else {
                 // only expiryDate or sticky flag of routing entry changed
                 logger.trace("Updated routing entry participantId {}, address {}, isGloballyVisible {}, expiryDateMs {}, sticky {}, refCnt {} . Updated expiryDate and sticky-flag",
@@ -241,6 +249,7 @@ public class RoutingTableImpl implements RoutingTable {
                 mergeRoutingEntryAttributes(oldRoutingEntry, expiryDateMs, sticky);
             }
         }
+        return true;
     }
 
     private void mergeRoutingEntryAttributes(final RoutingEntry entry,
