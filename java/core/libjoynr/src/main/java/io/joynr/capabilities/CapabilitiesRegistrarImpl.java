@@ -90,7 +90,14 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                          ProviderQos providerQos,
                                          String[] gbids,
                                          boolean awaitGlobalRegistration) {
-        DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
+        DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddProviderContainer(domain, provider, providerQos);
+        try {
+            addRoutingEntry(discoveryEntry, provider);
+        } catch (JoynrRuntimeException error) {
+            final Future<Void> newFuture = new Future<>();
+            newFuture.onFailure(error);
+            return newFuture;
+        }
         CallbackWithModeledError<Void, DiscoveryError> callback = buildAddCallback(discoveryEntry);
         return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration, gbids);
     }
@@ -101,14 +108,21 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                    Object provider,
                                                    ProviderQos providerQos,
                                                    boolean awaitGlobalRegistration) {
-        DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddLocalParticipantEntries(domain, provider, providerQos);
+        DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddProviderContainer(domain, provider, providerQos);
+        try {
+            addRoutingEntry(discoveryEntry, provider);
+        } catch (JoynrRuntimeException error) {
+            final Future<Void> newFuture = new Future<>();
+            newFuture.onFailure(error);
+            return newFuture;
+        }
         CallbackWithModeledError<Void, DiscoveryError> callback = buildAddCallback(discoveryEntry);
         return localDiscoveryAggregator.addToAll(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
-    private DiscoveryEntry buildDiscoveryEntryAndAddLocalParticipantEntries(final String domain,
-                                                                            Object provider,
-                                                                            ProviderQos providerQos) {
+    private DiscoveryEntry buildDiscoveryEntryAndAddProviderContainer(final String domain,
+                                                                      Object provider,
+                                                                      ProviderQos providerQos) {
         if (providerQos == null) {
             throw new JoynrRuntimeException("providerQos == null. It must not be null");
         }
@@ -125,10 +139,21 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                                            System.currentTimeMillis(),
                                                            System.currentTimeMillis() + defaultExpiryTimeMs,
                                                            defaultPublicKeyId);
-        final boolean isGloballyVisible = (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
         providerDirectory.add(participantId, providerContainer);
-        messageRouter.addNextHop(participantId, libjoynrMessagingAddress, isGloballyVisible);
         return discoveryEntry;
+    }
+
+    private void addRoutingEntry(DiscoveryEntry discoveryEntry, Object provider) {
+        final boolean isGloballyVisible = (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
+        String participantId = discoveryEntry.getParticipantId();
+        try {
+            messageRouter.addNextHop(participantId, libjoynrMessagingAddress, isGloballyVisible);
+        } catch (Exception error) {
+            // addNextHop throws when RoutingTable.put fails
+            providerDirectory.remove(participantId);
+            providerContainerFactory.removeProviderContainer(provider);
+            throw (new JoynrRuntimeException("Error while adding routing entry: " + error));
+        }
     }
 
     private CallbackWithModeledError<Void, DiscoveryError> buildAddCallback(final DiscoveryEntry discoveryEntry) {

@@ -46,6 +46,7 @@ public class StaticCapabilitiesProvisioningWithRoutingTableInsertion extends Sta
               legacyCapabilitiesProvisioning,
               resourceContentProvider,
               gbids);
+        // It will throw in case of wrong configuration
         addAddressesToRoutingTable(routingTable);
     }
 

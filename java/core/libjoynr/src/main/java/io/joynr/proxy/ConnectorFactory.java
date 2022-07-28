@@ -75,6 +75,7 @@ public class ConnectorFactory {
                 isGloballyVisible = true;
             }
         }
+        // It is handled in ProxyBuilder.createProxyInvocationHandler, in the arbitration listener
         messageRouter.addNextHop(fromParticipantId, libjoynrMessagingAddress, isGloballyVisible);
         return Optional.ofNullable(joynrMessagingConnectorFactory.create(fromParticipantId,
                                                                          arbitrationResult.getDiscoveryEntries(),
