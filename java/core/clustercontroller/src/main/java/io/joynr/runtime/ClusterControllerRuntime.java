@@ -36,6 +36,7 @@ import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.ParticipantIdStorage;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
@@ -114,16 +115,6 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
         final String routingProviderParticipantId = participantIdStorage.getProviderParticipantId(systemServicesDomain,
                                                                                                   Routing.INTERFACE_NAME,
                                                                                                   getVersionFromAnnotation(Routing.class).getMajorVersion());
-        routingTable.put(discoveryProviderParticipantId,
-                         discoveryProviderAddress,
-                         isGloballyVisible,
-                         expiryDateMs,
-                         isSticky);
-        routingTable.put(routingProviderParticipantId,
-                         discoveryProviderAddress,
-                         isGloballyVisible,
-                         expiryDateMs,
-                         isSticky);
 
         ProviderQos providerQos = new ProviderQos();
         providerQos.setScope(ProviderScope.LOCAL);
@@ -139,6 +130,24 @@ public class ClusterControllerRuntime extends JoynrRuntimeImpl {
                                                providerQos,
                                                new String[]{},
                                                awaitGlobalRegistration);
+
+        if (!routingTable.put(discoveryProviderParticipantId,
+                              discoveryProviderAddress,
+                              isGloballyVisible,
+                              expiryDateMs,
+                              isSticky)) {
+            throw (new JoynrRuntimeException("Unable to addNextHop " + discoveryProviderParticipantId + " to "
+                    + discoveryProviderAddress.toString()));
+        }
+
+        if (!routingTable.put(routingProviderParticipantId,
+                              discoveryProviderAddress,
+                              isGloballyVisible,
+                              expiryDateMs,
+                              isSticky)) {
+            throw (new JoynrRuntimeException("Unable to addNextHop " + routingProviderParticipantId + " to "
+                    + discoveryProviderAddress.toString()));
+        }
 
         this.scheduler = scheduler;
         scheduleRemoveStale(localCapabilitiesDirectory, removeStaleDelayMs);

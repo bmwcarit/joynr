@@ -23,6 +23,7 @@ import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.util.ObjectMapper;
@@ -56,11 +57,13 @@ public class StaticCapabilitiesProvisioningWithRoutingTableInsertion extends Sta
             boolean isGloballyVisible = (globalDiscoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
             final long expiryDateMs = Long.MAX_VALUE;
             final boolean isSticky = true;
-            routingTable.put(globalDiscoveryEntry.getParticipantId(),
-                             CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
-                             isGloballyVisible,
-                             expiryDateMs,
-                             isSticky);
+            if (!routingTable.put(globalDiscoveryEntry.getParticipantId(),
+                                  CapabilityUtils.getAddressFromGlobalDiscoveryEntry(globalDiscoveryEntry),
+                                  isGloballyVisible,
+                                  expiryDateMs,
+                                  isSticky)) {
+                throw (new JoynrRuntimeException("Unable to add routing entries for provisioned discovery entries."));
+            }
         }
     }
 }

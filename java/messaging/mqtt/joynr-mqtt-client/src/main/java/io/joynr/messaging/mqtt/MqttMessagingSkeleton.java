@@ -188,11 +188,12 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                 requestAccepted(message.getId());
             }
 
+            boolean routingEntryRegistered = false;
             try {
-                registerGlobalRoutingEntry(message, ownGbid);
+                routingEntryRegistered = registerGlobalRoutingEntry(message, ownGbid);
                 messageRouter.routeIn(message);
             } catch (Exception e) {
-                removeGlobalRoutingEntry(message);
+                removeGlobalRoutingEntry(message, routingEntryRegistered);
                 messageProcessed(message.getId());
                 failureAction.execute(e);
             }

@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,8 +67,8 @@ import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
-import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
+import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.system.DiscoveryAbstractProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -103,6 +102,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
     private static final long RE_ADD_INTERVAL_DAYS = 7L;
     private static final long REMOVESTALE_MAX_RETRY_MS = 3600000L;
+
+    private static final String REMOVE_LOOKUP_RESULT_MESSAGE = "Removing {} from lookup result because addToRoutingTable failed.";
 
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> freshnessUpdateScheduledFuture;
@@ -889,7 +890,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
     private void handleLocalOnly(final CapabilitiesCallback capabilitiesCallback,
                                  Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries) {
-        localDiscoveryEntries.forEach((entry) -> routingTable.incrementReferenceCount(entry.getParticipantId()));
+        localDiscoveryEntries.forEach(entry -> routingTable.incrementReferenceCount(entry.getParticipantId()));
         capabilitiesCallback.processCapabilitiesReceived(Optional.of(localDiscoveryEntries));
     }
 
@@ -902,7 +903,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                        Set<GlobalDiscoveryEntry> globalDiscoveryEntries) {
         Set<String> missingDomains = new HashSet<String>(Arrays.asList(domains));
 
-        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<DiscoveryEntryWithMetaInfo>();
+        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
         boolean globalEntriesAdded = false;
 
         // look for the domains in the local entries first
@@ -914,19 +915,28 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         // If there still some missing domains, search in the globalCache
         if (!missingDomains.isEmpty()) {
             globalEntriesAdded = true;
-            globalDiscoveryEntries.forEach((entry) -> {
-                result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
-                missingDomains.remove(entry.getDomain());
-            });
+            globalDiscoveryEntries.forEach(entry -> missingDomains.remove(entry.getDomain()));
         }
 
         if (missingDomains.isEmpty()) {
-            localDiscoveryEntries.forEach((entry) -> routingTable.incrementReferenceCount(entry.getParticipantId()));
+            localDiscoveryEntries.forEach(entry -> routingTable.incrementReferenceCount(entry.getParticipantId()));
             if (globalEntriesAdded) {
-                globalDiscoveryEntries.forEach((entry) -> addToRoutingTable(entry));
+                globalDiscoveryEntries.forEach(entry -> {
+                    try {
+                        addToRoutingTable(entry);
+                        result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
+                    } catch (Exception e) {
+                        // it should never happen because addNextHop was successful at least once when we received the entry from GCD
+                        logger.error(REMOVE_LOOKUP_RESULT_MESSAGE, entry, e);
+                    }
+                });
             }
             capabilitiesCallback.processCapabilitiesReceived(Optional.of(result));
         } else {
+            if (globalEntriesAdded) {
+                globalDiscoveryEntries.forEach(entry -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                       entry)));
+            }
             asyncGetGlobalCapabilities(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, result);
         }
     }
@@ -939,22 +949,32 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                       Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
                                       Set<GlobalDiscoveryEntry> globalDiscoveryEntries) {
         Set<String> missingDomains = new HashSet<String>(Arrays.asList(domains));
-        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<DiscoveryEntryWithMetaInfo>(localDiscoveryEntries);
-
-        // ParticipantIds are unique across the local store and the global cache
-        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
-        globalDiscoveryEntries.forEach((entry) -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                 entry)));
+        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
+        result.addAll(localDiscoveryEntries);
 
         for (GlobalDiscoveryEntry globalEntry : globalDiscoveryEntries) {
             missingDomains.remove(globalEntry.getDomain());
         }
 
         if (missingDomains.isEmpty()) {
-            localDiscoveryEntries.forEach((entry) -> routingTable.incrementReferenceCount(entry.getParticipantId()));
-            globalDiscoveryEntries.forEach((entry) -> addToRoutingTable(entry));
+            localDiscoveryEntries.forEach(entry -> routingTable.incrementReferenceCount(entry.getParticipantId()));
+            globalDiscoveryEntries.forEach(entry -> {
+                try {
+                    addToRoutingTable(entry);
+                    // ParticipantIds are unique across the local store and the global cache
+                    // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
+                    result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
+                } catch (Exception e) {
+                    // it should never happen because addNextHop was successful at least once when we received the entry from GCD
+                    logger.error(REMOVE_LOOKUP_RESULT_MESSAGE, entry, e);
+                }
+            });
             capabilitiesCallback.processCapabilitiesReceived(Optional.of(result));
         } else {
+            // ParticipantIds are unique across the local store and the global cache
+            // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
+            globalDiscoveryEntries.forEach(entry -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                   entry)));
             asyncGetGlobalCapabilities(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, result);
         }
     }
@@ -967,20 +987,34 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                   Set<DiscoveryEntryWithMetaInfo> localEntries,
                                   Set<GlobalDiscoveryEntry> globalDiscoveryEntries) {
         Set<String> missingDomains = new HashSet<>(Arrays.asList(domains));
-        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<DiscoveryEntryWithMetaInfo>(localEntries);
-        // ParticipantIds are unique across the local store and the global cache
-        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
-        globalDiscoveryEntries.forEach((entry) -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                 entry)));
+        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
+        result.addAll(localEntries);
+
         for (DiscoveryEntryWithMetaInfo entry : result) {
             missingDomains.remove(entry.getDomain());
         }
 
+        globalDiscoveryEntries.forEach(entry -> missingDomains.remove(entry.getDomain()));
+
         if (missingDomains.isEmpty()) {
-            localEntries.forEach((entry) -> routingTable.incrementReferenceCount(entry.getParticipantId()));
-            globalDiscoveryEntries.forEach((entry) -> addToRoutingTable(entry));
+            localEntries.forEach(entry -> routingTable.incrementReferenceCount(entry.getParticipantId()));
+            globalDiscoveryEntries.forEach(entry -> {
+                try {
+                    addToRoutingTable(entry);
+                    // ParticipantIds are unique across the local store and the global cache
+                    // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
+                    result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
+                } catch (Exception e) {
+                    // it should never happen because addNextHop was successful at least once when we received the entry from GCD
+                    logger.error(REMOVE_LOOKUP_RESULT_MESSAGE, entry, e);
+                }
+            });
             capabilitiesCallback.processCapabilitiesReceived(Optional.of(result));
         } else {
+            // ParticipantIds are unique across the local store and the global cache
+            // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
+            globalDiscoveryEntries.forEach(entry -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                   entry)));
             asyncGetGlobalCapabilities(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, result);
         }
     }
@@ -996,7 +1030,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                                                                                       cacheMaxAge);
             return filterGloballyCachedEntriesByGbids(globallyCachedEntries, gbids);
         }
-        return null;
+        return new HashSet<>();
     }
 
     private boolean isRegisteredForGbids(DiscoveryEntry entry, Collection<String> gbidSet) {
@@ -1180,8 +1214,10 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
             Address address = CapabilityUtils.getAddressFromGlobalDiscoveryEntry(entry);
             final boolean isGloballyVisible = (entry.getQos().getScope() == ProviderScope.GLOBAL);
             final long expiryDateMs = Long.MAX_VALUE;
-
-            routingTable.put(entry.getParticipantId(), address, isGloballyVisible, expiryDateMs);
+            if (!routingTable.put(entry.getParticipantId(), address, isGloballyVisible, expiryDateMs)) {
+                throw (new JoynrRuntimeException("Unable to addNextHop " + entry.getParticipantId() + " to "
+                        + address.toString()));
+            }
         }
     }
 
@@ -1194,9 +1230,15 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
         if (cachedGlobalCapability.isPresent()
                 && isEntryForGbids(cachedGlobalCapability.get(), new HashSet<>(Arrays.asList(gbids)))) {
-            addToRoutingTable(cachedGlobalCapability.get());
-            capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                           cachedGlobalCapability.get())));
+            try {
+                addToRoutingTable(cachedGlobalCapability.get());
+                capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                               cachedGlobalCapability.get())));
+            } catch (Exception e) {
+                // it should never happen because addNextHop was successful at least once when we received the entry from GCD
+                capabilitiesCallback.onError(new JoynrRuntimeException("DiscoveryEntry " + cachedGlobalCapability.get()
+                        + " cannot be used: " + e.getMessage()));
+            }
         } else {
             boolean isLookupCalledWithEmptyGbid = Arrays.equals(new String[]{ "" }, gbids);
             globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>() {
@@ -1211,16 +1253,18 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                             capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
                                                                                                                                            localStoreEntry.get())));
                         } else {
-                            if (isLookupCalledWithEmptyGbid) {
-                                MqttAddress address = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(newGlobalDiscoveryEntry);
-                                address.setBrokerUri("");
-                                newGlobalDiscoveryEntry.setAddress(CapabilityUtils.serializeAddress(address));
+                            adjustAddressWhenEmptyGbid(isLookupCalledWithEmptyGbid, newGlobalDiscoveryEntry);
+                            try {
+                                addToRoutingTable(newGlobalDiscoveryEntry);
+                                globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
+                                // No need to filter the received GDE by GBIDs: already done in GCD
+                                capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                                               newGlobalDiscoveryEntry)));
+                            } catch (Exception e) {
+                                // it should never happen
+                                capabilitiesCallback.onError(new JoynrRuntimeException("DiscoveryEntry "
+                                        + newGlobalDiscoveryEntry + " cannot be used: " + e.getMessage()));
                             }
-                            addToRoutingTable(newGlobalDiscoveryEntry);
-                            globalDiscoveryEntryCache.add(newGlobalDiscoveryEntry);
-                            // No need to filter the received GDE by GBIDs: already done in GCD
-                            capabilitiesCallback.processCapabilityReceived(Optional.of(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                                           newGlobalDiscoveryEntry)));
                         }
                     } else {
                         capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
@@ -1255,72 +1299,54 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                             DiscoveryQos discoveryQos,
                                             final String[] gbids,
                                             final CapabilitiesCallback capabilitiesCallback,
-                                            Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries2) {
-
-        final Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = localDiscoveryEntries2 == null
-                ? new LinkedList<DiscoveryEntryWithMetaInfo>()
-                : localDiscoveryEntries2;
-
+                                            Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries) {
         boolean isLookupCalledWithEmptyGbid = Arrays.equals(new String[]{ "" }, gbids);
         globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>() {
-
             @Override
             public void onSuccess(List<GlobalDiscoveryEntry> globalDiscoverEntries) {
-                if (globalDiscoverEntries != null) {
-                    Collection<DiscoveryEntryWithMetaInfo> allDiscoveryEntries = new ArrayList<DiscoveryEntryWithMetaInfo>();
-                    Collection<String> addedParticipantIds = new ArrayList<String>();
-                    synchronized (globalDiscoveryEntryCache) {
-                        for (GlobalDiscoveryEntry entry : globalDiscoverEntries) {
-                            Optional<DiscoveryEntry> localStoreEntry = localDiscoveryEntryStore.lookup(entry.getParticipantId(),
-                                                                                                       Long.MAX_VALUE);
-                            if (localStoreEntry.isPresent()) {
-                                DiscoveryEntry localEntry = localStoreEntry.get();
-                                boolean returnLocalEntry = !(discoveryQos.getDiscoveryScope()
-                                                                         .equals(DiscoveryScope.GLOBAL_ONLY))
-                                        || localEntry.getQos().getScope().equals(ProviderScope.GLOBAL);
-                                Set<String> domainSet = new HashSet<String>(Arrays.asList(domains));
-                                if (returnLocalEntry && interfaceName.equals(localEntry.getInterfaceName())
-                                        && domainSet.contains(localEntry.getDomain())) {
-                                    addedParticipantIds.add(entry.getParticipantId());
-                                    allDiscoveryEntries.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
-                                                                                                                localStoreEntry.get()));
-                                    routingTable.incrementReferenceCount(localStoreEntry.get().getParticipantId());
-                                }
-                                continue;
+                if (globalDiscoverEntries == null) {
+                    capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
+                    return;
+                }
+                Collection<DiscoveryEntryWithMetaInfo> allDiscoveryEntries = new ArrayList<DiscoveryEntryWithMetaInfo>();
+                Collection<String> addedParticipantIds = new ArrayList<String>();
+                synchronized (globalDiscoveryEntryCache) {
+                    for (GlobalDiscoveryEntry entry : globalDiscoverEntries) {
+                        Optional<DiscoveryEntry> localStoreEntry = localDiscoveryEntryStore.lookup(entry.getParticipantId(),
+                                                                                                   Long.MAX_VALUE);
+                        if (localStoreEntry.isPresent()) {
+                            DiscoveryEntry localEntry = localStoreEntry.get();
+                            boolean returnLocalEntry = !(discoveryQos.getDiscoveryScope()
+                                                                     .equals(DiscoveryScope.GLOBAL_ONLY))
+                                    || localEntry.getQos().getScope().equals(ProviderScope.GLOBAL);
+                            Set<String> domainSet = new HashSet<String>(Arrays.asList(domains));
+                            if (returnLocalEntry && interfaceName.equals(localEntry.getInterfaceName())
+                                    && domainSet.contains(localEntry.getDomain())) {
+                                addedParticipantIds.add(entry.getParticipantId());
+                                allDiscoveryEntries.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(true,
+                                                                                                            localStoreEntry.get()));
+                                routingTable.incrementReferenceCount(localStoreEntry.get().getParticipantId());
                             }
-                            if (isLookupCalledWithEmptyGbid) {
-                                MqttAddress address = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(entry);
-                                address.setBrokerUri("");
-                                entry.setAddress(CapabilityUtils.serializeAddress(address));
-                            }
+                            continue;
+                        }
+                        adjustAddressWhenEmptyGbid(isLookupCalledWithEmptyGbid, entry);
+
+                        try {
                             addToRoutingTable(entry);
                             globalDiscoveryEntryCache.add(entry);
                             addedParticipantIds.add(entry.getParticipantId());
-
                             // No need to filter the received GDEs by GBIDs: already done in GCD
                             allDiscoveryEntries.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
+                        } catch (Exception e) {
+                            logger.error("Dropping discovery entry: {} from global lookup result because it could not be added to the routing table",
+                                         entry,
+                                         e);
                         }
                     }
-                    for (DiscoveryEntryWithMetaInfo entry : localDiscoveryEntries) {
-                        if (!addedParticipantIds.contains(entry.getParticipantId())) {
-                            if (entry.getIsLocal()) {
-                                routingTable.incrementReferenceCount(entry.getParticipantId());
-                            } else {
-                                Optional<GlobalDiscoveryEntry> cachedEntry = globalDiscoveryEntryCache.lookup(entry.getParticipantId(),
-                                                                                                              Long.MAX_VALUE);
-                                if (cachedEntry.isPresent()) {
-                                    addToRoutingTable(cachedEntry.get());
-                                } else {
-                                    continue;
-                                }
-                            }
-                            allDiscoveryEntries.add(entry);
-                        }
-                    }
-                    capabilitiesCallback.processCapabilitiesReceived(Optional.of(allDiscoveryEntries));
-                } else {
-                    capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
                 }
+
+                addLocalDiscoveriesToResult(localDiscoveryEntries, allDiscoveryEntries, addedParticipantIds);
+                capabilitiesCallback.processCapabilitiesReceived(Optional.of(allDiscoveryEntries));
             }
 
             @Override
@@ -1341,6 +1367,39 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 capabilitiesCallback.onError(exception);
             }
         }, domains, interfaceName, discoveryQos.getDiscoveryTimeout(), gbids);
+    }
+
+    private void addLocalDiscoveriesToResult(Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
+                                             Collection<DiscoveryEntryWithMetaInfo> allDiscoveryEntries,
+                                             Collection<String> alreadyAddedParticipantIds) {
+        for (DiscoveryEntryWithMetaInfo entry : localDiscoveryEntries) {
+            if (!alreadyAddedParticipantIds.contains(entry.getParticipantId())) {
+                if (Boolean.TRUE.equals(entry.getIsLocal())) {
+                    routingTable.incrementReferenceCount(entry.getParticipantId());
+                    allDiscoveryEntries.add(entry);
+                } else {
+                    Optional<GlobalDiscoveryEntry> cachedEntry = globalDiscoveryEntryCache.lookup(entry.getParticipantId(),
+                                                                                                  Long.MAX_VALUE);
+                    if (cachedEntry.isPresent()) {
+                        try {
+                            addToRoutingTable(cachedEntry.get());
+                            allDiscoveryEntries.add(entry);
+                        } catch (Exception e) {
+                            // this should never happen because addNextHop was successful at least once when we received the entry from GCD
+                            logger.error(REMOVE_LOOKUP_RESULT_MESSAGE, entry, e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void adjustAddressWhenEmptyGbid(boolean isLookupCalledWithEmptyGbid, GlobalDiscoveryEntry entry) {
+        if (isLookupCalledWithEmptyGbid) {
+            MqttAddress address = (MqttAddress) CapabilityUtils.getAddressFromGlobalDiscoveryEntry(entry);
+            address.setBrokerUri("");
+            entry.setAddress(CapabilityUtils.serializeAddress(address));
+        }
     }
 
     @Override
