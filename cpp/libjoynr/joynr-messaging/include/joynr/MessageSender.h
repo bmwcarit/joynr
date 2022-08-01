@@ -149,6 +149,8 @@ public:
                        const MulticastPublication& multicastPublication,
                        const MessagingQos& messagingQos) override;
 
+    void removeRoutingEntry(const std::string& participantId) override;
+
 private:
     DISALLOW_COPY_AND_ASSIGN(MessageSender);
     std::weak_ptr<IDispatcher> _dispatcher;

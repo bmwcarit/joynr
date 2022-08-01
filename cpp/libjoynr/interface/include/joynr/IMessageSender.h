@@ -132,6 +132,8 @@ public:
     virtual void sendMulticast(const std::string& fromParticipantId,
                                const MulticastPublication& multicastPublication,
                                const MessagingQos& messagingQos) = 0;
+
+    virtual void removeRoutingEntry(const std::string& sparticipantId) = 0;
 };
 
 } // namespace joynr

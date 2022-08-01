@@ -316,4 +316,15 @@ void MessageSender::sendMulticast(const std::string& fromParticipantId,
     }
 }
 
+void MessageSender::removeRoutingEntry(const std::string& participantId)
+{
+    try {
+        _messageRouter->removeNextHop(participantId);
+    } catch (const exceptions::JoynrRuntimeException& e) {
+        JOYNR_LOG_ERROR(logger(),
+                        "removeNextHop for participantId {} could not be sent. Error: {}",
+                        participantId,
+                        e.getMessage());
+    }
+}
 } // namespace joynr
