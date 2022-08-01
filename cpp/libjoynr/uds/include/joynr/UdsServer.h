@@ -195,6 +195,7 @@ private:
     std::shared_ptr<Connection> _newConnection;
     std::future<void> _worker;
     std::atomic_bool _started;
+    std::mutex _acceptorMutex;
     ADD_LOGGER(UdsServer)
 };
 
