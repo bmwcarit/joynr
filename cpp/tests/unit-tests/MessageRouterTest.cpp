@@ -40,6 +40,7 @@
 #include "joynr/Util.h"
 #include "joynr/IPlatformSecurityManager.h"
 
+#include "tests/JoynrTest.h"
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
 #include "tests/mock/MockTransportStatus.h"
@@ -147,7 +148,7 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
     droppedMessages.push_front(immutableRequestMessage);
     EXPECT_EQ(1, droppedMessages.size());
 
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<joynr::Semaphore>(0);
     Reply capturedReply;
     const std::string expectedSenderId = receiverId;
     const std::string expectedReceiverId = senderId;
@@ -171,12 +172,12 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
                     _))
                    .WillOnce(DoAll(Invoke(captureReply),
                                    SaveArg<2>(&capturedQos),
-                                   ReleaseSemaphore(&semaphore)));
+                                   ReleaseSemaphore(semaphore)));
 
     capturedOnMsgsDroppedFunc(droppedMessages);
 
     EXPECT_EQ(0, droppedMessages.size());
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(500)));
 
     EXPECT_TRUE(compareMessagingQos(actualQos, capturedQos));
 
@@ -238,7 +239,7 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
     droppedMessages.push_front(immutableRequestMessage);
     EXPECT_EQ(1, droppedMessages.size());
 
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<joynr::Semaphore>(0);
     Reply capturedReply;
     const std::string expectedSenderId = receiverId;
     const std::string expectedReceiverId = senderId;
@@ -262,12 +263,12 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
                     _))
                    .WillOnce(DoAll(Invoke(captureReply),
                                    SaveArg<2>(&capturedQos),
-                                   ReleaseSemaphore(&semaphore)));
+                                   ReleaseSemaphore(semaphore)));
 
     capturedOnMsgsDroppedFunc(droppedMessages);
 
     EXPECT_EQ(0, droppedMessages.size());
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(500)));
 
     EXPECT_TRUE(compareMessagingQos(actualQos, capturedQos));
 
@@ -299,7 +300,7 @@ MATCHER_P(addressWithSkeleton, skeleton, "")
 
 TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue)
 {
-    joynr::Semaphore semaphore(0);
+    auto semaphore = std::make_shared<joynr::Semaphore>(0);
     const std::string unknownParticipantId = "unknownParticipantId";
     const std::string knownParticipantId = "knownParticipantId";
 
@@ -334,10 +335,10 @@ TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue)
             transmit(immutableMessage2,
                      A<const std::function<
                              void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
-            .WillByDefault(ReleaseSemaphore(&semaphore));
+            .WillByDefault(ReleaseSemaphore(semaphore));
     this->_messageRouter->route(immutableMessage2);
     EXPECT_EQ(this->_messageQueue->getQueueLength(), 1);
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(2)));
 }
 
 TYPED_TEST(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded)
@@ -449,16 +450,16 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable)
     EXPECT_EQ(1, this->_transportNotAvailableQueueRef->getQueueLength());
 
     // Now pretend that the transport became available
-    joynr::Semaphore semaphore(0);
+    auto semaphore = std::make_shared<joynr::Semaphore>(0);
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     ON_CALL(*mockMessagingStub, transmit(immutableMessage, _))
-            .WillByDefault(ReleaseSemaphore(&semaphore));
+            .WillByDefault(ReleaseSemaphore(semaphore));
     EXPECT_CALL(*(this->_messagingStubFactory), create(addressWithSkeleton(skeleton))).Times(1).WillOnce(
             Return(mockMessagingStub));
 
     availabilityChangedCallback(true);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(2)));
     EXPECT_EQ(0, this->_transportNotAvailableQueueRef->getQueueLength());
 }
 
@@ -557,7 +558,7 @@ TYPED_TEST(MessageRouterTest, cleanupExpiredMessagesFromTransportNotAvailableQue
 
 TYPED_TEST(MessageRouterTest, addressValidation_stickyEntriesAreNotReplaced)
 {
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<joynr::Semaphore>(0);
 
     const TimePoint now = TimePoint::now();
     this->_mutableMessage.setExpiryDate(now + std::chrono::milliseconds(1024));
@@ -583,11 +584,11 @@ TYPED_TEST(MessageRouterTest, addressValidation_stickyEntriesAreNotReplaced)
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     EXPECT_CALL(*this->_messagingStubFactory, create(Eq(stickyAddress))).WillOnce(Return(mockMessagingStub));
     EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     this->_messageRouter->route(immutableMessage);
 
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
     Mock::VerifyAndClearExpectations(this->_messagingStubFactory.get());
 
     auto dispatcher2 = std::make_shared<MockDispatcher>();
@@ -603,11 +604,11 @@ TYPED_TEST(MessageRouterTest, addressValidation_stickyEntriesAreNotReplaced)
 
     EXPECT_CALL(*this->_messagingStubFactory, create(Eq(stickyAddress))).WillOnce(Return(mockMessagingStub));
     EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     this->_messageRouter->route(immutableMessage);
 
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TYPED_TEST(MessageRouterTest, messageRunnable_onFailureScope)
@@ -634,13 +635,13 @@ TYPED_TEST(MessageRouterTest, messageRunnable_onFailureScope)
     ASSERT_TRUE(messageRunnableWeakPtr.expired()) << "MessageRunnable should not be shared";
 
     // Test 2nd run with MessageRunnable created by AbstractMessageRouter::scheduleMessage
-    Semaphore semaphore;
+    auto semaphore = std::make_shared<joynr::Semaphore>(0);
     EXPECT_CALL(*this->_messagingStubFactory, create(Eq(destAddress)))
             .WillOnce(Return(messagingStub));
     EXPECT_CALL(*messagingStub, transmit(Eq(immutableMessage), _))
-            .WillOnce(InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+            .WillOnce(ReleaseSemaphore(semaphore));
     std::chrono::milliseconds delay(10);
     ASSERT_TRUE(onFailure) << "onFailure callback not stored. Check test setup.";
     onFailure(exceptions::JoynrDelayMessageException(delay, ""));
-    EXPECT_TRUE(semaphore.waitFor(1000 * delay)) << "No transmit executed by the 2nd MessageRunnable.";
+    EXPECT_TRUE(semaphore->waitFor(1000 * delay)) << "No transmit executed by the 2nd MessageRunnable.";
 }
