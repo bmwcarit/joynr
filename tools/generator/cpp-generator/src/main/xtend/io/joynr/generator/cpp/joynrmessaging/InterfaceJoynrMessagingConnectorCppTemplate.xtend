@@ -355,8 +355,9 @@ request.setParams(
 			clonedMessagingQos.setTtl(static_cast<std::uint64_t>(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos)));
 
 			auto future = std::make_shared<Future<std::string>>();
+			std::shared_ptr<joynr::AbstractJoynrMessagingConnector> messagingConnector = shared_from_this();
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnType»>
-			>(subscriptionRequest.getSubscriptionId(), future, _subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, _subscriptionManager, messagingConnector);
 			if (auto ptr = _subscriptionManager.lock()) {
 				ptr->registerSubscription(
 						attributeName,
@@ -560,9 +561,10 @@ request.setParams(
 		clonedMessagingQos.setTtl(static_cast<std::uint64_t>(ISubscriptionManager::convertExpiryDateIntoTtlMs(*subscriptionQos)));
 
 		auto future = std::make_shared<Future<std::string>>();
+		std::shared_ptr<joynr::AbstractJoynrMessagingConnector> messagingConnector = shared_from_this();
 		«IF broadcast.selective»
 			auto subscriptionCallback = std::make_shared<joynr::UnicastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest.getSubscriptionId(), future, _subscriptionManager);
+			>(subscriptionRequest.getSubscriptionId(), future, _subscriptionManager, messagingConnector);
 			if (auto ptr = _subscriptionManager.lock()) {
 				ptr->registerSubscription(
 						broadcastName,
@@ -588,7 +590,7 @@ request.setParams(
 			}
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
-			>(subscriptionRequest->getSubscriptionId(), future, _subscriptionManager);
+			>(subscriptionRequest->getSubscriptionId(), future, _subscriptionManager, messagingConnector);
 			std::function<void()> onSuccess =
 					[messageSender = _messageSender,
 					proxyParticipantId = _proxyParticipantId,

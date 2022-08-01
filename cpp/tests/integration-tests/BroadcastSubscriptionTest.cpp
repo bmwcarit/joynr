@@ -160,7 +160,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback =
             std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>>(
-                    subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+                    subscriptionRequest.getSubscriptionId(), future, subscriptionManager, nullptr);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(subscribeToName,
@@ -210,7 +210,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters)
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback =
             std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation, double>>(
-                    subscriptionRequest.getSubscriptionId(), future, subscriptionManager);
+                    subscriptionRequest.getSubscriptionId(), future, subscriptionManager, nullptr);
 
     // subscriptionRequest is an out param
     subscriptionManager->registerSubscription(subscribeToName,

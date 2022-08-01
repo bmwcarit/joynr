@@ -27,11 +27,12 @@
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
-#include "joynr/tests/testProxy.h"
-#include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/tests/TestBroadcastWithFilteringBroadcastFilter.h"
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Future.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/system/RoutingProxy.h"
+#include "joynr/tests/TestBroadcastWithFilteringBroadcastFilter.h"
+#include "joynr/tests/testProxy.h"
 
 #include "tests/JoynrTest.h"
 
@@ -263,6 +264,69 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterFail)
     std::this_thread::sleep_for(std::chrono::milliseconds(minInterval_ms));
     JOYNR_EXPECT_NO_THROW(
             testProxy->unsubscribeFromLocationUpdateSelectiveBroadcast(subscriptionId));
+}
+
+TEST_P(End2EndSelectiveBroadcastTest, publishAfterProxyDestruction)
+{
+
+    MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(&semaphore));
+
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> subscriptionListener(
+            mockListener);
+
+    ON_CALL(*filter, filter(_, Eq(filterParameters))).WillByDefault(Return(true));
+
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+    testProvider->addBroadcastFilter(filter);
+
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
+    DiscoveryQos discoveryQos;
+    std::uint64_t qosRoundTripTTL = 500;
+
+    std::shared_ptr<tests::testProxy> testProxy =
+            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos =
+            std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                      1000,            // publication ttl
+                                                      minInterval_ms); // minInterval_ms
+
+    testProxy->subscribeToLocationUpdateSelectiveBroadcast(
+            filterParameters, subscriptionListener, subscriptionQos);
+    std::string participantId{testProxy->getProxyParticipantId()};
+
+    // Build a second proxy from the testProxyBuilder to remove the reference in the arbitrator of
+    // the first proxy
+    std::ignore = testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                          ->setDiscoveryQos(discoveryQos)
+                          ->build();
+
+    std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
+            runtime2->createProxyBuilder<joynr::system::RoutingProxy>("io.joynr.system");
+    std::shared_ptr<joynr::system::RoutingProxy> routingProxy(
+            routingProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
+
+    // Destruct the proxy
+    test::util::resetAndWaitUntilDestroyed(testProxy);
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
+
+    // Send message
+    testProvider->fireLocationUpdateSelective(gpsLocation2);
+    // Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+
+    bool resolved{false};
+    routingProxy->resolveNextHop(resolved, participantId);
+    ASSERT_TRUE(resolved);
 }
 
 using namespace std::string_literals;

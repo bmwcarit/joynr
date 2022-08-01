@@ -218,7 +218,7 @@ TEST_F(SubscriptionTest, receive_publication)
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback =
             std::make_shared<UnicastSubscriptionCallback<types::Localisation::GpsLocation>>(
-                    subscriptionRequest.getSubscriptionId(), future, _subscriptionManager);
+                    subscriptionRequest.getSubscriptionId(), future, _subscriptionManager, nullptr);
 
     // subscriptionRequest is an out param
     _subscriptionManager->registerSubscription(attributeName,
@@ -264,7 +264,7 @@ void SubscriptionTest::receive_publicationWithException(
 
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback = std::make_shared<UnicastSubscriptionCallback<std::int32_t>>(
-            subscriptionRequest.getSubscriptionId(), future, _subscriptionManager);
+            subscriptionRequest.getSubscriptionId(), future, _subscriptionManager, nullptr);
 
     _subscriptionManager->registerSubscription(attributeName,
                                               subscriptionCallback,
@@ -331,7 +331,7 @@ TEST_F(SubscriptionTest, receive_enumPublication)
     auto future = std::make_shared<Future<std::string>>();
     auto subscriptionCallback =
             std::make_shared<UnicastSubscriptionCallback<joynr::tests::testTypes::TestEnum::Enum>>(
-                    subscriptionRequest.getSubscriptionId(), future, _subscriptionManager);
+                    subscriptionRequest.getSubscriptionId(), future, _subscriptionManager, nullptr);
 
     // subscriptionRequest is an out param
     _subscriptionManager->registerSubscription(attributeName,

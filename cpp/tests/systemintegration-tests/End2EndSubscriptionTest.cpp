@@ -22,20 +22,21 @@
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
-#include "joynr/PrivateCopyAssign.h"
 #include "joynr/JoynrClusterControllerRuntime.h"
-#include "joynr/tests/testProxy.h"
-#include "joynr/types/ProviderQos.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/tests/testAbstractProvider.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
+#include "joynr/system/RoutingProxy.h"
 #include "joynr/tests/DefaulttestProvider.h"
+#include "joynr/tests/testAbstractProvider.h"
+#include "joynr/tests/testProxy.h"
+#include "joynr/types/ProviderQos.h"
 #include "tests/JoynrTest.h"
-#include "tests/utils/PtrUtils.h"
-#include "joynr/Semaphore.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -348,6 +349,66 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute)
             },
             &tests::testProvider::setByteBufferAttribute,
             "byteBufferAttribute");
+}
+
+TEST_P(End2EndSubscriptionTest, publishAfterProxyDestruction)
+{
+    auto mockListener = new MockSubscriptionListenerOneType<int32_t>();
+
+    ON_CALL(*mockListener, onReceive(Eq(42))).WillByDefault(ReleaseSemaphore(&semaphore));
+
+    std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
+    std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
+
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
+    DiscoveryQos discoveryQos;
+    std::uint64_t qosRoundTripTTL = 500;
+
+    std::shared_ptr<tests::testProxy> testProxy =
+            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build();
+
+    std::int64_t minInterval_ms = 50;
+    auto subscriptionQos =
+            std::make_shared<OnChangeSubscriptionQos>(500000,          // validity_ms
+                                                      1000,            // publication ttl
+                                                      minInterval_ms); // minInterval_ms
+    testProxy->subscribeToTestAttribute(subscriptionListener, subscriptionQos);
+    waitForAttributeSubscriptionArrivedAtProvider(testProvider, "testAttribute");
+    std::string participantId{testProxy->getProxyParticipantId()};
+
+    // Build a second proxy from the testProxyBuilder to remove the reference in the arbitrator of
+    // the first proxy
+    std::ignore = testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                          ->setDiscoveryQos(discoveryQos)
+                          ->build();
+
+    std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
+            runtime2->createProxyBuilder<joynr::system::RoutingProxy>("io.joynr.system");
+
+    std::shared_ptr<joynr::system::RoutingProxy> routingProxy(
+            routingProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
+
+    // Destruct the proxy
+    test::util::resetAndWaitUntilDestroyed(testProxy);
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
+
+    testProvider->setTestAttribute(
+            42,
+            []() {},
+            [](const joynr::exceptions::ProviderRuntimeException& error) {
+                ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage();
+            });
+    // Wait for a subscription reply message to arrive
+    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+
+    bool resolved{false};
+    routingProxy->resolveNextHop(resolved, participantId);
+    ASSERT_TRUE(resolved);
 }
 
 using namespace std::string_literals;

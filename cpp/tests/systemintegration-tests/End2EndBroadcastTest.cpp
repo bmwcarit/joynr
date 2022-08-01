@@ -33,8 +33,9 @@
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/tests/testProxy.h"
 #include "joynr/Settings.h"
+#include "joynr/system/RoutingProxy.h"
+#include "joynr/tests/testProxy.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockGpsFloatSubscriptionListener.h"
@@ -770,6 +771,62 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
     JOYNR_ASSERT_NO_THROW(testProxy2->unsubscribeFromLocationUpdateBroadcast(subscriptionId2));
 
     delayForMqttSubscribeOrUnsubscribe();
+}
+
+TEST_P(End2EndBroadcastTest, publishAfterProxyDestruction)
+{
+    MockGpsFloatSubscriptionListener* mockListener = new MockGpsFloatSubscriptionListener();
+
+    // Use a semaphore to count and wait on calls to the mock listener
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2), Eq(100)))
+            .WillOnce(ReleaseSemaphore(&semaphore));
+
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation, float>>
+            subscriptionListener(mockListener);
+    std::shared_ptr<MyTestProvider> testProvider = registerProvider();
+
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime2->createProxyBuilder<tests::testProxy>(domainName);
+    DiscoveryQos discoveryQos;
+    std::uint64_t qosRoundTripTTL = 500;
+
+    std::shared_ptr<tests::testProxy> testProxy =
+            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build();
+
+
+    auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
+    subscriptionQos->setValidityMs(500000);
+
+    testProxy->subscribeToLocationUpdateWithSpeedBroadcast(subscriptionListener, subscriptionQos);
+    delayForMqttSubscribeOrUnsubscribe();
+    std::string participantId{testProxy->getProxyParticipantId()};
+
+    // Build a second proxy from the testProxyBuilder to remove the reference in the arbitrator of
+    // the first proxy
+    std::ignore = testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                          ->setDiscoveryQos(discoveryQos)
+                          ->build();
+
+    std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
+            runtime2->createProxyBuilder<joynr::system::RoutingProxy>("io.joynr.system");
+    std::shared_ptr<joynr::system::RoutingProxy> routingProxy(
+            routingProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build());
+
+    // Destruct the proxy
+    test::util::resetAndWaitUntilDestroyed(testProxy);
+    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
+
+    testProvider->fireLocationUpdateWithSpeed(gpsLocation2, 100);
+    // Wait for a subscription message to arrive
+    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+
+    bool resolved{false};
+    routingProxy->resolveNextHop(resolved, participantId);
+    ASSERT_TRUE(resolved);
 }
 
 using namespace std::literals;

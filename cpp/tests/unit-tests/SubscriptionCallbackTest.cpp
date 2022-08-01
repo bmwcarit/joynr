@@ -53,7 +53,10 @@ public:
               subscriptionIdFuture(std::make_shared<Future<std::string>>()),
               mockSubscriptionListener(
                       std::make_shared<MockSubscriptionListenerOneType<std::string>>()),
-              subscriptionCallback(subscriptionId, subscriptionIdFuture, mockSubscriptionManager)
+              subscriptionCallback(subscriptionId,
+                                   subscriptionIdFuture,
+                                   mockSubscriptionManager,
+                                   nullptr)
     {
         ON_CALL(*mockSubscriptionManager, getSubscriptionListener(subscriptionId))
                 .WillByDefault(Return(mockSubscriptionListener));
