@@ -9,14 +9,31 @@ None.
 
 ## Other Changes
 * **[Java]** DomainAccessControlStore now uses com.googlecode.cqEngine 3.6.0 instead of
-  net.sf.ehCache
+  net.sf.ehCache to get rid of ehCache dependency.
+* **[Java]** Fixed logging with log4j2 in radio-app example.
+* **[Java]** Updated dependencies:
+```
+  * maven-project       2.2.1 -> maven-core 3.8.6
+  * hivemq-mqtt-client  1.2.2 -> 1.3.0
+  * junit              4.13.1 -> 4.13.2
+  * kotlin-stdlib-jdk8 1.3.61 -> 1.7.0
+  * kotlin-stdlib      1.3.61 -> 1.7.0
+  * netty-*      4.1.48.Final -> 4.1.77.Final
+  * postgresql         42.2.4 -> 42.4.0
+  * protobuf-java*     3.10.0 -> 3.21.2
+  * gson                2.8.5 -> 2.9.0
+```
+* **[C++]** Added cleanup of orphaned routing entries in cluster controller after loss of UDS
+  connection (same behavior as with WebSocket connections).
+* **[Docker]** Updated spdlog to version 1.9.2.
 
 ## Configuration Property Changes
 None.
 
 ## Security Fixes
 * **[Java]** Dependency to net.sf.ehCache removed, also removing transient dependencies
-  to vulnerable artifacts
+  to vulnerable artifacts.
+* **[Java]** Updated dependencies, see list above.
 
 ## Bug Fixes
 None.
