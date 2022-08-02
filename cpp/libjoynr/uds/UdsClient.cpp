@@ -50,7 +50,10 @@ UdsClient::UdsClient(
           _endpoint(settings.getSocketPath()),
           _ioContext(_threadsPerConnection),
           _socket(_ioContext),
-          _state{State::STOP}
+          _state{State::STOP},
+          _asyncShutdownMutex(),
+          _socketMutex(),
+          _worker()
 {
     try {
         _sendQueue->pushBack(UdsFrameBufferV1(_address));
@@ -129,6 +132,7 @@ void UdsClient::run()
             _ioContext.reset();
         }
         isRetry = true;
+        std::unique_lock<std::mutex> socketLock(_socketMutex);
         _socket.async_connect(_endpoint, [this](boost::system::error_code failedToConnect) {
             if (failedToConnect) {
                 JOYNR_LOG_ERROR(logger(),
@@ -153,8 +157,13 @@ void UdsClient::run()
                 }
             }
         });
+        socketLock.unlock();
+
         _ioContext.run();
+
+        socketLock.lock();
         boost::system::error_code ignore;
+        _socket.shutdown(boost::asio::socket_base::shutdown_both, ignore);
         _socket.close(ignore);
     }
     if (State::CONNECTED == _state.load()) {
@@ -191,6 +200,7 @@ void UdsClient::abortOnSocketConfigurationError() noexcept
 
 void UdsClient::doReadHeader() noexcept
 {
+    std::unique_lock<std::mutex> socketLock(_socketMutex);
     boost::asio::async_read(_socket,
                             _readBuffer->header(),
                             [this](boost::system::error_code readFailure, std::size_t /*length*/) {
@@ -208,6 +218,7 @@ void UdsClient::doReadHeader() noexcept
 void UdsClient::doReadBody() noexcept
 {
     try {
+        std::unique_lock<std::mutex> socketLock(_socketMutex);
         boost::asio::async_read(
                 _socket,
                 _readBuffer->body(),
@@ -250,6 +261,7 @@ void UdsClient::send(const smrf::ByteArrayView& msg, const IUdsSender::SendFaile
 
 void UdsClient::doWrite() noexcept
 {
+    std::unique_lock<std::mutex> socketLock(_socketMutex);
     boost::asio::async_write(_socket,
                              _sendQueue->showFront(),
                              [this](boost::system::error_code writeFailed, std::size_t /*length*/) {
@@ -289,6 +301,7 @@ void UdsClient::doHandleFatalError(const std::string& errorMessage) noexcept
                             _address.getId());
         }
         boost::system::error_code ignore;
+        std::unique_lock<std::mutex> socketLock(_socketMutex);
         _socket.shutdown(boost::asio::socket_base::shutdown_both, ignore);
         _socket.close(ignore);
     }

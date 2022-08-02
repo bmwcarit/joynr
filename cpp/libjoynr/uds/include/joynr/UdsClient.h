@@ -24,6 +24,7 @@
 #include <functional>
 #include <future>
 #include <memory>
+#include <mutex>
 
 #include <boost/asio.hpp>
 
@@ -136,6 +137,7 @@ private:
     enum class State : unsigned char { START, CONNECTED, STOP, FAILED };
     std::atomic<State> _state;
     std::mutex _asyncShutdownMutex;
+    std::mutex _socketMutex;
     std::future<void> _worker;
 
     ADD_LOGGER(UdsClient)
