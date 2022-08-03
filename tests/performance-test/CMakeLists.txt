@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
-project(performance-test VERSION 1.21.2 LANGUAGES CXX)
+project(performance-test VERSION 1.21.3 LANGUAGES CXX)
 
 # Compile to a bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -16,7 +16,7 @@ include(GNUInstallDirs)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.21.2 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
+find_package(Joynr 1.21.3 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 find_package(mosquitto 1.6.8)
 include(CheckMosquittoImportTargets)
 
