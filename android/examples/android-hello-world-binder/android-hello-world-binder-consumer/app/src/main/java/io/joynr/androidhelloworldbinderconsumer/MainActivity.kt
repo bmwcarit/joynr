@@ -3,7 +3,7 @@ package io.joynr.androidhelloworldbinderconsumer
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -14,8 +14,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        consumerViewModel =
-            ViewModelProviders.of(this)[ConsumerViewModel::class.java]
+        consumerViewModel = ViewModelProvider(this).get(ConsumerViewModel::class.java)
         consumerViewModel.registerProxy(application)
 
 
