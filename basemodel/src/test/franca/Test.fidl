@@ -235,6 +235,17 @@ interface test {
 		}
 	}
 
+	method sumIntsDelayed {
+		in {
+			Int32[] ints
+		}
+
+		out {
+			Int32 result
+		}
+	}
+
+
 	method methodWithNoInputParameters {
 		out {
 			Int32 result

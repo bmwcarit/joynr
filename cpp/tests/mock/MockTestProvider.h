@@ -154,6 +154,16 @@ public:
         onSuccess(result);
     }
 
+    void sumIntsDelayed(const std::vector<std::int32_t>& ints,
+                        std::function<void(const std::int32_t& result)> onSuccess,
+                        std::function<void(const joynr::exceptions::ProviderRuntimeException&
+                                                   exception)> /*onError*/) override
+    {
+        std::int32_t result = std::accumulate(ints.begin(), ints.end(), 0);
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        onSuccess(result);
+    }
+
     void returnPrimeNumbers(
             const std::int32_t &upperBound,
             std::function<void(

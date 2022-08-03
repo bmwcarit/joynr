@@ -202,6 +202,48 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
     runtime->unregisterProvider(participantId);
 }
 
+TEST_P(End2EndRPCTest, proxy_call_delay_response_destroy_proxy)
+{
+    auto mockProvider = std::make_shared<MockTestProvider>();
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
+    std::string participantId =
+            runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(550));
+
+    std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
+            runtime->createProxyBuilder<tests::testProxy>(domain);
+
+    std::uint64_t qosRoundTripTTL = 40000;
+    std::shared_ptr<tests::testProxy> testProxy =
+            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build();
+
+    std::shared_ptr<tests::testProxy> testProxy2 =
+            testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
+                    ->setDiscoveryQos(discoveryQos)
+                    ->build();
+
+    std::shared_ptr<Future<int>> testProxyFuture(
+            testProxy->sumIntsDelayedAsync(std::vector<int>{1, 2, 3}));
+
+    testProxy.reset();
+
+    testProxyFuture->wait();
+
+    int expectedValue = 6;
+    int actualValue;
+    testProxyFuture->get(actualValue);
+    EXPECT_EQ(expectedValue, actualValue);
+}
+
 using namespace std::string_literals;
 
 INSTANTIATE_TEST_SUITE_P(Mqtt,
