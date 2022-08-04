@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>1.20.0</version>
+		<version>1.20.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -308,6 +308,10 @@
 			<artifactId>aopalliance</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>ch.qos.reload4j</groupId>
+			<artifactId>reload4j</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.google.errorprone</groupId>
 			<artifactId>error_prone_annotations</artifactId>
 		</dependency>
@@ -351,10 +355,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.jcip</groupId>
@@ -523,6 +523,10 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.classgraph</groupId>
+			<artifactId>classgraph</artifactId>
 		</dependency>
 	</dependencies>
 </project>

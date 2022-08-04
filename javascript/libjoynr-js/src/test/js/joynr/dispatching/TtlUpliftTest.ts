@@ -48,42 +48,6 @@ const noTtlUplift = 0;
 const ttlUpliftMs = 10000;
 const toleranceMs = 50;
 
-function toEqualWithPositiveTolerance(actual: any, expected: any): { pass: boolean; message: string } {
-    const result: { pass: boolean; message: string } = {} as any;
-    if (expected === undefined || expected === null) {
-        result.pass = false;
-        result.message = `Expected expectation not to be ${expected}`;
-        return result;
-    }
-    if (actual === undefined || actual === null) {
-        result.pass = false;
-        result.message = `Expected value not to be ${actual}`;
-        return result;
-    }
-
-    const diff = actual - expected;
-    result.pass = diff >= 0;
-    if (!result.pass) {
-        result.message = `Expected ${actual} to be greater or equal than ${expected}`;
-        return result;
-    }
-    result.pass = diff < toleranceMs;
-    if (result.pass) {
-        result.message = `${actual} differs less than ${toleranceMs} from ${expected}`;
-    } else {
-        result.message = `Expected ${actual} to differ less than ${toleranceMs} from ${expected}`;
-    }
-    return result;
-}
-
-expect.extend({
-    toEqualWithPositiveTolerance
-});
-
-interface ExtendedMatchers extends jest.Matchers<any> {
-    toEqualWithPositiveTolerance: (expected: any) => any;
-}
-
 describe("libjoynr-js.joynr.ttlUpliftTest", () => {
     let dispatcher: Dispatcher, dispatcherWithTtlUplift: any;
     let clusterControllerMessagingStub: any, securityManager: any;
@@ -122,7 +86,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
         expect(msg.type).toEqual(messageType);
         expect(msg.from).toEqual(proxyId);
         expect(msg.to).toEqual(providerId);
-        (expect(msg.expiryDate) as ExtendedMatchers).toEqualWithPositiveTolerance(expectedExpiryDate);
+        expect(msg.expiryDate).not.toBeNull();
+        expect(msg.expiryDate).toBeDefined();
+        expect(expectedExpiryDate).not.toBeNull();
+        expect(expectedExpiryDate).toBeDefined();
+        expect(msg.expiryDate).toBeGreaterThanOrEqual(expectedExpiryDate);
+        expect(msg.expiryDate).toBeLessThan(expectedExpiryDate + toleranceMs);
     }
 
     function checkMessageFromProvider(messageType: any, expectedExpiryDate: any) {
@@ -342,7 +311,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
             expect(msg.from).toEqual(providerId);
             expect(msg.to).toEqual(multicastId);
-            (expect(msg.expiryDate) as ExtendedMatchers).toEqualWithPositiveTolerance(expiryDateMs);
+            expect(msg.expiryDate).not.toBeNull();
+            expect(msg.expiryDate).toBeDefined();
+            expect(expiryDateMs).not.toBeNull();
+            expect(expiryDateMs).toBeDefined();
+            expect(msg.expiryDate).toBeGreaterThanOrEqual(expiryDateMs);
+            expect(msg.expiryDate).toBeLessThan(expiryDateMs + toleranceMs);
         });
 
         it("request and reply", async () => {
@@ -595,7 +569,12 @@ describe("libjoynr-js.joynr.ttlUpliftTest", () => {
             expect(msg.type).toEqual(JoynrMessage.JOYNRMESSAGE_TYPE_MULTICAST);
             expect(msg.from).toEqual(providerId);
             expect(msg.to).toEqual(multicastId);
-            (expect(msg.expiryDate) as ExtendedMatchers).toEqualWithPositiveTolerance(expiryDateWithTtlUplift);
+            expect(msg.expiryDate).not.toBeNull();
+            expect(msg.expiryDate).toBeDefined();
+            expect(expiryDateWithTtlUplift).not.toBeNull();
+            expect(expiryDateWithTtlUplift).toBeDefined();
+            expect(msg.expiryDate).toBeGreaterThanOrEqual(expiryDateWithTtlUplift);
+            expect(msg.expiryDate).toBeLessThan(expiryDateWithTtlUplift + toleranceMs);
         });
 
         it("request and reply", async () => {

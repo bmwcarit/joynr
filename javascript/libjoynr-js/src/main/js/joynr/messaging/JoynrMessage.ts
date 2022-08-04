@@ -100,7 +100,7 @@ class JoynrMessage implements Partial<SmrfMessage> {
     public setCustomHeaders(customHeaders: Record<string, any>): JoynrMessage {
         let headerKey;
         for (headerKey in customHeaders) {
-            if (customHeaders.hasOwnProperty(headerKey)) {
+            if (Object.prototype.hasOwnProperty.call(customHeaders, headerKey)) {
                 this.headers[MESSAGE_CUSTOM_HEADER_PREFIX + headerKey] = customHeaders[headerKey];
             }
         }
@@ -115,7 +115,7 @@ class JoynrMessage implements Partial<SmrfMessage> {
         const customHeaders: Record<string, any> = {};
         for (const headerKey in this.headers) {
             if (
-                this.headers.hasOwnProperty(headerKey) &&
+                Object.prototype.hasOwnProperty.call(this.headers, headerKey) &&
                 headerKey.substr(0, MESSAGE_CUSTOM_HEADER_PREFIX.length) === MESSAGE_CUSTOM_HEADER_PREFIX
             ) {
                 const trimmedKey = headerKey.substr(MESSAGE_CUSTOM_HEADER_PREFIX.length);

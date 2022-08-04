@@ -31,7 +31,7 @@ class LongTimer {
     public readonly maxTime: number = Math.pow(2, 31) - 1;
     public readonly idPrefix: string = "lt";
     private timeoutMap: Mapping<any> = {};
-    private highestTimeoutId: number = 0;
+    private highestTimeoutId = 0;
     private highestIntervalId = -1;
     private intervalMap: Mapping<any> = {};
 

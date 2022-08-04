@@ -46,8 +46,8 @@ class SharedMqttClient {
     private queuedSubscriptions: string[] = [];
     private qosLevel: mqtt.QoS;
     private onConnectedDeferred: UtilInternal.Deferred;
-    private connected: boolean = false;
-    private closed: boolean = false;
+    private connected = false;
+    private closed = false;
     private queuedMessages: Queued[] = [];
     private onmessageCallback?: Function;
     private address: MqttAddress;

@@ -36,13 +36,13 @@ class ProviderImplementation {
             this._uInt8Attribute2 = value;
         }
     };
-    public getVersionedStruct = () => {
+    public getVersionedStruct = (): any => {
         // TODO implement
     };
-    public getAnonymousVersionedStruct = () => {
+    public getAnonymousVersionedStruct = (): any => {
         // TODO implement
     };
-    public getInterfaceVersionedStruct = () => {
+    public getInterfaceVersionedStruct = (): any => {
         // TODO implement
     };
 

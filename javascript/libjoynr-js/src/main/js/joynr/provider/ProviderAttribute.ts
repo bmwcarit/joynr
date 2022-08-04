@@ -176,7 +176,7 @@ interface JoynrProvider {
 }
 
 export class ProviderAttribute<T = any> {
-    public hasNotify: boolean = false;
+    public hasNotify = false;
     public attributeType: string;
     public attributeName: string;
     /** protected property, needs to be public for tsc -d */
@@ -186,8 +186,8 @@ export class ProviderAttribute<T = any> {
         valueChanged?: (value: T) => void;
     };
     public parent: JoynrProvider;
-    public hasRead: boolean = false;
-    public hasWrite: boolean = false;
+    public hasRead = false;
+    public hasWrite = false;
     /** protected property, needs to be public for tsc -d */
     public privateGetterFunc?: Function;
     /** protected property, needs to be public for tsc -d */

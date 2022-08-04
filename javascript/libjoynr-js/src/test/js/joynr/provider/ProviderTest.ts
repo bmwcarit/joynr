@@ -194,8 +194,27 @@ describe("libjoynr-js.joynr.provider.Provider", () => {
         expect(() => new RadioProvider({ isOn: {} } as any)).not.toThrow();
 
         expect(() => new RadioProvider({ isOn: { get: () => false } } as any)).not.toThrow();
-        expect(() => new RadioProvider({ isOn: { set: () => {} } } as any)).not.toThrow();
-        expect(() => new RadioProvider({ isOn: { get: () => false, set: () => {} } } as any)).not.toThrow();
+        expect(
+            () =>
+                new RadioProvider({
+                    isOn: {
+                        set: () => {
+                            // do nothing
+                        }
+                    }
+                } as any)
+        ).not.toThrow();
+        expect(
+            () =>
+                new RadioProvider({
+                    isOn: {
+                        get: () => false,
+                        set: () => {
+                            // do nothing
+                        }
+                    }
+                } as any)
+        ).not.toThrow();
         expect(() => new RadioProvider({ addFavoriteStation: () => true } as any)).not.toThrow();
     });
 

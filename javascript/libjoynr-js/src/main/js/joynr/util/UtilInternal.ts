@@ -61,7 +61,7 @@ export function extend(out: any, ...args: any[]): any {
 export function forward(receiver: any, provider: any): any {
     let methodName;
     for (methodName in provider) {
-        if (provider.hasOwnProperty(methodName) && typeof provider[methodName] === "function") {
+        if (Object.prototype.hasOwnProperty.call(provider, methodName) && typeof provider[methodName] === "function") {
             receiver[methodName] = provider[methodName].bind(provider);
         }
     }
@@ -210,7 +210,7 @@ export function removeElementFromArray(array: any[], item: any): void {
 export function fire(callbacks: Function[], data: any): void {
     let callbackFct;
     for (callbackFct in callbacks) {
-        if (callbacks.hasOwnProperty(callbackFct)) {
+        if (Object.prototype.hasOwnProperty.call(callbacks, callbackFct)) {
             callbacks[callbackFct](data);
         }
     }
@@ -292,7 +292,7 @@ export function augmentConfig(config: any): any {
             set(_, prop: string, value: any): boolean {
                 let level: any = config;
                 for (let i = 0; i < parts.length; i++) {
-                    if (!level.hasOwnProperty([parts[i]])) {
+                    if (!Object.prototype.hasOwnProperty.call(level, parts[i])) {
                         level[parts[i]] = {};
                     }
                     level = level[parts[i]];
@@ -306,7 +306,9 @@ export function augmentConfig(config: any): any {
     return proxy;
 }
 
-export function emptyFunction(): void {}
+export function emptyFunction(): void {
+    // do nothing
+}
 
 export function checkProperty(obj: any, type: string | string[] | Function, description: string): void {
     if (obj === undefined) {

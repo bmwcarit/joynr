@@ -24,7 +24,7 @@
 export function serializeSubscriptions(subscriptions: Record<string, any>): string {
     const result = [];
     for (const subscriptionId in subscriptions) {
-        if (subscriptions.hasOwnProperty(subscriptionId)) {
+        if (Object.prototype.hasOwnProperty.call(subscriptions, subscriptionId)) {
             result[result.length] = subscriptions[subscriptionId];
         }
     }
@@ -41,7 +41,7 @@ export function serializeSubscriptionIds(subscriptions: Record<string, any>): st
     const result = [];
 
     for (const subscriptionId in subscriptions) {
-        if (subscriptions.hasOwnProperty(subscriptionId)) {
+        if (Object.prototype.hasOwnProperty.call(subscriptions, subscriptionId)) {
             result[result.length] = subscriptionId;
         }
     }
@@ -66,7 +66,7 @@ export function deserializeSubscriptions(subscriptions: string): Record<string, 
     }
 
     for (const subscription in array) {
-        if (array.hasOwnProperty(subscription)) {
+        if (Object.prototype.hasOwnProperty.call(array, subscription)) {
             const object = array[subscription];
             result[object.subscriptionId] = object;
         }

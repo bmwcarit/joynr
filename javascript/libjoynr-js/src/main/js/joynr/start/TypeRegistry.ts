@@ -111,7 +111,7 @@ class TypeRegistry {
     public shutdown(): void {
         let typeName;
         for (typeName in this.registryPromise) {
-            if (this.registryPromise.hasOwnProperty(typeName)) {
+            if (Object.prototype.hasOwnProperty.call(this.registryPromise, typeName)) {
                 if (this.registryPromise[typeName].timeoutTimer !== undefined) {
                     clearTimeout(this.registryPromise[typeName].timeoutTimer);
                 }

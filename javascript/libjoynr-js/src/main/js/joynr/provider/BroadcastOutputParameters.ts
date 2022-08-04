@@ -53,7 +53,7 @@ class BroadcastOutputParameters {
 
         //for (parameterName in outputParameterProperties) {
         for (let i = 0; i < outputParameterProperties.length; i++) {
-            if (outputParameterProperties[i].hasOwnProperty("name")) {
+            if (Object.prototype.hasOwnProperty.call(outputParameterProperties[i], "name")) {
                 const parameterName = outputParameterProperties[i].name;
                 const setterFuncName = `set${parameterName.charAt(0).toUpperCase()}${parameterName.substring(1)}`;
                 //output[funcName] = makeSetterFunction(output, parameterName);

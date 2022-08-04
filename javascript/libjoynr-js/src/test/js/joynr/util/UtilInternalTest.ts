@@ -111,7 +111,7 @@ describe("libjoynr-js.joynr.UtilInternal.transform", () => {
         const transformed = UtilInternal.transform(origin, (element: any) => {
             const result: any = {};
             for (const id in element) {
-                if (element.hasOwnProperty(id)) {
+                if (Object.prototype.hasOwnProperty.call(element, id)) {
                     const member = element[id];
                     result[id] = member + postFix;
                 }

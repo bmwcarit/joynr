@@ -12,10 +12,10 @@ This tutorial describes how to build and use the dockerized joynr backend soluti
 The following component is necessary in order to set up a joynr environment:
 
 * Global Discovery service / Global Capabilities Directory (GCD)
-   * A joynr based application with which the participants register their providers and query to
-     discover other participants
-   * MQTT Broker for communication with the GCD and participants connected to different Cluster
-     Controllers.
+  * A joynr based application with which the participants register their providers and query to
+    discover other participants
+* MQTT Broker for communication with the GCD and participants connected to different Cluster
+  Controllers.
 
 ## Prerequisite
 

@@ -22,17 +22,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Method;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,21 +41,17 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
 import io.joynr.proxy.ProxyInvocationHandler;
 import io.joynr.proxy.ProxyInvocationHandlerFactory;
-import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.runtime.ShutdownNotifier;
-import joynr.MulticastSubscriptionQos;
 import joynr.infrastructure.DacTypes.DomainRoleEntry;
 import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
-import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.MasterRegistrationControlEntry;
+import joynr.infrastructure.DacTypes.OwnerAccessControlEntry;
 import joynr.infrastructure.DacTypes.OwnerRegistrationControlEntry;
 import joynr.infrastructure.DacTypes.Permission;
 import joynr.infrastructure.DacTypes.Role;
 import joynr.infrastructure.DacTypes.TrustLevel;
 import joynr.types.GlobalDiscoveryEntry;
-
-import net.sf.ehcache.CacheManager;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalDomainAccessControllerTest {
@@ -74,7 +65,6 @@ public class LocalDomainAccessControllerTest {
     private static final long DEFAULT_RETRY_INTERVAL_MS = 2000L;
     private static final long ARBITRATION_MINIMUMRETRYDELAY = 2000L;
 
-    private CacheManager cacheManager;
     private DomainAccessControlStore domainAccessControlStore;
     private LocalDomainAccessController localDomainAccessController;
     private MasterAccessControlEntry masterAce;
@@ -99,9 +89,7 @@ public class LocalDomainAccessControllerTest {
     @SuppressWarnings("unchecked")
     @Before
     public void setup() {
-        cacheManager = CacheManager.create();
-        domainAccessControlStore = new DomainAccessControlStoreEhCache(cacheManager,
-                                                                       new DefaultDomainAccessControlProvisioning());
+        domainAccessControlStore = new DomainAccessControlStoreCqEngine(new DefaultDomainAccessControlProvisioning());
 
         lenient().when(proxyInvocationHandlerFactoryMock.create(any(Set.class),
                                                                 any(String.class),
@@ -159,11 +147,6 @@ public class LocalDomainAccessControllerTest {
                                                      TrustLevel.LOW,
                                                      TrustLevel.LOW,
                                                      Permission.YES);
-    }
-
-    @After
-    public void tearDown() {
-        cacheManager.removeAllCaches();
     }
 
     @Test

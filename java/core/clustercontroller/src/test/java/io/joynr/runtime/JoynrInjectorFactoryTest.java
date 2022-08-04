@@ -85,7 +85,7 @@ public class JoynrInjectorFactoryTest {
     @Test
     public void applicationCreationPropertiesCannotOverrideJoynFactoryProperties() {
         creationException.expect(CreationException.class);
-        creationException.expectMessage(StringContains.containsString("A binding to java.lang.String annotated with @com.google.inject.name.Named(value=joynr.discovery.defaulttimeoutms) was already configured"));
+        creationException.expectMessage(StringContains.containsString("String annotated with @Named(value=\"joynr.discovery.defaulttimeoutms\") was bound multiple times."));
 
         applicationCreationProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
                                                   "0");

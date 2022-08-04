@@ -232,7 +232,9 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         messageRouter
             .route(joynrMessage2)
             .then(onFulfilledSpy)
-            .catch(() => {});
+            .catch(() => {
+                // Do nothing
+            });
         await increaseFakeTime(1);
 
         expect(messageQueueSpy.putMessage).toHaveBeenCalledWith(joynrMessage2);
@@ -240,7 +242,9 @@ describe("libjoynr-js.joynr.messaging.routing.MessageRouter", () => {
         expect(messagingStubSpy.transmit).not.toHaveBeenCalled();
 
         const isGloballyVisible = true;
-        messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible).catch(() => {});
+        messageRouter.addNextHop(joynrMessage2.to, address, isGloballyVisible).catch(() => {
+            /// do Nothing
+        });
         messageQueueSpy.getAndRemoveMessages.mockReturnValue(messageQueue);
         messageRouter.participantRegistered(joynrMessage2.to);
         await increaseFakeTime(1);

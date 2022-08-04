@@ -32,7 +32,7 @@ class End2EndAbstractTest {
     private processSpecialization: any;
     private providerChildProcessName: any;
     private provisioningSuffix: any;
-    private testIdentifier: number = 0;
+    private testIdentifier = 0;
     private childId: any;
     private multipleVersionsInterfaceProxy!: MultipleVersionsInterfaceProxy;
     private dataProxy!: DatatypesProxy;

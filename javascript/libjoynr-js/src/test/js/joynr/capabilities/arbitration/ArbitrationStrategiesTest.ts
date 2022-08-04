@@ -209,7 +209,7 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
         let discoveryEntryId: any;
         const highestPriority = ArbitrationStrategyCollection.HighestPriority(discoveryEntryList);
         for (discoveryEntryId in discoveryEntryList) {
-            if (discoveryEntryList.hasOwnProperty(discoveryEntryId)) {
+            if (Object.prototype.hasOwnProperty.call(discoveryEntryList, discoveryEntryId)) {
                 expect(highestPriority).toContain(discoveryEntryList[discoveryEntryId]);
             }
         }
@@ -228,7 +228,7 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
         let discoveryEntryId: any;
         const latestSeen = ArbitrationStrategyCollection.LastSeen(discoveryEntryList);
         for (discoveryEntryId in discoveryEntryList) {
-            if (discoveryEntryList.hasOwnProperty(discoveryEntryId)) {
+            if (Object.prototype.hasOwnProperty.call(discoveryEntryList, discoveryEntryId)) {
                 expect(latestSeen).toContain(discoveryEntryList[discoveryEntryId]);
             }
         }
@@ -272,12 +272,12 @@ describe("libjoynr-js.joynr.types.ArbitrationStrategyCollection", () => {
         const keywordCapInfoList = ArbitrationStrategyCollection.Keyword(keyword, discoveryEntryList);
         expect(keywordCapInfoList.length).toBe(2);
         for (discoveryEntryId in discoveryEntryList) {
-            if (discoveryEntryList.hasOwnProperty(discoveryEntryId)) {
+            if (Object.prototype.hasOwnProperty.call(discoveryEntryList, discoveryEntryId)) {
                 const capInfo = discoveryEntryList[discoveryEntryId];
                 found = false;
                 if (capInfo.qos.customParameters && Array.isArray(capInfo.qos.customParameters)) {
                     for (qosId in capInfo.qos.customParameters) {
-                        if (capInfo.qos.customParameters.hasOwnProperty(qosId)) {
+                        if (Object.prototype.hasOwnProperty.call(capInfo.qos.customParameters, qosId)) {
                             qosParam = capInfo.qos.customParameters[qosId];
                             if (!found && qosParam && qosParam.value && qosParam.value === keyword) {
                                 found = true;

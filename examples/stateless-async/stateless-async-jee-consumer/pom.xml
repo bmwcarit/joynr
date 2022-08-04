@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.examples</groupId>
 		<artifactId>stateless-async</artifactId>
-		<version>1.20.0</version>
+		<version>1.20.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -156,7 +156,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.2.4</version>
+			<version>42.4.0</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>

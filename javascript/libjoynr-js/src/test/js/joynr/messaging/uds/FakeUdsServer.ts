@@ -72,7 +72,7 @@ class FakeUdsServer {
     /**
      * Start listening / accepting clients
      */
-    public start = (callback?: Function) => {
+    public start = (callback?: Function): void => {
         console.log("Starting server...");
         this.server.listen(this.udsPath, callback);
     };
@@ -80,7 +80,7 @@ class FakeUdsServer {
     /**
      * Terminate the server.
      */
-    public stop = (callback?: Function) => {
+    public stop = (callback?: Function): void => {
         console.log("Terminating server...");
         if (this.clientSocket) {
             this.clientSocket.end();
@@ -89,7 +89,7 @@ class FakeUdsServer {
         this.server.close(callback);
     };
 
-    public getServerSpy = () => {
+    public getServerSpy = (): any => {
         return this.serverSpy;
     };
 
@@ -158,7 +158,7 @@ class FakeUdsServer {
      * to handle the server if error occurred
      * @param err - error object called by the server
      */
-    private onServerError = (err: Error) => {
+    private onServerError = (err: Error): void => {
         // call server spy function when server error occurred
         this.serverSpy.onServerError(err);
         console.log("Error on the server occurred:", err);
@@ -168,7 +168,7 @@ class FakeUdsServer {
      * Callback function on 'close' event of the server.
      * It is emitted only when all connections are closed.
      */
-    private onServerClose = () => {
+    private onServerClose = (): void => {
         // call server spy function when server closed
         this.serverSpy.onServerClose();
         console.log("Server is closed!");

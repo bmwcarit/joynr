@@ -1,6 +1,6 @@
 {
   "name": "radio-node",
-  "version": "1.20.0",
+  "version": "1.20.1",
   "license": "Apache-2.0",
   "description": "simple app to demonstrate usage of joynr",
   "main": "src/main/js/radioConsumer.js",
@@ -9,7 +9,7 @@
     "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js"
   },
   "devDependencies": {
-    "ts-node": "^8.3.0"
+    "ts-node": "8.10.2"
   },
   "config": {
     "runtime": "uds",

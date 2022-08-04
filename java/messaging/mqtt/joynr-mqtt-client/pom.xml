@@ -25,17 +25,13 @@
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>mqtt</artifactId>
-		<version>1.20.0</version>
+		<version>1.20.1</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.inject.extensions</groupId>
-			<artifactId>guice-multibindings</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java</groupId>

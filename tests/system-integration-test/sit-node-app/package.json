@@ -1,6 +1,6 @@
 {
   "name": "sit-node-app",
-  "version": "1.20.0",
+  "version": "1.20.1",
   "license": "Apache-2.0",
   "description": "System Integration Test Node App",
   "main": "src/main/js/consumer.js",
@@ -8,9 +8,9 @@
   "dependencies": {
     "joynr": "file:../../../javascript/libjoynr-js/.output/src/main/js",
     "test-base": "file:../../test-base",
-    "@types/node": "8.9.4",
-    "ts-node": "8.3.0",
-    "typescript": "3.5.2"
+    "@types/node": "8.10.66",
+    "ts-node": "8.10.2",
+    "typescript": "3.8.3"
   },
   "config": {
     "domain": "io.joynr.systemintegrationtest.node",

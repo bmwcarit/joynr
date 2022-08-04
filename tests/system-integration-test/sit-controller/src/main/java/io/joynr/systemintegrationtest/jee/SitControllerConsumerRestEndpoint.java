@@ -69,7 +69,7 @@ public class SitControllerConsumerRestEndpoint {
 
         discoveryQos = new DiscoveryQos();
         discoveryQos.setDiscoveryTimeoutMs(120000); // 2 Minutes
-        discoveryQos.setRetryIntervalMs(5000); // 2 seconds
+        discoveryQos.setRetryIntervalMs(5000); // 5 seconds
 
         statelessAsyncDiscoveryQos = new DiscoveryQos();
         statelessAsyncDiscoveryQos.setDiscoveryTimeoutMs(discoveryQos.getDiscoveryTimeoutMs());
@@ -77,7 +77,7 @@ public class SitControllerConsumerRestEndpoint {
         statelessAsyncDiscoveryQos.setCacheMaxAgeMs(DiscoveryQos.NO_MAX_AGE); // use provisioned DiscoveryEntry
         statelessAsyncDiscoveryQos.setArbitrationStrategy(ArbitrationStrategy.FixedChannel);
 
-        messagingQos = new MessagingQos(240000); // 4 Minutes
+        messagingQos = new MessagingQos(360000); // 6 Minutes
 
         String configuredDomainString = System.getenv("SIT_DOMAINS");
         if (configuredDomainString != null) {

@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>core</artifactId>
-		<version>1.20.0</version>
+		<version>1.20.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -85,16 +85,8 @@
 			<artifactId>javax.inject</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.inject.extensions</groupId>
-			<artifactId>guice-multibindings</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>

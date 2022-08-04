@@ -144,7 +144,7 @@ class CapabilitiesStore {
         const discoveryEntries = this.discoveryEntryStoreByDomainInterfaceName[domainInterfaceKey];
 
         for (entryId in discoveryEntries) {
-            if (discoveryEntries.hasOwnProperty(entryId) && !entryFound) {
+            if (Object.prototype.hasOwnProperty.call(discoveryEntries, entryId) && !entryFound) {
                 entry = discoveryEntries[entryId];
                 if (entry.participantId === discoveryEntry.participantId) {
                     entryFound = true;

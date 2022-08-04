@@ -175,7 +175,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.types.SubscriptionUtil", ()
 
         let subscriptionId: any;
         for (subscriptionId in subscriptions) {
-            if (subscriptions.hasOwnProperty(subscriptionId)) {
+            if (Object.prototype.hasOwnProperty.call(subscriptions, subscriptionId)) {
                 expect(subscriptionId === info1.subscriptionId || subscriptionId === info2.subscriptionId).toBe(true);
             }
         }
