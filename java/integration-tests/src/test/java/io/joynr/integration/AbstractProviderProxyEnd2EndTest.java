@@ -942,6 +942,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         } catch (ApplicationException e) {
             ApplicationException expected = new ApplicationException(ErrorEnumBase.BASE_ERROR_TYPECOLLECTION);
             assertEquals(expected, e);
+            String expectedMessage = "ErrorValue: " + ErrorEnumBase.BASE_ERROR_TYPECOLLECTION;
+            assertEquals(expected.getMessage(), expectedMessage);
         }
     }
 
@@ -951,6 +953,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
 
         ApplicationException expected = new ApplicationException(ErrorEnumBase.BASE_ERROR_TYPECOLLECTION);
+        String expectedMessage = "ErrorValue: " + ErrorEnumBase.BASE_ERROR_TYPECOLLECTION;
+        assertEquals(expected.getMessage(), expectedMessage);
         Future<Void> future = proxy.methodWithErrorEnum(callbackWithApplicationExceptionErrorEnumBase);
         try {
             future.get();
