@@ -701,9 +701,9 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                             callback,
                             discoveryQos.getDiscoveryScope(),
                             domains);
+                    thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
+                            interfaceAddresses, callback);
                 }
-                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
-                        interfaceAddresses, callback);
             }
         };
 
@@ -727,9 +727,9 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                 if (!(thisSharedPtr->_lcdPendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(error);
+                    thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
+                            interfaceAddresses, callback);
                 }
-                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
-                        interfaceAddresses, callback);
             }
         };
 
@@ -754,9 +754,9 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                 if (!(thisSharedPtr->_lcdPendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     callback->onError(types::DiscoveryError::INTERNAL_ERROR);
+                    thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
+                            interfaceAddresses, callback);
                 }
-                thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
-                        interfaceAddresses, callback);
             }
         };
 
