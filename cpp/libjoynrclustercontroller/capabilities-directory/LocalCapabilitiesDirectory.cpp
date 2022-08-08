@@ -686,14 +686,14 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
         ](std::vector<joynr::types::GlobalDiscoveryEntry> result)
         {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                std::lock_guard<std::recursive_mutex> cacheLock(
+                        thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
                 std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
                 if (!(thisSharedPtr->_lcdPendingLookupsHandler.isCallbackCalled(
                             interfaceAddresses, callback, discoveryQos))) {
                     if (replaceGdeGbid) {
                         LCDUtil::replaceGbidWithEmptyString(result);
                     }
-                    std::lock_guard<std::recursive_mutex> cacheLock(
-                            thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
                     thisSharedPtr->capabilitiesReceived(
                             result,
                             thisSharedPtr->_localCapabilitiesDirectoryStore->getLocalCapabilities(
@@ -776,6 +776,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
 
 bool LocalCapabilitiesDirectory::hasPendingLookups()
 {
+    std::lock_guard<std::mutex> lock(_pendingLookupsLock);
     return _lcdPendingLookupsHandler.hasPendingLookups();
 }
 
