@@ -19,8 +19,13 @@
 package io.joynr.runtime;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -109,6 +114,15 @@ public class ClusterControllerRuntimeTest {
 
     @Test
     public void removeStaleSchedulerUsesCorrectDelayMsValue() {
+        String discoveryProviderParticipantIdMock = "discoveryProviderParticipantIdMock";
+        doReturn(discoveryProviderParticipantIdMock).when(participantIdStorageMock)
+                                                    .getProviderParticipantId(anyString(), anyString(), anyInt());
+
+        doReturn(true).when(routingTableMock).put(eq(discoveryProviderParticipantIdMock),
+                                                  any(Address.class),
+                                                  anyBoolean(),
+                                                  anyLong(),
+                                                  anyBoolean());
         ccRuntime = new ClusterControllerRuntime(objectMapper,
                                                  null,
                                                  dispatcherMock,

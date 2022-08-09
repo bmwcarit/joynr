@@ -29,8 +29,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -68,6 +71,7 @@ import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -191,6 +195,7 @@ public class MqttMessagingSkeletonTest {
     public void testMessageRouterIsCalled() throws Exception {
         ImmutableMessage rqMessage = createTestRequestMessage();
 
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         subject.transmit(rqMessage.getSerializedMessage(), rqMessage.getPrefixedCustomHeaders(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
@@ -203,6 +208,7 @@ public class MqttMessagingSkeletonTest {
     public void testRegistrationOfReplyToAddress() throws Exception {
         ImmutableMessage rqMessage = createTestRequestMessage();
 
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         subject.transmit(rqMessage.getSerializedMessage(), rqMessage.getPrefixedCustomHeaders(), failIfCalledAction);
 
         ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
@@ -285,6 +291,7 @@ public class MqttMessagingSkeletonTest {
     public void testFailureActionCalledAfterExceptionFromMessageRouter() throws Exception {
         ImmutableMessage rqMessage = createTestRequestMessage();
 
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         doThrow(new JoynrRuntimeException()).when(messageRouter).routeIn(any(ImmutableMessage.class));
 
         Semaphore semaphore = new Semaphore(0);
@@ -298,6 +305,7 @@ public class MqttMessagingSkeletonTest {
 
     @Test
     public void testFurtherRequestsAreDroppedWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
         assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
@@ -315,6 +323,7 @@ public class MqttMessagingSkeletonTest {
 
     @Test
     public void testMqttStatusReceiverIsNotifiedWhenMessageIsDropped() throws Exception {
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
         subject.transmit(createTestRequestMessage().getSerializedMessage(),
                          createTestRequestMessage().getPrefixedCustomHeaders(),
@@ -325,6 +334,7 @@ public class MqttMessagingSkeletonTest {
 
     @Test
     public void testOtherMessagesAreAcceptedEvenWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
         assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
@@ -362,6 +372,7 @@ public class MqttMessagingSkeletonTest {
     public void testRequestsAreAcceptedAgainWhenPreviousAreProcessedAfterMaxIncomingRequestsReached() throws Exception {
         ImmutableMessage rqMessage1 = createTestRequestMessage();
         final String messageId1 = rqMessage1.getId();
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         subject.transmit(rqMessage1.getSerializedMessage(), rqMessage1.getPrefixedCustomHeaders(), failIfCalledAction);
 
         feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests - 1);
@@ -400,6 +411,7 @@ public class MqttMessagingSkeletonTest {
                                             routingTable);
         subject.init();
 
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         // number of incoming messages is arbitrarily selected
         feedMqttSkeletonWithRequests(subject, 2 * maxIncomingMqttRequests);
         feedMqttSkeletonWithMessages(subject,

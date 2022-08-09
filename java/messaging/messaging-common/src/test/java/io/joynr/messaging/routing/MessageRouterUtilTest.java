@@ -51,7 +51,7 @@ public class MessageRouterUtilTest {
 
     @Test
     public void isExpired_validMsg() throws SecurityException, EncodingException, UnsuppportedVersionException {
-        ImmutableMessage msg = createMessage(true, System.currentTimeMillis() + 1000);
+        ImmutableMessage msg = createMessage(true, System.currentTimeMillis() + 1200);
         assertFalse(MessageRouterUtil.isExpired(msg));
     }
 

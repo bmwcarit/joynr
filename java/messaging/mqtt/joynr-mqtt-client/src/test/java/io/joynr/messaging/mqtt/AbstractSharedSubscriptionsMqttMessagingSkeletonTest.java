@@ -22,8 +22,12 @@ import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.createTestMe
 import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.failIfCalledAction;
 import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.feedMqttSkeletonWithRequests;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +45,7 @@ import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.util.ObjectMapper;
 import joynr.Message;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
@@ -207,6 +212,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
         backpressureEnabled = true;
         createAndInitSkeleton("channelIdBackpressure");
 
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue
                 * backpressureIncomingMqttRequestsUpperThreshold) / 100;
         feedMqttSkeletonWithRequests(subject, mqttRequestsToHitUpperThreshold - 1);
@@ -235,6 +241,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
         backpressureEnabled = true;
         final String channelId = "channelIdBackpressureOneCycle";
         createAndInitSkeleton(channelId);
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
 
         final int expectedTotalUnsubscribeCallCount = 1;
         final int expectedTotalSubscribeCallCount = 2; // one call is from the init method of the skeleton
@@ -248,6 +255,8 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
         backpressureEnabled = true;
         final String channelId = "channelIdBackpressureMultipleCycles";
         createAndInitSkeleton(channelId);
+
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
 
         final int numCycles = 10;
         for (int i = 1; i <= numCycles; i++) {

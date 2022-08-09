@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -114,7 +113,7 @@ public class PublicationTimersTest {
                                                   JsonMappingException, IOException {
         logger.debug("Starting PublicationTimersTest.timerIsStoppedWhenEnddateIsReached test");
         int period = 500;
-        int subscriptionLength = 1100;
+        int subscriptionLength = 1300;
         PeriodicSubscriptionQos qos = new PeriodicSubscriptionQos();
         qos.setPeriodMs(period).setValidityMs(subscriptionLength).setPublicationTtlMs(1000);
         String subscriptionId = "subscriptionId";

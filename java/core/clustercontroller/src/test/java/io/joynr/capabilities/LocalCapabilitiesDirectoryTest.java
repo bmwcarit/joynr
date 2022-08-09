@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -291,6 +292,8 @@ public class LocalCapabilitiesDirectoryTest {
                                                 any(GlobalDiscoveryEntry.class),
                                                 anyLong(),
                                                 ArgumentMatchers.<String[]> any());
+
+        doReturn(true).when(routingTable).put(any(String.class), any(Address.class), any(Boolean.class), anyLong());
 
         String discoveryDirectoriesDomain = "io.joynr";
         String capabilitiesDirectoryParticipantId = "capDir_participantId";
@@ -1924,6 +1927,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                   eq(interfaceName1),
                                                   eq(discoveryQos.getCacheMaxAge()))).thenReturn(Arrays.asList(capInfo));
 
+        doReturn(true).when(routingTable).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
         Promise<Lookup1Deferred> promise5 = localCapabilitiesDirectory.lookup(domains, interfaceName1, discoveryQos);
         verifyGcdLookupAndPromiseFulfillment(4,
                                              domains,
@@ -1940,6 +1944,7 @@ public class LocalCapabilitiesDirectoryTest {
         discoveryQos.setCacheMaxAge(0L);
         Thread.sleep(1);
 
+        doReturn(true).when(routingTable).put(eq(globalParticipantId), any(Address.class), eq(true), anyLong());
         // now, another lookup call shall call the globalCapabilitiesDirectoryClient, as the global cap dir is expired
         Promise<Lookup1Deferred> promise6 = localCapabilitiesDirectory.lookup(domains, interfaceName1, discoveryQos);
         verifyGcdLookupAndPromiseFulfillment(5,
@@ -2416,6 +2421,8 @@ public class LocalCapabilitiesDirectoryTest {
 
         reset((Object) routingTable);
 
+        doReturn(true).when(routingTable)
+                      .put(eq(expectedEntry1.getParticipantId()), any(Address.class), eq(true), anyLong());
         Promise<Lookup2Deferred> promise2 = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                               interfaceName,
                                                                               discoveryQos,
@@ -2666,6 +2673,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                            eq(discoveryQos.getDiscoveryTimeout()),
                                                            eq(expectedGbids));
 
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         Promise<Lookup2Deferred> lookupPromise = localCapabilitiesDirectory.lookup(domainsForLookup,
                                                                                    INTERFACE_NAME,
                                                                                    discoveryQos,
@@ -2679,11 +2687,10 @@ public class LocalCapabilitiesDirectoryTest {
         Object[] values = checkPromiseSuccess(lookupPromise, "lookup failed");
         DiscoveryEntryWithMetaInfo[] foundEntries = (DiscoveryEntryWithMetaInfo[]) values[0];
         assertEquals(2, foundEntries.length);
-        Arrays.asList(foundEntries)
-              .forEach((entry) -> verify(routingTable, times(1)).put(eq(entry.getParticipantId()),
-                                                                     any(Address.class),
-                                                                     eq(true),
-                                                                     anyLong()));
+        Arrays.asList(foundEntries).forEach(entry -> {
+            verify(routingTable, times(1)).put(eq(entry.getParticipantId()), any(Address.class), eq(true), anyLong());
+        });
+
         verify(routingTable, never()).incrementReferenceCount(anyString());
         reset((Object) routingTable);
     }
@@ -2796,6 +2803,7 @@ public class LocalCapabilitiesDirectoryTest {
                                                                   eq(participantId),
                                                                   eq(discoveryQos.getDiscoveryTimeout()),
                                                                   eq(expectedGbids));
+        doReturn(true).when(routingTable).put(eq(participantId), any(Address.class), any(Boolean.class), anyLong());
 
         Promise<Lookup4Deferred> lookupPromise = localCapabilitiesDirectory.lookup(participantId,
                                                                                    discoveryQos,

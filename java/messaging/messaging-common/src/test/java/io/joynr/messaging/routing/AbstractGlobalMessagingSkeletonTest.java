@@ -18,11 +18,14 @@
  */
 package io.joynr.messaging.routing;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -149,10 +152,11 @@ public class AbstractGlobalMessagingSkeletonTest {
         when(immutableMessage.getReplyTo()).thenReturn(objectMapper.writeValueAsString(address));
         when(immutableMessage.getSender()).thenReturn("fromParticipantId");
         when(immutableMessage.getTtlMs()).thenReturn(ttlMs);
-
-        subject.registerGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
+        boolean result = subject.registerGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
 
         verify(routingTable).put(immutableMessage.getSender(), expectedAddress, isGloballyVisible, ttlMs);
+        assertTrue(result);
         reset(routingTable);
     }
 
@@ -169,26 +173,28 @@ public class AbstractGlobalMessagingSkeletonTest {
     private void testRegisteringGlobalRoutingEntryForNonRequestType(Message.MessageType nonRequestType) {
         when(immutableMessage.getType()).thenReturn(nonRequestType);
 
-        subject.registerGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
+        boolean result = subject.registerGlobalRoutingEntry(immutableMessage, gbidsArray[0]);
 
         verify(immutableMessage, times(0)).getReplyTo();
         verify(immutableMessage, times(0)).getSender();
         verify(immutableMessage, times(0)).getTtlMs();
         verify(routingTable, times(0)).put(anyString(), any(), anyBoolean(), anyLong());
+        assertFalse(result);
     }
 
     private void testUnregisterGlobalRoutingEntry(MessageType msgType, boolean alreadyProcessed) {
         when(immutableMessage.getType()).thenReturn(msgType);
         when(immutableMessage.isMessageProcessed()).thenReturn(alreadyProcessed);
 
-        subject.removeGlobalRoutingEntry(immutableMessage);
+        boolean routingEntryRegistered = true;
+        subject.removeGlobalRoutingEntry(immutableMessage, routingEntryRegistered);
 
         verify(immutableMessage).isMessageProcessed();
 
         if (alreadyProcessed) {
             verify(immutableMessage, times(0)).messageProcessed();
             verify(routingTable, times(0)).remove(any(String.class));
-        } else if (MESSAGE_TYPE_REQUESTS.contains(msgType)) {
+        } else if (routingEntryRegistered && MESSAGE_TYPE_REQUESTS.contains(msgType)) {
             verify(immutableMessage, times(1)).messageProcessed();
             verify(routingTable, times(1)).remove(eq(immutableMessage.getSender()));
         } else {
