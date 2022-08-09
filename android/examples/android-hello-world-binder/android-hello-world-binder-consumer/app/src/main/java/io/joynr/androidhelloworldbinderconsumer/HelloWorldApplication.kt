@@ -28,4 +28,7 @@ class HelloWorldApplication : Application() {
         joynrRuntime = AndroidBinderRuntime.init(this)
     }
 
+    fun getJoynRuntime(): JoynrRuntime {
+        return this.joynrRuntime
+    }
 }
