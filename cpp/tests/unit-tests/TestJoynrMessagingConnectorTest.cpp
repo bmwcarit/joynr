@@ -322,3 +322,11 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper)
     ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mockSubscriptionManager.get()));
 }
+
+TEST_F(TestJoynrMessagingConnectorTest, testDestructorRemoveRoutingEntry)
+{
+    std::shared_ptr<tests::testJoynrMessagingConnector> connector(createConnector());
+    EXPECT_CALL(*mockMessageSender, removeRoutingEntry(proxyParticipantId)).Times(1);
+
+    connector.reset();
+}
