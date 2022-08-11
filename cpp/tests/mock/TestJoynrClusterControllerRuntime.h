@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,17 +17,17 @@
  * #L%
  */
 
-#ifndef TESTS_MOCK_MOCKJOYNRCLUSTERCONTROLLERMQTTCONNECTIONDATA_H
-#define TESTS_MOCK_MOCKJOYNRCLUSTERCONTROLLERMQTTCONNECTIONDATA_H
+#ifndef TEST_MOCK_TESTJOYNRCLUSTERCONTROLLERRUNTIME_H
+#define TEST_MOCK_TESTJOYNRCLUSTERCONTROLLERRUNTIME_H
 
 #include <string>
 
 #include "tests/utils/Gmock.h"
 
-#include "joynr/JoynrClusterControllerMqttConnectionData.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/ITransportMessageReceiver.h"
 #include "joynr/ITransportMessageSender.h"
+#include "joynr/JoynrClusterControllerMqttConnectionData.h"
+#include "joynr/JoynrClusterControllerRuntime.h"
 #include "libjoynrclustercontroller/mqtt/MosquittoConnection.h"
 
 using namespace joynr;
@@ -48,11 +48,11 @@ public:
     MOCK_METHOD1(setMqttMessageSender, void(const std::shared_ptr<ITransportMessageSender>& value));
 };
 
-/** Helper to apply MockJoynrClusterControllerMqttConnectionData to CC */
-class JoynrClusterControllerRuntimeMockMqtt : public JoynrClusterControllerRuntime
+/** Helper to apply TestJoynrClusterControllerRuntimeto CC */
+class TestJoynrClusterControllerRuntime : public JoynrClusterControllerRuntime
 {
 public:
-    JoynrClusterControllerRuntimeMockMqtt(
+    TestJoynrClusterControllerRuntime(
             std::unique_ptr<Settings> settings,
             std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
             std::shared_ptr<IKeychain> keyChain = nullptr,
@@ -60,8 +60,7 @@ public:
             : JoynrClusterControllerRuntime(std::move(settings),
                                             std::move(onFatalRuntimeError),
                                             keyChain,
-                                            mqttMessagingSkeletonFactory)
-    {};
+                                            mqttMessagingSkeletonFactory){};
 
     std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>>
     mockJoynrClusterControllerMqttConnectionData(
@@ -91,4 +90,4 @@ public:
     }
 };
 
-#endif // TESTS_MOCK_MOCKJOYNRCLUSTERCONTROLLERMQTTCONNECTIONDATA_H
+#endif // TEST_MOCK_TESTJOYNRCLUSTERCONTROLLERRUNTIME_H
