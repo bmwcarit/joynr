@@ -40,7 +40,8 @@ UdsServer::UdsServer(const UdsSettings& settings)
           _openSleepTime{settings.getConnectSleepTimeMs()},
           _endpoint(settings.getSocketPath()),
           _acceptor(*_ioContext),
-          _started{false}
+          _started{false},
+          _acceptorMutex()
 {
     _remoteConfig._maxSendQueueSize = settings.getSendingQueueSize();
 }
@@ -50,7 +51,9 @@ UdsServer::~UdsServer()
     // Skip clean-up if UdsServer::start has not been called.
     if (_started.exchange(false)) {
         boost::system::error_code ignore;
+        std::unique_lock<std::mutex> acceptorLock(_acceptorMutex);
         _acceptor.cancel(ignore); // Acceptor will not create further connections
+        acceptorLock.unlock();
         _ioContext->stop();
         // Wait for worker before destructing members
         try {
@@ -108,10 +111,12 @@ void UdsServer::run()
         try {
             // no access to others and no permission to execute
             mode_t oldMask = umask(S_IXUSR | S_IXGRP | S_IRWXO);
+            std::unique_lock<std::mutex> acceptorLock(_acceptorMutex);
             _acceptor.open(_endpoint.protocol());
             _acceptor.bind(_endpoint);
             umask(oldMask); // restore original umask
             _acceptor.listen();
+            acceptorLock.unlock();
             JOYNR_LOG_INFO(logger(), "Waiting for connections on path {}.", _endpoint.path());
             doAcceptClient();
             _ioContext->run();
@@ -122,6 +127,7 @@ void UdsServer::run()
                             error.what());
         }
         boost::system::error_code ignore;
+        std::unique_lock<std::mutex> acceptorLock(_acceptorMutex);
         _acceptor.close(ignore);
     }
 }

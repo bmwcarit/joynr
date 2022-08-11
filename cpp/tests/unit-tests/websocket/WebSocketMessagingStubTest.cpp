@@ -21,7 +21,6 @@
 
 #include <functional>
 #include <memory>
-#include <thread>
 #include <vector>
 
 #include <smrf/ByteVector.h>
@@ -38,6 +37,7 @@
 #include "joynr/Settings.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/Util.h"
 #include "joynr/WebSocketSettings.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
@@ -47,14 +47,22 @@
 
 using namespace ::testing;
 
-class WebSocketServer
+class WebSocketServer : public std::enable_shared_from_this<WebSocketServer>
 {
     using Server = websocketpp::server<websocketpp::config::asio>;
     using MessagePtr = Server::message_ptr;
     using ConnectionHandle = websocketpp::connection_hdl;
 
 public:
-    WebSocketServer() : port(), thread(), messageReceivedCallback()
+    WebSocketServer() :
+        std::enable_shared_from_this<WebSocketServer>(),
+        _webSocketPpSingleThreadedIOService(std::make_shared<joynr::SingleThreadedIOService>()),
+        endpoint(),
+        port(),
+        messageReceivedCallback(),
+        _clientsMutex(),
+        _clients(),
+        _shuttingDown(false)
     {
         endpoint.clear_access_channels(websocketpp::log::alevel::all);
         endpoint.clear_error_channels(websocketpp::log::alevel::all);
@@ -62,8 +70,32 @@ public:
 
     ~WebSocketServer()
     {
-        endpoint.stop_listening();
-        thread.join();
+        std::lock_guard<std::mutex> lock1(_clientsMutex);
+        {
+            //std::lock_guard<std::mutex> lock1(_clientsMutex);
+            _shuttingDown = true;
+        }
+        websocketpp::lib::error_code shutdownError;
+        endpoint.stop_listening(shutdownError);
+        if (shutdownError) {
+            JOYNR_LOG_ERROR(logger(),
+                    "error during WebSocketCcMessagingSkeleton shutdown: ",
+                    shutdownError.message());
+        }
+
+        //std::lock_guard<std::mutex> lock1(_clientsMutex);
+        for (const auto& elem : _clients) {
+            websocketpp::lib::error_code websocketError;
+            endpoint.close(elem.first, websocketpp::close::status::normal, "", websocketError);
+            if (websocketError) {
+                if (websocketError != websocketpp::error::bad_connection) {
+                    JOYNR_LOG_ERROR(logger(),
+                            "Unable to close websocket connection. Error: {}",
+                            websocketError.message());
+                }
+            }
+        }
+        _webSocketPpSingleThreadedIOService->stop();
     }
 
     std::uint16_t getPort() const
@@ -81,15 +113,38 @@ public:
         try {
             using std::placeholders::_1;
             using std::placeholders::_2;
-            endpoint.set_message_handler(
-                    std::bind(&WebSocketServer::onMessageReceived, this, _1, _2));
-            endpoint.init_asio();
+
+            _webSocketPpSingleThreadedIOService->start();
+            boost::asio::io_service& endpointIoService =
+                _webSocketPpSingleThreadedIOService->getIOService();
+            websocketpp::lib::error_code initializationError;
+
+            //endpoint.set_message_handler(
+            //        std::bind(&WebSocketServer::onMessageReceived, this, _1, _2));
+            //endpoint.set_close_handler(
+            //        std::bind(&WebSocketServer::onConnectionClosed, this, _1));
+
+            endpoint.set_message_handler([thisWeakPtr =
+                    joynr::util::as_weak_ptr(this->shared_from_this())](
+                        ConnectionHandle hdl, MessagePtr message) {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    thisSharedPtr->onMessageReceived(hdl, message);
+                }
+            });
+
+            endpoint.set_close_handler([thisWeakPtr = joynr::util::as_weak_ptr(
+                        this->shared_from_this())](ConnectionHandle hdl) {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    thisSharedPtr->onConnectionClosed(hdl);
+                }
+            });
+
+            endpoint.init_asio(&endpointIoService, initializationError);
             // listen on random free port
             endpoint.listen(0);
             boost::system::error_code ec;
             port = endpoint.get_local_endpoint(ec).port();
             endpoint.start_accept();
-            thread = std::thread(&Server::run, &endpoint);
         } catch (const std::exception& e) {
             JOYNR_LOG_ERROR(logger(), "caught exception: {}", e.what());
         }
@@ -98,18 +153,48 @@ public:
 private:
     void onMessageReceived(ConnectionHandle hdl, MessagePtr msg)
     {
-        std::ignore = hdl;
         JOYNR_LOG_DEBUG(logger(), "received message of size {}", msg->get_payload().size());
         if (messageReceivedCallback) {
             const std::string& messageStr = msg->get_payload();
             smrf::ByteVector rawMessage(messageStr.begin(), messageStr.end());
             messageReceivedCallback(std::move(rawMessage));
         }
+
+        std::lock_guard<std::mutex> lock(_clientsMutex);
+        auto it = _clients.find(hdl);
+        if (it != _clients.cend()) {
+            JOYNR_LOG_DEBUG(logger(), "onMessageReceived: client found, updating");
+            it->second = true;
+        } else {
+            _clients[hdl] = true;
+            JOYNR_LOG_DEBUG(logger(), "onMessageReceived: client NOT found, adding");
+        }
     }
+
+    void onConnectionClosed(ConnectionHandle hdl)
+    {
+        JOYNR_LOG_DEBUG(logger(), "onConnectionClosed: invoked");
+        std::lock_guard<std::mutex> lock2(_clientsMutex);
+        if (_shuttingDown) {
+            JOYNR_LOG_DEBUG(logger(), "onConnectionClosed: shuttingDown is set");
+            return;
+        }
+        auto it = _clients.find(hdl);
+        if (it != _clients.cend()) {
+            JOYNR_LOG_DEBUG(logger(), "onConnectionClosed: client found, is getting erased");
+            _clients.erase(it);
+        } else {
+            JOYNR_LOG_DEBUG(logger(), "onConnectionClosed: client NOT found");
+        }
+    }
+
+    std::shared_ptr<joynr::SingleThreadedIOService> _webSocketPpSingleThreadedIOService;
     Server endpoint;
     std::uint32_t port;
-    std::thread thread;
     std::function<void(smrf::ByteVector&&)> messageReceivedCallback;
+    std::mutex _clientsMutex;
+    std::map<ConnectionHandle, bool, std::owner_less<ConnectionHandle>> _clients;
+    std::atomic<bool> _shuttingDown;
     ADD_LOGGER(WebSocketServer)
 };
 
@@ -120,13 +205,13 @@ public:
     WebSocketMessagingStubTest()
             : settings(),
               wsSettings(settings),
-              server(),
+              server(std::make_shared<WebSocketServer>()),
               serverAddress(),
               singleThreadedIOService(std::make_shared<joynr::SingleThreadedIOService>()),
               webSocket(nullptr)
     {
         singleThreadedIOService->start();
-        server.start();
+        server->start();
     }
 
     ~WebSocketMessagingStubTest()
@@ -142,17 +227,17 @@ public:
         serverAddress = joynr::system::RoutingTypes::WebSocketAddress(
                 joynr::system::RoutingTypes::WebSocketProtocol::WS,
                 "localhost",
-                server.getPort(),
+                server->getPort(),
                 "");
         JOYNR_LOG_DEBUG(logger(), "server URL: {}", serverAddress.toString());
-        joynr::Semaphore connected(0);
+        auto connected = std::make_shared<joynr::Semaphore>(0);
         webSocket = std::make_shared<joynr::WebSocketPpClient<websocketpp::config::asio_client>>(
                 wsSettings, singleThreadedIOService->getIOService());
-        webSocket->registerConnectCallback([&connected]() { connected.notify(); });
+        webSocket->registerConnectCallback([connected]() { connected->notify(); });
         webSocket->connect(serverAddress);
 
         // wait until connected
-        connected.wait();
+        connected->wait();
         JOYNR_LOG_DEBUG(logger(), "WebSocket is connected: {}", webSocket->isConnected());
     }
 
@@ -160,7 +245,7 @@ protected:
     ADD_LOGGER(WebSocketMessagingStubTest)
     joynr::Settings settings;
     joynr::WebSocketSettings wsSettings;
-    WebSocketServer server;
+    std::shared_ptr<WebSocketServer> server;
     joynr::system::RoutingTypes::WebSocketAddress serverAddress;
     std::shared_ptr<joynr::SingleThreadedIOService> singleThreadedIOService;
     std::shared_ptr<joynr::IWebSocketPpClient> webSocket;
@@ -170,14 +255,14 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize)
 {
     JOYNR_LOG_TRACE(logger(), "transmit message");
 
-    joynr::Semaphore sem(0);
+    auto semaphore = std::make_shared<joynr::Semaphore>(0);
     smrf::ByteVector receivedMessage;
 
-    auto callback = [&sem, &receivedMessage](smrf::ByteVector&& msg) {
+    auto callback = [semaphore, &receivedMessage](smrf::ByteVector&& msg) {
         receivedMessage = std::move(msg);
-        sem.notify();
+        semaphore->notify();
     };
-    server.registerMessageReceivedCallback(callback);
+    server->registerMessageReceivedCallback(callback);
 
     // send message using messaging stub
     joynr::WebSocketMessagingStub messagingStub(webSocket->getSender());
@@ -196,8 +281,8 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize)
     messagingStub.transmit(immutableMessage, onFailure);
 
     // wait until message is received
-    sem.wait();
-    ASSERT_EQ(0, sem.getStatus());
+    semaphore->wait();
+    ASSERT_EQ(0, semaphore->getStatus());
 
     // verify received message
     ASSERT_EQ(expectedMessage.size(), receivedMessage.size());

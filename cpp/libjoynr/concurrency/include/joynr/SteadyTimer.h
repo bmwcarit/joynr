@@ -22,6 +22,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <mutex>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
 
@@ -46,7 +47,8 @@ public:
     void asyncWait(std::function<void(const boost::system::error_code&)>&& callback);
 
 private:
-    std::unique_ptr<AsioSteadyTimer> steady_timer;
+    std::mutex _steady_timer_mutex;
+    std::unique_ptr<AsioSteadyTimer> _steady_timer;
 };
 } // namespace joynr
 #endif // STEADYTIMER_H
