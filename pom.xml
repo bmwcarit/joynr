@@ -517,6 +517,12 @@
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.jctools</groupId>
+				<artifactId>jctools-core</artifactId>
+				<type>jar</type>
+				<version>3.3.0</version>
+			</dependency>
+			<dependency>
 				<groupId>com.esotericsoftware</groupId>
 				<artifactId>kryo</artifactId>
 				<type>jar</type>
