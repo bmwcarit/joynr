@@ -341,7 +341,7 @@
 				<groupId>net.jodah</groupId>
 				<artifactId>typetools</artifactId>
 				<type>jar</type>
-				<version>0.6.1</version>
+				<version>0.6.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.antlr</groupId>
