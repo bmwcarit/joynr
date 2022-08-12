@@ -20,6 +20,7 @@
 #ifndef CONTEXTSTORAGE_H
 #define CONTEXTSTORAGE_H
 
+#include <mutex>
 #include <utility>
 
 namespace joynr
@@ -31,22 +32,32 @@ class ContextStorage
 public:
     static void set(const T& context)
     {
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         get() = context;
     }
 
     static void set(T&& context)
     {
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         get() = std::move(context);
     }
 
     static T& get()
     {
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         static T context;
         return context;
     }
 
+    static std::recursive_mutex& getMutex()
+    {
+        static std::recursive_mutex mutex;
+        return mutex;
+    }
+
     static void invalidate()
     {
+        std::lock_guard<std::recursive_mutex> lock(getMutex());
         get().invalidate();
     }
 };
