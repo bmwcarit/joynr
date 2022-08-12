@@ -517,6 +517,24 @@
 				<version>${jetty.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.esotericsoftware</groupId>
+				<artifactId>kryo</artifactId>
+				<type>jar</type>
+				<version>5.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.esotericsoftware</groupId>
+				<artifactId>minlog</artifactId>
+				<type>jar</type>
+				<version>1.3.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.esotericsoftware</groupId>
+				<artifactId>reflectasm</artifactId>
+				<type>jar</type>
+				<version>1.11.9</version>
+			</dependency>
+			<dependency>
 				<groupId>com.hivemq</groupId>
 				<artifactId>hivemq-mqtt-client</artifactId>
 				<version>1.3.0</version>
