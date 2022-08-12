@@ -27,13 +27,14 @@
 
 #include "joynr/system/MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters.h"
 #include "joynr/system/MessageNotificationProxy.h"
-#include "joynr/tests/testProxy.h"
 #include "joynr/tests/DefaulttestProvider.h"
+#include "joynr/tests/testProxy.h"
 #include "joynr/types/ProviderQos.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
+
 
 using namespace ::testing;
 using namespace joynr;
@@ -49,7 +50,7 @@ public:
               settingsPath("test-resources/websocket-cc-tls.settings"),
               semaphore()
     {
-        clusterControllerRuntime = std::make_shared<JoynrClusterControllerRuntime>(
+        clusterControllerRuntime = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsPath), failOnFatalRuntimeError);
         clusterControllerRuntime->init();
         clusterControllerRuntime->start();
@@ -91,7 +92,7 @@ public:
     }
 
 protected:
-    std::shared_ptr<JoynrClusterControllerRuntime> clusterControllerRuntime;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> clusterControllerRuntime;
     std::shared_ptr<TestLibJoynrWebSocketRuntime> libjoynrProviderRuntime;
     std::shared_ptr<TestLibJoynrWebSocketRuntime> libjoynrProxyRuntime;
 

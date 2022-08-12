@@ -56,20 +56,35 @@ public:
             std::unique_ptr<Settings> settings,
             std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
             std::shared_ptr<IKeychain> keyChain = nullptr,
-            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr)
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
+            std::int64_t removeStaleDelayMs = _defaultRemoveStaleDelayMs)
             : JoynrClusterControllerRuntime(std::move(settings),
                                             std::move(onFatalRuntimeError),
                                             keyChain,
-                                            mqttMessagingSkeletonFactory){};
+                                            mqttMessagingSkeletonFactory,
+                                            removeStaleDelayMs){};
 
-    std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>>
-    mockJoynrClusterControllerMqttConnectionData(
-            const std::shared_ptr<MosquittoConnection>& connection,
-            const std::shared_ptr<ITransportMessageReceiver>& receiver,
-            const std::shared_ptr<ITransportMessageSender>& sender)
+    TestJoynrClusterControllerRuntime(
+            const std::shared_ptr<MosquittoConnection>& mockMosquittoConnection,
+            const std::shared_ptr<ITransportMessageReceiver>& mockMqttMessageReceiver,
+            const std::shared_ptr<ITransportMessageSender>& mockMqttMessageSender,
+            std::unique_ptr<Settings> settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
+            std::shared_ptr<IKeychain> keyChain = nullptr,
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
+            std::int64_t removeStaleDelayMs = _defaultRemoveStaleDelayMs,
+            std::function<void(
+                    std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>>&)>
+                    testsToExecute = nullptr)
+            : JoynrClusterControllerRuntime(std::move(settings),
+                                            std::move(onFatalRuntimeError),
+                                            keyChain,
+                                            mqttMessagingSkeletonFactory,
+                                            removeStaleDelayMs)
     {
         const std::size_t numberOfGBIDs = 1U + _messagingSettings.getAdditionalBackendsCount();
         _mqttConnectionDataVector.clear();
+
         std::vector<std::shared_ptr<MockJoynrClusterControllerMqttConnectionData>> createdMocks;
         for (std::size_t i = 0; i < numberOfGBIDs; i++) {
             auto mockMqttConnectionData =
@@ -78,16 +93,19 @@ public:
             _mqttConnectionDataVector.push_back(mockMqttConnectionData);
 
             ON_CALL(*mockMqttConnectionData, getMqttMessageReceiver())
-                    .WillByDefault(testing::Return(receiver));
+                    .WillByDefault(testing::Return(mockMqttMessageReceiver));
 
             ON_CALL(*mockMqttConnectionData, getMqttMessageSender())
-                    .WillByDefault(testing::Return(sender));
+                    .WillByDefault(testing::Return(mockMqttMessageSender));
 
             ON_CALL(*mockMqttConnectionData, getMosquittoConnection())
-                    .WillByDefault(testing::Return(connection));
+                    .WillByDefault(testing::Return(mockMosquittoConnection));
         }
-        return createdMocks;
-    }
+
+        if (testsToExecute != nullptr) {
+            testsToExecute(createdMocks);
+        }
+    };
 };
 
 #endif // TEST_MOCK_TESTJOYNRCLUSTERCONTROLLERRUNTIME_H

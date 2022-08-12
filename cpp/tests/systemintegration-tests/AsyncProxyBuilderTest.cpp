@@ -22,7 +22,6 @@
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/Settings.h"
@@ -31,6 +30,7 @@
 #include "tests/mock/MockTestProvider.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
@@ -47,7 +47,7 @@ public:
                 std::make_unique<Settings>("test-resources/libjoynrSystemIntegration1.settings");
         Settings settings("test-resources/MqttSystemIntegrationTest1.settings");
         Settings::merge(settings, *integrationSettings, false);
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(integrationSettings), failOnFatalRuntimeError);
         runtime->init();
         runtime->start();
@@ -63,7 +63,7 @@ public:
     }
 
 protected:
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime;
     DiscoveryQos discoveryQos;
 };
 

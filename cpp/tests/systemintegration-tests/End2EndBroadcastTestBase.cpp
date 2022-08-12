@@ -27,7 +27,6 @@
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/MulticastSubscriptionQos.h"
@@ -40,6 +39,7 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/MyTestProvider.h"
 #include "tests/utils/PtrUtils.h"
 
@@ -57,8 +57,8 @@ namespace joynr
 class End2EndBroadcastTestBase : public TestWithParam<std::tuple<std::string, std::string>>
 {
 public:
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime2;
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
@@ -133,13 +133,13 @@ public:
 
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime1 = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings1), failOnFatalRuntimeError);
         runtime1->init();
 
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime2 = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings2), failOnFatalRuntimeError);
         runtime2->init();
 
@@ -183,7 +183,7 @@ protected:
     }
 
     std::shared_ptr<MyTestProvider> registerProvider(
-            std::shared_ptr<JoynrClusterControllerRuntime> runtime)
+            std::shared_ptr<TestJoynrClusterControllerRuntime> runtime)
     {
         auto testProvider = std::make_shared<MyTestProvider>();
         constexpr bool persist {true};
@@ -207,7 +207,7 @@ protected:
     }
 
     std::shared_ptr<tests::testProxy> buildProxy(
-            std::shared_ptr<JoynrClusterControllerRuntime> runtime)
+            std::shared_ptr<TestJoynrClusterControllerRuntime> runtime)
     {
         std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
                 runtime->createProxyBuilder<tests::testProxy>(domainName);

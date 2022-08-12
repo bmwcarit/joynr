@@ -28,7 +28,6 @@
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/Future.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/Settings.h"
@@ -39,6 +38,8 @@
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 #include "tests/mock/MockKeychain.h"
 #include "tests/mock/MockGpsProvider.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
+
 
 using namespace ::testing;
 using namespace joynr;
@@ -87,7 +88,7 @@ protected:
     void startRuntimes()
     {
         auto ccSettings = std::make_unique<Settings>(std::get<0>(GetParam()));
-        ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(
+        ccRuntime = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(ccSettings), failOnFatalRuntimeError);
         ccRuntime->init();
 
@@ -188,7 +189,7 @@ protected:
     std::string ownerId;
     const bool useTls;
     std::shared_ptr<MockKeychain> keyChain;
-    std::shared_ptr<JoynrClusterControllerRuntime> ccRuntime;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> ccRuntime;
     std::shared_ptr<TestLibJoynrWebSocketRuntime> libJoynrRuntime;
 
 private:

@@ -24,7 +24,6 @@
 
 #include "joynr/CapabilityUtils.h"
 #include "joynr/DiscoveryQos.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/Settings.h"
@@ -34,8 +33,9 @@
 #include "joynr/types/Version.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockTransportMessageSender.h"
 #include "tests/mock/MockTransportMessageReceiver.h"
+#include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
@@ -48,7 +48,7 @@ public:
     std::unique_ptr<Settings> settings;
     std::string discoveryDomain;
     std::string discoveryProviderParticipantId;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     std::shared_ptr<ITransportMessageSender> mockMessageSenderMqtt;
     DiscoveryQos discoveryQos;
@@ -98,10 +98,8 @@ public:
 
         // runtime can only be created, after MockCommunicationManager has been told to return
         // a channelId for getReceiveChannelId.
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings),
-                                                                  failOnFatalRuntimeError,
-                                                                  nullptr,
-                                                                  nullptr);
+        runtime = std::make_shared<TestJoynrClusterControllerRuntime>(
+                std::move(settings), failOnFatalRuntimeError, nullptr, nullptr);
         // discovery provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
 
