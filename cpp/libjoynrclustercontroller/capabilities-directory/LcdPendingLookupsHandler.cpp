@@ -40,11 +40,26 @@ void LcdPendingLookupsHandler::callPendingLookups(
     }
     auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
 
+    std::vector<std::shared_ptr<ILocalCapabilitiesCallback>> callbacksToRemove;
     for (const std::shared_ptr<ILocalCapabilitiesCallback>& callback :
          _pendingLookups[interfaceAddress]) {
+        callbacksToRemove.push_back(callback);
         callback->capabilitiesReceived(localCapabilitiesWithMetaInfo);
     }
-    _pendingLookups.erase(interfaceAddress);
+
+    // Note that a pending lookup might have been done for multiple damains
+    // in parallel resulting in multiple entries using the same callback.
+    // Identify all callbacks associated with a lookup for the interfaceAddress
+    // of the provider about to be registered, then also remove all other entries
+    // associated with the same callbacks since the search criteria is fulfilled
+    // by registering a provider that matches any of the domains searched for.
+    std::vector<InterfaceAddress> allInterfaces;
+    for (const auto& elem : _pendingLookups) {
+        allInterfaces.push_back(elem.first);
+    }
+    for (const auto& callback : callbacksToRemove) {
+        callbackCalled(allInterfaces, callback);
+    }
 }
 
 void LcdPendingLookupsHandler::registerPendingLookup(
