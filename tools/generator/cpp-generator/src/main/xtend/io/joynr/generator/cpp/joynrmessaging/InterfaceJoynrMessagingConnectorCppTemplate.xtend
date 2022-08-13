@@ -177,7 +177,8 @@ request.setParams(
 					future,
 					onSuccess = std::move(onSuccess),
 					requestReplyId = request.getRequestReplyId(),
-					methodName = request.getMethodName()
+					methodName = request.getMethodName(),
+					thisSharedPtr = shared_from_this()
 			] (const «returnType»& «attributeName») {
 				JOYNR_LOG_DEBUG(logger(),
 						"REQUEST returns successful: requestReplyId: {}, method: {}, response: {}",
@@ -257,7 +258,8 @@ request.setParams(
 					future,
 					onSuccess = std::move(onSuccess),
 					requestReplyId = request.getRequestReplyId(),
-					methodName = request.getMethodName()
+					methodName = request.getMethodName(),
+					thisSharedPtr = shared_from_this()
 			] () {
 				JOYNR_LOG_DEBUG(logger(),
 						"REQUEST returns successful: requestReplyId: {}, method: {}",
@@ -423,7 +425,8 @@ request.setParams(
 					future,
 					onSuccess = std::move(onSuccess),
 					requestReplyId = request.getRequestReplyId(),
-					methodName = request.getMethodName()
+					methodName = request.getMethodName(),
+					thisSharedPtr = shared_from_this()
 			] («outputTypedConstParamList»)
 			{
 				JOYNR_LOG_DEBUG(logger(),
