@@ -157,6 +157,13 @@ public:
             )
     );
 
+    MOCK_METHOD1(
+            removeRoutingEntry,
+            void(
+                const std::string& participantId
+            )
+    );
+
     void sendSubscriptionPublication(
         const std::string& senderParticipantId,
         const std::string& receiverParticipantId,

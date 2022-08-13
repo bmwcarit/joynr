@@ -239,6 +239,16 @@ TEST_F(MessageSenderTest, DISABLED_sendSubscriptionReply_normal)
     //    qosSettings);
 }
 
+TEST_F(MessageSenderTest, removeRoutingEntry)
+{
+    std::string participantId("participantId");
+
+    EXPECT_CALL(*(mockMessageRouter.get()), removeNextHop(participantId, _, _));
+
+    MessageSender messageSender(mockMessageRouter, nullptr);
+    messageSender.removeRoutingEntry(participantId);
+}
+
 TEST_F(MessageSenderTest, sendPublication_normal)
 {
     MessageSender messageSender(mockMessageRouter, nullptr);
