@@ -158,10 +158,10 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute)
 {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _)).WillRepeatedly(DoAll(
             Invoke(_mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
-            ReleaseSemaphore(&semaphore)));
+            ReleaseSemaphore(semaphore)));
 
     std::string attributeName = "Location";
     auto subscriptionQos =
@@ -184,7 +184,7 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute)
     _dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Wait for a call to be made to the mockRequestCaller
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
 }
 
 /**
@@ -195,9 +195,9 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute)
 TEST_F(SubscriptionTest, receive_publication)
 {
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
-    Semaphore publicationSemaphore(0);
+    auto publicationSemaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*_mockGpsLocationListener, onReceive(A<const types::Localisation::GpsLocation&>()))
-            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
+            .WillRepeatedly(ReleaseSemaphore(publicationSemaphore));
 
     // register the subscription on the consumer side
     std::string attributeName = "Location";
@@ -233,21 +233,21 @@ TEST_F(SubscriptionTest, receive_publication)
     _dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(publicationSemaphore.waitFor(std::chrono::seconds(1)));
-    ASSERT_FALSE(publicationSemaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(publicationSemaphore->waitFor(std::chrono::seconds(1)));
+    ASSERT_FALSE(publicationSemaphore->waitFor(std::chrono::seconds(1)));
 }
 
 void SubscriptionTest::receive_publicationWithException(
         std::shared_ptr<exceptions::JoynrRuntimeException> expectedException)
 {
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     auto mockIntListener = std::make_shared<MockSubscriptionListenerOneType<std::int32_t>>();
     EXPECT_CALL(*mockIntListener, onReceive(A<const std::int32_t&>())).Times(0);
     EXPECT_CALL(*mockIntListener,
                 onError(joynrException(
                         expectedException->getTypeName(), expectedException->getMessage())))
             .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     // register the subscription on the consumer side
     const std::string attributeName = "attributeWithProviderRuntimeException";
@@ -282,7 +282,7 @@ void SubscriptionTest::receive_publicationWithException(
             _providerParticipantId, _proxyParticipantId, _qos, subscriptionPublication);
 
     _dispatcher->receive(msg.getImmutableMessage());
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
 }
 
 TEST_F(SubscriptionTest, receive_publicationWithProviderRuntimeException)
@@ -308,10 +308,10 @@ TEST_F(SubscriptionTest, receive_publicationWithMethodInvocationException)
 TEST_F(SubscriptionTest, receive_enumPublication)
 {
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*_mockTestEnumSubscriptionListener,
                 onReceive(A<const joynr::tests::testTypes::TestEnum::Enum&>()))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+            .WillRepeatedly(ReleaseSemaphore(semaphore));
 
     // register the subscription on the consumer side
     std::string attributeName = "testEnum";
@@ -346,8 +346,8 @@ TEST_F(SubscriptionTest, receive_enumPublication)
     _dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
+    ASSERT_FALSE(semaphore->waitFor(std::chrono::seconds(1)));
 }
 
 /**
@@ -360,14 +360,14 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription)
 {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*_mockRequestCaller,
                 getLocationMock(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
                                 A<std::function<void(const std::shared_ptr<
                                         joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(DoAll(Invoke(_mockRequestCaller.get(),
                                    &MockTestRequestCaller::invokeLocationOnSuccessFct),
-                            ReleaseSemaphore(&semaphore)));
+                            ReleaseSemaphore(semaphore)));
     std::string attributeName = "Location";
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(500,  // validity_ms
@@ -389,7 +389,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription)
 
     _dispatcher->receive(mutableMessage.getImmutableMessage());
     _dispatcher->addRequestCaller(_providerParticipantId, _mockRequestCaller);
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(15)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(15)));
     // Try to acquire a semaphore for up to 15 seconds. Acquireing the semaphore will only work, if
     // the mockRequestCaller has been called
     // and will be much faster than waiting for 1s to make sure it has been called
@@ -407,7 +407,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam)
                                                                      );
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -420,7 +420,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam)
                     A<std::function<void(const std::vector<std::string>&)>>(),
                     A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>()))
             .WillOnce(DoAll(Invoke(_provider.get(), &MockTestProvider::invokeListOfStringsOnSuccess),
-                            ReleaseSemaphore(&semaphore)));
+                            ReleaseSemaphore(semaphore)));
 
     /* ensure the serialization succeeds and the first publication and the subscriptionReply are
      * sent to the proxy */
@@ -436,7 +436,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam)
                             subscriptionRequest,
                             _messageSender);
 
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(15)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(15)));
 
     std::vector<std::string> listOfStrings;
     listOfStrings.push_back("1");
@@ -457,7 +457,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithProviderRuntimeException)
 {
     using ImmutableMessagePtr = std::shared_ptr<ImmutableMessage>;
 
-    joynr::Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     const std::string subscriptionId = "SubscriptionID";
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(600,  // validity_ms
@@ -494,7 +494,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithProviderRuntimeException)
                                     joynr::serializer::serializeToJson(expectedPublication))),
                       _))
             .Times(2)
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+            .WillRepeatedly(ReleaseSemaphore(semaphore));
 
     _publicationManager->add(_proxyParticipantId,
                             _providerParticipantId,
@@ -503,8 +503,8 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithProviderRuntimeException)
                             _messageSender);
 
     // wait for the 2 async publications
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
 }
 
 /**
@@ -516,10 +516,10 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications)
 {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _)).WillRepeatedly(DoAll(
             Invoke(_mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
-            ReleaseSemaphore(&semaphore)));
+            ReleaseSemaphore(semaphore)));
 
     _dispatcher->addRequestCaller(_providerParticipantId, _mockRequestCaller);
     auto subscriptionQos =
@@ -541,13 +541,13 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications)
     // first received message with subscription request
     _dispatcher->receive(mutableMessage.getImmutableMessage());
     // wait for two requests from the subscription
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
     // remove the request caller
     _dispatcher->removeRequestCaller(_providerParticipantId);
     // assert that less than 2 requests happen in the next 300 milliseconds
-    semaphore.waitFor(std::chrono::milliseconds(300));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(300)));
+    semaphore->waitFor(std::chrono::milliseconds(300));
+    ASSERT_FALSE(semaphore->waitFor(std::chrono::milliseconds(300)));
 }
 
 /**
@@ -559,10 +559,10 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications)
 {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _)).WillRepeatedly(DoAll(
             Invoke(_mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
-            ReleaseSemaphore(&semaphore)));
+            ReleaseSemaphore(semaphore)));
 
     _dispatcher->addRequestCaller(_providerParticipantId, _mockRequestCaller);
     std::string attributeName = "Location";
@@ -585,8 +585,8 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications)
     _dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // wait for two requests from the subscription
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
 
     SubscriptionStop subscriptionStop;
     subscriptionStop.setSubscriptionId(subscriptionRequest.getSubscriptionId());
@@ -595,5 +595,5 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications)
             _proxyParticipantId, _providerParticipantId, _qos, subscriptionStop);
     _dispatcher->receive(mutableMessage.getImmutableMessage());
 
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_FALSE(semaphore->waitFor(std::chrono::seconds(1)));
 }
