@@ -281,7 +281,7 @@
 				<groupId>jakarta.annotation</groupId>
 				<artifactId>jakarta.annotation-api</artifactId>
 				<type>jar</type>
-				<version>2.0.0</version>
+				<version>2.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.platform</groupId>
@@ -377,79 +377,79 @@
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-alpn-client</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-annotations</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-client</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-http</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-io</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-jndi</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-plus</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-security</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-server</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-servlet</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-util</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-webapp</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-xml</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.toolchain</groupId>
@@ -461,49 +461,49 @@
 				<groupId>org.eclipse.jetty.websocket</groupId>
 				<artifactId>websocket-core-client</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
 				<artifactId>websocket-core-common</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
 				<artifactId>websocket-core-server</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
 				<artifactId>websocket-jetty-api</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
 				<artifactId>websocket-jetty-client</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
 				<artifactId>websocket-jetty-common</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
 				<artifactId>websocket-jetty-server</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty.websocket</groupId>
 				<artifactId>websocket-servlet</artifactId>
 				<type>jar</type>
-				<version>11.0.7</version>
+				<version>11.0.11</version>
 			</dependency>
 			<dependency>
 				<groupId>org.glassfish.jaxb</groupId>
@@ -761,25 +761,25 @@
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm</artifactId>
 				<type>jar</type>
-				<version>9.2</version>
+				<version>9.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-analysis</artifactId>
 				<type>jar</type>
-				<version>9.2</version>
+				<version>9.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-commons</artifactId>
 				<type>jar</type>
-				<version>9.2</version>
+				<version>9.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-tree</artifactId>
 				<type>jar</type>
-				<version>9.2</version>
+				<version>9.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.postgresql</groupId>
