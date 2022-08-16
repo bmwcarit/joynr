@@ -785,7 +785,7 @@
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
 				<type>jar</type>
-				<version>42.4.0</version>
+				<version>42.4.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.reactivestreams</groupId>
