@@ -43,10 +43,12 @@ private:
     using Base = SubscriptionCallback<UnicastSubscriptionCallback<T, Ts...>, T, Ts...>;
 
 public:
-    explicit UnicastSubscriptionCallback(const std::string& subscriptionId,
-                                         std::shared_ptr<Future<std::string>> future,
-                                         std::weak_ptr<ISubscriptionManager> subscriptionManager)
-            : Base(subscriptionId, std::move(future), subscriptionManager)
+    explicit UnicastSubscriptionCallback(
+            const std::string& subscriptionId,
+            std::shared_ptr<Future<std::string>> future,
+            std::weak_ptr<ISubscriptionManager> subscriptionManager,
+            std::shared_ptr<AbstractJoynrMessagingConnector> messagingConnector)
+            : Base(subscriptionId, std::move(future), subscriptionManager, messagingConnector)
     {
     }
 

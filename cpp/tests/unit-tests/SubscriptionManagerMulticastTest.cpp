@@ -49,20 +49,23 @@ public:
               _providerParticipantId1("providerParticipantId"),
               _partitions({"partition1", "partition2"}),
               _multicastId1("providerParticipantId/subscribeToName/partition1/partition2"),
-              _mockMessageRouter(
-                      std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
-              _mockGpsSubscriptionListener(std::make_shared<
-                      MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>()),
+              _mockMessageRouter(std::make_shared<MockMessageRouter>(
+                      _singleThreadedIOService->getIOService())),
+              _mockGpsSubscriptionListener(
+                      std::make_shared<
+                              MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>()),
               _qos(std::make_shared<MulticastSubscriptionQos>()),
               _future(std::make_shared<Future<std::string>>()),
-              _subscriptionManager(
-                      std::make_shared<SubscriptionManager>(_singleThreadedIOService->getIOService(),
-                                                            _mockMessageRouter)),
-              _subscriptionCallback(std::make_shared<
-                      MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-                      "testSubscriptionId",
-                      _future,
-                      _subscriptionManager))
+              _subscriptionManager(std::make_shared<SubscriptionManager>(
+                      _singleThreadedIOService->getIOService(),
+                      _mockMessageRouter)),
+              _subscriptionCallback(
+                      std::make_shared<
+                              MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
+                              "testSubscriptionId",
+                              _future,
+                              _subscriptionManager,
+                              nullptr))
     {
     }
 
@@ -157,23 +160,23 @@ TEST_F(SubscriptionManagerMulticastTest,
 
     auto subscriptionCallback1_1 =
             std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-                    subscriptionRequest_Provider1_1.getSubscriptionId(),
-                    _future,
-                    _subscriptionManager);
+                    subscriptionRequest_Provider1_1.getSubscriptionId(), _future,
+                    _subscriptionManager, nullptr);
 
     auto subscriptionCallback1_2 =
             std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-                    subscriptionRequest_Provider1_2.getSubscriptionId(),
-                    _future,
-                    _subscriptionManager);
+                    subscriptionRequest_Provider1_2.getSubscriptionId(), _future,
+                    _subscriptionManager, nullptr);
 
     auto subscriptionCallback2 =
             std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-                    subscriptionRequest_Provider2.getSubscriptionId(), _future, _subscriptionManager);
+                    subscriptionRequest_Provider2.getSubscriptionId(), _future,
+                    _subscriptionManager, nullptr);
 
     auto subscriptionCallback3 =
             std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-                    subscriptionRequest_Provider3.getSubscriptionId(), _future, _subscriptionManager);
+                    subscriptionRequest_Provider3.getSubscriptionId(), _future,
+                    _subscriptionManager, nullptr);
 
     _subscriptionManager->registerSubscription(
             _subscribeToName,

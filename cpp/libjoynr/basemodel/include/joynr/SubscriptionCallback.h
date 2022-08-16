@@ -22,11 +22,12 @@
 #include <memory>
 #include <tuple>
 
-#include "joynr/ISubscriptionManager.h"
+#include "joynr/AbstractJoynrMessagingConnector.h"
 #include "joynr/BasePublication.h"
 #include "joynr/Future.h"
 #include "joynr/ISubscriptionCallback.h"
 #include "joynr/ISubscriptionListener.h"
+#include "joynr/ISubscriptionManager.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/SubscriptionReply.h"
 
@@ -41,12 +42,15 @@ template <typename Derived, typename T, typename... Ts>
 class SubscriptionCallback : public ISubscriptionCallback
 {
 public:
-    explicit SubscriptionCallback(const std::string& subscriptionId,
-                                  std::shared_ptr<Future<std::string>> future,
-                                  std::weak_ptr<ISubscriptionManager> subscriptionManager)
+    explicit SubscriptionCallback(
+            const std::string& subscriptionId,
+            std::shared_ptr<Future<std::string>> future,
+            std::weak_ptr<ISubscriptionManager> subscriptionManager,
+            std::shared_ptr<AbstractJoynrMessagingConnector> messagingConnector)
             : _subscriptionId(subscriptionId),
               _future(std::move(future)),
-              _subscriptionManager(std::move(subscriptionManager))
+              _subscriptionManager(std::move(subscriptionManager)),
+              _messagingConnector(std::move(messagingConnector))
     {
     }
 
@@ -104,6 +108,7 @@ protected:
     std::string _subscriptionId;
     std::shared_ptr<Future<std::string>> _future;
     std::weak_ptr<ISubscriptionManager> _subscriptionManager;
+    std::shared_ptr<AbstractJoynrMessagingConnector> _messagingConnector;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(SubscriptionCallback);
