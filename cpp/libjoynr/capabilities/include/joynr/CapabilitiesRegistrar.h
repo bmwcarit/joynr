@@ -68,7 +68,7 @@ class JOYNR_EXPORT CapabilitiesRegistrar
 {
 public:
     CapabilitiesRegistrar(
-            std::vector<std::shared_ptr<IDispatcher>> dispatcherList,
+            std::shared_ptr<IDispatcher> dispatcher,
             std::shared_ptr<joynr::system::IDiscoveryAsync> discoveryProxy,
             std::shared_ptr<ParticipantIdStorage> participantIdStorage,
             std::shared_ptr<const joynr::system::RoutingTypes::Address> dispatcherAddress,
@@ -131,7 +131,6 @@ public:
             domain,
             interfaceName,
             majorVersion = T::MAJOR_VERSION,
-            dispatcherList = this->_dispatcherList,
             caller,
             participantIdStorage = util::as_weak_ptr(_participantIdStorage),
             messageRouter = util::as_weak_ptr(_messageRouter),
@@ -264,15 +263,7 @@ public:
             }
         };
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
-        for (std::shared_ptr<IDispatcher> currentDispatcher : _dispatcherList) {
-            // TODO will the provider be registered at all dispatchers or
-            //     should it be configurable which ones are used to contact it.
-            assert(currentDispatcher != nullptr);
-            currentDispatcher->addRequestCaller(participantId, caller);
-        }
-#pragma GCC diagnostic pop
+        _dispatcher->addRequestCaller(participantId, caller);
 
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
         const bool isSticky = false;
@@ -319,12 +310,9 @@ public:
         return participantId;
     }
 
-    void addDispatcher(std::shared_ptr<IDispatcher> dispatcher);
-    void removeDispatcher(std::shared_ptr<IDispatcher> dispatcher);
-
 private:
     DISALLOW_COPY_AND_ASSIGN(CapabilitiesRegistrar);
-    std::vector<std::shared_ptr<IDispatcher>> _dispatcherList;
+    std::shared_ptr<IDispatcher> _dispatcher;
     std::shared_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
     std::shared_ptr<ParticipantIdStorage> _participantIdStorage;
     std::shared_ptr<const joynr::system::RoutingTypes::Address> _dispatcherAddress;

@@ -132,7 +132,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _localCapabilitiesDirectory(nullptr),
           _libJoynrMessagingSkeleton(nullptr),
           _mqttMessagingSkeletonFactory(std::move(mqttMessagingSkeletonFactory)),
-          _dispatcherList(),
           _settings(std::move(settings)),
           _libjoynrSettings(*(this->_settings)),
           _localDomainAccessController(nullptr),
@@ -541,8 +540,6 @@ void JoynrClusterControllerRuntime::init()
 
     _proxyFactory = std::make_unique<ProxyFactory>(std::move(joynrMessagingConnectorFactory));
 
-    _dispatcherList.push_back(_joynrDispatcher);
-
     // Set up the persistence file for storing provider participant ids
     std::string persistenceFilename = _libjoynrSettings.getParticipantIdsPersistenceFilename();
     _participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
@@ -591,7 +588,7 @@ void JoynrClusterControllerRuntime::init()
         _discoveryProxy->setDiscoveryProxy(std::move(discoveryJoynrMessagingConnector));
     }
     _capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
-            _dispatcherList,
+            _joynrDispatcher,
             _discoveryProxy,
             _participantIdStorage,
             _dispatcherAddress,
@@ -760,8 +757,8 @@ void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProvider(
     if (_localCapabilitiesDirectory) {
         _localCapabilitiesDirectory->remove(participantId, nullptr, nullptr);
     }
-    for (std::shared_ptr<IDispatcher> currentDispatcher : _dispatcherList) {
-        currentDispatcher->removeRequestCaller(participantId);
+    if (_joynrDispatcher) {
+        _joynrDispatcher->removeRequestCaller(participantId);
     }
 }
 void JoynrClusterControllerRuntime::unregisterInternalSystemServiceProviders()

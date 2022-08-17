@@ -102,15 +102,12 @@ ShortCircuitRuntime::ShortCircuitRuntime(std::unique_ptr<Settings> settings,
     std::string persistenceFilename = "dummy.txt";
     _participantIdStorage = std::make_shared<ParticipantIdStorage>(persistenceFilename);
 
-    std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-    dispatcherList.push_back(_joynrDispatcher);
-
     _joynrDispatcher->registerPublicationManager(_publicationManager);
     _joynrDispatcher->registerSubscriptionManager(_subscriptionManager);
 
     _discoveryProxy = std::make_shared<DummyDiscovery>();
     _capabilitiesRegistrar =
-            std::make_unique<CapabilitiesRegistrar>(dispatcherList,
+            std::make_unique<CapabilitiesRegistrar>(_joynrDispatcher,
                                                     _discoveryProxy,
                                                     _participantIdStorage,
                                                     _dispatcherAddress,
