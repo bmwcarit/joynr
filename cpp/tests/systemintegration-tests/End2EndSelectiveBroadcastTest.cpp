@@ -302,12 +302,6 @@ TEST_P(End2EndSelectiveBroadcastTest, publishAfterProxyDestruction)
             filterParameters, subscriptionListener, subscriptionQos);
     std::string participantId{testProxy->getProxyParticipantId()};
 
-    // Build a second proxy from the testProxyBuilder to remove the reference in the arbitrator of
-    // the first proxy
-    std::ignore = testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
-                          ->setDiscoveryQos(discoveryQos)
-                          ->build();
-
     std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder =
             runtime2->createProxyBuilder<joynr::system::RoutingProxy>("io.joynr.system");
     std::shared_ptr<joynr::system::RoutingProxy> routingProxy(
