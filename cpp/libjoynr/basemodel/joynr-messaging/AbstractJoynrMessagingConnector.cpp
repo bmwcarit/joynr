@@ -69,4 +69,10 @@ void AbstractJoynrMessagingConnector::operationOneWayRequest(OneWayRequest&& req
     }
 }
 
+AbstractJoynrMessagingConnector::~AbstractJoynrMessagingConnector()
+{
+    if (auto ptr = _messageSender.lock()) {
+        ptr->removeRoutingEntry(_proxyParticipantId);
+    }
+}
 } // namespace joynr

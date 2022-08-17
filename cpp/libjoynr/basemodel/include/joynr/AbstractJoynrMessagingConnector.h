@@ -53,7 +53,7 @@ public:
             const MessagingQos& qosSettings,
             const types::DiscoveryEntryWithMetaInfo& providerDiscoveryEntry);
 
-    virtual ~AbstractJoynrMessagingConnector() = default;
+    virtual ~AbstractJoynrMessagingConnector();
 
     /**
      * @brief Makes a request and returns the received response via the callback.
