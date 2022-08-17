@@ -44,6 +44,27 @@ namespace joynr
 namespace util
 {
 
+#ifdef __GLIBCXX__
+class GlibCxxCTypeWorkaround
+{
+public:
+    GlibCxxCTypeWorkaround()
+    {
+        // Workaround for data race as mentioned in
+        // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77704
+        // Preinitialize global locale facet internal cache to prevent
+        // data race within std::regex APIs using std::ctype<char>
+        const std::ctype<char>& cCtype(std::use_facet<std::ctype<char>>(std::locale()));
+
+        for (int i = 0; i < 256; i++) {
+            cCtype.narrow(static_cast<char>(i), '\0');
+        }
+    }
+};
+
+static GlibCxxCTypeWorkaround glibCxxCtypeWorkaround;
+#endif
+
 class FileBufWithFileno : public std::filebuf
 {
 public:
