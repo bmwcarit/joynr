@@ -27,6 +27,7 @@
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
+#include "joynr/ReadWriteLock.h"
 #include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/RoutingProxy.h"
@@ -115,13 +116,19 @@ public:
     {
         std::uint64_t delay = 0;
 
-        while (testProvider->_attributeListeners.find(attributeName) ==
-                       testProvider->_attributeListeners.cend() &&
-               delay <= subscribeToAttributeWait) {
+        while (delay <= subscribeToAttributeWait) {
+            {
+                ReadLocker locker(testProvider->_lockAttributeListeners);
+                if (testProvider->_attributeListeners.find(attributeName) !=
+                       testProvider->_attributeListeners.cend()) {
+                    break;
+                }
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
             delay += 50;
         }
 
+        ReadLocker locker(testProvider->_lockAttributeListeners);
         EXPECT_FALSE(testProvider->_attributeListeners.find(attributeName) ==
                              testProvider->_attributeListeners.cend() ||
                      testProvider->_attributeListeners.find(attributeName)->second.empty());
