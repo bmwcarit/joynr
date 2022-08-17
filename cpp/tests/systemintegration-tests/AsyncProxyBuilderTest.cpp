@@ -82,10 +82,10 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
-    Semaphore onSuccessCalledSemaphore;
+    auto onSuccessCalledSemaphore = std::make_shared<Semaphore>(0);
 
-    auto onSuccess = [&onSuccessCalledSemaphore](std::shared_ptr<tests::testProxy> proxy) {
-        onSuccessCalledSemaphore.notify();
+    auto onSuccess = [onSuccessCalledSemaphore](std::shared_ptr<tests::testProxy> proxy) {
+        onSuccessCalledSemaphore->notify();
         EXPECT_NE(nullptr, proxy);
     };
 
@@ -95,7 +95,7 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_succeeds)
             ->setDiscoveryQos(discoveryQos)
             ->buildAsync(onSuccess, onFailure);
 
-    EXPECT_TRUE(onSuccessCalledSemaphore.waitFor(std::chrono::seconds(10)));
+    EXPECT_TRUE(onSuccessCalledSemaphore->waitFor(std::chrono::seconds(10)));
     runtime->unregisterProvider(participantId);
 }
 
@@ -104,19 +104,19 @@ TEST_F(AsyncProxyBuilderTest, createProxyAsync_exceptionThrown)
     std::shared_ptr<ProxyBuilder<tests::testProxy>> testProxyBuilder =
             runtime->createProxyBuilder<tests::testProxy>("unknownDomain");
 
-    Semaphore onErrorCalledSemaphore;
+    auto onErrorCalledSemaphore = std::make_shared<Semaphore>(0);
 
     auto onSuccess = [](std::shared_ptr<tests::testProxy>) { FAIL(); };
 
-    auto onFailure = [&onErrorCalledSemaphore](const joynr::exceptions::DiscoveryException&) {
-        onErrorCalledSemaphore.notify();
+    auto onFailure = [onErrorCalledSemaphore](const joynr::exceptions::DiscoveryException&) {
+        onErrorCalledSemaphore->notify();
     };
 
     testProxyBuilder->setMessagingQos(MessagingQos(50000))
             ->setDiscoveryQos(discoveryQos)
             ->buildAsync(onSuccess, onFailure);
 
-    EXPECT_TRUE(onErrorCalledSemaphore.waitFor(std::chrono::seconds(10)));
+    EXPECT_TRUE(onErrorCalledSemaphore->waitFor(std::chrono::seconds(10)));
 }
 
 TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_succeeds)
