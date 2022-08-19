@@ -22,16 +22,16 @@
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/system/RoutingProxy.h"
 #include "joynr/serializer/Serializer.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/PtrUtils.h"
-#include "tests/mock/MockTransportMessageSender.h"
 #include "tests/mock/MockTransportMessageReceiver.h"
+#include "tests/mock/MockTransportMessageSender.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace joynr;
 using ::testing::Mock;
@@ -76,10 +76,8 @@ public:
 
         // runtime can only be created, after MockMessageReceiver has been told to return
         // a channelId for getReceiveChannelId.
-        runtime = std::make_unique<JoynrClusterControllerRuntime>(std::move(settings),
-                                                                  failOnFatalRuntimeError,
-                                                                  nullptr,
-                                                                  nullptr);
+        runtime = std::make_unique<TestJoynrClusterControllerRuntime>(
+                std::move(settings), failOnFatalRuntimeError, nullptr, nullptr);
         // routing provider is normally registered in JoynrClusterControllerRuntime::create
         runtime->init();
     }
@@ -118,7 +116,7 @@ protected:
     std::unique_ptr<Settings> settings;
     std::string routingDomain;
     std::string routingProviderParticipantId;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime;
     std::shared_ptr<ITransportMessageReceiver> mockMessageReceiverMqtt;
     DiscoveryQos discoveryQos;
     std::shared_ptr<ProxyBuilder<joynr::system::RoutingProxy>> routingProxyBuilder;

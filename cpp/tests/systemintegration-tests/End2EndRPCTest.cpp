@@ -23,7 +23,6 @@
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/vehicle/GpsProxy.h"
@@ -37,6 +36,7 @@
 #include "tests/mock/MockGpsProvider.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
@@ -47,12 +47,12 @@ class End2EndRPCTest : public TestWithParam<std::string>
 {
 public:
     std::string domain;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime;
     std::shared_ptr<vehicle::GpsProvider> gpsProvider;
 
     End2EndRPCTest() : domain(), runtime()
     {
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError);
         runtime->init();
         domain = "cppEnd2EndRPCTest_Domain_" + util::createUuid();

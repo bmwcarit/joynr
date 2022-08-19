@@ -24,7 +24,6 @@
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/Settings.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
@@ -42,6 +41,7 @@
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "tests/mock/MockTestProvider.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -60,7 +60,7 @@ class GlobalCapabilitiesDirectoryIntegrationTest : public TestWithParam<std::str
 {
 public:
     ADD_LOGGER(GlobalCapabilitiesDirectoryIntegrationTest)
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime;
     std::unique_ptr<Settings> settings;
     MessagingSettings messagingSettings;
     ClusterControllerSettings clusterControllerSettings;
@@ -80,7 +80,8 @@ public:
     {
         Settings libjoynrSettings{libJoynrSettingsFilename};
         Settings::merge(libjoynrSettings, *settings, false);
-        runtime = std::make_shared<JoynrClusterControllerRuntime>(std::move(settings), failOnFatalRuntimeError);
+        runtime = std::make_shared<TestJoynrClusterControllerRuntime>(
+                std::move(settings), failOnFatalRuntimeError);
         runtime->init();
         runtime->start();
     }
@@ -209,8 +210,9 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
     discoveryQos.setRetryIntervalMs(discoveryTimeoutMs + 50.0);
 
     // Start cluster controller runtime first time
-    auto testRuntimeFirst = std::make_shared<JoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
+    auto testRuntimeFirst = std::make_shared<TestJoynrClusterControllerRuntime>(
+            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr,
+            removeStaleDelayMs);
     testRuntimeFirst->init();
     testRuntimeFirst->start();
 
@@ -226,8 +228,9 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
     test::util::resetAndWaitUntilDestroyed(testRuntimeFirst);
 
     // Start cluster controller runtime second time
-    auto testRuntimeSecond = std::make_shared<JoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
+    auto testRuntimeSecond = std::make_shared<TestJoynrClusterControllerRuntime>(
+            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr,
+            removeStaleDelayMs);
     testRuntimeSecond->init();
     testRuntimeSecond->start();
     // wait some time to make sure that removeStale has been published and processed
@@ -290,7 +293,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
     auto settings1 = std::make_unique<Settings>(GetParam());
     ClusterControllerSettings ccSettings1(*settings1);
     ccSettings1.setUdsEnabled(false);
-    auto testRuntimeFirst = std::make_shared<JoynrClusterControllerRuntime>(
+    auto testRuntimeFirst = std::make_shared<TestJoynrClusterControllerRuntime>(
             std::move(settings1), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
     testRuntimeFirst->init();
     testRuntimeFirst->start();
@@ -305,7 +308,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
     auto settings2 = std::make_unique<Settings>(GetParam());
     ClusterControllerSettings ccSettings2(*settings2);
     ccSettings2.setUdsEnabled(false);
-    auto testRuntimeSecond = std::make_shared<JoynrClusterControllerRuntime>(
+    auto testRuntimeSecond = std::make_shared<TestJoynrClusterControllerRuntime>(
             std::move(settings2), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
     testRuntimeSecond->init();
     testRuntimeSecond->start();

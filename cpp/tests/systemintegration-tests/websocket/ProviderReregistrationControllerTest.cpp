@@ -21,12 +21,12 @@
 #include "tests/utils/Gmock.h"
 #include <chrono>
 
-#include "joynr/JoynrClusterControllerRuntime.h"
+#include "joynr/DiscoveryQos.h"
 #include "joynr/Settings.h"
 #include "joynr/SystemServicesSettings.h"
 #include "joynr/system/ProviderReregistrationControllerProxy.h"
-#include "joynr/DiscoveryQos.h"
 #include "tests/JoynrTest.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
@@ -39,7 +39,7 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     joynr::SystemServicesSettings systemServiceSettings(*integrationSettings);
     const std::string domain(systemServiceSettings.getDomain());
 
-    auto runtime = std::make_shared<JoynrClusterControllerRuntime>(
+    auto runtime = std::make_shared<TestJoynrClusterControllerRuntime>(
             std::move(integrationSettings), failOnFatalRuntimeError);
     runtime->init();
     runtime->start();
@@ -69,7 +69,7 @@ TEST(ProviderReregistrationControllerTest, queryProviderReregistrationController
     joynr::SystemServicesSettings systemServiceSettings(*integrationSettings);
     const std::string domain(systemServiceSettings.getDomain());
 
-    auto ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(
+    auto ccRuntime = std::make_shared<TestJoynrClusterControllerRuntime>(
             std::move(integrationSettings), failOnFatalRuntimeError);
     ccRuntime->init();
     ccRuntime->start();

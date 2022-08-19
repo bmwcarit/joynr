@@ -25,9 +25,9 @@
 #include "joynr/tests/testProxy.h"
 #include "joynr/types/ProviderQos.h"
 
-#include "joynr/JoynrClusterControllerRuntime.h"
-#include "tests/utils/PtrUtils.h"
 #include "tests/JoynrTest.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -51,14 +51,14 @@ public:
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime1 = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings1), failOnFatalRuntimeError);
         runtime1->init();
 
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime2 = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings2), failOnFatalRuntimeError);
         runtime2->init();
 
@@ -92,8 +92,8 @@ protected:
         runtime->registerProvider<tests::testProvider>(testDomain, testProvider, providerQos);
     }
 
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime2;
     const std::string testDomain;
     DiscoveryQos discoveryQos;
     MessagingQos messagingQos;

@@ -24,16 +24,16 @@
 #include "tests/utils/Gmock.h"
 
 #include "joynr/Future.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Settings.h"
 
-#include "tests/mock/MockTestProvider.h"
 #include "joynr/tests/testProvider.h"
 #include "joynr/tests/testProxy.h"
 #include "joynr/types/ProviderQos.h"
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockTestProvider.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
@@ -62,11 +62,11 @@ public:
         assert(mSettings1.getGbid().empty());
         assert(!mSettings2.getGbid().empty());
 
-        runtime1WithEmptyGbid = std::make_shared<JoynrClusterControllerRuntime>(
-                    std::move(settings1), failOnFatalRuntimeError);
+        runtime1WithEmptyGbid = std::make_shared<TestJoynrClusterControllerRuntime>(
+                std::move(settings1), failOnFatalRuntimeError);
         runtime1WithEmptyGbid->init();
-        runtimeWithNonEmptyGbid = std::make_shared<JoynrClusterControllerRuntime>(
-                    std::move(settings2), failOnFatalRuntimeError);
+        runtimeWithNonEmptyGbid = std::make_shared<TestJoynrClusterControllerRuntime>(
+                std::move(settings2), failOnFatalRuntimeError);
         runtimeWithNonEmptyGbid->init();
 
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -97,8 +97,8 @@ public:
 
 protected:
     void callRpcMethodAndGetExpectedResult(
-            std::shared_ptr<JoynrClusterControllerRuntime> consumerRuntime,
-            std::shared_ptr<JoynrClusterControllerRuntime> providerRuntime)
+            std::shared_ptr<TestJoynrClusterControllerRuntime> consumerRuntime,
+            std::shared_ptr<TestJoynrClusterControllerRuntime> providerRuntime)
     {
         auto mockProvider = std::make_shared<MockTestProvider>();
 
@@ -135,8 +135,8 @@ protected:
     }
 
     std::string domain;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime1WithEmptyGbid;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtimeWithNonEmptyGbid;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime1WithEmptyGbid;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtimeWithNonEmptyGbid;
     joynr::DiscoveryQos discoveryQos;
 
 private:

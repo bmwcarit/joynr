@@ -27,9 +27,8 @@
 #include "joynr/BrokerUrl.h"
 #include "joynr/CcMessageRouter.h"
 #include "joynr/ClusterControllerSettings.h"
-#include "joynr/MessagingSettings.h"
 #include "joynr/Future.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
+#include "joynr/MessagingSettings.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
@@ -39,6 +38,7 @@
 #include "runtimes/libjoynr-runtime/websocket/LibJoynrWebSocketRuntime.h"
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockGpsProvider.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/PtrUtils.h"
 #include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
@@ -72,7 +72,7 @@ public:
         // use wrong broker-url to prevent global communication
         BrokerUrl brokerUrl("mqtt://localhost:12347");
         ccSettings.setBrokerUrl(brokerUrl);
-        ccRuntime = std::make_shared<JoynrClusterControllerRuntime>(
+        ccRuntime = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings), failOnFatalRuntimeError);
 
         ccRuntime->init();
@@ -134,7 +134,7 @@ protected:
     const std::int64_t retryIntervalMs;
     std::shared_ptr<TestLibJoynrWebSocketRuntime> consumerRuntime;
     std::shared_ptr<TestLibJoynrWebSocketRuntime> providerRuntime;
-    std::shared_ptr<JoynrClusterControllerRuntime> ccRuntime;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> ccRuntime;
     joynr::DiscoveryQos discoveryQos;
 
     void buildMultipleProxiesUsingSameProxyBuilder();

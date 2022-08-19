@@ -103,12 +103,6 @@ public:
                     const std::string& gbid,
                     const std::string& multicastTopicPrefix,
                     std::uint64_t ttlUplift)>;
-    JoynrClusterControllerRuntime(
-            std::unique_ptr<Settings> settings,
-            std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
-            std::shared_ptr<IKeychain> _keyChain = nullptr,
-            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
-            std::int64_t removeStaleDelayMs = _defaultRemoveStaleDelayMs);
 
     DISALLOW_COPY_AND_ASSIGN(JoynrClusterControllerRuntime);
 
@@ -145,6 +139,13 @@ public:
     void injectGlobalCapabilitiesFromFile(const std::string& fileName);
 
 protected:
+    JoynrClusterControllerRuntime(
+            std::unique_ptr<Settings> settings,
+            std::function<void(const exceptions::JoynrRuntimeException&)>&& onFatalRuntimeError,
+            std::shared_ptr<IKeychain> _keyChain = nullptr,
+            MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr,
+            std::int64_t removeStaleDelayMs = _defaultRemoveStaleDelayMs);
+
     void importMessageRouterFromFile();
     void importPersistedLocalCapabilitiesDirectory();
 
@@ -188,6 +189,7 @@ protected:
     bool _mqttMessagingIsRunning;
     bool _doMqttMessaging;
     std::shared_ptr<WebSocketMessagingStubFactory> _wsMessagingStubFactory;
+    static constexpr std::int64_t _defaultRemoveStaleDelayMs{300000};
 
     ADD_LOGGER(JoynrClusterControllerRuntime)
 
@@ -248,7 +250,6 @@ private:
     std::vector<std::string> _availableGbids;
     void fillAvailableGbidsVector();
 
-    static constexpr std::int64_t _defaultRemoveStaleDelayMs{300000};
     const std::int64_t _removeStaleDelay;
     boost::asio::steady_timer _removeStaleTimer;
     friend class WebSocketEnd2EndProxyBuilderRobustnessTest;

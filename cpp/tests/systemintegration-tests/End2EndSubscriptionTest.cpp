@@ -22,7 +22,6 @@
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
-#include "joynr/JoynrClusterControllerRuntime.h"
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -36,6 +35,7 @@
 #include "joynr/types/ProviderQos.h"
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
@@ -75,7 +75,7 @@ public:
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
 
-        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime1 = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings1), failOnFatalRuntimeError);
         runtime1->init();
         runtime1->start();
@@ -83,7 +83,7 @@ public:
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
 
-        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime2 = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings2), failOnFatalRuntimeError);
         runtime2->init();
         runtime2->start();

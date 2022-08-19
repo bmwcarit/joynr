@@ -215,7 +215,7 @@ if(${BUILD_UNIT_TESTS} OR ${BUILD_INTEGRATION_TESTS} OR ${BUILD_SYSTEM_INTEGRATI
         mock/MockMessagingStubFactory.h
         mock/MockMessageRouter.h
         mock/MockPublicationSender.h
-        mock/MockJoynrClusterControllerMqttConnectionData.h
+        mock/TestJoynrClusterControllerRuntime.h
         mock/MockProxyBuilder.h
         mock/MockGlobalCapabilitiesDirectoryClient.h
         mock/MockGlobalCapabilitiesDirectoryProxy.h

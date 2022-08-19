@@ -952,11 +952,11 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
         std::shared_ptr<IKeychain> keyChain,
         MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory)
 {
-    auto runtime = std::make_shared<JoynrClusterControllerRuntime>(
-            std::move(settings),
-            std::move(onFatalRuntimeError),
-            std::move(keyChain),
-            std::move(mqttMessagingSkeletonFactory));
+    auto runtime = std::shared_ptr<JoynrClusterControllerRuntime>(
+            new JoynrClusterControllerRuntime(std::move(settings),
+                                              std::move(onFatalRuntimeError),
+                                              std::move(keyChain),
+                                              std::move(mqttMessagingSkeletonFactory)));
     runtime->init();
 
     if (runtime->_localCapabilitiesDirectory) {

@@ -24,9 +24,8 @@
 #include "tests/utils/Gmock.h"
 
 #include "joynr/Future.h"
-#include "joynr/JoynrClusterControllerRuntime.h"
-#include "joynr/Settings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
 #include "joynr/tests/testProxy.h"
 
 #include "tests/JoynrTest.h"
@@ -34,6 +33,7 @@
 #include "tests/mock/MockTestProvider.h"
 #include "tests/utils/PtrUtils.h"
 #include "joynr/TimePoint.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 
 using namespace ::testing;
 
@@ -48,8 +48,8 @@ class End2EndPerformanceTest : public TestWithParam<std::tuple<std::string, std:
 {
 public:
     ADD_LOGGER(End2EndPerformanceTest)
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime1;
-    std::shared_ptr<JoynrClusterControllerRuntime> runtime2;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime1;
+    std::shared_ptr<TestJoynrClusterControllerRuntime> runtime2;
     std::unique_ptr<Settings> settings1;
     std::unique_ptr<Settings> settings2;
     std::string baseUuid;
@@ -68,13 +68,13 @@ public:
 
         Settings integration1Settings{"test-resources/libjoynrSystemIntegration1.settings"};
         Settings::merge(integration1Settings, *settings1, false);
-        runtime1 = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime1 = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings1), failOnFatalRuntimeError);
         runtime1->init();
         runtime1->start();
         Settings integration2Settings{"test-resources/libjoynrSystemIntegration2.settings"};
         Settings::merge(integration2Settings, *settings2, false);
-        runtime2 = std::make_shared<JoynrClusterControllerRuntime>(
+        runtime2 = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::move(settings2), failOnFatalRuntimeError);
         runtime2->init();
         runtime2->start();
