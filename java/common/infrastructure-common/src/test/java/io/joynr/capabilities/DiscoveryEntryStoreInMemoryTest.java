@@ -323,7 +323,7 @@ public class DiscoveryEntryStoreInMemoryTest {
             assertEquals(storeLimit, participantIdToQueueIdMapping.size());
 
             // since all entries use same domain/interfaceId there shoudl be exactly one entry
-            assertEquals(interfaceAddressToCapabilityMapping.size(), 1);
+            assertEquals(1, interfaceAddressToCapabilityMapping.size());
             // the list associated with that entry should have expected number of entries
             String domainInterfaceId = domainInterfaceKey(globalEntry.getDomain(), globalEntry.getInterfaceName());
             List<String> mapping = interfaceAddressToCapabilityMapping.get(domainInterfaceId);
