@@ -878,12 +878,15 @@ void CcMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> message,
     assert(messageQueueRetryReadLock.owns_lock());
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->toLogMessage());
     std::string recipient = message->getRecipient();
-    _messageQueue->queueMessage(std::move(recipient), message);
+    auto droppedMessagesToBeReplied = _messageQueue->queueMessage(std::move(recipient), message);
+    messageQueueRetryReadLock.unlock();
+    if (!droppedMessagesToBeReplied.empty()) {
+        onMsgsDropped(droppedMessagesToBeReplied);
+    }
     // do not fire a broadcast for an undeliverable message sent by
     // messageNotificationProvider (e.g. messageQueueForDelivery publication)
     // since it may cause an endless loop
     if (message->getSender() != _messageNotificationProviderParticipantId) {
-        messageQueueRetryReadLock.unlock();
         _messageNotificationProvider->fireMessageQueuedForDelivery(
                 message->getRecipient(), message->getType());
     }

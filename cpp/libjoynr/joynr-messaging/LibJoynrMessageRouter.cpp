@@ -152,7 +152,6 @@ void LibJoynrMessageRouter::routeInternal(std::shared_ptr<ImmutableMessage> mess
             const std::string destinationPartId = message->getRecipient();
             queueMessage(std::move(message), lock);
 
-            lock.unlock();
             // and try to resolve destination address via parent message router
             std::unique_lock<std::mutex> parentResolveLock(_parentResolveMutex);
             if (_runningParentResolves.find(destinationPartId) == _runningParentResolves.end()) {
