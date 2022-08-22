@@ -19,25 +19,45 @@
 package io.joynr.messaging;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import joynr.system.RoutingTypes.Address;
 
 abstract public class AbstractMiddlewareMessagingStubFactory<S extends IMessagingStub, A extends Address> {
 
-    private Map<A, S> stubMap = new HashMap<>();
+    private static final int MAX_SIZE = 100000;
+
+    private Map<A, S> stubMap = new LinkedHashMap<>() {
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > MAX_SIZE;
+        }
+    };
 
     protected abstract S createInternal(A address);
 
     public synchronized IMessagingStub create(A address) {
-        if (!stubMap.containsKey(address)) {
-            stubMap.put(address, createInternal(address));
+        S stub = stubMap.get(address);
+        if (stub == null) {
+            stub = createInternal(address);
+            stubMap.put(address, stub);
         }
-        return stubMap.get(address);
+        return stub;
     }
 
     protected Collection<S> getAllMessagingStubs() {
         return stubMap.values();
+    }
+
+    public int getMaxCacheSize() {
+        return MAX_SIZE;
+    }
+
+    public synchronized int getCacheSize() {
+        return stubMap.size();
+    }
+
+    public synchronized void clearCache() {
+        stubMap.clear();
     }
 }
