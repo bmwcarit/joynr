@@ -107,9 +107,10 @@ protected:
     template <typename U = T,
               typename = std::enable_if_t<std::is_same<U, LibJoynrMessageRouter>::value>>
     std::shared_ptr<LibJoynrMessageRouter> createMessageRouter(
-            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
+            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
+            std::uint64_t messageQueueLimit = 0)
     {
-        auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
+        auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>(messageQueueLimit);
         _messageQueue = messageQueueForMessageRouter.get();
 
         auto transportNotAvailableQueue =
@@ -159,7 +160,8 @@ protected:
 
     template <typename U = T, typename = std::enable_if_t<std::is_same<U, CcMessageRouter>::value>>
     std::shared_ptr<CcMessageRouter> createMessageRouter(
-            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
+            std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
+            std::uint64_t messageQueueLimit = 0)
     {
         const std::string globalCcAddress("globalAddress");
         const std::string messageNotificationProviderParticipantId(
@@ -168,7 +170,7 @@ protected:
 
         _messagingSettings.setRoutingTableCleanupIntervalMs(5000);
         _messagingSettings.setSendMsgRetryInterval(_sendMsgRetryInterval);
-        auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>();
+        auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>(messageQueueLimit);
         _messageQueue = messageQueueForMessageRouter.get();
 
         auto transportNotAvailableQueue =

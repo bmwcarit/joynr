@@ -43,7 +43,7 @@ public:
     MOCK_METHOD1(setOnMsgsDropped, void(std::function<void(std::deque<std::shared_ptr<joynr::ImmutableMessage>>&)> onMsgsDroppedFunc));
     MOCK_CONST_METHOD0(getQueueLength, std::size_t());
     MOCK_CONST_METHOD0(getQueueSizeBytes, std::size_t());
-    MOCK_METHOD2_T(queueMessage, void(const T key, std::shared_ptr<joynr::ImmutableMessage> message));
+    MOCK_METHOD2_T(queueMessage, std::deque<std::shared_ptr<joynr::ImmutableMessage>>(const T key, std::shared_ptr<joynr::ImmutableMessage> message));
     MOCK_METHOD1_T(getNextMessageFor, std::shared_ptr<joynr::ImmutableMessage>(const T& key));
     MOCK_METHOD0(removeOutdatedMessages, void());
 
