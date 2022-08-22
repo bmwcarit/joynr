@@ -115,7 +115,7 @@ public:
               dispatcher(std::make_shared<Dispatcher>(messageSender,
                                                       singleThreadIOService->getIOService())),
               callContext(),
-              getLocationCalledSemaphore(0),
+              getLocationCalledSemaphore(std::make_shared<Semaphore>(0)),
               isLocalMessage(true)
     {
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(
@@ -146,7 +146,7 @@ public:
         std::ignore = onError;
         callContext = joynr::CallContextStorage::get();
         onSuccess(types::Localisation::GpsLocation());
-        getLocationCalledSemaphore.notify();
+        getLocationCalledSemaphore->notify();
     }
 
 protected:
@@ -175,7 +175,7 @@ protected:
     std::shared_ptr<MessageSender> messageSender;
     std::shared_ptr<Dispatcher> dispatcher;
     joynr::CallContext callContext;
-    joynr::Semaphore getLocationCalledSemaphore;
+    std::shared_ptr<joynr::Semaphore> getLocationCalledSemaphore;
     const bool isLocalMessage;
 };
 
@@ -218,14 +218,14 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation)
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             ImmutableMessageHasPayload(expectedReply.getPayload())),
-                      _)).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     // test code: send the request through the dispatcher->
     // This should cause our mock messaging to receive a reply from the mock provider
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
 
     dispatcher->receive(mutableMessage.getImmutableMessage());
-    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(getLocationCalledSemaphore->waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(DispatcherTest, receive_customHeadersCopied)
@@ -255,12 +255,12 @@ TEST_F(DispatcherTest, receive_customHeadersCopied)
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             ImmutableMessageHasPrefixedCustomHeaders(prefixedCustomHeaders)),
-                      _)).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
-    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(getLocationCalledSemaphore->waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(DispatcherTest, compressFlagIsRetained)
@@ -286,12 +286,12 @@ TEST_F(DispatcherTest, compressFlagIsRetained)
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             MessageIsCompressed(isCompressed)),
-                      _)).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
-    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(getLocationCalledSemaphore->waitFor(std::chrono::milliseconds(5000)));
 }
 
 void DispatcherTest::testEffortFromRequestIsRetainedImpl(
@@ -322,12 +322,12 @@ void DispatcherTest::testEffortFromRequestIsRetainedImpl(
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             MessageUsesEffort(expectedEffort)),
-                      _)).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
-    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(getLocationCalledSemaphore->waitFor(std::chrono::milliseconds(5000)));
 
     Mock::VerifyAndClearExpectations(mockRequestCaller.get());
     Mock::VerifyAndClearExpectations(mockMessageRouter.get());
@@ -368,20 +368,20 @@ TEST_F(DispatcherTest, requestWithInvalidEffort_replyUsesDefaultEffort)
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             MessageUsesEffort(expectedEffort)),
-                      _)).WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
-    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(getLocationCalledSemaphore->waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller)
 {
-    joynr::Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
 
     // Expect the mock callback's onSuccess method to be called with the reply (a gps location)
-    EXPECT_CALL(*mockCallback, onSuccess(Eq(gpsLocation1))).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockCallback, onSuccess(Eq(gpsLocation1))).WillOnce(ReleaseSemaphore(semaphore));
 
     // getType is used by the ReplyInterpreterFactory to create an interpreter for the reply
     // so this has to match with the type being passed to the dispatcher in the reply
@@ -401,12 +401,12 @@ TEST_F(DispatcherTest, receive_interpreteReplyAndCallReplyCaller)
     dispatcher->addReplyCaller(requestReplyId, mockReplyCaller, qos);
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(5000)));
 }
 
 TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCallback)
 {
-    joynr::Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     std::string subscriptionId = "testSubscriptionId";
 
     // construct a subscription reply
@@ -423,14 +423,14 @@ TEST_F(DispatcherTest, receive_interpreteSubscriptionReplyAndCallSubscriptionCal
             .WillOnce(Return(mockSubscriptionCallback));
 
     EXPECT_CALL(*mockSubscriptionCallback, execute(Eq(reply)))
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     // test code: send the subscription reply through the dispatcher->
     // This should cause our subscription callback to be called
     dispatcher->registerSubscriptionManager(mockSubscriptionManager);
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(5000)));
     dispatcher->registerSubscriptionManager(nullptr);
 }
 
@@ -456,10 +456,10 @@ TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback)
             .Times(1)
             .WillOnce(Return(mockSubscriptionCallback));
     EXPECT_CALL(*mockSubscriptionCallback, executePublication(_))
-            .WillOnce(ReleaseSemaphore(&getLocationCalledSemaphore));
+            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->receive(message.getImmutableMessage());
 
-    EXPECT_TRUE(getLocationCalledSemaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(getLocationCalledSemaphore->waitFor(std::chrono::milliseconds(5000)));
     dispatcher->registerSubscriptionManager(nullptr);
 }

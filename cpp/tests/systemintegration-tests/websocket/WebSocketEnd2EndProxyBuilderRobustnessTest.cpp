@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2022 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,7 +152,7 @@ private:
 void WebSocketEnd2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistration(
         const bool expectSuccess)
 {
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     // prepare provider
     auto mockProvider = std::make_shared<MockGpsProvider>();
     types::ProviderQos providerQos;
@@ -166,27 +166,27 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistr
     std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder =
             consumerRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
 
-    auto onSuccess = [&semaphore, expectSuccess](std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
+    auto onSuccess = [semaphore, expectSuccess](std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
         if (!expectSuccess) {
             ADD_FAILURE() << "proxy building succeeded unexpectedly";
-            semaphore.notify();
+            semaphore->notify();
             return;
         }
         // call proxy method
-        auto calculateOnSuccess = [&semaphore](int value) {
+        auto calculateOnSuccess = [semaphore](int value) {
             const int expectedValue = 42; // as defined in MockGpsProvider
             EXPECT_EQ(expectedValue, value);
-            semaphore.notify();
+            semaphore->notify();
         };
         gpsProxy->calculateAvailableSatellitesAsync(calculateOnSuccess);
     };
 
-    auto onError = [&semaphore, expectSuccess](const exceptions::DiscoveryException& exception) {
+    auto onError = [semaphore, expectSuccess](const exceptions::DiscoveryException& exception) {
         if (expectSuccess) {
             ADD_FAILURE() << "proxy building failed unexpectedly, exception: "
                           << exception.getMessage();
         }
-        semaphore.notify();
+        semaphore->notify();
     };
 
     std::uint64_t qosRoundTripTTL = 10000;
@@ -202,7 +202,7 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::buildProxyBeforeProviderRegistr
     std::string participantId = providerRuntime->registerProvider<vehicle::GpsProvider>(
             domain, mockProvider, providerQos);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(
             static_cast<std::int64_t>(qosRoundTripTTL) + discoveryTimeoutMs)));
 
     // unregister provider
@@ -229,7 +229,9 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSamePr
             consumerRuntime->createProxyBuilder<vehicle::GpsProxy>(domain);
 
     // no proxy build done yet, number of arbitrators should be 0
+    std::unique_lock<std::mutex> lock(gpsProxyBuilder->_arbitratorsMutex);
     EXPECT_EQ(0, gpsProxyBuilder->_arbitrators.size());
+    lock.unlock();
 
     // synchronously build proxy 10 times
     for (int i = 0; i < 10; i++) {
@@ -241,8 +243,12 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSamePr
     // since each proxy build should have reclaimed the previously used
     // arbitrator which was already finished since the build was
     // synchronously done.
+    lock.lock();
     EXPECT_EQ(1, gpsProxyBuilder->_arbitrators.size());
+    lock.unlock();
+    std::unique_lock<std::mutex> lock2(gpsProxyBuilder->_finishedArbitratorIdsMutex);
     EXPECT_EQ(1, gpsProxyBuilder->_finishedArbitratorIds.size());
+    lock2.unlock();
 
     // unregister provider
     providerRuntime->unregisterProvider(participantId);
@@ -250,7 +256,7 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSamePr
 
 void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder()
 {
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
 
     // create ProxyBuilder; any build is supposed to fail because of the chosen domain
     std::string notExistingDomain("notExistingDomain");
@@ -258,7 +264,9 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxie
             consumerRuntime->createProxyBuilder<vehicle::GpsProxy>(notExistingDomain);
 
     // no proxy build done yet, number of arbitrators should be 0
+    std::unique_lock<std::mutex> lock(gpsProxyBuilder->_arbitratorsMutex);
     EXPECT_EQ(0, gpsProxyBuilder->_arbitrators.size());
+    lock.unlock();
 
     // attempt to build 10 proxies asynchronously
     // the builds are intentionally expected to fail
@@ -269,14 +277,14 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxie
 
     const int numberOfProxyBuilds = 10;
     for (int i = 0; i < numberOfProxyBuilds; i++) {
-        auto onSuccess = [&semaphore](std::shared_ptr<vehicle::GpsProxy>) {
+        auto onSuccess = [semaphore](std::shared_ptr<vehicle::GpsProxy>) {
             ADD_FAILURE() << "proxy building succeeded unexpectedly";
-            semaphore.notify();
+            semaphore->notify();
             return;
         };
 
-        auto onError = [&semaphore](const exceptions::DiscoveryException&) {
-            semaphore.notify();
+        auto onError = [semaphore](const exceptions::DiscoveryException&) {
+            semaphore->notify();
         };
 
         gpsProxyBuilder->setDiscoveryQos(discoveryQos)
@@ -288,7 +296,7 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxie
     // have been started without finding already finished Arbitrators at
     // their invocation time.
     for (int i = 0; i < numberOfProxyBuilds; i++) {
-        EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
+        EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
     }
 
     // at this time all callbacks have been invoked and the arbitrators
@@ -298,35 +306,43 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxie
 
     // Now we should have numberOfProxyBuilds stored arbitrators, and all
     // of them should be available for reclaiming
+    lock.lock();
     EXPECT_EQ(numberOfProxyBuilds, gpsProxyBuilder->_arbitrators.size());
+    lock.unlock();
+    std::unique_lock<std::mutex> lock2(gpsProxyBuilder->_finishedArbitratorIdsMutex);
     EXPECT_EQ(numberOfProxyBuilds, gpsProxyBuilder->_finishedArbitratorIds.size());
+    lock2.unlock();
 
     // starting another proxy build attempt with no retry
     discoveryQos.setRetryIntervalMs(discoveryTimeoutMs + 1000);
 
-    auto onSuccess = [&semaphore](std::shared_ptr<vehicle::GpsProxy>) {
+    auto onSuccess = [semaphore](std::shared_ptr<vehicle::GpsProxy>) {
         ADD_FAILURE() << "proxy building succeeded unexpectedly";
-        semaphore.notify();
+        semaphore->notify();
         return;
     };
 
-    auto onError = [&semaphore](const exceptions::DiscoveryException&) {
-        semaphore.notify();
+    auto onError = [semaphore](const exceptions::DiscoveryException&) {
+        semaphore->notify();
     };
 
     gpsProxyBuilder->setDiscoveryQos(discoveryQos)
         ->buildAsync(onSuccess, onError);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
 
     // this should have reduced the number of arbitrators to 1
+    lock.lock();
     EXPECT_EQ(1, gpsProxyBuilder->_arbitrators.size());
+    lock.unlock();
+    lock2.lock();
     EXPECT_EQ(1, gpsProxyBuilder->_finishedArbitratorIds.size());
+    lock2.unlock();
 }
 
 void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime()
 {
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     std::shared_ptr<TestLibJoynrWebSocketRuntime> ownConsumerRuntime;
 
     auto settings = std::make_unique<Settings>();
@@ -349,14 +365,14 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxie
 
     const int numberOfProxyBuilds = 10;
     for (int i = 0; i < numberOfProxyBuilds; i++) {
-        auto onSuccess = [&semaphore](std::shared_ptr<vehicle::GpsProxy>) {
+        auto onSuccess = [semaphore](std::shared_ptr<vehicle::GpsProxy>) {
             ADD_FAILURE() << "proxy building succeeded unexpectedly";
-            semaphore.notify();
+            semaphore->notify();
             return;
         };
 
-        auto onError = [&semaphore](const exceptions::DiscoveryException&) {
-            semaphore.notify();
+        auto onError = [semaphore](const exceptions::DiscoveryException&) {
+            semaphore->notify();
         };
 
         gpsProxyBuilder->setDiscoveryQos(discoveryQos)
@@ -372,7 +388,7 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxie
     test::util::resetAndWaitUntilDestroyed(ownConsumerRuntime);
 
     for (int i = 0; i < numberOfProxyBuilds; i++) {
-        EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
+        EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
     }
 }
 
@@ -391,7 +407,7 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::buildProxiesAndVerifyShutdownRu
     std::string participantId = providerRuntime->registerProvider<vehicle::GpsProvider>(
             domain, mockProvider, providerQos);
 
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     std::shared_ptr<TestLibJoynrWebSocketRuntime> ownConsumerRuntime;
 
     auto settings = std::make_unique<Settings>();
@@ -416,24 +432,24 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::buildProxiesAndVerifyShutdownRu
     // (to protect against destruction) and store their proxy participantIds
     // for later checking
     for (int i = 0; i < numberOfProxyBuilds; i++) {
-        auto onSuccess = [&semaphore, &proxyParticipantIds, &gpsProxies, &proxyLock](std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
+        auto onSuccess = [semaphore, &proxyParticipantIds, &gpsProxies, &proxyLock](std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
             std::lock_guard<std::mutex> lock(proxyLock);
             proxyParticipantIds.push_back(gpsProxy->getProxyParticipantId());
             gpsProxies.push_back(gpsProxy);
-            semaphore.notify();
+            semaphore->notify();
             return;
         };
 
-        auto onError = [&semaphore](const exceptions::DiscoveryException&) {
+        auto onError = [semaphore](const exceptions::DiscoveryException&) {
             ADD_FAILURE() << "proxy building failed unexpectedly";
-            semaphore.notify();
+            semaphore->notify();
         };
 
         gpsProxyBuilder->setDiscoveryQos(discoveryQos)
                 ->buildAsync(onSuccess, onError);
     }
     for (int i = 0; i < numberOfProxyBuilds; i++) {
-        EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
+        EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
     }
 
     // allow the runtime to destruct proxyBuilder on shutdown by releasing own shared_ptr

@@ -81,7 +81,7 @@ public:
     std::shared_ptr<MockTransportMessageSender> mockMqttMessageSender;
     std::string gbid;
     std::shared_ptr<MockMosquittoConnection> mockMosquittoConnection;
-    Semaphore semaphore;
+    std::shared_ptr<Semaphore> semaphore;
     std::string serializedMqttAddress;
 
     JoynrClusterControllerRuntimeTest()
@@ -123,7 +123,7 @@ public:
                                                                 false,
                                                                 "testClientId",
                                                                 gbid)),
-              semaphore(0),
+              semaphore(std::make_shared<Semaphore>(0)),
               globalMqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic"),
               globalMqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl"),
               mqttGlobalAddress(globalMqttBrokerUrl, globalMqttTopic)
@@ -629,19 +629,19 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
                                                                    10000 // alert after interval
                                                                    );
     ON_CALL(*mockSubscriptionListener, onReceive(Eq(gpsLocation)))
-            .WillByDefault(ReleaseSemaphore(&semaphore));
+            .WillByDefault(ReleaseSemaphore(semaphore));
 
     auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
 
     testProxy->unsubscribeFromLocation(subscriptionId);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::seconds(1)));
+    ASSERT_FALSE(semaphore->waitFor(std::chrono::seconds(1)));
     runtime->unregisterProvider(participantId);
 }
 
@@ -660,17 +660,16 @@ TEST_F(JoynrClusterControllerRuntimeTest, localCommunicationUds)
         mockClientCallbacks.received(std::move(val));
     });
 
-    Semaphore semaphore;
     EXPECT_CALL(mockClientCallbacks, connected()).Times(1).WillOnce(
-            InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+            ReleaseSemaphore(semaphore));
     client.start();
-    ASSERT_TRUE(semaphore.waitFor(waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(semaphore->waitFor(waitPeriodForClientServerCommunication))
             << "UDS client could not connect.";
     Mock::VerifyAndClearExpectations(&mockClientCallbacks);
 
     EXPECT_CALL(mockClientCallbacks, disconnected()).Times(1).WillOnce(
-            InvokeWithoutArgs(&semaphore, &Semaphore::notify));
+            ReleaseSemaphore(semaphore));
     shutdownRuntime();
-    ASSERT_TRUE(semaphore.waitFor(waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(semaphore->waitFor(waitPeriodForClientServerCommunication))
             << "UDS client could not disconnected when runtime is shutting down.";
 }
