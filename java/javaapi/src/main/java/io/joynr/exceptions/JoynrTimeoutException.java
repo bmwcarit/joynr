@@ -21,6 +21,7 @@ package io.joynr.exceptions;
 import java.text.SimpleDateFormat;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 public class JoynrTimeoutException extends JoynrRuntimeException {
     private static final long serialVersionUID = 1L;
@@ -29,10 +30,12 @@ public class JoynrTimeoutException extends JoynrRuntimeException {
     private long expiryDate;
 
     /**
+     * DO NOT USE
      * Constructor for deserializer
      */
-    protected JoynrTimeoutException() {
-        super();
+    public JoynrTimeoutException(String message, long expiryDate, StdDeserializer<JoynrTimeoutException> deserializer) {
+        super(message);
+        this.expiryDate = expiryDate;
     }
 
     public JoynrTimeoutException(long expiryDate) {

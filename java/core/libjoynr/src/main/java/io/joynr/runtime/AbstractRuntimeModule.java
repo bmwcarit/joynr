@@ -74,6 +74,7 @@ import io.joynr.messaging.routing.MessageRouterUtil;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.routing.MulticastReceiverRegistry;
+import io.joynr.messaging.serialize.JoynrExceptionDeserializationUtils;
 import io.joynr.proxy.DefaultStatelessAsyncIdCalculatorImpl;
 import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.ProxyBuilderFactoryImpl;
@@ -98,7 +99,8 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        requestStaticInjection(CapabilityUtils.class,
+        requestStaticInjection(JoynrExceptionDeserializationUtils.class,
+                               CapabilityUtils.class,
                                RpcUtils.class,
                                RoutingTypesUtil.class,
                                ArbitratorFactory.class,

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.concurrent.RejectedExecutionException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,12 +46,12 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.serialize.JoynrExceptionDeserializationUtils;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.util.ObjectMapper;
 import io.joynr.util.ReflectionUtils;
@@ -146,7 +145,6 @@ public class SerializationTest {
 
         @Override
         public int hashCode() {
-            // TODO Auto-generated method stub
             return super.hashCode();
         }
     }
@@ -159,7 +157,7 @@ public class SerializationTest {
 
             @Override
             protected void configure() {
-                requestStaticInjection(Request.class);
+                requestStaticInjection(JoynrExceptionDeserializationUtils.class, Request.class);
 
             }
 
@@ -218,7 +216,6 @@ public class SerializationTest {
 
     @Test
     public void serializeDeserializeSubscriptionRequests() throws Exception {
-        String persistenceFileName = "target/test_persistenceSubscriptionRequests_" + createUuidString();
         String subscriptionId = "subscriptionId";
         String subscribedToName = "subscribedToName";
         SubscriptionQos qos = new OnChangeSubscriptionQos();
@@ -770,19 +767,6 @@ public class SerializationTest {
     public void serializeReplyWithJoynrRequestInterruptedException() throws IOException {
 
         JoynrRequestInterruptedException error = new JoynrRequestInterruptedException("detail message: JoynrRequestInterruptedException");
-        Reply reply = new Reply(createUuidString(), error);
-
-        String writeValueAsString = objectMapper.writeValueAsString(reply);
-        System.out.println(writeValueAsString);
-
-        Reply receivedReply = objectMapper.readValue(writeValueAsString, Reply.class);
-        Assert.assertEquals(reply, receivedReply);
-    }
-
-    @Test
-    public void serializeReplyWithJoynrSendBufferFullException() throws IOException {
-
-        JoynrSendBufferFullException error = new JoynrSendBufferFullException(new RejectedExecutionException("cause message"));
         Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);

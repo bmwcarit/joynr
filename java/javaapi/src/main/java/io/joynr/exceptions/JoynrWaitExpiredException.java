@@ -18,15 +18,22 @@
  */
 package io.joynr.exceptions;
 
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+
 public class JoynrWaitExpiredException extends JoynrTimeoutException {
+
+    /**
+     * DO NOT USE
+     * Constructor for deserializer
+     */
+    public JoynrWaitExpiredException(long expiryDate, StdDeserializer<JoynrWaitExpiredException> deserializer) {
+        super(expiryDate);
+    }
 
     public JoynrWaitExpiredException() {
         super(System.currentTimeMillis());
     }
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -5357576996106391828L;
 
 }

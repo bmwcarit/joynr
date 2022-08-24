@@ -32,15 +32,41 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
+import io.joynr.exceptions.DiscoveryException;
+import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
+import io.joynr.exceptions.JoynrRequestInterruptedException;
+import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrShutdownException;
+import io.joynr.exceptions.JoynrTimeoutException;
+import io.joynr.exceptions.JoynrWaitExpiredException;
+import io.joynr.messaging.serialize.ApplicationExceptionDeserializer;
+import io.joynr.messaging.serialize.DiscoveryExceptionDeserializer;
+import io.joynr.messaging.serialize.IllegalAccessExceptionDeserializer;
 import io.joynr.messaging.serialize.JoynrArraySerializer;
+import io.joynr.messaging.serialize.JoynrCommunicationExceptionDeserializer;
 import io.joynr.messaging.serialize.JoynrEnumSerializer;
+import io.joynr.messaging.serialize.JoynrIllegalStateExceptionDeserializer;
 import io.joynr.messaging.serialize.JoynrListSerializer;
+import io.joynr.messaging.serialize.JoynrMessageNotSentExceptionDeserializer;
+import io.joynr.messaging.serialize.JoynrRequestInterruptedExceptionDeserializer;
+import io.joynr.messaging.serialize.JoynrRuntimeExceptionDeserializer;
+import io.joynr.messaging.serialize.JoynrShutdownExceptionDeserializer;
+import io.joynr.messaging.serialize.JoynrTimeoutExceptionDeserializer;
 import io.joynr.messaging.serialize.JoynrUntypedObjectDeserializer;
+import io.joynr.messaging.serialize.JoynrWaitExpiredExceptionDeserializer;
+import io.joynr.messaging.serialize.MethodInvocationExceptionDeserializer;
 import io.joynr.messaging.serialize.OneWayRequestDeserializer;
+import io.joynr.messaging.serialize.ProviderRuntimeExceptionDeserializer;
 import io.joynr.messaging.serialize.RequestDeserializer;
 import io.joynr.util.ObjectMapper;
 import joynr.OneWayRequest;
 import joynr.Request;
+import joynr.exceptions.ApplicationException;
+import joynr.exceptions.MethodInvocationException;
+import joynr.exceptions.ProviderRuntimeException;
+import joynr.exceptions.IllegalAccessException;
 
 public class JsonMessageSerializerModule extends AbstractModule {
 
@@ -78,6 +104,20 @@ public class JsonMessageSerializerModule extends AbstractModule {
         module.addDeserializer(Request.class, new RequestDeserializer(objectMapper));
         module.addDeserializer(OneWayRequest.class, new OneWayRequestDeserializer(objectMapper));
         module.addDeserializer(Object.class, new JoynrUntypedObjectDeserializer(typeDeserializer));
+        module.addDeserializer(ApplicationException.class, new ApplicationExceptionDeserializer());
+        module.addDeserializer(JoynrRuntimeException.class, new JoynrRuntimeExceptionDeserializer());
+        module.addDeserializer(ProviderRuntimeException.class, new ProviderRuntimeExceptionDeserializer());
+        module.addDeserializer(MethodInvocationException.class, new MethodInvocationExceptionDeserializer());
+        module.addDeserializer(JoynrCommunicationException.class, new JoynrCommunicationExceptionDeserializer());
+        module.addDeserializer(JoynrTimeoutException.class, new JoynrTimeoutExceptionDeserializer());
+        module.addDeserializer(JoynrWaitExpiredException.class, new JoynrWaitExpiredExceptionDeserializer());
+        module.addDeserializer(JoynrMessageNotSentException.class, new JoynrMessageNotSentExceptionDeserializer());
+        module.addDeserializer(DiscoveryException.class, new DiscoveryExceptionDeserializer());
+        module.addDeserializer(JoynrShutdownException.class, new JoynrShutdownExceptionDeserializer());
+        module.addDeserializer(IllegalAccessException.class, new IllegalAccessExceptionDeserializer());
+        module.addDeserializer(JoynrIllegalStateException.class, new JoynrIllegalStateExceptionDeserializer());
+        module.addDeserializer(JoynrRequestInterruptedException.class,
+                               new JoynrRequestInterruptedExceptionDeserializer());
 
         module.setMixInAnnotation(Throwable.class, ThrowableMixIn.class);
         objectMapper.registerModule(module);
