@@ -12,7 +12,7 @@
 #                  [GENERATION_ID id]
 #                  [OUTPUT_HEADER_PATH dir]
 #                  [INCLUDE_PREFIX prefix]
-#                  [ADD_VERSION_TO name|package|none])
+#                  [ADD_VERSION_TO comment|package|none])
 
 include(CMakeParseArguments)
 
