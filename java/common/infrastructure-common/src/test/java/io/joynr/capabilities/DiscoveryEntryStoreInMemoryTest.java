@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -34,11 +35,14 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.joynr.exceptions.JoynrCommunicationException;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
@@ -62,6 +66,9 @@ public class DiscoveryEntryStoreInMemoryTest {
     private final long EXPIRY_DATE_MS = LAST_SEEN_DATE_MS + 10000;
 
     private final int maxiumNumberOfNonStickyEntries = 1000;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -176,6 +183,85 @@ public class DiscoveryEntryStoreInMemoryTest {
         assertEquals(expectedLocalDiscoveryEntry, actualLocalDiscoveryEntry);
         assertEquals(expectedGlobalDiscoveryEntry, actualGlobalDiscoveryEntry);
         assertEquals(expectedGlobalDiscoveryEntry2, actualGlobalDiscoveryEntry2);
+    }
+
+    @Test
+    public void addWithNullThrows() {
+        thrown.expect(JoynrCommunicationException.class);
+        discoveryEntryStore.add((DiscoveryEntry) null);
+    }
+
+    @Test
+    public void addWithMissingDomainThrows() {
+        thrown.expect(JoynrCommunicationException.class);
+        DiscoveryEntry expectedLocalDiscoveryEntry = new DiscoveryEntry(localEntry.getProviderVersion(),
+                                                                        null, // domain
+                                                                        localEntry.getInterfaceName(),
+                                                                        localEntry.getParticipantId(),
+                                                                        localEntry.getQos(),
+                                                                        localEntry.getLastSeenDateMs(),
+                                                                        localEntry.getExpiryDateMs(),
+                                                                        localEntry.getPublicKeyId());
+        discoveryEntryStore.add(expectedLocalDiscoveryEntry);
+    }
+
+    @Test
+    public void addWithMissingInterfaceThrows() {
+        thrown.expect(JoynrCommunicationException.class);
+        DiscoveryEntry expectedLocalDiscoveryEntry = new DiscoveryEntry(localEntry.getProviderVersion(),
+                                                                        localEntry.getDomain(),
+                                                                        null, // interfaceName
+                                                                        localEntry.getParticipantId(),
+                                                                        localEntry.getQos(),
+                                                                        localEntry.getLastSeenDateMs(),
+                                                                        localEntry.getExpiryDateMs(),
+                                                                        localEntry.getPublicKeyId());
+        discoveryEntryStore.add(expectedLocalDiscoveryEntry);
+    }
+
+    @Test
+    public void addWithMissingParticipantIdThrows() {
+        thrown.expect(JoynrCommunicationException.class);
+        DiscoveryEntry expectedLocalDiscoveryEntry = new DiscoveryEntry(localEntry.getProviderVersion(),
+                                                                        localEntry.getDomain(),
+                                                                        localEntry.getInterfaceName(),
+                                                                        null, // participantId
+                                                                        localEntry.getQos(),
+                                                                        localEntry.getLastSeenDateMs(),
+                                                                        localEntry.getExpiryDateMs(),
+                                                                        localEntry.getPublicKeyId());
+        discoveryEntryStore.add(expectedLocalDiscoveryEntry);
+    }
+
+    @Test
+    public void addCollectionWithNullDoesNotThrow() {
+        discoveryEntryStore.add((Collection) null);
+    }
+
+    @Test
+    public void addCollectionWithEmptyListDoesNotThrow() {
+        ArrayList<DiscoveryEntry> discoveryEntryList = new ArrayList<>();
+        discoveryEntryStore.add(discoveryEntryList);
+    }
+
+    @Test
+    public void addCollectionWithNonEmptyList() {
+        DiscoveryEntry expectedLocalDiscoveryEntry = new DiscoveryEntry(localEntry);
+        DiscoveryEntry expectedGlobalDiscoveryEntry = new DiscoveryEntry(globalEntry);
+
+        ArrayList<DiscoveryEntry> discoveryEntryList = new ArrayList<>();
+
+        discoveryEntryList.add(localEntry);
+        discoveryEntryList.add(globalEntry);
+
+        discoveryEntryStore.add(discoveryEntryList);
+
+        DiscoveryEntry actualGlobalDiscoveryEntry = discoveryEntryStore.lookup(globalParticipantId, Long.MAX_VALUE)
+                                                                       .get();
+        DiscoveryEntry actualLocalDiscoveryEntry = discoveryEntryStore.lookup(localParticipantId, Long.MAX_VALUE).get();
+
+        assertEquals(expectedLocalDiscoveryEntry, actualLocalDiscoveryEntry);
+        assertEquals(expectedGlobalDiscoveryEntry, actualGlobalDiscoveryEntry);
     }
 
     private DiscoveryEntry getClonedDiscoveryEntry(int index, boolean isSticky) {
