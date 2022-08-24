@@ -21,20 +21,36 @@ package io.joynr.capabilities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.joynr.exceptions.JoynrCommunicationException;
 import joynr.types.DiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 import joynr.types.Version;
 
 public class DiscoveryEntryStoreInMemoryTest {
+    private static final Logger logger = LoggerFactory.getLogger(DiscoveryEntryStoreInMemoryTest.class);
+
     private DiscoveryEntryStoreInMemory<DiscoveryEntry> discoveryEntryStore;
 
     private DiscoveryEntry localEntry;
@@ -50,6 +66,9 @@ public class DiscoveryEntryStoreInMemoryTest {
     private final long EXPIRY_DATE_MS = LAST_SEEN_DATE_MS + 10000;
 
     private final int maxiumNumberOfNonStickyEntries = 1000;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -166,6 +185,85 @@ public class DiscoveryEntryStoreInMemoryTest {
         assertEquals(expectedGlobalDiscoveryEntry2, actualGlobalDiscoveryEntry2);
     }
 
+    @Test
+    public void addWithNullThrows() {
+        thrown.expect(JoynrCommunicationException.class);
+        discoveryEntryStore.add((DiscoveryEntry) null);
+    }
+
+    @Test
+    public void addWithMissingDomainThrows() {
+        thrown.expect(JoynrCommunicationException.class);
+        DiscoveryEntry expectedLocalDiscoveryEntry = new DiscoveryEntry(localEntry.getProviderVersion(),
+                                                                        null, // domain
+                                                                        localEntry.getInterfaceName(),
+                                                                        localEntry.getParticipantId(),
+                                                                        localEntry.getQos(),
+                                                                        localEntry.getLastSeenDateMs(),
+                                                                        localEntry.getExpiryDateMs(),
+                                                                        localEntry.getPublicKeyId());
+        discoveryEntryStore.add(expectedLocalDiscoveryEntry);
+    }
+
+    @Test
+    public void addWithMissingInterfaceThrows() {
+        thrown.expect(JoynrCommunicationException.class);
+        DiscoveryEntry expectedLocalDiscoveryEntry = new DiscoveryEntry(localEntry.getProviderVersion(),
+                                                                        localEntry.getDomain(),
+                                                                        null, // interfaceName
+                                                                        localEntry.getParticipantId(),
+                                                                        localEntry.getQos(),
+                                                                        localEntry.getLastSeenDateMs(),
+                                                                        localEntry.getExpiryDateMs(),
+                                                                        localEntry.getPublicKeyId());
+        discoveryEntryStore.add(expectedLocalDiscoveryEntry);
+    }
+
+    @Test
+    public void addWithMissingParticipantIdThrows() {
+        thrown.expect(JoynrCommunicationException.class);
+        DiscoveryEntry expectedLocalDiscoveryEntry = new DiscoveryEntry(localEntry.getProviderVersion(),
+                                                                        localEntry.getDomain(),
+                                                                        localEntry.getInterfaceName(),
+                                                                        null, // participantId
+                                                                        localEntry.getQos(),
+                                                                        localEntry.getLastSeenDateMs(),
+                                                                        localEntry.getExpiryDateMs(),
+                                                                        localEntry.getPublicKeyId());
+        discoveryEntryStore.add(expectedLocalDiscoveryEntry);
+    }
+
+    @Test
+    public void addCollectionWithNullDoesNotThrow() {
+        discoveryEntryStore.add((Collection) null);
+    }
+
+    @Test
+    public void addCollectionWithEmptyListDoesNotThrow() {
+        ArrayList<DiscoveryEntry> discoveryEntryList = new ArrayList<>();
+        discoveryEntryStore.add(discoveryEntryList);
+    }
+
+    @Test
+    public void addCollectionWithNonEmptyList() {
+        DiscoveryEntry expectedLocalDiscoveryEntry = new DiscoveryEntry(localEntry);
+        DiscoveryEntry expectedGlobalDiscoveryEntry = new DiscoveryEntry(globalEntry);
+
+        ArrayList<DiscoveryEntry> discoveryEntryList = new ArrayList<>();
+
+        discoveryEntryList.add(localEntry);
+        discoveryEntryList.add(globalEntry);
+
+        discoveryEntryStore.add(discoveryEntryList);
+
+        DiscoveryEntry actualGlobalDiscoveryEntry = discoveryEntryStore.lookup(globalParticipantId, Long.MAX_VALUE)
+                                                                       .get();
+        DiscoveryEntry actualLocalDiscoveryEntry = discoveryEntryStore.lookup(localParticipantId, Long.MAX_VALUE).get();
+
+        assertEquals(expectedLocalDiscoveryEntry, actualLocalDiscoveryEntry);
+        assertEquals(expectedGlobalDiscoveryEntry, actualGlobalDiscoveryEntry);
+    }
+
     private DiscoveryEntry getClonedDiscoveryEntry(int index, boolean isSticky) {
         DiscoveryEntry discoveryEntry = new DiscoveryEntry(globalEntry);
         if (isSticky) {
@@ -242,6 +340,85 @@ public class DiscoveryEntryStoreInMemoryTest {
         for (int i = 0; i < maxCount; i++) {
             String participantId = "stickyId" + i;
             assertTrue(discoveryEntryStore.remove(participantId));
+        }
+    }
+
+    private Field getPrivateField(Class<?> runtimeClass, String fieldName) {
+        try {
+            Field result = runtimeClass.getDeclaredField(fieldName);
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String domainInterfaceKey(String domain, String interfaceName) {
+        return (domain + "|" + interfaceName).toLowerCase();
+    }
+
+    @Test
+    public void discoveryEntryStoreIsLimitedUpdateSameEntriesMultipleTimes() {
+
+        final int storeLimit = 5;
+        final int maxCount = 100;
+
+        discoveryEntryStore = new DiscoveryEntryStoreInMemory<DiscoveryEntry>(storeLimit);
+
+        for (int i = 0; i < maxCount; i++) {
+            for (int j = 0; j < 2; j++) {
+                String participantId = "nonStickyId" + i;
+                DiscoveryEntry globalEntry2 = new DiscoveryEntry(globalEntry);
+                globalEntry2.setParticipantId(participantId);
+                discoveryEntryStore.add(globalEntry2);
+            }
+        }
+
+        // get access to internal maps
+        Field registeredCapabilitiesTimeField = getPrivateField(discoveryEntryStore.getClass(),
+                                                                "registeredCapabilitiesTime");
+        Field interfaceAddressToCapabilityMappingField = getPrivateField(discoveryEntryStore.getClass(),
+                                                                         "interfaceAddressToCapabilityMapping");
+        Field participantIdToCapabilityMappingField = getPrivateField(discoveryEntryStore.getClass(),
+                                                                      "participantIdToCapabilityMapping");
+        Field capabilityKeyToCapabilityMappingfield = getPrivateField(discoveryEntryStore.getClass(),
+                                                                      "capabilityKeyToCapabilityMapping");
+        Field queueIdToParticipantIdMappingField = getPrivateField(discoveryEntryStore.getClass(),
+                                                                   "queueIdToParticipantIdMapping");
+        Field participantIdToQueueIdMappingField = getPrivateField(discoveryEntryStore.getClass(),
+                                                                   "participantIdToQueueIdMapping");
+
+        registeredCapabilitiesTimeField.setAccessible(true);
+        interfaceAddressToCapabilityMappingField.setAccessible(true);
+        participantIdToCapabilityMappingField.setAccessible(true);
+        capabilityKeyToCapabilityMappingfield.setAccessible(true);
+        queueIdToParticipantIdMappingField.setAccessible(true);
+        participantIdToQueueIdMappingField.setAccessible(true);
+
+        try {
+            Map<String, Long> registeredCapabilitiesTime = (Map<String, Long>) registeredCapabilitiesTimeField.get(discoveryEntryStore);
+            Map<String, List<String>> interfaceAddressToCapabilityMapping = (Map<String, List<String>>) interfaceAddressToCapabilityMappingField.get(discoveryEntryStore);
+            Map<String, String> participantIdToCapabilityMapping = (Map<String, String>) participantIdToCapabilityMappingField.get(discoveryEntryStore);
+            Map<String, DiscoveryEntry> capabilityKeyToCapabilityMapping = (Map<String, DiscoveryEntry>) capabilityKeyToCapabilityMappingfield.get(discoveryEntryStore);
+            TreeMap<Long, String> queueIdToParticipantIdMapping = (TreeMap<Long, String>) queueIdToParticipantIdMappingField.get(discoveryEntryStore);
+            Map<String, Long> participantIdToQueueIdMapping = (Map<String, Long>) participantIdToQueueIdMappingField.get(discoveryEntryStore);
+
+            assertEquals(storeLimit, registeredCapabilitiesTime.size());
+            assertEquals(storeLimit, participantIdToCapabilityMapping.size());
+            assertEquals(storeLimit, capabilityKeyToCapabilityMapping.size());
+            assertEquals(storeLimit, queueIdToParticipantIdMapping.size());
+            assertEquals(storeLimit, participantIdToQueueIdMapping.size());
+
+            // since all entries use same domain/interfaceId there shoudl be exactly one entry
+            assertEquals(1, interfaceAddressToCapabilityMapping.size());
+            // the list associated with that entry should have expected number of entries
+            String domainInterfaceId = domainInterfaceKey(globalEntry.getDomain(), globalEntry.getInterfaceName());
+            List<String> mapping = interfaceAddressToCapabilityMapping.get(domainInterfaceId);
+            if (mapping == null) {
+                fail("required mapping not found in interfaceAddressToCapabilityMapping");
+            }
+            assertEquals(storeLimit, mapping.size());
+        } catch (Exception exception) {
+            fail(exception.getMessage());
         }
     }
 }
