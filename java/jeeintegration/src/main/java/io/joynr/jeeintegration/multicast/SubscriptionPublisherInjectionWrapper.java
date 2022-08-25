@@ -44,10 +44,8 @@ import io.joynr.provider.SubscriptionPublisherInjection;
  * the subscription publisher provided by joynr and
  * {@link SubscriptionPublisherProducer#add(SubscriptionPublisher, Class) adds it to the producer}
  * so that it can be injected in bean instances in the CDI runtime.
- * The subscription publishers which are
- * {@link SubscriptionPublisherInjection#setSubscriptionPublisher(SubscriptionPublisher) provided by the joynr runtime}
- * are further wrapped in a {@link SubscriptionPublisherWrapper}, which is responsbile for ensuring that only multicast
- * publications are made from within the JEE container runtime.
+ * The subscription publishers are
+ * {@link SubscriptionPublisherInjection#setSubscriptionPublisher(SubscriptionPublisher) provided by the joynr runtime}.
  */
 public class SubscriptionPublisherInjectionWrapper implements InvocationHandler {
 

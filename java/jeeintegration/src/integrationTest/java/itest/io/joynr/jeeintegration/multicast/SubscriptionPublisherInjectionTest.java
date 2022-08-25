@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherCdiExtension;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
 import io.joynr.jeeintegration.multicast.SubscriptionPublisherProducer;
-import io.joynr.jeeintegration.multicast.SubscriptionPublisherWrapper;
 import io.joynr.pubsub.publication.BroadcastFilterImpl;
 import joynr.jeeintegration.servicelocator.MyServiceSubscriptionPublisher;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
@@ -58,7 +57,6 @@ public class SubscriptionPublisherInjectionTest {
         return ShrinkWrap.create(JavaArchive.class)
                          .addClasses(SubscriptionPublisherCdiExtension.class,
                                      SubscriptionPublisherInjectionWrapper.class,
-                                     SubscriptionPublisherWrapper.class,
                                      SubscriptionPublisherProducer.class,
                                      BeanWithSubscriptionPublisher.class)
                          .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"))

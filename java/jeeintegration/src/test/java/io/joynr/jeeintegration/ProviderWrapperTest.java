@@ -78,6 +78,7 @@ import io.joynr.provider.SubscriptionPublisher;
 import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
+import joynr.jeeintegration.servicelocator.MyService.CallMeWithExceptionErrorEnum;
 
 /**
  * Unit tests for {@link ProviderWrapper}.
@@ -190,7 +191,7 @@ public class ProviderWrapperTest {
 
         @Override
         public void testThrowsApplicationException() throws ApplicationException {
-            throw new ApplicationException(null);
+            throw new ApplicationException(CallMeWithExceptionErrorEnum.MY_ERROR);
         }
 
         @Override
@@ -282,6 +283,8 @@ public class ProviderWrapperTest {
             @Override
             public void onRejection(JoynrException error) {
                 assertTrue(error instanceof ApplicationException);
+                String expectedMessage = "ErrorValue: " + CallMeWithExceptionErrorEnum.MY_ERROR;
+                assertEquals(((ApplicationException) error).getMessage(), expectedMessage);
             }
         }, false);
     }

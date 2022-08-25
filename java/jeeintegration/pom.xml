@@ -173,6 +173,13 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>access-control-common</artifactId>
 			<version>${project.version}</version>

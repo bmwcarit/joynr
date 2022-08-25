@@ -68,6 +68,7 @@ public class ApplicationException extends Exception implements JoynrException {
      * @param error error enum to be reported
      */
     public ApplicationException(Enum<?> error) {
+        super("ErrorValue: " + error);
         this.error = error;
     }
 
@@ -78,7 +79,7 @@ public class ApplicationException extends Exception implements JoynrException {
      * @param message description of the reported error
      */
     public ApplicationException(Enum<?> error, String message) {
-        super(message);
+        super(message + " ErrorValue: " + error);
         this.error = error;
     }
 
@@ -93,11 +94,6 @@ public class ApplicationException extends Exception implements JoynrException {
         } catch (ClassCastException e) {
             throw new MethodInvocationException("cannot cast enum " + error);
         }
-    }
-
-    @Override
-    public String toString() {
-        return super.toString() + ": error: " + error;
     }
 
     @Override
