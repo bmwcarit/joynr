@@ -58,7 +58,7 @@ import joynr.types.ProviderQos;
 
 public class MqttProviderProxyEnd2EndWithEmptyGbidTest extends JoynrEnd2EndTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(MqttTwoConnectionsProviderProxyEnd2EndTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(MqttProviderProxyEnd2EndWithEmptyGbidTest.class);
     @Rule
     public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 

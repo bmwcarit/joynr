@@ -34,7 +34,7 @@ public class BinderMessagingSkeleton extends JoynrBinder.Stub {
 
     public final static String BINDER_IS_MAIN_TRANSPORT = "io.joynr.android.binder.is.main.transport";
 
-    private static final Logger logger = LoggerFactory.getLogger(BinderService.class);
+    private static final Logger logger = LoggerFactory.getLogger(BinderMessagingSkeleton.class);
 
     private BinderMessageProcessor binderMessageProcessor;
 

@@ -38,7 +38,7 @@ import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 public class IltConsumerGetterSetterTest extends IltConsumerTest {
-    private static final Logger logger = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerGetterSetterTest.class);
 
     @SuppressWarnings("unchecked")
     private <T> void genericGetterSetterTestMethod(T arg, String methodName) {

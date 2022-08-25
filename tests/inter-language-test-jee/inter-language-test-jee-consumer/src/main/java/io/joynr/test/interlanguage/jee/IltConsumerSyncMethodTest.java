@@ -56,7 +56,7 @@ import joynr.interlanguagetest.namedTypeCollection2.MapStringString;
 import joynr.interlanguagetest.typeDefCollection.ArrayTypeDefStruct;
 
 public class IltConsumerSyncMethodTest extends IltConsumerTest {
-    private static final Logger logger = LoggerFactory.getLogger(IltConsumerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(IltConsumerSyncMethodTest.class);
 
     @SuppressWarnings("unchecked")
     private <T, U> void callProxyMethodWithParameterAndAssertResult(String methodName,

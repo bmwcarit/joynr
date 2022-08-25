@@ -15,7 +15,7 @@ import joynr.types.ProviderScope;
 
 public class HelloWorldProviderModel {
 
-    private static final Logger logger = LoggerFactory.getLogger(HelloWorldProviderApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(HelloWorldProviderModel.class);
     private HelloWorldProvider provider;
 
     private HelloWorldProviderApplication app;
