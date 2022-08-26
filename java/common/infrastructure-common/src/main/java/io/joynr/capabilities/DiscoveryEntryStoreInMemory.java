@@ -91,17 +91,17 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
     public void add(T discoveryEntry) {
         if (discoveryEntry == null || discoveryEntry.getDomain() == null || discoveryEntry.getInterfaceName() == null
                 || discoveryEntry.getParticipantId() == null) {
-            String message = format("discoveryEntry being registered is not complete: %s", discoveryEntry);
+            String message = format("Entry being registered is null or not complete: %s", discoveryEntry);
             logger.error(message);
             throw new JoynrCommunicationException(message);
         }
         String participantId = discoveryEntry.getParticipantId();
-        logger.trace("DiscoveryEntryStoreInMemory: add for participantId {}", participantId);
+        logger.trace("About to add entry for participantId {} to DiscoveryEntryStoreInMemory.", participantId);
         synchronized (storeLock) {
             // Check whether an entry for this participantId already exists, if so, remove it
             boolean removedSuccessfully = removeDiscoveryEntryFromStore(participantId);
             if (removedSuccessfully) {
-                logger.debug("Removed old discoveryEntry for participantId: {}", participantId);
+                logger.trace("Removed old entry for participantId {} from DiscoveryEntryStoreInMemory.", participantId);
             }
 
             // store limit will only be used if enabled, and only for non-sticky entries;
@@ -114,13 +114,15 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
                     // for each new invocation
                     Map.Entry<Long, String> entry = queueIdToParticipantIdMapping.firstEntry();
                     String oldestParticipantId = entry.getValue();
-                    logger.debug("About to remove entry with oldest participantId {}, queueId {}",
-                                 oldestParticipantId,
-                                 entry.getKey());
                     removedSuccessfully = removeDiscoveryEntryFromStore(oldestParticipantId);
-                    if (!removedSuccessfully) {
-                        logger.error("Could not find oldest discoveryEntry to remove with participantId: {}",
-                                     oldestParticipantId);
+                    if (removedSuccessfully) {
+                        logger.debug("Removed oldest entry for participantId {}, queueId {} from DiscoveryEntryStoreInMemory.",
+                                     oldestParticipantId,
+                                     entry.getKey());
+                    } else {
+                        logger.error("Could not remove oldest entry with participantId {}, queueId {} from DiscoveryEntryStoreInMemory.",
+                                     oldestParticipantId,
+                                     entry.getKey());
                     }
                 }
 
@@ -129,29 +131,53 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
                     recreateQueueIdToParticipantIdMapping();
                 }
 
-                if (queueIdToParticipantIdMapping.putIfAbsent(counter, participantId) != null) {
-                    logger.error("Found existing entry queueId {} in queueIdToParticipantIdMapping", counter);
+                String oldParticipantId = queueIdToParticipantIdMapping.put(counter, participantId);
+                if (oldParticipantId != null) {
+                    logger.error("Found existing entry queueId {} in queueIdToParticipantIdMapping, old participantId {}, new participantId {}",
+                                 counter,
+                                 oldParticipantId,
+                                 participantId);
                 }
 
-                if (participantIdToQueueIdMapping.putIfAbsent(participantId, counter) != null) {
-                    logger.error("Found existing entry participantId {} in participantIdToQueueIdMapping",
-                                 participantId);
+                Long oldQueueId = participantIdToQueueIdMapping.put(participantId, counter);
+                if (oldQueueId != null) {
+                    logger.error("Found existing entry participantId {} in participantIdToQueueIdMapping, old queueId {}, new queueId {}",
+                                 participantId,
+                                 oldQueueId,
+                                 counter);
                 }
             }
 
             String discoveryEntryId = domainInterfaceParticipantIdKey(discoveryEntry.getDomain(),
                                                                       discoveryEntry.getInterfaceName(),
                                                                       participantId);
-            // update combined key [domain + interfaceName + participantId] to capability mapping
-            if (capabilityKeyToCapabilityMapping.putIfAbsent(discoveryEntryId, discoveryEntry) != null) {
-                logger.error("Found existing entry discoveryEntryId {} in capabilityKeyToCapabilityMapping",
+
+            // update participantId to combined key [domain + interfaceName + participantId] mapping
+            String oldDiscoveryEntryId = participantIdToCapabilityMapping.put(participantId, discoveryEntryId);
+            if (oldDiscoveryEntryId != null) {
+                logger.error("Found existing entry participantId {} in participantIdToCapabilityMapping, old discoveryEntryId {}, new discoveryEntryId {}",
+                             participantId,
+                             oldDiscoveryEntryId,
                              discoveryEntryId);
             }
 
             // update combined key [domain + interfaceName + participantId] to time mapping
-            if (registeredCapabilitiesTime.putIfAbsent(discoveryEntryId, System.currentTimeMillis()) != null) {
-                logger.error("Found existing entry discoveryEntryId {} in registeredCapabilitiesTime",
-                             discoveryEntryId);
+            long newTimeMs = System.currentTimeMillis();
+            Long oldTimeMs = registeredCapabilitiesTime.put(discoveryEntryId, newTimeMs);
+            if (oldTimeMs != null) {
+                logger.error("Found existing entry discoveryEntryId {} in registeredCapabilitiesTime, old timeMs {}, new timeMs {}",
+                             discoveryEntryId,
+                             oldTimeMs,
+                             newTimeMs);
+            }
+
+            // update combined key [domain + interfaceName + participantId] to capability mapping
+            DiscoveryEntry oldDiscoveryEntry = capabilityKeyToCapabilityMapping.put(discoveryEntryId, discoveryEntry);
+            if (oldDiscoveryEntry != null) {
+                logger.error("Found existing entry discoveryEntryId {} in capabilityKeyToCapabilityMapping, old discoveryEntry {}, new discoveryEntry {}",
+                             discoveryEntryId,
+                             oldDiscoveryEntry,
+                             discoveryEntry);
             }
 
             // update combined key [domain + interface] to capability mapping
@@ -159,7 +185,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
                                                           discoveryEntry.getInterfaceName());
 
             // if domainInterfaceId not in the mapping, map it to an empty map,
-            // otherwise use the mapping that is  already there
+            // otherwise use the mapping that is already there, putIfAbsent is thus intentionally used
             List<String> newMapping = new ArrayList<String>();
             List<String> mapping = interfaceAddressToCapabilityMapping.putIfAbsent(domainInterfaceId, newMapping);
             if (mapping == null) {
@@ -168,12 +194,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
 
             mapping.add(discoveryEntryId);
 
-            // update participantId to combined key [domain + interfaceName + participantId] mapping
-            if (participantIdToCapabilityMapping.putIfAbsent(participantId, discoveryEntryId) != null) {
-                logger.error("Found existing entry participantId {} in participantIdToCapabilityMapping",
-                             participantId);
-            }
-            logger.debug("Added entry for participantId {} to DiscoveryEntryStore.", participantId);
+            logger.debug("Added entry for participantId {} to DiscoveryEntryStoreInMemory.", participantId);
         }
     }
 
@@ -194,25 +215,20 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
             removedSuccessfully = removeDiscoveryEntryFromStore(participantId);
         }
         if (!removedSuccessfully) {
-            logger.error("Could not find discoveryEntry to remove for participantId {}", participantId);
+            logger.error("Could not remove discoveryEntry for participantId {} from DiscoveryEntryStoreInMemory.",
+                         participantId);
         } else {
-            logger.debug("Removed entry for participantId {} from DiscoveryEntryStore.", participantId);
+            logger.debug("Removed entry for participantId {} from DiscoveryEntryStoreInMemory.", participantId);
         }
         return removedSuccessfully;
     }
 
     private boolean removeDiscoveryEntryFromStore(String participantId) {
-        logger.debug("DiscoveryEntryStoreInMemory: removeDiscoveryEntryFromStore for participantId {}", participantId);
+        logger.trace("removeDiscoveryEntryFromStore for participantId {}", participantId);
         // get combined key [domain + interfaceName + participantId], if existing
-        String discoveryEntryId = participantIdToCapabilityMapping.get(participantId);
+        String discoveryEntryId = participantIdToCapabilityMapping.remove(participantId);
         if (discoveryEntryId == null) {
-            return false;
-        }
-
-        T capability = capabilityKeyToCapabilityMapping.remove(discoveryEntryId);
-        if (capability == null) {
-            logger.error("Could not find discoveryEntryId {} to remove from capabilityKeyToCapabilityMapping",
-                         discoveryEntryId);
+            // valid case, if entry is not part of the cache yet
             return false;
         }
 
@@ -221,8 +237,25 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
             logger.error("Could not find participantId {} to remove from registeredCapabilitiesTime, discoveryEntryId {}",
                          participantId,
                          discoveryEntryId);
+        }
+
+        T capability = capabilityKeyToCapabilityMapping.remove(discoveryEntryId);
+        if (capability == null) {
+            logger.error("Could not find discoveryEntryId {} to remove from capabilityKeyToCapabilityMapping",
+                         discoveryEntryId);
+            // since capability data is required for further processing, quit here if the entry could not be found
+            if (maximumNumberOfNonStickyEntries > 0) {
+                // try to remove entry from remaining maps as well without further error checking
+                // since it is unclear whether entry was non-sticky
+                Long queueId = participantIdToQueueIdMapping.remove(participantId);
+                if (queueId != null) {
+                    queueIdToParticipantIdMapping.remove(queueId);
+                }
+            }
             return false;
         }
+
+        boolean removedSuccessfully = true;
 
         // update [interface + domain] to capability mapping
         // there can be multiple entries serving same interface / domain so remove only 
@@ -234,6 +267,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
                 logger.error("Could not find discoveryEntryId {} to remove from list returned for domainInterfaceId {} in interfaceDomainToCapabilityMapping",
                              discoveryEntryId,
                              domainInterfaceId);
+                removedSuccessfully = false;
             }
             if (mapping.isEmpty()) {
                 interfaceAddressToCapabilityMapping.remove(domainInterfaceId);
@@ -242,15 +276,7 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
             logger.error("Could not find domainInterfaceId {} in interfaceAddressToCapabilityMapping, in order to remove discoveryEntryId {} from associated list",
                          domainInterfaceId,
                          discoveryEntryId);
-            return false;
-        }
-
-        // update participantId to capability mapping
-        if (participantIdToCapabilityMapping.remove(participantId) == null) {
-            logger.error("Could not find participantId {} to remove from participantIdToCapabilityMapping, discoveryEntryId {}",
-                         participantId,
-                         discoveryEntryId);
-            return false;
+            removedSuccessfully = false;
         }
 
         // store limit will only be used if configured, and only for non-sticky entries;
@@ -261,18 +287,18 @@ public class DiscoveryEntryStoreInMemory<T extends DiscoveryEntry> implements Di
                 logger.error("Could not find participantId {} to remove from participantIdToQueueIdMapping, discoveryEntryId {}",
                              participantId,
                              discoveryEntryId);
-                return false;
-            }
-
-            if (queueIdToParticipantIdMapping.remove(queueId) == null) {
-                logger.error("Could not find queueid {} to remove from queueIdToParticipantIdMapping, discoveryEntryId {}",
-                             queueId,
-                             discoveryEntryId);
-                return false;
+                removedSuccessfully = false;
+            } else {
+                if (queueIdToParticipantIdMapping.remove(queueId) == null) {
+                    logger.error("Could not find queueid {} to remove from queueIdToParticipantIdMapping, discoveryEntryId {}",
+                                 queueId,
+                                 discoveryEntryId);
+                    removedSuccessfully = false;
+                }
             }
         }
 
-        return true;
+        return removedSuccessfully;
     }
 
     @Override
