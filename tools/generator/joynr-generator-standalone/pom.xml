@@ -235,7 +235,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${user.home}/.cmake/packages/JoynrGenerator</outputDirectory>
+							<outputDirectory>${HOME}/.cmake/packages/JoynrGenerator</outputDirectory>
 							<resources>
 								<resource>
 									<directory>src/main/scripts</directory>
