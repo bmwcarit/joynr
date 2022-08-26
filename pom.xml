@@ -700,11 +700,6 @@
 				<version>${log4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.ning</groupId>
-				<artifactId>async-http-client</artifactId>
-				<version>1.9.0</version>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<!-- Manage arquillian and shrinkwrap dependencies -->
 				<artifactId>arquillian-bom</artifactId>
