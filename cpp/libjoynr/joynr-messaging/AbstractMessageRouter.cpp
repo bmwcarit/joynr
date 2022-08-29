@@ -254,84 +254,83 @@ void AbstractMessageRouter::sendQueuedMessages(
     }
 }
 
+void AbstractMessageRouter::onMsgsDropped(
+        std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessages)
+{
+    while (droppedMessages.size() > 0) {
+        auto droppedMessage = droppedMessages.back();
+        droppedMessages.pop_back();
+        if (droppedMessage) {
+            if (droppedMessage->getType() != Message::VALUE_MESSAGE_TYPE_REQUEST()) {
+                continue;
+            }
+
+            // deserialize the request
+            Request request;
+            try {
+                joynr::serializer::deserializeFromJson(
+                        request, droppedMessage->getUnencryptedBody());
+            } catch (const std::invalid_argument& e) {
+
+                JOYNR_LOG_ERROR(logger(),
+                                "Failed to prepare reply message with error for "
+                                "{}: unable to deserialize request object - error: {}",
+                                droppedMessage->toLogMessage(),
+                                e.what());
+                continue;
+            }
+
+            Reply reply;
+            const std::string& requestReplyId = request.getRequestReplyId();
+            TimePoint requestExpiryDate = droppedMessage->getExpiryDate();
+            reply.setRequestReplyId(requestReplyId);
+            auto error = std::make_shared<joynr::exceptions::ProviderRuntimeException>(
+                    "Request Message {" + droppedMessage->getTrackingInfo() +
+                    "} dropped due to the exhaustion of the message queue.");
+
+            reply.setError(error);
+
+            std::string senderId = droppedMessage->getSender();
+            std::string receiverId = droppedMessage->getRecipient();
+
+            const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
+            MessagingQos messagingQos(static_cast<std::uint64_t>(ttl.count()));
+            messagingQos.setCompress(droppedMessage->isCompressed());
+            const boost::optional<std::string> effort = droppedMessage->getEffort();
+            if (effort) {
+                try {
+                    messagingQos.setEffort(MessagingQosEffort::getEnum(*effort));
+                } catch (const std::invalid_argument&) {
+                    JOYNR_LOG_ERROR(logger(),
+                                    "Request message (id: {}) uses invalid effort: {}. Using "
+                                    "default effort for reply message.",
+                                    droppedMessage->getId(),
+                                    *effort);
+                }
+            }
+            if (auto messageSenderSharedPtr = _messageSender.lock()) {
+                JOYNR_LOG_TRACE(logger(),
+                                "Sending fake reply for the dropped request message. "
+                                "RequestReplyId: {}, "
+                                "sender of droppedMsg: {}, receiver of droppedMsg: {}",
+                                requestReplyId,
+                                senderId,
+                                receiverId);
+                messageSenderSharedPtr->sendReply(
+                        receiverId, // the receiver of the dropped messasge is the sender of the
+                                    // reply
+                        senderId,   // the sender of the dropped message is the receiver of reply
+                        messagingQos,
+                        droppedMessage->getPrefixedCustomHeaders(),
+                        std::move(reply));
+            }
+        }
+    }
+}
+
 void AbstractMessageRouter::setMessageSender(std::weak_ptr<IMessageSender> messageSender)
 {
     this->_messageSender = std::move(messageSender);
-    auto onMsgsDropped = [messageSenderWeakPtr = _messageSender](
-            std::deque<std::shared_ptr<ImmutableMessage>> & droppedMessages)
-    {
-        while (droppedMessages.size() > 0) {
-            auto droppedMessage = droppedMessages.back();
-            droppedMessages.pop_back();
-            if (droppedMessage) {
-                if (droppedMessage->getType() != Message::VALUE_MESSAGE_TYPE_REQUEST()) {
-                    continue;
-                }
-
-                // deserialize the request
-                Request request;
-                try {
-                    joynr::serializer::deserializeFromJson(
-                            request, droppedMessage->getUnencryptedBody());
-                } catch (const std::invalid_argument& e) {
-
-                    JOYNR_LOG_ERROR(logger(),
-                                    "Failed to prepare reply message with error for "
-                                    "{}: unable to deserialize request object - error: {}",
-                                    droppedMessage->toLogMessage(),
-                                    e.what());
-                    continue;
-                }
-
-                Reply reply;
-                const std::string& requestReplyId = request.getRequestReplyId();
-                TimePoint requestExpiryDate = droppedMessage->getExpiryDate();
-                reply.setRequestReplyId(requestReplyId);
-                auto error = std::make_shared<joynr::exceptions::ProviderRuntimeException>(
-                        "Request Message {" + droppedMessage->getTrackingInfo() +
-                        "} dropped due to the exhaustion of the message queue.");
-
-                reply.setError(error);
-
-                std::string senderId = droppedMessage->getSender();
-                std::string receiverId = droppedMessage->getRecipient();
-
-                const std::chrono::milliseconds ttl = requestExpiryDate.relativeFromNow();
-                MessagingQos messagingQos(static_cast<std::uint64_t>(ttl.count()));
-                messagingQos.setCompress(droppedMessage->isCompressed());
-                const boost::optional<std::string> effort = droppedMessage->getEffort();
-                if (effort) {
-                    try {
-                        messagingQos.setEffort(MessagingQosEffort::getEnum(*effort));
-                    } catch (const std::invalid_argument&) {
-                        JOYNR_LOG_ERROR(logger(),
-                                        "Request message (id: {}) uses invalid effort: {}. Using "
-                                        "default effort for reply message.",
-                                        droppedMessage->getId(),
-                                        *effort);
-                    }
-                }
-                if (auto messageSenderSharedPtr = messageSenderWeakPtr.lock()) {
-                    JOYNR_LOG_TRACE(logger(),
-                                    "Sending fake reply for the dropped request message. "
-                                    "RequestReplyId: {}, "
-                                    "sender of droppedMsg: {}, receiver of droppedMsg: {}",
-                                    requestReplyId,
-                                    senderId,
-                                    receiverId);
-                    messageSenderSharedPtr->sendReply(
-                            receiverId, // the receiver of the dropped messasge is the sender of the
-                                        // reply
-                            senderId, // the sender of the dropped message is the receiver of reply
-                            messagingQos,
-                            droppedMessage->getPrefixedCustomHeaders(),
-                            std::move(reply));
-                }
-            }
-        }
-    };
-    _messageQueue->setOnMsgsDropped(onMsgsDropped);
-    _transportNotAvailableQueue->setOnMsgsDropped(std::move(onMsgsDropped));
 }
 
 void AbstractMessageRouter::sendQueuedMessages(
@@ -365,6 +364,7 @@ void AbstractMessageRouter::scheduleMessage(
 {
     for (const auto& transportStatus : _transportStatuses) {
         if (transportStatus->isReponsibleFor(destAddress)) {
+            std::deque<std::shared_ptr<ImmutableMessage>> droppedMessagesToBeReplied;
             if (!transportStatus->isAvailable()) {
                 // We need to lock the mutex to ensure that the queue isn't processed right now.
                 std::lock_guard<std::mutex> lock(_transportAvailabilityMutex);
@@ -373,9 +373,17 @@ void AbstractMessageRouter::scheduleMessage(
                                     "Transport not available. Message queued: {}",
                                     message->getTrackingInfo());
 
-                    _transportNotAvailableQueue->queueMessage(transportStatus, std::move(message));
-                    return;
+                    droppedMessagesToBeReplied = _transportNotAvailableQueue->queueMessage(
+                            transportStatus, std::move(message));
+                    if (droppedMessagesToBeReplied.empty()) {
+                        return;
+                    }
                 }
+            }
+            // This can only contain entries if the Transport was not available
+            if (!droppedMessagesToBeReplied.empty()) {
+                onMsgsDropped(droppedMessagesToBeReplied);
+                return;
             }
             break;
         }
@@ -537,7 +545,12 @@ void AbstractMessageRouter::queueMessage(std::shared_ptr<ImmutableMessage> messa
     std::ignore = messageQueueRetryReadLock;
     JOYNR_LOG_TRACE(logger(), "message queued: {}", message->getTrackingInfo());
     std::string recipient = message->getRecipient();
-    _messageQueue->queueMessage(std::move(recipient), std::move(message));
+    auto droppedMessagesToBeReplied =
+            _messageQueue->queueMessage(std::move(recipient), std::move(message));
+    messageQueueRetryReadLock.unlock();
+    if (!droppedMessagesToBeReplied.empty()) {
+        onMsgsDropped(droppedMessagesToBeReplied);
+    }
 }
 
 bool AbstractMessageRouter::addToRoutingTable(

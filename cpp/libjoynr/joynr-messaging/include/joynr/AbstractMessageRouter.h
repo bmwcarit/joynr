@@ -176,6 +176,7 @@ protected:
 
     virtual void queueMessage(std::shared_ptr<ImmutableMessage> message,
                               ReadLocker& messageQueueRetryReadLock);
+    void onMsgsDropped(std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessages);
     /*
      * return always true in libjoynr and result accessControlChecked for the CCMessageRouter
      */

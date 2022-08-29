@@ -243,9 +243,8 @@ TEST_F(MessageQueueWithLimitTest, testAddingMessages)
     EXPECT_EQ(_messageQueue.getNextMessageFor(recipient[4])->getRecipient(), recipient[4]);
 }
 
-TEST_F(MessageQueueWithLimitTest, queueLimitExceeded_onMsgsDroppedInvoked)
+TEST_F(MessageQueueWithLimitTest, queueLimitExceeded_droppedMessagesReturned)
 {
-    Semaphore semaphore(0);
     constexpr std::uint64_t messageQueueLimit = 4;
     MessageQueue<std::string> messageQueue(messageQueueLimit);
 
@@ -258,21 +257,19 @@ TEST_F(MessageQueueWithLimitTest, queueLimitExceeded_onMsgsDroppedInvoked)
 
     const std::string recipient[messageCount] = {"TEST1", "TEST2", "TEST3", "TEST4", "TEST5"};
 
-    auto onMsgsDropped = [&recipient, &semaphore] (std::deque<std::shared_ptr<ImmutableMessage>>& droppedMessages) {
-            EXPECT_EQ(1, droppedMessages.size());
-            EXPECT_EQ(droppedMessages[0]->getRecipient(), recipient[2]);
-            semaphore.notify();
-    };
-
-    messageQueue.setOnMsgsDropped(onMsgsDropped);
-
+    std::deque<std::shared_ptr<ImmutableMessage>> droppedMessages{};
     std::shared_ptr<ImmutableMessage> immutableMessages [messageCount];
     for (int i = 0; i < messageCount; i++) {
         immutableMessages[i] = this->createMessage(expiryDate[i], recipient[i], "", "rq");
-        messageQueue.queueMessage(immutableMessages[i]->getRecipient(), immutableMessages[i]);
+        auto recentDroppedMessages = messageQueue.queueMessage(immutableMessages[i]->getRecipient(), immutableMessages[i]);
+        if(!recentDroppedMessages.empty()) {
+            droppedMessages.insert(droppedMessages.begin(), recentDroppedMessages.cbegin(), recentDroppedMessages.cend());
+        }
     }
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
+    EXPECT_EQ(1, droppedMessages.size());
+    EXPECT_EQ(droppedMessages[0]->getRecipient(), recipient[2]);
+
     EXPECT_EQ(messageQueue.getQueueLength(), messageQueueLimit);
 }
 

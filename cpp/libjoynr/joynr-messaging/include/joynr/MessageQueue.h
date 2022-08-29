@@ -57,7 +57,6 @@ public:
                  std::uint64_t messageQueueLimitBytes = 0)
             : _queue(),
               _queueMutex(),
-              _onMsgsDropped([](std::deque<std::shared_ptr<ImmutableMessage>>&) {}),
               _messageQueueLimit(messageQueueLimit),
               _messageQueueLimitBytes(messageQueueLimitBytes),
               _perKeyMessageQueueLimit(perKeyMessageQueueLimit),
@@ -67,12 +66,6 @@ public:
 
     virtual ~MessageQueue()
     {
-    }
-
-    virtual void setOnMsgsDropped(
-            std::function<void(std::deque<std::shared_ptr<ImmutableMessage>>&)> onMsgsDroppedFunc)
-    {
-        _onMsgsDropped = std::move(onMsgsDroppedFunc);
     }
 
     virtual std::size_t getQueueLength() const
@@ -87,7 +80,9 @@ public:
         return _queueSizeBytes;
     }
 
-    virtual void queueMessage(const T key, std::shared_ptr<ImmutableMessage> message)
+    virtual std::deque<std::shared_ptr<ImmutableMessage>> queueMessage(
+            const T key,
+            std::shared_ptr<ImmutableMessage> message)
     {
 
         MessageQueueItem item;
@@ -110,7 +105,7 @@ public:
                                item._message->getTrackingInfo(),
                                _queueSizeBytes,
                                getQueueLengthUnlocked());
-                return;
+                return droppedMessagesToBeReplied;
             }
             _queueSizeBytes += item._message->getMessageSize();
             std::string trackingInfo = item._message->getTrackingInfo();
@@ -121,9 +116,7 @@ public:
                             _queueSizeBytes,
                             getQueueLengthUnlocked());
         }
-        if (!droppedMessagesToBeReplied.empty()) {
-            _onMsgsDropped(droppedMessagesToBeReplied);
-        }
+        return droppedMessagesToBeReplied;
     }
 
     virtual std::shared_ptr<ImmutableMessage> getNextMessageFor(const T& key)
@@ -213,7 +206,6 @@ protected:
 
     QueueMultiIndexContainer _queue;
     mutable std::mutex _queueMutex;
-    std::function<void(std::deque<std::shared_ptr<ImmutableMessage>>&)> _onMsgsDropped;
 
 private:
     const std::uint64_t _messageQueueLimit;
