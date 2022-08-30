@@ -191,6 +191,8 @@ void Arbitrator::startArbitration(
                                        exceptions::NoCompatibleProviderFoundException(
                                                thisSharedPtr->_discoveredIncompatibleVersions));
                     }
+                    thisSharedPtr->_onSuccessCallback = nullptr;
+                    thisSharedPtr->_onErrorCallback = nullptr;
                 }
 
                 thisSharedPtr->_arbitrationRunning = false;
@@ -457,6 +459,8 @@ void Arbitrator::receiveCapabilitiesLookupResults(
                 joynr::ArbitrationResult(selectedDiscoveryEntries);
         if (_onSuccessCallback) {
             std::call_once(_onceFlag, _onSuccessCallback, arbitrationResult);
+            _onSuccessCallback = nullptr;
+            _onErrorCallback = nullptr;
         }
         _arbitrationFinished = true;
     }
