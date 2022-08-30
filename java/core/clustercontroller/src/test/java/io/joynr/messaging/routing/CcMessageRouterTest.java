@@ -810,7 +810,8 @@ public class CcMessageRouterTest {
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
         MqttAddress proxyAddress = new MqttAddress();
-        routingTable.put(fromParticipantId, proxyAddress, true, Long.MAX_VALUE, true);
+        boolean putResult = routingTable.put(fromParticipantId, proxyAddress, true, Long.MAX_VALUE, true);
+        assertTrue(putResult);
 
         final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
         doAnswer(new Answer<Void>() {
