@@ -2,6 +2,55 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.21.3
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[C++]** Improved resource consumption:
+  * Routing entries of destructed proxies are now removed when they are no longer needed.
+  * Fixed a bug which prevented proxies from being destructed if they had been built with the
+    synchronous build method from `ProxyBuilder`. The proxies were still captured in an internal
+    callback of Arbitrator.
+* **[Java]** Updated dependencies (including transitive dependencies):
+```
+  * netty-*         4.1.78.Final -> 4.1.80.Final
+  * postgresql            42.4.0 -> 42.4.1
+  * org.eclipse.jetty     11.0.7 -> 11.0.11
+  * maven-settings         3.6.3 -> 3.8.6
+  * maven-settings-builder 3.6.3 -> 3.8.6
+  * maven-shared-utils     3.2.1 -> 3.3.4
+  * commons-io               2.5 -> 2.11.0
+  * jctools-core           2.1.2 -> 3.3.0
+  * objenesis                3.2 -> 3.3
+  * typetools              0.6.1 -> 0.6.3
+  * kryo               5.0.0-RC1 -> 5.3.0
+  * minlog                 1.3.0 -> 1.3.1
+  * reflectasm            1.11.7 -> 1.11.9
+```
+* **[Java]** Removed unused dependency to `com.ning:async-http-client`.
+* **[Java]** `ApplicationException` now always contains the error enum name in the detail message.
+* **[Android]** Updated android joynr documentation and examples.
+* **[TS]** Use fixed version `4.14.178` for `@types/lodash` instead of `^4.14.178` to fix
+  compilation issue.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Updated dependencies, see list above.
+
+## Bug Fixes
+* **[C++]** Fixed a deadlock that could occur in the cluster controller when a message had to be
+  dropped from a message queue while either another thread was trying to add a routing entry or the
+  message router cleanup thread tried to remove expired messages.
+* **[C++]** Fixed a bug which prevented proxies from being destructed, see `Other changes` above.
+* **[C++]** Fixed problems reported by TSAN.
+* **[Java]** Fixed potential out of memory errors that could occur because:
+  * `DiscoveryEntryStoreInMemory` did not always respect its size limit.
+  * A map in `AbstractMiddlewareMessagingStubFactory` was unlimited.
+
 # joynr 1.21.2
 
 ## API relevant changes
@@ -18,7 +67,7 @@ None.
   * junit              4.13.1 -> 4.13.2
   * kotlin-stdlib-jdk8 1.3.61 -> 1.7.0
   * kotlin-stdlib      1.3.61 -> 1.7.0
-  * netty-*      4.1.48.Final -> 4.1.77.Final
+  * netty-*      4.1.48.Final -> 4.1.78.Final
   * postgresql         42.2.4 -> 42.4.0
   * protobuf-java*     3.10.0 -> 3.21.2
   * gson                2.8.5 -> 2.9.0
