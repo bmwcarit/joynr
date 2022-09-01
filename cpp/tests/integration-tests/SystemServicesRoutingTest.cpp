@@ -61,7 +61,7 @@ public:
         discoveryQos.setCacheMaxAgeMs(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
         discoveryQos.addCustomParameter("fixedParticipantId", routingProviderParticipantId);
-        discoveryQos.setDiscoveryTimeoutMs(50);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
 
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
 
