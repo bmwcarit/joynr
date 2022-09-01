@@ -22,7 +22,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.junit.Before;
@@ -114,9 +117,29 @@ public class MulticastWildcardRegexFactoryTest {
         assertFalse(pattern.matcher("").matches());
     }
 
-    @Test(expected = JoynrIllegalStateException.class)
+    @Test
     public void testPlusAsPartOfPartition() {
-        subject.createIdPattern("+one+two/three+four/five+six+");
+        List<String> faultyPlusPatternList = new ArrayList<String>();
+        faultyPlusPatternList.add("+onetwo/threefour/fivesix");
+        faultyPlusPatternList.add("one+two/threefour/fivesix");
+        faultyPlusPatternList.add("onetwo+/threefour/fivesix");
+        faultyPlusPatternList.add("onetwo/+threefour/fivesix");
+        faultyPlusPatternList.add("onetwo/three+four/fivesix");
+        faultyPlusPatternList.add("onetwo/threefour+/fivesix");
+        faultyPlusPatternList.add("onetwo/threefour/+fivesix");
+        faultyPlusPatternList.add("onetwo/threefour/five+six");
+        faultyPlusPatternList.add("onetwo/threefour/fivesix+");
+        faultyPlusPatternList.add("++/threefour/fivesix");
+        faultyPlusPatternList.add("onetwo/++/fivesix");
+        faultyPlusPatternList.add("onetwo/threefour/++");
+        for (String faultyPlusPattern : faultyPlusPatternList) {
+            try {
+                subject.createIdPattern(faultyPlusPattern);
+                fail("Pattern " + faultyPlusPattern + " should not be accepted");
+            } catch (JoynrIllegalStateException e) {
+
+            }
+        }
     }
 
     @Test(expected = JoynrIllegalStateException.class)
