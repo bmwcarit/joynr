@@ -1,6 +1,6 @@
 {
   "name": "sit-node-app",
-  "version": "1.21.3",
+  "version": "1.21.4-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "System Integration Test Node App",
   "main": "src/main/js/consumer.js",

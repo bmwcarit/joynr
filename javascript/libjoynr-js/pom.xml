@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>javascript</artifactId>
-		<version>1.21.3</version>
+		<version>1.21.4-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
