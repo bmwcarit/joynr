@@ -219,11 +219,8 @@ void LibJoynrRuntime::init(
 
                 _messageSender->setReplyToAddress(replyAddress);
 
-                std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
-                dispatcherList.push_back(_joynrDispatcher);
-
                 _capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
-                        dispatcherList,
+                        _joynrDispatcher,
                         _discoveryProxy,
                         _participantIdStorage,
                         _dispatcherAddress,

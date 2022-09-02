@@ -159,7 +159,7 @@ TEST_F(TaskSequencerTest, addSequence)
         test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(10000)));
         expectedSequence.push_back({i, i});
     }
-    const auto sequence = waitForTestFutureCreation(expectedSequence.size());
+    const auto sequence = waitForTestFutureCreation(expectedSequence.size(), std::chrono::seconds{20});
     EXPECT_THAT(sequence, ::testing::ContainerEq(expectedSequence));
 }
 
@@ -170,7 +170,7 @@ TEST_F(TaskSequencerTest, addConcurrency)
     std::vector<TestTaskSequencer::TaskWithExpiryDate> tasks;
     std::set<std::uint64_t> expectedExecutions;
     for (std::uint64_t i = 0; i < numberOfTasks; i++) {
-        tasks.push_back(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(10000)));
+        tasks.push_back(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(100000)));
         expectedExecutions.insert(i);
     }
     std::vector<std::future<void>> addAsync;
@@ -178,7 +178,7 @@ TEST_F(TaskSequencerTest, addConcurrency)
         addAsync.push_back(std::async([&test, task]() mutable { test.add(std::move(task)); }));
     }
     addAsync.clear();
-    const auto sequence = waitForTestFutureCreation(expectedExecutions.size());
+    const auto sequence = waitForTestFutureCreation(expectedExecutions.size(), std::chrono::seconds{60});
     std::set<std::uint64_t> executions;
     for (auto taskState : sequence) {
         executions.insert(taskState.executionNo);

@@ -88,19 +88,17 @@ public:
 
     void SetUp()
     {
-        std::vector<std::shared_ptr<IDispatcher>> dispatcherList;
         _mockDispatcher = std::make_shared<MockDispatcher>();
-        dispatcherList.push_back(_mockDispatcher);
 
         const std::string globalAddress = "testGlobalAddressString";
-        _capabilitiesRegistrar = new CapabilitiesRegistrar(dispatcherList,
-                                                          _mockDiscovery,
-                                                          _mockParticipantIdStorage,
-                                                          _dispatcherAddress,
-                                                          _mockMessageRouter,
-                                                          std::numeric_limits<std::int64_t>::max(),
-                                                          _pubManager,
-                                                          globalAddress);
+        _capabilitiesRegistrar = new CapabilitiesRegistrar(_mockDispatcher,
+                                                           _mockDiscovery,
+                                                           _mockParticipantIdStorage,
+                                                           _dispatcherAddress,
+                                                           _mockMessageRouter,
+                                                           std::numeric_limits<std::int64_t>::max(),
+                                                           _pubManager,
+                                                           globalAddress);
     }
 
 protected:
@@ -281,110 +279,6 @@ TEST_F(CapabilitiesRegistrarTest, removeWithParticipantId)
 
     _capabilitiesRegistrar->removeAsync(_expectedParticipantId, onSuccess, onError);
     future.get();
-}
-
-TEST_F(CapabilitiesRegistrarTest, registerMultipleDispatchersAndRegisterCapability)
-{
-    auto mockDispatcher1 = std::make_shared<MockDispatcher>();
-    auto mockDispatcher2 = std::make_shared<MockDispatcher>();
-    types::ProviderQos testQos;
-    testQos.setPriority(100);
-
-    EXPECT_CALL(*_mockParticipantIdStorage,
-                getProviderParticipantId(_domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
-            .Times(1)
-            .WillOnce(Return(_expectedParticipantId));
-
-    auto mockFuture = std::make_shared<joynr::Future<void>>();
-    mockFuture->onSuccess();
-
-    EXPECT_CALL(*_mockDiscovery,
-                addAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(_domain)),
-                                   Property(&joynr::types::DiscoveryEntry::getInterfaceName,
-                                            Eq(MockProvider::INTERFACE_NAME())),
-                                   Property(&joynr::types::DiscoveryEntry::getParticipantId,
-                                            Eq(_expectedParticipantId)),
-                                   Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))),
-                             _,
-                             _,
-                             _,
-                             _,
-                             _,
-                             _))
-            .Times(1)
-            .WillOnce(DoAll(InvokeArgument<3>(), Return(mockFuture)));
-
-    EXPECT_CALL(*_mockDispatcher, addRequestCaller(_expectedParticipantId, _)).Times(1);
-    EXPECT_CALL(*mockDispatcher1, addRequestCaller(_expectedParticipantId, _)).Times(1);
-    EXPECT_CALL(*mockDispatcher2, addRequestCaller(_expectedParticipantId, _)).Times(1);
-
-    _capabilitiesRegistrar->addDispatcher(mockDispatcher1);
-    _capabilitiesRegistrar->addDispatcher(mockDispatcher2);
-
-    Future<void> future;
-    auto onSuccess = [&future]() { future.onSuccess(); };
-    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
-        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
-    };
-
-    std::string participantId =
-            _capabilitiesRegistrar->addAsync(_domain, _mockProvider, testQos, onSuccess, onError);
-    future.get();
-
-    EXPECT_EQ(_expectedParticipantId, participantId);
-}
-
-TEST_F(CapabilitiesRegistrarTest, removeDispatcher)
-{
-    auto mockDispatcher1 = std::make_shared<MockDispatcher>();
-    auto mockDispatcher2 = std::make_shared<MockDispatcher>();
-    types::ProviderQos testQos;
-    testQos.setPriority(100);
-
-    _capabilitiesRegistrar->addDispatcher(mockDispatcher1);
-    _capabilitiesRegistrar->addDispatcher(mockDispatcher2);
-
-    _capabilitiesRegistrar->removeDispatcher(mockDispatcher1);
-
-    EXPECT_CALL(*_mockParticipantIdStorage,
-                getProviderParticipantId(_domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
-            .Times(1)
-            .WillOnce(Return(_expectedParticipantId));
-
-    auto mockFuture = std::make_shared<joynr::Future<void>>();
-    mockFuture->onSuccess();
-    EXPECT_CALL(*_mockDiscovery,
-                addAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(_domain)),
-                                   Property(&joynr::types::DiscoveryEntry::getInterfaceName,
-                                            Eq(MockProvider::INTERFACE_NAME())),
-                                   Property(&joynr::types::DiscoveryEntry::getParticipantId,
-                                            Eq(_expectedParticipantId)),
-                                   Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos))),
-                             _,
-                             _,
-                             _,
-                             _,
-                             _,
-                             _))
-            .Times(1)
-            .WillOnce(DoAll(InvokeArgument<3>(), Return(mockFuture)));
-
-    EXPECT_CALL(*_mockDispatcher, addRequestCaller(_expectedParticipantId, _)).Times(1);
-    // mockDispatcher1 should not be used as it was removed
-    EXPECT_CALL(*mockDispatcher1, addRequestCaller(_expectedParticipantId, _)).Times(0);
-    EXPECT_CALL(*mockDispatcher2, addRequestCaller(_expectedParticipantId, _)).Times(1);
-
-    Future<void> future;
-    auto onSuccess = [&future]() { future.onSuccess(); };
-    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
-        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
-    };
-
-    std::string participantId =
-            _capabilitiesRegistrar->addAsync(_domain, _mockProvider, testQos, onSuccess, onError);
-    future.get();
-
-    EXPECT_EQ(_expectedParticipantId, participantId);
 }
 
 TEST_F(CapabilitiesRegistrarTest, addWithGbids)

@@ -169,8 +169,6 @@ protected:
     std::vector<std::shared_ptr<JoynrClusterControllerMqttConnectionData>>
             _mqttConnectionDataVector;
 
-    std::vector<std::shared_ptr<IDispatcher>> _dispatcherList;
-
     std::unique_ptr<Settings> _settings;
     LibjoynrSettings _libjoynrSettings;
     std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
