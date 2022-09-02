@@ -252,6 +252,32 @@
 					<argLine>-Xmx1024m -XX:MaxPermSize=256m ${surefireArgs}</argLine>
 				</configuration>
 			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets combine.children="append">
+						<fileset>
+							<directory>src/main/generated</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>src/test/generated</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${project.basedir}</directory>
+							<includes>
+								<include>joynr.properties</include>
+								<include>joynr_participantIds.properties</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
 
 			<!-- enforce dependency check -->
 			<!-- optionally this can be moved up, together with pluginManagement for this plugin -->

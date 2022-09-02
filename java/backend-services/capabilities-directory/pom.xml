@@ -191,21 +191,6 @@
 				</executions>
 			</plugin>
 
-			<!-- clean up should remove joynr.properties -->
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>${project.basedir}</directory>
-							<includes>
-								<include>joynr.properties</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
