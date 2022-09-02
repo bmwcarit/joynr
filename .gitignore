@@ -18,6 +18,7 @@ tools/generator/joynr-generator-npm/jars/
 tools/generator/joynr-generator-npm/src/*.js
 tools/generator/joynr-generator-npm/joynr-generator-npm-test/jars/
 tools/generator/joynr-generator-npm/joynr-generator-npm-test/generated/
+android/dependency-lock/**/src/
 
 # Generated files
 /**/src/main/generated*/
