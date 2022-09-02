@@ -195,20 +195,6 @@
 					</executions>
 				</plugin>
 				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>appassembler-maven-plugin</artifactId>
-					<configuration>
-						<repositoryLayout>flat</repositoryLayout>
-						<repositoryName>lib</repositoryName>
-						<programs>
-							<program>
-								<mainClass>io.joynr.dispatcher.Test</mainClass>
-								<name>Test</name>
-							</program>
-						</programs>
-					</configuration>
-				</plugin>
-				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
 					<executions>
