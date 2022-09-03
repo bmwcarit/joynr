@@ -77,7 +77,6 @@ RUN apk update \
     iproute2 \
     iputils \
     less \
-    libcurl \
     libtool \
     libuuid \
     libwebsockets-dev \

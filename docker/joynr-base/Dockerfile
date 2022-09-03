@@ -3,7 +3,7 @@ FROM fedora:36
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2022-05-02-15-00
+ENV REFRESHED_AT 2022-09-05-15-00
 
 ###################################################
 # create data directories and volumes
@@ -64,8 +64,6 @@ RUN dnf update -y \
     iputils \
     libasan \
     libasan-static \
-    libcurl \
-    libcurl-devel \
     libstdc++.i686 \
     libtool \
     libtsan \
