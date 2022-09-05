@@ -212,6 +212,8 @@ AccessController::AccessController(
 {
     _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
     _discoveryQos.setDiscoveryTimeout(60000);
+    _discoveryQosWithLocalOnlyScope = _discoveryQos;
+    _discoveryQosWithLocalOnlyScope.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
 }
 
 void AccessController::addParticipantToWhitelist(const std::string& participantId)
@@ -252,7 +254,8 @@ bool AccessController::needsHasProviderPermissionCheck() const
 
 void AccessController::hasConsumerPermission(
         std::shared_ptr<ImmutableMessage> message,
-        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
+        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback,
+        bool isLocalRecipient)
 {
     if (!needsHasConsumerPermissionCheck(*message)) {
         callback->hasConsumerPermission(IAccessController::Enum::YES);
@@ -298,11 +301,12 @@ void AccessController::hasConsumerPermission(
     };
 
     // Lookup participantId in the local Capabilities Directory
-    _localCapabilitiesDirectory->lookup(message->getRecipient(),
-                                        _discoveryQos,
-                                        std::vector<std::string>(),
-                                        std::move(lookupSuccessCallback),
-                                        std::move(lookupErrorCallback));
+    _localCapabilitiesDirectory->lookup(
+            message->getRecipient(),
+            (isLocalRecipient ? _discoveryQosWithLocalOnlyScope : _discoveryQos),
+            std::vector<std::string>(),
+            std::move(lookupSuccessCallback),
+            std::move(lookupErrorCallback));
 }
 
 bool AccessController::hasProviderPermission(const std::string& userId,

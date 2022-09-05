@@ -28,8 +28,9 @@ class MockAccessController : public joynr::IAccessController
 public:
     MockAccessController() = default;
 
-    MOCK_METHOD2(hasConsumerPermission, void(std::shared_ptr<joynr::ImmutableMessage> message,
-                                             std::shared_ptr<joynr::IAccessController::IHasConsumerPermissionCallback> callback));
+    MOCK_METHOD3(hasConsumerPermission, void(std::shared_ptr<joynr::ImmutableMessage> message,
+                                             std::shared_ptr<joynr::IAccessController::IHasConsumerPermissionCallback> callback,
+                                             bool isLocalRecipient));
 
     MOCK_METHOD4(hasProviderPermission, bool(const std::string& userId,
                                              joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,

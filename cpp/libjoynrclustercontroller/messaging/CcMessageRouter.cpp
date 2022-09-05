@@ -256,7 +256,13 @@ void CcMessageRouter::sendMessage(
                 destAddress,
                 _clusterControllerSettings.aclAudit(),
                 tryCount);
-        gotAccessController->hasConsumerPermission(message, callback);
+        auto& typeIdDestAddress = *destAddress.get();
+        bool isLocalRecipient =
+                (typeid(typeIdDestAddress) ==
+                         typeid(system::RoutingTypes::WebSocketClientAddress) ||
+                 typeid(typeIdDestAddress) == typeid(system::RoutingTypes::UdsClientAddress) ||
+                 typeid(typeIdDestAddress) == typeid(joynr::InProcessMessagingAddress));
+        gotAccessController->hasConsumerPermission(message, callback, isLocalRecipient);
     } else {
         // If this point is reached, the message can be sent without delay
         scheduleMessage(message, destAddress, tryCount);
