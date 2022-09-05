@@ -99,7 +99,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!-- Enforce failure is dependency check fails -->
+				<!-- Enforce failure if dependency check fails -->
 				<!-- Can optionally be moved up to parent pom -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
