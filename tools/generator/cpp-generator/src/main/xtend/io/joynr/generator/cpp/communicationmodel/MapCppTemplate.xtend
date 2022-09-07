@@ -45,7 +45,6 @@ class MapCppTemplate extends MapTemplate {
 '''
 «val typeName = type.joynrName»
 «warning()»
-«getDllExportIncludeStatement()»
 
 #include «type.getIncludeOf(generateVersion)»
 

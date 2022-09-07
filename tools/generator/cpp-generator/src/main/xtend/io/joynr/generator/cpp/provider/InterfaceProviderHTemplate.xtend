@@ -64,7 +64,6 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
 «ENDFOR»
 
 #include <memory>
-«getDllExportIncludeStatement()»
 
 «getNamespaceStarter(francaIntf, generateVersion)»
 
@@ -73,7 +72,7 @@ class InterfaceProviderHTemplate extends InterfaceTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «interfaceName»Provider : public virtual IJoynrProvider
+class «interfaceName»Provider : public virtual IJoynrProvider
 {
 
 public:

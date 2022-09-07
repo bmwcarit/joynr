@@ -6,12 +6,8 @@
 # Function to call the joynr generator:
 #   JoynrGenerator(OUTPUTPATH path
 #                  MODELPATH path
-#                  ROOT_GENERATOR file | GENERATION_LANGUAGE <cpp|java|javascript>
-#                  [TEMPLATES_DIR dir]
-#                  [TEMPLATES_ENCODING encoding]
-#                  [GENERATION_ID id]
+#                  GENERATION_LANGUAGE <cpp|java|javascript>
 #                  [OUTPUT_HEADER_PATH dir]
-#                  [INCLUDE_PREFIX prefix]
 #                  [ADD_VERSION_TO comment|package|none])
 
 include(CMakeParseArguments)
@@ -34,13 +30,8 @@ function(JoynrGenerator)
     set(singleValueArgs
         OUTPUTPATH
         MODELPATH
-        ROOT_GENERATOR
         GENERATION_LANGUAGE
-        TEMPLATES_DIR
-        TEMPLATES_ENCODING
-        GENERATION_ID
         OUTPUT_HEADER_PATH
-        INCLUDE_PREFIX
         ADD_VERSION_TO
     )
     cmake_parse_arguments(joynrGenerator "" "${singleValueArgs}" "" ${ARGN})
@@ -61,36 +52,15 @@ function(JoynrGenerator)
         list(APPEND joynrGeneratorCmd "-outputPath" "${joynrGenerator_ABSOLUTE_OUTPUTPATH}")
     endif()
 
-    if(joynrGenerator_ROOT_GENERATOR)
-        get_filename_component(joynrGenerator_ABSOLUTE_ROOT_GENERATOR ${joynrGenerator_ROOT_GENERATOR} ABSOLUTE)
-        list(APPEND joynrGeneratorCmd "-rootGenerator" "${joynrGenerator_ABSOLUTE_ROOT_GENERATOR}")
-    endif()
-
     if(joynrGenerator_GENERATION_LANGUAGE)
         list(APPEND joynrGeneratorCmd "-generationLanguage" "${joynrGenerator_GENERATION_LANGUAGE}")
     else()
         list(APPEND joynrGeneratorCmd "-generationLanguage" "cpp")
     endif()
 
-    if(joynrGenerator_TEMPLATES_DIR)
-        list(APPEND joynrGeneratorCmd "-templatesDir" "${joynrGenerator_TEMPLATES_DIR}")
-    endif()
-
-    if(joynrGenerator_TEMPLATES_ENCODING)
-        list(APPEND joynrGeneratorCmd "-templatesEncoding" "${joynrGenerator_TEMPLATES_ENCODING}")
-    endif()
-
-    if(joynrGenerator_GENERATION_ID)
-        list(APPEND joynrGeneratorCmd "-generationId" "${joynrGenerator_GENERATION_ID}")
-    endif()
-
     if(joynrGenerator_OUTPUT_HEADER_PATH)
         get_filename_component(joynrGenerator_ABSOLUTE_OUTPUT_HEADER_PATH ${joynrGenerator_OUTPUT_HEADER_PATH} ABSOLUTE)
         list(APPEND joynrGeneratorCmd "-outputHeaderPath" "${joynrGenerator_ABSOLUTE_OUTPUT_HEADER_PATH}")
-    endif()
-
-    if(joynrGenerator_INCLUDE_PREFIX)
-        list(APPEND joynrGeneratorCmd "-includePrefix" "${joynrGenerator_INCLUDE_PREFIX}")
     endif()
 
     if(joynrGenerator_ADD_VERSION_TO)

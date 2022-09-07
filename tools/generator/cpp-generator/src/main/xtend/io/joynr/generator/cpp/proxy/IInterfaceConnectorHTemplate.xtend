@@ -42,7 +42,6 @@ class IInterfaceConnectorHTemplate extends InterfaceTemplate {
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«getDllExportIncludeStatement()»
 «FOR parameterType: cppStdTypeUtil.getDataTypeIncludesFor(francaIntf, generateVersion)»
 	#include «parameterType»
 «ENDFOR»
@@ -66,7 +65,7 @@ namespace joynr {
 	class «forwardDecl»;
 «ENDFOR»
 
-class «getDllExportMacro()» I«interfaceName»Subscription{
+class I«interfaceName»Subscription{
 	/**
 	  * in  - subscriptionListener      std::shared_ptr to a SubscriptionListener which will receive the updates.
 	  * in  - subscriptionQos           SubscriptionQos parameters like interval and end date.
@@ -78,7 +77,7 @@ public:
 	«produceSubscribeUnsubscribeMethodDeclarations(francaIntf, true, generateVersion)»
 };
 
-class «getDllExportMacro()» I«interfaceName»Connector: virtual public I«interfaceName», virtual public I«interfaceName»Subscription{
+class I«interfaceName»Connector: virtual public I«interfaceName», virtual public I«interfaceName»Subscription{
 
 public:
 	~I«interfaceName»Connector() override = default;

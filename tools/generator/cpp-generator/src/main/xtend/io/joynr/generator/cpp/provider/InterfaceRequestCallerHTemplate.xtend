@@ -48,7 +48,6 @@ class InterfaceRequestCallerHTemplate extends InterfaceTemplate {
 #include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
-«getDllExportIncludeStatement()»
 #include "joynr/RequestCaller.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/Version.h"
@@ -70,7 +69,7 @@ class SubscriptionAttributeListener;
 class «interfaceName»Provider;
 
 /** @brief RequestCaller for interface «interfaceName» */
-class «getDllExportMacro()» «interfaceName»RequestCaller : public joynr::RequestCaller {
+class «interfaceName»RequestCaller : public joynr::RequestCaller {
 public:
 	/**
 	 * @brief parameterized constructor

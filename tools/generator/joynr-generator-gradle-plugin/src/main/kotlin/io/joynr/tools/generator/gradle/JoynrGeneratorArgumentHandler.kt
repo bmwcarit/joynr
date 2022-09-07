@@ -40,8 +40,6 @@ class JoynrGeneratorArgumentHandler(
     private var modelPath: Property<String>,
     private var outputPath: Property<String>,
     private var generationLanguage: Property<String>,
-    private var rootGenerator: Property<String>,
-    private var generationId: Property<String>,
     private var target: Property<String>,
     /**
      * kotlin.Boolean can not be used as property type here,
@@ -103,14 +101,12 @@ class JoynrGeneratorArgumentHandler(
             it.setGenerate(!doClean)
             it.modelPath = defaultModelPath
             it.outputPath = defaultOutputPath
-            it.rootGenerator = rootGenerator.orNull
             try {
                 it.setGenerationLanguage(defaultLanguage)
             } catch (e: IllegalArgumentException) {
                 logger.error("The specified generation language is not valid: $defaultLanguage")
                 e.printStackTrace()
             }
-            it.generationId = generationId.orNull
             if (addVersionTo.isPresent) {
                 it.setAddVersionTo(addVersionTo.get())
             }

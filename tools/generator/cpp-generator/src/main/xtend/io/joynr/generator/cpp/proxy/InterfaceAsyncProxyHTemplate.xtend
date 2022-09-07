@@ -46,7 +46,6 @@ class InterfaceAsyncProxyHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«className»Base.h"
 «IF hasFireAndForgetMethods(francaIntf)»
 	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»FireAndForgetProxy.h"
@@ -74,7 +73,7 @@ namespace exceptions
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «asyncClassName» :
+class «asyncClassName» :
 		virtual public «className»Base,
 		virtual public I«interfaceName»Async«IF hasFireAndForgetMethods(francaIntf)»,
 		virtual public «interfaceName»FireAndForgetProxy«ENDIF»

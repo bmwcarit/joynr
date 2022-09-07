@@ -63,7 +63,6 @@ class InterfaceHTemplate extends InterfaceTemplate{
 	#include «include»
 «ENDFOR»
 
-«getDllExportIncludeStatement()»
 
 #include <memory>
 #include <functional>
@@ -92,7 +91,7 @@ namespace exceptions
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» I«interfaceName»Base {
+class I«interfaceName»Base {
 public:
 	I«interfaceName»Base() = default;
 	virtual ~I«interfaceName»Base() = default;
@@ -116,7 +115,7 @@ public:
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» I«interfaceName»FireAndForget : virtual public I«interfaceName»Base {
+class I«interfaceName»FireAndForget : virtual public I«interfaceName»Base {
 public:
 	~I«interfaceName»FireAndForget() override = default;
 	«produceFireAndForgetMethodDeclarations(francaIntf,true, generateVersion)»
@@ -128,7 +127,7 @@ public:
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» I«interfaceName»Sync :
+class I«interfaceName»Sync :
 		virtual public I«interfaceName»Base«IF hasFireAndForgetMethods(francaIntf)»,
 		virtual public I«interfaceName»FireAndForget«ENDIF»
 {
@@ -144,7 +143,7 @@ public:
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» I«interfaceName»Async :
+class I«interfaceName»Async :
 		virtual public I«interfaceName»Base«IF hasFireAndForgetMethods(francaIntf)»,
 		virtual public I«interfaceName»FireAndForget«ENDIF»
 {
@@ -160,7 +159,7 @@ public:
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
+class I«interfaceName» : virtual public I«interfaceName»Sync, virtual public I«interfaceName»Async {
 public:
 	~I«interfaceName»() override = default;
 	«FOR attribute: getAttributes(francaIntf)»

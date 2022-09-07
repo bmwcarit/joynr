@@ -42,7 +42,6 @@ class InterfaceRequestInterpreterHTemplate extends InterfaceTemplate {
 #include <memory>
 
 #include "joynr/PrivateCopyAssign.h"
-«getDllExportIncludeStatement()»
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/Logger.h"
 
@@ -64,7 +63,7 @@ class JoynrException;
 «getNamespaceStarter(francaIntf, generateVersion)»
 
 /** @brief RequestInterpreter class for interface «interfaceName» */
-class «getDllExportMacro()» «interfaceName»RequestInterpreter: public joynr::IRequestInterpreter {
+class «interfaceName»RequestInterpreter: public joynr::IRequestInterpreter {
 public:
 	/** @brief Default constructor */
 	«interfaceName»RequestInterpreter() = default;

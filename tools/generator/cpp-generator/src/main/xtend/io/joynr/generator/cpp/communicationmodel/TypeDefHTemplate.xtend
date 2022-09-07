@@ -45,7 +45,6 @@ class TypeDefHTemplate implements TypeDefTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«getDllExportIncludeStatement()»
 
 // include required datatype headers.
 «val typeDependencies = type.typeDependencies»

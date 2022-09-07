@@ -99,8 +99,6 @@ public abstract class AbstractJoynrCppGeneratorTest {
                                                                                       .to(generateVersion);
                                                                         bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_NOVERSIONGENERATION_COMMENT))
                                                                                       .to(useComment);
-                                                                        bindConstant().annotatedWith(Names.named("generationId"))
-                                                                                      .to("5");
                                                                         bindConstant().annotatedWith(Names.named("generateProxyCode"))
                                                                                       .to(arguments.getGenerateProxyCode());
                                                                         bindConstant().annotatedWith(Names.named("generateProviderCode"))

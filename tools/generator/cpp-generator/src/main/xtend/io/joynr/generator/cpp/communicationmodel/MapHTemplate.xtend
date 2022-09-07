@@ -51,7 +51,6 @@ class MapHTemplate extends MapTemplate {
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«getDllExportIncludeStatement()»
 
 #include <map>
 #include "joynr/HashUtil.h"

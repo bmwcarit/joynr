@@ -49,7 +49,6 @@ class EnumHTemplate extends EnumTemplate {
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«getDllExportIncludeStatement()»
 #include <cstdint>
 #include <ostream>
 #include <string>
@@ -69,7 +68,7 @@ class EnumHTemplate extends EnumTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-struct «getDllExportMacro()»«typeName» : public joynr::exceptions::ApplicationExceptionError {
+struct «typeName» : public joynr::exceptions::ApplicationExceptionError {
 	«IF type.hasExtendsDeclaration»
 		// This enum inherits enumeration values from «type.extendedType.getTypeName(generateVersion)».
 	«ENDIF»

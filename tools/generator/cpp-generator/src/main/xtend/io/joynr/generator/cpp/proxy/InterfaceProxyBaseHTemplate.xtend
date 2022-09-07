@@ -49,7 +49,6 @@ class InterfaceProxyBaseHTemplate extends InterfaceTemplate {
 «ENDFOR»
 #include <memory>
 
-«getDllExportIncludeStatement()»
 #include "joynr/ProxyBase.h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName»Connector.h"
 
@@ -67,7 +66,7 @@ namespace types
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::I«interfaceName»Subscription {
+class «className»: virtual public joynr::ProxyBase, virtual public «getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::I«interfaceName»Subscription {
 public:
 	/**
 	 * @brief Parameterized constructor

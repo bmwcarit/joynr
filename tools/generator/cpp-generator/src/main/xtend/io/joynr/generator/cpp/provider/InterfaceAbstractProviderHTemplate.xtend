@@ -53,7 +53,6 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 	#include «parameterType»
 «ENDFOR»
 
-«getDllExportIncludeStatement()»
 
 «getNamespaceStarter(francaIntf, generateVersion)»
 
@@ -65,7 +64,7 @@ class InterfaceAbstractProviderHTemplate extends InterfaceTemplate {
 «ENDFOR»
 
 /** @brief Abstract provider class for interface «interfaceName» */
-class «getDllExportMacro()» «interfaceName»AbstractProvider :
+class «interfaceName»AbstractProvider :
 		public «getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::«interfaceName»Provider,
 		public joynr::AbstractJoynrProvider
 {

@@ -54,8 +54,6 @@ public class InvocationArguments {
 
     private String outputPath = null;
 
-    private String generationId = null;
-
     private Map<String, String> parameter;
 
     private boolean generate = true;
@@ -109,8 +107,6 @@ public class InvocationArguments {
         usageString.append("      Required: \n");
         usageString.append("       " + dumpModelPathDefinition() + "\n");
         usageString.append("       " + dumpOutputPathDefinition() + "\n");
-        usageString.append("      One of:\n");
-        usageString.append("       " + dumpRootGeneratorDefinition() + " OR\n");
         usageString.append("       " + dumpGenerationLanguageDefinition() + "\n");
         usageString.append("      Optional: \n");
         usageString.append("       " + dumpVersionDefinition() + "\n");
@@ -132,9 +128,7 @@ public class InvocationArguments {
         usageString.append("       -target proxy|provider|both:\n");
         usageString.append("         specify which code shall be generated.\n");
         usageString.append("      Optional, C++ only: \n");
-        usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
-        usageString.append("       -includePrefix <prefix to use in include statements>\n");
         return usageString.toString();
     }
 
@@ -144,10 +138,6 @@ public class InvocationArguments {
 
     private static String dumpModelPathDefinition() {
         return "-modelPath <path to model>";
-    }
-
-    private static String dumpRootGeneratorDefinition() {
-        return "-rootGenerator <full name of template root>";
     }
 
     private static String dumpVersionDefinition() {
@@ -171,9 +161,6 @@ public class InvocationArguments {
             } else if (args[i].equalsIgnoreCase("-addVersionTo")) {
                 setAddVersionTo(args[i + 1]);
                 i++;
-            } else if (args[i].equalsIgnoreCase("-generationId")) {
-                setGenerationId(args[i + 1].replace("\"", ""));
-                i++;
             } else if (args[i].equalsIgnoreCase("-generationLanguage")) {
                 setGenerationLanguage(args[i + 1].replace("\"", ""));
                 i++;
@@ -188,9 +175,6 @@ public class InvocationArguments {
                 i++;
             } else if (args[i].equalsIgnoreCase("-outputPath")) {
                 setOutputPath(new File(args[i + 1]).getAbsolutePath());
-                i++;
-            } else if (args[i].equalsIgnoreCase("-rootGenerator")) {
-                setRootGenerator(args[i + 1].replace("\"", ""));
                 i++;
             } else if (args[i].equalsIgnoreCase("-requireJSSupport")) {
                 setParameterElement("requireJSSupport", args[i + 1].replace("\"", ""));
@@ -278,8 +262,8 @@ public class InvocationArguments {
             errorMessages.append(newLine);
         }
         if (rootGenerator == null) {
-            errorMessages.append("- Root generator could not be found. Please invoke the generator with the following argument: "
-                    + dumpRootGeneratorDefinition() + " OR " + dumpGenerationLanguageDefinition());
+            errorMessages.append("- The generation language could not be found. Please invoke the generator with the following argument: "
+                    + dumpGenerationLanguageDefinition());
             errorMessages.append(newLine);
         }
         if (addVersionTo != null && !("package".equalsIgnoreCase(addVersionTo) || "none".equalsIgnoreCase(addVersionTo)
@@ -307,20 +291,14 @@ public class InvocationArguments {
         return rootGenerator;
     }
 
-    public void setRootGenerator(String rootGenerator) {
-        this.rootGenerator = rootGenerator;
-    }
-
     public void setGenerationLanguage(String generationLanguage) {
-        if (rootGenerator == null && generationLanguage != null) {
-            rootGenerator = languages.get(generationLanguage);
-            if (rootGenerator == null) {
-                throw new IllegalArgumentException("The generation language \"" + generationLanguage
-                        + "\" could not be found in the configuration. The following languages have been found: "
-                        + getLanguages(", ")
-                        + ". Be sure to have the respective generation templates included in your dependencies. The package of generator templates shall start with \"io\", \"com\", \"org\" or \"de\""
-                        + dumpCorrectInvocation());
-            }
+        rootGenerator = languages.get(generationLanguage);
+        if (rootGenerator == null) {
+            throw new IllegalArgumentException("The generation language \"" + generationLanguage
+                    + "\" could not be found in the configuration. The following languages have been found: "
+                    + getLanguages(", ")
+                    + ". Be sure to have the respective generation templates included in your dependencies. The package of generator templates shall start with \"io\", \"com\", \"org\" or \"de\""
+                    + dumpCorrectInvocation());
         }
     }
 
@@ -346,19 +324,10 @@ public class InvocationArguments {
         this.parameter = parameter;
     }
 
-    public String getGenerationId() {
-        return generationId;
-    }
-
-    public void setGenerationId(String generationId) {
-        this.generationId = generationId;
-    }
-
     public int getHashCodeForParameterCombination() {
         StringBuilder sb = new StringBuilder();
         sb.append(getModelPath());
         sb.append(getRootGenerator());
-        sb.append(generationId);
         sb.append(addVersionTo);
         sb.append(outputPath);
         if (parameter != null) {

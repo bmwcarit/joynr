@@ -186,6 +186,6 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 	}
 
 	override supportedParameters() {
-		new HashSet(Arrays.asList("jee"));
+		new HashSet(Arrays.asList("jee", "ignoreInvalidNullClassMembers"));
 	}
 }

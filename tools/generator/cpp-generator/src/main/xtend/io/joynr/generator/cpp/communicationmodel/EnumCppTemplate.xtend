@@ -45,7 +45,6 @@ class EnumCppTemplate extends EnumTemplate {
 '''
 «val typeName = type.joynrName»
 «warning»
-«getDllExportIncludeStatement()»
 
 #include «type.getIncludeOf(generateVersion)»
 #include <sstream>
