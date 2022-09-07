@@ -36,7 +36,7 @@
 				<groupId>io.joynr.tools.generator</groupId>
 				<artifactId>joynr-generator-maven-plugin</artifactId>
 				<configuration>
-					<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
+					<generationLanguage>cpp</generationLanguage>
 				</configuration>
 				<executions>
 					<execution>

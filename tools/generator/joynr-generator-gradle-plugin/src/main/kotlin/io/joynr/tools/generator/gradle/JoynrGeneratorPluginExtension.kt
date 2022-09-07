@@ -43,11 +43,6 @@ open class JoynrGeneratorPluginExtension(project: Project) {
     val generationLanguage = project.objects.property(String::class.java)!!
 
     /**
-     * Full name of the root generator (optional).
-     */
-    val rootGenerator = project.objects.property(String::class.java)!!
-
-    /**
      * Sets the generation ID (optional).
      */
     val generationId = project.objects.property(String::class.java)!!

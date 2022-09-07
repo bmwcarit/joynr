@@ -37,7 +37,7 @@
 				<artifactId>joynr-generator-maven-plugin</artifactId>
 				<configuration>
 					<model>${basedir}/../../basemodel/src/main/franca</model>
-					<rootGenerator>io.joynr.generator.cpp.JoynrCppGenerator</rootGenerator>
+					<generationLanguage>cpp</generationLanguage>
 					<outputPath>${basedir}/basemodel/generated</outputPath>
 				</configuration>
 				<executions>

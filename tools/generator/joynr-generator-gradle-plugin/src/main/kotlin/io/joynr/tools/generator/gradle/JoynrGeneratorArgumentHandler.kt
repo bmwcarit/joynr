@@ -40,7 +40,6 @@ class JoynrGeneratorArgumentHandler(
     private var modelPath: Property<String>,
     private var outputPath: Property<String>,
     private var generationLanguage: Property<String>,
-    private var rootGenerator: Property<String>,
     private var generationId: Property<String>,
     private var target: Property<String>,
     /**
@@ -103,7 +102,6 @@ class JoynrGeneratorArgumentHandler(
             it.setGenerate(!doClean)
             it.modelPath = defaultModelPath
             it.outputPath = defaultOutputPath
-            it.rootGenerator = rootGenerator.orNull
             try {
                 it.setGenerationLanguage(defaultLanguage)
             } catch (e: IllegalArgumentException) {

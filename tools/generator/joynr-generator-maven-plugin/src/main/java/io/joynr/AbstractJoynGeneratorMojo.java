@@ -51,12 +51,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected String model;
 
     /**
-     * Properties full name of the root generator.
-     * @parameter property="joynr.generator.rootGenerator"
-     */
-    protected String rootGenerator;
-
-    /**
      * Properties the generation language
      * @parameter property="joynr.generator.generationLanguage"
      */
@@ -119,7 +113,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         }
         getLog().info("model: " + (model == null ? "not specified" : model));
         getLog().info("generationLanguage " + (generationLanguage == null ? "not specified" : generationLanguage));
-        getLog().info("rootGenerator " + (rootGenerator == null ? "not specified" : rootGenerator));
         getLog().info("generationId " + (generationId == null ? "not specified" : generationId));
         getLog().info("outputPath " + (outputPath == null ? "not specified" : outputPath));
         getLog().info("addVersionTo " + (addVersionTo == null ? "not specified" : addVersionTo));
@@ -148,7 +141,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected InvocationArguments createInvocationArguments() throws MojoExecutionException {
         InvocationArguments arguments = new InvocationArguments();
         arguments.setModelPath(model);
-        arguments.setRootGenerator(rootGenerator);
         arguments.setGenerationLanguage(generationLanguage);
         arguments.setGenerationId(generationId);
         arguments.setOutputPath(outputPath);

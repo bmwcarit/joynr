@@ -24,10 +24,8 @@ have to be provided in the Maven configuration:
                 <model><PATH_TO_MODEL_FILE_OR_DIRECTORY></model>
                 <!-- choose the generation language
                         (see section "Choosing the generation language"):
-                    either by specifying <generationLanguage>
-                    or <rootGenerator> -->
+                    -->
                 <generationLanguage><GENERATION_LANGUAGE></generationLanguage>
-                <rootGenerator><FULL_NAME_OF_ROOT_GENERATOR></rootGenerator>
                 <!-- specify the output directory -->
                 <outputPath><PATH_TO_OUTPUT_DIRECTORY></outputPath>
                 <!-- optional parameters -->
@@ -133,7 +131,6 @@ configuration](#maven-configuration) for details):
    fall back to `app/build/generated/source/fidl/`).
 * `generationLanguage`: The language to be used for generator tool selection.
   The default value is `java`.
-* `rootGenerator`
 * `generationId`
 * `skip`
 * `addVersionTo` specify how the major version of Franca interfaces and typecollections shall
@@ -250,13 +247,6 @@ section (see above):
 * for **cpp**: the artifact `io.joynr.tools.generator: cpp-generator`
 * for **javascript**: the artifact `io.joynr.tools.generator: js-generator`
 
-Alternatively, the generation language can also be chosen by the setting `rootGenerator`.
-Possible values of **&lt;FULL_NAME_OF_ROOT_GENERATOR&gt;** are
-* for **java**: `io.joynr.generator.JoynrJavaGenerator`,
-* for **cpp**: `io.joynr.generator.cpp.JoynrCppGenerator`,
-* for **javascript**: `io.joynr.generator.js.JoynrJSGenerator`
-
-
 ## Providing the Franca model files
 The model (Franca files) can either be provided by a **relative path to a file on the
 filesystem** or a **relative path to a directory on the filesystem** or a **relative path
@@ -322,8 +312,6 @@ to *gen*.
     Required:
       -modelpath <path to model>
       -outputPath <path to output directory>
-    Also one of:
-      -rootGenerator <full name of template root> OR
       -generationLanguage <cpp|java|javascript>
     Optional:
       -addVersionTo <comment, package, none>
@@ -349,7 +337,6 @@ to *gen*.
     Optional, C++ only:
       -generationId <name of what is being generated>
       -outputHeaderPath <path to directory containing header files>
-      -includePrefix <prefix to use in include statements>
     Optional, JS only:
       -requireJSSupport <true, false>
         true: generate exports for all require mechanisms such as requirejs, browser and node
