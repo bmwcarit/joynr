@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>dependency-lock</artifactId>
-		<version>1.21.4-SNAPSHOT</version>
+		<version>1.21.4</version>
 		<relativePath>../dependency-lock/pom.xml</relativePath>
 	</parent>
 
