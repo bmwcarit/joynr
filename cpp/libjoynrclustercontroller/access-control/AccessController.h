@@ -52,7 +52,8 @@ public:
     //---IAccessController interface -------------------------------------------
 
     void hasConsumerPermission(std::shared_ptr<ImmutableMessage> message,
-                               std::shared_ptr<IHasConsumerPermissionCallback> callback) override;
+                               std::shared_ptr<IHasConsumerPermissionCallback> callback,
+                               bool isLocalRecipient) override;
 
     bool hasProviderPermission(const std::string& userId,
                                infrastructure::DacTypes::TrustLevel::Enum trustLevel,
@@ -72,6 +73,7 @@ private:
     std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
     std::vector<std::string> _whitelistParticipantIds;
     types::DiscoveryQos _discoveryQos;
+    types::DiscoveryQos _discoveryQosWithLocalOnlyScope;
 
     ADD_LOGGER(AccessController)
 };

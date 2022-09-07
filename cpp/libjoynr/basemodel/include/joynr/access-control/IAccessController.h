@@ -65,10 +65,11 @@ public:
      *
      * @param message The message to check
      * @param callback An object that will be called back with the result
+     * @param isLocalRecipient true in case of local destination address, false otherwise
      */
-    virtual void hasConsumerPermission(
-            std::shared_ptr<ImmutableMessage> message,
-            std::shared_ptr<IHasConsumerPermissionCallback> callback) = 0;
+    virtual void hasConsumerPermission(std::shared_ptr<ImmutableMessage> message,
+                                       std::shared_ptr<IHasConsumerPermissionCallback> callback,
+                                       bool isLocalRecipient) = 0;
 
     /**
      * Does the provider with given userId and given trust level, have permission to expose given

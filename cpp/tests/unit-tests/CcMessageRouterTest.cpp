@@ -712,15 +712,19 @@ TEST_F(CcMessageRouterTest, removeUnreachableMulticastReceivers)
 
 void invokeConsumerPermissionCallbackWithPermissionYes(
         std::shared_ptr<ImmutableMessage> /*message*/,
-        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
+        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback,
+        bool isLocalRecipient)
 {
+    std::ignore = isLocalRecipient;
     callback->hasConsumerPermission(IAccessController::Enum::YES);
 }
 
 void invokeConsumerPermissionCallbackWithPermissionRetry(
         std::shared_ptr<ImmutableMessage> /*message*/,
-        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback)
+        std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> callback,
+        bool isLocalRecipient)
 {
+    std::ignore = isLocalRecipient;
     callback->hasConsumerPermission(IAccessController::Enum::RETRY);
 }
 
@@ -728,9 +732,9 @@ TEST_F(CcMessageRouterTest,
        routeMulticastMessageFromWebSocketProvider_withAccessController_multicastMsgIsSentToAllMulticastReceivers_webSocketClientAddresses)
 {
     auto mockAccessController = std::make_shared<MockAccessController>();
-    ON_CALL(*mockAccessController, hasConsumerPermission(_, _))
+    ON_CALL(*mockAccessController, hasConsumerPermission(_, _, _))
             .WillByDefault(Invoke(invokeConsumerPermissionCallbackWithPermissionYes));
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _)).Times(AtLeast(1));
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _, _)).Times(AtLeast(1));
     _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
     bool isGloballyVisible = true;
@@ -743,9 +747,9 @@ TEST_F(CcMessageRouterTest,
        routeMulticastMessageFromUdsProvider_withAccessController_multicastMsgIsSentToAllMulticastReceivers_udsClientAddresses)
 {
     auto mockAccessController = std::make_shared<MockAccessController>();
-    ON_CALL(*mockAccessController, hasConsumerPermission(_, _))
+    ON_CALL(*mockAccessController, hasConsumerPermission(_, _, _))
             .WillByDefault(Invoke(invokeConsumerPermissionCallbackWithPermissionYes));
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _)).Times(AtLeast(1));
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _, _)).Times(AtLeast(1));
     _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
 
     bool isGloballyVisible = true;
@@ -1114,11 +1118,11 @@ TEST_F(CcMessageRouterTest, accessControllerIsCalledForQueuedMsgs)
     this->_messageRouter->route(immutableMessage);
 
     EXPECT_EQ(1, _messageQueue->getQueueLength());
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _)).Times(0);
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _, _)).Times(0);
 
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(Eq(immutableMessage), _));
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(Eq(immutableMessage), _, _));
 
     const bool isSticky = false;
     const std::int64_t expiryDate = std::numeric_limits<std::int64_t>::max();
@@ -1152,38 +1156,38 @@ TEST_F(CcMessageRouterTest, testAccessControlRetryWithDelay)
 
     std::shared_ptr<ImmutableMessage> immutableMessage = localMutableMessage->getImmutableMessage();
 
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _, _))
             .WillOnce(Invoke(invokeConsumerPermissionCallbackWithPermissionRetry));
 
     this->_messageRouter->route(immutableMessage);
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
     // 1st retry
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _)).Times(0);
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _, _)).Times(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(1 * _sendMsgRetryInterval - 200));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _, _))
             .WillOnce(DoAll(ReleaseSemaphore(&semaphore),Invoke(invokeConsumerPermissionCallbackWithPermissionRetry)));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_sendMsgRetryInterval)));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
     // 2nd retry
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _)).Times(0);
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _, _)).Times(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(2 * _sendMsgRetryInterval - 200));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _, _))
             .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Invoke(invokeConsumerPermissionCallbackWithPermissionRetry)));
     EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(_sendMsgRetryInterval)));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
 
     // 3rd retry (stub.transmit has not been called so far)
     EXPECT_CALL(*mockMessagingStub, transmit(immutableMessage, _)).Times(0);
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _)).Times(0);
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _, _)).Times(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(4 * _sendMsgRetryInterval - 200));
     Mock::VerifyAndClearExpectations(mockAccessController.get());
     Mock::VerifyAndClearExpectations(mockMessagingStub.get());
-    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _))
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(immutableMessage, _, _))
             .WillOnce(DoAll(ReleaseSemaphore(&semaphore), Invoke(invokeConsumerPermissionCallbackWithPermissionYes)));
     EXPECT_CALL(*mockMessagingStub, transmit(immutableMessage, _)).WillOnce(ReleaseSemaphore(&semaphore));
 
@@ -2053,4 +2057,70 @@ TEST_F(CcMessageRouterTest, routingTableRemoveEntriesWorksForUds)
 
     // providerParticipantId3 should still be around
     checkResolveNextHop(providerParticipantId3, true);
+}
+
+TEST_F(CcMessageRouterTest, accessControllerIsCalledWithCorrectIsLocalRecipient)
+{
+    const std::string providerParticipantId1("providerParticipantId1");
+    const std::string providerParticipantId2("providerParticipantId2");
+    const std::string providerParticipantId3("providerParticipantId3");
+    const std::string providerParticipantId4("providerParticipantId4");
+
+    auto providerAddress1 =
+            std::make_shared<const joynr::system::RoutingTypes::WebSocketClientAddress>();
+    auto providerAddress2 =
+            std::make_shared<const joynr::system::RoutingTypes::UdsClientAddress>();
+    auto providerAddress3 =
+            std::make_shared<const joynr::InProcessMessagingAddress>();
+    auto providerAddress4 =
+            std::make_shared<const joynr::system::RoutingTypes::MqttAddress>("testGbid", "testTopic");
+
+    const bool isSticky = false;
+    const std::int64_t expiryDate = std::numeric_limits<std::int64_t>::max();
+    _messageRouter->addNextHop(
+            providerParticipantId1, providerAddress1, _DEFAULT_IS_GLOBALLY_VISIBLE,
+            expiryDate, isSticky);
+    _messageRouter->addNextHop(
+            providerParticipantId2, providerAddress2, _DEFAULT_IS_GLOBALLY_VISIBLE,
+            expiryDate, isSticky);
+    _messageRouter->addNextHop(
+            providerParticipantId3, providerAddress3, _DEFAULT_IS_GLOBALLY_VISIBLE,
+            expiryDate, isSticky);
+    _messageRouter->addNextHop(
+            providerParticipantId4, providerAddress4, _DEFAULT_IS_GLOBALLY_VISIBLE,
+            expiryDate, isSticky);
+
+    // setup the messages
+    auto localMutableMessage = std::make_shared<MutableMessage>();
+    localMutableMessage->setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
+    localMutableMessage->setSender("sender");
+    const TimePoint nowTime = TimePoint::now();
+    localMutableMessage->setExpiryDate(nowTime + std::chrono::milliseconds(16000));
+
+    localMutableMessage->setRecipient(providerParticipantId1);
+    std::shared_ptr<ImmutableMessage> immutableMessage1 = localMutableMessage->getImmutableMessage();
+    localMutableMessage->setRecipient(providerParticipantId2);
+    std::shared_ptr<ImmutableMessage> immutableMessage2 = localMutableMessage->getImmutableMessage();
+    localMutableMessage->setRecipient(providerParticipantId3);
+    std::shared_ptr<ImmutableMessage> immutableMessage3 = localMutableMessage->getImmutableMessage();
+    localMutableMessage->setRecipient(providerParticipantId4);
+    std::shared_ptr<ImmutableMessage> immutableMessage4 = localMutableMessage->getImmutableMessage();
+
+    auto mockAccessController = std::make_shared<MockAccessController>();
+
+    const bool isLocalRecipient = true;
+    // handle the rest
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(_, _, _)).Times(0);
+    // unless handled by specifc expectations
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(Eq(immutableMessage1), _, isLocalRecipient)).Times(1);
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(Eq(immutableMessage2), _, isLocalRecipient)).Times(1);
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(Eq(immutableMessage3), _, isLocalRecipient)).Times(1);
+    EXPECT_CALL(*mockAccessController, hasConsumerPermission(Eq(immutableMessage4), _, !isLocalRecipient)).Times(1);
+
+    _messageRouter->setAccessController(util::as_weak_ptr(mockAccessController));
+
+    this->_messageRouter->route(immutableMessage1);
+    this->_messageRouter->route(immutableMessage2);
+    this->_messageRouter->route(immutableMessage3);
+    this->_messageRouter->route(immutableMessage4);
 }
