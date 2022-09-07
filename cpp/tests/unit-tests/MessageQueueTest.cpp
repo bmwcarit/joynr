@@ -273,6 +273,45 @@ TEST_F(MessageQueueWithLimitTest, queueLimitExceeded_droppedMessagesReturned)
     EXPECT_EQ(messageQueue.getQueueLength(), messageQueueLimit);
 }
 
+TEST_F(MessageQueueWithLimitTest, messageQueueLimitBytes_droppedMessagesReturned)
+{
+    constexpr std::uint64_t messageQueueLimit = 5;
+    constexpr std::uint64_t messageQueueLimitBytes = 200;
+    MessageQueue<std::string> messageQueue(messageQueueLimit, 0, 200);
+    const int messageCount = 2;
+
+    auto now = TimePoint::now();
+    const TimePoint expiryDate[messageCount] = {now + 10000, now + 10000};
+    const std::string recipient[messageCount] = {"TEST0", "TEST1"};
+
+    std::shared_ptr<ImmutableMessage> immutableMessages[messageCount];
+
+    immutableMessages[0] = this->createMessage(expiryDate[0], recipient[0], "", "rq");
+    immutableMessages[1] =
+            this->createMessage(expiryDate[1],
+                                recipient[1],
+                                "{\"methodName\":\"method\", "
+                                "\"paramDatatypes\":[\"param1\"],\"requestReplyId\":\"123\"}",
+                                "rq");
+
+    auto droppedMessages =
+            messageQueue.queueMessage(immutableMessages[0]->getRecipient(), immutableMessages[0]);
+
+    EXPECT_EQ(0, droppedMessages.size());
+
+    droppedMessages =
+            messageQueue.queueMessage(immutableMessages[1]->getRecipient(), immutableMessages[1]);
+
+    const size_t size1 = immutableMessages[0]->getMessageSize();
+    const size_t size2 = immutableMessages[1]->getMessageSize();
+    EXPECT_LT(size1, messageQueueLimitBytes);
+    EXPECT_GT(size2, messageQueueLimitBytes);
+
+    EXPECT_EQ(1, droppedMessages.size());
+    EXPECT_EQ(1, messageQueue.getQueueLength());
+    EXPECT_EQ(recipient[1], droppedMessages[0]->getRecipient());
+}
+
 TEST_F(MessageQueueWithLimitTest, testPerKeyQueueLimit_lowestTtlRemoved)
 {
     const std::string recipient1("recipient1");

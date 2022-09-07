@@ -97,6 +97,11 @@ public:
             ensureFreeQueueSlot(item._key, droppedMessagesToBeReplied);
             if (!ensureFreeQueueBytes(
                         item._message->getMessageSize(), droppedMessagesToBeReplied)) {
+
+                if (item._message->getMessageSize() > _messageQueueLimitBytes) {
+                    droppedMessagesToBeReplied.push_front(item._message);
+                }
+
                 JOYNR_LOG_WARN(logger(),
                                "queueMessage: messageSize exceeds messageQueueLimitBytes {}, "
                                "discarding message {}; queueSize(bytes) = {}, "
