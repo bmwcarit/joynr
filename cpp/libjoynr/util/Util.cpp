@@ -80,6 +80,7 @@ bool fileExists(const std::string& fileName)
     return fileToTest.good();
 }
 
+//  __attribute__((no_sanitize("undefined")))
 void writeToFile(const std::string& fileName,
                  const std::string& strToSave,
                  std::ios_base::openmode mode,
@@ -235,6 +236,10 @@ std::string extractParticipantIdFromMulticastId(const std::string& multicastId)
 
 void validatePartitions(const std::vector<std::string>& partitions, bool allowWildcards)
 {
+    if (partitions.empty()) {
+        return;
+    }
+
     static const std::regex patternRegex("^[a-zA-Z0-9]+$");
     const std::vector<std::string>::const_iterator lastPartition = --partitions.cend();
     for (auto partition = partitions.cbegin(); partition != partitions.cend(); ++partition) {
