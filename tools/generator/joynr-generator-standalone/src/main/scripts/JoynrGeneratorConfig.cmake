@@ -7,7 +7,6 @@
 #   JoynrGenerator(OUTPUTPATH path
 #                  MODELPATH path
 #                  GENERATION_LANGUAGE <cpp|java|javascript>
-#                  [GENERATION_ID id]
 #                  [OUTPUT_HEADER_PATH dir]
 #                  [ADD_VERSION_TO comment|package|none])
 
@@ -32,7 +31,6 @@ function(JoynrGenerator)
         OUTPUTPATH
         MODELPATH
         GENERATION_LANGUAGE
-        GENERATION_ID
         OUTPUT_HEADER_PATH
         ADD_VERSION_TO
     )
@@ -58,10 +56,6 @@ function(JoynrGenerator)
         list(APPEND joynrGeneratorCmd "-generationLanguage" "${joynrGenerator_GENERATION_LANGUAGE}")
     else()
         list(APPEND joynrGeneratorCmd "-generationLanguage" "cpp")
-    endif()
-
-    if(joynrGenerator_GENERATION_ID)
-        list(APPEND joynrGeneratorCmd "-generationId" "${joynrGenerator_GENERATION_ID}")
     endif()
 
     if(joynrGenerator_OUTPUT_HEADER_PATH)

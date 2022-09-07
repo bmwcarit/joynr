@@ -54,7 +54,6 @@ class DefaultInterfaceProviderHTemplate extends InterfaceTemplate{
 
 #include <functional>
 
-«getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName».h"
 #include "joynr/Logger.h"
 
@@ -66,7 +65,7 @@ class DefaultInterfaceProviderHTemplate extends InterfaceTemplate{
 
 «getNamespaceStarter(francaIntf, generateVersion)»
 
-class «getDllExportMacro()» Default«interfaceName»Provider : public «getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::«interfaceName»AbstractProvider {
+class Default«interfaceName»Provider : public «getPackagePathWithJoynrPrefix(francaIntf, "::", generateVersion)»::«interfaceName»AbstractProvider {
 
 public:
 	Default«interfaceName»Provider();

@@ -60,13 +60,6 @@ public class Executor {
             @Override
             protected void configure() {
                 bind(IFileSystemAccess.class).to(JavaIoFileSystemAccess.class);
-                String generationId = arguments.getGenerationId();
-                if (generationId != null) {
-                    bindConstant().annotatedWith(Names.named("generationId")).to(generationId);
-                } else {
-                    // Guice does not allow null binding - use an empty string to show there is no generationId
-                    bindConstant().annotatedWith(Names.named("generationId")).to("");
-                }
                 bindConstant().annotatedWith(Names.named("generateProxyCode")).to(arguments.getGenerateProxyCode());
                 bindConstant().annotatedWith(Names.named("generateProviderCode"))
                               .to(arguments.getGenerateProviderCode());

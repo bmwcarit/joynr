@@ -54,8 +54,6 @@ public class InvocationArguments {
 
     private String outputPath = null;
 
-    private String generationId = null;
-
     private Map<String, String> parameter;
 
     private boolean generate = true;
@@ -130,7 +128,6 @@ public class InvocationArguments {
         usageString.append("       -target proxy|provider|both:\n");
         usageString.append("         specify which code shall be generated.\n");
         usageString.append("      Optional, C++ only: \n");
-        usageString.append("       -generationId <name of what is being generated>\n");
         usageString.append("       -outputHeaderPath <path to directory containing header files>\n");
         return usageString.toString();
     }
@@ -163,9 +160,6 @@ public class InvocationArguments {
                 i++;
             } else if (args[i].equalsIgnoreCase("-addVersionTo")) {
                 setAddVersionTo(args[i + 1]);
-                i++;
-            } else if (args[i].equalsIgnoreCase("-generationId")) {
-                setGenerationId(args[i + 1].replace("\"", ""));
                 i++;
             } else if (args[i].equalsIgnoreCase("-generationLanguage")) {
                 setGenerationLanguage(args[i + 1].replace("\"", ""));
@@ -330,19 +324,10 @@ public class InvocationArguments {
         this.parameter = parameter;
     }
 
-    public String getGenerationId() {
-        return generationId;
-    }
-
-    public void setGenerationId(String generationId) {
-        this.generationId = generationId;
-    }
-
     public int getHashCodeForParameterCombination() {
         StringBuilder sb = new StringBuilder();
         sb.append(getModelPath());
         sb.append(getRootGenerator());
-        sb.append(generationId);
         sb.append(addVersionTo);
         sb.append(outputPath);
         if (parameter != null) {

@@ -52,14 +52,13 @@ class FilterTemplate implements BroadcastTemplate {
 
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/", generateVersion)»/I«serviceInterface.name».h"
 #include "«getPackagePathWithJoynrPrefix(serviceInterface, "/", generateVersion)»/«className»Parameters.h"
-«getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface, generateVersion)»
 /**
  * @brief Broadcast filter class for interface «serviceInterface.joynrName.toFirstUpper»,
  * broadcast «broadcastName»
  */
-class «getDllExportMacro()» «className» {
+class «className» {
 public:
 	/** @brief Default constructor */
 	«className»() = default;

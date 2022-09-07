@@ -46,7 +46,6 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«className»Base.h"
 «IF hasFireAndForgetMethods(francaIntf)»
 	#include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«interfaceName»FireAndForgetProxy.h"
@@ -64,7 +63,7 @@ class InterfaceSyncProxyHTemplate extends InterfaceTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «syncClassName» :
+class «syncClassName» :
 		virtual public «className»Base,
 		virtual public I«interfaceName»Sync«IF hasFireAndForgetMethods(francaIntf)»,
 		virtual public «interfaceName»FireAndForgetProxy«ENDIF»

@@ -53,7 +53,6 @@ public class CppStdTypeUtilTest extends TestCase {
 
             @Override
             protected void configure() {
-                bindConstant().annotatedWith(Names.named("generationId")).to("");
                 bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_CLEAN)).to(false);
                 bindConstant().annotatedWith(Names.named(JoynrGeneratorExtensions.JOYNR_GENERATOR_GENERATE)).to(true);
                 bindConstant().annotatedWith(Names.named(NamingUtil.JOYNR_GENERATOR_PACKAGEWITHVERSION)).to(false);

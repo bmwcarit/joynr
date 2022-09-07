@@ -68,7 +68,7 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         val joynrGeneratorArgumentHandler = JoynrGeneratorArgumentHandler(
             project.logger,
             extension.modelPath, extension.outputPath, extension.generationLanguage,
-            extension.generationId, extension.target, extension.skip, extension.addVersionTo,
+            extension.target, extension.skip, extension.addVersionTo,
             extension.extraParameters, project
         )
 

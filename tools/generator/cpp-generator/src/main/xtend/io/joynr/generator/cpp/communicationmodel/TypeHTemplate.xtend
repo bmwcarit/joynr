@@ -49,7 +49,6 @@ class TypeHTemplate extends CompoundTypeTemplate {
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«getDllExportIncludeStatement()»
 
 #include <cstddef>
 #include <memory>
@@ -73,7 +72,7 @@ class TypeHTemplate extends CompoundTypeTemplate {
 «appendDoxygenSummaryAndWriteSeeAndDescription(type, " *")»
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).getTypeName(generateVersion)»«ENDIF»{
+class «typeName» «IF hasExtendsDeclaration(type)»: public «getExtendedType(type).getTypeName(generateVersion)»«ENDIF»{
 
 public:
 	/**

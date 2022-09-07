@@ -131,7 +131,6 @@ configuration](#maven-configuration) for details):
    fall back to `app/build/generated/source/fidl/`).
 * `generationLanguage`: The language to be used for generator tool selection.
   The default value is `java`.
-* `generationId`
 * `skip`
 * `addVersionTo` specify how the major version of Franca interfaces and typecollections shall
   affect the generated package of interfaces and types.  
@@ -335,7 +334,6 @@ to *gen*.
         If not provided, code for both proxy and provider will be generated.
         For Jee code generation use value 'both' or omit this command line argument.
     Optional, C++ only:
-      -generationId <name of what is being generated>
       -outputHeaderPath <path to directory containing header files>
     Optional, JS only:
       -requireJSSupport <true, false>

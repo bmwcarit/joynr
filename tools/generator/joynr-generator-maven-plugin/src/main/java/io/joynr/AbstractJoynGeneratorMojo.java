@@ -57,12 +57,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
     protected String generationLanguage;
 
     /**
-     * Properties the generationId
-     * @parameter property="joynr.generator.generationId"
-     */
-    protected String generationId;
-
-    /**
      * Properties where the version shall be included in (package, name, none)
      * @parameter property="joynr.generator.addVersionTo"
      */
@@ -113,7 +107,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         }
         getLog().info("model: " + (model == null ? "not specified" : model));
         getLog().info("generationLanguage " + (generationLanguage == null ? "not specified" : generationLanguage));
-        getLog().info("generationId " + (generationId == null ? "not specified" : generationId));
         getLog().info("outputPath " + (outputPath == null ? "not specified" : outputPath));
         getLog().info("addVersionTo " + (addVersionTo == null ? "not specified" : addVersionTo));
         getLog().info("parameter " + (parameter == null ? "not specified" : ":"));
@@ -142,7 +135,6 @@ public abstract class AbstractJoynGeneratorMojo extends AbstractMojo {
         InvocationArguments arguments = new InvocationArguments();
         arguments.setModelPath(model);
         arguments.setGenerationLanguage(generationLanguage);
-        arguments.setGenerationId(generationId);
         arguments.setOutputPath(outputPath);
         arguments.setAddVersionTo(addVersionTo);
         arguments.setParameter(parameter);

@@ -31,9 +31,6 @@ import org.franca.core.franca.FType
 
 class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 
-	@Inject @Named("generationId")
-	String dllExportName;
-
 	def String getNamespaceStarter(FInterface interfaceType, boolean generateVersion) {
 		getNamespaceStarter(getPackageNames(interfaceType, generateVersion));
 	}
@@ -133,24 +130,6 @@ class JoynrCppGeneratorExtensions extends JoynrGeneratorExtensions {
 	// Get the name of enum types that are nested in an Enum wrapper class
 	def String getNestedEnumName() {
 		return "Enum";
-	}
-
-	// Return a call to a macro that allows classes to be exported and imported
-	// from DLLs when compiling with VC++
-	def String getDllExportMacro() {
-		if (!dllExportName.isEmpty()) {
-			return dllExportName.toUpperCase() + "_EXPORT ";
-		}
-		return "";
-	}
-
-	// Return an include statement that pulls in VC++ macros for DLL import and
-	// export
-	def String getDllExportIncludeStatement() {
-		if (!dllExportName.isEmpty()) {
-			return "#include \"" + joynrGenerationPrefix + "/" + dllExportName + "Export.h\"";
-		}
-		return "";
 	}
 
 	def String getIncludeOfFilterParametersContainer(FInterface serviceInterface, FBroadcast broadcast, boolean generateVersion) {

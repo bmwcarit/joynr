@@ -47,7 +47,6 @@ class InterfaceJoynrMessagingConnectorHTemplate extends InterfaceTemplate{
 #ifndef «headerGuard»
 #define «headerGuard»
 
-«getDllExportIncludeStatement()»
 «FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
 	#include «parameterType»
 «ENDFOR»
@@ -93,7 +92,7 @@ namespace exceptions
 
 
 /** @brief JoynrMessagingConnector for interface «interfaceName» */
-class «getDllExportMacro()» «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
+class «interfaceName»JoynrMessagingConnector : public I«interfaceName»Connector, virtual public joynr::AbstractJoynrMessagingConnector {
 private:
 	«FOR attribute: getAttributes(francaIntf)»
 		«val returnType = attribute.getTypeName(generateVersion)»

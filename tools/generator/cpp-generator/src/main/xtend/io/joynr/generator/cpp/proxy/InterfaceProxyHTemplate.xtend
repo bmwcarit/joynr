@@ -55,7 +55,6 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
 «ENDFOR»
 #include <memory>
 
-«getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«syncClassName».h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«asyncClassName».h"
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/I«interfaceName».h"
@@ -73,7 +72,7 @@ class InterfaceProxyHTemplate extends InterfaceTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
+class «className» : virtual public I«interfaceName», virtual public «syncClassName», virtual public «asyncClassName» {
 public:
 	/**
 	 * @brief Parameterized constructor

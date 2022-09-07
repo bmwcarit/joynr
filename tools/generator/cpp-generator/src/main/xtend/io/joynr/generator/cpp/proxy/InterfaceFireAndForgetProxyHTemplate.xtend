@@ -46,7 +46,6 @@ class InterfaceFireAndForgetProxyHTemplate extends InterfaceTemplate {
 #define «headerGuard»
 
 #include "joynr/PrivateCopyAssign.h"
-«getDllExportIncludeStatement()»
 #include "«getPackagePathWithJoynrPrefix(francaIntf, "/", generateVersion)»/«className»Base.h"
 
 «FOR parameterType: getDataTypeIncludesFor(francaIntf, generateVersion).addElements(includeForString)»
@@ -61,7 +60,7 @@ class InterfaceFireAndForgetProxyHTemplate extends InterfaceTemplate {
  *
  * @version «majorVersion».«minorVersion»
  */
-class «getDllExportMacro()» «fireAndForgetClassName»: virtual public I«interfaceName»FireAndForget, virtual public «interfaceName»ProxyBase {
+class «fireAndForgetClassName»: virtual public I«interfaceName»FireAndForget, virtual public «interfaceName»ProxyBase {
 public:
 	/**
 	 * @brief Parameterized constructor

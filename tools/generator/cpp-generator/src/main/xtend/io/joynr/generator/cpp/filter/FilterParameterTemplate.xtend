@@ -44,14 +44,13 @@ class FilterParameterTemplate implements BroadcastTemplate {
 
 #include "joynr/BroadcastFilterParameters.h"
 #include <string>
-«getDllExportIncludeStatement()»
 
 «getNamespaceStarter(serviceInterface, generateVersion)»
 /**
  * @brief BroadcastFilterParameter class for interface «serviceInterface.joynrName.toFirstUpper»
  * broadcast «broadcastName»
  */
-class «getDllExportMacro()» «className» : public BroadcastFilterParameters {
+class «className» : public BroadcastFilterParameters {
 public:
 
 	using BroadcastFilterParameters::BroadcastFilterParameters;
