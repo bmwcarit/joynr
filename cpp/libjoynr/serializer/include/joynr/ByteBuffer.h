@@ -72,6 +72,10 @@ private:
     template <typename Source, typename Dest>
     static void copyBuffer(const Source& source, Dest& dest)
     {
+        if (!source.data()) {
+            dest.resize(0);
+            return;
+        }
         dest.resize(source.size());
         std::memcpy(dest.data(), source.data(), source.size());
     }

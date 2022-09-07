@@ -41,8 +41,13 @@ UdsFrameBufferV1::UdsFrameBufferV1(const smrf::ByteArrayView& view) : UdsFrameBu
         resizeBufferPayload(_buffer, view.size());
         writeMagicCookie(_msgMagicCookie);
         writeLength(view.size());
-        std::memcpy(_buffer.data() + _headerSize, view.data(), view.size());
         _isValid = true;
+
+        if (!view.data()) {
+            return;
+        }
+
+        std::memcpy(_buffer.data() + _headerSize, view.data(), view.size());
     }
 }
 

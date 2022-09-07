@@ -50,7 +50,7 @@ protected:
 };
 
 template <typename Variant, typename... Ts>
-struct Serializable : ISerializable<Variant>
+struct Serializable : public ISerializable<Variant>
 {
     template <typename... Xs>
     explicit Serializable(Xs&&... data)
