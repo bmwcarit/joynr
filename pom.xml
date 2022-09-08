@@ -406,7 +406,7 @@
 		<netty.version>4.1.80.Final</netty.version>
 		<guice.version>5.1.0</guice.version>
 		<jetty.version>11.0.11</jetty.version>
-		<tycho.version>0.24.0</tycho.version>
+		<tycho.version>2.7.5</tycho.version>
 		<hibernate.version>5.5.7.Final</hibernate.version>
 		<android.platform.version>9_r6</android.platform.version>
 		<android.platform.level>28</android.platform.level>
