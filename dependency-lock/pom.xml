@@ -551,7 +551,7 @@
 				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
 				<type>jar</type>
-				<version>3.27.0-GA</version>
+				<version>3.29.1-GA</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss</groupId>
