@@ -963,6 +963,12 @@
 				<type>jar</type>
 				<version>3.39.3.0</version>
 			</dependency>
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<type>jar</type>
+				<version>3.29.2-GA</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
