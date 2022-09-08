@@ -809,7 +809,7 @@
 				<groupId>org.xerial</groupId>
 				<artifactId>sqlite-jdbc</artifactId>
 				<type>jar</type>
-				<version>3.27.2.1</version>
+				<version>3.39.2.1</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
