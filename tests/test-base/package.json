@@ -1,6 +1,6 @@
 {
   "name": "test-base",
-  "version": "1.21.4",
+  "version": "1.21.5-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "Test utilities used by several joynr JavaScript test projects",
   "main": "src/main/js/testbase.js",
