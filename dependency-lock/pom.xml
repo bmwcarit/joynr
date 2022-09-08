@@ -533,13 +533,13 @@
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-core</artifactId>
 				<type>jar</type>
-				<version>5.5.7.Final</version>
+				<version>5.6.11.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-entitymanager</artifactId>
 				<type>jar</type>
-				<version>5.5.7.Final</version>
+				<version>5.6.11.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hibernate.common</groupId>
