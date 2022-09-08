@@ -969,6 +969,12 @@
 				<type>jar</type>
 				<version>3.29.2-GA</version>
 			</dependency>
+			<dependency>
+				<groupId>jakarta.annotation</groupId>
+				<artifactId>jakarta.annotation-api</artifactId>
+				<type>jar</type>
+				<version>2.1.1</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
