@@ -137,7 +137,6 @@ dependencies {
         implementation 'com.googlecode.cqengine:3.6.0'
 
         implementation 'com.hivemq:hivemq-mqtt-client:1.1.3'
-        implementation 'io.joynr.mqtt:mqtt-client:0.0.6'
         implementation 'io.joynr.smrf.java:smrf:0.3.3'
 
         compileOnly 'javax:javaee-api:7.0'
