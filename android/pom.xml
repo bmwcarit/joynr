@@ -34,6 +34,10 @@
 		<module>dependency-lock</module>
 	</modules>
 
+	<properties>
+		<guice.version>4.2.3</guice.version>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -110,4 +114,14 @@
 			</dependencies>
 		</profile>
 	</profiles>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.inject</groupId>
+				<artifactId>guice</artifactId>
+				<version>${guice.version}</version>
+				<classifier>no_aop</classifier>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>

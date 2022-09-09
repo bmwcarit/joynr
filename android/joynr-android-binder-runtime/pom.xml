@@ -249,6 +249,7 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+			<classifier>no_aop</classifier>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>

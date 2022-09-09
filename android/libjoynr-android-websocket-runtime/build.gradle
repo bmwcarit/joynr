@@ -83,7 +83,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    api 'com.google.inject:guice:5.1.0'
+    api 'com.google.inject:guice:4.2.3:no_aop'
     api(group: 'io.joynr.android.core', name: 'libjoynr-websocket-runtime', version: "$version") {
         exclude(module: 'guice')
         exclude(group: 'org.slf4j')
@@ -124,6 +124,9 @@ publishing {
                     dependencyNode.appendNode('artifactId', dp.name)
                     dependencyNode.appendNode('version', dp.version)
                     dependencyNode.appendNode('scope', 'compile')
+                    if (dp.group == 'com.google.inject') {
+                        dependencyNode.appendNode('classifier', 'no_aop')
+                    }
 
                     if (dp.excludeRules.size() > 0) {
                         def exclusions = dependencyNode.appendNode('exclusions')
