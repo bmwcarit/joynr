@@ -84,7 +84,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     api 'com.google.inject:guice:5.1.0'
-    api(group: 'io.joynr.java.core', name: 'libjoynr-websocket-runtime', version: "$version") {
+    api(group: 'io.joynr.android.core', name: 'libjoynr-websocket-runtime', version: "$version") {
         exclude(module: 'guice')
         exclude(group: 'org.slf4j')
     }

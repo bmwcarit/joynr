@@ -263,7 +263,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.core</groupId>
+			<groupId>io.joynr.android.core</groupId>
 			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
@@ -275,7 +275,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.core</groupId>
+			<groupId>io.joynr.android.core</groupId>
 			<artifactId>clustercontroller</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
@@ -287,7 +287,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.common</groupId>
+			<groupId>io.joynr.android.common</groupId>
 			<artifactId>guice-integration</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
@@ -299,7 +299,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<groupId>io.joynr.android.messaging.mqtt</groupId>
 			<artifactId>hivemq-mqtt-client</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>

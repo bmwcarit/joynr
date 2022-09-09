@@ -146,16 +146,16 @@ dependencies {
 
     } else {
 
-        implementation("io.joynr.java.core:libjoynr:${version}") {
+        implementation("io.joynr.android.core:libjoynr:${version}") {
             exclude(module: 'guice')
         }
-        implementation("io.joynr.java.core:clustercontroller:${version}") {
+        implementation("io.joynr.android.core:clustercontroller:${version}") {
             exclude(module: 'guice')
         }
-        implementation("io.joynr.java.common:guice-integration:${version}") {
+        implementation("io.joynr.android.common:guice-integration:${version}") {
             exclude(module: 'guice')
         }
-        implementation("io.joynr.java.messaging.mqtt:hivemq-mqtt-client:${version}") {
+        implementation("io.joynr.android.messaging.mqtt:hivemq-mqtt-client:${version}") {
             exclude(module: 'guice')
         }
 
