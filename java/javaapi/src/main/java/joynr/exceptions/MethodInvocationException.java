@@ -82,6 +82,11 @@ public class MethodInvocationException extends JoynrRuntimeException {
     }
 
     @Override
+    public String toString() {
+        return super.toString() + (providerVersion == null ? "" : ", providerVersion: " + providerVersion);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
