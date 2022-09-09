@@ -96,6 +96,12 @@ public class ApplicationException extends Exception implements JoynrException {
         }
     }
 
+    @JsonProperty("detailMessage")
+    @Override
+    public String getMessage() {
+        return super.getMessage();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
