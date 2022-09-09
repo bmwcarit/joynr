@@ -234,27 +234,6 @@
 				</dependencies>
 			</plugin>
 			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<configuration>
-					<filesets>
-						<!-- <fileset> <directory>src/main/xtend-gen</directory> <includes> 
-							<include>**</include> </includes> </fileset> -->
-						<fileset>
-							<directory>src/main/generated</directory>
-							<includes>
-								<include>**</include>
-							</includes>
-						</fileset>
-						<fileset>
-							<directory>src/test/generated</directory>
-							<includes>
-								<include>**</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<executions>

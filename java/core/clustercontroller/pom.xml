@@ -167,6 +167,7 @@
 				</dependencies>
 			</plugin>
 			<plugin>
+				<!-- Make the libjoynr unittests available to other platforms -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<executions>
@@ -176,19 +177,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>src/test/generated</directory>
-							<includes>
-								<include>**</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
 			</plugin>
 		</plugins>
 		<resources>
@@ -204,36 +192,8 @@
 			</testResource>
 		</testResources>
 
-		<!-- specify plugin versions and configuration here to apply to all submodules
-			that use the specified plugin -->
 		<pluginManagement>
 			<plugins>
-				<!-- Make the libjoynr unittests available to other platforms -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-jar-plugin</artifactId>
-					<executions>
-						<execution>
-							<goals>
-								<goal>test-jar</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>appassembler-maven-plugin</artifactId>
-					<configuration>
-						<repositoryLayout>flat</repositoryLayout>
-						<repositoryName>lib</repositoryName>
-						<programs>
-							<program>
-								<mainClass>io.joynr.dispatcher.Test</mainClass>
-								<name>Test</name>
-							</program>
-						</programs>
-					</configuration>
-				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>

@@ -99,7 +99,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!-- Enforce failure is dependency check fails -->
+				<!-- Enforce failure if dependency check fails -->
 				<!-- Can optionally be moved up to parent pom -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -250,6 +250,32 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration combine.children="override">
 					<argLine>-Xmx1024m -XX:MaxPermSize=256m ${surefireArgs}</argLine>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets combine.children="append">
+						<fileset>
+							<directory>src/main/generated</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>src/test/generated</directory>
+							<includes>
+								<include>**</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>${project.basedir}</directory>
+							<includes>
+								<include>joynr.properties</include>
+								<include>joynr_participantIds.properties</include>
+							</includes>
+						</fileset>
+					</filesets>
 				</configuration>
 			</plugin>
 
