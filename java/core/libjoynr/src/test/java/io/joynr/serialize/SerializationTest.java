@@ -23,7 +23,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +41,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import io.joynr.dispatching.subscription.PersistedSubscriptionRequest;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -56,7 +54,6 @@ import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.util.MultiMap;
 import io.joynr.util.ObjectMapper;
 import io.joynr.util.ReflectionUtils;
 import joynr.BroadcastSubscriptionRequest;
@@ -79,10 +76,11 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderQos;
+import joynr.types.Version;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.GpsPosition;
-import joynr.types.ProviderQos;
 import joynr.types.TestTypes.TEnum;
 import joynr.types.TestTypes.TEverythingExtendedStruct;
 import joynr.types.TestTypes.TEverythingMap;
@@ -91,7 +89,6 @@ import joynr.types.TestTypes.TStringKeyMap;
 import joynr.types.TestTypes.TStruct;
 import joynr.types.TestTypes.Vowel;
 import joynr.types.TestTypes.Word;
-import joynr.types.Version;
 
 /**
  * This test sends two messages in each direction, containing different TTL values. One with a very high TTL value to
@@ -629,6 +626,20 @@ public class SerializationTest {
     public void serializeReplyWithMethodInvocationException() throws IOException {
 
         MethodInvocationException error = new MethodInvocationException("detail message: MessageInvocationException");
+        Reply reply = new Reply(createUuidString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        Reply receivedReply = objectMapper.readValue(writeValueAsString, Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeReplyWithMethodInvocationExceptionWithVersion() throws IOException {
+
+        MethodInvocationException error = new MethodInvocationException("detail message: MessageInvocationException",
+                                                                        new Version(47, 11));
         Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
