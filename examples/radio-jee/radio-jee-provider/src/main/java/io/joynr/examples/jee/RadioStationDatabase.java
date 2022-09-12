@@ -46,6 +46,7 @@ public class RadioStationDatabase {
         radioStations.add(new RadioStation("Radio Popolare", false, Country.ITALY));
         radioStations.add(new RadioStation("JAZZ.FM91", false, Country.CANADA));
         radioStations.add(new RadioStation("Bayern 3", true, Country.GERMANY));
+        currentStation = radioStations.iterator().next();
     }
 
     public RadioStation getCurrentStation() {
