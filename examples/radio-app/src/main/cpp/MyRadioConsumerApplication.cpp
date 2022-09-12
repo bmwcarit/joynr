@@ -230,6 +230,7 @@ int main(int argc, char* argv[])
     } catch (exceptions::JoynrException& e) {
         assert(false);
     }
+
     MyRadioHelper::prettyLog(logger, "ATTRIBUTE GET: " + currentStation.toString());
     // Run a short subscription using the proxy
     // Set the Quality of Service parameters for the subscription
@@ -337,21 +338,18 @@ int main(int argc, char* argv[])
     try {
         favoriteStation.setName("");
         proxy->addFavoriteStation(success, favoriteStation);
+    } catch (exceptions::ApplicationException& e) {
+        MyRadioHelper::prettyLog(logger,
+                                 "METHOD: addFavoriteStation failed with the following unexpected "
+                                 "ApplicationException: " +
+                                         e.getName());
     } catch (exceptions::ProviderRuntimeException& e) {
-        if (e.getMessage() == MyRadioHelper::MISSING_NAME()) {
-            MyRadioHelper::prettyLog(logger,
-                                     "METHOD: add favorite station with empty name failed with the "
-                                     "following "
-                                     "expected exception: " +
-                                             e.getMessage());
-        } else {
-            MyRadioHelper::prettyLog(logger,
-                                     "METHOD: add favorite station with empty name failed "
-                                     "with the following "
-                                     "UNEXPECTED exception: " +
-                                             e.getMessage());
-        }
-    }
+        std::string expectation =
+                (e.getMessage() == MyRadioHelper::MISSING_NAME()) ? "expected" : "unexpected";
+        MyRadioHelper::prettyLog(logger,
+                                 "METHOD: addFavoriteStation failed with the following " +
+                                         expectation + " exception: " + e.getTypeName());
+    };
 
     // shuffle the stations
     MyRadioHelper::prettyLog(logger, "METHOD: calling shuffle stations");
