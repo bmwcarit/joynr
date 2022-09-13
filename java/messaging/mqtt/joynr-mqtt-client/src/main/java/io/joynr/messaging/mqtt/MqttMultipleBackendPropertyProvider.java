@@ -89,7 +89,7 @@ public class MqttMultipleBackendPropertyProvider {
 
         gbidToBrokerUriMap = arraysToHashMap(gbidArray, brokerUriArray);
         gbidToConnectionTimeoutSecMap = arraysToHashMap(gbidArray, connectionTimeoutTimerSecArray);
-        gbidToKeepAliveTimerSecMap = arraysToHashMap(gbidArray, connectionTimeoutTimerSecArray);
+        gbidToKeepAliveTimerSecMap = arraysToHashMap(gbidArray, keepAliveTimerSecArray);
     }
 
     private static Integer[] stringArrayToIntArray(String[] stringArray) {
