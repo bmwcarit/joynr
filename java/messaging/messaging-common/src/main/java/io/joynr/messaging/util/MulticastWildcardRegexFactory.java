@@ -31,17 +31,26 @@ public class MulticastWildcardRegexFactory {
 
     public Pattern createIdPattern(String multicastId) {
         verifyMulticastIdValid(multicastId);
+        if (multicastId.matches("^\\*$")) {
+            logger.trace("Creating multicast ID regex pattern: {}", ".+");
+            return Pattern.compile(".+");
+        }
         String patternString = multicastId.replaceAll("^\\+(/)?", "[^\\/]+$1");
         patternString = patternString.replaceAll("/\\+/", "/[^\\/]+/");
-        patternString = patternString.replaceAll("(.*)/[\\+]$", "$1/[^\\/]+\\$");
-        patternString = patternString.replaceAll("(.*)/[\\*]$", "$1(/.*)?\\$");
-        patternString = patternString.replaceAll("^\\*$", ".+");
+        if (patternString.endsWith("/+")) {
+            patternString = patternString.substring(0, patternString.length() - 1);
+            patternString = patternString + "[^/]+$";
+        } else if (patternString.endsWith("/*")) {
+            patternString = patternString.substring(0, patternString.length() - 2);
+            patternString = patternString + "(/.*)?$";
+        }
         logger.trace("Creating multicast ID regex pattern: {}", patternString);
         return Pattern.compile(patternString);
     }
 
     private void verifyMulticastIdValid(String multicastId) {
-        boolean invalid = multicastId.matches(".*.[^/]\\+.*") || multicastId.matches(".*\\+[^/]+.*")
+        boolean invalid = Pattern.compile("[^/]\\+").matcher(multicastId).find()
+                || Pattern.compile("\\+[^/]").matcher(multicastId).find()
                 || (!"*".equals(multicastId) && multicastId.contains("*") && !multicastId.matches(".*/\\*$"));
         if (invalid) {
             throw new JoynrIllegalStateException("Multicast IDs may only contain '+' as a placeholder for a partition, and '*' as only character or right at the end after a '/'. You passed in: "
