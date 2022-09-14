@@ -22,18 +22,18 @@
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
-#include "joynr/Logger.h"
-#include "joynr/exceptions/SubscriptionException.h"
 #include "joynr/Future.h"
-#include "joynr/SingleThreadedIOService.h"
-#include "joynr/UnicastSubscriptionCallback.h"
+#include "joynr/Logger.h"
+#include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionCallback.h"
-#include "joynr/SubscriptionPublication.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionReply.h"
+#include "joynr/UnicastSubscriptionCallback.h"
+#include "joynr/exceptions/SubscriptionException.h"
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockSubscriptionManager.h"
-#include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/MockSubscriptionManager.h"
 
 using namespace joynr;
 using namespace testing;
@@ -119,28 +119,46 @@ TYPED_TEST(SubscriptionCallbackTest, forwardSubscriptionExceptionToFutureAndList
     }
 }
 
-TYPED_TEST(SubscriptionCallbackTest, forwardSubscriptionPublicationToListener)
+TYPED_TEST(SubscriptionCallbackTest, forwardPublicationToListener)
 {
     const std::string response = "testResponse";
-    SubscriptionPublication publication;
-    publication.setSubscriptionId(this->subscriptionId);
-    publication.setResponse(response);
 
     EXPECT_CALL(*(this->mockSubscriptionListener), onError(_)).Times(0);
     EXPECT_CALL(*(this->mockSubscriptionListener), onReceive(response)).Times(1);
 
-    this->subscriptionCallback.execute(std::move(publication));
+    if (typeid(this->subscriptionCallback) == typeid(MulticastSubscriptionCallback<std::string>)) {
+        MulticastPublication publication;
+        publication.setMulticastId(this->subscriptionId);
+        publication.setResponse(response);
+        this->subscriptionCallback.execute(std::move(publication));
+    } else if (typeid(this->subscriptionCallback) ==
+               typeid(UnicastSubscriptionCallback<std::string>)) {
+        BasePublication publication;
+        publication.setResponse(response);
+        this->subscriptionCallback.execute(std::move(publication));
+    } else {
+        FAIL() << "Could not evaluate type";
+    }
 }
 
-TYPED_TEST(SubscriptionCallbackTest, forwardSubscriptionPublicationErrorToListener)
+TYPED_TEST(SubscriptionCallbackTest, forwardPublicationErrorToListener)
 {
     auto error = std::make_shared<exceptions::ProviderRuntimeException>("testException");
-    SubscriptionPublication publication;
-    publication.setSubscriptionId(this->subscriptionId);
-    publication.setError(error);
 
     EXPECT_CALL(*(this->mockSubscriptionListener), onError(*error)).Times(1);
     EXPECT_CALL(*(this->mockSubscriptionListener), onReceive(_)).Times(0);
 
-    this->subscriptionCallback.execute(std::move(publication));
+    if (typeid(this->subscriptionCallback) == typeid(MulticastSubscriptionCallback<std::string>)) {
+        MulticastPublication publication;
+        publication.setMulticastId(this->subscriptionId);
+        publication.setError(error);
+        this->subscriptionCallback.execute(std::move(publication));
+    } else if (typeid(this->subscriptionCallback) ==
+               typeid(UnicastSubscriptionCallback<std::string>)) {
+        BasePublication publication;
+        publication.setError(error);
+        this->subscriptionCallback.execute(std::move(publication));
+    } else {
+        FAIL() << "Could not evaluate type";
+    }
 }
