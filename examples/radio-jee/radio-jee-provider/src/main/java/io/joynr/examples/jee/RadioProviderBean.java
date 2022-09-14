@@ -34,6 +34,7 @@ import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import io.joynr.statusmetrics.JoynrStatusMetrics;
 import joynr.exceptions.ApplicationException;
+import joynr.exceptions.ProviderRuntimeException;
 import joynr.vehicle.RadioStation;
 import joynr.vehicle.RadioSubscriptionPublisher;
 import joynr.vehicle.RadioSync;
@@ -79,7 +80,11 @@ public class RadioProviderBean implements RadioService {
     }
 
     @Override
-    public Boolean addFavoriteStation(RadioStation newFavoriteStation) throws ApplicationException {
+    public Boolean addFavoriteStation(RadioStation newFavoriteStation) throws ProviderRuntimeException,
+                                                                       ApplicationException {
+        if (newFavoriteStation.getName().isEmpty()) {
+            throw new ProviderRuntimeException("MISSING_NAME");
+        }
         radioStationDatabase.addRadioStation(newFavoriteStation);
         return true;
     }
