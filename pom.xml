@@ -827,7 +827,7 @@
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.core.contenttype</artifactId>
-				<version>3.7.200</version>
+				<version>3.8.200</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
@@ -1079,7 +1079,7 @@
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.contenttype</artifactId>
-							<version>3.7.1000</version>
+							<version>3.8.200</version>
 							<exclusions>
 								<exclusion>
 									<groupId>org.eclipse.platform</groupId>
@@ -1398,7 +1398,7 @@
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.contenttype</artifactId>
-							<version>3.7.1000</version>
+							<version>3.8.200</version>
 							<exclusions>
 								<exclusion>
 									<groupId>org.eclipse.platform</groupId>
