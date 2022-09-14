@@ -21,6 +21,7 @@ package io.joynr.messaging.mqtt;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import java.util.HashMap;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 
@@ -37,13 +38,26 @@ public class MqttMultipleBackendPropertyProviderTest {
     private final String nonIntKeepAliveTimers = "a,0,45";
     private final String keepAliveTimersWithEmptyEntry = "60,,45";
 
-    private final String validConnectionTimeouts = "60,0,45";
-    private final String differentLengthConnectionTimeouts = "60,0";
-    private final String nonIntConnectionTimeouts = "a,0,45";
-    private final String connectionTimeoutsWithEmptyEntry = "60,,45";
+    private final String validConnectionTimeouts = "1000,0,4500";
+    private final String differentLengthConnectionTimeouts = "1000,0";
+    private final String nonIntConnectionTimeouts = "a,0,4500";
+    private final String connectionTimeoutsWithEmptyEntry = "1000,,4500";
+
+    private <T> void compareStringListToHashMapValues(String list, HashMap<String, T> map) {
+        for (int index = 0; index < gbids.split(",").length; index++) {
+            T elementFromMap = map.get(gbids.split(",")[index]);
+            String elementFromList = list.split(",")[index];
+
+            if (Integer.class.isInstance(elementFromMap)) {
+                assertEquals(elementFromMap, Integer.parseInt(elementFromList));
+            } else {
+                assertEquals(elementFromMap, elementFromList);
+            }
+        }
+    }
 
     @Test
-    public void testSuccessfulPropertyInitialization() {
+    public void testSuccessfulPropertyInitializationSize() {
         MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider = new MqttMultipleBackendPropertyProvider(validBrokerUris,
                                                                                                                           gbids,
                                                                                                                           validKeepAliveTimers,
@@ -54,6 +68,23 @@ public class MqttMultipleBackendPropertyProviderTest {
         assertEquals(mqttMultipleBackendPropertyProvider.provideGbidToKeepAliveTimerSecMap().size(),
                      gbids.split(",").length);
         assertEquals(mqttMultipleBackendPropertyProvider.provideGbidToBrokerUriMap().size(), gbids.split(",").length);
+    }
+
+    @Test
+    public void testSuccessfulPropertyInitialization() {
+        MqttMultipleBackendPropertyProvider mqttMultipleBackendPropertyProvider = new MqttMultipleBackendPropertyProvider(validBrokerUris,
+                                                                                                                          gbids,
+                                                                                                                          validKeepAliveTimers,
+                                                                                                                          validConnectionTimeouts);
+
+        assertEquals(validBrokerUris.split(","), mqttMultipleBackendPropertyProvider.provideBrokerUris());
+        compareStringListToHashMapValues(validConnectionTimeouts,
+                                         mqttMultipleBackendPropertyProvider.provideGbidToConnectionTimeoutSecMap());
+        compareStringListToHashMapValues(validKeepAliveTimers,
+                                         mqttMultipleBackendPropertyProvider.provideGbidToKeepAliveTimerSecMap());
+        compareStringListToHashMapValues(validBrokerUris,
+                                         mqttMultipleBackendPropertyProvider.provideGbidToBrokerUriMap());
+
     }
 
     @Test(expected = JoynrIllegalStateException.class)
