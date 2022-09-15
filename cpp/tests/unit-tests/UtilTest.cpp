@@ -20,10 +20,14 @@
 #include <string>
 #include <vector>
 
-#include "tests/utils/Gtest.h"
+#include "muesli/detail/IncrementalTypeList.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Util.h"
+#include <boost/filesystem.hpp>
+#include <boost/mpl/find.hpp>
+#include <fstream>
 
 using namespace joynr;
 
@@ -200,4 +204,207 @@ TEST(UtilTest, getErrorStringDeliversCorrectString)
             EXPECT_EQ(s1, s2);
         }
     }
+}
+
+TEST(UtilTest, createValidUuid)
+{
+    std::string uuid1 = util::createUuid();
+    std::string uuid2 = util::createUuid();
+    EXPECT_NE(uuid1, uuid2);
+}
+
+TEST(UtilTest, vectorContainsContainsValue)
+{
+    const std::vector<std::string> stringValues{"s1", "s2", "s3", "s4"};
+    std::string stringValue = "s1";
+    EXPECT_TRUE(util::vectorContains(stringValues, stringValue));
+
+    const std::vector<int> intValues{1, 2, 3, 4, 5};
+    int intValue = 3;
+    EXPECT_TRUE(util::vectorContains(intValues, intValue));
+
+    const std::vector<double> doubleValues{1.2, 2.3, 3.4, 4.5, 5.6, 6.7};
+    double doubleValue = 1.2;
+    EXPECT_TRUE(util::vectorContains(doubleValues, doubleValue));
+}
+
+TEST(UtilTest, vectorDoesNotContainValue)
+{
+    const std::vector<std::string> stringValues{"s1", "s2", "s3", "s4y"};
+    std::string stringValue = "s5";
+    EXPECT_FALSE(util::vectorContains(stringValues, stringValue));
+
+    const std::vector<int> intValues{1, 2, 3, 4, 5};
+    int intValue = 7;
+    EXPECT_FALSE(util::vectorContains(intValues, intValue));
+
+    const std::vector<double> doubleValues{1.2, 2.3, 3.4, 4.5, 5.6, 6.7};
+    double doubleValue = 0.5;
+    EXPECT_FALSE(util::vectorContains(doubleValues, doubleValue));
+}
+
+TEST(UtilTest, removeAllTest)
+{
+    std::vector<int> intValues{1, 2, 3, 4, 5};
+    EXPECT_EQ(intValues.size(), 5);
+    util::removeAll(intValues, 3);
+    EXPECT_EQ(std::find(intValues.begin(), intValues.end(), 3), intValues.end());
+    EXPECT_EQ(intValues.size(), 4);
+
+    std::vector<double> doubleValues{1.1, 1.1, 1.1, 1.1};
+    EXPECT_EQ(doubleValues.size(), 4);
+    util::removeAll(doubleValues, 1.1);
+    EXPECT_EQ(std::find(doubleValues.begin(), doubleValues.end(), 1.1), doubleValues.end());
+    EXPECT_EQ(doubleValues.size(), 0);
+
+    std::vector<std::string> stringValues{"s1", "s2", "s3", "s4", "s4"};
+    EXPECT_EQ(stringValues.size(), 5);
+    std::string valueToBeremoved = "s4";
+    util::removeAll(stringValues, valueToBeremoved);
+    EXPECT_EQ(std::find(stringValues.begin(), stringValues.end(), valueToBeremoved),
+              stringValues.end());
+
+    EXPECT_EQ(stringValues.size(), 3);
+}
+
+TEST(UtilTest, asWeakPtrTest)
+{
+    std::shared_ptr<int> intPtr = std::make_shared<int>(10);
+    EXPECT_EQ(intPtr.use_count(), 1);
+    std::shared_ptr<int> secondPtr = intPtr;
+    EXPECT_EQ(intPtr.use_count(), 2);
+
+    auto weakPtr = util::as_weak_ptr(intPtr);
+    EXPECT_EQ(intPtr.use_count(), 2);
+}
+
+TEST(UtilTest, compareValuesTest)
+{
+    int intValue1 = 10;
+    int intValue2 = 10;
+    int intValue3 = 20;
+
+    EXPECT_TRUE(util::compareValues(intValue1, intValue2));
+    EXPECT_TRUE(util::compareValues(intValue1, intValue1));
+    EXPECT_FALSE(util::compareValues(intValue1, intValue3));
+
+    double doubleValue1 = 5.5;
+    double doubleValue2 = 5.5;
+    double doubleValue3 = 5.9;
+
+    EXPECT_TRUE(util::compareValues(doubleValue1, doubleValue2));
+    EXPECT_TRUE(util::compareValues(doubleValue1, doubleValue1));
+    EXPECT_FALSE(util::compareValues(doubleValue1, doubleValue3));
+}
+
+TEST(UtilTest, invokeOnTest)
+{
+    typedef boost::mpl::vector<int, long, float, unsigned> vectorTypes;
+    std::vector<std::string> typeIDs;
+    typeIDs.push_back(typeid(int).name());
+    typeIDs.push_back(typeid(long).name());
+    typeIDs.push_back(typeid(float).name());
+    typeIDs.push_back(typeid(unsigned).name());
+
+    unsigned int counter = 0;
+
+    auto fun = [&counter, &typeIDs](auto&& holder) {
+        using iterType = std::decay_t<decltype(holder)>;
+        EXPECT_TRUE((typeIDs[counter].compare(typeid(iterType).name()) == 0));
+        counter++;
+        return true;
+    };
+
+    util::invokeOn<vectorTypes>(fun);
+}
+
+TEST(UtilTest, fileExistsTest)
+{
+    std::string filename = "test.out";
+    std::ofstream g(filename);
+    g.close();
+    EXPECT_TRUE(util::fileExists(filename));
+    std::remove(filename.c_str());
+    EXPECT_FALSE(util::fileExists(filename));
+}
+
+TEST(UtilTest, writeToFileTestSyncFalse)
+{
+    std::string filename = "test.out";
+    std::string stringToWrite = "this is first line\nthis is secondLine\r";
+    util::writeToFile(filename, stringToWrite, std::ios::out, false);
+
+    std::stringstream buffer;
+    std::ifstream f(filename, std::ios_base::binary);
+    buffer << f.rdbuf();
+    f.close();
+    EXPECT_EQ(stringToWrite, buffer.str());
+    std::remove(filename.c_str());
+}
+
+TEST(UtilTest, writeToFileTestSyncTrue)
+{
+    std::string filename = "test.out";
+    std::string stringToWrite = "this is first line\nthis is secondLine\r";
+    util::writeToFile(filename, stringToWrite, std::ios::out, true);
+
+    std::stringstream buffer;
+    std::ifstream f(filename, std::ios_base::binary);
+    buffer << f.rdbuf();
+    f.close();
+    EXPECT_EQ(stringToWrite, buffer.str());
+    std::remove(filename.c_str());
+}
+
+TEST(UtilTest, writeToFileException)
+{
+    std::string folderName = "test";
+    boost::filesystem::create_directory(folderName);
+
+    EXPECT_THROW(
+            util::writeToFile(folderName, "testString", std::ios::out, false), std::runtime_error);
+    std::remove(folderName.c_str());
+}
+TEST(UtilTest, loadStringFromFileTest)
+{
+    std::string filename = "test.out";
+    std::string stringToWrite = "this is first line\nthis is secondLine";
+    std::ofstream g(filename);
+    g << stringToWrite;
+    g.close();
+
+    std::string readString = util::loadStringFromFile(filename);
+    EXPECT_EQ(stringToWrite, readString);
+
+    g.open(filename, std::ios_base::app);
+    g << stringToWrite;
+    g.close();
+
+    stringToWrite.append(stringToWrite);
+
+    readString = util::loadStringFromFile(filename);
+    EXPECT_EQ(stringToWrite, readString);
+
+    std::remove(filename.c_str());
+}
+
+TEST(UtilTest, loadStringFromFileSizeExceeded)
+{
+    std::string filename = "sparseFile";
+    std::ofstream g(filename, std::ios::binary | std::ios::out);
+    std::uint64_t size = 2 * 1024 * 1024 * 1024UL + 10;
+    g.seekp((std::streamoff)size);
+    g.write("", 1);
+    g.close();
+
+    EXPECT_THROW(util::loadStringFromFile(filename), std::runtime_error);
+    std::remove(filename.c_str());
+}
+
+TEST(UtilTest, loadStringFromFileNoFileTest)
+{
+    std::string filename = "test.out";
+    std::string stringToWrite = "this is first line\nthis is secondLine\n";
+
+    EXPECT_THROW(util::loadStringFromFile(filename), std::runtime_error);
 }
