@@ -409,7 +409,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeAllowsEmptyGbid)
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeoutMs(50);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     std::shared_ptr<tests::testProxy> testProxy(
@@ -458,7 +458,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProvider)
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeoutMs(50);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     std::shared_ptr<tests::testProxy> testProxy(
@@ -505,7 +505,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndUseLocalProviderWithListArg
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeoutMs(50);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     std::shared_ptr<tests::testProxy> testProxy(
@@ -555,7 +555,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeoutMs(50);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     std::shared_ptr<tests::testProxy> testProxy(
@@ -611,7 +611,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
 
     DiscoveryQos discoveryQos(1000);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-    discoveryQos.setDiscoveryTimeoutMs(50);
+    discoveryQos.setDiscoveryTimeoutMs(1000);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
 
     std::shared_ptr<tests::testProxy> testProxy(

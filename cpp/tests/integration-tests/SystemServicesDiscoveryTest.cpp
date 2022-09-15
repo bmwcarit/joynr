@@ -84,7 +84,7 @@ public:
         discoveryQos.setCacheMaxAgeMs(1000);
         discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
         discoveryQos.addCustomParameter("fixedParticipantId", discoveryProviderParticipantId);
-        discoveryQos.setDiscoveryTimeoutMs(50);
+        discoveryQos.setDiscoveryTimeoutMs(1000);
 
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
 
@@ -177,9 +177,8 @@ protected:
         EXPECT_EQ(expectedResult[0].getInterfaceName(), result[0].getInterfaceName());
         EXPECT_EQ(expectedResult[0].getParticipantId(), result[0].getParticipantId());
         EXPECT_EQ(expectedResult[0].getQos(), result[0].getQos());
-        EXPECT_TRUE(expectedResult[0].getLastSeenDateMs() <= result[0].getLastSeenDateMs() &&
-                    result[0].getLastSeenDateMs() <=
-                            (expectedResult[0].getLastSeenDateMs() + 5000));
+        EXPECT_LE(expectedResult[0].getLastSeenDateMs(), result[0].getLastSeenDateMs());
+        EXPECT_LE(result[0].getLastSeenDateMs(), (expectedResult[0].getLastSeenDateMs() + 5000));
         EXPECT_EQ(expectedResult[0].getExpiryDateMs(), result[0].getExpiryDateMs());
         EXPECT_EQ(expectedResult[0].getPublicKeyId(), result[0].getPublicKeyId());
 
