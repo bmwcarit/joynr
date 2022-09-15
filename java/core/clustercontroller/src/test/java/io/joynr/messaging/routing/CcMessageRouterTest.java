@@ -25,6 +25,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
@@ -1395,6 +1397,13 @@ public class CcMessageRouterTest {
                                                                      any(HasConsumerPermissionCallback.class));
         verify(mockMessageProcessedListener, times(1)).messageProcessed(eq(immutableMessage.getId()));
         verify(routingTable).remove(eq(immutableMessage.getSender()));
+    }
+
+    @Test(expected = JoynrRuntimeException.class)
+    public void addNextHopThrows() {
+        final boolean isGloballyVisible = true;
+        doReturn(false).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong(), anyBoolean());
+        ccMessageRouter.addNextHop(fromParticipantId, mqttAddress, isGloballyVisible);
     }
 
     @Test(expected = JoynrMessageExpiredException.class)
