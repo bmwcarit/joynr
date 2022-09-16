@@ -60,6 +60,7 @@ cd /data/src
 
 # 1st run; just build without tests to provide JAR file for GCD
 mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+--projects io.joynr.java.backend-services:capabilities-directory -am \
 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests \
 -Dmaven.test.failure.ignore=true \
