@@ -170,6 +170,17 @@
 									<goal>jar-no-fork</goal>
 								</goals>
 							</execution>
+							<execution>
+								<id>attach-test-sources</id>
+								<goals>
+									<goal>test-jar-no-fork</goal>
+								</goals>
+								<!-- do not deploy test sources jar -->
+								<phase>none</phase>
+								<configuration>
+									<attach>false</attach>
+								</configuration>
+							</execution>
 						</executions>
 					</plugin>
 					<plugin>

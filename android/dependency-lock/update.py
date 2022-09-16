@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # #%L
 # %%
-# Copyright (C) 2021 BMW Car IT GmbH
+# Copyright (C) 2022 BMW Car IT GmbH
 # %%
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ class ProjectDependency(object):
     DEFAULT_POM_FILENAME = 'pom.xml'
     MVN_EXEC = 'mvn'
     MVN_SCOPES = ['compile', 'provided', 'runtime', 'test', 'system', 'import']
-    ADDITIONAL_PROFILES = ['javascript']
+    ADDITIONAL_PROFILES = []
 
     def __init__(self, pomDir=DEFAULT_POM_DIR, pomFile=DEFAULT_POM_FILENAME):
         object.__init__(self)
@@ -144,20 +144,7 @@ class ProjectDependency(object):
                 raise RuntimeError("'%s' execution failed:\n%s\n%s" % (
                     ProjectDependency.MVN_EXEC, mvnCall.stdout, mvnCall.stderr))
 
-            self.__cmd = [ProjectDependency.MVN_EXEC, '-f', pomFile,
-                          '-pl', '"-io.joynr.examples:radio-app'
-                          ',-io.joynr:tools'
-                          ',-io.joynr.tools:build-resources'
-                          ',-io.joynr.tools:license-check'
-                          ',-io.joynr.tools:generator'
-                          ',-io.joynr.tools.generator:generator-framework'
-                          ',-io.joynr.tools.generator:cpp-generator'
-                          ',-io.joynr.tools.generator:java-generator'
-                          ',-io.joynr.tools.generator:js-generator'
-                          ',-io.joynr.tools.generator:joynr-generator-maven-plugin'
-                          ',-io.joynr.tools.generator:joynr-generator-standalone'
-                          ',-io.joynr.tools.generator:joynr-generator-npm'
-                          ',-io.joynr.tools.generator:joynr-generator-npm-test"']
+            self.__cmd = [ProjectDependency.MVN_EXEC, '-f', pomFile]
             if ProjectDependency.ADDITIONAL_PROFILES:
                 self.__cmd.append('-P')
                 self.__cmd.append(','.join(ProjectDependency.ADDITIONAL_PROFILES))
@@ -191,7 +178,7 @@ class ProjectDependency(object):
         cmd = self.__cmd.copy()
         for userProperty in userProperties:
             cmd += ["-D%s" % userProperty]
-        cmd += ['dependency:list']
+        cmd += ['dependency:list', '-Dno-android-sdk']
         mvnCall = subprocess.run(cmd, capture_output=True, text=True)
         if mvnCall.returncode:
             raise RuntimeError("'%s' execution failed:\n%s\n%s" % (

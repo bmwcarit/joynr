@@ -146,10 +146,11 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+			<classifier>no_aop</classifier>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.core</groupId>
+			<groupId>io.joynr.android.core</groupId>
 			<artifactId>libjoynr-websocket-runtime</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>

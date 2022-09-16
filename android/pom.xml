@@ -31,12 +31,12 @@
 	</parent>
 
 	<modules>
-		<module>slf4j-android-bindings</module>
-		<module>joynr-android-binder-runtime</module>
-		<module>libjoynr-android-websocket-runtime</module>
-		<module>libjoynr-android-integration-tests</module>
-		<module>examples</module>
+		<module>dependency-lock</module>
 	</modules>
+
+	<properties>
+		<guice.version>4.2.3</guice.version>
+	</properties>
 
 	<build>
 		<plugins>
@@ -86,14 +86,42 @@
 			</plugin>
 		</plugins>
 	</build>
-	<dependencies>
-		<dependency>
-			<!-- required for javadoc only -->
-			<groupId>com.google.android</groupId>
-			<artifactId>android</artifactId>
-			<version>28</version>
-			<scope>system</scope>
-			<systemPath>${env.ANDROID_HOME}/platforms/${env.ANDROID_API_LEVEL}/android.jar</systemPath>
-		</dependency>
-	</dependencies>
+	<profiles>
+		<profile>
+			<id>default</id>
+			<activation>
+				<property>
+					<!-- required for android dependency-lock file creation -->
+					<name>!no-android-sdk</name>
+				</property>
+			</activation>
+			<modules>
+				<module>slf4j-android-bindings</module>
+				<module>joynr-android-binder-runtime</module>
+				<module>libjoynr-android-websocket-runtime</module>
+				<module>libjoynr-android-integration-tests</module>
+				<module>examples</module>
+			</modules>
+			<dependencies>
+				<dependency>
+					<!-- required for javadoc only -->
+					<groupId>com.google.android</groupId>
+					<artifactId>android</artifactId>
+					<version>28</version>
+					<scope>system</scope>
+					<systemPath>${env.ANDROID_HOME}/platforms/${env.ANDROID_API_LEVEL}/android.jar</systemPath>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.inject</groupId>
+				<artifactId>guice</artifactId>
+				<version>${guice.version}</version>
+				<classifier>no_aop</classifier>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>

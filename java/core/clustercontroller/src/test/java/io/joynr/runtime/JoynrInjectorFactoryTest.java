@@ -21,15 +21,13 @@ package io.joynr.runtime;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
-import org.hamcrest.core.StringContains;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.google.inject.CreationException;
 
@@ -70,9 +68,6 @@ public class JoynrInjectorFactoryTest {
         System.setProperties(originalSystemproperties);
     }
 
-    @Rule
-    public ExpectedException creationException = ExpectedException.none();
-
     @Test
     /**
      * Would (but should not) fail with a guice exception if the property is added at the factory level and then again at the application level
@@ -84,13 +79,18 @@ public class JoynrInjectorFactoryTest {
 
     @Test
     public void applicationCreationPropertiesCannotOverrideJoynFactoryProperties() {
-        creationException.expect(CreationException.class);
-        creationException.expectMessage(StringContains.containsString("String annotated with @Named(value=\"joynr.discovery.defaulttimeoutms\") was bound multiple times."));
-
         applicationCreationProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS,
                                                   "0");
 
-        injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties));
+        try {
+            injectorfactory.createApplication(new TestApplicationModule(applicationCreationProperties));
+            fail("Expected CreationException");
+        } catch (CreationException e) {
+            // different exception message for Guice 4.2.3
+            assertTrue(e.getMessage()
+                        .contains("String annotated with @Named(value=\"joynr.discovery.defaulttimeoutms\") was bound multiple times.")
+                    || e.getMessage().contains("Unable to create injector, see the following errors:"));
+        }
     }
 
     @Test
