@@ -2,6 +2,32 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.21.5
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** The Android Joynr version will from now on use Guice 4.2.3
+  with related dependencies since the Android SDK is not compatible to
+  Guice 5.x due to lack of support for specific classes and APIs.
+* **[Java]** The Android specific version of general Joynr Artifacts will
+  now be created out of the same sources but using 'io.joynr.android'
+  as prefix for the groupId instead of just 'io.joynr'.
+  Android specific dependencies have been adjusted accordingly.
+* **[C++]** Fixed problems reported by UBSAN.
+* **[C++]** Improved stability of C++ integration tests.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** MqttMultipleBackendPropertyProvider has been fixed to provide
+  correct keepAliveTimer values.
+
 # joynr 1.21.4
 
 ## API relevant changes
