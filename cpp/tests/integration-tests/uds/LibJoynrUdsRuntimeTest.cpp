@@ -20,6 +20,7 @@
 #include <memory>
 #include <vector>
 
+#include "tests/JoynrTest.h"
 #include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
 
@@ -103,7 +104,7 @@ protected:
         return result;
     }
 
-    Semaphore _onFatalRuntimeErrorSemaphore;
+    std::shared_ptr<Semaphore> _onFatalRuntimeErrorSemaphore;
 
     void shutdown(std::shared_ptr<LibJoynrUdsRuntime>&& runtime)
     {
@@ -114,6 +115,10 @@ protected:
 
 public:
     MockCallbackWithJoynrException<void> _runtimeCallbacks;
+
+    LibJoynrUdsRuntimeTest() : _onFatalRuntimeErrorSemaphore(std::make_shared<Semaphore>())
+    {
+    }
 
     ~LibJoynrUdsRuntimeTest()
     {
@@ -128,7 +133,7 @@ public:
 
     void onFatalRuntimeError(const exceptions::JoynrRuntimeException&)
     {
-        _onFatalRuntimeErrorSemaphore.notify();
+        _onFatalRuntimeErrorSemaphore->notify();
     }
 };
 
@@ -141,7 +146,8 @@ TEST_F(LibJoynrUdsRuntimeTest, createAndDelete)
 
 TEST_F(LibJoynrUdsRuntimeTest, shutdownAfterConnect)
 {
-    Semaphore serverSemaphore;
+    auto serverSemaphore = std::make_shared<Semaphore>();
+    auto serverSemaphoreDisconnected = std::make_shared<Semaphore>();
     std::shared_ptr<joynr::IUdsSender> sender;
     MockUdsServerCallbacks serverCallbacks;
     /*
@@ -149,20 +155,19 @@ TEST_F(LibJoynrUdsRuntimeTest, shutdownAfterConnect)
      * routing-proxy replies, which are not simulated by this test setup.
      */
     EXPECT_CALL(serverCallbacks, connectedMock(_, _)).WillOnce(
-            DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&serverSemaphore, &Semaphore::notify)));
+            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(serverSemaphore)));
     EXPECT_CALL(_runtimeCallbacks, onSuccess()).Times(0);
+    EXPECT_CALL(serverCallbacks, disconnected(_))
+            .WillOnce(ReleaseSemaphore(serverSemaphoreDisconnected));
     auto runtime = connectRuntime(this);
     auto server = createServer(serverCallbacks);
     server->start();
 
-    ASSERT_TRUE(serverSemaphore.waitFor(waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(serverSemaphore->waitFor(waitPeriodForClientServerCommunication))
             << "Connection not monitored by server";
-    Mock::VerifyAndClearExpectations(&serverCallbacks);
 
-    EXPECT_CALL(serverCallbacks, disconnected(_))
-            .WillOnce(InvokeWithoutArgs(&serverSemaphore, &Semaphore::notify));
     shutdown(std::move(runtime));
-    EXPECT_TRUE(serverSemaphore.waitFor(waitPeriodForClientServerCommunication))
+    EXPECT_TRUE(serverSemaphoreDisconnected->waitFor(waitPeriodForClientServerCommunication))
             << "Disconnection not monitored by server";
 }
 
@@ -179,7 +184,7 @@ TEST_F(LibJoynrUdsRuntimeTest, shutdownWhileWaitingForConnect)
 
 TEST_F(LibJoynrUdsRuntimeTest, connectionLoss)
 {
-    Semaphore serverSemaphore;
+    auto serverSemaphore = std::make_shared<Semaphore>();
     std::shared_ptr<joynr::IUdsSender> sender;
     MockUdsServerCallbacks serverCallbacks;
     /*
@@ -187,16 +192,15 @@ TEST_F(LibJoynrUdsRuntimeTest, connectionLoss)
      * routing-proxy replies, which are not simulated by this test setup.
      */
     EXPECT_CALL(serverCallbacks, connectedMock(_, _)).WillOnce(
-            DoAll(SaveArg<1>(&sender), InvokeWithoutArgs(&serverSemaphore, &Semaphore::notify)));
+            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(serverSemaphore)));
     connectRuntime(this);
     auto server = createServer(serverCallbacks);
     server->start();
 
-    ASSERT_TRUE(serverSemaphore.waitFor(waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(serverSemaphore->waitFor(waitPeriodForClientServerCommunication))
             << "Connection not monitored by server";
-    Mock::VerifyAndClearExpectations(&serverCallbacks);
 
     server.reset();
-    EXPECT_TRUE(_onFatalRuntimeErrorSemaphore.waitFor(waitPeriodForClientServerCommunication))
+    EXPECT_TRUE(_onFatalRuntimeErrorSemaphore->waitFor(waitPeriodForClientServerCommunication))
             << "Fatal runtime error not monitored by runtime user";
 }
