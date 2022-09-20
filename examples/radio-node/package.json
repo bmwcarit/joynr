@@ -1,6 +1,6 @@
 {
   "name": "radio-node",
-  "version": "1.21.5",
+  "version": "1.21.6-SNAPSHOT",
   "license": "Apache-2.0",
   "description": "simple app to demonstrate usage of joynr",
   "main": "src/main/js/radioConsumer.js",

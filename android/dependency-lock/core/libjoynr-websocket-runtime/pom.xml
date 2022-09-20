@@ -27,7 +27,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>io.joynr.android</groupId>
-		<version>1.21.5</version>
+		<version>1.21.6-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
