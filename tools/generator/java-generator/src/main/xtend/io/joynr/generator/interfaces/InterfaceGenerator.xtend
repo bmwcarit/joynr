@@ -38,7 +38,7 @@ class InterfaceGenerator {
 	@Named("generateProxyCode")
 	public boolean generateProxyCode;
 
-	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa, boolean generateVersion){
+	def doGenerate(FInterface serviceInterface, IFileSystemAccess fsa, boolean generateVersion) {
 
 		val path = getPackagePathWithJoynrPrefix(serviceInterface, File::separator, generateVersion) + File::separator
 
@@ -92,7 +92,7 @@ class InterfaceGenerator {
 				generateVersion
 			)
 
-			if (serviceInterface.attributes.size>0){
+			if (serviceInterface.attributes.size>0) {
 				var interfaceSubscriptionTemplate = templateFactory.createInterfaceSubscriptionTemplate(serviceInterface)
 				generateFile(
 					fsa,
@@ -103,7 +103,7 @@ class InterfaceGenerator {
 			}
 		}
 
-		if (serviceInterface.broadcasts.size>0){
+		if (serviceInterface.broadcasts.size>0) {
 			var interfaceBroadcastTemplate = templateFactory.createInterfaceBroadcastTemplate(serviceInterface)
 			generateFile(
 				fsa,

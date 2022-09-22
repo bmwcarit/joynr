@@ -255,12 +255,11 @@ public interface «asyncClassName» extends «interfaceName»«IF hasFireAndForg
 		var outputObjectType = getObjectDataTypeForPlainType(outputParameterType);
 		var callbackType = methodToCallbackName.get(method);
 		if (method.outputParameters.size < 2) {
-			if (outputParameterType!="void"){
-				if (outputObjectType == ""){
+			if (outputParameterType!="void") {
+				if (outputObjectType == "") {
 					throw new IllegalArgumentException("error in method: " + method
 						+ ". outputObjectType is empty even though outputParameterType is not void")
-				}
-				else{
+				} else {
 					return "@JoynrRpcCallback(deserializationType = " + outputObjectType + ".class) " + callbackType + " callback"
 				}
 			} else {

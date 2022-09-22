@@ -139,28 +139,28 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	}
 
 	override isCompound(FType type) {
-		if (type instanceof FTypeDef){
+		if (type instanceof FTypeDef) {
 			return isCompound(type.actualType)
 		}
 		return super.isCompound(type)
 	}
 
 	override getCompoundType(FType type) {
-		if (type instanceof FTypeDef){
+		if (type instanceof FTypeDef) {
 			return getCompoundType(type.actualType)
 		}
 		return super.getCompoundType(type)
 	}
 
 	override isPrimitive(FType type) {
-		if (type instanceof FTypeDef){
+		if (type instanceof FTypeDef) {
 			return isPrimitive(type.actualType)
 		}
 		return super.isPrimitive(type)
 	}
 
 	override getPrimitive(FType type) {
-		if (type instanceof FTypeDef){
+		if (type instanceof FTypeDef) {
 			return getPrimitive(type.actualType)
 		}
 		return super.getPrimitive(type)
@@ -186,16 +186,16 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	}
 
 	override getTypeName(FType datatype) {
-		if (isEnum(datatype)){
+		if (isEnum(datatype)) {
 			return datatype.enumType.joynrName;
 		}
-		if (isPrimitive(datatype)){
+		if (isPrimitive(datatype)) {
 			return datatype.getPrimitive.typeName
 		}
-		if (isCompound(datatype)){
+		if (isCompound(datatype)) {
 			return datatype.compoundType.joynrName
 		}
-		if (isMap(datatype)){
+		if (isMap(datatype)) {
 			return datatype.mapType.joynrName
 		}
 		throw new IllegalStateException("JavaTypeUtil.getTypeName: unsupported state, datatype " +
@@ -224,7 +224,7 @@ class JavaTypeUtil extends AbstractTypeUtil {
 		while (i < params.size) {
 			val param = params.get(i);
 			sb.append(param.typeName + " "+ param.joynrName)
-			if (i != params.size-1){
+			if (i != params.size-1) {
 				sb.append(",\n")
 			}
 			i = i+1;
@@ -245,8 +245,8 @@ class JavaTypeUtil extends AbstractTypeUtil {
 	}
 
 	def getDefaultValue(FTypedElement element) {
-		if ((isArray(element))){
-			return "{}";
+		if ((isArray(element))) {
+			return "{ }";
 		}
 		return element.type.getDefaultValue();
 	}

@@ -71,7 +71,7 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 	«val memberType = member.typeName.replace("::","__")»
 	@JsonProperty("«member.joynrName»")
 	«IF isArray(member)»
-	private «memberType» «member.joynrName» = {};
+	private «memberType» «member.joynrName» = { };
 	«ELSE»
 	private «memberType» «member.joynrName»;
 	«ENDIF»
@@ -134,7 +134,7 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 		«ENDIF»
 		«FOR member : getMembers(type)»
 		«IF isArray(member)»
-			if(«member.joynrName» != null) {
+			if («member.joynrName» != null) {
 				this.«member.joynrName» = «member.joynrName».clone();
 			}
 		«ELSE»
@@ -155,7 +155,7 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 	@JsonIgnore
 	public «memberType» get«memberName.toFirstUpper»() {
 		«IF isArray(member)»
-		if(«member.joynrName» != null) {
+		if («member.joynrName» != null) {
 			return «member.joynrName».clone();
 		} else {
 			return null;
@@ -234,15 +234,15 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 					return false;
 				}
 			«IF isByteBuffer(member.type)»
-			} else if (!java.util.Arrays.equals(this.«member.joynrName», other.«member.joynrName»)){
+			} else if (!java.util.Arrays.equals(this.«member.joynrName», other.«member.joynrName»)) {
 				return false;
 			}
 			«ELSEIF isArray(member)»
-			} else if (!java.util.Arrays.deepEquals(this.«member.joynrName», other.«member.joynrName»)){
+			} else if (!java.util.Arrays.deepEquals(this.«member.joynrName», other.«member.joynrName»)) {
 				return false;
 			}
 			«ELSE»
-			} else if (!this.«member.joynrName».equals(other.«member.joynrName»)){
+			} else if (!this.«member.joynrName».equals(other.«member.joynrName»)) {
 				return false;
 			}
 			«ENDIF»

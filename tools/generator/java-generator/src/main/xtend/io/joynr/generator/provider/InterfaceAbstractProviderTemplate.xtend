@@ -87,7 +87,7 @@ public abstract class «className» extends AbstractJoynrProvider implements «p
 					queuedBroadcastFilters.add(filter);
 				}
 			}
-			public void addBroadcastFilter(BroadcastFilterImpl... filters){
+			public void addBroadcastFilter(BroadcastFilterImpl... filters) {
 				if (this.«interfaceName.toFirstLower»SubscriptionPublisher != null) {
 					this.«interfaceName.toFirstLower»SubscriptionPublisher.addBroadcastFilter(filters);
 				} else {

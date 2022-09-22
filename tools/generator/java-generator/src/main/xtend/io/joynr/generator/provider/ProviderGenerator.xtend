@@ -34,7 +34,7 @@ class ProviderGenerator {
 	extension NamingUtil
 	@Inject JavaTemplateFactory templateFactory
 
-	def doGenerate(FInterface fInterface, IFileSystemAccess fsa, boolean generateVersion){
+	def doGenerate(FInterface fInterface, IFileSystemAccess fsa, boolean generateVersion) {
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersion) + File::separator
 
 		var serviceName =  fInterface.joynrName
