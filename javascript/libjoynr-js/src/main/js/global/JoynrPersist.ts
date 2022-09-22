@@ -54,7 +54,17 @@ async function mkdirRecursive(directory: string): Promise<void> {
         if (e.code === "ENOENT") {
             const parentDir = path.dirname(directory);
             await mkdirRecursive(parentDir);
-            await mkdirAsync(directory);
+            try {
+                await mkdirAsync(directory);
+            } catch (err) {
+                if (err.code === "EEXIST") {
+                    log.info(`Directory: ${directory} already exists`);
+                } else {
+                    throw err;
+                }
+            }
+        } else if (e.code === "EEXIST") {
+            log.info(`Directory: ${directory} already exists`);
         } else {
             throw e;
         }
