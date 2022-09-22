@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.exceptions.JoynrCommunicationException;
-import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
