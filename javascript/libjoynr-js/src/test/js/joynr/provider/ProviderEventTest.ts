@@ -112,7 +112,7 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
         };
 
         const observerFunction = jest.fn();
-        const filterFunction = jest.fn();
+        const filterObject = { filter: jest.fn() };
 
         observerFunction.mockImplementation((data: any) => {
             const filters = data.filters;
@@ -121,19 +121,19 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
             let i: any;
 
             for (i = 0; i < filters.length; i++) {
-                filters[i](broadcastOutputParameters, filterParameters);
+                filters[i].filter(broadcastOutputParameters, filterParameters);
             }
         });
 
-        weakSignal.addBroadcastFilter(filterFunction);
+        weakSignal.addBroadcastFilter(filterObject);
         weakSignal.registerObserver(observerFunction);
 
         expect(observerFunction).not.toHaveBeenCalled();
-        expect(filterFunction).not.toHaveBeenCalled();
+        expect(filterObject.filter).not.toHaveBeenCalled();
 
         const data = {
             broadcastOutputParameters: value,
-            filters: [filterFunction],
+            filters: [filterObject],
             partitions: []
         };
         const filterParameters = {};
@@ -141,7 +141,7 @@ describe("libjoynr-js.joynr.provider.ProviderEvent", () => {
         weakSignal.fire(value);
 
         expect(observerFunction).toHaveBeenCalledWith(data);
-        expect(filterFunction).toHaveBeenCalledWith(value, filterParameters);
+        expect(filterObject.filter).toHaveBeenCalledWith(value, filterParameters);
         done();
     });
 

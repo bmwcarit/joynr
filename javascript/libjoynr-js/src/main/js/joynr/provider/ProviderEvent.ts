@@ -31,7 +31,7 @@ interface ProviderEventSettings {
 class ProviderEvent {
     public selective?: boolean;
     private settings: ProviderEventSettings;
-    private filters: Function[];
+    private filters: { filter: Function }[];
     private callbacks: Function[];
     /**
      * Constructor of ProviderEvent object that is used in the generation of provider objects
@@ -110,20 +110,20 @@ class ProviderEvent {
     /**
      * Registers a filter
      *
-     * @param filter the callback object that executes the filtering
+     * @param filter the callback object with a filter function that executes the filtering
      * @see ProviderEvent#deleteBroadcastFilter
      */
-    public addBroadcastFilter(filter: Function): void {
+    public addBroadcastFilter(filter: { filter: Function }): void {
         this.filters.push(filter);
     }
 
     /**
      * Unregisters an Observer for value changes
      *
-     * @param filter the callback object that executes the filtering
+     * @param filter the to be removed callback object with a filter function that executes the filtering
      * @see ProviderEvent#addBroadcastFilter
      */
-    public deleteBroadcastFilter(filter: Function): void {
+    public deleteBroadcastFilter(filter: { filter: Function }): void {
         UtilInternal.removeElementFromArray(this.filters, filter);
     }
 }
