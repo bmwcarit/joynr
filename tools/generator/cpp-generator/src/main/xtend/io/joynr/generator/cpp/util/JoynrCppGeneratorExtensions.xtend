@@ -18,8 +18,6 @@ package io.joynr.generator.cpp.util
  */
 
 import com.google.common.collect.Iterators
-import com.google.inject.Inject
-import com.google.inject.name.Named
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions
 import java.io.File
 import java.util.Iterator
