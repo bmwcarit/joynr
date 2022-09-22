@@ -37,8 +37,8 @@ class CommunicationModelGenerator {
 
 	@Inject JavaTemplateFactory templateFactory
 
-	def doGenerate(FModel fModel, IFileSystemAccess fsa, boolean generateVersion){
-		for( type: getCompoundDataTypes(fModel)){
+	def doGenerate(FModel fModel, IFileSystemAccess fsa, boolean generateVersion) {
+		for (type: getCompoundDataTypes(fModel)) {
 			var path = getPackagePathWithJoynrPrefix(type, File::separator, generateVersion) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator
@@ -52,7 +52,7 @@ class CommunicationModelGenerator {
 			)
 		}
 
-		for( type: getEnumDataTypes(fModel)){
+		for (type: getEnumDataTypes(fModel)) {
 			var path = getPackagePathWithJoynrPrefix(type, File::separator, generateVersion) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator
@@ -66,7 +66,7 @@ class CommunicationModelGenerator {
 			)
 		}
 
-		for( type: getMapDataTypes(fModel)){
+		for (type: getMapDataTypes(fModel)) {
 			var path = getPackagePathWithJoynrPrefix(type, File::separator, generateVersion) + File::separator
 			if (type.isPartOfNamedTypeCollection) {
 				path += type.typeCollectionName + File::separator

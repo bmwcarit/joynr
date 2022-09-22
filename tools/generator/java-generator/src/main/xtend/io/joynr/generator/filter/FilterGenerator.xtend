@@ -34,7 +34,7 @@ class FilterGenerator {
 	@Inject
 	FilterTemplate filterTemplate;
 
-	def doGenerate(FInterface fInterface, IFileSystemAccess fsa, boolean generateVersion){
+	def doGenerate(FInterface fInterface, IFileSystemAccess fsa, boolean generateVersion) {
 		val path = getPackagePathWithJoynrPrefix(fInterface, File::separator, generateVersion) + File::separator
 		for (broadcast : fInterface.broadcasts) {
 			if (broadcast.selective) {

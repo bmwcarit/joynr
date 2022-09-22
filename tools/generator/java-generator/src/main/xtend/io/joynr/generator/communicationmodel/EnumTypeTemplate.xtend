@@ -70,7 +70,7 @@ public enum «typeName» {
 	public static final int MINOR_VERSION = «minorVersion»;
 	static final Map<Integer, «typeName»> ordinalToEnumValues = new HashMap<>();
 
-	static{
+	static {
 		«var ordinal = -1»
 		«FOR enumValue : getEnumElementsAndBaseEnumElements(type)»
 			«{
@@ -100,8 +100,8 @@ public enum «typeName» {
 	public Integer getOrdinal() {
 		// TODO should we use a bidirectional map from a third-party library?
 		Integer ordinal = null;
-		for(Entry<Integer, «typeName»> entry : ordinalToEnumValues.entrySet()) {
-			if(this == entry.getValue()) {
+		for (Entry<Integer, «typeName»> entry : ordinalToEnumValues.entrySet()) {
+			if (this == entry.getValue()) {
 				ordinal = entry.getKey();
 				break;
 			}

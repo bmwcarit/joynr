@@ -96,7 +96,7 @@ class JoynrJavaGenerator implements IJoynrGenerator {
 
 	override updateCommunicationModelGeneration(Resource input) {
 		val fModel = input.contents.get(0) as FModel
-		if(fModel.interfaces.size == 0) {
+		if (fModel.interfaces.size == 0) {
 			generateVersionedCommunicationModel = true;
 		}
 		for (fInterface : fModel.interfaces) {

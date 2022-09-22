@@ -88,7 +88,7 @@ public interface «broadcastClassName» extends JoynrBroadcastSubscriptionInterf
 
 	«IF broadcast.selective»
 		public class «filterParameterType» extends BroadcastFilterParameters {
-			public «filterParameterType»() {};
+			public «filterParameterType»() { };
 
 			«IF filterParameters.size > 0»
 				public «filterParameterType»(«broadcast.commaSeperatedTypedFilterParameterList») {

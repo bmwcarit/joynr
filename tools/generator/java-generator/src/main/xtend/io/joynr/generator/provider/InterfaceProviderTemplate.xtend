@@ -117,7 +117,7 @@ import io.joynr.JoynrVersion;
 
 import io.joynr.provider.SubscriptionPublisherInjection;
 
-interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> {}
+interface «interfaceName»SubscriptionPublisherInjection extends SubscriptionPublisherInjection<«interfaceName»SubscriptionPublisher> { }
 «ENDIF»
 
 @JoynrInterface(provides = «interfaceName».class, provider = «className».class, name = "«francaIntf.fullyQualifiedName»")
@@ -163,14 +163,14 @@ public interface «className» {
 		public class «methodToDeferredName.get(method)» extends AbstractDeferred {
 			«IF method.outputParameters.empty»
 				public synchronized boolean resolve() {
-					Object[] values = new Object[] {};
+					Object[] values = new Object[] { };
 					return super.resolve(values);
 				}
 			««« In the case of single output param that is an array, the varargs resolve gets confused
 			««« and assumes the array is multi-out. Cast to object to prevent this from happening.
 			«ELSEIF method.outputParameters.length == 1 && (isArray(method.outputParameters.get(0)) || isByteBuffer(method.outputParameters.get(0).type))»
 				public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {
-					return super.resolve((Object)«method.commaSeperatedUntypedOutputParameterList»);
+					return super.resolve((Object) «method.commaSeperatedUntypedOutputParameterList»);
 				}
 			«ELSE»
 				public synchronized boolean resolve(«method.commaSeperatedTypedOutputParameterList») {

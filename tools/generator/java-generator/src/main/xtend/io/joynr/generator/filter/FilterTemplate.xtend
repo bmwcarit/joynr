@@ -26,7 +26,7 @@ import io.joynr.generator.util.TemplateBase
 import org.franca.core.franca.FBroadcast
 import org.franca.core.franca.FInterface
 
-class FilterTemplate implements BroadcastTemplate{
+class FilterTemplate implements BroadcastTemplate {
 	@Inject extension JoynrJavaGeneratorExtensions
 	@Inject extension JavaTypeUtil
 	@Inject extension NamingUtil
@@ -47,7 +47,7 @@ class FilterTemplate implements BroadcastTemplate{
 		«ENDFOR»
 
 		public abstract class «className» extends BroadcastFilterImpl {
-			public «className»(){
+			public «className»() {
 				super("«broadcastName»");
 			}
 
