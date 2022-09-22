@@ -31,6 +31,7 @@
 	
 	<suppress checks="." files="[\\/]generated[\\/].*"/> <!--  For a start - deactivating all checkstyle tests in generated code -->
 	<suppress checks="." files="[\\/]generated-java[\\/].*"/> <!--  For a start - deactivating all checkstyle tests in generated code -->
+	<suppress checks="." files="[\\/]android[\\/]dependency-lock[\\/].*"/> <!--  For a start - deactivating all checkstyle tests in code copied for Android -->
 		
 	<suppress checks="." files="[\\/]fibex[\\/]"/>
 	<suppress checks="." files="\.xml$"/>
