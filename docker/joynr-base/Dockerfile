@@ -104,6 +104,7 @@ RUN dnf update -y \
     maven \
     hostname.x86_64 \
     clang \
+    clang-tools-extra \
     libcxx-devel \
     && dnf groupinstall -y 'Development Tools' \
     && dnf clean all
@@ -296,18 +297,6 @@ RUN dnf update -y \
 
 RUN chmod -R a+rw /opt \
     && chown -R 1000 /usr/local
-
-###################################################
-# install clang 3.5 for formatting
-###################################################
-RUN cd /tmp/ \
-    && . /etc/profile \
-    && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
-    && tar -xf clang+llvm-3.5.0-x86_64-fedora20.tar.xz \
-    clang+llvm-3.5.0-x86_64-fedora20/bin/clang-format \
-    --strip-components=2 \
-    && mv clang-format /usr/local/bin/ \
-    && rm -f clang+llvm-3.5.0-x86_64-fedora20.tar.xz
 
 ###################################################
 # install spdlog

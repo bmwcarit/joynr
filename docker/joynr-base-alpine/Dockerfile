@@ -257,31 +257,6 @@ RUN chmod -R a+rw /opt \
     && chown -R 1000 /usr/local
 
 ###################################################
-# install clang-format-3.5
-# This can be taken from Alpine 3.1 where
-# llvm 3.5.0 was current
-###################################################
-RUN . /etc/profile \
-    && mkdir -p /tmp/clang-format \
-    && cd /tmp/clang-format \
-    && wget http://dl-cdn.alpinelinux.org/alpine/v3.1/main/x86_64/llvm-libs-3.5.0-r0.apk \
-    && tar xvf llvm-libs-3.5.0-r0.apk \
-    && cp usr/lib/libLLVM-3.5.so /usr/lib \
-    && chown root /usr/lib/libLLVM-3.5.so \
-    && chgrp root /usr/lib/libLLVM-3.5.so \
-    && chmod  755 /usr/lib/libLLVM-3.5.so \
-    && wget http://dl-cdn.alpinelinux.org/alpine/v3.1/main/x86_64/clang-3.5.0-r0.apk \
-    && tar xvf clang-3.5.0-r0.apk \
-    && cp usr/bin/clang-format /usr/bin/clang-format-3.5 \
-    && chown root /usr/bin/clang-format-3.5 \
-    && chgrp root /usr/bin/clang-format-3.5 \
-    && chmod  755 /usr/bin/clang-format-3.5 \
-    && mv /usr/bin/clang-format /usr/bin/clang-format-12.0.1 \
-    && ln -s /usr/bin/clang-format-3.5 /usr/bin/clang-format \
-    && cd /tmp \
-    && rm -fr /tmp/clang-format
-
-###################################################
 # install spdlog
 ###################################################
 RUN cd /opt \
