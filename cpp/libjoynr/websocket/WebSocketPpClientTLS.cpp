@@ -34,8 +34,7 @@ namespace joynr
 WebSocketPpClientTLS::WebSocketPpClientTLS(const WebSocketSettings& wsSettings,
                                            boost::asio::io_service& ioService,
                                            std::shared_ptr<joynr::IKeychain> keyChain)
-        : WebSocketPpClient<websocketpp::config::asio_tls_client>(wsSettings, ioService),
-          useEncryptedTls{wsSettings.getEncryptedTlsUsage()}
+        : WebSocketPpClient<websocketpp::config::asio_tls_client>(wsSettings, ioService)
 {
     _endpoint.set_tls_init_handler(
             [this, keyChain](ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
@@ -88,25 +87,6 @@ std::shared_ptr<WebSocketPpClientTLS::SSLContext> WebSocketPpClientTLS::createSS
     } catch (boost::system::system_error& e) {
         JOYNR_LOG_FATAL(logger(), "Failed to initialize TLS session {}", e.what());
         return nullptr;
-    }
-
-    if (!useEncryptedTls) {
-#if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
-        SSL_CTX_set_security_level(sslContext->native_handle(), 0);
-        if (SSL_CTX_get_security_level(sslContext->native_handle()) != 0) {
-            JOYNR_LOG_FATAL(
-                    logger(), "Failed to initialize TLS session: Could not set security level 0");
-            return nullptr;
-        }
-#endif
-        int opensslResult = SSL_CTX_set_cipher_list(sslContext->native_handle(), "eNULL");
-        if (opensslResult == 0) {
-            JOYNR_LOG_FATAL(
-                    logger(),
-                    "[DEPRECATED] Failed to initialize TLS session: Could not set eNULL cipher");
-            return nullptr;
-        }
-        JOYNR_LOG_WARN(logger(), "[DEPRECATED] TLS session: Set cipher list to eNULL");
     }
 
     return sslContext;

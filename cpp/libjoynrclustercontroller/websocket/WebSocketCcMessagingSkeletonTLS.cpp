@@ -40,8 +40,7 @@ WebSocketCcMessagingSkeletonTLS::WebSocketCcMessagingSkeletonTLS(
         const system::RoutingTypes::WebSocketAddress& serverAddress,
         const std::string& caPemFile,
         const std::string& certPemFile,
-        const std::string& privateKeyPemFile,
-        bool /*useEncryptedTls*/)
+        const std::string& privateKeyPemFile)
         : WebSocketCcMessagingSkeleton<websocketpp::config::asio_tls>(
                   ioService,
                   std::move(messageRouter),
@@ -208,18 +207,13 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
         return nullptr;
     }
 
-// for backward compatibility allow both eNULL and normal ciphers
+    // ensure backward compatibility
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
-    SSL_CTX_set_security_level(sslContext->native_handle(), 0);
-    if (SSL_CTX_get_security_level(sslContext->native_handle()) != 0) {
-        JOYNR_LOG_FATAL(
-                logger(), "Failed to initialize TLS session: Could not set security level 0");
-        return nullptr;
-    }
-    const char* cipherList = "ALL:!COMPLEMENTOFDEFAULT:eNULL";
+    const char* cipherList = "ALL:!COMPLEMENTOFDEFAULT:!eNULL";
 #else
-    const char* cipherList = "ALL:!EXPORT:!LOW:!aNULL:eNULL:!SSLv2";
+    const char* cipherList = "ALL:!EXPORT:!LOW:!aNULL:!eNULL:!SSLv2";
 #endif
+
     if (SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList) == 0) {
         JOYNR_LOG_FATAL(logger(),
                         "Failed to initialize TLS session: Could not set cipher list to {}",

@@ -33,6 +33,11 @@ the versioning scheme [here](JoynrVersioning.md).
   * `MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()`
   * `MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()`
   * `MessagingSettings::SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES()`
+* **[C++]** The support for eNULL has been removed, consequently the following configuration related APIs have been removed in WebSocketSettings:
+  * `WebSocketSettings::SETTING_TLS_ENCRYPTION()`
+  * `WebSocketSettings::DEFAULT_TLS_ENCRYPTION`
+  * `WebSocketSettings::getEncryptedTlsUsage()`
+  * `WebSocketSettings::setEncryptedTlsUsage(..)`
 
 ## Other Changes
 None.
@@ -50,6 +55,9 @@ None.
   client-certificate-password
   client-certificate
   max-send-ttl
+
+  [websocket]
+  tls-encryption
 ```
 
 ## Security Fixes
