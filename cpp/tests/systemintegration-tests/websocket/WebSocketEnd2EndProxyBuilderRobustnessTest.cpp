@@ -138,6 +138,7 @@ protected:
     joynr::DiscoveryQos discoveryQos;
 
     void buildMultipleProxiesUsingSameProxyBuilder();
+    void checkFinishedArbitrators(std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder, size_t expectedNumberOfFinishedArbitrators) const;
     void attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder();
     void buildProxiesAndVerifyShutdownRuntimeCleansUpCcRuntime();
     void attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime();
@@ -254,6 +255,26 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSamePr
     providerRuntime->unregisterProvider(participantId);
 }
 
+void WebSocketEnd2EndProxyBuilderRobustnessTest::checkFinishedArbitrators(
+    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder,
+    size_t expectedNumberOfFinishedArbitrators) const
+{
+    // the adding to gpsProxyBuilder->_finishedArbitratorIds is async, wait for it a limited time
+    std::unique_lock<std::mutex> lock(gpsProxyBuilder->_finishedArbitratorIdsMutex, std::defer_lock);
+    for (int i = 0; i < 100; i++) {
+        lock.lock();
+        if (gpsProxyBuilder->_finishedArbitratorIds.size() == expectedNumberOfFinishedArbitrators) {
+            lock.unlock();
+            break;
+        }
+        lock.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    lock.lock();
+    EXPECT_EQ(expectedNumberOfFinishedArbitrators, gpsProxyBuilder->_finishedArbitratorIds.size());
+    lock.unlock();
+}
+
 void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder()
 {
     auto semaphore = std::make_shared<Semaphore>(0);
@@ -309,9 +330,8 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxie
     lock.lock();
     EXPECT_EQ(numberOfProxyBuilds, gpsProxyBuilder->_arbitrators.size());
     lock.unlock();
-    std::unique_lock<std::mutex> lock2(gpsProxyBuilder->_finishedArbitratorIdsMutex);
-    EXPECT_EQ(numberOfProxyBuilds, gpsProxyBuilder->_finishedArbitratorIds.size());
-    lock2.unlock();
+
+    checkFinishedArbitrators(gpsProxyBuilder, numberOfProxyBuilds);
 
     // starting another proxy build attempt with no retry
     discoveryQos.setRetryIntervalMs(discoveryTimeoutMs + 1000);
@@ -332,12 +352,12 @@ void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxie
     EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
 
     // this should have reduced the number of arbitrators to 1
+    const int expectedArbitratorsLeft = 1;
     lock.lock();
-    EXPECT_EQ(1, gpsProxyBuilder->_arbitrators.size());
+    EXPECT_EQ(expectedArbitratorsLeft, gpsProxyBuilder->_arbitrators.size());
     lock.unlock();
-    lock2.lock();
-    EXPECT_EQ(1, gpsProxyBuilder->_finishedArbitratorIds.size());
-    lock2.unlock();
+
+    checkFinishedArbitrators(gpsProxyBuilder, expectedArbitratorsLeft);
 }
 
 void WebSocketEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime()
