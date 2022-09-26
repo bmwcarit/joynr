@@ -86,7 +86,9 @@ public:
      */
     void clear();
 
-    virtual void insertInLocalCapabilitiesStorage(const types::DiscoveryEntry& entry);
+    virtual void insertInLocalCapabilitiesStorage(
+            const types::DiscoveryEntry& entry,
+            const std::vector<std::string>& gbids = std::vector<std::string>());
     virtual void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
                                            const std::vector<std::string>& gbids);
 
@@ -118,6 +120,9 @@ private:
                                 std::vector<types::DiscoveryEntry>&& localCapabilities,
                                 std::vector<types::DiscoveryEntry>&& globalCapabilities,
                                 std::shared_ptr<ILocalCapabilitiesCallback> callback);
+
+    void mapGbidsToGlobalProviderParticipantId(const std::string& participantId,
+                                               std::vector<std::string>& allGbids);
 
     std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
     std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;

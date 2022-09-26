@@ -203,9 +203,10 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getAllGlobalCapabilities)
     types::DiscoveryEntry globalDiscoveryEntry2 = globalDiscoveryEntry1;
     globalDiscoveryEntry2.setParticipantId(participantId2);
 
+    std::vector<std::string> gbids{"gbid1", "gbid2"};
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(globalDiscoveryEntry1);
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(globalDiscoveryEntry2);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(globalDiscoveryEntry1, gbids);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(globalDiscoveryEntry2, gbids);
 
     std::vector<types::DiscoveryEntry> globalDiscoveryEntries =
             _localCapabilitiesDirectoryStore.getAllGlobalCapabilities();
@@ -242,9 +243,10 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, clear)
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, countGlobalCapabilities)
 {
+    std::vector<std::string> gbids{"gbid1", "gbid2"};
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.countGlobalCapabilities());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_globalEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_globalEntry, gbids);
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.countGlobalCapabilities());
 }
 

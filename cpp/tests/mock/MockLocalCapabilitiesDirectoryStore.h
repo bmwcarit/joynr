@@ -41,7 +41,7 @@ public:
     MOCK_METHOD1(getLocalCapabilities,
                  std::vector<types::DiscoveryEntry>(
                          const std::vector<InterfaceAddress>& interfaceAddresses));
-    MOCK_METHOD1(insertInLocalCapabilitiesStorage, void(const types::DiscoveryEntry& entry));
+    MOCK_METHOD2(insertInLocalCapabilitiesStorage, void(const types::DiscoveryEntry& entry, const std::vector<std::string>& gbids));
     MOCK_METHOD2(insertInGlobalLookupCache,
                  void(const types::DiscoveryEntry& entry, const std::vector<std::string>& gbids));
     MOCK_METHOD4(getLocalAndCachedCapabilities,

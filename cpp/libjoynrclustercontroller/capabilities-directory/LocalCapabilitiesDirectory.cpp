@@ -318,11 +318,8 @@ void LocalCapabilitiesDirectory::addInternal(
     if (!isGloballyVisible || !awaitGlobalRegistration) {
         std::lock_guard<std::recursive_mutex> lock1(
                 _localCapabilitiesDirectoryStore->getCacheLock());
-        if (isGloballyVisible) {
-            _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(discoveryEntry, gbids);
-        }
         // register locally
-        _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(discoveryEntry);
+        _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(discoveryEntry, gbids);
 
         updatePersistedFile();
         {
@@ -396,10 +393,8 @@ void LocalCapabilitiesDirectory::addInternal(
                 std::lock_guard<std::recursive_mutex> cacheInsertionLock(
                         thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
                 if (awaitGlobalRegistration) {
-                    thisSharedPtr->_localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
-                            globalDiscoveryEntry, gbids);
                     thisSharedPtr->_localCapabilitiesDirectoryStore
-                            ->insertInLocalCapabilitiesStorage(globalDiscoveryEntry);
+                            ->insertInLocalCapabilitiesStorage(globalDiscoveryEntry, gbids);
                     JOYNR_LOG_INFO(logger(),
                                    "Global capability '{}' added successfully for GBIDs >{}<, "
                                    "#registeredGlobalCapabilities {}",
@@ -1329,14 +1324,6 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
         joynr::serializer::deserializeFromJson(locallyRegisteredCapabilities, jsonString);
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger(), ex.what());
-    }
-
-    // insert all global capability entries into global cache
-    for (const auto& entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                 filePersistencyRetrievalLock))) {
-        if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
-            _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(entry, entry.gbids);
-        }
     }
 }
 

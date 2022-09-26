@@ -1064,11 +1064,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
     const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
     initializeMockLocalCapabilitiesDirectoryStore();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry)))
+                insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry), expectedGbids))
             .Times(1);
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                insertInGlobalLookupCache(DiscoveryEntryMatcher(_entry), Eq(expectedGbids)))
-            .Times(1);
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(_,_)).Times(0);
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->add(
@@ -1104,7 +1102,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocalEntry_callsMockStorage)
     _entry.setQos(providerQos);
     initializeMockLocalCapabilitiesDirectoryStore();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry)))
+                insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry), _KNOWN_GBIDS))
             .Times(1);
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(_, _)).Times(0);
     finalizeTestSetupAfterMockExpectationsAreDone();

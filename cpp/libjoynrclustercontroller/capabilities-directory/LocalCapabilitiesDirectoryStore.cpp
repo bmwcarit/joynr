@@ -187,6 +187,23 @@ bool LocalCapabilitiesDirectoryStore::callReceiverIfPossible(
     return false;
 }
 
+void LocalCapabilitiesDirectoryStore::mapGbidsToGlobalProviderParticipantId(
+        const std::string& participantId,
+        std::vector<std::string>& allGbids)
+{
+    const auto foundMapping = _globalParticipantIdsToGbidsMap.find(participantId);
+    if (foundMapping != _globalParticipantIdsToGbidsMap.cend()) {
+        // entry already exists
+        const auto& oldGbids = foundMapping->second;
+        for (const auto& gbid : oldGbids) {
+            if (std::find(allGbids.cbegin(), allGbids.cend(), gbid) == allGbids.cend()) {
+                allGbids.emplace_back(gbid);
+            }
+        }
+    }
+    _globalParticipantIdsToGbidsMap[participantId] = allGbids;
+}
+
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getLocalCapabilities(
         const std::string& participantId)
 {
@@ -210,17 +227,31 @@ void LocalCapabilitiesDirectoryStore::clear()
 }
 
 void LocalCapabilitiesDirectoryStore::insertInLocalCapabilitiesStorage(
-        const types::DiscoveryEntry& entry)
+        const types::DiscoveryEntry& entry,
+        const std::vector<std::string>& gbids)
 {
-    std::lock_guard<std::recursive_mutex> localInsertionLock(_cacheLock);
+    std::unique_lock<std::recursive_mutex> localInsertionLock(_cacheLock);
+    // always remove cached remote entries with the same participantId.
+    auto cachedEntry = _globalLookupCache->lookupByParticipantId(entry.getParticipantId());
+    if (cachedEntry) {
+        JOYNR_LOG_WARN(logger(),
+                       "Add participantId {} removes cached entry with the same participantId: {}",
+                       entry.getParticipantId(),
+                       cachedEntry->toString());
+        _globalLookupCache->removeByParticipantId(entry.getParticipantId());
+        eraseParticipantIdToGbidMapping(cachedEntry->getParticipantId(), localInsertionLock);
+    }
 
-    auto found = _globalParticipantIdsToGbidsMap.find(entry.getParticipantId());
-    _locallyRegisteredCapabilities->insert(entry,
-                                           found != _globalParticipantIdsToGbidsMap.cend()
-                                                   ? found->second
-                                                   : std::vector<std::string>{});
+    std::vector<std::string> allGbids(gbids);
+    if (LCDUtil::isGlobal(entry)) {
+        mapGbidsToGlobalProviderParticipantId(entry.getParticipantId(), allGbids);
+        _locallyRegisteredCapabilities->insert(entry, allGbids);
+    } else {
+        _locallyRegisteredCapabilities->insert(entry);
+    }
+
     JOYNR_LOG_INFO(logger(),
-                   "Added local capability to cache {}, #localCapabilities: {}",
+                   "Added local capability {}, #localCapabilities: {}",
                    entry.toString(),
                    _locallyRegisteredCapabilities->size());
 }
@@ -233,19 +264,8 @@ void LocalCapabilitiesDirectoryStore::insertInGlobalLookupCache(
 
     _globalLookupCache->insert(entry);
 
-    const std::string& participantId = entry.getParticipantId();
     std::vector<std::string> allGbids(gbids);
-    const auto foundMapping = _globalParticipantIdsToGbidsMap.find(participantId);
-    if (foundMapping != _globalParticipantIdsToGbidsMap.cend()) {
-        // entry already exists
-        const auto& oldGbids = foundMapping->second;
-        for (const auto& gbid : oldGbids) {
-            if (std::find(allGbids.cbegin(), allGbids.cend(), gbid) == allGbids.cend()) {
-                allGbids.emplace_back(gbid);
-            }
-        }
-    }
-    _globalParticipantIdsToGbidsMap[participantId] = allGbids;
+    mapGbidsToGlobalProviderParticipantId(entry.getParticipantId(), allGbids);
 
     JOYNR_LOG_INFO(
             logger(),
