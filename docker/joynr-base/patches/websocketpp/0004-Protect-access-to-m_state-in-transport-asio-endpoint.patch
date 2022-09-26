@@ -1,0 +1,82 @@
+From 4010ac69ef8ec225655817383dba432a7bcbe8ca Mon Sep 17 00:00:00 2001
+From: Guido Ostkamp <Guido.Ostkamp@partner.bmw.de>
+Date: Fri, 16 Sep 2022 14:54:11 +0200
+Subject: Protect access to m_state in transport/asio/endpoint using lock
+
+---
+ websocketpp/transport/asio/endpoint.hpp | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/websocketpp/transport/asio/endpoint.hpp b/websocketpp/transport/asio/endpoint.hpp
+index 94509ad..2f0f87c 100644
+--- a/websocketpp/transport/asio/endpoint.hpp
++++ b/websocketpp/transport/asio/endpoint.hpp
+@@ -91,6 +91,9 @@ public:
+     /// Type of socket pre-bind handler
+     typedef lib::function<lib::error_code(acceptor_ptr)> tcp_pre_bind_handler;
+ 
++    typedef typename concurrency_type::scoped_lock_type scoped_lock_type;
++    typedef typename concurrency_type::mutex_type mutex_type;
++
+     // generate and manage our own io_service
+     explicit endpoint()
+       : m_io_service(NULL)
+@@ -109,6 +112,7 @@ public:
+         m_acceptor.reset();
+         m_resolver.reset();
+         m_work.reset();
++        scoped_lock_type lock(m_state_mutex);
+         if (m_state != UNINITIALIZED && !m_external_io_service) {
+             delete m_io_service;
+         }
+@@ -183,6 +187,7 @@ public:
+      * @param ec Set to indicate what error occurred, if any.
+      */
+     void init_asio(io_service_ptr ptr, lib::error_code & ec) {
++        scoped_lock_type lock(m_state_mutex);
+         if (m_state != UNINITIALIZED) {
+             m_elog->write(log::elevel::library,
+                 "asio::init_asio called from the wrong state");
+@@ -411,6 +416,7 @@ public:
+      */
+     void listen(lib::asio::ip::tcp::endpoint const & ep, lib::error_code & ec)
+     {
++        scoped_lock_type lock(m_state_mutex);
+         if (m_state != READY) {
+             m_elog->write(log::elevel::library,
+                 "asio::listen called from the wrong state");
+@@ -602,6 +608,7 @@ public:
+      * @param ec A status code indicating an error, if any.
+      */
+     void stop_listening(lib::error_code & ec) {
++        scoped_lock_type lock(m_state_mutex);
+         if (m_state != LISTENING) {
+             m_elog->write(log::elevel::library,
+                 "asio::listen called from the wrong state");
+@@ -633,6 +640,7 @@ public:
+      * @return Whether or not the endpoint is listening.
+      */
+     bool is_listening() const {
++        scoped_lock_type lock(m_state_mutex);
+         return (m_state == LISTENING);
+     }
+ 
+@@ -768,6 +776,7 @@ public:
+     void async_accept(transport_con_ptr tcon, accept_handler callback,
+         lib::error_code & ec)
+     {
++        scoped_lock_type lock(m_state_mutex);
+         if (m_state != LISTENING || !m_acceptor) {
+             using websocketpp::error::make_error_code;
+             ec = make_error_code(websocketpp::error::async_accept_not_listening);
+@@ -1173,6 +1182,7 @@ private:
+ 
+     // Transport state
+     state               m_state;
++    mutable mutex_type  m_state_mutex;
+ };
+ 
+ } // namespace asio
+-- 
+2.25.1
+

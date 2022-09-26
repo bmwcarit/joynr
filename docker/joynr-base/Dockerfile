@@ -324,17 +324,21 @@ RUN cd /opt \
 # install websocket++
 ###################################################
 
+RUN mkdir -p /tmp/patches/websocketpp
+COPY patches/websocketpp /tmp/patches/websocketpp
 RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/zaphoyd/websocketpp.git \
     && cd websocketpp \
     && git checkout 0.8.2 \
+    && git am -k /tmp/patches/websocketpp/*.patch \
     && mkdir build \
     && cd build \
     && cmake .. \
     && make install -j"$(nproc)" \
     && cd /opt/ \
-    && rm -rf websocketpp
+    && rm -rf websocketpp \
+    && rm -fr /tmp/patches/websocketpp
 
 ###################################################
 # install DLT

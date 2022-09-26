@@ -1,0 +1,55 @@
+From 31c094f29cc3fbb2e13fab1b9e999f9b2243d0f2 Mon Sep 17 00:00:00 2001
+From: Guido Ostkamp <Guido.Ostkamp@partner.bmw.de>
+Date: Fri, 16 Sep 2022 14:49:38 +0200
+Subject: Introduce unique_lock type
+
+* Required to be able for flexible locking & unlocking within
+  code section
+---
+ websocketpp/concurrency/basic.hpp |  1 +
+ websocketpp/concurrency/none.hpp  | 10 ++++++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/websocketpp/concurrency/basic.hpp b/websocketpp/concurrency/basic.hpp
+index 1943ad7..a21b65d 100644
+--- a/websocketpp/concurrency/basic.hpp
++++ b/websocketpp/concurrency/basic.hpp
+@@ -38,6 +38,7 @@ class basic {
+ public:
+     typedef lib::mutex mutex_type;
+     typedef lib::lock_guard<mutex_type> scoped_lock_type;
++    typedef lib::unique_lock<mutex_type> unique_lock_type;
+ };
+ 
+ } // namespace concurrency
+diff --git a/websocketpp/concurrency/none.hpp b/websocketpp/concurrency/none.hpp
+index da9aa41..5344719 100644
+--- a/websocketpp/concurrency/none.hpp
++++ b/websocketpp/concurrency/none.hpp
+@@ -48,6 +48,15 @@ public:
+     explicit fake_lock_guard(fake_mutex) {}
+     ~fake_lock_guard() {}
+ };
++
++/// A fake lock guard implementation that does nothing
++class fake_unique_lock {
++public:
++    explicit fake_unique_lock(fake_mutex) {};
++    ~fake_unique_lock() {};
++    void lock();
++    void unlock();
++};
+ } // namespace none_impl
+ 
+ /// Stub concurrency policy that implements the interface using no-ops.
+@@ -72,6 +81,7 @@ public:
+      * an example.
+      */
+     typedef none_impl::fake_lock_guard scoped_lock_type;
++    typedef none_impl::fake_unique_lock unique_lock_type;
+ };
+ 
+ } // namespace concurrency
+-- 
+2.25.1
+
