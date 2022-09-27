@@ -24,9 +24,9 @@
 #include <chrono>
 #include <limits>
 #include <mutex>
+#include <ostream>
 #include <tuple>
 #include <unordered_set>
-#include <ostream>
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -45,6 +45,7 @@
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/InterfaceAddress.h"
+#include "joynr/LCDUtil.h"
 #include "joynr/TimePoint.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
@@ -57,7 +58,6 @@
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"
-#include "joynr/LCDUtil.h"
 
 #include "IGlobalCapabilitiesDirectoryClient.h"
 
@@ -128,7 +128,7 @@ void LocalCapabilitiesDirectory::scheduleFreshnessUpdate()
                         timerError.message());
     }
     _freshnessUpdateTimer.async_wait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
-            const boost::system::error_code& localTimerError) {
+                                             const boost::system::error_code& localTimerError) {
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             thisSharedPtr->sendAndRescheduleFreshnessUpdate(localTimerError);
         }
@@ -155,17 +155,18 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
     std::vector<std::string> participantIds;
     const std::int64_t newLastSeenDateMs =
             std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count();
+                    std::chrono::system_clock::now().time_since_epoch())
+                    .count();
     const std::int64_t newExpiryDateMs = newLastSeenDateMs + _defaultExpiryIntervalMs;
     {
         std::unique_lock<std::recursive_mutex> expiryDateUpdateLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
         participantIds =
-                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                                                          expiryDateUpdateLock)
+                _localCapabilitiesDirectoryStore
+                        ->getLocallyRegisteredCapabilities(expiryDateUpdateLock)
                         ->touchAndReturnGlobalParticipantIds(newLastSeenDateMs, newExpiryDateMs);
-        _localCapabilitiesDirectoryStore->getGlobalLookupCache(expiryDateUpdateLock)->touchSelected(
-                participantIds, newLastSeenDateMs, newExpiryDateMs);
+        _localCapabilitiesDirectoryStore->getGlobalLookupCache(expiryDateUpdateLock)
+                ->touchSelected(participantIds, newLastSeenDateMs, newExpiryDateMs);
     }
 
     if (participantIds.empty()) {
@@ -226,8 +227,7 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
             continue;
         }
 
-        auto onSuccess = [ ccId = _clusterControllerId, participantIdsToTouch, gbid ]()
-        {
+        auto onSuccess = [ccId = _clusterControllerId, participantIdsToTouch, gbid]() {
             if (logger().getLogLevel() == LogLevel::Trace) {
                 const std::string participantIdConcat =
                         boost::algorithm::join(participantIdsToTouch, ", ");
@@ -241,9 +241,8 @@ void LocalCapabilitiesDirectory::sendAndRescheduleFreshnessUpdate(
             }
         };
 
-        auto onError = [ ccId = _clusterControllerId, participantIdsToTouch, gbid ](
-                const joynr::exceptions::JoynrRuntimeException& error)
-        {
+        auto onError = [ccId = _clusterControllerId, participantIdsToTouch, gbid](
+                               const joynr::exceptions::JoynrRuntimeException& error) {
             JOYNR_LOG_ERROR(logger(),
                             "touch(ccId={}, participantIds={}, gbid={}) failed: {}",
                             ccId,
@@ -272,8 +271,8 @@ void LocalCapabilitiesDirectory::scheduleReAddAllGlobalDiscoveryEntries()
                         timerError.value(),
                         timerError.message());
     }
-    _reAddAllGlobalEntriesTimer
-            .async_wait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+    _reAddAllGlobalEntriesTimer.async_wait(
+            [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
                     const boost::system::error_code& localTimerError) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
                     thisSharedPtr->triggerAndRescheduleReAdd(localTimerError);
@@ -341,14 +340,11 @@ void LocalCapabilitiesDirectory::addInternal(
         types::GlobalDiscoveryEntry globalDiscoveryEntry =
                 LCDUtil::toGlobalDiscoveryEntry(discoveryEntry, _localAddress);
 
-        auto onRuntimeError = [
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            globalDiscoveryEntry,
-            gbids,
-            awaitGlobalRegistration,
-            onError
-        ](const exceptions::JoynrRuntimeException& error)
-        {
+        auto onRuntimeError = [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                               globalDiscoveryEntry,
+                               gbids,
+                               awaitGlobalRegistration,
+                               onError](const exceptions::JoynrRuntimeException& error) {
             JOYNR_LOG_ERROR(logger(),
                             "Exception occurred during the execution of capabilitiesProxy->add for "
                             "'{}' for GBIDs >{}<. Error: {} ({})",
@@ -367,14 +363,11 @@ void LocalCapabilitiesDirectory::addInternal(
             // since it already got a reply after the local registration succeeded.
         };
 
-        auto onErrorWrapper = [
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            globalDiscoveryEntry,
-            gbids,
-            awaitGlobalRegistration,
-            onError
-        ](const types::DiscoveryError::Enum& error)
-        {
+        auto onErrorWrapper = [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                               globalDiscoveryEntry,
+                               gbids,
+                               awaitGlobalRegistration,
+                               onError](const types::DiscoveryError::Enum& error) {
             JOYNR_LOG_ERROR(
                     logger(),
                     "DiscoveryError occurred during the execution of capabilitiesProxy->add for "
@@ -393,14 +386,12 @@ void LocalCapabilitiesDirectory::addInternal(
             // since it already got a reply after the local registration succeeded.
         };
 
-        std::function<void()> onSuccessWrapper = [
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            globalDiscoveryEntry,
-            awaitGlobalRegistration,
-            gbids,
-            onSuccess
-        ]()
-        {
+        std::function<void()> onSuccessWrapper = [thisWeakPtr = joynr::util::as_weak_ptr(
+                                                          shared_from_this()),
+                                                  globalDiscoveryEntry,
+                                                  awaitGlobalRegistration,
+                                                  gbids,
+                                                  onSuccess]() {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::recursive_mutex> cacheInsertionLock(
                         thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
@@ -466,9 +457,9 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                 _localCapabilitiesDirectoryStore->getCacheLock());
         JOYNR_LOG_DEBUG(logger(), "triggerGlobalProviderReregistration");
         std::vector<types::DiscoveryEntry> entries;
-        const std::int64_t now =
-                std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::system_clock::now().time_since_epoch()).count();
+        const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                         std::chrono::system_clock::now().time_since_epoch())
+                                         .count();
         const std::int64_t newExpiryDateMs = now + _defaultExpiryIntervalMs;
 
         // copy existing global entries, update lastSeenDateMs and
@@ -491,16 +482,16 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                         participantId, providerReregistrationLock);
                 if (!foundGbids.empty()) {
                     // update local store
-                    _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                                                              providerReregistrationLock)
+                    _localCapabilitiesDirectoryStore
+                            ->getLocallyRegisteredCapabilities(providerReregistrationLock)
                             ->insert(capability, foundGbids);
                     // update global cache
-                    _localCapabilitiesDirectoryStore->getGlobalLookupCache(
-                                                              providerReregistrationLock)
+                    _localCapabilitiesDirectoryStore
+                            ->getGlobalLookupCache(providerReregistrationLock)
                             ->insert(capability);
                     // send entries to JDS again
-                    auto onApplicationError =
-                            [participantId, foundGbids](const types::DiscoveryError::Enum& error) {
+                    auto onApplicationError = [participantId, foundGbids](
+                                                      const types::DiscoveryError::Enum& error) {
                         JOYNR_LOG_WARN(logger(),
                                        "Global provider reregistration for participantId {} and "
                                        "gbids >{}< failed: {} (DiscoveryError)",
@@ -508,16 +499,18 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                                        boost::algorithm::join(foundGbids, ", "),
                                        types::DiscoveryError::getLiteral(error));
                     };
-                    auto onRuntimeError = [participantId, foundGbids](
-                            const exceptions::JoynrRuntimeException& exception) {
-                        JOYNR_LOG_WARN(logger(),
-                                       "Global provider reregistration for participantId {} and "
-                                       "gbids >{}< failed: {} ({})",
-                                       participantId,
-                                       boost::algorithm::join(foundGbids, ", "),
-                                       exception.getMessage(),
-                                       exception.getTypeName());
-                    };
+                    auto onRuntimeError =
+                            [participantId,
+                             foundGbids](const exceptions::JoynrRuntimeException& exception) {
+                                JOYNR_LOG_WARN(
+                                        logger(),
+                                        "Global provider reregistration for participantId {} and "
+                                        "gbids >{}< failed: {} ({})",
+                                        participantId,
+                                        boost::algorithm::join(foundGbids, ", "),
+                                        exception.getMessage(),
+                                        exception.getTypeName());
+                            };
                     _globalCapabilitiesDirectoryClient->add(
                             LCDUtil::toGlobalDiscoveryEntry(capability, _localAddress),
                             false,
@@ -533,8 +526,8 @@ void LocalCapabilitiesDirectory::triggerGlobalProviderReregistration(
                 }
             } else {
                 // update local cache
-                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                                                          providerReregistrationLock)
+                _localCapabilitiesDirectoryStore
+                        ->getLocallyRegisteredCapabilities(providerReregistrationLock)
                         ->insert(capability);
             }
         }
@@ -616,14 +609,12 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entries in the global capabilities directory
-        auto onSuccess = [
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            participantId,
-            discoveryScope = discoveryQos.getDiscoveryScope(),
-            callback,
-            replaceGdeGbid = LCDUtil::containsOnlyEmptyString(gbids)
-        ](std::vector<joynr::types::GlobalDiscoveryEntry> result)
-        {
+        auto onSuccess = [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                          participantId,
+                          discoveryScope = discoveryQos.getDiscoveryScope(),
+                          callback,
+                          replaceGdeGbid = LCDUtil::containsOnlyEmptyString(gbids)](
+                                 std::vector<joynr::types::GlobalDiscoveryEntry> result) {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 if (replaceGdeGbid) {
                     LCDUtil::replaceGbidWithEmptyString(result);
@@ -639,8 +630,8 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
             }
         };
 
-        auto onRuntimeError =
-                [callback, participantId](const exceptions::JoynrRuntimeException& exception) {
+        auto onRuntimeError = [callback,
+                               participantId](const exceptions::JoynrRuntimeException& exception) {
             JOYNR_LOG_DEBUG(logger(),
                             "Global lookup for participantId {} failed with exception: {} ({})",
                             participantId,
@@ -676,15 +667,13 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
     // if no receiver is called, use the global capabilities directory
     if (!receiverCalled) {
         // search for global entries in the global capabilities directory
-        auto onSuccess = [
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            domains,
-            interfaceAddresses,
-            callback,
-            discoveryQos,
-            replaceGdeGbid = LCDUtil::containsOnlyEmptyString(gbids)
-        ](std::vector<joynr::types::GlobalDiscoveryEntry> result)
-        {
+        auto onSuccess = [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                          domains,
+                          interfaceAddresses,
+                          callback,
+                          discoveryQos,
+                          replaceGdeGbid = LCDUtil::containsOnlyEmptyString(gbids)](
+                                 std::vector<joynr::types::GlobalDiscoveryEntry> result) {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 std::lock_guard<std::recursive_mutex> cacheLock(
                         thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
@@ -707,15 +696,12 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             }
         };
 
-        auto onError = [
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            interfaceAddresses,
-            domain = domains[0],
-            interfaceName,
-            callback,
-            discoveryQos
-        ](const types::DiscoveryError::Enum& error)
-        {
+        auto onError = [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                        interfaceAddresses,
+                        domain = domains[0],
+                        interfaceName,
+                        callback,
+                        discoveryQos](const types::DiscoveryError::Enum& error) {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 JOYNR_LOG_DEBUG(logger(),
                                 "Global lookup for domain {} and interface {} failed with "
@@ -733,15 +719,12 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
             }
         };
 
-        auto onRuntimeError = [
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            interfaceAddresses,
-            domain = domains[0],
-            interfaceName,
-            callback,
-            discoveryQos
-        ](const exceptions::JoynrRuntimeException& exception)
-        {
+        auto onRuntimeError = [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                               interfaceAddresses,
+                               domain = domains[0],
+                               interfaceName,
+                               callback,
+                               discoveryQos](const exceptions::JoynrRuntimeException& exception) {
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 JOYNR_LOG_DEBUG(logger(),
                                 "Global lookup for domain {} and interface {} failed with "
@@ -844,12 +827,10 @@ void LocalCapabilitiesDirectory::add(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto onErrorWrapper = [
-        onError = std::move(onError),
-        discoveryEntry,
-        participantId = discoveryEntry.getParticipantId()
-    ](const types::DiscoveryError::Enum& errorEnum)
-    {
+    auto onErrorWrapper = [onError = std::move(onError),
+                           discoveryEntry,
+                           participantId = discoveryEntry.getParticipantId()](
+                                  const types::DiscoveryError::Enum& errorEnum) {
         onError(joynr::exceptions::ProviderRuntimeException(
                 fmt::format("Error registering provider {} in default backend: {}",
                             participantId,
@@ -968,9 +949,8 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>& result)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto onErrorWrapper = [ onError = std::move(onError), domains = domains, interfaceName ](
-            const types::DiscoveryError::Enum& error)
-    {
+    auto onErrorWrapper = [onError = std::move(onError), domains = domains, interfaceName](
+                                  const types::DiscoveryError::Enum& error) {
         onError(exceptions::ProviderRuntimeException(
                 fmt::format("Error looking up provider for domain {} and interface {} in all known "
                             "backends: {}",
@@ -1032,41 +1012,39 @@ void LocalCapabilitiesDirectory::lookup(
         std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    auto onErrorWrapper = [ onError = std::move(onError), participantId ](
-            const types::DiscoveryError::Enum& error)
-    {
+    auto onErrorWrapper = [onError = std::move(onError),
+                           participantId](const types::DiscoveryError::Enum& error) {
         onError(exceptions::ProviderRuntimeException(
                 fmt::format("Error looking up provider {} in all known backends: {}",
                             participantId,
                             types::DiscoveryError::getLiteral(error))));
     };
 
-    auto onSuccessWrapper = [
-        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-        onSuccess = std::move(onSuccess),
-        onError,
-        participantId
-    ](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
-    {
-        if (auto thisSharedPtr = thisWeakPtr.lock()) {
-            if (capabilities.size() == 0) {
-                joynr::exceptions::ProviderRuntimeException exception(
-                        "No capabilities found for participantId \"" + participantId +
-                        "\" and default GBID: " + thisSharedPtr->_knownGbids[0]);
-                onError(exception);
-                return;
-            }
-            if (capabilities.size() > 1) {
-                JOYNR_LOG_FATAL(thisSharedPtr->logger(),
+    auto onSuccessWrapper =
+            [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+             onSuccess = std::move(onSuccess),
+             onError,
+             participantId](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    if (capabilities.size() == 0) {
+                        joynr::exceptions::ProviderRuntimeException exception(
+                                "No capabilities found for participantId \"" + participantId +
+                                "\" and default GBID: " + thisSharedPtr->_knownGbids[0]);
+                        onError(exception);
+                        return;
+                    }
+                    if (capabilities.size() > 1) {
+                        JOYNR_LOG_FATAL(
+                                thisSharedPtr->logger(),
                                 "participantId {} has more than 1 capability entry:\n {}\n {}",
                                 participantId,
                                 capabilities[0].toString(),
                                 capabilities[1].toString());
-            }
+                    }
 
-            onSuccess(capabilities[0]);
-        }
-    };
+                    onSuccess(capabilities[0]);
+                }
+            };
 
     types::DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
@@ -1099,36 +1077,36 @@ void LocalCapabilitiesDirectory::lookup(
     }
 
     const auto gbidsForLookup = gbids.size() == 0 ? _knownGbids : gbids;
-    auto onSuccessWrapper = [
-        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-        onSuccess = std::move(onSuccess),
-        onError,
-        participantId,
-        gbidsForLookup
-    ](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities)
-    {
-        if (auto thisSharedPtr = thisWeakPtr.lock()) {
-            if (capabilities.size() == 0) {
-                const std::string gbidString = boost::algorithm::join(gbidsForLookup, ", ");
-                JOYNR_LOG_DEBUG(logger(),
+    auto onSuccessWrapper =
+            [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+             onSuccess = std::move(onSuccess),
+             onError,
+             participantId,
+             gbidsForLookup](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    if (capabilities.size() == 0) {
+                        const std::string gbidString = boost::algorithm::join(gbidsForLookup, ", ");
+                        JOYNR_LOG_DEBUG(
+                                logger(),
                                 "participantId {} has no capability entry "
                                 "(DiscoveryError::NO_ENTRY_FOR_PARTICIPANT) for GBIDs: >{}<",
                                 participantId,
                                 gbidString);
-                onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
-                return;
-            }
-            if (capabilities.size() > 1) {
-                JOYNR_LOG_FATAL(thisSharedPtr->logger(),
+                        onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
+                        return;
+                    }
+                    if (capabilities.size() > 1) {
+                        JOYNR_LOG_FATAL(
+                                thisSharedPtr->logger(),
                                 "participantId {} has more than 1 capability entry:\n {}\n {}",
                                 participantId,
                                 capabilities[0].toString(),
                                 capabilities[1].toString());
-            }
+                    }
 
-            onSuccess(capabilities[0]);
-        }
-    };
+                    onSuccess(capabilities[0]);
+                }
+            };
 
     auto localCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
             std::move(onSuccessWrapper), std::move(onError));
@@ -1167,12 +1145,10 @@ void LocalCapabilitiesDirectory::remove(
                     _localCapabilitiesDirectoryStore->getGlobalLookupCache(removeLock)->size());
             updatePersistedFile();
         } else {
-            auto onGlobalRemoveSuccess = [
-                this,
-                participantId,
-                lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
-            ]()
-            {
+            auto onGlobalRemoveSuccess = [this,
+                                          participantId,
+                                          lCDStoreWeakPtr = joynr::util::as_weak_ptr(
+                                                  _localCapabilitiesDirectoryStore)]() {
                 if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
                     std::unique_lock<std::recursive_mutex> cacheLock(
                             lCDStoreSharedPtr->getCacheLock());
@@ -1180,8 +1156,8 @@ void LocalCapabilitiesDirectory::remove(
                             lCDStoreSharedPtr->getGbidsForParticipantId(participantId, cacheLock),
                             ", ");
                     lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId, cacheLock);
-                    lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)
-                            ->removeByParticipantId(participantId);
+                    lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->removeByParticipantId(
+                            participantId);
                     lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)
                             ->removeByParticipantId(participantId);
                     JOYNR_LOG_INFO(
@@ -1197,12 +1173,11 @@ void LocalCapabilitiesDirectory::remove(
                 }
                 updatePersistedFile();
             };
-            auto onApplicationError = [
-                this,
-                participantId,
-                lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
-            ](const types::DiscoveryError::Enum& error)
-            {
+            auto onApplicationError = [this,
+                                       participantId,
+                                       lCDStoreWeakPtr = joynr::util::as_weak_ptr(
+                                               _localCapabilitiesDirectoryStore)](
+                                              const types::DiscoveryError::Enum& error) {
                 using namespace types;
                 switch (error) {
                 case DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT:
@@ -1222,18 +1197,19 @@ void LocalCapabilitiesDirectory::remove(
                                        types::DiscoveryError::getLiteral(error));
                         lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(
                                 participantId, cacheLock);
-                        lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)
-                                ->removeByParticipantId(participantId);
+                        lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->removeByParticipantId(
+                                participantId);
                         lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)
                                 ->removeByParticipantId(participantId);
-                        JOYNR_LOG_INFO(logger(),
-                                       "After removal of participantId {}: #localCapabilities {}, "
-                                       "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
-                                       participantId,
-                                       lCDStoreSharedPtr->getLocallyRegisteredCapabilities(
-                                                                  cacheLock)->size(),
-                                       lCDStoreSharedPtr->countGlobalCapabilities(),
-                                       lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->size());
+                        JOYNR_LOG_INFO(
+                                logger(),
+                                "After removal of participantId {}: #localCapabilities {}, "
+                                "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
+                                participantId,
+                                lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)
+                                        ->size(),
+                                lCDStoreSharedPtr->countGlobalCapabilities(),
+                                lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->size());
                     }
                     updatePersistedFile();
                     break;
@@ -1258,11 +1234,10 @@ void LocalCapabilitiesDirectory::remove(
                     break;
                 }
             };
-            auto onRuntimeError = [
-                participantId,
-                lCDStoreWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectoryStore)
-            ](const exceptions::JoynrRuntimeException& exception)
-            {
+            auto onRuntimeError = [participantId,
+                                   lCDStoreWeakPtr = joynr::util::as_weak_ptr(
+                                           _localCapabilitiesDirectoryStore)](
+                                          const exceptions::JoynrRuntimeException& exception) {
                 if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
                     std::unique_lock<std::recursive_mutex> cacheLock(
                             lCDStoreSharedPtr->getCacheLock());
@@ -1421,8 +1396,8 @@ void LocalCapabilitiesDirectory::scheduleCleanupTimer()
                         timerError.value(),
                         timerError.message());
     } else {
-        _checkExpiredDiscoveryEntriesTimer
-                .async_wait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+        _checkExpiredDiscoveryEntriesTimer.async_wait(
+                [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
                         const boost::system::error_code& errorCode) {
                     if (auto thisSharedPtr = thisWeakPtr.lock()) {
                         thisSharedPtr->checkExpiredDiscoveryEntries(errorCode);
@@ -1453,12 +1428,12 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                 _localCapabilitiesDirectoryStore->getCacheLock());
 
         auto removedLocalCapabilities =
-                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                                                          discoveryEntryExpiryCheckLock)
+                _localCapabilitiesDirectoryStore
+                        ->getLocallyRegisteredCapabilities(discoveryEntryExpiryCheckLock)
                         ->removeExpired();
         auto removedGlobalCapabilities =
-                _localCapabilitiesDirectoryStore->getGlobalLookupCache(
-                                                          discoveryEntryExpiryCheckLock)
+                _localCapabilitiesDirectoryStore
+                        ->getGlobalLookupCache(discoveryEntryExpiryCheckLock)
                         ->removeExpired();
 
         if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
@@ -1469,12 +1444,12 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                         "Following discovery entries expired: local: {}, "
                         "#localCapabilities: {}, global: {}, #globalLookupCache: {}",
                         LCDUtil::joinToString(removedLocalCapabilities),
-                        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                                                                  discoveryEntryExpiryCheckLock)
+                        _localCapabilitiesDirectoryStore
+                                ->getLocallyRegisteredCapabilities(discoveryEntryExpiryCheckLock)
                                 ->size(),
                         LCDUtil::joinToString(removedGlobalCapabilities),
-                        _localCapabilitiesDirectoryStore->getGlobalLookupCache(
-                                                                  discoveryEntryExpiryCheckLock)
+                        _localCapabilitiesDirectoryStore
+                                ->getGlobalLookupCache(discoveryEntryExpiryCheckLock)
                                 ->size());
 
                 for (const auto& capability :
@@ -1502,8 +1477,7 @@ void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
         const std::int64_t& clusterControllerStartDateMs,
         const std::string gbid)
 {
-    auto onSuccess = [ ccId = _clusterControllerId, clusterControllerStartDateMs, gbid ]()
-    {
+    auto onSuccess = [ccId = _clusterControllerId, clusterControllerStartDateMs, gbid]() {
         JOYNR_LOG_TRACE(logger(),
                         "RemoveStale(ccId={}, gbid={}, maxLastSeenDateMs={}) succeeded.",
                         ccId,
@@ -1511,13 +1485,11 @@ void LocalCapabilitiesDirectory::removeStaleProvidersOfClusterController(
                         clusterControllerStartDateMs);
     };
 
-    auto onRuntimeError = [
-        ccId = _clusterControllerId,
-        clusterControllerStartDateMs,
-        gbid,
-        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())
-    ](const joynr::exceptions::JoynrRuntimeException& error)
-    {
+    auto onRuntimeError = [ccId = _clusterControllerId,
+                           clusterControllerStartDateMs,
+                           gbid,
+                           thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+                                  const joynr::exceptions::JoynrRuntimeException& error) {
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             std::int64_t durationForRetryCallMs = 3600000;
             JOYNR_LOG_ERROR(logger(),

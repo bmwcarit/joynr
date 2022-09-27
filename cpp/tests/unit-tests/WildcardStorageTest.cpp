@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +20,8 @@
 #include <string>
 #include <tuple>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "libjoynrclustercontroller/access-control/AccessControlUtils.h"
 #include "libjoynrclustercontroller/access-control/WildcardStorage.h"
@@ -123,32 +123,28 @@ const std::vector<std::tuple<std::string, std::string, int, int>> testData_TwoCh
         std::make_tuple("test.joynr.*", "joynr.test.*", 1, 1),
 
         // two children of root
-        std::make_tuple("a*", "b*", 1, 1),
-        std::make_tuple("b*", "a*", 1, 1)};
+        std::make_tuple("a*", "b*", 1, 1), std::make_tuple("b*", "a*", 1, 1)};
 
 const std::vector<std::tuple<std::string, std::string, int, int>> testData_ChildOfChild = {
         // Params: 1st and 2nd key to be inserted in the storage followed by expected entries in
         // first and second lookup
 
         // child of child (with empty string)
-        std::make_tuple("*", "k*", 1, 2),
-        std::make_tuple("k*", "*", 2, 1),
+        std::make_tuple("*", "k*", 1, 2), std::make_tuple("k*", "*", 2, 1),
 
         // child of child
-        std::make_tuple("key*", "key0*", 1, 2),
-        std::make_tuple("key0*", "key*", 2, 1),
+        std::make_tuple("key*", "key0*", 1, 2), std::make_tuple("key0*", "key*", 2, 1),
 
         // child of child (with domain like separator and empty string)
-        std::make_tuple("*", "joynr.*", 1, 2),
-        std::make_tuple("joynr.*", "*", 2, 1)};
+        std::make_tuple("*", "joynr.*", 1, 2), std::make_tuple("joynr.*", "*", 2, 1)};
 
 INSTANTIATE_TEST_SUITE_P(lookupChildOfChild,
-                        WildcardStorageTestP,
-                        ::testing::ValuesIn(testData_ChildOfChild));
+                         WildcardStorageTestP,
+                         ::testing::ValuesIn(testData_ChildOfChild));
 
 INSTANTIATE_TEST_SUITE_P(lookupTwoChildrenOfParent,
-                        WildcardStorageTestP,
-                        ::testing::ValuesIn(testData_TwoChildrenOfParent));
+                         WildcardStorageTestP,
+                         ::testing::ValuesIn(testData_TwoChildrenOfParent));
 
 template <typename T>
 class WildcardStorageTestTypedTest : public ::testing::Test
@@ -161,7 +157,7 @@ using AccessControlTestTypes = ::testing::Types<dac::MasterAccessControlEntry,
                                                 dac::MasterRegistrationControlEntry,
                                                 dac::MediatorRegistrationControlEntry,
                                                 dac::OwnerRegistrationControlEntry>;
-TYPED_TEST_SUITE(WildcardStorageTestTypedTest, AccessControlTestTypes,);
+TYPED_TEST_SUITE(WildcardStorageTestTypedTest, AccessControlTestTypes, );
 
 TYPED_TEST(WildcardStorageTestTypedTest, insertAndLookupOptionalSet)
 {

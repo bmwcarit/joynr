@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,8 @@
 #include <cstdint>
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Future.h"
 #include "joynr/ISubscriptionCallback.h"
@@ -31,16 +31,16 @@
 #include "joynr/Runnable.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
+#include "joynr/SubscriptionRequest.h"
 #include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/Util.h"
-#include "joynr/SubscriptionRequest.h"
 
-#include "tests/utils/TimeUtils.h"
 #include "tests/mock/MockDelayedScheduler.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/utils/TimeUtils.h"
 
-using ::testing::A;
 using ::testing::_;
+using ::testing::A;
 using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::Between;
@@ -300,7 +300,7 @@ TEST_F(SubscriptionManagerTest,
                                                          100,  // publication ttl
                                                          100,  // period
                                                          400   // alert after interval
-                                                         );
+    );
     subscriptionManager->registerSubscription("methodName",
                                               gpslocationCallback,
                                               mockGpsSubscriptionListener,
@@ -333,7 +333,7 @@ TEST_F(SubscriptionManagerTest, getSubscriptionListener)
                                                          100,  // publication ttl
                                                          100,  // period
                                                          400   // alert after interval
-                                                         );
+    );
     subscriptionManager->registerSubscription("broadcastName",
                                               gpslocationCallback,
                                               mockGpsSubscriptionListener,

@@ -32,7 +32,6 @@
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/Util.h"
 
-
 using namespace joynr;
 
 static const std::string storageFile("test-participantIdStorageTest.persist");
@@ -45,7 +44,7 @@ public:
     {
         std::remove(storageFile.c_str());
 
-        std::tie(domain, interfaceName, majorVersion) =  GetParam();
+        std::tie(domain, interfaceName, majorVersion) = GetParam();
     }
 
     std::string domain;
@@ -72,13 +71,14 @@ TEST_P(ParticipantIdStorageTest, defaultProviderParticipantId)
 TEST_P(ParticipantIdStorageTest, newProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
-    std::string participantId =
-            store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion, std::string());
+    std::string participantId = store.getProviderParticipantId(
+            this->domain, this->interfaceName, this->majorVersion, std::string());
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 21);
 
     // also check get function without default value
-    participantId = store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion);
+    participantId =
+            store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion);
     // Check that the id is long enough to be a UUID
     ASSERT_TRUE(participantId.size() > 21);
 }
@@ -89,15 +89,18 @@ TEST_P(ParticipantIdStorageTest, persistedProviderParticipantId)
     std::string expectedParticipantId;
     {
         ParticipantIdStorage store(storageFile);
-        expectedParticipantId = store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion);
-        store.setProviderParticipantId(this->domain, this->interfaceName, this->majorVersion, expectedParticipantId);
+        expectedParticipantId = store.getProviderParticipantId(
+                this->domain, this->interfaceName, this->majorVersion);
+        store.setProviderParticipantId(
+                this->domain, this->interfaceName, this->majorVersion, expectedParticipantId);
     }
 
     // create a new storage
     ParticipantIdStorage store(storageFile);
 
     // Check that the setting was persisted
-    std::string participantId = store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion);
+    std::string participantId =
+            store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion);
 
     ASSERT_EQ(expectedParticipantId, participantId);
 }
@@ -111,8 +114,8 @@ TEST_P(ParticipantIdStorageTest, settingsAreNotAutomaticallySyncedToFile)
     }
     {
         ParticipantIdStorage store(storageFile);
-        std::string queriedParticipantID =
-                store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion);
+        std::string queriedParticipantID = store.getProviderParticipantId(
+                this->domain, this->interfaceName, this->majorVersion);
         // participantID does not exist
         EXPECT_NE(queriedParticipantID, participantID);
     }
@@ -129,18 +132,20 @@ std::tuple<std::string, std::string, std::uint32_t> const stringValues[] = {
         std::make_tuple("0123456789012345678912", "0123456789012345678912", 1234567890)};
 INSTANTIATE_TEST_SUITE_P(checkStrings, ParticipantIdStorageTest, ::testing::ValuesIn(stringValues));
 
-
 #ifndef NDEBUG
 TEST_P(ParticipantIdStorageAssertTest, assertOnGetProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
-    EXPECT_DEATH(store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion), "Assertion.*");
+    EXPECT_DEATH(
+            store.getProviderParticipantId(this->domain, this->interfaceName, this->majorVersion),
+            "Assertion.*");
 }
 
 TEST_P(ParticipantIdStorageAssertTest, assertOnSetProviderParticipantId)
 {
     ParticipantIdStorage store(storageFile);
-    EXPECT_DEATH(store.setProviderParticipantId(this->domain, this->interfaceName, this->majorVersion, "participantID"),
+    EXPECT_DEATH(store.setProviderParticipantId(
+                         this->domain, this->interfaceName, this->majorVersion, "participantID"),
                  "Assertion.*");
 }
 
@@ -148,12 +153,11 @@ std::tuple<std::string, std::string, std::uint32_t> const failingStrings[] = {
         // domain: tuple[0]
         // interfaceName: tuple[1]
         // majorVersion: tuple[2]
-        std::make_tuple("", "", 1),
-        std::make_tuple("", "interfaceName", 1),
+        std::make_tuple("", "", 1), std::make_tuple("", "interfaceName", 1),
         std::make_tuple("domain", "", 1)};
 INSTANTIATE_TEST_SUITE_P(failingStrings,
-                        ParticipantIdStorageAssertTest,
-                        ::testing::ValuesIn(failingStrings));
+                         ParticipantIdStorageAssertTest,
+                         ::testing::ValuesIn(failingStrings));
 #endif
 
 TEST(ParticipantIdStorageTest, writeIniFile)
@@ -163,8 +167,10 @@ TEST(ParticipantIdStorageTest, writeIniFile)
 
     const int entriesToWrite = 100;
     for (int i = 0; i < entriesToWrite; ++i) {
-        store.setProviderParticipantId(
-                joynr::util::createUuid(), joynr::util::createUuid(), 1234567890, joynr::util::createUuid());
+        store.setProviderParticipantId(joynr::util::createUuid(),
+                                       joynr::util::createUuid(),
+                                       1234567890,
+                                       joynr::util::createUuid());
     }
 
     std::ifstream fileStream(storageFile.c_str());
@@ -187,8 +193,10 @@ TEST(ParticipantIdStorageTest, deleteCorruptedFile)
         const std::string interface = ".interface";
         const std::string majorVersion = ".v5";
         // add twice the same line to make the file an invalid INI file
-        file << header << domain << interface << majorVersion << "=" << wrongParticipantID << std::endl;
-        file << header << domain << interface << majorVersion << "=" << wrongParticipantID << std::endl;
+        file << header << domain << interface << majorVersion << "=" << wrongParticipantID
+             << std::endl;
+        file << header << domain << interface << majorVersion << "=" << wrongParticipantID
+             << std::endl;
     }
 
     {
@@ -242,8 +250,10 @@ public:
 
     void writeOneEntryAndNotify()
     {
-        store.setProviderParticipantId(
-                joynr::util::createUuid(), joynr::util::createUuid(), 1234567890, joynr::util::createUuid());
+        store.setProviderParticipantId(joynr::util::createUuid(),
+                                       joynr::util::createUuid(),
+                                       1234567890,
+                                       joynr::util::createUuid());
 
         // notify threads
         std::cout << "Done writing first entry." << std::endl;

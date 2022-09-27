@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,11 +18,11 @@
  */
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
-#include "joynr/ReplyInterpreter.h"
 #include "joynr/ReplyCaller.h"
+#include "joynr/ReplyInterpreter.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
@@ -31,11 +31,11 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockCallback.h"
 
-using ::testing::A;
 using ::testing::_;
-using ::testing::Property;
+using ::testing::A;
 using ::testing::Eq;
 using ::testing::Pointee;
+using ::testing::Property;
 
 using namespace joynr;
 
@@ -129,8 +129,9 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_with_error)
     auto callback = std::make_shared<
             MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
     EXPECT_CALL(*callback, onSuccess(_)).Times(0);
-    EXPECT_CALL(*callback,
-                onError(Pointee(joynrException(error.getTypeName(), error.getMessage())))).Times(1);
+    EXPECT_CALL(
+            *callback, onError(Pointee(joynrException(error.getTypeName(), error.getMessage()))))
+            .Times(1);
 
     // Create a reply caller
     auto icaller = std::make_shared<ReplyCaller<types::Localisation::GpsLocation>>(
@@ -154,8 +155,9 @@ TEST_F(ReplyInterpreterTest, execute_calls_caller_void_with_error)
     // Create a mock callback
     auto callback = std::make_shared<MockCallbackWithJoynrException<void>>();
     EXPECT_CALL(*callback, onSuccess()).Times(0);
-    EXPECT_CALL(*callback,
-                onError(Pointee(joynrException(error.getTypeName(), error.getMessage())))).Times(1);
+    EXPECT_CALL(
+            *callback, onError(Pointee(joynrException(error.getTypeName(), error.getMessage()))))
+            .Times(1);
 
     // Create a reply caller
     auto icaller = std::make_shared<ReplyCaller<void>>(
@@ -176,8 +178,9 @@ TEST_F(ReplyInterpreterTest, execute_empty_reply)
     auto callback = std::make_shared<
             MockCallbackWithJoynrException<joynr::types::Localisation::GpsLocation>>();
     EXPECT_CALL(*callback, onSuccess(_)).Times(0);
-    EXPECT_CALL(*callback,
-                onError(Pointee(joynrException(error.getTypeName(), error.getMessage())))).Times(1);
+    EXPECT_CALL(
+            *callback, onError(Pointee(joynrException(error.getTypeName(), error.getMessage()))))
+            .Times(1);
 
     // Create a reply caller
     auto icaller = std::make_shared<ReplyCaller<types::Localisation::GpsLocation>>(

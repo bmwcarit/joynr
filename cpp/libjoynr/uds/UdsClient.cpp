@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -204,15 +204,15 @@ void UdsClient::doReadHeader() noexcept
     boost::asio::async_read(_socket,
                             _readBuffer->header(),
                             [this](boost::system::error_code readFailure, std::size_t /*length*/) {
-        if (readFailure) {
-            JOYNR_LOG_ERROR(logger(),
-                            "{} failed to read header: {}",
-                            _address.getId(),
-                            readFailure.message());
-        } else {
-            doReadBody();
-        }
-    });
+                                if (readFailure) {
+                                    JOYNR_LOG_ERROR(logger(),
+                                                    "{} failed to read header: {}",
+                                                    _address.getId(),
+                                                    readFailure.message());
+                                } else {
+                                    doReadBody();
+                                }
+                            });
 }
 
 void UdsClient::doReadBody() noexcept
@@ -245,7 +245,7 @@ void UdsClient::doReadBody() noexcept
 void UdsClient::send(const smrf::ByteArrayView& msg, const IUdsSender::SendFailed& callback)
 {
     try {
-        _ioContext.post([ this, frame = UdsFrameBufferV1(msg), callback ]() mutable {
+        _ioContext.post([this, frame = UdsFrameBufferV1(msg), callback]() mutable {
             try {
                 if (_sendQueue->pushBack(std::move(frame), callback)) {
                     doWrite();
@@ -265,10 +265,10 @@ void UdsClient::doWrite() noexcept
     boost::asio::async_write(_socket,
                              _sendQueue->showFront(),
                              [this](boost::system::error_code writeFailed, std::size_t /*length*/) {
-        if (_sendQueue->popFrontOnSuccess(writeFailed)) {
-            doWrite();
-        }
-    });
+                                 if (_sendQueue->popFrontOnSuccess(writeFailed)) {
+                                     doWrite();
+                                 }
+                             });
 }
 
 void UdsClient::doHandleFatalError(const std::string& errorMessage,

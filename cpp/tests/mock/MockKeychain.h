@@ -23,7 +23,8 @@
 
 #include "joynr/IKeychain.h"
 
-class MockKeychain : public joynr::IKeychain {
+class MockKeychain : public joynr::IKeychain
+{
 public:
     MOCK_CONST_METHOD0(getTlsCertificate, std::shared_ptr<const mococrw::X509Certificate>());
     MOCK_CONST_METHOD0(getTlsKey, std::shared_ptr<const mococrw::AsymmetricPrivateKey>());

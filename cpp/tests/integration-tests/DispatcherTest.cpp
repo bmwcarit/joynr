@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,20 +16,18 @@
  * limitations under the License.
  * #L%
  */
-#include <string>
-#include <vector>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"
-#include "joynr/Dispatcher.h"
 #include "joynr/Dispatcher.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/InterfaceRegistrar.h"
@@ -51,11 +49,11 @@
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockMessageRouter.h"
-#include "tests/mock/MockSubscriptionManager.h"
-#include "tests/mock/MockSubscriptionCallback.h"
-#include "tests/mock/MockTestRequestCaller.h"
 #include "tests/mock/MockReplyCaller.h"
+#include "tests/mock/MockSubscriptionCallback.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/MockSubscriptionManager.h"
+#include "tests/mock/MockTestRequestCaller.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -190,7 +188,7 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation)
                 getLocationMock(
                         A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                         A<std::function<void(const std::shared_ptr<
-                                joynr::exceptions::ProviderRuntimeException>&)>>()))
+                                             joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
     qos.setTtl(1000);
@@ -218,7 +216,8 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation)
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             ImmutableMessageHasPayload(expectedReply.getPayload())),
-                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
+                      _))
+            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     // test code: send the request through the dispatcher->
     // This should cause our mock messaging to receive a reply from the mock provider
@@ -237,7 +236,7 @@ TEST_F(DispatcherTest, receive_customHeadersCopied)
                 getLocationMock(
                         A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                         A<std::function<void(const std::shared_ptr<
-                                joynr::exceptions::ProviderRuntimeException>&)>>()))
+                                             joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
     Request request;
@@ -255,7 +254,8 @@ TEST_F(DispatcherTest, receive_customHeadersCopied)
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             ImmutableMessageHasPrefixedCustomHeaders(prefixedCustomHeaders)),
-                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
+                      _))
+            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
@@ -271,7 +271,7 @@ TEST_F(DispatcherTest, compressFlagIsRetained)
                 getLocationMock(
                         A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                         A<std::function<void(const std::shared_ptr<
-                                joynr::exceptions::ProviderRuntimeException>&)>>()))
+                                             joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
     Request request;
@@ -286,7 +286,8 @@ TEST_F(DispatcherTest, compressFlagIsRetained)
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             MessageIsCompressed(isCompressed)),
-                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
+                      _))
+            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
@@ -301,7 +302,7 @@ void DispatcherTest::testEffortFromRequestIsRetainedImpl(
                 getLocationMock(
                         A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                         A<std::function<void(const std::shared_ptr<
-                                joynr::exceptions::ProviderRuntimeException>&)>>()))
+                                             joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
     Request request;
@@ -322,7 +323,8 @@ void DispatcherTest::testEffortFromRequestIsRetainedImpl(
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             MessageUsesEffort(expectedEffort)),
-                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
+                      _))
+            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
@@ -352,7 +354,7 @@ TEST_F(DispatcherTest, requestWithInvalidEffort_replyUsesDefaultEffort)
                 getLocationMock(
                         A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
                         A<std::function<void(const std::shared_ptr<
-                                joynr::exceptions::ProviderRuntimeException>&)>>()))
+                                             joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
     Request request;
@@ -368,7 +370,8 @@ TEST_F(DispatcherTest, requestWithInvalidEffort_replyUsesDefaultEffort)
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             MessageUsesEffort(expectedEffort)),
-                      _)).WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
+                      _))
+            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());

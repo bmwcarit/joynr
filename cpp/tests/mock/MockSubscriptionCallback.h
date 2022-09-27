@@ -23,13 +23,15 @@
 
 #include "joynr/ISubscriptionCallback.h"
 
-class MockSubscriptionCallback : public joynr::ISubscriptionCallback {
+class MockSubscriptionCallback : public joynr::ISubscriptionCallback
+{
 public:
     MOCK_METHOD1(onError, void(const joynr::exceptions::JoynrRuntimeException& error));
     MOCK_METHOD1(executePublication, void(joynr::BasePublication& publication));
     MOCK_METHOD1(execute, void(const joynr::SubscriptionReply& subscriptionReply));
 
-    void execute(joynr::BasePublication&& subscriptionPublication) override {
+    void execute(joynr::BasePublication&& subscriptionPublication) override
+    {
         executePublication(subscriptionPublication);
     }
 };

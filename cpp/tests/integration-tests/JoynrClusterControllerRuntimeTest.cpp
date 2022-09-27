@@ -46,7 +46,6 @@
 #include "joynr/tests/testProxy.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/mock/MockMosquittoConnection.h"
 #include "tests/mock/MockMqttMessagingSkeleton.h"
 #include "tests/mock/MockSubscriptionListener.h"
@@ -54,6 +53,7 @@
 #include "tests/mock/MockTransportMessageReceiver.h"
 #include "tests/mock/MockTransportMessageSender.h"
 #include "tests/mock/MockUdsClientCallbacks.h"
+#include "tests/mock/TestJoynrClusterControllerRuntime.h"
 #include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
@@ -114,15 +114,15 @@ public:
               mockMqttMessageReceiver(std::make_shared<MockTransportMessageReceiver>()),
               mockMqttMessageSender(std::make_shared<MockTransportMessageSender>()),
               gbid("gbid"),
-              mockMosquittoConnection(
-                      std::make_shared<MockMosquittoConnection>(ccSettings,
-                                                                joynr::BrokerUrl("mqtt://testBrokerHost:1883"),
-                                                                std::chrono::seconds(1),
-                                                                std::chrono::seconds(1),
-                                                                std::chrono::seconds(1),
-                                                                false,
-                                                                "testClientId",
-                                                                gbid)),
+              mockMosquittoConnection(std::make_shared<MockMosquittoConnection>(
+                      ccSettings,
+                      joynr::BrokerUrl("mqtt://testBrokerHost:1883"),
+                      std::chrono::seconds(1),
+                      std::chrono::seconds(1),
+                      std::chrono::seconds(1),
+                      false,
+                      "testClientId",
+                      gbid)),
               semaphore(std::make_shared<Semaphore>(0)),
               globalMqttTopic("mqtt_JoynrClusterControllerRuntimeTest.topic"),
               globalMqttBrokerUrl("mqtt_JoynrClusterControllerRuntimeTest.brokerUrl"),
@@ -233,9 +233,9 @@ TEST_F(JoynrClusterControllerRuntimeTest, loadMultipleAclRclFiles)
 {
     // runtime can only be created, after MockMessageReceiver has been told to return
     // a channelId for getReceiveChannelId.
-    //EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
+    // EXPECT_CALL(*mockMqttMessageReceiver, getSerializedGlobalClusterControllerAddress())
     //    .WillOnce(::testing::Return(serializedMqttAddress));
-    //EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
+    // EXPECT_CALL(*mockMqttMessageReceiver, getGlobalClusterControllerAddress())
     //    .WillOnce(::testing::ReturnRef(mqttGlobalAddress));
 
     runtime = std::make_shared<TestJoynrClusterControllerRuntime>(
@@ -271,12 +271,12 @@ TEST_F(JoynrClusterControllerRuntimeTest, injectCustomMqttMessagingSkeleton)
 {
     auto mockMqttMessagingSkeleton = std::make_shared<MockMqttMessagingSkeleton>();
 
-    auto mockMqttMessagingSkeletonFactory =
-            [mockMqttMessagingSkeleton](std::weak_ptr<IMessageRouter> messageRouter,
-                                        std::shared_ptr<MqttReceiver> mqttReceiver,
-                                        const std::string& gbid,
-                                        const std::string& multicastTopicPrefix,
-                                        std::uint64_t ttlUplift) {
+    auto mockMqttMessagingSkeletonFactory = [mockMqttMessagingSkeleton](
+                                                    std::weak_ptr<IMessageRouter> messageRouter,
+                                                    std::shared_ptr<MqttReceiver> mqttReceiver,
+                                                    const std::string& gbid,
+                                                    const std::string& multicastTopicPrefix,
+                                                    std::uint64_t ttlUplift) {
         std::ignore = messageRouter;
         std::ignore = mqttReceiver;
         std::ignore = multicastTopicPrefix;
@@ -572,7 +572,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
                                                                    200,  // min interval
                                                                    200,  // max interval
                                                                    200   // alert after interval
-                                                                   );
+            );
     auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
@@ -627,7 +627,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
                                                                    100,  // min interval
                                                                    1000, // max interval
                                                                    10000 // alert after interval
-                                                                   );
+            );
     ON_CALL(*mockSubscriptionListener, onReceive(Eq(gpsLocation)))
             .WillByDefault(ReleaseSemaphore(semaphore));
 
@@ -660,15 +660,13 @@ TEST_F(JoynrClusterControllerRuntimeTest, localCommunicationUds)
         mockClientCallbacks.received(std::move(val));
     });
 
-    EXPECT_CALL(mockClientCallbacks, connected()).Times(1).WillOnce(
-            ReleaseSemaphore(semaphore));
+    EXPECT_CALL(mockClientCallbacks, connected()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
     client.start();
     ASSERT_TRUE(semaphore->waitFor(waitPeriodForClientServerCommunication))
             << "UDS client could not connect.";
     Mock::VerifyAndClearExpectations(&mockClientCallbacks);
 
-    EXPECT_CALL(mockClientCallbacks, disconnected()).Times(1).WillOnce(
-            ReleaseSemaphore(semaphore));
+    EXPECT_CALL(mockClientCallbacks, disconnected()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
     shutdownRuntime();
     ASSERT_TRUE(semaphore->waitFor(waitPeriodForClientServerCommunication))
             << "UDS client could not disconnected when runtime is shutting down.";

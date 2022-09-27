@@ -19,8 +19,8 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
@@ -73,7 +73,8 @@ public:
               clusterControllerSettings(*settings),
               sysSettings(*settings)
     {
-        clusterControllerSettings.setCapabilitiesFreshnessUpdateIntervalMs(std::chrono::milliseconds(500));
+        clusterControllerSettings.setCapabilitiesFreshnessUpdateIntervalMs(
+                std::chrono::milliseconds(500));
     }
 
     void initCCRuntime()
@@ -88,7 +89,7 @@ public:
 
     ~GlobalCapabilitiesDirectoryIntegrationTest() override
     {
-        if(runtime) {
+        if (runtime) {
             runtime->shutdown();
             test::util::resetAndWaitUntilDestroyed(runtime);
         }
@@ -104,7 +105,7 @@ private:
 TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability)
 {
     initCCRuntime();
-    const std::vector<std::string> gbids {"testGbid"};
+    const std::vector<std::string> gbids{"testGbid"};
     std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
             capabilitiesProxyBuilder =
                     runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
@@ -121,8 +122,10 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
                     ->build());
 
     std::unique_ptr<GlobalCapabilitiesDirectoryClient> globalCapabilitiesDirectoryClient(
-            std::make_unique<GlobalCapabilitiesDirectoryClient>(clusterControllerSettings,
-                std::make_unique<TaskSequencer<void>>(std::chrono::milliseconds(MessagingQos().getTtl()))));
+            std::make_unique<GlobalCapabilitiesDirectoryClient>(
+                    clusterControllerSettings,
+                    std::make_unique<TaskSequencer<void>>(
+                            std::chrono::milliseconds(MessagingQos().getTtl()))));
     globalCapabilitiesDirectoryClient->setProxy(cabilitiesProxy);
 
     std::string capDomain("testDomain");
@@ -133,7 +136,8 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
     joynr::types::Version providerVersion(47, 11);
     std::int64_t capLastSeenMs = 0;
     std::int64_t capExpiryDateMs = 1000;
-    std::string capSerializedMqttAddress("{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"testGbid\",\"topic\":\"testTopic}");
+    std::string capSerializedMqttAddress("{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\","
+                                         "\"brokerUri\":\"testGbid\",\"topic\":\"testTopic}");
     types::GlobalDiscoveryEntry globalDiscoveryEntry(providerVersion,
                                                      capDomain,
                                                      capInterface,
@@ -146,12 +150,12 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
 
     JOYNR_LOG_DEBUG(logger(), "Registering capabilities");
     globalCapabilitiesDirectoryClient->add(
-                globalDiscoveryEntry,
-                false,
-                gbids,
-                []() {},
-                [](const joynr::types::DiscoveryError::Enum& /*error*/) {},
-                [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
+            globalDiscoveryEntry,
+            false,
+            gbids,
+            []() {},
+            [](const joynr::types::DiscoveryError::Enum& /*error*/) {},
+            [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
     JOYNR_LOG_DEBUG(logger(), "Registered capabilities");
 
     auto callback = std::make_shared<GlobalCapabilitiesMock>();
@@ -163,19 +167,19 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
             .WillRepeatedly(DoAll(ReleaseSemaphore(&semaphore), Return()));
     std::function<void(const std::vector<types::GlobalDiscoveryEntry>&)> onSuccess =
             [&](const std::vector<types::GlobalDiscoveryEntry>& capabilities) {
-        callback->capabilitiesReceived(capabilities);
-    };
+                callback->capabilitiesReceived(capabilities);
+            };
 
     JOYNR_LOG_DEBUG(logger(), "get capabilities");
     std::int64_t defaultDiscoveryMessageTtl = messagingSettings.getDiscoveryMessagesTtl();
     globalCapabilitiesDirectoryClient->lookup(
-                {capDomain},
-                capInterface,
-                gbids,
-                defaultDiscoveryMessageTtl,
-                onSuccess,
-                [](const joynr::types::DiscoveryError::Enum& /*error*/) {},
-                [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
+            {capDomain},
+            capInterface,
+            gbids,
+            defaultDiscoveryMessageTtl,
+            onSuccess,
+            [](const joynr::types::DiscoveryError::Enum& /*error*/) {},
+            [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
     semaphore.waitFor(std::chrono::seconds(10));
     JOYNR_LOG_DEBUG(logger(), "finished get capabilities");
 }
@@ -183,8 +187,8 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
 /**
  * Test removing stale providers functionality of cluster controller when it is starting
  *
- * Pre-conditions: start cluster controller first time, register provider, shutdown cluster controller
- * without calling of unregisterProvider() method. Start cluster controller second time.
+ * Pre-conditions: start cluster controller first time, register provider, shutdown cluster
+ * controller without calling of unregisterProvider() method. Start cluster controller second time.
  *
  * Expected behavior: testProxyBuilder->build() throws an exception after the second start of
  * cluster controller, because stale provider has been removed at the start of cluster controller.
@@ -216,13 +220,14 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
     testRuntimeFirst->init();
     testRuntimeFirst->start();
 
-    std::string providerParticipantId = testRuntimeFirst->registerProvider<tests::testProvider>(domain, mockProvider, providerQos, true, true);
+    std::string providerParticipantId = testRuntimeFirst->registerProvider<tests::testProvider>(
+            domain, mockProvider, providerQos, true, true);
 
     auto testProxyBuilder = testRuntimeFirst->createProxyBuilder<tests::testProxy>(domain);
 
     auto testProxy = testProxyBuilder->setMessagingQos(MessagingQos())
-                    ->setDiscoveryQos(discoveryQos)
-                    ->build();
+                             ->setDiscoveryQos(discoveryQos)
+                             ->build();
 
     testRuntimeFirst->shutdown();
     test::util::resetAndWaitUntilDestroyed(testRuntimeFirst);
@@ -240,13 +245,14 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
 
     try {
         testProxy = testProxyBuilder->setMessagingQos(MessagingQos())
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
+                            ->setDiscoveryQos(discoveryQos)
+                            ->build();
         FAIL() << "Proxy creation succeeded unexpectedly";
     } catch (const exceptions::JoynrException& e) {
         std::string exceptionMessage = e.getMessage();
         std::string expectedSubstring = "No entries found for domain";
-        bool messageFound = exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
+        bool messageFound =
+                exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
         ASSERT_TRUE(messageFound);
     }
 
@@ -258,12 +264,13 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
 /**
  * Test removing stale providers functionality of cluster controller with the delay after CC start
  *
- * Pre-conditions: start cluster controller first time, register two providers, shutdown cluster controller
- * without calling of unregisterProvider() method. Start cluster controller second time.
+ * Pre-conditions: start cluster controller first time, register two providers, shutdown cluster
+ * controller without calling of unregisterProvider() method. Start cluster controller second time.
  *
- * Expected behavior: after the second start of cluster controller, first call of testProxyBuilder->build() will
- * be successful (because it is called before the call of removeStale) and it will throw an exception at the
- * second call because stale providers have been removed after waiting for a delay.
+ * Expected behavior: after the second start of cluster controller, first call of
+ * testProxyBuilder->build() will be successful (because it is called before the call of
+ * removeStale) and it will throw an exception at the second call because stale providers have been
+ * removed after waiting for a delay.
  */
 TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
 {
@@ -279,7 +286,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
     providerQosFirst.setScope(joynr::types::ProviderScope::GLOBAL);
     providerQosFirst.setSupportsOnChangeSubscriptions(true);
 
-    types::ProviderQos providerQosSecond {providerQosFirst};
+    types::ProviderQos providerQosSecond{providerQosFirst};
     providerQosSecond.setPriority(millisSinceEpoch + 10);
 
     const std::int64_t discoveryTimeoutMs = 3000;
@@ -298,8 +305,10 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
     testRuntimeFirst->init();
     testRuntimeFirst->start();
 
-    testRuntimeFirst->registerProvider<tests::testProvider>(domainFirst, mockProvider, providerQosFirst, true, true);
-    testRuntimeFirst->registerProvider<tests::testProvider>(domainSecond, mockProvider, providerQosSecond, true, true);
+    testRuntimeFirst->registerProvider<tests::testProvider>(
+            domainFirst, mockProvider, providerQosFirst, true, true);
+    testRuntimeFirst->registerProvider<tests::testProvider>(
+            domainSecond, mockProvider, providerQosSecond, true, true);
 
     testRuntimeFirst->shutdown();
     test::util::resetAndWaitUntilDestroyed(testRuntimeFirst);
@@ -319,8 +328,8 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
     auto testProxyBuilder = testRuntimeSecond->createProxyBuilder<tests::testProxy>(domainFirst);
     try {
         auto testProxy = testProxyBuilder->setMessagingQos(MessagingQos())
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
+                                 ->setDiscoveryQos(discoveryQos)
+                                 ->build();
         ASSERT_NE(nullptr, testProxy);
     } catch (const exceptions::JoynrException& e) {
         FAIL() << "Proxy creation failed unexpectedly: " << e.getMessage();
@@ -331,14 +340,13 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
 
     testProxyBuilder = testRuntimeSecond->createProxyBuilder<tests::testProxy>(domainSecond);
     try {
-        testProxyBuilder->setMessagingQos(MessagingQos())
-                ->setDiscoveryQos(discoveryQos)
-                ->build();
+        testProxyBuilder->setMessagingQos(MessagingQos())->setDiscoveryQos(discoveryQos)->build();
         FAIL() << "Proxy creation succeeded unexpectedly";
     } catch (const exceptions::JoynrException& e) {
         std::string exceptionMessage = e.getMessage();
         std::string expectedSubstring = "No entries found for domain";
-        bool messageFound = exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
+        bool messageFound =
+                exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
         ASSERT_TRUE(messageFound);
     }
 
@@ -354,8 +362,9 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegi
     initCCRuntime();
     JOYNR_LOG_DEBUG(logger(), "testTouchOnlyUpdatesExistingParticipantIds started");
     // Setup
-    const std::chrono::milliseconds touchInterval = clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs();
-    const std::vector<std::string> lookupGbids = { messagingSettings.getGbid() };
+    const std::chrono::milliseconds touchInterval =
+            clusterControllerSettings.getCapabilitiesFreshnessUpdateIntervalMs();
+    const std::vector<std::string> lookupGbids = {messagingSettings.getGbid()};
 
     joynr::DiscoveryQos discoveryQos;
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
@@ -375,11 +384,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegi
 
     const auto timeBeforeAdd = TimePoint::now().toMilliseconds();
     const std::string providerParticipantId = runtime->registerProvider<tests::testProvider>(
-                domain,
-                mockProvider,
-                providerQos,
-                true,
-                true);
+            domain, mockProvider, providerQos, true, true);
 
     // build GCD proxy
     std::shared_ptr<ProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>>
@@ -387,14 +392,14 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegi
                     runtime->createProxyBuilder<infrastructure::GlobalCapabilitiesDirectoryProxy>(
                             messagingSettings.getDiscoveryDirectoriesDomain());
     std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> gcdProxy(
-            gcdProxyBuilder
-                    ->setDiscoveryQos(discoveryQos)
-                    ->build());
+            gcdProxyBuilder->setDiscoveryQos(discoveryQos)->build());
 
     // build LCD proxy
     discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
-    auto lcdProxyBuilder = runtime->createProxyBuilder<system::DiscoveryProxy>(sysSettings.getDomain());
-    std::shared_ptr<system::DiscoveryProxy> lcdProxy = lcdProxyBuilder->setDiscoveryQos(discoveryQos)->build();
+    auto lcdProxyBuilder =
+            runtime->createProxyBuilder<system::DiscoveryProxy>(sysSettings.getDomain());
+    std::shared_ptr<system::DiscoveryProxy> lcdProxy =
+            lcdProxyBuilder->setDiscoveryQos(discoveryQos)->build();
 
     JOYNR_LOG_DEBUG(logger(), "performing pre-touch lookup");
     types::GlobalDiscoveryEntry oldEntry;
@@ -412,67 +417,68 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegi
     internalDiscoveryQos.setDiscoveryTimeout(3000);
     types::DiscoveryEntryWithMetaInfo cachedEntry;
     lcdProxy->lookup(cachedEntry, providerParticipantId, internalDiscoveryQos, lookupGbids);
-    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , cached {}",
-                            oldEntry.getLastSeenDateMs(),
-                            cachedEntry.getLastSeenDateMs());
-    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , cached {}",
-                            oldEntry.getExpiryDateMs(),
-                            cachedEntry.getExpiryDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , cached {}", oldEntry.getLastSeenDateMs(),
+                    cachedEntry.getLastSeenDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , cached {}", oldEntry.getExpiryDateMs(),
+                    cachedEntry.getExpiryDateMs());
 
     auto timeAfterSecondLookup = TimePoint::now().toMilliseconds();
     int64_t deltaMax = timeAfterSecondLookup - timeBeforeAdd;
 
-    // real interval between 2 touch calls might be less than FRESHNESS_UPDATE_INTERVAL_MS because of messaging delays
+    // real interval between 2 touch calls might be less than FRESHNESS_UPDATE_INTERVAL_MS because
+    // of messaging delays
     const int64_t minNewLastSeenDate = oldEntry.getLastSeenDateMs() + touchInterval.count() / 2;
     const int64_t minNewExpiryDate = oldEntry.getExpiryDateMs() + touchInterval.count() / 2;
     EXPECT_TRUE(cachedEntry.getLastSeenDateMs() > minNewLastSeenDate);
     EXPECT_TRUE(cachedEntry.getLastSeenDateMs() < (oldEntry.getLastSeenDateMs() + deltaMax))
-            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs())
+            << ", deltaMax: " << deltaMax;
     EXPECT_TRUE(cachedEntry.getExpiryDateMs() > minNewExpiryDate);
     EXPECT_TRUE(cachedEntry.getExpiryDateMs() < (oldEntry.getExpiryDateMs() + deltaMax))
-            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs())
+            << ", deltaMax: " << deltaMax;
 
     // check local store in LCD
     internalDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
     types::DiscoveryEntryWithMetaInfo localEntry;
     lcdProxy->lookup(localEntry, providerParticipantId, internalDiscoveryQos, lookupGbids);
-    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , local {}",
-                            oldEntry.getLastSeenDateMs(),
-                            localEntry.getLastSeenDateMs());
-    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , local {}",
-                            oldEntry.getExpiryDateMs(),
-                            localEntry.getExpiryDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , local {}", oldEntry.getLastSeenDateMs(),
+                    localEntry.getLastSeenDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , local {}", oldEntry.getExpiryDateMs(),
+                    localEntry.getExpiryDateMs());
 
     timeAfterSecondLookup = TimePoint::now().toMilliseconds();
     deltaMax = timeAfterSecondLookup - timeBeforeAdd;
 
     EXPECT_TRUE(localEntry.getLastSeenDateMs() > minNewLastSeenDate);
     EXPECT_TRUE(localEntry.getLastSeenDateMs() < (oldEntry.getLastSeenDateMs() + deltaMax))
-            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs())
+            << ", deltaMax: " << deltaMax;
     EXPECT_TRUE(localEntry.getExpiryDateMs() > minNewExpiryDate);
     EXPECT_TRUE(localEntry.getExpiryDateMs() < (oldEntry.getExpiryDateMs() + deltaMax))
-            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs())
+            << ", deltaMax: " << deltaMax;
 
     // check entry in GCD
     types::GlobalDiscoveryEntry globalEntry;
     gcdProxy->lookup(globalEntry, providerParticipantId, lookupGbids);
 
-    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , new {}",
-                            oldEntry.getLastSeenDateMs(),
-                            globalEntry.getLastSeenDateMs());
-    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , new {}",
-                            oldEntry.getExpiryDateMs(),
-                            globalEntry.getExpiryDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap last seen: {} , new {}", oldEntry.getLastSeenDateMs(),
+                    globalEntry.getLastSeenDateMs());
+    JOYNR_LOG_DEBUG(logger(), "old cap expiry date: {} , new {}", oldEntry.getExpiryDateMs(),
+                    globalEntry.getExpiryDateMs());
 
     timeAfterSecondLookup = TimePoint::now().toMilliseconds();
     deltaMax = timeAfterSecondLookup - timeBeforeAdd;
 
     EXPECT_TRUE(globalEntry.getLastSeenDateMs() > minNewLastSeenDate);
     EXPECT_TRUE(globalEntry.getLastSeenDateMs() < (oldEntry.getLastSeenDateMs() + deltaMax))
-            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs())
+            << ", deltaMax: " << deltaMax;
     EXPECT_TRUE(globalEntry.getExpiryDateMs() > minNewExpiryDate);
     EXPECT_TRUE(globalEntry.getExpiryDateMs() < (oldEntry.getExpiryDateMs() + deltaMax))
-            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs()) << ", deltaMax: " << deltaMax;
+            << "delta: " << (cachedEntry.getLastSeenDateMs() - oldEntry.getLastSeenDateMs())
+            << ", deltaMax: " << deltaMax;
 
     // Unregister providers to not clutter the JDS
     runtime->unregisterProvider(providerParticipantId);
@@ -481,5 +487,5 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegi
 using namespace std::string_literals;
 
 INSTANTIATE_TEST_SUITE_P(Mqtt,
-                        GlobalCapabilitiesDirectoryIntegrationTest,
-                        testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));
+                         GlobalCapabilitiesDirectoryIntegrationTest,
+                         testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));

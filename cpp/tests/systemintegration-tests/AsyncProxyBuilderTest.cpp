@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,12 +19,12 @@
 
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
+#include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/Settings.h"
 
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
@@ -135,30 +135,32 @@ TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_succeeds)
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     // Fake ArbitrationResult to build proxy
-    joynr::types::Version interfaceVersion(tests::testProvider::MAJOR_VERSION, tests::testProvider::MINOR_VERSION);
-    types::DiscoveryEntryWithMetaInfo discoveryEntry = types::DiscoveryEntryWithMetaInfo(interfaceVersion,
-                                                                                         domain,
-                                                                                         tests::testProvider::INTERFACE_NAME(),
-                                                                                         "participantId1",
-                                                                                         providerQos,
-                                                                                         9900,
-                                                                                         15000,
-                                                                                         "_publicKeyId1",
-                                                                                         true);
+    joynr::types::Version interfaceVersion(
+            tests::testProvider::MAJOR_VERSION, tests::testProvider::MINOR_VERSION);
+    types::DiscoveryEntryWithMetaInfo discoveryEntry =
+            types::DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                              domain,
+                                              tests::testProvider::INTERFACE_NAME(),
+                                              "participantId1",
+                                              providerQos,
+                                              9900,
+                                              15000,
+                                              "_publicKeyId1",
+                                              true);
 
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries {discoveryEntry};
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries{discoveryEntry};
     ArbitrationResult arbitrationResult = ArbitrationResult(discoveryEntries);
 
-    std::shared_ptr<tests::testProxy> proxy = testProxyBuilder
-            ->setMessagingQos(MessagingQos(50000))
-            ->setDiscoveryQos(discoveryQos)
-            ->build(arbitrationResult);
+    std::shared_ptr<tests::testProxy> proxy = testProxyBuilder->setMessagingQos(MessagingQos(50000))
+                                                      ->setDiscoveryQos(discoveryQos)
+                                                      ->build(arbitrationResult);
     EXPECT_NE(nullptr, proxy);
 
     runtime->unregisterProvider(participantId);
 }
 
-TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_throwsException_whenArbitrationResultEmpty)
+TEST_F(AsyncProxyBuilderTest,
+       buildProxyWithArbitrationResult_throwsException_whenArbitrationResultEmpty)
 {
     const std::string domain = "testArbitrationResultSuccessDomain";
     auto testProvider = std::make_shared<MockTestProvider>();
@@ -178,10 +180,10 @@ TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_throwsException_wh
     bool exceptionThrown = false;
     bool messageFound = false;
     try {
-        std::shared_ptr<tests::testProxy> proxy = testProxyBuilder
-                ->setMessagingQos(MessagingQos(50000))
-                ->setDiscoveryQos(discoveryQos)
-                ->build(arbitrationResult);
+        std::shared_ptr<tests::testProxy> proxy =
+                testProxyBuilder->setMessagingQos(MessagingQos(50000))
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build(arbitrationResult);
     } catch (const exceptions::DiscoveryException& e) {
         std::string exceptionMessage = e.getMessage();
         std::string expectedSubstring = "ArbitrationResult is empty";
@@ -195,7 +197,8 @@ TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_throwsException_wh
     runtime->unregisterProvider(participantId);
 }
 
-TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_throwsException_whenParticipantIdEmpty)
+TEST_F(AsyncProxyBuilderTest,
+       buildProxyWithArbitrationResult_throwsException_whenParticipantIdEmpty)
 {
     const std::string domain = "testArbitrationResultSuccessDomain";
     auto testProvider = std::make_shared<MockTestProvider>();
@@ -211,27 +214,29 @@ TEST_F(AsyncProxyBuilderTest, buildProxyWithArbitrationResult_throwsException_wh
             runtime->createProxyBuilder<tests::testProxy>(domain);
 
     // Fake ArbitrationResult to build proxy
-    joynr::types::Version interfaceVersion(tests::testProvider::MAJOR_VERSION, tests::testProvider::MINOR_VERSION);
-    types::DiscoveryEntryWithMetaInfo discoveryEntry = types::DiscoveryEntryWithMetaInfo(interfaceVersion,
-                                                                                         domain,
-                                                                                         tests::testProvider::INTERFACE_NAME(),
-                                                                                         "",
-                                                                                         providerQos,
-                                                                                         9900,
-                                                                                         15000,
-                                                                                         "_publicKeyId1",
-                                                                                         true);
+    joynr::types::Version interfaceVersion(
+            tests::testProvider::MAJOR_VERSION, tests::testProvider::MINOR_VERSION);
+    types::DiscoveryEntryWithMetaInfo discoveryEntry =
+            types::DiscoveryEntryWithMetaInfo(interfaceVersion,
+                                              domain,
+                                              tests::testProvider::INTERFACE_NAME(),
+                                              "",
+                                              providerQos,
+                                              9900,
+                                              15000,
+                                              "_publicKeyId1",
+                                              true);
 
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries {discoveryEntry};
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> discoveryEntries{discoveryEntry};
     ArbitrationResult arbitrationResult = ArbitrationResult(discoveryEntries);
 
     bool exceptionThrown = false;
     bool messageFound = false;
     try {
-        std::shared_ptr<tests::testProxy> proxy = testProxyBuilder
-                ->setMessagingQos(MessagingQos(50000))
-                ->setDiscoveryQos(discoveryQos)
-                ->build(arbitrationResult);
+        std::shared_ptr<tests::testProxy> proxy =
+                testProxyBuilder->setMessagingQos(MessagingQos(50000))
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build(arbitrationResult);
     } catch (const exceptions::DiscoveryException& e) {
         std::string exceptionMessage = e.getMessage();
         std::string expectedSubstring = "ParticipantId is empty";

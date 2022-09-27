@@ -36,8 +36,7 @@ namespace joynr
 class DltSink : public spdlog::sinks::sink
 {
 private:
-    struct DltContextHolder
-    {
+    struct DltContextHolder {
         DltContext dltContext;
 
         DltContextHolder() : dltContext()

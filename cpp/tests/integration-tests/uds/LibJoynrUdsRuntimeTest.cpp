@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,8 @@
 #include <vector>
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
@@ -154,8 +154,8 @@ TEST_F(LibJoynrUdsRuntimeTest, shutdownAfterConnect)
      * onSuccess of runtime is currently not checked, since it waits for
      * routing-proxy replies, which are not simulated by this test setup.
      */
-    EXPECT_CALL(serverCallbacks, connectedMock(_, _)).WillOnce(
-            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(serverSemaphore)));
+    EXPECT_CALL(serverCallbacks, connectedMock(_, _))
+            .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(serverSemaphore)));
     EXPECT_CALL(_runtimeCallbacks, onSuccess()).Times(0);
     EXPECT_CALL(serverCallbacks, disconnected(_))
             .WillOnce(ReleaseSemaphore(serverSemaphoreDisconnected));
@@ -191,8 +191,8 @@ TEST_F(LibJoynrUdsRuntimeTest, connectionLoss)
      * onSuccess of runtime is currently not checked, since it waits for
      * routing-proxy replies, which are not simulated by this test setup.
      */
-    EXPECT_CALL(serverCallbacks, connectedMock(_, _)).WillOnce(
-            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(serverSemaphore)));
+    EXPECT_CALL(serverCallbacks, connectedMock(_, _))
+            .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(serverSemaphore)));
     connectRuntime(this);
     auto server = createServer(serverCallbacks);
     server->start();

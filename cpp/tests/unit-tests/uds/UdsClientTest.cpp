@@ -55,8 +55,9 @@ TEST_F(UdsClientTest, receiveFromServer_clientCallbacksCalled)
     MockUdsClientCallbacks mockUdsClientCallbacks;
     EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1).InSequence(sequence);
     EXPECT_CALL(mockUdsClientCallbacks, receivedMock(ElementsAre(1))).InSequence(sequence);
-    EXPECT_CALL(mockUdsClientCallbacks, receivedMock(ElementsAre(2))).InSequence(sequence).WillOnce(
-            ReleaseSemaphore(semaphore));
+    EXPECT_CALL(mockUdsClientCallbacks, receivedMock(ElementsAre(2)))
+            .InSequence(sequence)
+            .WillOnce(ReleaseSemaphore(semaphore));
     EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(1).InSequence(sequence);
     // On an expected connection loss, no fatal runtime error is signaled
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(0);
@@ -79,11 +80,15 @@ TEST_F(UdsClientTest, disconnectFromServer_clientCallbacksCalled)
     auto semaphore2 = std::make_shared<Semaphore>();
     MockUdsClientCallbacks mockUdsClientCallbacks;
     Sequence sequence;
-    EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1).InSequence(sequence).WillOnce(
-            ReleaseSemaphore(semaphore1));
+    EXPECT_CALL(mockUdsClientCallbacks, connected())
+            .Times(1)
+            .InSequence(sequence)
+            .WillOnce(ReleaseSemaphore(semaphore1));
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(1).InSequence(sequence);
-    EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(1).InSequence(sequence).WillOnce(
-            ReleaseSemaphore(semaphore2));
+    EXPECT_CALL(mockUdsClientCallbacks, disconnected())
+            .Times(1)
+            .InSequence(sequence)
+            .WillOnce(ReleaseSemaphore(semaphore2));
     auto client = createClient(mockUdsClientCallbacks);
     client->start();
     EXPECT_TRUE(semaphore1->waitFor(_waitPeriodForClientServerCommunication))
@@ -136,10 +141,12 @@ TEST_F(UdsClientTest, sendFrom2Clients)
     EXPECT_EQ(messagesReceivedFromClient1[4], messageEmptyClient1);
 
     const auto& messagesReceivedFromClient2 = _connectedClients[1]._receivedMessages;
-    EXPECT_TRUE(messagesReceivedFromClient2.size() <= numberOfMessagesWhileDisconnectingClient2 + 1 &&
+    EXPECT_TRUE(messagesReceivedFromClient2.size() <=
+                        numberOfMessagesWhileDisconnectingClient2 + 1 &&
                 messagesReceivedFromClient2.size() >= 1)
             << "Unexpected number of messages received for client 2 (which had been closed while "
-               "sending): " << messagesReceivedFromClient2.size();
+               "sending): "
+            << messagesReceivedFromClient2.size();
 }
 
 TEST_F(UdsClientTest, sendFromClientBufferOverflow)
@@ -147,8 +154,9 @@ TEST_F(UdsClientTest, sendFromClientBufferOverflow)
     constexpr unsigned int sendQueueSize = 1000;
     std::atomic_uint32_t countSendFailures{0};
     MockUdsClientCallbacks mockUdsClientCallbacks;
-    EXPECT_CALL(mockUdsClientCallbacks, sendFailed(_)).Times(sendQueueSize).WillRepeatedly(
-            InvokeWithoutArgs([&countSendFailures] { countSendFailures++; }));
+    EXPECT_CALL(mockUdsClientCallbacks, sendFailed(_))
+            .Times(sendQueueSize)
+            .WillRepeatedly(InvokeWithoutArgs([&countSendFailures] { countSendFailures++; }));
     const smrf::ByteVector messageEmpty;
     _udsSettings.setSendingQueueSize(sendQueueSize);
     auto client = createClient();
@@ -224,8 +232,9 @@ TEST_F(UdsClientTest, sendFailedCallbackException)
 {
     MockUdsClientCallbacks mockUdsClientCallbacks;
     const std::logic_error userException("Test exception");
-    EXPECT_CALL(mockUdsClientCallbacks, sendFailed(_)).Times(AtLeast(1)).WillRepeatedly(
-            Throw(userException));
+    EXPECT_CALL(mockUdsClientCallbacks, sendFailed(_))
+            .Times(AtLeast(1))
+            .WillRepeatedly(Throw(userException));
     EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).Times(1);
     EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1);
     EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(AtMost(1));
@@ -247,8 +256,7 @@ TEST_F(UdsClientTest, connectedCallbackException)
     MockUdsClientCallbacks mockUdsClientCallbacks;
     const std::logic_error userException("Test exception");
     EXPECT_CALL(mockUdsClientCallbacks, connected()).WillOnce(Throw(userException));
-    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
-            .WillOnce(ReleaseSemaphore(semaphore));
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).WillOnce(ReleaseSemaphore(semaphore));
     EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(AtMost(1));
     auto client = createClient(mockUdsClientCallbacks);
     client->start();
@@ -263,8 +271,7 @@ TEST_F(UdsClientTest, disconnectedCallbackException)
     MockUdsClientCallbacks mockUdsClientCallbacks;
     const std::logic_error userException("Test exception");
     EXPECT_CALL(mockUdsClientCallbacks, disconnected()).WillOnce(Throw(userException));
-    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
-            .WillOnce(ReleaseSemaphore(semaphore));
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).WillOnce(ReleaseSemaphore(semaphore));
     EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1);
     auto client = createClient(mockUdsClientCallbacks);
     client->start();
@@ -280,8 +287,7 @@ TEST_F(UdsClientTest, receivedCallbackException)
     MockUdsClientCallbacks mockUdsClientCallbacks;
     const std::logic_error userException("Test exception");
     EXPECT_CALL(mockUdsClientCallbacks, receivedMock(_)).WillOnce(Throw(userException));
-    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_))
-            .WillOnce(ReleaseSemaphore(semaphore));
+    EXPECT_CALL(mockUdsClientCallbacks, fatalRuntimeError(_)).WillOnce(ReleaseSemaphore(semaphore));
     EXPECT_CALL(mockUdsClientCallbacks, connected()).Times(1);
     EXPECT_CALL(mockUdsClientCallbacks, disconnected()).Times(1);
     auto client = createClient(mockUdsClientCallbacks);

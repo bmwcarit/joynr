@@ -23,12 +23,15 @@
 
 #include "joynr/IWebSocketSendInterface.h"
 
-class MockWebSocketSendInterface : public joynr::IWebSocketSendInterface {
+class MockWebSocketSendInterface : public joynr::IWebSocketSendInterface
+{
 public:
-    MOCK_METHOD2(send, void (const smrf::ByteArrayView& message,
-                             const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
-    MOCK_CONST_METHOD0(isInitialized, bool ());
-    MOCK_CONST_METHOD0(isConnected, bool ());
+    MOCK_METHOD2(send,
+                 void(const smrf::ByteArrayView& message,
+                      const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&
+                              onFailure));
+    MOCK_CONST_METHOD0(isInitialized, bool());
+    MOCK_CONST_METHOD0(isConnected, bool());
 };
 
 #endif // TESTS_MOCK_MOCKWEBSOCKETSENDINTERFACE_H

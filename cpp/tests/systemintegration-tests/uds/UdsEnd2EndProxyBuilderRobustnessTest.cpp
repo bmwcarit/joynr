@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,8 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/BrokerUrl.h"
 #include "joynr/CcMessageRouter.h"
@@ -94,19 +94,19 @@ public:
     {
         Semaphore successCallbackCalled;
         ccRuntime->_ccMessageRouter->resolveNextHop(
-            participantId,
-            [&successCallbackCalled, expectProviderResolved](const bool& resolved) {
-                if (resolved == expectProviderResolved) {
+                participantId,
+                [&successCallbackCalled, expectProviderResolved](const bool& resolved) {
+                    if (resolved == expectProviderResolved) {
+                        successCallbackCalled.notify();
+                    } else {
+                        FAIL() << "resolve delivered unexpected result";
+                        successCallbackCalled.notify();
+                    }
+                },
+                [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
+                    FAIL() << "resolveNextHop did not succeed.";
                     successCallbackCalled.notify();
-                } else {
-                    FAIL() << "resolve delivered unexpected result";
-                    successCallbackCalled.notify();
-                }
-            },
-            [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
-                FAIL() << "resolveNextHop did not succeed.";
-                successCallbackCalled.notify();
-            });
+                });
         EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
     }
 
@@ -138,7 +138,8 @@ protected:
     joynr::DiscoveryQos discoveryQos;
 
     void buildMultipleProxiesUsingSameProxyBuilder();
-    void checkFinishedArbitrators(std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder, size_t expectedNumberOfFinishedArbitrators) const;
+    void checkFinishedArbitrators(std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder,
+                                  size_t expectedNumberOfFinishedArbitrators) const;
     void attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder();
     void buildProxiesAndVerifyShutdownRuntimeCleansUpCcRuntime();
     void attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime();
@@ -236,8 +237,7 @@ void UdsEnd2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSameProxyBui
 
     // synchronously build proxy 10 times
     for (int i = 0; i < 10; i++) {
-        gpsProxyBuilder->setDiscoveryQos(discoveryQos)
-            ->build();
+        gpsProxyBuilder->setDiscoveryQos(discoveryQos)->build();
     }
 
     // number of stored and finished arbitrators should be 1 now,
@@ -256,11 +256,12 @@ void UdsEnd2EndProxyBuilderRobustnessTest::buildMultipleProxiesUsingSameProxyBui
 }
 
 void UdsEnd2EndProxyBuilderRobustnessTest::checkFinishedArbitrators(
-    std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder,
-    size_t expectedNumberOfFinishedArbitrators) const
+        std::shared_ptr<ProxyBuilder<vehicle::GpsProxy>> gpsProxyBuilder,
+        size_t expectedNumberOfFinishedArbitrators) const
 {
     // the adding to gpsProxyBuilder->_finishedArbitratorIds is async, wait for it a limited time
-    std::unique_lock<std::mutex> lock(gpsProxyBuilder->_finishedArbitratorIdsMutex, std::defer_lock);
+    std::unique_lock<std::mutex> lock(
+            gpsProxyBuilder->_finishedArbitratorIdsMutex, std::defer_lock);
     for (int i = 0; i < 100; i++) {
         lock.lock();
         if (gpsProxyBuilder->_finishedArbitratorIds.size() == expectedNumberOfFinishedArbitrators) {
@@ -304,12 +305,9 @@ void UdsEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsing
             return;
         };
 
-        auto onError = [semaphore](const exceptions::DiscoveryException&) {
-            semaphore->notify();
-        };
+        auto onError = [semaphore](const exceptions::DiscoveryException&) { semaphore->notify(); };
 
-        gpsProxyBuilder->setDiscoveryQos(discoveryQos)
-                ->buildAsync(onSuccess, onError);
+        gpsProxyBuilder->setDiscoveryQos(discoveryQos)->buildAsync(onSuccess, onError);
     }
 
     // the building attempts above should time out after discoveryTimeoutMs
@@ -342,12 +340,9 @@ void UdsEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsing
         return;
     };
 
-    auto onError = [semaphore](const exceptions::DiscoveryException&) {
-        semaphore->notify();
-    };
+    auto onError = [semaphore](const exceptions::DiscoveryException&) { semaphore->notify(); };
 
-    gpsProxyBuilder->setDiscoveryQos(discoveryQos)
-        ->buildAsync(onSuccess, onError);
+    gpsProxyBuilder->setDiscoveryQos(discoveryQos)->buildAsync(onSuccess, onError);
 
     EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
 
@@ -360,7 +355,8 @@ void UdsEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsing
     checkFinishedArbitrators(gpsProxyBuilder, expectedArbitratorsLeft);
 }
 
-void UdsEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime()
+void UdsEnd2EndProxyBuilderRobustnessTest::
+        attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime()
 {
     auto semaphore = std::make_shared<Semaphore>(0);
     std::shared_ptr<TestLibJoynrUdsRuntime> ownConsumerRuntime;
@@ -391,12 +387,9 @@ void UdsEnd2EndProxyBuilderRobustnessTest::attemptBuildAsyncMultipleProxiesUsing
             return;
         };
 
-        auto onError = [semaphore](const exceptions::DiscoveryException&) {
-            semaphore->notify();
-        };
+        auto onError = [semaphore](const exceptions::DiscoveryException&) { semaphore->notify(); };
 
-        gpsProxyBuilder->setDiscoveryQos(discoveryQos)
-                ->buildAsync(onSuccess, onError);
+        gpsProxyBuilder->setDiscoveryQos(discoveryQos)->buildAsync(onSuccess, onError);
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -452,7 +445,8 @@ void UdsEnd2EndProxyBuilderRobustnessTest::buildProxiesAndVerifyShutdownRuntimeC
     // (to protect against destruction) and store their proxy participantIds
     // for later checking
     for (int i = 0; i < numberOfProxyBuilds; i++) {
-        auto onSuccess = [semaphore, &proxyParticipantIds, &gpsProxies, &proxyLock](std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
+        auto onSuccess = [semaphore, &proxyParticipantIds, &gpsProxies, &proxyLock](
+                                 std::shared_ptr<vehicle::GpsProxy> gpsProxy) {
             std::lock_guard<std::mutex> lock(proxyLock);
             proxyParticipantIds.push_back(gpsProxy->getProxyParticipantId());
             gpsProxies.push_back(gpsProxy);
@@ -465,8 +459,7 @@ void UdsEnd2EndProxyBuilderRobustnessTest::buildProxiesAndVerifyShutdownRuntimeC
             semaphore->notify();
         };
 
-        gpsProxyBuilder->setDiscoveryQos(discoveryQos)
-                ->buildAsync(onSuccess, onError);
+        gpsProxyBuilder->setDiscoveryQos(discoveryQos)->buildAsync(onSuccess, onError);
     }
     for (int i = 0; i < numberOfProxyBuilds; i++) {
         EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(discoveryTimeoutMs + 1000)));
@@ -583,20 +576,17 @@ TEST_F(UdsEnd2EndProxyBuilderRobustnessTest,
     buildProxyBeforeProviderRegistration(expectedSuccess);
 }
 
-TEST_F(UdsEnd2EndProxyBuilderRobustnessTest,
-        ProxyBuilderReclaimsArbitrators)
+TEST_F(UdsEnd2EndProxyBuilderRobustnessTest, ProxyBuilderReclaimsArbitrators)
 {
     buildMultipleProxiesUsingSameProxyBuilder();
 }
 
-TEST_F(UdsEnd2EndProxyBuilderRobustnessTest,
-        ProxyBuilderAsyncReclaimsArbitrators)
+TEST_F(UdsEnd2EndProxyBuilderRobustnessTest, ProxyBuilderAsyncReclaimsArbitrators)
 {
     attemptBuildAsyncMultipleProxiesUsingSameProxyBuilder();
 }
 
-TEST_F(UdsEnd2EndProxyBuilderRobustnessTest,
-        ProxyBuilderAsyncDoesNotCrashWhenRuntimeIsShutdown)
+TEST_F(UdsEnd2EndProxyBuilderRobustnessTest, ProxyBuilderAsyncDoesNotCrashWhenRuntimeIsShutdown)
 {
     attemptBuildAsyncMultipleProxiesUsingSameProxyBuilderAndShutdownRuntime();
 }

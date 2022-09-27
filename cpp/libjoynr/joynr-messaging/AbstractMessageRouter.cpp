@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,6 @@
 
 #include "joynr/IMessageSender.h"
 #include "joynr/IMessagingStub.h"
-#include "joynr/MessagingQos.h"
 #include "joynr/IMessagingStubFactory.h"
 #include "joynr/IMulticastAddressCalculator.h"
 #include "joynr/ITransportStatus.h"
@@ -38,6 +37,7 @@
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Message.h"
 #include "joynr/MessageQueue.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
@@ -436,8 +436,8 @@ void AbstractMessageRouter::scheduleMessage(
 void AbstractMessageRouter::activateMessageCleanerTimer()
 {
     _messageQueueCleanerTimer.expiresFromNow(_messageQueueCleanerTimerPeriodMs);
-    _messageQueueCleanerTimer
-            .asyncWait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+    _messageQueueCleanerTimer.asyncWait(
+            [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
                     const boost::system::error_code& errorCode) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
                     thisSharedPtr->onMessageCleanerTimerExpired(thisSharedPtr, errorCode);
@@ -449,8 +449,8 @@ void AbstractMessageRouter::activateRoutingTableCleanerTimer()
 {
     _routingTableCleanerTimer.expiresFromNow(
             std::chrono::milliseconds(_messagingSettings.getRoutingTableCleanupIntervalMs()));
-    _routingTableCleanerTimer
-            .asyncWait([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
+    _routingTableCleanerTimer.asyncWait(
+            [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())](
                     const boost::system::error_code& errorCode) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
                     thisSharedPtr->onRoutingTableCleanerTimerExpired(errorCode);
@@ -461,19 +461,19 @@ void AbstractMessageRouter::activateRoutingTableCleanerTimer()
 void AbstractMessageRouter::registerTransportStatusCallbacks()
 {
     for (auto& transportStatus : _transportStatuses) {
-        transportStatus->setAvailabilityChangedCallback([
-            thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-            transportStatusWeakPtr = joynr::util::as_weak_ptr(transportStatus)
-        ](bool isAvailable) {
-            if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                if (isAvailable) {
-                    if (auto transportStatusSharedPtr = transportStatusWeakPtr.lock()) {
-                        thisSharedPtr->rescheduleQueuedMessagesForTransport(
-                                transportStatusSharedPtr);
+        transportStatus->setAvailabilityChangedCallback(
+                [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                 transportStatusWeakPtr =
+                         joynr::util::as_weak_ptr(transportStatus)](bool isAvailable) {
+                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                        if (isAvailable) {
+                            if (auto transportStatusSharedPtr = transportStatusWeakPtr.lock()) {
+                                thisSharedPtr->rescheduleQueuedMessagesForTransport(
+                                        transportStatusSharedPtr);
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
     }
 }
 
@@ -698,13 +698,10 @@ void MessageRunnable::shutdown()
 void MessageRunnable::run()
 {
     if (!isExpired()) {
-        auto onFailure = [
-            messageRouter = _messageRouter,
-            message = _message,
-            destAddress = _destAddress,
-            tryCount = _tryCount
-        ](const exceptions::JoynrRuntimeException& e)
-        {
+        auto onFailure = [messageRouter = _messageRouter,
+                          message = _message,
+                          destAddress = _destAddress,
+                          tryCount = _tryCount](const exceptions::JoynrRuntimeException& e) {
             try {
                 exceptions::JoynrDelayMessageException& delayException =
                         dynamic_cast<exceptions::JoynrDelayMessageException&>(

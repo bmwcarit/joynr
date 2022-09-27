@@ -58,8 +58,8 @@ private:
 class UdsServer
 {
 public:
-    using Connected = std::function<
-            void(const system::RoutingTypes::UdsClientAddress&, std::unique_ptr<IUdsSender>)>;
+    using Connected = std::function<void(const system::RoutingTypes::UdsClientAddress&,
+                                         std::unique_ptr<IUdsSender>)>;
     using Disconnected = std::function<void(const system::RoutingTypes::UdsClientAddress&)>;
     using Received = std::function<void(const system::RoutingTypes::UdsClientAddress&,
                                         smrf::ByteVector&&,
@@ -100,11 +100,10 @@ public:
 private:
     using uds = boost::asio::local::stream_protocol;
     // Default config basically does nothing, everything is just eaten
-    struct ConnectionConfig
-    {
+    struct ConnectionConfig {
         std::size_t _maxSendQueueSize = 0;
-        Connected _connectedCallback =
-                [](const system::RoutingTypes::UdsClientAddress&, std::shared_ptr<IUdsSender>) {};
+        Connected _connectedCallback = [](const system::RoutingTypes::UdsClientAddress&,
+                                          std::shared_ptr<IUdsSender>) {};
         Disconnected _disconnectedCallback = [](const system::RoutingTypes::UdsClientAddress&) {};
         Received _receivedCallback = [](const system::RoutingTypes::UdsClientAddress&,
                                         smrf::ByteVector&&,

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,20 +26,20 @@
 #include "joynr/Settings.h"
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/ItestConnector.h"
-#include "joynr/tests/testProxy.h"
 #include "joynr/tests/TestWithoutVersionProxy.h"
+#include "joynr/tests/testProxy.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 #include "tests/mock/MockJoynrRuntime.h"
 
-using ::testing::A;
 using ::testing::_;
-using ::testing::Return;
-using ::testing::Eq;
-using ::testing::NotNull;
+using ::testing::A;
 using ::testing::AllOf;
-using ::testing::Property;
+using ::testing::Eq;
 using ::testing::Invoke;
+using ::testing::NotNull;
+using ::testing::Property;
+using ::testing::Return;
 using ::testing::Unused;
 
 using namespace joynr;
@@ -60,8 +60,8 @@ public:
     void SetUp() override
     {
         AbstractSyncAsyncTest::SetUp();
-        joynrMessagingConnectorFactory =
-                std::make_unique<JoynrMessagingConnectorFactory>(mockMessageSender, mockSubscriptionManager);
+        joynrMessagingConnectorFactory = std::make_unique<JoynrMessagingConnectorFactory>(
+                mockMessageSender, mockSubscriptionManager);
         auto settings = std::make_unique<Settings>();
         runtime = std::make_shared<MockJoynrRuntime>(std::move(settings));
     }
@@ -267,8 +267,7 @@ TEST_F(ProxyTest, defaultVersionIsSetCorrectly)
     EXPECT_EQ(expectedDefaultMinorVersion, tests::TestWithoutVersionProxy::MINOR_VERSION);
 }
 
-TEST_F(ProxyTest,
-       doNotSendSubscriptionStopForMulticastSubscription)
+TEST_F(ProxyTest, doNotSendSubscriptionStopForMulticastSubscription)
 {
     doNotSendSubscriptionStopForMulticastSubscription();
 }

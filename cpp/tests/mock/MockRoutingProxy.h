@@ -29,153 +29,140 @@ namespace joynr
 class JoynrRuntimeImpl;
 } // namespace joynr
 
-class MockRoutingProxy : public virtual joynr::system::RoutingProxy {
+class MockRoutingProxy : public virtual joynr::system::RoutingProxy
+{
 public:
-    MockRoutingProxy(std::weak_ptr<joynr::JoynrRuntimeImpl> runtime) :
-        ProxyBase(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        RoutingProxyBase(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        RoutingSyncProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        RoutingAsyncProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos()),
-        RoutingProxy(
-                runtime,
-                nullptr,
-                "domain",
-                joynr::MessagingQos())
-    { }
+    MockRoutingProxy(std::weak_ptr<joynr::JoynrRuntimeImpl> runtime)
+            : ProxyBase(runtime, nullptr, "domain", joynr::MessagingQos()),
+              RoutingProxyBase(runtime, nullptr, "domain", joynr::MessagingQos()),
+              RoutingSyncProxy(runtime, nullptr, "domain", joynr::MessagingQos()),
+              RoutingAsyncProxy(runtime, nullptr, "domain", joynr::MessagingQos()),
+              RoutingProxy(runtime, nullptr, "domain", joynr::MessagingQos())
+    {
+    }
 
     std::shared_ptr<joynr::Future<void>> addNextHopAsync(
             const std::string& participantId,
             const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
             const bool& isGloballyVisible,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-            boost::optional<joynr::MessagingQos> qos
-        ) noexcept override
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos) noexcept override
     {
-        return addNextHopAsyncMockWs(
-                participantId,
-                webSocketClientAddress,
-                isGloballyVisible,
-                std::move(onSuccess),
-                std::move(onRuntimeError),
-                std::move(qos));
+        return addNextHopAsyncMockWs(participantId,
+                                     webSocketClientAddress,
+                                     isGloballyVisible,
+                                     std::move(onSuccess),
+                                     std::move(onRuntimeError),
+                                     std::move(qos));
     }
-    MOCK_METHOD6(addNextHopAsyncMockWs, std::shared_ptr<joynr::Future<void>>(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::WebSocketClientAddress& webSocketClientAddress,
-            const bool& isGloballyVisible,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-            boost::optional<joynr::MessagingQos> qos));
+    MOCK_METHOD6(addNextHopAsyncMockWs,
+                 std::shared_ptr<joynr::Future<void>>(
+                         const std::string& participantId,
+                         const joynr::system::RoutingTypes::WebSocketClientAddress&
+                                 webSocketClientAddress,
+                         const bool& isGloballyVisible,
+                         std::function<void()> onSuccess,
+                         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                                 onRuntimeError,
+                         boost::optional<joynr::MessagingQos> qos));
 
     std::shared_ptr<joynr::Future<void>> addNextHopAsync(
             const std::string& participantId,
             const joynr::system::RoutingTypes::UdsClientAddress& udsClientAddress,
             const bool& isGloballyVisible,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-            boost::optional<joynr::MessagingQos> qos
-        ) noexcept override
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos) noexcept override
     {
-        return addNextHopAsyncMockUds(
-                participantId,
-                udsClientAddress,
-                isGloballyVisible,
-                std::move(onSuccess),
-                std::move(onRuntimeError),
-                std::move(qos));
+        return addNextHopAsyncMockUds(participantId,
+                                      udsClientAddress,
+                                      isGloballyVisible,
+                                      std::move(onSuccess),
+                                      std::move(onRuntimeError),
+                                      std::move(qos));
     }
-    MOCK_METHOD6(addNextHopAsyncMockUds, std::shared_ptr<joynr::Future<void>>(
-            const std::string& participantId,
-            const joynr::system::RoutingTypes::UdsClientAddress& udsClientAddress,
-            const bool& isGloballyVisible,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-            boost::optional<joynr::MessagingQos> qos));
+    MOCK_METHOD6(addNextHopAsyncMockUds,
+                 std::shared_ptr<joynr::Future<void>>(
+                         const std::string& participantId,
+                         const joynr::system::RoutingTypes::UdsClientAddress& udsClientAddress,
+                         const bool& isGloballyVisible,
+                         std::function<void()> onSuccess,
+                         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                                 onRuntimeError,
+                         boost::optional<joynr::MessagingQos> qos));
 
     std::shared_ptr<joynr::Future<bool>> resolveNextHopAsync(
-             const std::string& participantId,
-             std::function<void(const bool& resolved)> onSuccess,
-             std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-             boost::optional<joynr::MessagingQos> qos
-         ) noexcept override
+            const std::string& participantId,
+            std::function<void(const bool& resolved)> onSuccess,
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos) noexcept override
     {
-        return resolveNextHopAsyncMock(participantId, std::move(onSuccess), std::move(onRuntimeError), std::move(qos));
+        return resolveNextHopAsyncMock(
+                participantId, std::move(onSuccess), std::move(onRuntimeError), std::move(qos));
     }
     MOCK_METHOD4(resolveNextHopAsyncMock,
-        std::shared_ptr<joynr::Future<bool>>(
-            const std::string& participantId,
-                     std::function<void(const bool& resolved)> onSuccess,
-                     std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-                     boost::optional<joynr::MessagingQos> qos));
+                 std::shared_ptr<joynr::Future<bool>>(
+                         const std::string& participantId,
+                         std::function<void(const bool& resolved)> onSuccess,
+                         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                                 onRuntimeError,
+                         boost::optional<joynr::MessagingQos> qos));
 
     std::shared_ptr<joynr::Future<void>> addMulticastReceiverAsync(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-            boost::optional<joynr::MessagingQos> qos
-        ) noexcept override
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos) noexcept override
     {
-        return addMulticastReceiverAsyncMock(
-                multicastId,
-                subscriberParticipantId,
-                providerParticipantId,
-                std::move(onSuccess),
-                std::move(onRuntimeError),
-                std::move(qos));
+        return addMulticastReceiverAsyncMock(multicastId,
+                                             subscriberParticipantId,
+                                             providerParticipantId,
+                                             std::move(onSuccess),
+                                             std::move(onRuntimeError),
+                                             std::move(qos));
     }
     MOCK_METHOD6(addMulticastReceiverAsyncMock,
-        std::shared_ptr<joynr::Future<void>> (
-            const std::string& multicastId,
-            const std::string& subscriberParticipantId,
-            const std::string& providerParticipantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-            boost::optional<joynr::MessagingQos> qos));
+                 std::shared_ptr<joynr::Future<void>>(
+                         const std::string& multicastId,
+                         const std::string& subscriberParticipantId,
+                         const std::string& providerParticipantId,
+                         std::function<void()> onSuccess,
+                         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                                 onRuntimeError,
+                         boost::optional<joynr::MessagingQos> qos));
 
     std::shared_ptr<joynr::Future<void>> removeMulticastReceiverAsync(
             const std::string& multicastId,
             const std::string& subscriberParticipantId,
             const std::string& providerParticipantId,
             std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-            boost::optional<joynr::MessagingQos> qos
-        ) noexcept override
+            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                    onRuntimeError,
+            boost::optional<joynr::MessagingQos> qos) noexcept override
     {
-        return removeMulticastReceiverAsyncMock(
-                multicastId,
-                subscriberParticipantId,
-                providerParticipantId,
-                std::move(onSuccess),
-                std::move(onRuntimeError),
-                std::move(qos));
+        return removeMulticastReceiverAsyncMock(multicastId,
+                                                subscriberParticipantId,
+                                                providerParticipantId,
+                                                std::move(onSuccess),
+                                                std::move(onRuntimeError),
+                                                std::move(qos));
     }
     MOCK_METHOD6(removeMulticastReceiverAsyncMock,
-        std::shared_ptr<joynr::Future<void>> (
-            const std::string& multicastId,
-            const std::string& subscriberParticipantId,
-            const std::string& providerParticipantId,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::exceptions::JoynrRuntimeException& error)> onRuntimeError,
-            boost::optional<joynr::MessagingQos> qos));
+                 std::shared_ptr<joynr::Future<void>>(
+                         const std::string& multicastId,
+                         const std::string& subscriberParticipantId,
+                         const std::string& providerParticipantId,
+                         std::function<void()> onSuccess,
+                         std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                                 onRuntimeError,
+                         boost::optional<joynr::MessagingQos> qos));
 };
 
 #endif // TESTS_MOCK_MOCKROUTINGPROXY_H

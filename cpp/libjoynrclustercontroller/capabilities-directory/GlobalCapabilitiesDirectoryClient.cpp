@@ -22,17 +22,17 @@
  */
 
 #include <atomic>
-#include <mutex>
 #include <boost/algorithm/string/join.hpp>
+#include <mutex>
 
 #include "GlobalCapabilitiesDirectoryClient.h"
 
 #include "joynr/ClusterControllerSettings.h"
+#include "joynr/LCDUtil.h"
 #include "joynr/Message.h"
 #include "joynr/Semaphore.h"
 #include "joynr/TimePoint.h"
 #include "joynr/infrastructure/GlobalCapabilitiesDirectoryProxy.h"
-#include "joynr/LCDUtil.h"
 #include "joynr/types/GlobalDiscoveryEntry.h"
 
 namespace joynr
@@ -121,13 +121,10 @@ void GlobalCapabilitiesDirectoryClient::reAdd(
     TaskSequencer<void>::TaskWithExpiryDate reAddTask;
     reAddTask._expiryDate = TimePoint::max();
     reAddTask._timeout = []() {};
-    reAddTask._task = [
-        this,
-        localCapabilitiesDirectoryStore,
-        localAddress,
-        addMessagingQos = std::move(addMessagingQos)
-    ]() mutable
-    {
+    reAddTask._task = [this,
+                       localCapabilitiesDirectoryStore,
+                       localAddress,
+                       addMessagingQos = std::move(addMessagingQos)]() mutable {
         JOYNR_LOG_DEBUG(logger(), "Re-Add started.");
         std::shared_ptr<Future<void>> reAddResultFuture = std::make_shared<Future<void>>();
         std::vector<types::DiscoveryEntry> discoveryEntries;
@@ -172,7 +169,7 @@ void GlobalCapabilitiesDirectoryClient::reAdd(
             };
 
             auto onError = [onceFlag, onAddCompleted, participantId](
-                    const types::DiscoveryError::Enum& error) {
+                                   const types::DiscoveryError::Enum& error) {
                 JOYNR_LOG_ERROR(logger(),
                                 "Re-Add failed for {} with error. Error: {}",
                                 participantId,
@@ -181,7 +178,7 @@ void GlobalCapabilitiesDirectoryClient::reAdd(
             };
 
             auto onRuntimeError = [onceFlag, onAddCompleted, participantId](
-                    const exceptions::JoynrRuntimeException& error) {
+                                          const exceptions::JoynrRuntimeException& error) {
                 JOYNR_LOG_ERROR(logger(),
                                 "Re-Add failed for {} with exception: {} ({})",
                                 participantId,
@@ -267,17 +264,18 @@ void GlobalCapabilitiesDirectoryClient::lookup(
     MessagingQos lookupMessagingQos = _messagingQos;
     lookupMessagingQos.setTtl(static_cast<std::uint64_t>(messagingTtl));
     lookupMessagingQos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), gbids[0]);
-    _capabilitiesProxy->lookupAsync(participantId,
-                                    std::move(gbids),
-                                    [onSuccess = std::move(onSuccess)](
-                                            const joynr::types::GlobalDiscoveryEntry& capability) {
-                                        std::vector<joynr::types::GlobalDiscoveryEntry> result;
-                                        result.push_back(capability);
-                                        onSuccess(result);
-                                    },
-                                    std::move(onError),
-                                    std::move(onRuntimeError),
-                                    lookupMessagingQos);
+    _capabilitiesProxy->lookupAsync(
+            participantId,
+            std::move(gbids),
+            [onSuccess =
+                     std::move(onSuccess)](const joynr::types::GlobalDiscoveryEntry& capability) {
+                std::vector<joynr::types::GlobalDiscoveryEntry> result;
+                result.push_back(capability);
+                onSuccess(result);
+            },
+            std::move(onError),
+            std::move(onRuntimeError),
+            lookupMessagingQos);
 }
 
 void GlobalCapabilitiesDirectoryClient::touch(

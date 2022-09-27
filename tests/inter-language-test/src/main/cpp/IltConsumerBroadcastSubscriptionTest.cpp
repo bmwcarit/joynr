@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -73,8 +73,9 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSinglePri
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithSinglePrimitiveParameter - register subscription");
-        testInterfaceProxy->subscribeToBroadcastWithSinglePrimitiveParameterBroadcast(
-                                    listener, subscriptionQos, partitions)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithSinglePrimitiveParameterBroadcast(
+                        listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
@@ -123,8 +124,9 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleP
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultiplePrimitiveParameters - register subscription");
-        testInterfaceProxy->subscribeToBroadcastWithMultiplePrimitiveParametersBroadcast(
-                                    listener, subscriptionQos, partitions)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithMultiplePrimitiveParametersBroadcast(
+                        listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
@@ -174,8 +176,9 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleArr
     JOYNR_ASSERT_NO_THROW({
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleArrayParameter - register subscription");
-        testInterfaceProxy->subscribeToBroadcastWithSingleArrayParameterBroadcast(
-                                    listener, subscriptionQos, partitions)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithSingleArrayParameterBroadcast(
+                        listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
@@ -239,8 +242,9 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleA
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithMultipleArrayParameters - register subscription");
 
-        testInterfaceProxy->subscribeToBroadcastWithMultipleArrayParametersBroadcast(
-                                    listener, subscriptionQos, partitions)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithMultipleArrayParametersBroadcast(
+                        listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
@@ -289,10 +293,10 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleByt
     std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer>> listener(
             mockBroadcastWithSingleByteBufferParameterBroadcastListener);
     std::string subscriptionId;
-    JOYNR_ASSERT_NO_THROW(
-            testInterfaceProxy->subscribeToBroadcastWithSingleByteBufferParameterBroadcast(
-                                        listener, subscriptionQos, partitions)
-                    ->get(subscriptionIdFutureTimeoutMs, subscriptionId));
+    JOYNR_ASSERT_NO_THROW(testInterfaceProxy
+                                  ->subscribeToBroadcastWithSingleByteBufferParameterBroadcast(
+                                          listener, subscriptionQos, partitions)
+                                  ->get(subscriptionIdFutureTimeoutMs, subscriptionId));
 
     JOYNR_LOG_DEBUG(
             iltConsumerBroadcastSubscriptionTestLogger,
@@ -347,10 +351,10 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleB
     std::shared_ptr<ISubscriptionListener<joynr::ByteBuffer, joynr::ByteBuffer>> listener(
             mockBroadcastWithMultipleByteBufferParametersBroadcastListener);
     std::string subscriptionId;
-    JOYNR_ASSERT_NO_THROW(
-            testInterfaceProxy->subscribeToBroadcastWithMultipleByteBufferParametersBroadcast(
-                                        listener, subscriptionQos, partitions)
-                    ->get(subscriptionIdFutureTimeoutMs, subscriptionId));
+    JOYNR_ASSERT_NO_THROW(testInterfaceProxy
+                                  ->subscribeToBroadcastWithMultipleByteBufferParametersBroadcast(
+                                          listener, subscriptionQos, partitions)
+                                  ->get(subscriptionIdFutureTimeoutMs, subscriptionId));
 
     JOYNR_LOG_DEBUG(
             iltConsumerBroadcastSubscriptionTestLogger,
@@ -401,16 +405,18 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleEnu
                                              ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION)))
             .Times(1)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
-    typedef std::shared_ptr<ISubscriptionListener<
-            joynr::interlanguagetest::namedTypeCollection2::
-                    ExtendedTypeCollectionEnumerationInTypeCollection::Enum>> listenerType;
+    typedef std::shared_ptr<
+            ISubscriptionListener<joynr::interlanguagetest::namedTypeCollection2::
+                                          ExtendedTypeCollectionEnumerationInTypeCollection::Enum>>
+            listenerType;
     listenerType listener(mockBroadcastWithSingleEnumerationParameterBroadcastListener);
     JOYNR_ASSERT_NO_THROW({
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithSingleEnumerationParameter - register subscription");
-        testInterfaceProxy->subscribeToBroadcastWithSingleEnumerationParameterBroadcast(
-                                    listener, subscriptionQos, partitions)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithSingleEnumerationParameterBroadcast(
+                        listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
@@ -467,14 +473,16 @@ TEST_P(IltConsumerBroadcastSubscriptionTest,
     typedef std::shared_ptr<
             ISubscriptionListener<joynr::interlanguagetest::namedTypeCollection2::
                                           ExtendedEnumerationWithPartlyDefinedValues::Enum,
-                                  joynr::interlanguagetest::Enumeration::Enum>> listenerType;
+                                  joynr::interlanguagetest::Enumeration::Enum>>
+            listenerType;
     listenerType listener(mockBroadcastWithMultipleEnumerationParametersBroadcastListener);
     JOYNR_ASSERT_NO_THROW({
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultipleEnumerationParameters - register subscription");
-        testInterfaceProxy->subscribeToBroadcastWithMultipleEnumerationParametersBroadcast(
-                                    listener, subscriptionQos, partitions)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithMultipleEnumerationParametersBroadcast(
+                        listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
@@ -531,8 +539,9 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithSingleStr
     JOYNR_ASSERT_NO_THROW({
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
                        "callSubscribeBroadcastWithSingleStructParameter - register subscription");
-        testInterfaceProxy->subscribeToBroadcastWithSingleStructParameterBroadcast(
-                                    listener, subscriptionQos, partitions)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithSingleStructParameterBroadcast(
+                        listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerBroadcastSubscriptionTestLogger,
@@ -597,8 +606,9 @@ TEST_P(IltConsumerBroadcastSubscriptionTest, callSubscribeBroadcastWithMultipleS
         JOYNR_LOG_INFO(
                 iltConsumerBroadcastSubscriptionTestLogger,
                 "callSubscribeBroadcastWithMultipleStructParameters - register subscription");
-        testInterfaceProxy->subscribeToBroadcastWithMultipleStructParametersBroadcast(
-                                    listener, subscriptionQos, partitions)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithMultipleStructParametersBroadcast(
+                        listener, subscriptionQos, partitions)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(
@@ -626,8 +636,9 @@ TEST_F(IltConsumerBroadcastSubscriptionTest, doNotReceivePublicationsForOtherPar
     auto mockBroadcastWithSingleEnumerationParameter =
             std::make_shared<MockBroadcastWithSingleEnumerationParameterBroadcastListener>();
 
-    EXPECT_CALL(*mockBroadcastWithSingleEnumerationParameter, onReceive(_)).Times(1).WillRepeatedly(
-            ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockBroadcastWithSingleEnumerationParameter, onReceive(_))
+            .Times(1)
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
 
     const std::vector<std::string> subscribeToPartitions{"partition0", "partition1"};
     const std::vector<std::string> broadcastPartitions{"otherPartition"};

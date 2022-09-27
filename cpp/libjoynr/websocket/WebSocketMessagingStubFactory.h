@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,19 +56,23 @@ public:
     void addServer(const joynr::system::RoutingTypes::WebSocketAddress& serverAddress,
                    std::shared_ptr<IWebSocketSendInterface> webSocket);
     void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
-    void registerOnMessagingStubClosedCallback(std::function<
-            void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
-                                                       _onMessagingStubClosedCallback) override;
+    void registerOnMessagingStubClosedCallback(
+            std::function<void(
+                    std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
+                    _onMessagingStubClosedCallback) override;
 
 private:
     std::unordered_map<joynr::system::RoutingTypes::WebSocketAddress,
-                       std::shared_ptr<IMessagingStub>> _serverStubMap;
+                       std::shared_ptr<IMessagingStub>>
+            _serverStubMap;
     std::mutex _serverStubMapMutex;
     std::unordered_map<joynr::system::RoutingTypes::WebSocketClientAddress,
-                       std::shared_ptr<IMessagingStub>> _clientStubMap;
+                       std::shared_ptr<IMessagingStub>>
+            _clientStubMap;
     std::mutex _clientStubMapMutex;
-    std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
-                               destinationAddress)> _onMessagingStubClosedCallback;
+    std::function<void(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
+            _onMessagingStubClosedCallback;
 
     ADD_LOGGER(WebSocketMessagingStubFactory)
 };

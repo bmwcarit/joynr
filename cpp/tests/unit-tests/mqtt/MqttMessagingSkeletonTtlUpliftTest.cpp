@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,20 +19,20 @@
 #include <chrono>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/MqttMessagingSkeleton.h"
 
 #include "joynr/ClusterControllerSettings.h"
-#include "joynr/Request.h"
-#include "joynr/serializer/Serializer.h"
-#include "joynr/SingleThreadedIOService.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/MutableMessageFactory.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MutableMessageFactory.h"
+#include "joynr/Request.h"
 #include "joynr/Settings.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/TimePoint.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
@@ -120,8 +120,9 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUplift)
 
     EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
-    MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), "testGbid", ttlUpliftMs);
+    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr,
+                                                ccSettings.getMqttMulticastTopicPrefix(),
+                                                "testGbid", ttlUpliftMs);
     std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     mqttMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
@@ -143,8 +144,9 @@ TEST_F(MqttMessagingSkeletonTtlUpliftTest, DISABLED_testTtlUpliftWithLargeTtl)
 
     EXPECT_CALL(*mockMessageRouter, route(MessageHasExpiryDate(expectedExpiryDate), _));
 
-    MqttMessagingSkeleton mqttMessagingSkeleton(
-            mockMessageRouter, nullptr, ccSettings.getMqttMulticastTopicPrefix(), "testGbid", ttlUpliftMs);
+    MqttMessagingSkeleton mqttMessagingSkeleton(mockMessageRouter, nullptr,
+                                                ccSettings.getMqttMulticastTopicPrefix(),
+                                                "testGbid", ttlUpliftMs);
     {
         std::unique_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
         smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -131,10 +131,9 @@ public:
     {
         std::stringstream stream;
         auto visitor = [&stream](const auto& node, const auto& keys) {
-            const std::string key = std::accumulate(
-                    keys.begin(), keys.end(), std::string(), [](std::string& s, const auto& i) {
-                        return s + i.get();
-                    });
+            const std::string key =
+                    std::accumulate(keys.begin(), keys.end(), std::string(),
+                                    [](std::string& s, const auto& i) { return s + i.get(); });
             stream << key << "->" << serializer::serializeToJson(node.getValue()) << std::endl;
         };
         _storage.visit(visitor);
@@ -179,14 +178,12 @@ private:
     }
 
     template <typename ACEntry, typename tag>
-    struct MatchesKey
-    {
+    struct MatchesKey {
         static bool apply(const ACEntry& entry, const std::string& key);
     };
 
     template <typename ACEntry>
-    struct MatchesKey<ACEntry, access_control::wildcards::Domain>
-    {
+    struct MatchesKey<ACEntry, access_control::wildcards::Domain> {
         static bool apply(const ACEntry& entry, const std::string& key)
         {
             return entry.getDomain() == key;
@@ -194,8 +191,7 @@ private:
     };
 
     template <typename ACEntry>
-    struct MatchesKey<ACEntry, access_control::wildcards::Interface>
-    {
+    struct MatchesKey<ACEntry, access_control::wildcards::Interface> {
         static bool apply(const ACEntry& entry, const std::string& key)
         {
             return entry.getInterfaceName() == key;

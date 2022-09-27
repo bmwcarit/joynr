@@ -24,10 +24,16 @@
 #include "joynr/ReplyCaller.h"
 
 template <typename T>
-class MockReplyCaller : public joynr::ReplyCaller<T> {
+class MockReplyCaller : public joynr::ReplyCaller<T>
+{
 public:
-    MockReplyCaller(std::function<void(const T& returnValue)> callbackFct,
-                    std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>& error)> errorFct) : joynr::ReplyCaller<T>(callbackFct, errorFct) {}
+    MockReplyCaller(
+            std::function<void(const T& returnValue)> callbackFct,
+            std::function<void(const std::shared_ptr<joynr::exceptions::JoynrException>& error)>
+                    errorFct)
+            : joynr::ReplyCaller<T>(callbackFct, errorFct)
+    {
+    }
     MOCK_METHOD1_T(returnValue, void(const T& payload));
     MOCK_METHOD0_T(timeOut, void());
     MOCK_CONST_METHOD0_T(getType, std::string());

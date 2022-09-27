@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,11 +20,11 @@
 #include <chrono>
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
-#include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
+#include "joynr/MutableMessage.h"
 #include "joynr/Semaphore.h"
 
 #include "libjoynr/uds/UdsMessagingStub.h"
@@ -73,39 +73,40 @@ TEST_F(UdsMessagingStubTest, transmitCallsIUdsSenderSendWithCorrectArgs)
     std::string expectedData(byteArrayView.data(), byteArrayView.data() + byteArrayView.size());
 
     smrf::ByteArrayView capturedByteArrayView;
-    EXPECT_CALL(*_mockIUdsSender,
-            send(A<const smrf::ByteArrayView &>(),
-                A<const std::function<
-                void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
-        .WillOnce(DoAll(::testing::SaveArg<0>(&capturedByteArrayView), ReleaseSemaphore(&_semaphore)));
+    EXPECT_CALL(
+            *_mockIUdsSender,
+            send(A<const smrf::ByteArrayView&>(),
+                 A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+            .WillOnce(DoAll(
+                    ::testing::SaveArg<0>(&capturedByteArrayView), ReleaseSemaphore(&_semaphore)));
 
     EXPECT_CALL(*_mockIUdsSender, dtorCalled()).Times(1);
 
-    _udsMessagingStub->transmit(_immutableMessage,
-            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; }
-    );
+    _udsMessagingStub->transmit(_immutableMessage, [](const exceptions::JoynrRuntimeException&) {
+        FAIL() << "onFailure called";
+    });
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::seconds(2)));
-    std::string capturedData(capturedByteArrayView.data(), capturedByteArrayView.data() + capturedByteArrayView.size());
+    std::string capturedData(capturedByteArrayView.data(),
+                             capturedByteArrayView.data() + capturedByteArrayView.size());
     EXPECT_EQ(expectedData, capturedData);
 }
 
 TEST_F(UdsMessagingStubTest, transmitOnErrorIsInvokedWhenCalledFromUdsSenderSend)
 {
     exceptions::JoynrRuntimeException expectedException("send exception");
-    EXPECT_CALL(*_mockIUdsSender,
-            send(A<const smrf::ByteArrayView &>(),
-                A<const std::function<
-                void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
-        .WillOnce(DoAll(InvokeArgument<1>(expectedException), ReleaseSemaphore(&_semaphore)));
+    EXPECT_CALL(
+            *_mockIUdsSender,
+            send(A<const smrf::ByteArrayView&>(),
+                 A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+            .WillOnce(DoAll(InvokeArgument<1>(expectedException), ReleaseSemaphore(&_semaphore)));
 
     auto callback = std::make_shared<MockCallback<void>>();
     EXPECT_CALL(*callback, onError(Eq(expectedException))).Times(1);
     EXPECT_CALL(*_mockIUdsSender, dtorCalled()).Times(1);
 
-    _udsMessagingStub->transmit(_immutableMessage,
-            [callback](const exceptions::JoynrRuntimeException& error) {
+    _udsMessagingStub->transmit(
+            _immutableMessage, [callback](const exceptions::JoynrRuntimeException& error) {
                 callback->onError(error);
-            }
-    );
+            });
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::seconds(2)));
 }

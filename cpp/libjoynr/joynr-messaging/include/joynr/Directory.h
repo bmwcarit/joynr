@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,19 +40,19 @@ namespace joynr
 {
 
 /**
-  * The directory.h offers the interface of a Map. However, in contrast to a Map,
-  * one can choose to use two different add methods. The first add/remove behave as expected by a
-  *Map.
-  * The second option is to specify a time to live for entries when adding them (in milli-secondes).
-  *The
-  * entry will be removed automatically after this time. The methods are thread-safe.
-  *
-  * This template can be used on libJoynr and ClusterController sides:
-  *     MessagingEndpointDirectory,           CC
-  *     ParticipantDirectory,                 CC
-  *     \<Middleware\>RequestCallerDirectory, libjoynr
-  *     ReplyCallerDirectory,                 libjoynr
-  */
+ * The directory.h offers the interface of a Map. However, in contrast to a Map,
+ * one can choose to use two different add methods. The first add/remove behave as expected by a
+ *Map.
+ * The second option is to specify a time to live for entries when adding them (in milli-secondes).
+ *The
+ * entry will be removed automatically after this time. The methods are thread-safe.
+ *
+ * This template can be used on libJoynr and ClusterController sides:
+ *     MessagingEndpointDirectory,           CC
+ *     ParticipantDirectory,                 CC
+ *     \<Middleware\>RequestCallerDirectory, libjoynr
+ *     ReplyCallerDirectory,                 libjoynr
+ */
 
 template <typename Key, typename T>
 class Directory

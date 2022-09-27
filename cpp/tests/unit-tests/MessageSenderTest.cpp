@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,39 +20,38 @@
 #include <string>
 #include <vector>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
+#include "joynr/BroadcastFilterParameters.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
+#include "joynr/MessageSender.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MulticastSubscriptionQos.h"
+#include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/MutableMessageFactory.h"
-#include "joynr/MulticastSubscriptionQos.h"
-#include "joynr/MessageSender.h"
-#include "joynr/Request.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/Reply.h"
-#include "joynr/SubscriptionRequest.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/BroadcastFilterParameters.h"
-#include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/Request.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/PeriodicSubscriptionQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/SingleThreadedIOService.h"
+#include "joynr/SubscriptionRequest.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockDispatcher.h"
-#include "tests/mock/MockMessagingStub.h"
 #include "tests/mock/MockMessageRouter.h"
+#include "tests/mock/MockMessagingStub.h"
 
-using ::testing::A;
 using ::testing::_;
 using ::testing::A;
+using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::NotNull;
-using ::testing::AllOf;
 using ::testing::Property;
 using namespace joynr;
 
@@ -290,14 +289,11 @@ TEST_F(MessageSenderTest, sendMulticastSubscriptionRequest)
     SubscriptionReply subscriptionReply;
     subscriptionReply.setSubscriptionId("subscriptionId");
 
-    MutableMessage mutableReplyMessage =
-            messageFactory.createSubscriptionReply(receiverParticipantId,
-                    senderParticipantId,
-                    messagingQos,
-                    subscriptionReply);
+    MutableMessage mutableReplyMessage = messageFactory.createSubscriptionReply(
+            receiverParticipantId, senderParticipantId, messagingQos, subscriptionReply);
 
-    expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(),
-                        mutableReplyMessage.getPayload());
+    expectRoutedMessage(
+            Message::VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY(), mutableReplyMessage.getPayload());
 
     MessageSender messageSender(mockMessageRouter, nullptr);
 

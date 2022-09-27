@@ -16,17 +16,17 @@
  * limitations under the License.
  * #L%
  */
-#include "utils/Gtest.h"
 #include "utils/Gmock.h"
+#include "utils/Gtest.h"
 
 #include "JoynrTest.h"
 #include "joynr/interlanguagetest/TestInterfaceProxy.h"
 
+#include "IltHelper.h"
+#include "IltUtil.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingQosEffort.h"
-#include "IltHelper.h"
-#include "IltUtil.h"
 
 using namespace ::testing;
 
@@ -51,9 +51,10 @@ protected:
         // implementation.
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
                 [&](const joynr::exceptions::JoynrRuntimeException& exception) {
-            JOYNR_LOG_ERROR(
-                    logger(), "Unexpected joynr runtime error occured: " + exception.getMessage());
-        };
+                    JOYNR_LOG_ERROR(
+                            logger(),
+                            "Unexpected joynr runtime error occured: " + exception.getMessage());
+                };
 
         // Initialize the joynr runtime
         std::string pathToMessagingSettings(dir + "/resources/ilt-consumer.settings");
@@ -79,12 +80,12 @@ protected:
                 joynr::DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
 
         // Build a proxy
-        testInterfaceProxy = proxyBuilder->setMessagingQos(joynr::MessagingQos(qosMsgTtl,
-                                                                               qosMsgEffort,
-                                                                               qosMsgEncrypt,
-                                                                               qosMsgCompress))
-                                     ->setDiscoveryQos(discoveryQos)
-                                     ->build();
+        testInterfaceProxy =
+                proxyBuilder
+                        ->setMessagingQos(joynr::MessagingQos(
+                                qosMsgTtl, qosMsgEffort, qosMsgEncrypt, qosMsgCompress))
+                        ->setDiscoveryQos(discoveryQos)
+                        ->build();
 
         JOYNR_LOG_INFO(logger(), "***********************");
         JOYNR_LOG_INFO(logger(), "Proxy built.");

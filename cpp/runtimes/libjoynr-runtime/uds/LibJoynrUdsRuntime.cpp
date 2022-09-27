@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,16 +22,16 @@
 #include <utility>
 
 #include "joynr/Settings.h"
-#include "joynr/Util.h"
 #include "joynr/UdsClient.h"
 #include "joynr/UdsMulticastAddressCalculator.h"
+#include "joynr/Util.h"
 
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/system/RoutingTypes/UdsClientAddress.h"
 
-#include "libjoynr/uds/UdsMessagingStubFactory.h"
 #include "libjoynr/uds/UdsLibJoynrMessagingSkeleton.h"
+#include "libjoynr/uds/UdsMessagingStubFactory.h"
 
 namespace joynr
 {
@@ -73,7 +73,7 @@ void LibJoynrUdsRuntime::connect(
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
 {
     _client->setConnectCallback(
-            [ this, onSuccess = std::move(onSuccess), onError = std::move(onError) ]() mutable {
+            [this, onSuccess = std::move(onSuccess), onError = std::move(onError)]() mutable {
                 // The destructor resolves the circular dependency
                 _stubFactory->addServer(*_serverAddress, _client);
 

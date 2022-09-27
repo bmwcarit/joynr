@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,15 +16,16 @@
  * limitations under the License.
  * #L%
  */
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
+// clang-format off
 #include "tests/unit-tests/serializer/MockArchive.h" // must be included prior to Serializer.h
 #include "joynr/serializer/Serializer.h"
+// clang-format on
 
 template <typename ExpectedArchive>
-struct DemoType
-{
+struct DemoType {
     MOCK_METHOD0(expectedCalled, void());
     MOCK_METHOD0(unexpectedCalled, void());
 
@@ -49,7 +50,8 @@ protected:
     {
         using Tag = typename Id::Tag;
         using ExpectedArchiveImpl = typename ArchiveTraits<Tag>::template type<Stream>;
-        EXPECT_NO_THROW(auto archive = getter(Id::id(), streamParam); DemoType<ExpectedArchiveImpl> demo;
+        EXPECT_NO_THROW(auto archive = getter(Id::id(), streamParam);
+                        DemoType<ExpectedArchiveImpl> demo;
                         EXPECT_CALL(demo, expectedCalled()).Times(1);
                         EXPECT_CALL(demo, unexpectedCalled()).Times(0);
                         archive(demo););
@@ -62,8 +64,7 @@ class RuntimeArchiveSelectionTestMustFail : public ::testing::Test
 };
 
 template <typename TagType>
-struct GetId
-{
+struct GetId {
     using Tag = TagType;
     static constexpr const char* id()
     {
@@ -75,8 +76,7 @@ template <typename TagType>
 struct GetInputData;
 
 template <>
-struct GetInputData<tag::mock>
-{
+struct GetInputData<tag::mock> {
     static constexpr const char* data()
     {
         return "";
@@ -84,8 +84,7 @@ struct GetInputData<tag::mock>
 };
 
 template <>
-struct GetInputData<muesli::tags::json>
-{
+struct GetInputData<muesli::tags::json> {
     static constexpr const char* data()
     {
         return "{}";
@@ -95,8 +94,7 @@ struct GetInputData<muesli::tags::json>
 struct NonExistingTag;
 
 template <>
-struct GetId<NonExistingTag>
-{
+struct GetId<NonExistingTag> {
     static constexpr const char* id()
     {
         return "non-existing-tag";
@@ -104,15 +102,16 @@ struct GetId<NonExistingTag>
 };
 
 using SuceedingTags = ::testing::Types<GetId<muesli::tags::json>, GetId<tag::mock>>;
-TYPED_TEST_SUITE(RuntimeArchiveSelectionTestMustSucceed, SuceedingTags,);
+TYPED_TEST_SUITE(RuntimeArchiveSelectionTestMustSucceed, SuceedingTags, );
 
 using FailingTags = ::testing::Types<GetId<NonExistingTag>>;
-TYPED_TEST_SUITE(RuntimeArchiveSelectionTestMustFail, FailingTags,);
+TYPED_TEST_SUITE(RuntimeArchiveSelectionTestMustFail, FailingTags, );
 
 TYPED_TEST(RuntimeArchiveSelectionTestMustSucceed, getOutputArchive)
 {
-    auto getter = [](
-            auto&& id, auto&& stream) { return joynr::serializer::getOutputArchive(id, stream); };
+    auto getter = [](auto&& id, auto&& stream) {
+        return joynr::serializer::getOutputArchive(id, stream);
+    };
     muesli::StringOStream ostream;
     this->template run<TypeParam, muesli::OutputArchiveTraits>(ostream, getter);
 }
@@ -122,8 +121,9 @@ TYPED_TEST(RuntimeArchiveSelectionTestMustSucceed, getInputArchive)
     using namespace joynr::serializer;
     std::string input = GetInputData<typename TypeParam::Tag>::data();
     muesli::StringIStream istream(input);
-    auto getter =
-            [](auto&& id, auto&& stream) { return joynr::serializer::getInputArchive(id, stream); };
+    auto getter = [](auto&& id, auto&& stream) {
+        return joynr::serializer::getInputArchive(id, stream);
+    };
     this->template run<TypeParam, muesli::InputArchiveTraits>(istream, getter);
 }
 

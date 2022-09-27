@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,15 +21,15 @@
 #include <cstdint>
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Future.h"
+#include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/MulticastSubscriptionQos.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionManager.h"
-#include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/Util.h"
 
 #include "tests/mock/MockMessageRouter.h"
@@ -246,7 +246,8 @@ TEST_F(SubscriptionManagerMulticastTest,
     std::string partition1 = "partition1";
     std::string partition2 = "partition2";
     std::vector<std::string> partitions1 = {partition1};
-    std::string localMulticastId1 = _providerParticipantId1 + "/" + _subscribeToName + "/" + partition1;
+    std::string localMulticastId1 =
+            _providerParticipantId1 + "/" + _subscribeToName + "/" + partition1;
     MulticastSubscriptionRequest subscriptionRequest1;
 
     EXPECT_CALL(*_mockMessageRouter,

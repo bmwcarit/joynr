@@ -41,33 +41,34 @@ using namespace joynr;
 class LocalCapabilitiesDirectoryStoreTest : public ::testing::Test
 {
 public:
-    LocalCapabilitiesDirectoryStoreTest() :
-    _defaultProviderVersion(30, 06),
-    _domainName("testdomain"),
-    _domainNameGlobal("testdomain2"),
-    _interfaceName("testinterface"),
-    _interfaceNameGlobal("testinterface2"),
-    _participantId("testparticipantid"),
-    _participantIdGlobal("testparticipantid2"),
-    _publicKeyId("testkey"),
-    _qos(),
-    _localEntry(_defaultProviderVersion,
-                _domainName,
-                _interfaceName,
-                _participantId,
-                _qos,
-                10000,
-                10000,
-                _publicKeyId),
-     _globalEntry(_defaultProviderVersion,
-                  _domainNameGlobal,
-                  _interfaceNameGlobal,
-                  _participantIdGlobal,
-                  _qos,
-                  10000,
-                  10000,
-                  _publicKeyId),
-    _semaphore(0){
+    LocalCapabilitiesDirectoryStoreTest()
+            : _defaultProviderVersion(30, 06),
+              _domainName("testdomain"),
+              _domainNameGlobal("testdomain2"),
+              _interfaceName("testinterface"),
+              _interfaceNameGlobal("testinterface2"),
+              _participantId("testparticipantid"),
+              _participantIdGlobal("testparticipantid2"),
+              _publicKeyId("testkey"),
+              _qos(),
+              _localEntry(_defaultProviderVersion,
+                          _domainName,
+                          _interfaceName,
+                          _participantId,
+                          _qos,
+                          10000,
+                          10000,
+                          _publicKeyId),
+              _globalEntry(_defaultProviderVersion,
+                           _domainNameGlobal,
+                           _interfaceNameGlobal,
+                           _participantIdGlobal,
+                           _qos,
+                           10000,
+                           10000,
+                           _publicKeyId),
+              _semaphore(0)
+    {
         _qos.setScope(types::ProviderScope::LOCAL);
         _localEntry.setQos(_qos);
         _qos.setScope(types::ProviderScope::GLOBAL);
@@ -91,9 +92,9 @@ protected:
 
     void test_getLocalAndCachedCapabilities_interfaceAddresses(
             types::DiscoveryQos discoveryQos,
-            std::shared_ptr<ILocalCapabilitiesCallback> callback) {
-        InterfaceAddress interfaceAddress(
-                _localEntry.getDomain(), _localEntry.getInterfaceName());
+            std::shared_ptr<ILocalCapabilitiesCallback> callback)
+    {
+        InterfaceAddress interfaceAddress(_localEntry.getDomain(), _localEntry.getInterfaceName());
         InterfaceAddress interfaceAddressGlobal(
                 _globalEntry.getDomain(), _globalEntry.getInterfaceName());
         std::vector<InterfaceAddress> interfaceAddresses;
@@ -106,45 +107,48 @@ protected:
         _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
         ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
-                    interfaceAddresses,
-                    discoveryQos,
-                    gbids,
-                    callback));
+                interfaceAddresses, discoveryQos, gbids, callback));
     }
-
 };
-
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getGlobalLookupCache)
 {
-    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
     ASSERT_NE(nullptr, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocallyRegisteredCapabilities)
 {
-    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
-    ASSERT_NE(nullptr, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock));
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_NE(
+            nullptr, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, insertInLocalCapabilitiesStorage)
 {
-    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_EQ(0,
+              _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocalCapabilities(_participantId).size());
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
+    ASSERT_EQ(1,
+              _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, insertInGlobalLookupCache)
 {
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
-    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_localEntry, gbids);
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries().size());
-    ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
+    ASSERT_EQ(gbids,
+              _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, updateEntryInGlobalLookupCacheIfItExists)
@@ -152,13 +156,15 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, updateEntryInGlobalLookupCacheIfItEx
     const std::vector<std::string> gbids1 = {"gbid1", "gbid2"};
     const std::vector<std::string> expectedGbids1 = {gbids1};
     const std::vector<types::DiscoveryEntry> expectedDiscoveryEntries1 = {_localEntry};
-    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
 
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_localEntry, gbids1);
 
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
-    ASSERT_EQ(expectedGbids1, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
+    ASSERT_EQ(expectedGbids1,
+              _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
     cacheLock.unlock();
     ASSERT_EQ(expectedDiscoveryEntries1,
               _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries());
@@ -175,14 +181,15 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, updateEntryInGlobalLookupCacheIfItEx
     cacheLock.lock();
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries().size());
-    ASSERT_EQ(expectedGbids2, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
+    ASSERT_EQ(expectedGbids2,
+              _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantId, cacheLock));
     cacheLock.unlock();
 
     // check that the entry is updated
     ASSERT_EQ(expectedDiscoveryEntries2,
-                _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries());
+              _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries());
     ASSERT_EQ(expectedDiscoveryEntries2[0].getDomain(),
-                _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries()[0].getDomain());
+              _localCapabilitiesDirectoryStore.getCachedGlobalDiscoveryEntries()[0].getDomain());
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getAllGlobalCapabilities)
@@ -207,11 +214,11 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getAllGlobalCapabilities)
 
     bool foundEntry1;
     bool foundEntry2;
-    for(types::DiscoveryEntry entry : globalDiscoveryEntries) {
-        if(entry.getParticipantId() == participantId1) {
+    for (types::DiscoveryEntry entry : globalDiscoveryEntries) {
+        if (entry.getParticipantId() == participantId1) {
             foundEntry1 = true;
         }
-        if (entry.getParticipantId() == participantId2 ) {
+        if (entry.getParticipantId() == participantId2) {
             foundEntry2 = true;
         }
     }
@@ -221,12 +228,16 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getAllGlobalCapabilities)
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, clear)
 {
-    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_EQ(0,
+              _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
+    ASSERT_EQ(1,
+              _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
     _localCapabilitiesDirectoryStore.clear();
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
+    ASSERT_EQ(0,
+              _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, countGlobalCapabilities)
@@ -237,11 +248,10 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, countGlobalCapabilities)
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.countGlobalCapabilities());
 }
 
-//It's basically the same method....
+// It's basically the same method....
 TEST_F(LocalCapabilitiesDirectoryStoreTest, searchLocalCacheAndGetLocalCapabilities)
 {
-    InterfaceAddress interfaceAddress(
-            _localEntry.getDomain(), _localEntry.getInterfaceName());
+    InterfaceAddress interfaceAddress(_localEntry.getDomain(), _localEntry.getInterfaceName());
     std::vector<InterfaceAddress> interfaceAddresses;
     interfaceAddresses.push_back(interfaceAddress);
 
@@ -258,33 +268,44 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, handlingOfGbidMappings)
 {
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
-    std::unique_lock<std::recursive_mutex> cacheLock(_localCapabilitiesDirectoryStore.getCacheLock());
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal, cacheLock).size());
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_EQ(0,
+              _localCapabilitiesDirectoryStore
+                      .getGbidsForParticipantId(_participantIdGlobal, cacheLock)
+                      .size());
     cacheLock.unlock();
 
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     cacheLock.lock();
-    ASSERT_EQ(gbids, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal, cacheLock));
+    ASSERT_EQ(gbids,
+              _localCapabilitiesDirectoryStore.getGbidsForParticipantId(
+                      _participantIdGlobal, cacheLock));
 
-    _localCapabilitiesDirectoryStore.eraseParticipantIdToGbidMapping(_participantIdGlobal, cacheLock);
+    _localCapabilitiesDirectoryStore.eraseParticipantIdToGbidMapping(
+            _participantIdGlobal, cacheLock);
 
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGbidsForParticipantId(_participantIdGlobal, cacheLock).size());
-
+    ASSERT_EQ(0,
+              _localCapabilitiesDirectoryStore
+                      .getGbidsForParticipantId(_participantIdGlobal, cacheLock)
+                      .size());
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interfaceAddresses_local_only)
+TEST_F(LocalCapabilitiesDirectoryStoreTest,
+       getLocalAndCachedCapabilities_interfaceAddresses_local_only)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
                 _semaphore.notify();
-    };
+            };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [] (const types::DiscoveryError::Enum& errorEnum) {
-                FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
-    };
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
@@ -298,28 +319,32 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interf
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interfaceAddresses_local_and_global)
+TEST_F(LocalCapabilitiesDirectoryStoreTest,
+       getLocalAndCachedCapabilities_interfaceAddresses_local_and_global)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(2, result.size());
                 bool firstNotified = false;
                 bool secondNotified = false;
                 for (auto entry : result) {
-                    if(_localEntry.getParticipantId() == entry.getParticipantId() && !firstNotified) {
+                    if (_localEntry.getParticipantId() == entry.getParticipantId() &&
+                        !firstNotified) {
                         _semaphore.notify();
                         firstNotified = true;
                     }
-                    if(_globalEntry.getParticipantId() == entry.getParticipantId() && !secondNotified) {
+                    if (_globalEntry.getParticipantId() == entry.getParticipantId() &&
+                        !secondNotified) {
                         _semaphore.notify();
                         secondNotified = true;
                     }
                 }
-    };
+            };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [] (const types::DiscoveryError::Enum& errorEnum) {
-                FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
-    };
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
@@ -330,23 +355,24 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interf
 
     test_getLocalAndCachedCapabilities_interfaceAddresses(discoveryQos, localCapabilitiesCallback);
 
-
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interfaceAddresses_local_then_global)
+TEST_F(LocalCapabilitiesDirectoryStoreTest,
+       getLocalAndCachedCapabilities_interfaceAddresses_local_then_global)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
                 _semaphore.notify();
-    };
+            };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [] (const types::DiscoveryError::Enum& errorEnum) {
-                FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
-    };
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
@@ -360,18 +386,20 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interf
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interfaceAddresses_global_only)
+TEST_F(LocalCapabilitiesDirectoryStoreTest,
+       getLocalAndCachedCapabilities_interfaceAddresses_global_only)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
                 _semaphore.notify();
-    };
+            };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [] (const types::DiscoveryError::Enum& errorEnum) {
-                FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
-    };
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
@@ -385,19 +413,19 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_interf
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_local_only)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
                 _semaphore.notify();
-    };
+            };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [] (const types::DiscoveryError::Enum& errorEnum) {
-                FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
-    };
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
@@ -412,37 +440,37 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
-                _localEntry.getParticipantId(),
-                discoveryQos,
-                gbids,
-                localCapabilitiesCallback));
+            _localEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_local_and_global)
+TEST_F(LocalCapabilitiesDirectoryStoreTest,
+       getLocalAndCachedCapabilities_participantId_local_and_global)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
                 _semaphore.notify();
-    };
-    std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccessGlobal =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
-                ASSERT_EQ(1, result.size());
-                ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
-    };
+            };
+    std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)>
+            onSuccessGlobal =
+                    [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+                        ASSERT_EQ(1, result.size());
+                        ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
+                        _semaphore.notify();
+                    };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [] (const types::DiscoveryError::Enum& errorEnum) {
-                FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
-    };
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
-    auto globalCapabilitiesCallback =
-            std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccessGlobal), std::move(onError));
+    auto globalCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
+            std::move(onSuccessGlobal), std::move(onError));
 
     types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(LONG_MAX);
@@ -454,43 +482,40 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
-                _localEntry.getParticipantId(),
-                discoveryQos,
-                gbids,
-                localCapabilitiesCallback));
+            _localEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
-                _globalEntry.getParticipantId(),
-                discoveryQos,
-                gbids,
-                globalCapabilitiesCallback));
+            _globalEntry.getParticipantId(), discoveryQos, gbids, globalCapabilitiesCallback));
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
-TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_local_then_global)
+TEST_F(LocalCapabilitiesDirectoryStoreTest,
+       getLocalAndCachedCapabilities_participantId_local_then_global)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
                 _semaphore.notify();
-    };
-    std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccessGlobal =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
-                ASSERT_EQ(1, result.size());
-                ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
-    };
+            };
+    std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)>
+            onSuccessGlobal =
+                    [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+                        ASSERT_EQ(1, result.size());
+                        ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
+                        _semaphore.notify();
+                    };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [] (const types::DiscoveryError::Enum& errorEnum) {
-                FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
-    };
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
-    auto globalCapabilitiesCallback =
-            std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccessGlobal), std::move(onError));
+    auto globalCapabilitiesCallback = std::make_shared<LocalCapabilitiesCallback>(
+            std::move(onSuccessGlobal), std::move(onError));
 
     types::DiscoveryQos discoveryQos;
     discoveryQos.setCacheMaxAge(LONG_MAX);
@@ -502,15 +527,9 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
-                _localEntry.getParticipantId(),
-                discoveryQos,
-                gbids,
-                localCapabilitiesCallback));
+            _localEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
-                _globalEntry.getParticipantId(),
-                discoveryQos,
-                gbids,
-                globalCapabilitiesCallback));
+            _globalEntry.getParticipantId(), discoveryQos, gbids, globalCapabilitiesCallback));
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
@@ -519,15 +538,16 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_global_only)
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
-            [this] (const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
                 _semaphore.notify();
-    };
+            };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
-            [] (const types::DiscoveryError::Enum& errorEnum) {
-                FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);
-    };
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
 
     auto localCapabilitiesCallback =
             std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
@@ -542,17 +562,9 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
-                _globalEntry.getParticipantId(),
-                discoveryQos,
-                gbids,
-                localCapabilitiesCallback));
+            _globalEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
     ASSERT_FALSE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
-                _localEntry.getParticipantId(),
-                discoveryQos,
-                gbids,
-                localCapabilitiesCallback));
+            _localEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
 
     EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
-
-

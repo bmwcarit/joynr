@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,17 +20,17 @@
 #ifndef PERFORMANCECONSUMER_H
 #define PERFORMANCECONSUMER_H
 
-#include <condition_variable>
-#include <mutex>
 #include <chrono>
-#include <limits>
-#include <numeric>
+#include <condition_variable>
 #include <exception>
+#include <limits>
+#include <mutex>
+#include <numeric>
 #include <random>
 
 #include "../common/PerformanceTest.h"
-#include "joynr/JoynrRuntime.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/JoynrRuntime.h"
 #include "joynr/ProxyBuilder.h"
 
 #include "joynr/tests/performance/EchoProxy.h"
@@ -38,8 +38,7 @@
 namespace joynr
 {
 
-struct IPerformanceConsumer
-{
+struct IPerformanceConsumer {
     virtual ~IPerformanceConsumer() = default;
     virtual void runByteArray() = 0;
     virtual void runByteArrayWithSizeTimesK() = 0;
@@ -233,8 +232,9 @@ public:
 
     void loopByteArray(const ByteArray& data)
     {
-        auto fun =
-                [this, &data](auto onSuccess) { echoProxy->echoByteArrayAsync(data, onSuccess); };
+        auto fun = [this, &data](auto onSuccess) {
+            echoProxy->echoByteArrayAsync(data, onSuccess);
+        };
         loop(fun);
     }
 

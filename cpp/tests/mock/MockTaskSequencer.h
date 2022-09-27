@@ -23,13 +23,14 @@
 
 #include "joynr/TaskSequencer.h"
 
-template<typename T>
+template <typename T>
 class MockTaskSequencer : public joynr::TaskSequencer<T>
 {
 public:
     using MockTaskWithExpiryDate = typename TaskSequencer<T>::TaskWithExpiryDate;
 
-    MockTaskSequencer(std::chrono::milliseconds defaultTimeToWait) : TaskSequencer<T>(defaultTimeToWait)
+    MockTaskSequencer(std::chrono::milliseconds defaultTimeToWait)
+            : TaskSequencer<T>(defaultTimeToWait)
     {
         // Do nothing
     }
@@ -37,6 +38,5 @@ public:
     MOCK_METHOD0(cancel, void());
     MOCK_METHOD1_T(add, void(const MockTaskWithExpiryDate& taskWithExpiryDate));
 };
-
 
 #endif // MOCKTASKSEQUENCER_H

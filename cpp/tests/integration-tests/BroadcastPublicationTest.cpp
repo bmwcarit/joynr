@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,23 +16,23 @@
  * limitations under the License.
  * #L%
  */
-#include "joynr/PrivateCopyAssign.h"
-#include "tests/utils/Gtest.h"
-#include "tests/utils/Gmock.h"
-#include <memory>
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/MessageSender.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilterParameters.h"
+#include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
+#include <memory>
 
-#include "joynr/UnicastBroadcastListener.h"
 #include "joynr/MulticastBroadcastListener.h"
+#include "joynr/UnicastBroadcastListener.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
 #include "tests/mock/MockMessageRouter.h"
 #include "tests/mock/MockPublicationSender.h"
-#include "tests/mock/MockLocationUpdatedSelectiveFilter.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
 
@@ -43,30 +43,30 @@ using namespace joynr;
 using namespace joynr::tests;
 
 /**
-  * Is an integration test. Tests from Provider -> PublicationManager
-  */
+ * Is an integration test. Tests from Provider -> PublicationManager
+ */
 class BroadcastPublicationTest : public ::testing::Test
 {
 public:
     BroadcastPublicationTest()
             : _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _gpsLocation1(1.1,
-                           2.2,
-                           3.3,
-                           types::Localisation::GpsFixEnum::MODE2D,
-                           0.0,
-                           0.0,
-                           0.0,
-                           0.0,
-                           444,
-                           444,
-                           444),
+                            2.2,
+                            3.3,
+                            types::Localisation::GpsFixEnum::MODE2D,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            444,
+                            444,
+                            444),
               _speed1(100),
               _providerParticipantId("providerParticipantId"),
               _proxyParticipantId("proxyParticipantId"),
               _subscriptionId("subscriptionId"),
-              _mockMessageRouter(
-                      std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
+              _mockMessageRouter(std::make_shared<MockMessageRouter>(
+                      _singleThreadedIOService->getIOService())),
               _messageSender(std::make_shared<MessageSender>(_mockMessageRouter, nullptr)),
               _publicationManager(
                       std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
@@ -102,7 +102,7 @@ public:
         auto qos = std::make_shared<OnChangeSubscriptionQos>(1000, // publication ttl
                                                              80,   // validity_ms
                                                              100   // minInterval_ms
-                                                             );
+        );
         _request.setQos(qos);
         _request.setFilterParameters(_filterParameters);
 
@@ -110,10 +110,10 @@ public:
                 "locationUpdateSelective", _subscriptionBroadcastListener);
 
         _publicationManager->add(_proxyParticipantId,
-                                _providerParticipantId,
-                                _requestCaller,
-                                _request,
-                                _publicationSender);
+                                 _providerParticipantId,
+                                 _requestCaller,
+                                 _request,
+                                 _publicationSender);
 
         _provider->registerBroadcastListener(_multicastBroadcastListener);
         _provider->addBroadcastFilter(_filter1);
@@ -154,16 +154,18 @@ private:
 };
 
 /**
-  * Trigger:    A broadcast occurs.
-  * Expected:   The registered filter objects are called correctly.
-  */
+ * Trigger:    A broadcast occurs.
+ * Expected:   The registered filter objects are called correctly.
+ */
 TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered)
 {
 
     // It's only guaranteed that all filters are executed when they return true
     // (When not returning true, filter chain execution is interrupted)
-    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters)))
+            .WillByDefault(Return(true));
+    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters)))
+            .WillByDefault(Return(true));
 
     EXPECT_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters)));
     EXPECT_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters)));
@@ -172,14 +174,16 @@ TEST_F(BroadcastPublicationTest, call_BroadcastFilterOnBroadcastTriggered)
 }
 
 /**
-  * Trigger:    A broadcast occurs. The filter chain has a positive result.
-  * Expected:   A broadcast publication is triggered
-  */
+ * Trigger:    A broadcast occurs. The filter chain has a positive result.
+ * Expected:   A broadcast publication is triggered
+ */
 TEST_F(BroadcastPublicationTest, sendPublication_FilterChainSuccess)
 {
 
-    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
+    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters)))
+            .WillByDefault(Return(true));
+    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters)))
+            .WillByDefault(Return(true));
 
     EXPECT_CALL(*_publicationSender,
                 sendSubscriptionPublicationMock(
@@ -212,14 +216,16 @@ TEST_F(BroadcastPublicationTest, sendPublication_broadcastwithSingleArrayParam)
 }
 
 /**
-  * Trigger:    A broadcast occurs. The filter chain has a negative result.
-  * Expected:   A broadcast publication is triggered
-  */
+ * Trigger:    A broadcast occurs. The filter chain has a negative result.
+ * Expected:   A broadcast publication is triggered
+ */
 TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail)
 {
 
-    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(true));
-    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters))).WillByDefault(Return(false));
+    ON_CALL(*_filter1, filter(Eq(_gpsLocation1), Eq(_filterParameters)))
+            .WillByDefault(Return(true));
+    ON_CALL(*_filter2, filter(Eq(_gpsLocation1), Eq(_filterParameters)))
+            .WillByDefault(Return(false));
 
     EXPECT_CALL(*_publicationSender,
                 sendSubscriptionPublicationMock(
@@ -228,7 +234,8 @@ TEST_F(BroadcastPublicationTest, sendPublication_FilterChainFail)
                         _,
                         AllOf(A<const SubscriptionPublication&>(),
                               Property(&SubscriptionPublication::getSubscriptionId,
-                                       Eq(_subscriptionId))))).Times(Exactly(0));
+                                       Eq(_subscriptionId)))))
+            .Times(Exactly(0));
 
     _provider->fireLocationUpdateSelective(_gpsLocation1);
 }

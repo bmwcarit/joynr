@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,8 +16,8 @@
  * limitations under the License.
  * #L%
  */
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include <functional>
 #include <memory>
@@ -27,18 +27,18 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
-#include "joynr/Logger.h"
-#include "joynr/Semaphore.h"
 #include "joynr/ImmutableMessage.h"
+#include "joynr/Logger.h"
 #include "joynr/MutableMessage.h"
-#include "joynr/system/RoutingTypes/Address.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/exceptions/JoynrException.h"
+#include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
 #include "joynr/WebSocketSettings.h"
+#include "joynr/exceptions/JoynrException.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingTypes/Address.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
 
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
 #include "libjoynr/websocket/WebSocketPpClient.h"
@@ -54,15 +54,16 @@ class WebSocketServer : public std::enable_shared_from_this<WebSocketServer>
     using ConnectionHandle = websocketpp::connection_hdl;
 
 public:
-    WebSocketServer() :
-        std::enable_shared_from_this<WebSocketServer>(),
-        _webSocketPpSingleThreadedIOService(std::make_shared<joynr::SingleThreadedIOService>()),
-        endpoint(),
-        port(),
-        messageReceivedCallback(),
-        _clientsMutex(),
-        _clients(),
-        _shuttingDown(false)
+    WebSocketServer()
+            : std::enable_shared_from_this<WebSocketServer>(),
+              _webSocketPpSingleThreadedIOService(
+                      std::make_shared<joynr::SingleThreadedIOService>()),
+              endpoint(),
+              port(),
+              messageReceivedCallback(),
+              _clientsMutex(),
+              _clients(),
+              _shuttingDown(false)
     {
         endpoint.clear_access_channels(websocketpp::log::alevel::all);
         endpoint.clear_error_channels(websocketpp::log::alevel::all);
@@ -72,26 +73,26 @@ public:
     {
         std::lock_guard<std::mutex> lock1(_clientsMutex);
         {
-            //std::lock_guard<std::mutex> lock1(_clientsMutex);
+            // std::lock_guard<std::mutex> lock1(_clientsMutex);
             _shuttingDown = true;
         }
         websocketpp::lib::error_code shutdownError;
         endpoint.stop_listening(shutdownError);
         if (shutdownError) {
             JOYNR_LOG_ERROR(logger(),
-                    "error during WebSocketCcMessagingSkeleton shutdown: ",
-                    shutdownError.message());
+                            "error during WebSocketCcMessagingSkeleton shutdown: ",
+                            shutdownError.message());
         }
 
-        //std::lock_guard<std::mutex> lock1(_clientsMutex);
+        // std::lock_guard<std::mutex> lock1(_clientsMutex);
         for (const auto& elem : _clients) {
             websocketpp::lib::error_code websocketError;
             endpoint.close(elem.first, websocketpp::close::status::normal, "", websocketError);
             if (websocketError) {
                 if (websocketError != websocketpp::error::bad_connection) {
                     JOYNR_LOG_ERROR(logger(),
-                            "Unable to close websocket connection. Error: {}",
-                            websocketError.message());
+                                    "Unable to close websocket connection. Error: {}",
+                                    websocketError.message());
                 }
             }
         }
@@ -116,24 +117,24 @@ public:
 
             _webSocketPpSingleThreadedIOService->start();
             boost::asio::io_service& endpointIoService =
-                _webSocketPpSingleThreadedIOService->getIOService();
+                    _webSocketPpSingleThreadedIOService->getIOService();
             websocketpp::lib::error_code initializationError;
 
-            //endpoint.set_message_handler(
-            //        std::bind(&WebSocketServer::onMessageReceived, this, _1, _2));
-            //endpoint.set_close_handler(
-            //        std::bind(&WebSocketServer::onConnectionClosed, this, _1));
+            // endpoint.set_message_handler(
+            //         std::bind(&WebSocketServer::onMessageReceived, this, _1, _2));
+            // endpoint.set_close_handler(
+            //         std::bind(&WebSocketServer::onConnectionClosed, this, _1));
 
-            endpoint.set_message_handler([thisWeakPtr =
-                    joynr::util::as_weak_ptr(this->shared_from_this())](
-                        ConnectionHandle hdl, MessagePtr message) {
-                if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    thisSharedPtr->onMessageReceived(hdl, message);
-                }
-            });
+            endpoint.set_message_handler(
+                    [thisWeakPtr = joynr::util::as_weak_ptr(this->shared_from_this())](
+                            ConnectionHandle hdl, MessagePtr message) {
+                        if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                            thisSharedPtr->onMessageReceived(hdl, message);
+                        }
+                    });
 
             endpoint.set_close_handler([thisWeakPtr = joynr::util::as_weak_ptr(
-                        this->shared_from_this())](ConnectionHandle hdl) {
+                                                this->shared_from_this())](ConnectionHandle hdl) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
                     thisSharedPtr->onConnectionClosed(hdl);
                 }
@@ -290,5 +291,5 @@ TEST_P(WebSocketMessagingStubTest, transmitMessageWithVaryingSize)
 }
 
 INSTANTIATE_TEST_SUITE_P(WebsocketTransmitMessagesWithIncreasingSize,
-                        WebSocketMessagingStubTest,
-                        ::testing::Values<std::size_t>(256 * 1024, 512 * 1024, 1024 * 1024));
+                         WebSocketMessagingStubTest,
+                         ::testing::Values<std::size_t>(256 * 1024, 512 * 1024, 1024 * 1024));

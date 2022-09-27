@@ -32,16 +32,17 @@ using ::testing::_;
 class MockTestProvider : public joynr::tests::DefaulttestProvider
 {
 public:
-    MockTestProvider() :
-        joynr::tests::DefaulttestProvider(),
-        _listOfStrings()
+    MockTestProvider() : joynr::tests::DefaulttestProvider(), _listOfStrings()
     {
-        EXPECT_CALL(*this, getLocation(_,_))
+        EXPECT_CALL(*this, getLocation(_, _))
                 .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeLocationOnSuccess));
-        EXPECT_CALL(*this, getListOfStrings(_,_))
-                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
-        EXPECT_CALL(*this, getAttributeWithProviderRuntimeException(_,_))
-                .WillRepeatedly(testing::Invoke(this, &MockTestProvider::invokeAttributeWithProviderRuntimeExceptionOnError));
+        EXPECT_CALL(*this, getListOfStrings(_, _))
+                .WillRepeatedly(
+                        testing::Invoke(this, &MockTestProvider::invokeListOfStringsOnSuccess));
+        EXPECT_CALL(*this, getAttributeWithProviderRuntimeException(_, _))
+                .WillRepeatedly(testing::Invoke(
+                        this,
+                        &MockTestProvider::invokeAttributeWithProviderRuntimeExceptionOnError));
     }
 
     ~MockTestProvider()
@@ -49,33 +50,40 @@ public:
         EXPECT_TRUE(::testing::Mock::VerifyAndClearExpectations(this));
     }
 
-    void invokeLocationOnSuccess(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
-                         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/)
+    void invokeLocationOnSuccess(
+            std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
+            std::function<
+                    void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/)
     {
         joynr::types::Localisation::GpsLocation gpsLocation;
         onSuccess(gpsLocation);
     }
 
-    void invokeListOfStringsOnSuccess(std::function<void(const std::vector<std::string>&)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/)
+    void invokeListOfStringsOnSuccess(
+            std::function<void(const std::vector<std::string>&)> onSuccess,
+            std::function<
+                    void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/)
     {
         onSuccess(_listOfStrings);
     }
 
-    void invokeAttributeWithProviderRuntimeExceptionOnError(std::function<void(const int32_t&)> /*onSuccess*/,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError) {
+    void invokeAttributeWithProviderRuntimeExceptionOnError(
+            std::function<void(const int32_t&)> /*onSuccess*/,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                    onError)
+    {
         onError(joynr::exceptions::ProviderRuntimeException(_providerRuntimeExceptionTestMsg));
     }
 
-    void fireLocationUpdateSelective(const joynr::types::Localisation::GpsLocation& gpsLocation) override
+    void fireLocationUpdateSelective(
+            const joynr::types::Localisation::GpsLocation& gpsLocation) override
     {
         joynr::tests::testAbstractProvider::fireLocationUpdateSelective(gpsLocation);
     }
 
     void fireBroadcastWithSingleArrayParameter(
             const std::vector<std::string>& singleParam,
-            const std::vector<std::string>& partitions = std::vector<std::string>()
-    ) override
+            const std::vector<std::string>& partitions = std::vector<std::string>()) override
     {
         std::ignore = partitions;
         joynr::tests::testAbstractProvider::fireBroadcastWithSingleArrayParameter(singleParam);
@@ -86,69 +94,59 @@ public:
         joynr::tests::testAbstractProvider::listOfStringsChanged(listOfStrs);
     }
 
-    void registerBroadcastListener(std::shared_ptr<joynr::MulticastBroadcastListener> broadcastListener) override
+    void registerBroadcastListener(
+            std::shared_ptr<joynr::MulticastBroadcastListener> broadcastListener) override
     {
         joynr::tests::testAbstractProvider::registerBroadcastListener(broadcastListener);
     }
 
-    void methodWithNoInputParameters(std::function<void(const std::int32_t& result)> onSuccess,
-                                     std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError) override
+    void methodWithNoInputParameters(
+            std::function<void(const std::int32_t& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override
     {
-        methodWithNoInputParametersMock([](const std::int32_t&){},
-                                        [](const joynr::exceptions::ProviderRuntimeException&){});
-        joynr::tests::DefaulttestProvider::methodWithNoInputParameters(std::move(onSuccess), std::move(onError));
+        methodWithNoInputParametersMock([](const std::int32_t&) {},
+                                        [](const joynr::exceptions::ProviderRuntimeException&) {});
+        joynr::tests::DefaulttestProvider::methodWithNoInputParameters(
+                std::move(onSuccess), std::move(onError));
     }
 
     MOCK_METHOD2(
             methodWithNoInputParametersMock,
-            void(std::function<void(
-                    const std::int32_t& result
-                 )> onSuccess,
-                 std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError)
-    );
+            void(std::function<void(const std::int32_t& result)> onSuccess,
+                 std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
     MOCK_METHOD2(
             getLocation,
-            void(
-                    std::function<void(const joynr::types::Localisation::GpsLocation& result)> onSuccess,
-                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
-            )
-    );
+            void(std::function<void(const joynr::types::Localisation::GpsLocation& result)>
+                         onSuccess,
+                 std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                         onError));
     MOCK_METHOD2(
             getListOfStrings,
-            void(
-                    std::function<void(const std::vector<std::string>& result)> onSuccess,
-                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
-            )
-    );
+            void(std::function<void(const std::vector<std::string>& result)> onSuccess,
+                 std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                         onError));
     MOCK_METHOD3(
             setLocation,
-            void(
-                    const joynr::types::Localisation::GpsLocation& gpsLocation,
-                    std::function<void()> onSuccess,
-                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
-            )
-    );
-    MOCK_METHOD3(
-            methodFireAndForget,
-            void(
-                    const std::int32_t& intIn,
-                    const std::string& stringIn,
-                    const joynr::tests::testTypes::ComplexTestType& complexTestTypeIn
-            )
-    );
+            void(const joynr::types::Localisation::GpsLocation& gpsLocation,
+                 std::function<void()> onSuccess,
+                 std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                         onError));
+    MOCK_METHOD3(methodFireAndForget,
+                 void(const std::int32_t& intIn,
+                      const std::string& stringIn,
+                      const joynr::tests::testTypes::ComplexTestType& complexTestTypeIn));
     MOCK_METHOD2(
             getAttributeWithProviderRuntimeException,
-            void(
-                    std::function<void(const int32_t& result)> onSuccess,
-                    std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> onError
-            )
-    );
+            void(std::function<void(const int32_t& result)> onSuccess,
+                 std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
+                         onError));
 
-    void sumInts(
-            const std::vector<std::int32_t>& ints,
-            std::function<void(const std::int32_t& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
+    void sumInts(const std::vector<std::int32_t>& ints,
+                 std::function<void(const std::int32_t& result)> onSuccess,
+                 std::function<void(const joynr::exceptions::ProviderRuntimeException&
+                                            exception)> /*onError*/) override
     {
         std::int32_t result = std::accumulate(ints.begin(), ints.end(), 0);
         onSuccess(result);
@@ -164,14 +162,13 @@ public:
         onSuccess(result);
     }
 
-    void returnPrimeNumbers(
-            const std::int32_t &upperBound,
-            std::function<void(
-                const std::vector<std::int32_t>& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
+    void returnPrimeNumbers(const std::int32_t& upperBound,
+                            std::function<void(const std::vector<std::int32_t>& result)> onSuccess,
+                            std::function<void(const joynr::exceptions::ProviderRuntimeException&
+                                                       exception)> /*onError*/) override
     {
         std::vector<std::int32_t> result;
-        assert(upperBound<7);
+        assert(upperBound < 7);
         std::ignore = upperBound;
         result.clear();
         result.push_back(2);
@@ -180,49 +177,47 @@ public:
         onSuccess(result);
     }
 
-    void optimizeTrip(
-            const joynr::types::Localisation::Trip& input,
-            std::function<void(
-                const joynr::types::Localisation::Trip& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
+    void optimizeTrip(const joynr::types::Localisation::Trip& input,
+                      std::function<void(const joynr::types::Localisation::Trip& result)> onSuccess,
+                      std::function<void(const joynr::exceptions::ProviderRuntimeException&
+                                                 exception)> /*onError*/) override
     {
-         onSuccess(input);
+        onSuccess(input);
     }
     void optimizeLocationList(
             const std::vector<joynr::types::Localisation::GpsLocation>& inputList,
-            std::function<void(
-                const std::vector<joynr::types::Localisation::GpsLocation>& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
+            std::function<void(const std::vector<joynr::types::Localisation::GpsLocation>& result)>
+                    onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&
+                                       exception)> /*onError*/) override
 
     {
-         onSuccess(inputList);
+        onSuccess(inputList);
     }
 
-    void overloadedOperation(
-            const joynr::tests::testTypes::DerivedStruct& /*input*/,
-            std::function<void(
-                const std::string& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
+    void overloadedOperation(const joynr::tests::testTypes::DerivedStruct& /*input*/,
+                             std::function<void(const std::string& result)> onSuccess,
+                             std::function<void(const joynr::exceptions::ProviderRuntimeException&
+                                                        exception)> /*onError*/) override
     {
         std::string result("DerivedStruct");
         onSuccess(result);
     }
 
-    void overloadedOperation(
-            const joynr::tests::testTypes::AnotherDerivedStruct& /*input*/,
-            std::function<void(
-                const std::string& result)> onSuccess,
-            std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/) override
+    void overloadedOperation(const joynr::tests::testTypes::AnotherDerivedStruct& /*input*/,
+                             std::function<void(const std::string& result)> onSuccess,
+                             std::function<void(const joynr::exceptions::ProviderRuntimeException&
+                                                        exception)> /*onError*/) override
     {
         std::string result("AnotherDerivedStruct");
         onSuccess(result);
     }
 
-    void setListOfStrings(
-         const std::vector<std::string> & listOfStrs,
-         std::function<void()> onSuccess,
-         std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)> /*onError*/
-    ) override
+    void setListOfStrings(const std::vector<std::string>& listOfStrs,
+                          std::function<void()> onSuccess,
+                          std::function<void(const joynr::exceptions::ProviderRuntimeException&
+                                                     exception)> /*onError*/
+                          ) override
     {
         this->_listOfStrings = listOfStrs;
         listOfStringsChanged(listOfStrs);
@@ -242,55 +237,45 @@ public:
             const std::uint32_t& uInt32Arg,
             const std::uint64_t& uInt64Arg,
             const std::uint8_t& uInt8Arg,
-            std::function<void(
-                    const bool& booleanOut,
-                    const double& doubleOut,
-                    const float& floatOut,
-                    const std::int16_t& int16Out,
-                    const std::int32_t& int32Out,
-                    const std::int64_t& int64Out,
-                    const std::int8_t& int8Out,
-                    const std::string& stringOut,
-                    const std::uint16_t& uInt16Out,
-                    const std::uint32_t& uInt32Out,
-                    const std::uint64_t& uInt64Out,
-                    const std::uint8_t& uInt8Out
-            )> onSuccess,
-            std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
-    ) override
+            std::function<void(const bool& booleanOut,
+                               const double& doubleOut,
+                               const float& floatOut,
+                               const std::int16_t& int16Out,
+                               const std::int32_t& int32Out,
+                               const std::int64_t& int64Out,
+                               const std::int8_t& int8Out,
+                               const std::string& stringOut,
+                               const std::uint16_t& uInt16Out,
+                               const std::uint32_t& uInt32Out,
+                               const std::uint64_t& uInt64Out,
+                               const std::uint8_t& uInt8Out)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override
     {
         std::ignore = onError;
-        onSuccess(
-                booleanArg, doubleArg, floatArg, int16Arg, int32Arg, int64Arg, int8Arg, stringArg, uInt16Arg, uInt32Arg, uInt64Arg, uInt8Arg
-        );
+        onSuccess(booleanArg, doubleArg, floatArg, int16Arg, int32Arg, int64Arg, int8Arg, stringArg,
+                  uInt16Arg, uInt32Arg, uInt64Arg, uInt8Arg);
     }
 
     void methodWithByteBuffer(
             const joynr::ByteBuffer& input,
-            std::function<void(
-                    const joynr::ByteBuffer& result
-            )> onSuccess,
-            std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
-    ) override
+            std::function<void(const joynr::ByteBuffer& result)> onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override
     {
         std::ignore = onError;
-        onSuccess(
-                input
-        );
+        onSuccess(input);
     }
 
     void mapParameters(
             const joynr::types::TestTypes::TStringKeyMap& tStringMapIn,
-            std::function<void(
-                    const joynr::types::TestTypes::TStringKeyMap& tStringMapOut
-            )> onSuccess,
-            std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError
-    ) override
+            std::function<void(const joynr::types::TestTypes::TStringKeyMap& tStringMapOut)>
+                    onSuccess,
+            std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
+            override
     {
         std::ignore = onError;
-        onSuccess(
-                tStringMapIn
-        );
+        onSuccess(tStringMapIn);
     }
     const std::string _providerRuntimeExceptionTestMsg = "ProviderRuntimeExceptionTestMessage";
 

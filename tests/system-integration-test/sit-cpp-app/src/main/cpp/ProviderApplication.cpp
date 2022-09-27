@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +20,8 @@
 #include <cassert>
 #include <chrono>
 #include <memory>
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -29,16 +29,16 @@
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/Semaphore.h"
+#include "joynr/Util.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/ProviderScope.h"
-#include "joynr/Util.h"
 
-#include "SystemIntegrationTestProvider.h"
 #include "SitUtil.h"
+#include "SystemIntegrationTestProvider.h"
 
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>

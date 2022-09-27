@@ -78,26 +78,26 @@ void IltConsumerAsyncMethodTest::callProxyMethodWithParameterAsyncAndAssertResul
 {
     std::function<void(const AttributeType result)> onSuccess =
             [&testValue](const AttributeType result) {
-        // check result
-        if (result != testValue) {
-            JOYNR_LOG_ERROR(logger(),
-                            "callProxyMethodWithParameterAsyncAndAssertResult FAILED - "
-                            "invalid result from callback");
-            return;
-        }
-        JOYNR_LOG_DEBUG(logger(),
-                        " - callback - "
-                        "got correct value");
-    };
+                // check result
+                if (result != testValue) {
+                    JOYNR_LOG_ERROR(logger(),
+                                    "callProxyMethodWithParameterAsyncAndAssertResult FAILED - "
+                                    "invalid result from callback");
+                    return;
+                }
+                JOYNR_LOG_DEBUG(logger(),
+                                " - callback - "
+                                "got correct value");
+            };
 
     std::function<void(const joynr::exceptions::JoynrException& error)> onError =
             [](const joynr::exceptions::JoynrException& error) {
-        JOYNR_LOG_ERROR(logger(),
-                        "callProxyMethodWithParameterAsyncAndAssertResult FAILED - "
-                        "caught exception");
-        JOYNR_LOG_ERROR(logger(), error.getTypeName());
-        JOYNR_LOG_ERROR(logger(), error.getMessage());
-    };
+                JOYNR_LOG_ERROR(logger(),
+                                "callProxyMethodWithParameterAsyncAndAssertResult FAILED - "
+                                "caught exception");
+                JOYNR_LOG_ERROR(logger(), error.getTypeName());
+                JOYNR_LOG_ERROR(logger(), error.getMessage());
+            };
 
     std::shared_ptr<joynr::Future<AttributeType>> future =
             testMethod(testInterfaceProxy.get(), testValue, onSuccess, onError, {});
@@ -120,7 +120,8 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithMultipleStructParametersAsync)
 {
     typedef std::shared_ptr<joynr::Future<
             joynr::interlanguagetest::namedTypeCollection2::BaseStructWithoutElements,
-            joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedBaseStruct>> futureType;
+            joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedBaseStruct>>
+            futureType;
     JOYNR_ASSERT_NO_THROW({
         // setup input parameters
         joynr::interlanguagetest::namedTypeCollection2::ExtendedStructOfPrimitives
@@ -130,49 +131,52 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithMultipleStructParametersAsync)
 
         std::function<void(
                 const joynr::interlanguagetest::namedTypeCollection2::BaseStructWithoutElements&,
-                const joynr::interlanguagetest::namedTypeCollection2::
-                        ExtendedExtendedBaseStruct&)> onSuccess =
-                [](const joynr::interlanguagetest::namedTypeCollection2::BaseStructWithoutElements&
-                           baseStructWithoutElementsOut,
-                   const joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedBaseStruct&
-                           extendedExtendedBaseStructOut) {
-            // check results
-            if (!IltUtil::checkBaseStructWithoutElements(baseStructWithoutElementsOut)) {
-                methodWithMultipleStructParametersAsyncCallbackResult = false;
-                methodWithMultipleStructParametersAsyncCallbackDone = true;
-                JOYNR_LOG_INFO(logger(),
-                               "callMethodWithMultipleStructParametersAsync - callback - invalid "
-                               "baseStructWithoutElementsOut");
-                JOYNR_LOG_INFO(logger(), "callMethodWithMultipleStructParametersAsync - FAILED");
-                return;
-            }
+                const joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedBaseStruct&)>
+                onSuccess = [](const joynr::interlanguagetest::namedTypeCollection2::
+                                       BaseStructWithoutElements& baseStructWithoutElementsOut,
+                               const joynr::interlanguagetest::namedTypeCollection2::
+                                       ExtendedExtendedBaseStruct& extendedExtendedBaseStructOut) {
+                    // check results
+                    if (!IltUtil::checkBaseStructWithoutElements(baseStructWithoutElementsOut)) {
+                        methodWithMultipleStructParametersAsyncCallbackResult = false;
+                        methodWithMultipleStructParametersAsyncCallbackDone = true;
+                        JOYNR_LOG_INFO(
+                                logger(),
+                                "callMethodWithMultipleStructParametersAsync - callback - invalid "
+                                "baseStructWithoutElementsOut");
+                        JOYNR_LOG_INFO(
+                                logger(), "callMethodWithMultipleStructParametersAsync - FAILED");
+                        return;
+                    }
 
-            if (!IltUtil::checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut)) {
-                methodWithMultipleStructParametersAsyncCallbackResult = false;
-                methodWithMultipleStructParametersAsyncCallbackDone = true;
-                JOYNR_LOG_INFO(logger(),
-                               "callMethodWithMultipleStructParametersAsync - callback - invalid "
-                               "extendedExtendedBaseStructOut");
-                JOYNR_LOG_INFO(logger(), "callMethodWithMultipleStructParametersAsync - FAILED");
-                return;
-            }
-            methodWithMultipleStructParametersAsyncCallbackResult = true;
-            methodWithMultipleStructParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger(),
-                           "callMethodWithMultipleStructParametersAsync - callback - "
-                           "got correct values");
-        };
+                    if (!IltUtil::checkExtendedExtendedBaseStruct(extendedExtendedBaseStructOut)) {
+                        methodWithMultipleStructParametersAsyncCallbackResult = false;
+                        methodWithMultipleStructParametersAsyncCallbackDone = true;
+                        JOYNR_LOG_INFO(
+                                logger(),
+                                "callMethodWithMultipleStructParametersAsync - callback - invalid "
+                                "extendedExtendedBaseStructOut");
+                        JOYNR_LOG_INFO(
+                                logger(), "callMethodWithMultipleStructParametersAsync - FAILED");
+                        return;
+                    }
+                    methodWithMultipleStructParametersAsyncCallbackResult = true;
+                    methodWithMultipleStructParametersAsyncCallbackDone = true;
+                    JOYNR_LOG_INFO(logger(),
+                                   "callMethodWithMultipleStructParametersAsync - callback - "
+                                   "got correct values");
+                };
 
         std::function<void(const joynr::exceptions::JoynrException&)> onError =
                 [](const joynr::exceptions::JoynrException& error) {
-            methodWithMultipleStructParametersAsyncCallbackResult = false;
-            methodWithMultipleStructParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger(),
-                           "callMethodWithMultipleStructParametersAsync - callback - "
-                           "caught exception");
-            JOYNR_LOG_INFO(logger(), error.getTypeName());
-            JOYNR_LOG_INFO(logger(), error.getMessage());
-        };
+                    methodWithMultipleStructParametersAsyncCallbackResult = false;
+                    methodWithMultipleStructParametersAsyncCallbackDone = true;
+                    JOYNR_LOG_INFO(logger(),
+                                   "callMethodWithMultipleStructParametersAsync - callback - "
+                                   "caught exception");
+                    JOYNR_LOG_INFO(logger(), error.getTypeName());
+                    JOYNR_LOG_INFO(logger(), error.getMessage());
+                };
 
         futureType future = testInterfaceProxy->methodWithMultipleStructParametersAsync(
                 extendedStructOfPrimitivesArg, baseStructArg, onSuccess, onError);
@@ -213,34 +217,36 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithSingleArrayParametersAsync)
 
         std::function<void(const std::vector<std::string>& result)> onSuccess =
                 [](const std::vector<std::string>& result) {
-            // check results
-            if (!IltUtil::checkStringArray(result)) {
-                methodWithSingleArrayParametersAsyncCallbackResult = false;
-                methodWithSingleArrayParametersAsyncCallbackDone = true;
-                JOYNR_LOG_INFO(logger(),
-                               "callMethodWithSingleArrayParametersAsync - callback - invalid "
-                               "baseStructWithoutElementsOut");
-                JOYNR_LOG_INFO(logger(), "callMethodWithSingleArrayParametersAsync - FAILED");
-                return;
-            }
+                    // check results
+                    if (!IltUtil::checkStringArray(result)) {
+                        methodWithSingleArrayParametersAsyncCallbackResult = false;
+                        methodWithSingleArrayParametersAsyncCallbackDone = true;
+                        JOYNR_LOG_INFO(
+                                logger(),
+                                "callMethodWithSingleArrayParametersAsync - callback - invalid "
+                                "baseStructWithoutElementsOut");
+                        JOYNR_LOG_INFO(
+                                logger(), "callMethodWithSingleArrayParametersAsync - FAILED");
+                        return;
+                    }
 
-            methodWithSingleArrayParametersAsyncCallbackResult = true;
-            methodWithSingleArrayParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(
-                    logger(),
-                    "callMethodWithSingleArrayParametersAsync - callback - got correct values");
-        };
+                    methodWithSingleArrayParametersAsyncCallbackResult = true;
+                    methodWithSingleArrayParametersAsyncCallbackDone = true;
+                    JOYNR_LOG_INFO(logger(),
+                                   "callMethodWithSingleArrayParametersAsync - callback - got "
+                                   "correct values");
+                };
 
         std::function<void(const joynr::exceptions::JoynrException&)> onError =
                 [](const joynr::exceptions::JoynrException& error) {
-            methodWithSingleArrayParametersAsyncCallbackResult = false;
-            methodWithSingleArrayParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(
-                    logger(),
-                    "callMethodWithSingleArrayParametersAsync - callback - caught exception");
-            JOYNR_LOG_INFO(logger(), error.getTypeName());
-            JOYNR_LOG_INFO(logger(), error.getMessage());
-        };
+                    methodWithSingleArrayParametersAsyncCallbackResult = false;
+                    methodWithSingleArrayParametersAsyncCallbackDone = true;
+                    JOYNR_LOG_INFO(logger(),
+                                   "callMethodWithSingleArrayParametersAsync - callback - caught "
+                                   "exception");
+                    JOYNR_LOG_INFO(logger(), error.getTypeName());
+                    JOYNR_LOG_INFO(logger(), error.getMessage());
+                };
 
         std::shared_ptr<joynr::Future<std::vector<std::string>>> future =
                 testInterfaceProxy->methodWithSingleArrayParametersAsync(arg, onSuccess, onError);
@@ -294,14 +300,14 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithSinglePrimitiveParametersAsync)
 
         std::function<void(const joynr::exceptions::JoynrException&)> onError =
                 [](const joynr::exceptions::JoynrException& error) {
-            methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
-            methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
-            JOYNR_LOG_INFO(logger(),
-                           "callMethodWithSinglePrimitiveParametersAsync - callback - "
-                           "caught exception");
-            JOYNR_LOG_INFO(logger(), error.getTypeName());
-            JOYNR_LOG_INFO(logger(), error.getMessage());
-        };
+                    methodWithSinglePrimitiveParametersAsyncCallbackResult = false;
+                    methodWithSinglePrimitiveParametersAsyncCallbackDone = true;
+                    JOYNR_LOG_INFO(logger(),
+                                   "callMethodWithSinglePrimitiveParametersAsync - callback - "
+                                   "caught exception");
+                    JOYNR_LOG_INFO(logger(), error.getTypeName());
+                    JOYNR_LOG_INFO(logger(), error.getMessage());
+                };
 
         std::shared_ptr<joynr::Future<std::string>> future =
                 testInterfaceProxy->methodWithSinglePrimitiveParametersAsync(
@@ -343,34 +349,35 @@ TEST_F(IltConsumerAsyncMethodTest, callMethodWithMultipleByteBufferParameters)
 
     std::function<void(const joynr::ByteBuffer& result)> onSuccess =
             [&arg1, &arg2](const joynr::ByteBuffer& result) {
-        // check result
-        if (result != IltUtil::concatByteBuffers(arg1, arg2)) {
-            methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
-            methodWithMultipleByteBufferParametersAsyncCallbackDone = true;
-            JOYNR_LOG_DEBUG(logger(),
-                            "callMethodWithMultipleByteBufferParametersAsync - callback -"
-                            "invalid result");
-            JOYNR_LOG_DEBUG(logger(), "callMethodWithMultipleByteBufferParametersAsync - FAILED");
-            return;
-        }
+                // check result
+                if (result != IltUtil::concatByteBuffers(arg1, arg2)) {
+                    methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
+                    methodWithMultipleByteBufferParametersAsyncCallbackDone = true;
+                    JOYNR_LOG_DEBUG(logger(),
+                                    "callMethodWithMultipleByteBufferParametersAsync - callback -"
+                                    "invalid result");
+                    JOYNR_LOG_DEBUG(
+                            logger(), "callMethodWithMultipleByteBufferParametersAsync - FAILED");
+                    return;
+                }
 
-        methodWithMultipleByteBufferParametersAsyncCallbackResult = true;
-        methodWithMultipleByteBufferParametersAsyncCallbackDone = true;
-        JOYNR_LOG_DEBUG(logger(),
-                        "callMethodWithMultipleByteBufferParametersAsync - callback - "
-                        "got correct value");
-    };
+                methodWithMultipleByteBufferParametersAsyncCallbackResult = true;
+                methodWithMultipleByteBufferParametersAsyncCallbackDone = true;
+                JOYNR_LOG_DEBUG(logger(),
+                                "callMethodWithMultipleByteBufferParametersAsync - callback - "
+                                "got correct value");
+            };
 
     std::function<void(const joynr::exceptions::JoynrException& error)> onError =
             [](const joynr::exceptions::JoynrException& error) {
-        methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
-        methodWithMultipleByteBufferParametersAsyncCallbackDone = true;
-        JOYNR_LOG_DEBUG(logger(),
-                        "callMethodWithMultipleByteBufferParametersAsync - callback - "
-                        "caught exception");
-        JOYNR_LOG_DEBUG(logger(), error.getTypeName());
-        JOYNR_LOG_DEBUG(logger(), error.getMessage());
-    };
+                methodWithMultipleByteBufferParametersAsyncCallbackResult = false;
+                methodWithMultipleByteBufferParametersAsyncCallbackDone = true;
+                JOYNR_LOG_DEBUG(logger(),
+                                "callMethodWithMultipleByteBufferParametersAsync - callback - "
+                                "caught exception");
+                JOYNR_LOG_DEBUG(logger(), error.getTypeName());
+                JOYNR_LOG_DEBUG(logger(), error.getMessage());
+            };
 
     std::shared_ptr<joynr::Future<joynr::ByteBuffer>> future =
             testInterfaceProxy->methodWithMultipleByteBufferParametersAsync(

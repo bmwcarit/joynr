@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,8 +28,8 @@ namespace joynr
 {
 
 /**
-  * Immutable data class for messaging interface addresses.
-  */
+ * Immutable data class for messaging interface addresses.
+ */
 class JOYNR_EXPORT InterfaceAddress
 {
 public:
@@ -66,8 +66,7 @@ namespace std
  * std::unordered_map, std::unordered_multimap as default hash function.
  */
 template <>
-struct hash<joynr::InterfaceAddress>
-{
+struct hash<joynr::InterfaceAddress> {
 
     /**
      * @brief method overriding default implementation of operator ()

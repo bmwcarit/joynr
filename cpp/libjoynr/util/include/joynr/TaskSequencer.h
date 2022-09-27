@@ -69,8 +69,7 @@ public:
      */
     using Task = std::function<FutureSP()>;
 
-    struct TaskWithExpiryDate
-    {
+    struct TaskWithExpiryDate {
         Task _task;
         TimePoint _expiryDate;
         std::function<void()> _timeout;

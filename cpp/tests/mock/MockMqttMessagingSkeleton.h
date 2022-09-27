@@ -26,11 +26,13 @@
 class MockMqttMessagingSkeleton : public joynr::AbstractGlobalMessagingSkeleton
 {
 public:
-    MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message,
-                 const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+    MOCK_METHOD2(transmit,
+                 void(std::shared_ptr<joynr::ImmutableMessage> message,
+                      const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&
+                              onFailure));
 
     // GoogleMock does not support mocking functions with r-value references as parameters
-    MOCK_METHOD1(onMessageReceivedMock,void(smrf::ByteVector& rawMessage));
+    MOCK_METHOD1(onMessageReceivedMock, void(smrf::ByteVector& rawMessage));
     void onMessageReceived(smrf::ByteVector&& rawMessage) override
     {
         onMessageReceivedMock(rawMessage);

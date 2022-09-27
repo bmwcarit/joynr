@@ -27,11 +27,11 @@
 #include <mutex>
 #include <string>
 
-#include <boost/multi_index_container.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index_container.hpp>
 
 #include "joynr/ImmutableMessage.h"
 #include "joynr/JoynrExport.h"
@@ -46,7 +46,7 @@ namespace messagequeuetags
 struct key;
 struct ttlAbsolute;
 struct key_and_ttlAbsolute;
-}
+} // namespace messagequeuetags
 
 template <typename T>
 class JOYNR_EXPORT MessageQueue
@@ -183,8 +183,7 @@ protected:
     DISALLOW_COPY_AND_ASSIGN(MessageQueue);
     ADD_LOGGER(MessageQueue);
 
-    struct MessageQueueItem
-    {
+    struct MessageQueueItem {
         T _key;
         TimePoint _ttlAbsolute;
         std::shared_ptr<ImmutableMessage> _message;

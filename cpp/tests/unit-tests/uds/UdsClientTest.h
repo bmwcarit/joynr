@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,8 +27,8 @@
 
 #include <boost/filesystem.hpp>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include <smrf/ByteVector.h>
 
@@ -53,8 +53,7 @@ private:
     bool _rootDetected = false;
 
 protected:
-    struct ClientInfo
-    {
+    struct ClientInfo {
         joynr::system::RoutingTypes::UdsClientAddress _address;
         std::unique_ptr<joynr::IUdsSender> _sender;
         std::vector<smrf::ByteVector> _receivedMessages;
@@ -172,10 +171,11 @@ protected:
         }
     }
 
-    static void sendFromClient(std::unique_ptr<joynr::UdsClient>& client,
-                               const smrf::ByteVector& msg,
-                               const joynr::IUdsSender::SendFailed& callback =
-                                       [](const joynr::exceptions::JoynrRuntimeException&) {})
+    static void sendFromClient(
+            std::unique_ptr<joynr::UdsClient>& client,
+            const smrf::ByteVector& msg,
+            const joynr::IUdsSender::SendFailed& callback =
+                    [](const joynr::exceptions::JoynrRuntimeException&) {})
     {
         client->send(smrf::ByteArrayView(msg), callback);
     }
@@ -204,34 +204,36 @@ protected:
                     std::lock_guard<std::mutex> lck(_connectedClientsMutex);
                     _connectedClients.push_back(ClientInfo(address, std::move(sender)));
                 });
-        _server->setDisconnectCallback([this](
-                const joynr::system::RoutingTypes::UdsClientAddress& address) {
-            std::lock_guard<std::mutex> lck(_connectedClientsMutex);
-            auto clientToErase =
-                    std::find(_connectedClients.begin(), _connectedClients.end(), address);
-            if (_connectedClients.end() == clientToErase) {
-                FAIL() << "Client with ID " << address.getId()
-                       << " has not connected yet or is already disconnected.";
-            }
-            if (!clientToErase->_connected) {
-                FAIL() << "Client with ID " << address.getId() << " has already been disconnected.";
-            }
-            clientToErase->_connected = false;
-        });
-        _server->setReceiveCallback([this](
-                const joynr::system::RoutingTypes::UdsClientAddress& address,
-                smrf::ByteVector&& message,
-                const std::string& creator) {
-            std::ignore = creator;
-            std::lock_guard<std::mutex> lck(_connectedClientsMutex);
-            auto clientInfo =
-                    std::find(_connectedClients.begin(), _connectedClients.end(), address);
-            if (_connectedClients.end() == clientInfo) {
-                FAIL() << "Client with ID " << address.getId() << " has not connected (yet).";
-            } else {
-                clientInfo->_receivedMessages.push_back(std::move(message));
-            }
-        });
+        _server->setDisconnectCallback(
+                [this](const joynr::system::RoutingTypes::UdsClientAddress& address) {
+                    std::lock_guard<std::mutex> lck(_connectedClientsMutex);
+                    auto clientToErase =
+                            std::find(_connectedClients.begin(), _connectedClients.end(), address);
+                    if (_connectedClients.end() == clientToErase) {
+                        FAIL() << "Client with ID " << address.getId()
+                               << " has not connected yet or is already disconnected.";
+                    }
+                    if (!clientToErase->_connected) {
+                        FAIL() << "Client with ID " << address.getId()
+                               << " has already been disconnected.";
+                    }
+                    clientToErase->_connected = false;
+                });
+        _server->setReceiveCallback(
+                [this](const joynr::system::RoutingTypes::UdsClientAddress& address,
+                       smrf::ByteVector&& message,
+                       const std::string& creator) {
+                    std::ignore = creator;
+                    std::lock_guard<std::mutex> lck(_connectedClientsMutex);
+                    auto clientInfo =
+                            std::find(_connectedClients.begin(), _connectedClients.end(), address);
+                    if (_connectedClients.end() == clientInfo) {
+                        FAIL() << "Client with ID " << address.getId()
+                               << " has not connected (yet).";
+                    } else {
+                        clientInfo->_receivedMessages.push_back(std::move(message));
+                    }
+                });
         _server->start();
     }
 
@@ -241,9 +243,10 @@ protected:
         MockUdsClientCallbacks callbacks;
         joynr::exceptions::JoynrRuntimeException capturedException;
         auto client = createClient(callbacks);
-        EXPECT_CALL(callbacks, fatalRuntimeError(testing::_)).WillOnce(
-                testing::DoAll(testing::SaveArg<0>(&capturedException),
-                               testing::InvokeWithoutArgs(&semaphore, &joynr::Semaphore::notify)));
+        EXPECT_CALL(callbacks, fatalRuntimeError(testing::_))
+                .WillOnce(testing::DoAll(
+                        testing::SaveArg<0>(&capturedException),
+                        testing::InvokeWithoutArgs(&semaphore, &joynr::Semaphore::notify)));
         EXPECT_CALL(callbacks, disconnected()).Times(testing::AtMost(1));
         client->start();
         ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
@@ -262,7 +265,8 @@ public:
                 JOYNR_LOG_DEBUG(logger(), "Could not drop privileges");
             }
         }
-        boost::filesystem::path tmpFile = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
+        boost::filesystem::path tmpFile =
+                boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
         _socketPath = tmpFile.string();
         _udsSettings.setSocketPath(_socketPath);
     }

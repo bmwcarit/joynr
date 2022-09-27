@@ -43,10 +43,12 @@ TEST_F(UdsServerTest, multipleServerReusingSocket)
     std::shared_ptr<joynr::IUdsSender> sender2;
     MockUdsServerCallbacks mockUdsServerCallbacks1;
     MockUdsServerCallbacks mockUdsServerCallbacks2;
-    EXPECT_CALL(mockUdsServerCallbacks1, connectedMock(_, _)).Times(1).WillOnce(
-            SaveArg<1>(&sender1));
-    EXPECT_CALL(mockUdsServerCallbacks2, connectedMock(_, _)).Times(1).WillOnce(
-            SaveArg<1>(&sender2));
+    EXPECT_CALL(mockUdsServerCallbacks1, connectedMock(_, _))
+            .Times(1)
+            .WillOnce(SaveArg<1>(&sender1));
+    EXPECT_CALL(mockUdsServerCallbacks2, connectedMock(_, _))
+            .Times(1)
+            .WillOnce(SaveArg<1>(&sender2));
     auto server1 = createServer(mockUdsServerCallbacks1);
     server1->start();
     ASSERT_EQ(waitClientConnected(true), true) << "Client is not connected to initial server.";
@@ -80,22 +82,21 @@ TEST_F(UdsServerTest, connectReceiveAndDisconnectFromClient_serverCallbacksCalle
     // It is thus not possible to have expectations parameters depend
     // on SaveArgs from previous mock invocations. Instead the invocation
     // args are recorded and compared later after the mock is no longer in use.
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).InSequence(sequence).WillOnce(
-            DoAll(SaveArg<0>(&clientAddress),
-                  SaveArg<1>(&sender),
-                  ReleaseSemaphore(semaphore1)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .InSequence(sequence)
+            .WillOnce(DoAll(
+                    SaveArg<0>(&clientAddress), SaveArg<1>(&sender), ReleaseSemaphore(semaphore1)));
     const smrf::Byte message1 = 42;
     const smrf::Byte message2 = 43;
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, ElementsAre(message1), _))
-            .InSequence(sequence).WillOnce(
-            DoAll(SaveArg<0>(&clientAddress2)));
+            .InSequence(sequence)
+            .WillOnce(DoAll(SaveArg<0>(&clientAddress2)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, ElementsAre(message2), _))
-            .InSequence(sequence).WillOnce(
-            DoAll(SaveArg<0>(&clientAddress3),
-                  ReleaseSemaphore(semaphore2)));
-    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(1).WillOnce(
-            DoAll(SaveArg<0>(&clientAddress4),
-                  ReleaseSemaphore(semaphore3)));
+            .InSequence(sequence)
+            .WillOnce(DoAll(SaveArg<0>(&clientAddress3), ReleaseSemaphore(semaphore2)));
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&clientAddress4), ReleaseSemaphore(semaphore3)));
 
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
@@ -120,8 +121,8 @@ TEST_F(UdsServerTest, sendToClient)
     auto semaphore = std::make_shared<Semaphore>();
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> sender;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).WillOnce(
-            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
             .Times(0); // Server disconnects before client
@@ -143,8 +144,10 @@ TEST_F(UdsServerTest, robustness_sendException_otherClientsNotAffected)
     Semaphore connectionSemaphore, disconnectionSemaphore;
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> tmpSender, nominalSender, erroneousSender;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(2).WillRepeatedly(DoAll(
-            SaveArg<1>(&tmpSender), InvokeWithoutArgs(&connectionSemaphore, &Semaphore::notify)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(2)
+            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender),
+                                  InvokeWithoutArgs(&connectionSemaphore, &Semaphore::notify)));
     // disconnected called for erroneous sender, not for nominal one
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
             .WillOnce(InvokeWithoutArgs(&disconnectionSemaphore, &Semaphore::notify));
@@ -188,12 +191,15 @@ TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffec
      * Connected callback called for good client and erroneous client which causes error after init
      * frame. All errors are introduced in the cookie of the corresponding frame.
      */
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(2).WillRepeatedly(DoAll(
-            SaveArg<1>(&tmpSender), InvokeWithoutArgs(&connectSemaphore, &Semaphore::notify)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(2)
+            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender),
+                                  InvokeWithoutArgs(&connectSemaphore, &Semaphore::notify)));
 
     // disconnected callback called for erroneous client, not for good client
-    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(1).WillRepeatedly(
-            InvokeWithoutArgs(&disconnectSemaphore, &Semaphore::notify));
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
+            .Times(1)
+            .WillRepeatedly(InvokeWithoutArgs(&disconnectSemaphore, &Semaphore::notify));
 
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
@@ -236,8 +242,10 @@ TEST_F(UdsServerTest, robustness_nonblockingRead)
     Semaphore connectSemaphore, messageSemaphore;
     std::shared_ptr<joynr::IUdsSender> tmpSender, goodClientSender, badClientSender;
     MockUdsServerCallbacks mockUdsServerCallbacks;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(2).WillRepeatedly(DoAll(
-            SaveArg<1>(&tmpSender), InvokeWithoutArgs(&connectSemaphore, &Semaphore::notify)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(2)
+            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender),
+                                  InvokeWithoutArgs(&connectSemaphore, &Semaphore::notify)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, ElementsAre(goodMessage), _))
             .WillOnce(InvokeWithoutArgs(&messageSemaphore, &Semaphore::notify));
     auto server = createServer(mockUdsServerCallbacks);
@@ -296,9 +304,10 @@ TEST_F(UdsServerTest, robustness_nonblockingWrite)
     Semaphore connectionSemaphore;
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> tmpClientSender, goodClientSender, blockingClientSender;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(2).WillRepeatedly(
-            DoAll(SaveArg<1>(&tmpClientSender),
-                  InvokeWithoutArgs(&connectionSemaphore, &Semaphore::notify)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(2)
+            .WillRepeatedly(DoAll(SaveArg<1>(&tmpClientSender),
+                                  InvokeWithoutArgs(&connectionSemaphore, &Semaphore::notify)));
     // disconnected not called, since no connection loss (UDS socket has per default no timeout)
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(0);
     auto server = createServer(mockUdsServerCallbacks);
@@ -345,8 +354,9 @@ TEST_F(UdsServerTest, sendToClientWhileClientDisconnection)
     auto semaphoreStop = std::make_shared<Semaphore>();
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> sender;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(1).WillOnce(
-            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(AnyNumber());
     // Check that the stopping of the client occured while processing the send calls.
@@ -376,8 +386,9 @@ TEST_F(UdsServerTest, stopServerWhileSending)
     auto semaphore = std::make_shared<Semaphore>();
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> sender;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(1).WillOnce(
-            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
     ASSERT_TRUE(semaphore->waitFor(_waitPeriodForClientServerCommunication))
@@ -406,11 +417,13 @@ TEST_F(UdsServerTest, sendAfterClientDisconnection)
     auto semaphore = std::make_shared<Semaphore>();
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> sender;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(1).WillOnce(
-            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
-    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(1).WillOnce(
-            ReleaseSemaphore(semaphore));
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(semaphore));
     AtomicCounter sendFailures;
     EXPECT_CALL(mockUdsServerCallbacks, sendFailed(_))
             .WillRepeatedly(InvokeWithoutArgs(&sendFailures, &AtomicCounter::increment));
@@ -435,10 +448,12 @@ TEST_F(UdsServerTest, sendFailedCallbackException)
     MockUdsServerCallbacks mockUdsServerCallbacks;
     const std::logic_error userException("Test exception");
     std::shared_ptr<joynr::IUdsSender> sender;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(1).WillOnce(
-            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
-    EXPECT_CALL(mockUdsServerCallbacks, sendFailed(_)).Times(AtLeast(1)).WillRepeatedly(
-            Throw(userException));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(mockUdsServerCallbacks, sendFailed(_))
+            .Times(AtLeast(1))
+            .WillRepeatedly(Throw(userException));
 
     _udsSettings.setSendingQueueSize(0);
     auto server = createServer(mockUdsServerCallbacks);
@@ -462,10 +477,12 @@ TEST_F(UdsServerTest, stopServerWhileReceiving)
     std::atomic_ullong numberOfMessagesReceived(0);
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> sender;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).Times(1).WillOnce(
-            DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
-    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).WillRepeatedly(
-            InvokeWithoutArgs([&numberOfMessagesReceived] { numberOfMessagesReceived++; }));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _))
+            .WillRepeatedly(
+                    InvokeWithoutArgs([&numberOfMessagesReceived] { numberOfMessagesReceived++; }));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
     ASSERT_TRUE(semaphore->waitFor(_waitPeriodForClientServerCommunication))
@@ -493,8 +510,8 @@ TEST_F(UdsServerTest, connectedCallbackException)
     auto semaphore = std::make_shared<Semaphore>();
     MockUdsServerCallbacks mockUdsServerCallbacks;
     const std::logic_error userException("Test exception");
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).WillOnce(
-            DoAll(ReleaseSemaphore(semaphore), Throw(userException)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .WillOnce(DoAll(ReleaseSemaphore(semaphore), Throw(userException)));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
     ASSERT_TRUE(semaphore->waitFor(_waitPeriodForClientServerCommunication))
@@ -508,8 +525,8 @@ TEST_F(UdsServerTest, disconnectedCallbackException)
     std::shared_ptr<joynr::IUdsSender> sender;
     MockUdsServerCallbacks mockUdsServerCallbacks;
     const std::logic_error userException("Test exception");
-    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).WillOnce(
-            DoAll(ReleaseSemaphore(semaphore), Throw(userException)));
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
+            .WillOnce(DoAll(ReleaseSemaphore(semaphore), Throw(userException)));
     EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).WillOnce(SaveArg<1>(&sender));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
@@ -552,18 +569,19 @@ TEST_F(UdsServerTest, getCorrectUsernameAfterConnection)
     joynr::system::RoutingTypes::UdsClientAddress clientAddress2;
     std::shared_ptr<joynr::IUdsSender> sender;
     std::string capturedUsername;
-    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _)).WillOnce(
-            DoAll(SaveArg<0>(&clientAddress1),
-                  SaveArg<1>(&sender),
-                  ReleaseSemaphore(semaphore1)));
+    EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
+            .WillOnce(DoAll(SaveArg<0>(&clientAddress1),
+                            SaveArg<1>(&sender),
+                            ReleaseSemaphore(semaphore1)));
     const smrf::Byte message = 42;
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, ElementsAre(message), _))
-            .WillOnce(DoAll(SaveArg<0>(&clientAddress2), SaveArg<2>(&capturedUsername), ReleaseSemaphore(semaphore2)));
+            .WillOnce(DoAll(SaveArg<0>(&clientAddress2),
+                            SaveArg<2>(&capturedUsername),
+                            ReleaseSemaphore(semaphore2)));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
     ASSERT_TRUE(semaphore1->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback.";
-
 
     sendFromClient(message);
     EXPECT_TRUE(semaphore2->waitFor(_waitPeriodForClientServerCommunication))

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,8 +17,8 @@
  * #L%
  */
 #include "AbstractMessagingTest.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/BrokerUrl.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "libjoynrclustercontroller/messaging/joynr-messaging/MqttMessagingStubFactory.h"
 
 using namespace ::testing;
@@ -30,10 +30,9 @@ public:
     ADD_LOGGER(MqttMessagingTest)
     MqttMessagingTest() : mqttTopic("receiverChannelId"), testGbid()
     {
-        std::string brokerHost =
-                _messagingSettings.getBrokerUrl().getBrokerBaseUrl().getHost();
-        std::string brokerPort = std::to_string(
-                _messagingSettings.getBrokerUrl().getBrokerBaseUrl().getPort());
+        std::string brokerHost = _messagingSettings.getBrokerUrl().getBrokerBaseUrl().getHost();
+        std::string brokerPort =
+                std::to_string(_messagingSettings.getBrokerUrl().getBrokerBaseUrl().getPort());
         testGbid = "testGbid";
         // provision global capabilities directory
         const bool isGloballyVisible = true;

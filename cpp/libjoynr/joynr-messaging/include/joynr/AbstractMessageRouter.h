@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,8 +38,8 @@
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/ObjectWithDecayTime.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/RoutingTable.h"
 #include "joynr/ReadWriteLock.h"
+#include "joynr/RoutingTable.h"
 #include "joynr/Runnable.h"
 #include "joynr/SteadyTimer.h"
 #include "joynr/system/RoutingTypes/Address.h"
@@ -67,8 +67,8 @@ class ImmutableMessage;
 class ThreadPoolDelayedScheduler;
 
 /**
-  * Common implementation of functionalities of a message router object.
-  */
+ * Common implementation of functionalities of a message router object.
+ */
 class JOYNR_EXPORT AbstractMessageRouter
         : public joynr::IMessageRouter,
           public std::enable_shared_from_this<AbstractMessageRouter>
@@ -94,8 +94,7 @@ public:
     friend class ConsumerPermissionCallback;
 
 protected:
-    struct AddressEqual
-    {
+    struct AddressEqual {
     public:
         bool operator()(std::shared_ptr<const joynr::system::RoutingTypes::Address> address1,
                         std::shared_ptr<const joynr::system::RoutingTypes::Address> address2) const
@@ -104,8 +103,7 @@ protected:
         }
     };
 
-    struct AddressHash
-    {
+    struct AddressHash {
     public:
         size_t operator()(std::shared_ptr<const joynr::system::RoutingTypes::Address> address) const
         {

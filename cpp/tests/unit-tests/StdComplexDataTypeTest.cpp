@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,19 +19,19 @@
 #include <string>
 #include <unordered_set>
 
-#include <boost/math/special_functions/next.hpp>
 #include "tests/utils/Gtest.h"
+#include <boost/math/special_functions/next.hpp>
 
 #include "joynr/ByteBuffer.h"
-#include "joynr/types/TestTypes/Word.h"
-#include "joynr/types/TestTypes/Vowel.h"
-#include "joynr/types/TestTypes/TEverythingStruct.h"
-#include "joynr/types/TestTypes/TEverythingExtendedStruct.h"
-#include "joynr/types/TestTypes/TEverythingExtendedExtendedStruct.h"
-#include "joynr/types/TestTypes/TEnum.h"
 #include "joynr/tests/StructInsideInterface.h"
-#include "joynr/tests/testTypes/ComplexTestType.h"
 #include "joynr/tests/StructInsideInterfaceWithoutVersion.h"
+#include "joynr/tests/testTypes/ComplexTestType.h"
+#include "joynr/types/TestTypes/TEnum.h"
+#include "joynr/types/TestTypes/TEverythingExtendedExtendedStruct.h"
+#include "joynr/types/TestTypes/TEverythingExtendedStruct.h"
+#include "joynr/types/TestTypes/TEverythingStruct.h"
+#include "joynr/types/TestTypes/Vowel.h"
+#include "joynr/types/TestTypes/Word.h"
 #include "joynr/types/TestTypesWithoutVersion/StructInsideTypeCollectionWithoutVersion.h"
 
 #include "tests/PrettyPrint.h"

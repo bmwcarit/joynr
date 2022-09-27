@@ -28,8 +28,8 @@
 
 #include "joynr/AbstractMessageRouter.h"
 #include "joynr/BoostIoserviceForwardDecl.h"
-#include "joynr/JoynrExport.h"
 #include "joynr/IMessagingMulticastSubscriber.h"
+#include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/ReadWriteLock.h"
@@ -55,7 +55,7 @@ namespace exceptions
 {
 class JoynrRuntimeException;
 class ProviderRuntimeException;
-}
+} // namespace exceptions
 
 namespace system
 {
@@ -65,18 +65,18 @@ class MessageNotificationProvider;
 class CcMessageNotificationProvider;
 
 /**
-  * MessageRouter specialization for cluster-controller. It receives incoming ImmutableMessages
-  * on the ClusterController and forwards them either to a remote ClusterController or
-  * to a LibJoynr on the machine.
-  *
-  *  1 extracts the destination participant ID and looks up the EndpointAddress in the
-  *     MessagingEndpointDirectory
-  *  2 creates a <Middleware>MessagingStub by calling MessagingStubFactory.create(EndpointAddress
-  *addr)
-  *  3 forwards the message using the <Middleware>MessagingStub.transmit(ImmutableMessage msg)
-  *
-  *  In sending, a ThreadPool of default size 1 is used.
-  */
+ * MessageRouter specialization for cluster-controller. It receives incoming ImmutableMessages
+ * on the ClusterController and forwards them either to a remote ClusterController or
+ * to a LibJoynr on the machine.
+ *
+ *  1 extracts the destination participant ID and looks up the EndpointAddress in the
+ *     MessagingEndpointDirectory
+ *  2 creates a <Middleware>MessagingStub by calling MessagingStubFactory.create(EndpointAddress
+ *addr)
+ *  3 forwards the message using the <Middleware>MessagingStub.transmit(ImmutableMessage msg)
+ *
+ *  In sending, a ThreadPool of default size 1 is used.
+ */
 
 class JOYNR_EXPORT CcMessageRouter : public joynr::AbstractMessageRouter,
                                      public joynr::system::RoutingAbstractProvider

@@ -39,138 +39,88 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
 
-class MockMessageSender : public joynr::IMessageSender {
+class MockMessageSender : public joynr::IMessageSender
+{
 public:
+    MOCK_METHOD1(setReplyToAddress, void(const std::string& replyToAddress));
 
-    MOCK_METHOD1(
-            setReplyToAddress,
-            void(const std::string& replyToAddress)
-    );
+    MOCK_METHOD1(registerDispatcher, void(std::weak_ptr<joynr::IDispatcher> dispatcher));
 
-    MOCK_METHOD1(
-            registerDispatcher,
-            void(std::weak_ptr<joynr::IDispatcher> dispatcher)
-    );
+    MOCK_METHOD6(sendRequest,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      const joynr::Request& request,
+                      std::shared_ptr<joynr::IReplyCaller> callback,
+                      bool isLocalMessage));
 
-    MOCK_METHOD6(
-            sendRequest,
-            void(
-                const std::string& senderParticipantId,
-                const std::string& receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::Request& request,
-                std::shared_ptr<joynr::IReplyCaller> callback,
-                bool isLocalMessage
-            )
-    );
+    MOCK_METHOD5(sendOneWayRequest,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      const joynr::OneWayRequest& request,
+                      bool isLocalMessage));
 
-    MOCK_METHOD5(
-            sendOneWayRequest,
-            void(
-                const std::string& senderParticipantId,
-                const std::string& receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::OneWayRequest& request,
-                bool isLocalMessage
-            )
-    );
+    MOCK_METHOD5(sendReply,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      std::unordered_map<std::string, std::string> prefixedCustomHeaders,
+                      const joynr::Reply& reply));
 
-    MOCK_METHOD5(
-            sendReply,
-            void(
-                const std::string& senderParticipantId,
-                const std::string& receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                std::unordered_map<std::string, std::string> prefixedCustomHeaders,
-                const joynr::Reply& reply
-            )
-    );
+    MOCK_METHOD5(sendSubscriptionRequest,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      const joynr::SubscriptionRequest& subscriptionRequest,
+                      bool isLocalMessage));
 
-    MOCK_METHOD5(
-            sendSubscriptionRequest,
-            void(
-                const std::string &senderParticipantId,
-                const std::string &receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::SubscriptionRequest& subscriptionRequest,
-                bool isLocalMessage
-            )
-    );
+    MOCK_METHOD5(sendBroadcastSubscriptionRequest,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      const joynr::BroadcastSubscriptionRequest& subscriptionRequest,
+                      bool isLocalMessage));
 
-    MOCK_METHOD5(
-            sendBroadcastSubscriptionRequest,
-            void(
-                const std::string &senderParticipantId,
-                const std::string &receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::BroadcastSubscriptionRequest& subscriptionRequest,
-                bool isLocalMessage
-            )
-    );
+    MOCK_METHOD4(sendSubscriptionReply,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      const joynr::SubscriptionReply& subscriptionReply));
 
-    MOCK_METHOD4(
-            sendSubscriptionReply,
-            void(
-                const std::string &senderParticipantId,
-                const std::string &receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::SubscriptionReply& subscriptionReply
-            )
-    );
+    MOCK_METHOD4(sendSubscriptionStop,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      const joynr::SubscriptionStop& subscriptionStop));
 
-    MOCK_METHOD4(
-            sendSubscriptionStop,
-            void(
-                const std::string& senderParticipantId,
-                const std::string& receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::SubscriptionStop& subscriptionStop
-            )
-    );
+    MOCK_METHOD4(sendSubscriptionPublicationMock,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      const joynr::SubscriptionPublication& subscriptionPublication));
 
-    MOCK_METHOD4(
-            sendSubscriptionPublicationMock,
-            void(
-                const std::string& senderParticipantId,
-                const std::string& receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::SubscriptionPublication& subscriptionPublication
-            )
-    );
+    MOCK_METHOD3(sendMulticast,
+                 void(const std::string& fromParticipantId,
+                      const joynr::MulticastPublication& multicastPublication,
+                      const joynr::MessagingQos& messagingQos));
 
-    MOCK_METHOD3(
-            sendMulticast,
-            void (const std::string& fromParticipantId,
-                  const joynr::MulticastPublication& multicastPublication,
-                  const joynr::MessagingQos& messagingQos
-            )
-   );
+    MOCK_METHOD5(sendMulticastSubscriptionRequest,
+                 void(const std::string& senderParticipantId,
+                      const std::string& receiverParticipantId,
+                      const joynr::MessagingQos& qos,
+                      const joynr::MulticastSubscriptionRequest& subscriptionRequest,
+                      bool isLocalMessage));
 
-    MOCK_METHOD5(
-            sendMulticastSubscriptionRequest,
-            void(
-                const std::string& senderParticipantId,
-                const std::string& receiverParticipantId,
-                const joynr::MessagingQos& qos,
-                const joynr::MulticastSubscriptionRequest& subscriptionRequest,
-                bool isLocalMessage
-            )
-    );
+    MOCK_METHOD1(removeRoutingEntry, void(const std::string& participantId));
 
-    MOCK_METHOD1(
-            removeRoutingEntry,
-            void(
-                const std::string& participantId
-            )
-    );
-
-    void sendSubscriptionPublication(
-        const std::string& senderParticipantId,
-        const std::string& receiverParticipantId,
-        const joynr::MessagingQos& qos,
-        joynr::SubscriptionPublication&& subscriptionPublication
-    ){
-        sendSubscriptionPublicationMock(senderParticipantId,receiverParticipantId,qos,subscriptionPublication);
+    void sendSubscriptionPublication(const std::string& senderParticipantId,
+                                     const std::string& receiverParticipantId,
+                                     const joynr::MessagingQos& qos,
+                                     joynr::SubscriptionPublication&& subscriptionPublication)
+    {
+        sendSubscriptionPublicationMock(
+                senderParticipantId, receiverParticipantId, qos, subscriptionPublication);
     }
 };
 

@@ -26,7 +26,10 @@
 class MockTransportMessageSender : public joynr::ITransportMessageSender
 {
 public:
-    MOCK_METHOD3(sendMessage,void(const joynr::system::RoutingTypes::Address&, std::shared_ptr<joynr::ImmutableMessage>, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
+    MOCK_METHOD3(sendMessage,
+                 void(const joynr::system::RoutingTypes::Address&,
+                      std::shared_ptr<joynr::ImmutableMessage>,
+                      const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
 };
 
 #endif // TESTS_MOCK_MOCKTRANSPORTMESSAGESENDER_H

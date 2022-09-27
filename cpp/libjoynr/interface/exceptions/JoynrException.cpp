@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -180,21 +180,19 @@ JoynrMessageNotSentException* JoynrMessageNotSentException::clone() const
 
 const std::chrono::milliseconds JoynrDelayMessageException::DEFAULT_DELAY_MS(1000);
 
-JoynrDelayMessageException::JoynrDelayMessageException() noexcept : JoynrRuntimeException(),
-                                                                    _delayMs(DEFAULT_DELAY_MS)
+JoynrDelayMessageException::JoynrDelayMessageException() noexcept
+        : JoynrRuntimeException(), _delayMs(DEFAULT_DELAY_MS)
 {
 }
 
 JoynrDelayMessageException::JoynrDelayMessageException(const std::string& message) noexcept
-        : JoynrRuntimeException(message),
-          _delayMs(DEFAULT_DELAY_MS)
+        : JoynrRuntimeException(message), _delayMs(DEFAULT_DELAY_MS)
 {
 }
 
 JoynrDelayMessageException::JoynrDelayMessageException(const std::chrono::milliseconds delayMs,
                                                        const std::string& message) noexcept
-        : JoynrRuntimeException(message),
-          _delayMs(delayMs)
+        : JoynrRuntimeException(message), _delayMs(delayMs)
 {
 }
 
@@ -258,14 +256,13 @@ ProviderRuntimeException* ProviderRuntimeException::clone() const
     return new ProviderRuntimeException(const_cast<ProviderRuntimeException&>(*this));
 }
 
-PublicationMissedException::PublicationMissedException() noexcept : JoynrRuntimeException(),
-                                                                    _subscriptionId()
+PublicationMissedException::PublicationMissedException() noexcept
+        : JoynrRuntimeException(), _subscriptionId()
 {
 }
 
 PublicationMissedException::PublicationMissedException(const std::string& subscriptionId) noexcept
-        : JoynrRuntimeException(subscriptionId),
-          _subscriptionId(subscriptionId)
+        : JoynrRuntimeException(subscriptionId), _subscriptionId(subscriptionId)
 {
 }
 
@@ -301,8 +298,8 @@ ApplicationException::ApplicationException() noexcept : JoynrException(), _error
 
 ApplicationException::ApplicationException(
         const std::string& message,
-        std::shared_ptr<ApplicationExceptionError> error) noexcept : JoynrException(message),
-                                                                     _error(std::move(error))
+        std::shared_ptr<ApplicationExceptionError> error) noexcept
+        : JoynrException(message), _error(std::move(error))
 {
 }
 

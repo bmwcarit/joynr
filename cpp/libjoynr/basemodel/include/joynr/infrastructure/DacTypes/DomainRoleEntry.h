@@ -257,8 +257,7 @@ namespace std
  * std::unordered_map, std::unordered_multimap as default hash function.
  */
 template <>
-struct hash<joynr::infrastructure::DacTypes::DomainRoleEntry>
-{
+struct hash<joynr::infrastructure::DacTypes::DomainRoleEntry> {
 
     /**
      * @brief method overriding default implementation of operator ()

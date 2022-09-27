@@ -23,12 +23,14 @@
 
 #include "joynr/tests/TestLocationUpdateSelectiveBroadcastFilter.h"
 
-class MockLocationUpdatedSelectiveFilter : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter {
+class MockLocationUpdatedSelectiveFilter
+        : public joynr::tests::TestLocationUpdateSelectiveBroadcastFilter
+{
 public:
     MOCK_METHOD2(filter,
-                 bool(
-                     const joynr::types::Localisation::GpsLocation &location,
-                     const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters &filterParameters));
+                 bool(const joynr::types::Localisation::GpsLocation& location,
+                      const joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters&
+                              filterParameters));
 };
 
 #endif // TESTS_MOCK_MOCKLOCATIONUPDATEDSELECTIVEFILTER_H

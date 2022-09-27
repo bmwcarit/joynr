@@ -38,12 +38,16 @@ public:
         JOYNR_LOG_DEBUG(logger(), "I am being destroyed");
     }
 
-    MOCK_METHOD2(getLocation, void(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess, std::function<void (const joynr::exceptions::ProviderRuntimeException&)> onError));
+    MOCK_METHOD2(
+            getLocation,
+            void(std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
+                 std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
 
     std::string getParticipantId() const
     {
         return "Fake_ParticipantId_vehicle/DefaultGpsProvider";
     }
+
 private:
     ADD_LOGGER(MockGpsProvider)
 };

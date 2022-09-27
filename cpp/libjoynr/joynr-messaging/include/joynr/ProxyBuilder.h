@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,9 +21,9 @@
 
 #include <cassert>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <memory>
-#include <deque>
 #include <string>
 #include <vector>
 
@@ -257,8 +257,9 @@ std::shared_ptr<T> ProxyBuilder<T>::build()
     }
     auto proxyFuture = std::make_shared<Future<std::shared_ptr<T>>>();
 
-    auto onSuccess =
-            [proxyFuture](std::shared_ptr<T> proxy) { proxyFuture->onSuccess(std::move(proxy)); };
+    auto onSuccess = [proxyFuture](std::shared_ptr<T> proxy) {
+        proxyFuture->onSuccess(std::move(proxy));
+    };
 
     auto onError = [proxyFuture](const exceptions::DiscoveryException& exception) {
         proxyFuture->onError(std::make_shared<exceptions::DiscoveryException>(exception));
@@ -292,57 +293,53 @@ void ProxyBuilder<T>::buildAsync(
     std::uint32_t currentArbitratorId = _arbitratorId++;
 
     std::shared_ptr<ProxyBuilder<T>> thisSharedPtr = this->shared_from_this();
-    auto arbitrationSucceeds = [
-        thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
-        this,
-        currentArbitratorId,
-        proxyBuilderId = _proxyBuilderId,
-        onSuccess = std::move(onSuccess),
-        onError
-    ](const joynr::ArbitrationResult& arbitrationResult) mutable
-    {
-        JOYNR_LOG_TRACE(logger(),
-                        "ProxyBuilderId {}, ArbitratorId {}: arbitrationSucceeds",
-                        proxyBuilderId,
-                        currentArbitratorId);
-        // need to make sure own instance still exists before
-        // accesssing internal inherited member runtime
-        auto proxyBuilderSharedPtr = thisWeakPtr.lock();
-        if (proxyBuilderSharedPtr == nullptr) {
-            onError(exceptions::DiscoveryException(_runtimeAlreadyDestroyed));
-            return;
-        }
+    auto arbitrationSucceeds =
+            [thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
+             this,
+             currentArbitratorId,
+             proxyBuilderId = _proxyBuilderId,
+             onSuccess = std::move(onSuccess),
+             onError](const joynr::ArbitrationResult& arbitrationResult) mutable {
+                JOYNR_LOG_TRACE(logger(),
+                                "ProxyBuilderId {}, ArbitratorId {}: arbitrationSucceeds",
+                                proxyBuilderId,
+                                currentArbitratorId);
+                // need to make sure own instance still exists before
+                // accesssing internal inherited member runtime
+                auto proxyBuilderSharedPtr = thisWeakPtr.lock();
+                if (proxyBuilderSharedPtr == nullptr) {
+                    onError(exceptions::DiscoveryException(_runtimeAlreadyDestroyed));
+                    return;
+                }
 
-        auto onSuccessBuildInternalAsync =
-                [onSuccess](std::shared_ptr<T> proxy) { onSuccess(std::move(proxy)); };
+                auto onSuccessBuildInternalAsync = [onSuccess](std::shared_ptr<T> proxy) {
+                    onSuccess(std::move(proxy));
+                };
 
-        auto onErrorBuildInternalAsync =
-                [onError](const exceptions::DiscoveryException& discoveryRuntimeException) {
-            if (onError) {
-                onError(discoveryRuntimeException);
-            }
-        };
+                auto onErrorBuildInternalAsync =
+                        [onError](const exceptions::DiscoveryException& discoveryRuntimeException) {
+                            if (onError) {
+                                onError(discoveryRuntimeException);
+                            }
+                        };
 
-        buildInternalAsync(
-                arbitrationResult, onSuccessBuildInternalAsync, onErrorBuildInternalAsync);
+                buildInternalAsync(
+                        arbitrationResult, onSuccessBuildInternalAsync, onErrorBuildInternalAsync);
 
-        std::unique_lock<std::mutex> lock3(_finishedArbitratorIdsMutex);
-        this->_finishedArbitratorIds.push_back(currentArbitratorId);
-        lock3.unlock();
-        JOYNR_LOG_TRACE(logger(),
-                        "ProxyBuilderId {}, ArbitratorId {}: end of arbitrationSucceeds",
-                        proxyBuilderId,
-                        currentArbitratorId);
-    };
+                std::unique_lock<std::mutex> lock3(_finishedArbitratorIdsMutex);
+                this->_finishedArbitratorIds.push_back(currentArbitratorId);
+                lock3.unlock();
+                JOYNR_LOG_TRACE(logger(),
+                                "ProxyBuilderId {}, ArbitratorId {}: end of arbitrationSucceeds",
+                                proxyBuilderId,
+                                currentArbitratorId);
+            };
 
-    auto arbitrationFails = [
-        thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
-        this,
-        currentArbitratorId,
-        proxyBuilderId = _proxyBuilderId,
-        onError
-    ](const exceptions::DiscoveryException& exception)
-    {
+    auto arbitrationFails = [thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
+                             this,
+                             currentArbitratorId,
+                             proxyBuilderId = _proxyBuilderId,
+                             onError](const exceptions::DiscoveryException& exception) {
         JOYNR_LOG_TRACE(logger(),
                         "ProxyBuilderId {}, ArbitratorId {}: arbitrationFails",
                         proxyBuilderId,
@@ -483,11 +480,12 @@ void ProxyBuilder<T>::buildInternalAsync(
     auto onSuccessAddNextHop = [onSuccess, proxy]() { onSuccess(std::move(proxy)); };
     auto onErrorAddNextHop =
             [onError](const joynr::exceptions::ProviderRuntimeException& providerRuntimeException) {
-        if (onError) {
-            onError(exceptions::DiscoveryException("Proxy could not be added to parent router: " +
-                                                   providerRuntimeException.getMessage()));
-        }
-    };
+                if (onError) {
+                    onError(exceptions::DiscoveryException(
+                            "Proxy could not be added to parent router: " +
+                            providerRuntimeException.getMessage()));
+                }
+            };
 
     _messageRouter->setToKnown(discoveryEntry.getParticipantId());
     _messageRouter->addNextHop(proxy->getProxyParticipantId(),
@@ -508,8 +506,9 @@ std::shared_ptr<T> ProxyBuilder<T>::build(const ArbitrationResult& arbitrationRe
     }
     auto proxyFuture = std::make_shared<Future<std::shared_ptr<T>>>();
 
-    auto onSuccess =
-            [proxyFuture](std::shared_ptr<T> proxy) { proxyFuture->onSuccess(std::move(proxy)); };
+    auto onSuccess = [proxyFuture](std::shared_ptr<T> proxy) {
+        proxyFuture->onSuccess(std::move(proxy));
+    };
 
     auto onError = [proxyFuture](const exceptions::DiscoveryException& exception) {
         proxyFuture->onError(std::make_shared<exceptions::DiscoveryException>(exception));

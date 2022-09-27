@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,37 +16,37 @@
  * limitations under the License.
  * #L%
  */
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include <string>
 #include <vector>
 
-#include "joynr/ClusterControllerSettings.h"
-#include "joynr/PrivateCopyAssign.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/InProcessMessagingAddress.h"
-#include "joynr/MutableMessage.h"
-#include "joynr/MessageQueue.h"
-#include "joynr/ImmutableMessage.h"
-#include "joynr/MessageSender.h"
 #include "joynr/CcMessageRouter.h"
+#include "joynr/ClusterControllerSettings.h"
+#include "joynr/Dispatcher.h"
+#include "joynr/IPlatformSecurityManager.h"
+#include "joynr/ImmutableMessage.h"
+#include "joynr/InProcessMessagingAddress.h"
+#include "joynr/MessageQueue.h"
+#include "joynr/MessageSender.h"
 #include "joynr/MessagingStubFactory.h"
-#include "joynr/MulticastMessagingSkeletonDirectory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
+#include "joynr/MulticastMessagingSkeletonDirectory.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Request.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
-#include "joynr/IPlatformSecurityManager.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockMessageSender.h"
-#include "tests/mock/MockInProcessMessagingSkeleton.h"
-#include "tests/mock/MockTransportMessageSender.h"
-#include "tests/mock/MockTransportMessageReceiver.h"
 #include "tests/mock/MockDispatcher.h"
+#include "tests/mock/MockInProcessMessagingSkeleton.h"
+#include "tests/mock/MockMessageSender.h"
+#include "tests/mock/MockTransportMessageReceiver.h"
+#include "tests/mock/MockTransportMessageSender.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -156,11 +156,13 @@ public:
         EXPECT_CALL(*_inProcessMessagingSkeleton, transmit(_, _)).Times(0);
 
         // MessageSender should receive the message
-        EXPECT_CALL(*_mockMessageSender, sendMessage(_, _, _)).Times(1).WillRepeatedly(
-                ReleaseSemaphore(&_semaphore));
+        EXPECT_CALL(*_mockMessageSender, sendMessage(_, _, _))
+                .Times(1)
+                .WillRepeatedly(ReleaseSemaphore(&_semaphore));
 
-        EXPECT_CALL(*mockDispatcher, addReplyCaller(_, _, _)).Times(1).WillRepeatedly(
-                ReleaseSemaphore(&_semaphore));
+        EXPECT_CALL(*mockDispatcher, addReplyCaller(_, _, _))
+                .Times(1)
+                .WillRepeatedly(ReleaseSemaphore(&_semaphore));
 
         MessageSender messageSender(_messageRouter, nullptr);
         std::shared_ptr<IReplyCaller> replyCaller;
@@ -173,7 +175,8 @@ public:
         _messageRouter->addNextHop(
                 _receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 
-        messageSender.sendRequest(_senderId, _receiverId, _qos, _request, replyCaller, _isLocalMessage);
+        messageSender.sendRequest(
+                _senderId, _receiverId, _qos, _request, replyCaller, _isLocalMessage);
 
         WaitXTimes(2);
     }
@@ -190,8 +193,8 @@ public:
 
     void routeMsgToInProcessMessagingSkeleton()
     {
-        MutableMessage mutableMessage =
-                _messageFactory.createRequest(_senderId, _receiverId, _qos, _request, _isLocalMessage);
+        MutableMessage mutableMessage = _messageFactory.createRequest(
+                _senderId, _receiverId, _qos, _request, _isLocalMessage);
 
         // We must set the reply address here. Otherwise the message router will
         // set it and the message which was created will differ from the message
@@ -216,10 +219,10 @@ public:
         const bool isSticky = false;
 
         _messageRouter->addNextHop(_receiverId,
-                                  messagingSkeletonEndpointAddr,
-                                  isGloballyVisible,
-                                  expiryDateMs,
-                                  isSticky);
+                                   messagingSkeletonEndpointAddr,
+                                   isGloballyVisible,
+                                   expiryDateMs,
+                                   isSticky);
 
         _messageRouter->route(immutableMessage);
 
@@ -229,8 +232,8 @@ public:
     void routeMsgToCommunicationManager(
             std::shared_ptr<system::RoutingTypes::Address> joynrMessagingEndpointAddr)
     {
-        MutableMessage mutableMessage =
-                _messageFactory.createRequest(_senderId, _receiverId, _qos, _request, _isLocalMessage);
+        MutableMessage mutableMessage = _messageFactory.createRequest(
+                _senderId, _receiverId, _qos, _request, _isLocalMessage);
         mutableMessage.setReplyTo(_globalClusterControllerAddress);
         std::shared_ptr<ImmutableMessage> immutableMessage = mutableMessage.getImmutableMessage();
         // InProcessMessagingSkeleton should not receive the message
@@ -255,13 +258,13 @@ public:
     void routeMultipleMessages(
             std::shared_ptr<system::RoutingTypes::Address> joynrMessagingEndpointAddr)
     {
-        MutableMessage mutableMessage1 =
-                _messageFactory.createRequest(_senderId, _receiverId, _qos, _request, _isLocalMessage);
+        MutableMessage mutableMessage1 = _messageFactory.createRequest(
+                _senderId, _receiverId, _qos, _request, _isLocalMessage);
         mutableMessage1.setReplyTo(_globalClusterControllerAddress);
 
         std::string receiverId2("receiverId2");
-        MutableMessage mutableMessage2 =
-                _messageFactory.createRequest(_senderId, receiverId2, _qos, _request, _isLocalMessage);
+        MutableMessage mutableMessage2 = _messageFactory.createRequest(
+                _senderId, receiverId2, _qos, _request, _isLocalMessage);
         mutableMessage2.setReplyTo(_globalClusterControllerAddress);
 
         std::shared_ptr<ImmutableMessage> immutableMessage1 = mutableMessage1.getImmutableMessage();
@@ -287,10 +290,10 @@ public:
         const bool isSticky = false;
 
         _messageRouter->addNextHop(receiverId2,
-                                  messagingSkeletonEndpointAddr,
-                                  isGloballyVisible,
-                                  expiryDateMs,
-                                  isSticky);
+                                   messagingSkeletonEndpointAddr,
+                                   isGloballyVisible,
+                                   expiryDateMs,
+                                   isSticky);
         _messageRouter->addNextHop(
                 _receiverId, joynrMessagingEndpointAddr, isGloballyVisible, expiryDateMs, isSticky);
 

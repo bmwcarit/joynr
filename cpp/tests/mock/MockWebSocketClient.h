@@ -35,7 +35,8 @@ public:
     using ConnectionHandle = websocketpp::connection_hdl;
     MOCK_METHOD1(registerConnectCallback, void(std::function<void()>));
     MOCK_METHOD1(registerReconnectCallback, void(std::function<void()>));
-    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(ConnectionHandle&&, smrf::ByteVector&&)>));
+    MOCK_METHOD1(registerReceiveCallback,
+                 void(std::function<void(ConnectionHandle&&, smrf::ByteVector&&)>));
 
     void registerDisconnectCallback(std::function<void()> callback) override
     {
@@ -53,9 +54,9 @@ public:
 
     MOCK_CONST_METHOD0(isConnected, bool());
 
-    MOCK_METHOD2(send, void(
-            const smrf::ByteArrayView&,
-            const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
+    MOCK_METHOD2(send,
+                 void(const smrf::ByteArrayView&,
+                      const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&));
 
     MOCK_CONST_METHOD0(getSender, std::shared_ptr<joynr::IWebSocketSendInterface>());
 

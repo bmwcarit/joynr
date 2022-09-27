@@ -40,10 +40,9 @@ namespace types
 class DiscoveryEntry;
 class DiscoveryEntryWithMetaInfo;
 class GlobalDiscoveryEntry;
-}
+} // namespace types
 
-struct DiscoveryEntryHash
-{
+struct DiscoveryEntryHash {
     std::size_t operator()(const types::DiscoveryEntry& entry) const
     {
         std::size_t seed = 0;
@@ -52,8 +51,7 @@ struct DiscoveryEntryHash
     }
 };
 
-struct DiscoveryEntryKeyEq
-{
+struct DiscoveryEntryKeyEq {
     bool operator()(const types::DiscoveryEntry& lhs, const types::DiscoveryEntry& rhs) const
     {
         // there is no need to check typeid because entries are of the same type.
@@ -61,8 +59,7 @@ struct DiscoveryEntryKeyEq
     }
 };
 
-struct ValidateGBIDsEnum
-{
+struct ValidateGBIDsEnum {
     enum Enum : std::uint32_t { OK = 0, INVALID = 1, UNKNOWN = 2 };
 };
 

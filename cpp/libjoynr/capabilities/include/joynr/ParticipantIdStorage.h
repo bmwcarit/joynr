@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,12 +24,12 @@
 #include <mutex>
 #include <string>
 
-#include <boost/multi_index_container.hpp>
 #include <boost/multi_index/indexed_by.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/random_access_index.hpp>
 #include <boost/multi_index/tag.hpp>
+#include <boost/multi_index_container.hpp>
 
 #include "joynr/JoynrExport.h"
 #include "joynr/Logger.h"
@@ -43,7 +43,7 @@ namespace participantIdStorageTags
 {
 struct write;
 struct read;
-}
+} // namespace participantIdStorageTags
 
 /**
  * Creates and persists participant ids.
@@ -90,8 +90,7 @@ public:
                                                  const std::string& defaultValue);
 
 private:
-    struct StorageItem
-    {
+    struct StorageItem {
         const std::string key;
         const std::string participantId;
 

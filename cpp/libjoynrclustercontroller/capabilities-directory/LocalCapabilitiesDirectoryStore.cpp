@@ -24,13 +24,13 @@
 #include <string>
 #include <vector>
 
-#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/CapabilitiesStorage.h"
 #include "joynr/CapabilityUtils.h"
-#include "joynr/types/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/LCDUtil.h"
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/Util.h"
+#include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
 {
@@ -369,4 +369,4 @@ std::shared_ptr<capabilities::Storage> LocalCapabilitiesDirectoryStore::
     std::ignore = cacheLock;
     return _locallyRegisteredCapabilities;
 }
-}
+} // namespace joynr

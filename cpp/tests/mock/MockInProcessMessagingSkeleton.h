@@ -26,8 +26,14 @@
 class MockInProcessMessagingSkeleton : public joynr::InProcessMessagingSkeleton
 {
 public:
-    MockInProcessMessagingSkeleton(std::weak_ptr<joynr::IDispatcher> dispatcher) : InProcessMessagingSkeleton(dispatcher){}
-    MOCK_METHOD2(transmit, void(std::shared_ptr<joynr::ImmutableMessage> message, const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>& onFailure));
+    MockInProcessMessagingSkeleton(std::weak_ptr<joynr::IDispatcher> dispatcher)
+            : InProcessMessagingSkeleton(dispatcher)
+    {
+    }
+    MOCK_METHOD2(transmit,
+                 void(std::shared_ptr<joynr::ImmutableMessage> message,
+                      const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&
+                              onFailure));
 };
 
 #endif // TESTS_MOCK_MOCKINPROCESSMESSAGINGSKELETON_H

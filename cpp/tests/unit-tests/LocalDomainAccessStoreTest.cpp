@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,9 +21,9 @@
 
 #include "tests/JoynrTest.h"
 
-#include "joynr/Settings.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
 
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
@@ -31,8 +31,7 @@ using namespace ::testing;
 using namespace joynr;
 using namespace joynr::infrastructure::DacTypes;
 
-struct AccessStoreTestData
-{
+struct AccessStoreTestData {
     std::string userId;
     std::string domain;
     std::string interfaceName;
@@ -45,22 +44,22 @@ public:
     {
         _expectedDomainRoleEntry = DomainRoleEntry(_TEST_USER1, _DOMAINS, Role::OWNER);
         _expectedMasterAccessControlEntry = MasterAccessControlEntry(_TEST_USER1,
-                                                                    _TEST_DOMAIN1,
-                                                                    _TEST_INTERFACE1,
-                                                                    TrustLevel::LOW,
-                                                                    _TRUST_LEVELS,
-                                                                    TrustLevel::LOW,
-                                                                    _TRUST_LEVELS,
-                                                                    _TEST_OPERATION1,
-                                                                    Permission::NO,
-                                                                    _PERMISSIONS);
+                                                                     _TEST_DOMAIN1,
+                                                                     _TEST_INTERFACE1,
+                                                                     TrustLevel::LOW,
+                                                                     _TRUST_LEVELS,
+                                                                     TrustLevel::LOW,
+                                                                     _TRUST_LEVELS,
+                                                                     _TEST_OPERATION1,
+                                                                     Permission::NO,
+                                                                     _PERMISSIONS);
         _expectedOwnerAccessControlEntry = OwnerAccessControlEntry(_TEST_USER1,
-                                                                  _TEST_DOMAIN1,
-                                                                  _TEST_INTERFACE1,
-                                                                  TrustLevel::LOW,
-                                                                  TrustLevel::LOW,
-                                                                  _TEST_OPERATION1,
-                                                                  Permission::NO);
+                                                                   _TEST_DOMAIN1,
+                                                                   _TEST_INTERFACE1,
+                                                                   TrustLevel::LOW,
+                                                                   TrustLevel::LOW,
+                                                                   _TEST_OPERATION1,
+                                                                   Permission::NO);
     }
 
     ~LocalDomainAccessStoreTest() override
@@ -157,28 +156,23 @@ const std::string LocalDomainAccessStoreTest::_TEST_INTERFACE2("interface2");
 const std::string LocalDomainAccessStoreTest::_TEST_OPERATION1("READ");
 const std::string LocalDomainAccessStoreTest::_TEST_OPERATION2("WRITE");
 const std::vector<std::string> LocalDomainAccessStoreTest::_DOMAINS = {_TEST_DOMAIN1};
-const std::vector<Permission::Enum> LocalDomainAccessStoreTest::_PERMISSIONS = {Permission::NO,
-                                                                               Permission::ASK};
-const std::vector<TrustLevel::Enum> LocalDomainAccessStoreTest::_TRUST_LEVELS = {TrustLevel::LOW,
-                                                                                TrustLevel::MID};
+const std::vector<Permission::Enum> LocalDomainAccessStoreTest::_PERMISSIONS = {
+        Permission::NO, Permission::ASK};
+const std::vector<TrustLevel::Enum> LocalDomainAccessStoreTest::_TRUST_LEVELS = {
+        TrustLevel::LOW, TrustLevel::MID};
 
 const std::vector<Permission::Enum> PERMISSIONS_EMPTY;
-const std::vector<Permission::Enum> PERMISSIONS_ALL = {Permission::YES,
-                                                       Permission::NO,
-                                                       Permission::ASK};
+const std::vector<Permission::Enum> PERMISSIONS_ALL = {
+        Permission::YES, Permission::NO, Permission::ASK};
 const std::vector<Permission::Enum> PERMISSIONS_WITHOUT_NO = {Permission::YES, Permission::ASK};
 const std::vector<Permission::Enum> PERMISSIONS_WITHOUT_YES = {Permission::NO, Permission::ASK};
 const std::vector<TrustLevel::Enum> TRUST_LEVELS_EMPTY;
-const std::vector<TrustLevel::Enum> TRUST_LEVELS_ALL = {TrustLevel::NONE,
-                                                        TrustLevel::LOW,
-                                                        TrustLevel::MID,
-                                                        TrustLevel::HIGH};
-const std::vector<TrustLevel::Enum> TRUST_LEVELS_WITHOUT_LOW = {TrustLevel::NONE,
-                                                                TrustLevel::MID,
-                                                                TrustLevel::HIGH};
-const std::vector<TrustLevel::Enum> TRUST_LEVELS_WITHOUT_NONE = {TrustLevel::LOW,
-                                                                 TrustLevel::MID,
-                                                                 TrustLevel::HIGH};
+const std::vector<TrustLevel::Enum> TRUST_LEVELS_ALL = {
+        TrustLevel::NONE, TrustLevel::LOW, TrustLevel::MID, TrustLevel::HIGH};
+const std::vector<TrustLevel::Enum> TRUST_LEVELS_WITHOUT_LOW = {
+        TrustLevel::NONE, TrustLevel::MID, TrustLevel::HIGH};
+const std::vector<TrustLevel::Enum> TRUST_LEVELS_WITHOUT_NONE = {
+        TrustLevel::LOW, TrustLevel::MID, TrustLevel::HIGH};
 
 //----- Tests ------------------------------------------------------------------
 
@@ -202,7 +196,8 @@ TEST_F(LocalDomainAccessStoreTest, mergeMultipleLocalDomainAccessStores)
     EXPECT_EQ(
             mergedLocalDomainAccessStore.getMasterRegistrationControlEntries(_TEST_USER).size(), 0);
     EXPECT_EQ(mergedLocalDomainAccessStore.getOwnerAccessControlEntries(_TEST_USER).size(), 0);
-    EXPECT_EQ(mergedLocalDomainAccessStore.getOwnerRegistrationControlEntries(_TEST_USER).size(), 0);
+    EXPECT_EQ(
+            mergedLocalDomainAccessStore.getOwnerRegistrationControlEntries(_TEST_USER).size(), 0);
 
     EXPECT_TRUE(mergedLocalDomainAccessStore.mergeDomainAccessStore(masterAccess));
     EXPECT_TRUE(mergedLocalDomainAccessStore.mergeDomainAccessStore(masterRegistration));
@@ -213,7 +208,8 @@ TEST_F(LocalDomainAccessStoreTest, mergeMultipleLocalDomainAccessStores)
     EXPECT_EQ(
             mergedLocalDomainAccessStore.getMasterRegistrationControlEntries(_TEST_USER).size(), 1);
     EXPECT_EQ(mergedLocalDomainAccessStore.getOwnerAccessControlEntries(_TEST_USER).size(), 1);
-    EXPECT_EQ(mergedLocalDomainAccessStore.getOwnerRegistrationControlEntries(_TEST_USER).size(), 1);
+    EXPECT_EQ(
+            mergedLocalDomainAccessStore.getOwnerRegistrationControlEntries(_TEST_USER).size(), 1);
 }
 
 TEST_F(LocalDomainAccessStoreTest, mergeLocalDomainAccessStoreSingleEntryOnEmptyStore)
@@ -280,26 +276,30 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces)
 {
     _localDomainAccessStore.updateMasterAccessControlEntry(_expectedMasterAccessControlEntry);
     EXPECT_EQ(_expectedMasterAccessControlEntry,
-              *_localDomainAccessStore.getMasterAccessControlEntries(
-                                              _expectedMasterAccessControlEntry.getUid()).begin());
-    EXPECT_EQ(_expectedMasterAccessControlEntry,
-              *_localDomainAccessStore.getMasterAccessControlEntries(
-                                              _expectedMasterAccessControlEntry.getDomain(),
-                                              _expectedMasterAccessControlEntry.getInterfaceName())
+              *_localDomainAccessStore
+                       .getMasterAccessControlEntries(_expectedMasterAccessControlEntry.getUid())
                        .begin());
     EXPECT_EQ(_expectedMasterAccessControlEntry,
-              *_localDomainAccessStore.getMasterAccessControlEntries(
-                                              _expectedMasterAccessControlEntry.getUid(),
-                                              _expectedMasterAccessControlEntry.getDomain(),
-                                              _expectedMasterAccessControlEntry.getInterfaceName())
+              *_localDomainAccessStore
+                       .getMasterAccessControlEntries(
+                               _expectedMasterAccessControlEntry.getDomain(),
+                               _expectedMasterAccessControlEntry.getInterfaceName())
                        .begin());
-    EXPECT_EQ(
-            _expectedMasterAccessControlEntry,
-            _localDomainAccessStore.getMasterAccessControlEntry(
-                                           _expectedMasterAccessControlEntry.getUid(),
-                                           _expectedMasterAccessControlEntry.getDomain(),
-                                           _expectedMasterAccessControlEntry.getInterfaceName(),
-                                           _expectedMasterAccessControlEntry.getOperation()).get());
+    EXPECT_EQ(_expectedMasterAccessControlEntry,
+              *_localDomainAccessStore
+                       .getMasterAccessControlEntries(
+                               _expectedMasterAccessControlEntry.getUid(),
+                               _expectedMasterAccessControlEntry.getDomain(),
+                               _expectedMasterAccessControlEntry.getInterfaceName())
+                       .begin());
+    EXPECT_EQ(_expectedMasterAccessControlEntry,
+              _localDomainAccessStore
+                      .getMasterAccessControlEntry(
+                              _expectedMasterAccessControlEntry.getUid(),
+                              _expectedMasterAccessControlEntry.getDomain(),
+                              _expectedMasterAccessControlEntry.getInterfaceName(),
+                              _expectedMasterAccessControlEntry.getOperation())
+                      .get());
     MasterAccessControlEntry masterAceWildcardUser(_expectedMasterAccessControlEntry);
     masterAceWildcardUser.setUid(access_control::WILDCARD);
     _localDomainAccessStore.updateMasterAccessControlEntry(masterAceWildcardUser);
@@ -311,18 +311,20 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAces)
     EXPECT_TRUE(util::vectorContains(masterAces, _expectedMasterAccessControlEntry));
     EXPECT_TRUE(util::vectorContains(masterAces, masterAceWildcardUser));
     EXPECT_EQ(masterAceWildcardUser,
-              _localDomainAccessStore.getMasterAccessControlEntry(
-                                             _TEST_USER2,
-                                             masterAceWildcardUser.getDomain(),
-                                             masterAceWildcardUser.getInterfaceName(),
-                                             masterAceWildcardUser.getOperation()).get());
+              _localDomainAccessStore
+                      .getMasterAccessControlEntry(_TEST_USER2,
+                                                   masterAceWildcardUser.getDomain(),
+                                                   masterAceWildcardUser.getInterfaceName(),
+                                                   masterAceWildcardUser.getOperation())
+                      .get());
     EXPECT_EQ(masterAceWildcardUser,
               *(_localDomainAccessStore.getMasterAccessControlEntries(_TEST_USER2)).begin());
     EXPECT_EQ(masterAceWildcardUser,
               *(_localDomainAccessStore.getMasterAccessControlEntries(
                         _TEST_USER2,
                         masterAceWildcardUser.getDomain(),
-                        masterAceWildcardUser.getInterfaceName())).begin());
+                        masterAceWildcardUser.getInterfaceName()))
+                       .begin());
 }
 
 TEST_F(LocalDomainAccessStoreTest, getMasterAceWithWildcardOperation)
@@ -331,11 +333,13 @@ TEST_F(LocalDomainAccessStoreTest, getMasterAceWithWildcardOperation)
     _localDomainAccessStore.updateMasterAccessControlEntry(_expectedMasterAccessControlEntry);
 
     EXPECT_EQ(_expectedMasterAccessControlEntry,
-              _localDomainAccessStore.getMasterAccessControlEntry(
-                                             _expectedMasterAccessControlEntry.getUid(),
-                                             _expectedMasterAccessControlEntry.getDomain(),
-                                             _expectedMasterAccessControlEntry.getInterfaceName(),
-                                             _TEST_OPERATION1).get());
+              _localDomainAccessStore
+                      .getMasterAccessControlEntry(
+                              _expectedMasterAccessControlEntry.getUid(),
+                              _expectedMasterAccessControlEntry.getDomain(),
+                              _expectedMasterAccessControlEntry.getInterfaceName(),
+                              _TEST_OPERATION1)
+                      .get());
 }
 
 TEST_F(LocalDomainAccessStoreTest, editableMasterAces)
@@ -367,11 +371,13 @@ TEST_F(LocalDomainAccessStoreTest, updateMasterAce)
             _expectedMasterAccessControlEntry));
 
     MasterAccessControlEntry masterAceFromDb =
-            _localDomainAccessStore.getMasterAccessControlEntry(
-                                           _expectedMasterAccessControlEntry.getUid(),
-                                           _expectedMasterAccessControlEntry.getDomain(),
-                                           _expectedMasterAccessControlEntry.getInterfaceName(),
-                                           _expectedMasterAccessControlEntry.getOperation()).get();
+            _localDomainAccessStore
+                    .getMasterAccessControlEntry(
+                            _expectedMasterAccessControlEntry.getUid(),
+                            _expectedMasterAccessControlEntry.getDomain(),
+                            _expectedMasterAccessControlEntry.getInterfaceName(),
+                            _expectedMasterAccessControlEntry.getOperation())
+                    .get();
     EXPECT_EQ(_expectedMasterAccessControlEntry, masterAceFromDb);
 }
 
@@ -400,25 +406,30 @@ TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry)
     _localDomainAccessStore.updateOwnerAccessControlEntry(_expectedOwnerAccessControlEntry);
 
     EXPECT_EQ(_expectedOwnerAccessControlEntry,
-              *_localDomainAccessStore.getOwnerAccessControlEntries(
-                                              _expectedOwnerAccessControlEntry.getUid()).begin());
-    EXPECT_EQ(_expectedOwnerAccessControlEntry,
-              *_localDomainAccessStore.getOwnerAccessControlEntries(
-                                              _expectedOwnerAccessControlEntry.getDomain(),
-                                              _expectedOwnerAccessControlEntry.getInterfaceName())
+              *_localDomainAccessStore
+                       .getOwnerAccessControlEntries(_expectedOwnerAccessControlEntry.getUid())
                        .begin());
     EXPECT_EQ(_expectedOwnerAccessControlEntry,
-              *_localDomainAccessStore.getOwnerAccessControlEntries(
-                                              _expectedOwnerAccessControlEntry.getUid(),
-                                              _expectedOwnerAccessControlEntry.getDomain(),
-                                              _expectedOwnerAccessControlEntry.getInterfaceName())
+              *_localDomainAccessStore
+                       .getOwnerAccessControlEntries(
+                               _expectedOwnerAccessControlEntry.getDomain(),
+                               _expectedOwnerAccessControlEntry.getInterfaceName())
                        .begin());
     EXPECT_EQ(_expectedOwnerAccessControlEntry,
-              _localDomainAccessStore.getOwnerAccessControlEntry(
-                                             _expectedOwnerAccessControlEntry.getUid(),
-                                             _expectedOwnerAccessControlEntry.getDomain(),
-                                             _expectedOwnerAccessControlEntry.getInterfaceName(),
-                                             _expectedOwnerAccessControlEntry.getOperation()).get());
+              *_localDomainAccessStore
+                       .getOwnerAccessControlEntries(
+                               _expectedOwnerAccessControlEntry.getUid(),
+                               _expectedOwnerAccessControlEntry.getDomain(),
+                               _expectedOwnerAccessControlEntry.getInterfaceName())
+                       .begin());
+    EXPECT_EQ(
+            _expectedOwnerAccessControlEntry,
+            _localDomainAccessStore
+                    .getOwnerAccessControlEntry(_expectedOwnerAccessControlEntry.getUid(),
+                                                _expectedOwnerAccessControlEntry.getDomain(),
+                                                _expectedOwnerAccessControlEntry.getInterfaceName(),
+                                                _expectedOwnerAccessControlEntry.getOperation())
+                    .get());
     OwnerAccessControlEntry ownerAceWildcardUser(_expectedOwnerAccessControlEntry);
     ownerAceWildcardUser.setUid(access_control::WILDCARD);
     EXPECT_TRUE(_localDomainAccessStore.updateOwnerAccessControlEntry(ownerAceWildcardUser));
@@ -430,18 +441,20 @@ TEST_F(LocalDomainAccessStoreTest, getOwnerAccessControlEntry)
     EXPECT_TRUE(util::vectorContains(ownerAces, _expectedOwnerAccessControlEntry));
     EXPECT_TRUE(util::vectorContains(ownerAces, ownerAceWildcardUser));
     EXPECT_EQ(ownerAceWildcardUser,
-              _localDomainAccessStore.getOwnerAccessControlEntry(
-                                             _TEST_USER2,
-                                             ownerAceWildcardUser.getDomain(),
-                                             ownerAceWildcardUser.getInterfaceName(),
-                                             ownerAceWildcardUser.getOperation()).get());
+              _localDomainAccessStore
+                      .getOwnerAccessControlEntry(_TEST_USER2,
+                                                  ownerAceWildcardUser.getDomain(),
+                                                  ownerAceWildcardUser.getInterfaceName(),
+                                                  ownerAceWildcardUser.getOperation())
+                      .get());
     EXPECT_EQ(ownerAceWildcardUser,
               *(_localDomainAccessStore.getOwnerAccessControlEntries(_TEST_USER2)).begin());
     EXPECT_EQ(ownerAceWildcardUser,
               *(_localDomainAccessStore.getOwnerAccessControlEntries(
                         _TEST_USER2,
                         ownerAceWildcardUser.getDomain(),
-                        ownerAceWildcardUser.getInterfaceName())).begin());
+                        ownerAceWildcardUser.getInterfaceName()))
+                       .begin());
 }
 
 TEST_F(LocalDomainAccessStoreTest, getEditableOwnerAces)
@@ -473,16 +486,17 @@ TEST_F(LocalDomainAccessStoreTest, editableOwnerAccessControlEntryNoMatchingDre)
 
 TEST_F(LocalDomainAccessStoreTest, updateOwnerAce)
 {
-    EXPECT_TRUE(
-            _localDomainAccessStore.updateOwnerAccessControlEntry(_expectedOwnerAccessControlEntry));
+    EXPECT_TRUE(_localDomainAccessStore.updateOwnerAccessControlEntry(
+            _expectedOwnerAccessControlEntry));
 
     // Check that the entry was added
     OwnerAccessControlEntry ownerAceFromDb =
-            _localDomainAccessStore.getOwnerAccessControlEntry(
-                                           _expectedOwnerAccessControlEntry.getUid(),
-                                           _expectedOwnerAccessControlEntry.getDomain(),
-                                           _expectedOwnerAccessControlEntry.getInterfaceName(),
-                                           _expectedOwnerAccessControlEntry.getOperation()).get();
+            _localDomainAccessStore
+                    .getOwnerAccessControlEntry(_expectedOwnerAccessControlEntry.getUid(),
+                                                _expectedOwnerAccessControlEntry.getDomain(),
+                                                _expectedOwnerAccessControlEntry.getInterfaceName(),
+                                                _expectedOwnerAccessControlEntry.getOperation())
+                    .get();
     EXPECT_EQ(_expectedOwnerAccessControlEntry, ownerAceFromDb);
 }
 
@@ -638,7 +652,8 @@ TEST_F(LocalDomainAccessStoreTest, updateMediatorRce_notAllowedByMasterRce)
 
     EXPECT_TRUE(_localDomainAccessStore.updateMasterRegistrationControlEntry(testMasterRce));
     EXPECT_FALSE(_localDomainAccessStore.updateMediatorRegistrationControlEntry(testMediatorRce));
-    EXPECT_FALSE(_localDomainAccessStore.updateMediatorRegistrationControlEntry(allowedMediatorRce));
+    EXPECT_FALSE(
+            _localDomainAccessStore.updateMediatorRegistrationControlEntry(allowedMediatorRce));
 
     // test Mediator RCE with required trust level LOW
     // as default required trust level not allowed
@@ -896,21 +911,22 @@ TEST_F(LocalDomainAccessStoreTest, restoreFromPersistenceFile)
                 ClusterControllerSettings::
                         DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME());
         EXPECT_EQ(_expectedOwnerAccessControlEntry,
-                  localDomainAccessStore.getOwnerAccessControlEntry(
-                                                 _expectedOwnerAccessControlEntry.getUid(),
-                                                 _expectedOwnerAccessControlEntry.getDomain(),
-                                                 _expectedOwnerAccessControlEntry.getInterfaceName(),
-                                                 _expectedOwnerAccessControlEntry.getOperation())
+                  localDomainAccessStore
+                          .getOwnerAccessControlEntry(
+                                  _expectedOwnerAccessControlEntry.getUid(),
+                                  _expectedOwnerAccessControlEntry.getDomain(),
+                                  _expectedOwnerAccessControlEntry.getInterfaceName(),
+                                  _expectedOwnerAccessControlEntry.getOperation())
                           .get());
 
-        EXPECT_EQ(
-                _expectedMasterAccessControlEntry,
-                localDomainAccessStore.getMasterAccessControlEntry(
-                                               _expectedMasterAccessControlEntry.getUid(),
-                                               _expectedMasterAccessControlEntry.getDomain(),
-                                               _expectedMasterAccessControlEntry.getInterfaceName(),
-                                               _expectedMasterAccessControlEntry.getOperation())
-                        .get());
+        EXPECT_EQ(_expectedMasterAccessControlEntry,
+                  localDomainAccessStore
+                          .getMasterAccessControlEntry(
+                                  _expectedMasterAccessControlEntry.getUid(),
+                                  _expectedMasterAccessControlEntry.getDomain(),
+                                  _expectedMasterAccessControlEntry.getInterfaceName(),
+                                  _expectedMasterAccessControlEntry.getOperation())
+                          .get());
     }
 }
 
@@ -1103,9 +1119,9 @@ TEST_F(LocalDomainAccessStoreTest,
 
     auto result =
             _localDomainAccessStore.getMasterAccessControlEntry("application_1",
-                                                               "common.prefix.domain1",
-                                                               "same/interface/prefix/value",
-                                                               joynr::access_control::WILDCARD);
+                                                                "common.prefix.domain1",
+                                                                "same/interface/prefix/value",
+                                                                joynr::access_control::WILDCARD);
     ASSERT_TRUE(result);
     EXPECT_EQ(result->getUid(), "application_1");
     EXPECT_EQ(result->getDomain(), "common.prefix.domain1");
@@ -1115,9 +1131,9 @@ TEST_F(LocalDomainAccessStoreTest,
 
     auto result2 =
             _localDomainAccessStore.getMasterAccessControlEntry("application_1",
-                                                               "common.prefix.domain2",
-                                                               "same/interface/prefix/value",
-                                                               joynr::access_control::WILDCARD);
+                                                                "common.prefix.domain2",
+                                                                "same/interface/prefix/value",
+                                                                joynr::access_control::WILDCARD);
     ASSERT_TRUE(result2);
     EXPECT_EQ(result2->getUid(), "application_1");
     EXPECT_EQ(result2->getDomain(), "common.prefix.domain2");

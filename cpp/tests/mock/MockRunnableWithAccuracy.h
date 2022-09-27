@@ -23,8 +23,8 @@
 
 #include "tests/utils/Gmock.h"
 
-#include "joynr/Runnable.h"
 #include "joynr/Logger.h"
+#include "joynr/Runnable.h"
 
 class MockRunnableWithAccuracy : public joynr::Runnable
 {
@@ -33,10 +33,10 @@ public:
 
     MockRunnableWithAccuracy(const std::uint64_t delay);
 
-    MOCK_CONST_METHOD0(dtorCalled, void ());
+    MOCK_CONST_METHOD0(dtorCalled, void());
     ~MockRunnableWithAccuracy();
 
-    MOCK_METHOD0(shutdown, void ());
+    MOCK_METHOD0(shutdown, void());
 
     MOCK_CONST_METHOD0(runCalled, void());
     MOCK_CONST_METHOD0(runCalledInTime, void());

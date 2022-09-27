@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,10 +55,11 @@ public:
     LocalCapabilitiesDirectoryEmptyGbidTest()
             : _settings(),
               _clusterControllerSettings(_settings),
-              _globalCapabilitiesDirectoryClientMock(std::make_shared<MockGlobalCapabilitiesDirectoryClient>()),
+              _globalCapabilitiesDirectoryClientMock(
+                      std::make_shared<MockGlobalCapabilitiesDirectoryClient>()),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              _messageRouterMock(
-                      std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
+              _messageRouterMock(std::make_shared<MockMessageRouter>(
+                      _singleThreadedIOService->getIOService())),
               _clusterControllerId("clusterControllerId"),
               _localCapabilitiesDirectoryStore(std::make_shared<LocalCapabilitiesDirectoryStore>()),
               _localCapabilitiesDirectory(),
@@ -66,21 +67,23 @@ public:
               _discoveryQos(),
               _nonEmptyGbids(std::vector<std::string>{"nonEmptyGbid1", "nonEmptyGbid2"}),
               _externalAddresses(std::vector<system::RoutingTypes::MqttAddress>{
-                  system::RoutingTypes::MqttAddress(_nonEmptyGbids[0], "externalTopic1"),
-                  system::RoutingTypes::MqttAddress(_nonEmptyGbids[1], "externalTopic2")
-              }),
-              _expectedLookupOnSuccessFunction([this](const std::vector<types::DiscoveryEntryWithMetaInfo>&) {
-                  _semaphore.notify();
-              }),
-              _expectedLookupParticipantIdOnSuccessFunction([this](const types::DiscoveryEntryWithMetaInfo&) {
-                  _semaphore.notify();
-              }),
+                      system::RoutingTypes::MqttAddress(_nonEmptyGbids[0], "externalTopic1"),
+                      system::RoutingTypes::MqttAddress(_nonEmptyGbids[1], "externalTopic2")}),
+              _expectedLookupOnSuccessFunction(
+                      [this](const std::vector<types::DiscoveryEntryWithMetaInfo>&) {
+                          _semaphore.notify();
+                      }),
+              _expectedLookupParticipantIdOnSuccessFunction(
+                      [this](const types::DiscoveryEntryWithMetaInfo&) { _semaphore.notify(); }),
               _unexpectedOnErrorFunction([](const types::DiscoveryError::Enum& errorEnum) {
-                  FAIL() << "Unexpected onError call: " + types::DiscoveryError::getLiteral(errorEnum);}
-              ),
-              _unexpectedOnRuntimeErrorFunction([](const exceptions::JoynrRuntimeException& exception) {
-                  FAIL() << "Unexpected onRuntimeError call: " + exception.getTypeName() + ":" + exception.getMessage();}
-              )
+                  FAIL() << "Unexpected onError call: " +
+                                    types::DiscoveryError::getLiteral(errorEnum);
+              }),
+              _unexpectedOnRuntimeErrorFunction(
+                      [](const exceptions::JoynrRuntimeException& exception) {
+                          FAIL() << "Unexpected onRuntimeError call: " + exception.getTypeName() +
+                                            ":" + exception.getMessage();
+                      })
     {
         _singleThreadedIOService->start();
 
@@ -121,8 +124,8 @@ public:
 protected:
     std::shared_ptr<LocalCapabilitiesDirectory> getLcd(const std::vector<std::string>& knownGbids)
     {
-        const std::string localAddress =
-                serializer::serializeToJson(system::RoutingTypes::MqttAddress(knownGbids[0], "localTopic"));
+        const std::string localAddress = serializer::serializeToJson(
+                system::RoutingTypes::MqttAddress(knownGbids[0], "localTopic"));
         const std::int64_t defaultExpiryDateMs = 60 * 60 * 1000;
         _localCapabilitiesDirectory.reset();
         _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
@@ -141,42 +144,47 @@ protected:
 
     void checkGdeGbidReplacement()
     {
-        ASSERT_TRUE(_gdesWithNonEmptyGbid.size() > 0 && _externalAddresses.size() >= _gdesWithNonEmptyGbid.size());
+        ASSERT_TRUE(_gdesWithNonEmptyGbid.size() > 0 &&
+                    _externalAddresses.size() >= _gdesWithNonEmptyGbid.size());
         for (size_t i = 0; i < _gdesWithNonEmptyGbid.size(); i++) {
             auto address = _externalAddresses[i];
-            EXPECT_CALL(*_messageRouterMock, addNextHop(Eq(_gdesWithNonEmptyGbid[i].getParticipantId()),
-                                                       pointerToMqttAddress(address),
-                                                       _,
-                                                       _,
-                                                       _,
-                                                       _,
-                                                       _))
+            EXPECT_CALL(*_messageRouterMock,
+                        addNextHop(Eq(_gdesWithNonEmptyGbid[i].getParticipantId()),
+                                   pointerToMqttAddress(address),
+                                   _,
+                                   _,
+                                   _,
+                                   _,
+                                   _))
                     .Times(0);
             system::RoutingTypes::MqttAddress expectedAddress(address);
             expectedAddress.setBrokerUri("");
-            EXPECT_CALL(*_messageRouterMock, addNextHop(Eq(_gdesWithNonEmptyGbid[i].getParticipantId()),
-                                                       pointerToMqttAddress(expectedAddress),
-                                                       _,
-                                                       _,
-                                                       _,
-                                                       _,
-                                                       _));
+            EXPECT_CALL(*_messageRouterMock,
+                        addNextHop(Eq(_gdesWithNonEmptyGbid[i].getParticipantId()),
+                                   pointerToMqttAddress(expectedAddress),
+                                   _,
+                                   _,
+                                   _,
+                                   _,
+                                   _));
         }
     }
 
     void checkGdeGbidsAreNotChanged()
     {
-        ASSERT_TRUE(_gdesWithNonEmptyGbid.size() > 0 && _externalAddresses.size() >= _gdesWithNonEmptyGbid.size());
+        ASSERT_TRUE(_gdesWithNonEmptyGbid.size() > 0 &&
+                    _externalAddresses.size() >= _gdesWithNonEmptyGbid.size());
         for (size_t i = 0; i < _gdesWithNonEmptyGbid.size(); i++) {
             auto expectedAddress = _externalAddresses[i];
             EXPECT_TRUE(!expectedAddress.getBrokerUri().empty());
-            EXPECT_CALL(*_messageRouterMock, addNextHop(Eq(_gdesWithNonEmptyGbid[i].getParticipantId()),
-                                                       pointerToMqttAddress(expectedAddress),
-                                                       _,
-                                                       _,
-                                                       _,
-                                                       _,
-                                                       _));
+            EXPECT_CALL(*_messageRouterMock,
+                        addNextHop(Eq(_gdesWithNonEmptyGbid[i].getParticipantId()),
+                                   pointerToMqttAddress(expectedAddress),
+                                   _,
+                                   _,
+                                   _,
+                                   _,
+                                   _));
         }
     }
 
@@ -196,8 +204,10 @@ protected:
     const std::vector<system::RoutingTypes::MqttAddress> _externalAddresses;
     std::vector<types::GlobalDiscoveryEntry> _gdesWithNonEmptyGbid;
 
-    std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)> _expectedLookupOnSuccessFunction;
-    std::function<void(const types::DiscoveryEntryWithMetaInfo&)> _expectedLookupParticipantIdOnSuccessFunction;
+    std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>
+            _expectedLookupOnSuccessFunction;
+    std::function<void(const types::DiscoveryEntryWithMetaInfo&)>
+            _expectedLookupParticipantIdOnSuccessFunction;
     std::function<void(const types::DiscoveryError::Enum&)> _unexpectedOnErrorFunction;
     std::function<void(const exceptions::JoynrRuntimeException&)> _unexpectedOnRuntimeErrorFunction;
 
@@ -216,16 +226,17 @@ const std::string LocalCapabilitiesDirectoryEmptyGbidTest::_PUBLIC_KEY_ID("publi
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupDomainInterface_onlyEmptyGbidIsKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsReplaced)
 {
-    const std::vector<std::string> knownGbids {""};
+    const std::vector<std::string> knownGbids{""};
     auto lcd = getLcd(knownGbids);
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // domains
-                                                               _, // interfaceName
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // domains
+                       _,              // interfaceName
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<4>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidReplacement();
@@ -241,18 +252,20 @@ TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupParticipantId_onlyEmptyGbidIsKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsReplaced)
 {
-    const std::vector<std::string> knownGbids {""};
+    const std::vector<std::string> knownGbids{""};
     auto lcd = getLcd(knownGbids);
 
     _gdesWithNonEmptyGbid.pop_back();
-    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() == 1); // lookup by participantId returns only 1 DiscoveryEntry
+    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() ==
+                1); // lookup by participantId returns only 1 DiscoveryEntry
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // participantId
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // participantId
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<3>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidReplacement();
@@ -266,16 +279,17 @@ TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupDomainInterfaceWithGbids_emptyGbidArray_onlyEmptyGbidIsKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsReplaced)
 {
-    const std::vector<std::string> knownGbids {""};
+    const std::vector<std::string> knownGbids{""};
     auto lcd = getLcd(knownGbids);
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // domains
-                                                               _, // interfaceName
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // domains
+                       _,              // interfaceName
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<4>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidReplacement();
@@ -292,18 +306,20 @@ TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupParticipantIdWithGbids_emptyGbidArray_onlyEmptyGbidIsKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsReplaced)
 {
-    const std::vector<std::string> knownGbids {""};
+    const std::vector<std::string> knownGbids{""};
     auto lcd = getLcd(knownGbids);
 
     _gdesWithNonEmptyGbid.pop_back();
-    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() == 1); // lookup by participantId returns only 1 DiscoveryEntry
+    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() ==
+                1); // lookup by participantId returns only 1 DiscoveryEntry
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // participantId
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // participantId
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<3>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidReplacement();
@@ -319,91 +335,79 @@ TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupDomainInterfaceWithGbids_emptyGbid_onlyEmptyGbidIsKnown_emptyGbidStillInvalid)
 {
-    const std::vector<std::string> knownGbids {""};
+    const std::vector<std::string> knownGbids{""};
     auto lcd = getLcd(knownGbids);
 
-
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // domains
-                                                               _, // interfaceName
-                                                               _, // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,  // domains
+                       _,  // interfaceName
+                       _,  // gbids
+                       _,  // messagingTtl
+                       _,  // onSuccess
+                       _,  // onError
+                       _)) // onRuntimeError
             .Times(0);
 
-    EXPECT_CALL(*_messageRouterMock, addNextHop(_,
-                                               _,
-                                               _,
-                                               _,
-                                               _,
-                                               _,
-                                               _))
-            .Times(0);
+    EXPECT_CALL(*_messageRouterMock, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
-    lcd->lookup({_DOMAIN_1_NAME},
-                _INTERFACE_1_NAME,
-                _discoveryQos,
-                std::vector<std::string> {""},
-                [](const std::vector<types::DiscoveryEntryWithMetaInfo>&) {
-                    FAIL() << "Unexpected onSuccess call";
-                },
-                [this](const types::DiscoveryError::Enum& errorEnum) {
-                    EXPECT_EQ(types::DiscoveryError::INVALID_GBID, errorEnum);
-                    _semaphore.notify();
-                });
+    lcd->lookup(
+            {_DOMAIN_1_NAME},
+            _INTERFACE_1_NAME,
+            _discoveryQos,
+            std::vector<std::string>{""},
+            [](const std::vector<types::DiscoveryEntryWithMetaInfo>&) {
+                FAIL() << "Unexpected onSuccess call";
+            },
+            [this](const types::DiscoveryError::Enum& errorEnum) {
+                EXPECT_EQ(types::DiscoveryError::INVALID_GBID, errorEnum);
+                _semaphore.notify();
+            });
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupParticipantIdWithGbids_emptyGbid_onlyEmptyGbidIsKnown_emptyGbidStillInvalid)
 {
-    const std::vector<std::string> knownGbids {""};
+    const std::vector<std::string> knownGbids{""};
     auto lcd = getLcd(knownGbids);
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // participantId
-                                                               _, // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,  // participantId
+                       _,  // gbids
+                       _,  // messagingTtl
+                       _,  // onSuccess
+                       _,  // onError
+                       _)) // onRuntimeError
             .Times(0);
 
-    EXPECT_CALL(*_messageRouterMock, addNextHop(_,
-                                               _,
-                                               _,
-                                               _,
-                                               _,
-                                               _,
-                                               _))
-            .Times(0);
+    EXPECT_CALL(*_messageRouterMock, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
-    lcd->lookup(_gdesWithNonEmptyGbid[0].getParticipantId(),
-                _discoveryQos,
-                std::vector<std::string> {""},
-                [](const types::DiscoveryEntryWithMetaInfo&) {
-                    FAIL() << "Unexpected onSuccess call";
-                },
-                [this](const types::DiscoveryError::Enum& errorEnum) {
-                    EXPECT_EQ(types::DiscoveryError::INVALID_GBID, errorEnum);
-                    _semaphore.notify();
-                });
+    lcd->lookup(
+            _gdesWithNonEmptyGbid[0].getParticipantId(),
+            _discoveryQos,
+            std::vector<std::string>{""},
+            [](const types::DiscoveryEntryWithMetaInfo&) { FAIL() << "Unexpected onSuccess call"; },
+            [this](const types::DiscoveryError::Enum& errorEnum) {
+                EXPECT_EQ(types::DiscoveryError::INVALID_GBID, errorEnum);
+                _semaphore.notify();
+            });
     ASSERT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupDomainInterface_nonEmptyGbidsAreKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsNotChanged)
 {
-    const std::vector<std::string> knownGbids {"gbid1", "gbid2"};
+    const std::vector<std::string> knownGbids{"gbid1", "gbid2"};
     auto lcd = getLcd(knownGbids);
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // domains
-                                                               _, // interfaceName
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // domains
+                       _,              // interfaceName
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<4>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidsAreNotChanged();
@@ -419,18 +423,20 @@ TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupParticipantId_nonEmptyGbidsAreKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsNotChanged)
 {
-    const std::vector<std::string> knownGbids {"gbid1", "gbid2"};
+    const std::vector<std::string> knownGbids{"gbid1", "gbid2"};
     auto lcd = getLcd(knownGbids);
 
     _gdesWithNonEmptyGbid.pop_back();
-    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() == 1); // lookup by participantId returns only 1 DiscoveryEntry
+    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() ==
+                1); // lookup by participantId returns only 1 DiscoveryEntry
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // participantId
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // participantId
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<3>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidsAreNotChanged();
@@ -444,16 +450,17 @@ TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupDomainInterfaceWithGbids_emptyGbidArray_nonEmptyGbidsAreKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsNotChanged)
 {
-    const std::vector<std::string> knownGbids {"gbid1", "gbid2"};
+    const std::vector<std::string> knownGbids{"gbid1", "gbid2"};
     auto lcd = getLcd(knownGbids);
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // domains
-                                                               _, // interfaceName
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // domains
+                       _,              // interfaceName
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<4>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidsAreNotChanged();
@@ -470,18 +477,20 @@ TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupParticipantIdWithGbids_emptyGbidArray_nonEmptyGbidsAreKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsNotChanged)
 {
-    const std::vector<std::string> knownGbids {"gbid1", "gbid2"};
+    const std::vector<std::string> knownGbids{"gbid1", "gbid2"};
     auto lcd = getLcd(knownGbids);
 
     _gdesWithNonEmptyGbid.pop_back();
-    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() == 1); // lookup by participantId returns only 1 DiscoveryEntry
+    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() ==
+                1); // lookup by participantId returns only 1 DiscoveryEntry
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // participantId
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // participantId
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<3>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidsAreNotChanged();
@@ -497,18 +506,20 @@ TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
 TEST_F(LocalCapabilitiesDirectoryEmptyGbidTest,
        lookupParticipantIdWithGbids_emptyGbidArray_nonEmptyAndEmptyGbidsAreKnown_gcdReturnsNonEmptyGbid_gbidOfGcdResultIsNotChanged)
 {
-    const std::vector<std::string> knownGbids {"", "gbid2"};
+    const std::vector<std::string> knownGbids{"", "gbid2"};
     auto lcd = getLcd(knownGbids);
 
     _gdesWithNonEmptyGbid.pop_back();
-    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() == 1); // lookup by participantId returns only 1 DiscoveryEntry
+    ASSERT_TRUE(_gdesWithNonEmptyGbid.size() ==
+                1); // lookup by participantId returns only 1 DiscoveryEntry
 
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock, lookup(_, // participantId
-                                                               Eq(knownGbids), // gbids
-                                                               _, // messagingTtl
-                                                               _, // onSuccess
-                                                               _, // onError
-                                                               _)) // onRuntimeError
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClientMock,
+                lookup(_,              // participantId
+                       Eq(knownGbids), // gbids
+                       _,              // messagingTtl
+                       _,              // onSuccess
+                       _,              // onError
+                       _))             // onRuntimeError
             .WillOnce(InvokeArgument<3>(_gdesWithNonEmptyGbid));
 
     checkGdeGbidsAreNotChanged();

@@ -155,7 +155,8 @@ void RoutingTable::purge()
     bool expiredEntriesFound = false;
     auto& index = boost::multi_index::get<routingtable::tags::ExpiryDate>(_multiIndexContainer);
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                       std::chrono::system_clock::now().time_since_epoch()).count();
+                       std::chrono::system_clock::now().time_since_epoch())
+                       .count();
     auto last = index.upper_bound(now);
     std::vector<std::string> expiredParticipantIds;
     for (auto routingEntryIterator = index.lower_bound(0); routingEntryIterator != last;

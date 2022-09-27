@@ -26,10 +26,12 @@
 class MockTransportStatus : public joynr::ITransportStatus
 {
 public:
-    MOCK_METHOD1(isReponsibleFor, bool(std::shared_ptr<const joynr::system::RoutingTypes::Address>));
+    MOCK_METHOD1(isReponsibleFor,
+                 bool(std::shared_ptr<const joynr::system::RoutingTypes::Address>));
     MOCK_METHOD0(isAvailable, bool());
 
-    MOCK_METHOD1(setAvailabilityChangedCallback, void(std::function<void(bool)> availabilityChangedCallback));
+    MOCK_METHOD1(setAvailabilityChangedCallback,
+                 void(std::function<void(bool)> availabilityChangedCallback));
 };
 
 #endif // TESTS_MOCK_MOCKTRANSPORTSTATUS_H

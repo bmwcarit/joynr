@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,29 +25,29 @@
 #include <memory>
 #include <string>
 
+#include "joynr/IPlatformSecurityManager.h"
 #include "joynr/ImmutableMessage.h"
 #include "joynr/InProcessMessagingAddress.h"
-#include "joynr/Semaphore.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/MessagingStubFactory.h"
 #include "joynr/MessageQueue.h"
 #include "joynr/MessageSender.h"
+#include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
-#include "joynr/MutableMessageFactory.h"
 #include "joynr/MulticastMessagingSkeletonDirectory.h"
-#include "joynr/WebSocketMulticastAddressCalculator.h"
-#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
+#include "joynr/MutableMessageFactory.h"
+#include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/Util.h"
-#include "joynr/IPlatformSecurityManager.h"
+#include "joynr/WebSocketMulticastAddressCalculator.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
-#include "tests/mock/MockTransportStatus.h"
-#include "tests/mock/MockMessageSender.h"
 #include "tests/mock/MockMessageQueue.h"
+#include "tests/mock/MockMessageSender.h"
+#include "tests/mock/MockTransportStatus.h"
 
 #include "tests/utils/PtrUtils.h"
 
@@ -69,11 +69,12 @@ using namespace joynr;
 
 typedef ::testing::Types<LibJoynrMessageRouter, CcMessageRouter> MessageRouterTypes;
 
-TYPED_TEST_SUITE(MessageRouterTest, MessageRouterTypes,);
+TYPED_TEST_SUITE(MessageRouterTest, MessageRouterTypes, );
 
 TYPED_TEST(MessageRouterTest, addMessageToQueue)
 {
-    std::shared_ptr<ImmutableMessage> immutableMessage = this->_mutableMessage.getImmutableMessage();
+    std::shared_ptr<ImmutableMessage> immutableMessage =
+            this->_mutableMessage.getImmutableMessage();
 
     EXPECT_EQ(this->_messageRouter->getNumberOfRoutedMessages(), 0);
 
@@ -91,8 +92,7 @@ bool compareMessagingQos(const MessagingQos expectedQos, const MessagingQos actu
     std::uint64_t lowestExpectedTtl = expectedQos.getTtl() - 100;
     std::uint64_t highestExpectedTtl = expectedQos.getTtl();
 
-    return highestExpectedTtl >= actualQos.getTtl() &&
-           lowestExpectedTtl <= actualQos.getTtl() &&
+    return highestExpectedTtl >= actualQos.getTtl() && lowestExpectedTtl <= actualQos.getTtl() &&
            expectedQos.getEffort() == actualQos.getEffort() &&
            expectedQos.getEncrypt() == actualQos.getEncrypt() &&
            expectedQos.getCompress() == actualQos.getCompress() &&
@@ -119,16 +119,15 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
     reply.setRequestReplyId("anyRequestReplyId");
     std::unordered_map<std::string, std::string> prefixedCustomHeaders{
             {customHeaderKey, customHeaderValue}};
-    MutableMessage replyMessage = messageFactory.createReply(senderId,
-                                                         receiverId,
-                                                         actualQos,
-                                                         std::move(prefixedCustomHeaders),
-                                                         reply);
+    MutableMessage replyMessage = messageFactory.createReply(
+            senderId, receiverId, actualQos, std::move(prefixedCustomHeaders), reply);
 
     std::shared_ptr<ImmutableMessage> immutableReplyMsg = replyMessage.getImmutableMessage();
 
     std::deque<std::shared_ptr<ImmutableMessage>> droppedMessages{immutableReplyMsg};
-    EXPECT_CALL(*(this->_mockedMessageQueue), queueMessage(_, immutableReplyMsg)).Times(1).WillOnce(Return(droppedMessages));
+    EXPECT_CALL(*(this->_mockedMessageQueue), queueMessage(_, immutableReplyMsg))
+            .Times(1)
+            .WillOnce(Return(droppedMessages));
     EXPECT_CALL(*mockMessageSender, sendReply(_, _, _, _, _)).Times(0);
     this->_messageRouterWithMockedMessageQueue->route(immutableReplyMsg, 0);
 
@@ -138,12 +137,15 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
 
     Request request;
     request.setRequestReplyId(requestReplyId);
-    MutableMessage requestMessage = messageFactory.createRequest(
-            senderId, receiverId, actualQos, request, isLocalMessage);
+    MutableMessage requestMessage =
+            messageFactory.createRequest(senderId, receiverId, actualQos, request, isLocalMessage);
     requestMessage.setCustomHeader(customHeaderKey, customHeaderValue);
-    std::shared_ptr<ImmutableMessage> immutableRequestMessage = requestMessage.getImmutableMessage();
+    std::shared_ptr<ImmutableMessage> immutableRequestMessage =
+            requestMessage.getImmutableMessage();
     droppedMessages = {immutableRequestMessage};
-    EXPECT_CALL(*(this->_mockedMessageQueue), queueMessage(_, immutableRequestMessage)).Times(1).WillOnce(Return(droppedMessages));
+    EXPECT_CALL(*(this->_mockedMessageQueue), queueMessage(_, immutableRequestMessage))
+            .Times(1)
+            .WillOnce(Return(droppedMessages));
 
     Reply capturedReply;
     const std::string expectedSenderId = receiverId;
@@ -160,14 +162,13 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
         capturedReply.setError(reply.getError());
         EXPECT_FALSE(reply.hasResponse());
     };
-    EXPECT_CALL(*mockMessageSender, sendReply(
-                    Eq(expectedSenderId),
-                    Eq(expectedReceiverId),
-                    _,
-                    Eq(immutableRequestMessage->getPrefixedCustomHeaders()),
-                    _))
-                   .WillOnce(DoAll(Invoke(captureReply),
-                                   SaveArg<2>(&capturedQos)));
+    EXPECT_CALL(
+            *mockMessageSender, sendReply(Eq(expectedSenderId),
+                                          Eq(expectedReceiverId),
+                                          _,
+                                          Eq(immutableRequestMessage->getPrefixedCustomHeaders()),
+                                          _))
+            .WillOnce(DoAll(Invoke(captureReply), SaveArg<2>(&capturedQos)));
     this->_messageRouterWithMockedMessageQueue->route(immutableRequestMessage, 0);
 
     EXPECT_TRUE(compareMessagingQos(expectedQos, capturedQos));
@@ -179,8 +180,8 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit)
     EXPECT_EQ(expectedError->getMessage(), capturedReply.getError()->getMessage());
 }
 
-//This test checks whether the lock controlling the messageQueue can lead to a deadlock.
-//It should either succeed, or run infinitely, the latter corresponding to a failure.
+// This test checks whether the lock controlling the messageQueue can lead to a deadlock.
+// It should either succeed, or run infinitely, the latter corresponding to a failure.
 TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit_realMessageSender)
 {
     std::uint64_t messageQueueLimit = 1;
@@ -193,7 +194,6 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit_realM
     this->_messageRouter->setMessageSender(messageSender);
     MutableMessageFactory messageFactory;
 
-
     // create request message
     Request request;
     MessagingQos actualQos;
@@ -201,11 +201,8 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit_realM
     const std::string senderId = "senderId";
     const std::string receiverId = "receiverId";
     request.setRequestReplyId("anyRequestReplyId");
-    MutableMessage requestMessage = messageFactory.createRequest(senderId,
-                                                         receiverId,
-                                                         actualQos,
-                                                         request,
-                                                         true);
+    MutableMessage requestMessage =
+            messageFactory.createRequest(senderId, receiverId, actualQos, request, true);
 
     std::shared_ptr<ImmutableMessage> immutableRequestMsg = requestMessage.getImmutableMessage();
 
@@ -213,14 +210,21 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenMessageQueueExceedsItsLimit_realM
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
     auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
 
-    this->_messageRouter->addNextHop(receiverId, inProcessAddress, true, std::numeric_limits<std::int64_t>::max(), false, nullptr, nullptr);
-    this->_messageRouter->addNextHop(senderId, inProcessAddress, true, std::numeric_limits<std::int64_t>::max(), false, nullptr, nullptr);
+    this->_messageRouter->addNextHop(receiverId, inProcessAddress, true,
+                                     std::numeric_limits<std::int64_t>::max(), false, nullptr,
+                                     nullptr);
+    this->_messageRouter->addNextHop(senderId, inProcessAddress, true,
+                                     std::numeric_limits<std::int64_t>::max(), false, nullptr,
+                                     nullptr);
 
     auto isFinished = std::make_shared<std::atomic<bool>>(false);
-    auto routeFuture = std::async([this, inProcessAddress, isFinished](){
-       while(!isFinished->load()) {
-         this->_messageRouter->addNextHop("opq", inProcessAddress, true, std::numeric_limits<std::int64_t>::max(), false, nullptr, nullptr);
-       }});
+    auto routeFuture = std::async([this, inProcessAddress, isFinished]() {
+        while (!isFinished->load()) {
+            this->_messageRouter->addNextHop("opq", inProcessAddress, true,
+                                             std::numeric_limits<std::int64_t>::max(), false,
+                                             nullptr, nullptr);
+        }
+    });
     std::this_thread::sleep_for(std::chrono::milliseconds(15));
     this->_messageRouter->route(immutableRequestMsg, 0);
     this->_messageRouter->route(immutableRequestMsg, 0);
@@ -232,16 +236,12 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
 {
     auto mockTransportStatus = std::make_shared<MockTransportStatus>();
 
-    EXPECT_CALL(*mockTransportStatus, setAvailabilityChangedCallback(_))
-            .Times(1);
-    EXPECT_CALL(*mockTransportStatus, isReponsibleFor(_))
-            .Times(2)
-            .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mockTransportStatus, isAvailable())
-            .Times(4)
-            .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mockTransportStatus, setAvailabilityChangedCallback(_)).Times(1);
+    EXPECT_CALL(*mockTransportStatus, isReponsibleFor(_)).Times(2).WillRepeatedly(Return(true));
+    EXPECT_CALL(*mockTransportStatus, isAvailable()).Times(4).WillRepeatedly(Return(false));
 
-    this->_messageRouterWithMockedMessageQueue = this->createMessageRouterWithMockedMessageQueue({mockTransportStatus});
+    this->_messageRouterWithMockedMessageQueue =
+            this->createMessageRouterWithMockedMessageQueue({mockTransportStatus});
 
     auto mockMessageSender = std::make_shared<MockMessageSender>();
     this->_messageRouterWithMockedMessageQueue->setMessageSender(mockMessageSender);
@@ -260,25 +260,28 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
     reply.setRequestReplyId("anyRequestReplyId");
     std::unordered_map<std::string, std::string> prefixedCustomHeaders{
             {customHeaderKey, customHeaderValue}};
-    MutableMessage replyMessage = messageFactory.createReply(senderId,
-                                                         receiverId,
-                                                         actualQos,
-                                                         std::move(prefixedCustomHeaders),
-                                                         reply);
+    MutableMessage replyMessage = messageFactory.createReply(
+            senderId, receiverId, actualQos, std::move(prefixedCustomHeaders), reply);
 
     std::shared_ptr<ImmutableMessage> immutableReplyMsg = replyMessage.getImmutableMessage();
 
     std::deque<std::shared_ptr<ImmutableMessage>> droppedMessages{immutableReplyMsg};
-    EXPECT_CALL(*(this->_mockedTransportNotAvailableQueue), queueMessage(_, immutableReplyMsg)).Times(1).WillOnce(Return(droppedMessages));
+    EXPECT_CALL(*(this->_mockedTransportNotAvailableQueue), queueMessage(_, immutableReplyMsg))
+            .Times(1)
+            .WillOnce(Return(droppedMessages));
     EXPECT_CALL(*mockMessageSender, sendReply(_, _, _, _, _)).Times(0);
 
     auto dispatcher = std::make_shared<MockDispatcher>();
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
     auto inProcessAddress = std::make_shared<const InProcessMessagingAddress>(skeleton);
 
-    this->_messageRouterWithMockedMessageQueue->addNextHop(receiverId, inProcessAddress, false, std::numeric_limits<std::int64_t>::max(), false, nullptr, nullptr);
+    this->_messageRouterWithMockedMessageQueue->addNextHop(receiverId, inProcessAddress, false,
+                                                           std::numeric_limits<std::int64_t>::max(),
+                                                           false, nullptr, nullptr);
 
-    this->_messageRouterWithMockedMessageQueue->addNextHop(senderId, inProcessAddress, false, std::numeric_limits<std::int64_t>::max(), false, nullptr, nullptr);
+    this->_messageRouterWithMockedMessageQueue->addNextHop(senderId, inProcessAddress, false,
+                                                           std::numeric_limits<std::int64_t>::max(),
+                                                           false, nullptr, nullptr);
 
     this->_messageRouterWithMockedMessageQueue->route(immutableReplyMsg, 0);
 
@@ -288,12 +291,16 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
 
     Request request;
     request.setRequestReplyId(requestReplyId);
-    MutableMessage requestMessage = messageFactory.createRequest(
-            senderId, receiverId, actualQos, request, isLocalMessage);
+    MutableMessage requestMessage =
+            messageFactory.createRequest(senderId, receiverId, actualQos, request, isLocalMessage);
     requestMessage.setCustomHeader(customHeaderKey, customHeaderValue);
-    std::shared_ptr<ImmutableMessage> immutableRequestMessage = requestMessage.getImmutableMessage();
+    std::shared_ptr<ImmutableMessage> immutableRequestMessage =
+            requestMessage.getImmutableMessage();
     droppedMessages = {immutableRequestMessage};
-    EXPECT_CALL(*(this->_mockedTransportNotAvailableQueue), queueMessage(_, immutableRequestMessage)).Times(1).WillOnce(Return(droppedMessages));
+    EXPECT_CALL(
+            *(this->_mockedTransportNotAvailableQueue), queueMessage(_, immutableRequestMessage))
+            .Times(1)
+            .WillOnce(Return(droppedMessages));
 
     Reply capturedReply;
     const std::string expectedSenderId = receiverId;
@@ -310,14 +317,13 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
         capturedReply.setError(reply.getError());
         EXPECT_FALSE(reply.hasResponse());
     };
-    EXPECT_CALL(*mockMessageSender, sendReply(
-                    Eq(expectedSenderId),
-                    Eq(expectedReceiverId),
-                    _,
-                    Eq(immutableRequestMessage->getPrefixedCustomHeaders()),
-                    _))
-                   .WillOnce(DoAll(Invoke(captureReply),
-                                   SaveArg<2>(&capturedQos)));
+    EXPECT_CALL(
+            *mockMessageSender, sendReply(Eq(expectedSenderId),
+                                          Eq(expectedReceiverId),
+                                          _,
+                                          Eq(immutableRequestMessage->getPrefixedCustomHeaders()),
+                                          _))
+            .WillOnce(DoAll(Invoke(captureReply), SaveArg<2>(&capturedQos)));
 
     this->_messageRouterWithMockedMessageQueue->route(immutableRequestMessage, 0);
 
@@ -333,7 +339,8 @@ TYPED_TEST(MessageRouterTest, sendFakeReplyWhenTransportNotAvailableQueueExceeds
 TYPED_TEST(MessageRouterTest, multicastMessageWillNotBeQueued)
 {
     this->_mutableMessage.setType(Message::VALUE_MESSAGE_TYPE_MULTICAST());
-    std::shared_ptr<ImmutableMessage> immutableMessage = this->_mutableMessage.getImmutableMessage();
+    std::shared_ptr<ImmutableMessage> immutableMessage =
+            this->_mutableMessage.getImmutableMessage();
     immutableMessage->setReceivedFromGlobal(true);
     this->_messageRouter->route(immutableMessage);
     EXPECT_EQ(this->_messageQueue->getQueueLength(), 0);
@@ -384,8 +391,8 @@ TYPED_TEST(MessageRouterTest, doNotAddMessageToQueue)
             .WillOnce(Return(mockMessagingStub));
     ON_CALL(*mockMessagingStub,
             transmit(immutableMessage2,
-                     A<const std::function<
-                             void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+                     A<const std::function<void(
+                             const joynr::exceptions::JoynrRuntimeException&)>&>()))
             .WillByDefault(ReleaseSemaphore(semaphore));
     this->_messageRouter->route(immutableMessage2);
     EXPECT_EQ(this->_messageQueue->getQueueLength(), 1);
@@ -408,7 +415,7 @@ TYPED_TEST(MessageRouterTest, resendMessageWhenDestinationAddressIsAdded)
     // this message should be added to the queue because destination is unknown
     EXPECT_EQ(this->_messageQueue->getQueueLength(), 1);
 
-    auto firstMessageAddress = std::make_shared<InProcessMessagingAddress>( );
+    auto firstMessageAddress = std::make_shared<InProcessMessagingAddress>();
     const bool isGloballyVisible = true;
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
@@ -449,15 +456,11 @@ TYPED_TEST(MessageRouterTest, routeMessageToInProcessAddress)
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = false;
 
-    this->_messageRouter->addNextHop(destinationParticipantId,
-                                    inProcessAddress,
-                                    isGloballyVisible,
-                                    expiryDateMs,
-                                    isSticky);
+    this->_messageRouter->addNextHop(
+            destinationParticipantId, inProcessAddress, isGloballyVisible, expiryDateMs, isSticky);
     this->_mutableMessage.setRecipient(destinationParticipantId);
 
-    EXPECT_CALL(*(this->_messagingStubFactory),
-                create(addressWithSkeleton(skeleton))).Times(1);
+    EXPECT_CALL(*(this->_messagingStubFactory), create(addressWithSkeleton(skeleton))).Times(1);
 
     this->routeMessageToAddress();
 }
@@ -495,7 +498,8 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable)
             .WillOnce(Return(true));
 
     // The first message is supposed to be queued as the transport is not available
-    std::shared_ptr<ImmutableMessage> immutableMessage = this->_mutableMessage.getImmutableMessage();
+    std::shared_ptr<ImmutableMessage> immutableMessage =
+            this->_mutableMessage.getImmutableMessage();
     this->_messageRouter->route(immutableMessage);
 
     EXPECT_EQ(1, this->_transportNotAvailableQueueRef->getQueueLength());
@@ -505,8 +509,9 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable)
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
     ON_CALL(*mockMessagingStub, transmit(immutableMessage, _))
             .WillByDefault(ReleaseSemaphore(semaphore));
-    EXPECT_CALL(*(this->_messagingStubFactory), create(addressWithSkeleton(skeleton))).Times(1).WillOnce(
-            Return(mockMessagingStub));
+    EXPECT_CALL(*(this->_messagingStubFactory), create(addressWithSkeleton(skeleton)))
+            .Times(1)
+            .WillOnce(Return(mockMessagingStub));
 
     availabilityChangedCallback(true);
 
@@ -514,7 +519,9 @@ TYPED_TEST(MessageRouterTest, routedMessageQueuedIfTransportIsNotAvailable)
     EXPECT_EQ(0, this->_transportNotAvailableQueueRef->getQueueLength());
 }
 
-TYPED_TEST(MessageRouterTest, queuedMsgsAreQueuedInTransportNotAvailableQueueWhenTransportIsUnavailable) {
+TYPED_TEST(MessageRouterTest,
+           queuedMsgsAreQueuedInTransportNotAvailableQueueWhenTransportIsUnavailable)
+{
     const std::string providerParticipantId("providerParticipantId");
     auto dispatcher = std::make_shared<MockDispatcher>();
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
@@ -550,12 +557,12 @@ TYPED_TEST(MessageRouterTest, queuedMsgsAreQueuedInTransportNotAvailableQueueWhe
     EXPECT_EQ(1, this->_messageQueue->getQueueLength());
     EXPECT_EQ(0, this->_transportNotAvailableQueueRef->getQueueLength());
 
-    // When the address becomes available, the message should be moved to the transportNotAvailableQueue
+    // When the address becomes available, the message should be moved to the
+    // transportNotAvailableQueue
     const bool isSticky = false;
     const bool isGloballyVisible = true;
-    this->_messageRouter->addNextHop(
-            providerParticipantId, providerAddress, isGloballyVisible,
-            std::move(expiryDate), isSticky);
+    this->_messageRouter->addNextHop(providerParticipantId, providerAddress, isGloballyVisible,
+                                     std::move(expiryDate), isSticky);
 
     EXPECT_EQ(1, this->_transportNotAvailableQueueRef->getQueueLength());
     EXPECT_EQ(0, this->_messageQueue->getQueueLength());
@@ -616,7 +623,8 @@ TYPED_TEST(MessageRouterTest, addressValidation_stickyEntriesAreNotReplaced)
     this->_mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
     const std::string testParticipantId = "stickyAddressUpdateParticipantId";
     this->_mutableMessage.setRecipient(testParticipantId);
-    std::shared_ptr<ImmutableMessage> immutableMessage = this->_mutableMessage.getImmutableMessage();
+    std::shared_ptr<ImmutableMessage> immutableMessage =
+            this->_mutableMessage.getImmutableMessage();
 
     auto dispatcher = std::make_shared<MockDispatcher>();
     auto skeleton = std::make_shared<MockInProcessMessagingSkeleton>(dispatcher);
@@ -626,15 +634,12 @@ TYPED_TEST(MessageRouterTest, addressValidation_stickyEntriesAreNotReplaced)
     constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
     const bool isSticky = true;
     this->_messageRouter->addNextHop(
-                testParticipantId,
-                stickyAddress,
-                isParticipantGloballyVisible,
-                expiryDateMs,
-                isSticky);
+            testParticipantId, stickyAddress, isParticipantGloballyVisible, expiryDateMs, isSticky);
 
     auto mockMessagingStub = std::make_shared<MockMessagingStub>();
-    EXPECT_CALL(*this->_messagingStubFactory, create(Eq(stickyAddress))).WillOnce(Return(mockMessagingStub));
-    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
+    EXPECT_CALL(*this->_messagingStubFactory, create(Eq(stickyAddress)))
+            .WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage), _))
             .WillOnce(ReleaseSemaphore(semaphore));
 
     this->_messageRouter->route(immutableMessage);
@@ -647,14 +652,11 @@ TYPED_TEST(MessageRouterTest, addressValidation_stickyEntriesAreNotReplaced)
     auto newAddress = std::make_shared<const InProcessMessagingAddress>(skeleton2);
 
     this->_messageRouter->addNextHop(
-                testParticipantId,
-                newAddress,
-                isParticipantGloballyVisible,
-                expiryDateMs,
-                isSticky);
+            testParticipantId, newAddress, isParticipantGloballyVisible, expiryDateMs, isSticky);
 
-    EXPECT_CALL(*this->_messagingStubFactory, create(Eq(stickyAddress))).WillOnce(Return(mockMessagingStub));
-    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage),_))
+    EXPECT_CALL(*this->_messagingStubFactory, create(Eq(stickyAddress)))
+            .WillOnce(Return(mockMessagingStub));
+    EXPECT_CALL(*mockMessagingStub, transmit(Eq(immutableMessage), _))
             .WillOnce(ReleaseSemaphore(semaphore));
 
     this->_messageRouter->route(immutableMessage);
@@ -694,5 +696,6 @@ TYPED_TEST(MessageRouterTest, messageRunnable_onFailureScope)
     std::chrono::milliseconds delay(10);
     ASSERT_TRUE(onFailure) << "onFailure callback not stored. Check test setup.";
     onFailure(exceptions::JoynrDelayMessageException(delay, ""));
-    EXPECT_TRUE(semaphore->waitFor(1000 * delay)) << "No transmit executed by the 2nd MessageRunnable.";
+    EXPECT_TRUE(semaphore->waitFor(1000 * delay))
+            << "No transmit executed by the 2nd MessageRunnable.";
 }

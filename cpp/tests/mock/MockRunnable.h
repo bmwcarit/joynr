@@ -30,14 +30,14 @@ public:
     {
     }
 
-    MOCK_CONST_METHOD0(dtorCalled, void ());
+    MOCK_CONST_METHOD0(dtorCalled, void());
     ~MockRunnable()
     {
         dtorCalled();
     }
 
-    MOCK_METHOD0(shutdown, void ());
-    MOCK_METHOD0(run, void ());
+    MOCK_METHOD0(shutdown, void());
+    MOCK_METHOD0(run, void());
 };
 
 #endif // TESTS_MOCK_MOCKRUNNABLE_H

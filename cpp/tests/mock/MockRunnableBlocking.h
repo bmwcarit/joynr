@@ -27,18 +27,17 @@
 class MockRunnableBlocking : public joynr::Runnable
 {
 public:
-    MockRunnableBlocking()
-        : Runnable(),
-          semaphore(0)
+    MockRunnableBlocking() : Runnable(), semaphore(0)
     {
     }
 
-    MOCK_CONST_METHOD0(dtorCalled, void ());
-    ~MockRunnableBlocking() {
+    MOCK_CONST_METHOD0(dtorCalled, void());
+    ~MockRunnableBlocking()
+    {
         dtorCalled();
     }
 
-    MOCK_METHOD0(shutdownCalled, void ());
+    MOCK_METHOD0(shutdownCalled, void());
     void shutdown()
     {
         semaphore.notify();
@@ -50,8 +49,8 @@ public:
         semaphore.notify();
     }
 
-    MOCK_CONST_METHOD0(runEntry, void ());
-    MOCK_CONST_METHOD0(runExit, void ());
+    MOCK_CONST_METHOD0(runEntry, void());
+    MOCK_CONST_METHOD0(runExit, void());
     void run()
     {
         runEntry();

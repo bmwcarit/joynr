@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,12 +16,12 @@
  * limitations under the License.
  * #L%
  */
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <cstdint>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Future.h"
 #include "joynr/MessagingSettings.h"
@@ -43,10 +43,10 @@ using namespace joynr;
 class End2End2CcWithEmptyGbidTest : public Test
 {
 public:
-    End2End2CcWithEmptyGbidTest() :
-        domain("cppEnd2End2CcWithEmptyGbidTest_Domain_" + util::createUuid()),
-        runtime1WithEmptyGbid(),
-        runtimeWithNonEmptyGbid()
+    End2End2CcWithEmptyGbidTest()
+            : domain("cppEnd2End2CcWithEmptyGbidTest_Domain_" + util::createUuid()),
+              runtime1WithEmptyGbid(),
+              runtimeWithNonEmptyGbid()
     {
         const Settings libjoynrSettings1("test-resources/libjoynrSystemIntegration1.settings");
         const Settings libjoynrSettings2("test-resources/libjoynrSystemIntegration2.settings");
@@ -108,13 +108,15 @@ protected:
                         std::chrono::system_clock::now().time_since_epoch());
         providerQos.setPriority(millisSinceEpoch.count());
         providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
-        const std::string providerParticipantId = providerRuntime->registerProvider<tests::testProvider>(
-                    domain, mockProvider, providerQos, true, true);
+        const std::string providerParticipantId =
+                providerRuntime->registerProvider<tests::testProvider>(
+                        domain, mockProvider, providerQos, true, true);
 
         std::shared_ptr<ProxyBuilder<tests::testProxy>> proxyBuilder =
                 consumerRuntime->createProxyBuilder<tests::testProxy>(domain);
 
-        if (discoveryQos.getArbitrationStrategy() == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
+        if (discoveryQos.getArbitrationStrategy() ==
+            DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
             discoveryQos.addCustomParameter("fixedParticipantId", providerParticipantId);
         }
         std::uint64_t qosRoundTripTTL = 30000;
@@ -143,23 +145,27 @@ private:
     DISALLOW_COPY_AND_ASSIGN(End2End2CcWithEmptyGbidTest);
 };
 
-TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithEmptyGbid_providerCcWithNonEmptyGbid_rpcCallSuccessfulAfterLookupByDomainInterface)
+TEST_F(End2End2CcWithEmptyGbidTest,
+       consumerCcWithEmptyGbid_providerCcWithNonEmptyGbid_rpcCallSuccessfulAfterLookupByDomainInterface)
 {
     callRpcMethodAndGetExpectedResult(runtime1WithEmptyGbid, runtimeWithNonEmptyGbid);
 }
 
-TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithNonEmptyGbid_providerCcWithEmptyGbid_rpcCallSuccessfulAfterLookupByDomainInterface)
+TEST_F(End2End2CcWithEmptyGbidTest,
+       consumerCcWithNonEmptyGbid_providerCcWithEmptyGbid_rpcCallSuccessfulAfterLookupByDomainInterface)
 {
     callRpcMethodAndGetExpectedResult(runtimeWithNonEmptyGbid, runtime1WithEmptyGbid);
 }
 
-TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithEmptyGbid_providerCcWithNonEmptyGbid_rpcCallSuccessfulAfterLookupByParticipantId)
+TEST_F(End2End2CcWithEmptyGbidTest,
+       consumerCcWithEmptyGbid_providerCcWithNonEmptyGbid_rpcCallSuccessfulAfterLookupByParticipantId)
 {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     callRpcMethodAndGetExpectedResult(runtime1WithEmptyGbid, runtimeWithNonEmptyGbid);
 }
 
-TEST_F(End2End2CcWithEmptyGbidTest, consumerCcWithNonEmptyGbid_providerCcWithEmptyGbid_rpcCallSuccessfulAfterLookupByParticipantId)
+TEST_F(End2End2CcWithEmptyGbidTest,
+       consumerCcWithNonEmptyGbid_providerCcWithEmptyGbid_rpcCallSuccessfulAfterLookupByParticipantId)
 {
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT);
     callRpcMethodAndGetExpectedResult(runtimeWithNonEmptyGbid, runtime1WithEmptyGbid);

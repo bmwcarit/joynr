@@ -19,14 +19,14 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/Future.h"
+#include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/Message.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/JoynrMessagingConnectorFactory.h"
 #include "joynr/Settings.h"
 #include "joynr/StatusCode.h"
 #include "libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h"
@@ -48,9 +48,8 @@ public:
             : settings(std::make_unique<Settings>()),
               messagingSettings(*settings),
               clusterControllerSettings(*settings),
-              taskSequencer(
-                      std::make_unique<TaskSequencer<void>>(
-                              std::chrono::milliseconds(MessagingQos().getTtl()))),
+              taskSequencer(std::make_unique<TaskSequencer<void>>(
+                      std::chrono::milliseconds(MessagingQos().getTtl()))),
               mockJoynrRuntime(std::make_shared<MockJoynrRuntime>(*settings)),
               mockMessageSender(std::make_shared<MockMessageSender>()),
               joynrMessagingConnectorFactory(
@@ -61,15 +60,18 @@ public:
                               joynrMessagingConnectorFactory)),
               mockLCDStore(std::make_shared<MockLocalCapabilitiesDirectoryStore>()),
               globalCapabilitiesDirectoryClient(std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                      clusterControllerSettings, std::move(taskSequencer))),
-              mockLocalCapabilitiesDirectoryStore(std::make_shared<MockLocalCapabilitiesDirectoryStore>()),
+                      clusterControllerSettings,
+                      std::move(taskSequencer))),
+              mockLocalCapabilitiesDirectoryStore(
+                      std::make_shared<MockLocalCapabilitiesDirectoryStore>()),
               capDomain("testDomain"),
               capInterface("testInterface"),
               capParticipantId("testParticipantId"),
               capPublicKeyId("publicKeyId"),
               capLastSeenMs(0),
               capExpiryDateMs(1000),
-              capSerializedMqttAddress("{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\",\"brokerUri\":\"testGbid\",\"topic\":\"testTopic}"),
+              capSerializedMqttAddress("{\"_typeName\":\"joynr.system.RoutingTypes.MqttAddress\","
+                                       "\"brokerUri\":\"testGbid\",\"topic\":\"testTopic}"),
               gbids({"gbid1", "gbid2"}),
               messagingTtl(10000),
               capProviderQos(),
@@ -104,8 +106,7 @@ public:
 
     void SetUp() override
     {
-        globalCapabilitiesDirectoryClient->setProxy(
-                mockGlobalCapabilitiesDirectoryProxy);
+        globalCapabilitiesDirectoryClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
     }
 
     void TearDown() override
@@ -122,7 +123,8 @@ public:
 protected:
     void testAddUsesCorrectRemainingTtl(const bool awaitGlobalRegistration);
     void testAdd(bool awaitGlobalRegistration);
-    void testAddTaskExpiryDateHasCorrectValue(bool awaitGlobalRegistration, const joynr::TimePoint& expiryDate);
+    void testAddTaskExpiryDateHasCorrectValue(bool awaitGlobalRegistration,
+                                              const joynr::TimePoint& expiryDate);
 
     const std::string capDomain;
     const std::string capInterface;
@@ -150,33 +152,36 @@ void testMessagingQosForCustomHeaderGbidKey(std::string gbid,
     ASSERT_EQ(gbid, customMessageHeaders.find(joynr::Message::CUSTOM_HEADER_GBID_KEY())->second);
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskTimeoutFunctionCallsOnRuntimeErrorCorrectly)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAddTaskTimeoutFunctionCallsOnRuntimeErrorCorrectly)
 {
-    std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer = std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
+    std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
+            std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
     auto mockTaskSequencerRef = mockTaskSequencer.get();
 
-    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient = std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                                                  clusterControllerSettings, std::move(mockTaskSequencer));
+    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
+            std::make_shared<GlobalCapabilitiesDirectoryClient>(
+                    clusterControllerSettings, std::move(mockTaskSequencer));
     auto semaphore = std::make_shared<Semaphore>();
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
 
-    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(*mockTaskSequencerRef, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     bool onRuntimeErrorCalled = false;
     bool exceptionMessageFound = false;
     auto onRuntimeError = [&onRuntimeErrorCalled, &exceptionMessageFound](
-            const exceptions::JoynrRuntimeException& exception) {
+                                  const exceptions::JoynrRuntimeException& exception) {
         std::string exceptionMessage = exception.getMessage();
-        std::string expectedMessage = "Failed to process global registration in time, please try again";
+        std::string expectedMessage =
+                "Failed to process global registration in time, please try again";
         onRuntimeErrorCalled = true;
         if (exceptionMessage.find(expectedMessage) != std::string::npos) {
             exceptionMessageFound = true;
         }
     };
-    gcdClient->add(
-            globalDiscoveryEntry, true, gbids, onSuccess, onError, onRuntimeError);
+    gcdClient->add(globalDiscoveryEntry, true, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
     capturedTask._timeout();
     ASSERT_TRUE(onRuntimeErrorCalled);
@@ -185,39 +190,49 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskTimeoutFunctionCallsOnR
 
 void GlobalCapabilitiesDirectoryClientTest::testAddTaskExpiryDateHasCorrectValue(
         bool awaitGlobalRegistration,
-        const TimePoint &expectedTaskExpiryDate)
+        const TimePoint& expectedTaskExpiryDate)
 {
-    std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer = std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
+    std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
+            std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
     auto mockTaskSequencerRef = mockTaskSequencer.get();
-    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient = std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                                                  clusterControllerSettings, std::move(mockTaskSequencer));
+    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
+            std::make_shared<GlobalCapabilitiesDirectoryClient>(
+                    clusterControllerSettings, std::move(mockTaskSequencer));
     auto semaphore = std::make_shared<Semaphore>();
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
 
-    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            ReleaseSemaphore(semaphore)));
-    gcdClient->add(
-            globalDiscoveryEntry, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
+    EXPECT_CALL(*mockTaskSequencerRef, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
+    gcdClient->add(globalDiscoveryEntry,
+                   awaitGlobalRegistration,
+                   gbids,
+                   onSuccess,
+                   onError,
+                   onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
     auto actualTaskExpiryDate = capturedTask._expiryDate;
     if (awaitGlobalRegistration) {
-        ASSERT_TRUE(actualTaskExpiryDate - expectedTaskExpiryDate < std::chrono::milliseconds(1000));
-        ASSERT_TRUE(actualTaskExpiryDate.toMilliseconds() >= expectedTaskExpiryDate.toMilliseconds());
+        ASSERT_TRUE(actualTaskExpiryDate - expectedTaskExpiryDate <
+                    std::chrono::milliseconds(1000));
+        ASSERT_TRUE(actualTaskExpiryDate.toMilliseconds() >=
+                    expectedTaskExpiryDate.toMilliseconds());
     } else {
         ASSERT_EQ(expectedTaskExpiryDate.toMilliseconds(), actualTaskExpiryDate.toMilliseconds());
     }
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskExpiryDateHasCorrectValueWithAwaitGlobalRegistration)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAddTaskExpiryDateHasCorrectValueWithAwaitGlobalRegistration)
 {
     bool awaitGlobalRegistration = true;
-    TimePoint taskExpiryDate = TimePoint::fromRelativeMs(
-                static_cast<std::int64_t>(MessagingQos().getTtl()));
+    TimePoint taskExpiryDate =
+            TimePoint::fromRelativeMs(static_cast<std::int64_t>(MessagingQos().getTtl()));
     testAddTaskExpiryDateHasCorrectValue(awaitGlobalRegistration, taskExpiryDate);
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskExpiryDateHasCorrectValueWithoutAwaitGlobalRegistration)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAddTaskExpiryDateHasCorrectValueWithoutAwaitGlobalRegistration)
 {
     bool awaitGlobalRegistration = false;
     TimePoint taskExpiryDate = TimePoint::max();
@@ -225,23 +240,23 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddTaskExpiryDateHasCorrectVal
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest,
-       testReAddTask_onSuccessForAllEntries_proxyCalledAndResultFutureResolved) {
+       testReAddTask_onSuccessForAllEntries_proxyCalledAndResultFutureResolved)
+{
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
     auto mockTaskSequencerRef = mockTaskSequencer.get();
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                                                  clusterControllerSettings, std::move(mockTaskSequencer));
-    gcdClient->setProxy(
-            mockGlobalCapabilitiesDirectoryProxy);
+                    clusterControllerSettings, std::move(mockTaskSequencer));
+    gcdClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
 
     auto semaphore = std::make_shared<Semaphore>();
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture1;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture2;
-    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(*mockTaskSequencerRef, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -256,18 +271,19 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     types::GlobalDiscoveryEntry globalDiscoveryEntry2 = globalDiscoveryEntry1;
     globalDiscoveryEntry2.setParticipantId(participantId2);
 
-    std::vector<types::DiscoveryEntry> allGlobalEntries {globalDiscoveryEntry1, globalDiscoveryEntry2};
+    std::vector<types::DiscoveryEntry> allGlobalEntries{
+            globalDiscoveryEntry1, globalDiscoveryEntry2};
+
+    EXPECT_CALL(*mockLCDStore, getAllGlobalCapabilities()).WillOnce(Return(allGlobalEntries));
 
     EXPECT_CALL(*mockLCDStore,
-                getAllGlobalCapabilities())
-               .WillOnce(Return(allGlobalEntries));
-
-    EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _)).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _))
+            .Times(1)
             .WillOnce(Return(gbids));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _)).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _))
+            .Times(1)
             .WillOnce(Return(gbids));
 
     std::function<void()> onSuccessOfAddGlobalEntry1;
@@ -313,24 +329,24 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest,
-       testReAddTask_mixOfOnSuccessOnError_proxyCalledAndResultFutureResolved) {
+       testReAddTask_mixOfOnSuccessOnError_proxyCalledAndResultFutureResolved)
+{
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
     auto mockTaskSequencerRef = mockTaskSequencer.get();
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                                                  clusterControllerSettings, std::move(mockTaskSequencer));
-    gcdClient->setProxy(
-            mockGlobalCapabilitiesDirectoryProxy);
+                    clusterControllerSettings, std::move(mockTaskSequencer));
+    gcdClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
 
     auto semaphore = std::make_shared<Semaphore>();
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture1;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture2;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture3;
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
-    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(*mockTaskSequencerRef, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -349,24 +365,24 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     types::GlobalDiscoveryEntry globalDiscoveryEntry3 = globalDiscoveryEntry2;
     globalDiscoveryEntry3.setParticipantId(participantId3);
 
-    std::vector<types::DiscoveryEntry> allGlobalEntries { globalDiscoveryEntry1,
-                                                          globalDiscoveryEntry2,
-                                                          globalDiscoveryEntry3 };
+    std::vector<types::DiscoveryEntry> allGlobalEntries{
+            globalDiscoveryEntry1, globalDiscoveryEntry2, globalDiscoveryEntry3};
+
+    EXPECT_CALL(*mockLCDStore, getAllGlobalCapabilities()).WillOnce(Return(allGlobalEntries));
 
     EXPECT_CALL(*mockLCDStore,
-                getAllGlobalCapabilities())
-               .WillOnce(Return(allGlobalEntries));
-
-    EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _)).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _))
+            .Times(1)
             .WillOnce(Return(gbids));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _)).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _))
+            .Times(1)
             .WillOnce(Return(gbids));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry3.getParticipantId()), _)).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry3.getParticipantId()), _))
+            .Times(1)
             .WillOnce(Return(gbids));
 
     std::function<void()> onSuccessOfAddGlobalEntry1;
@@ -434,61 +450,57 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     EXPECT_EQ(StatusCodeEnum::SUCCESS, reAddResultFuture->getStatus());
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_noEntries_resultFutureResolvedAndProxyNotCalled) {
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testReAddTask_noEntries_resultFutureResolvedAndProxyNotCalled)
+{
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
     auto mockTaskSequencerRef = mockTaskSequencer.get();
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                                                  clusterControllerSettings,
-                                                  std::move(mockTaskSequencer));
+                    clusterControllerSettings, std::move(mockTaskSequencer));
 
-    gcdClient->setProxy(
-            mockGlobalCapabilitiesDirectoryProxy);
+    gcdClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
 
     auto semaphore = std::make_shared<Semaphore>();
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
-    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(*mockTaskSequencerRef, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
 
-    std::vector<types::DiscoveryEntry> allGlobalEntries {};
+    std::vector<types::DiscoveryEntry> allGlobalEntries{};
 
-    EXPECT_CALL(*mockLCDStore,
-                getAllGlobalCapabilities())
-               .WillOnce(Return(allGlobalEntries));
+    EXPECT_CALL(*mockLCDStore, getAllGlobalCapabilities()).WillOnce(Return(allGlobalEntries));
 
     EXPECT_CALL(*mockLCDStore, getGbidsForParticipantId(_, _)).Times(0);
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
-                addAsyncMock(_, _, _, _, _, _))
-                .Times(0);
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, addAsyncMock(_, _, _, _, _, _)).Times(0);
 
     std::shared_ptr<Future<void>> reAddResultFuture = capturedTask._task();
 
     EXPECT_EQ(StatusCodeEnum::SUCCESS, reAddResultFuture->getStatus());
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_resultFutureResolved) {
+TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_resultFutureResolved)
+{
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
     auto mockTaskSequencerRef = mockTaskSequencer.get();
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                                                  clusterControllerSettings, std::move(mockTaskSequencer));
-    gcdClient->setProxy(
-            mockGlobalCapabilitiesDirectoryProxy);
+                    clusterControllerSettings, std::move(mockTaskSequencer));
+    gcdClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
 
     auto semaphore = std::make_shared<Semaphore>();
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
-    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(*mockTaskSequencerRef, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -503,24 +515,23 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_re
     types::GlobalDiscoveryEntry globalDiscoveryEntry2 = globalDiscoveryEntry1;
     globalDiscoveryEntry2.setParticipantId(participantId2);
 
-    std::vector<types::DiscoveryEntry> allGlobalEntries {globalDiscoveryEntry1, globalDiscoveryEntry2};
+    std::vector<types::DiscoveryEntry> allGlobalEntries{
+            globalDiscoveryEntry1, globalDiscoveryEntry2};
 
-    EXPECT_CALL(*mockLCDStore,
-                getAllGlobalCapabilities())
-               .WillOnce(Return(allGlobalEntries));
+    EXPECT_CALL(*mockLCDStore, getAllGlobalCapabilities()).WillOnce(Return(allGlobalEntries));
 
-    std::vector<std::string> emptyGbids {};
+    std::vector<std::string> emptyGbids{};
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _)).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry1.getParticipantId()), _))
+            .Times(1)
             .WillOnce(Return(emptyGbids));
 
     EXPECT_CALL(*mockLCDStore,
-                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _)).Times(1)
+                getGbidsForParticipantId(Eq(globalDiscoveryEntry2.getParticipantId()), _))
+            .Times(1)
             .WillOnce(Return(gbids));
 
-    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
-                addAsyncMock(_, _, _, _, _, _))
-            .Times(0);
+    EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy, addAsyncMock(_, _, _, _, _, _)).Times(0);
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry2),
@@ -546,7 +557,8 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_re
     EXPECT_EQ(StatusCodeEnum::SUCCESS, reAddResultFuture->getStatus());
 }
 
-void GlobalCapabilitiesDirectoryClientTest::testAdd(bool awaitGlobalRegistration) {
+void GlobalCapabilitiesDirectoryClientTest::testAdd(bool awaitGlobalRegistration)
+{
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     auto semaphore = std::make_shared<Semaphore>();
 
@@ -555,8 +567,12 @@ void GlobalCapabilitiesDirectoryClientTest::testAdd(bool awaitGlobalRegistration
             .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
                             ReleaseSemaphore(semaphore),
                             Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->add(
-            globalDiscoveryEntry, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry,
+                                           awaitGlobalRegistration,
+                                           gbids,
+                                           onSuccess,
+                                           onError,
+                                           onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
 }
@@ -573,7 +589,9 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddWithoutAwaitGlobalRegistrat
     testAdd(awaitGlobalRegistration);
 }
 
-void GlobalCapabilitiesDirectoryClientTest::testAddUsesCorrectRemainingTtl(const bool awaitGlobalRegistration) {
+void GlobalCapabilitiesDirectoryClientTest::testAddUsesCorrectRemainingTtl(
+        const bool awaitGlobalRegistration)
+{
     std::uint64_t expectedTtl;
 
     expectedTtl = MessagingQos().getTtl();
@@ -594,10 +612,18 @@ void GlobalCapabilitiesDirectoryClientTest::testAddUsesCorrectRemainingTtl(const
             .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
                             ReleaseSemaphore(semaphore),
                             Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->add(
-            globalDiscoveryEntry, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
-    globalCapabilitiesDirectoryClient->add(
-            globalDiscoveryEntry2, awaitGlobalRegistration, gbids, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry,
+                                           awaitGlobalRegistration,
+                                           gbids,
+                                           onSuccess,
+                                           onError,
+                                           onRuntimeError);
+    globalCapabilitiesDirectoryClient->add(globalDiscoveryEntry2,
+                                           awaitGlobalRegistration,
+                                           gbids,
+                                           onSuccess,
+                                           onError,
+                                           onRuntimeError);
     std::int64_t firstNow = TimePoint::now().toMilliseconds();
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
@@ -614,19 +640,22 @@ void GlobalCapabilitiesDirectoryClientTest::testAddUsesCorrectRemainingTtl(const
     }
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtlWithAwaitGlobalRegistration)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAddUsesCorrectRemainingTtlWithAwaitGlobalRegistration)
 {
     const bool awaitGlobalRegistration = true;
     testAddUsesCorrectRemainingTtl(awaitGlobalRegistration);
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAddUsesCorrectRemainingTtlWithoutAwaitGlobalRegistration)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAddUsesCorrectRemainingTtlWithoutAwaitGlobalRegistration)
 {
     const bool awaitGlobalRegistration = false;
     testAddUsesCorrectRemainingTtl(awaitGlobalRegistration);
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistration_noRetryAfterSuccess)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAdd_WithoutAwaitGlobalRegistration_noRetryAfterSuccess)
 {
     std::function<void()> onSuccessCallback;
     auto semaphore = std::make_shared<Semaphore>();
@@ -642,7 +671,8 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistra
     onSuccessCallback();
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistration_RetryAfterTimeout)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAdd_WithoutAwaitGlobalRegistration_RetryAfterTimeout)
 {
     std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
@@ -652,20 +682,21 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistra
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
             .Times(numberOfTimeouts + 1)
             .WillRepeatedly(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
-                            ReleaseSemaphore(semaphore),
-                            Return(mockFuture)));
+                                  ReleaseSemaphore(semaphore),
+                                  Return(mockFuture)));
     globalCapabilitiesDirectoryClient->add(
             globalDiscoveryEntry, false, gbids, onSuccess, onError, onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "GCD Proxy not called.";
     const exceptions::JoynrTimeOutException timeoutException("Test timeout");
     for (unsigned int i = 0; i < numberOfTimeouts; i++) {
         onRuntimeErrorCallback(timeoutException);
-        ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "No retry after timeout number "
-                                                                 << i + 1 << ".";
+        ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)))
+                << "No retry after timeout number " << i + 1 << ".";
     }
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithAwaitGlobalRegistration_noRetryAfterTimeout)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAdd_WithAwaitGlobalRegistration_noRetryAfterTimeout)
 {
     std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
@@ -682,7 +713,8 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithAwaitGlobalRegistratio
     onRuntimeErrorCallback(timeoutException);
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistration_noRetryAfterRuntimeException)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAdd_WithoutAwaitGlobalRegistration_noRetryAfterRuntimeException)
 {
     std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
@@ -698,7 +730,8 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistra
     onRuntimeErrorCallback(exceptions::JoynrRuntimeException("Some runtime exception"));
 }
 
-TEST_F(GlobalCapabilitiesDirectoryClientTest, testAdd_WithoutAwaitGlobalRegistration_noRetryAfterApplicationException)
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAdd_WithoutAwaitGlobalRegistration_noRetryAfterApplicationException)
 {
     std::function<void(const types::DiscoveryError::Enum&)> onApplicationErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
@@ -759,10 +792,10 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     auto semaphore = std::make_shared<Semaphore>();
 
-    EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(ReleaseSemaphore(semaphore),
-                            Return(gbids)));
+    EXPECT_CALL(
+            *mockLocalCapabilitiesDirectoryStore, getGbidsForParticipantId(Eq(capParticipantId), _))
+            .Times(1)
+            .WillOnce(DoAll(ReleaseSemaphore(semaphore), Return(gbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
@@ -770,8 +803,11 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemove)
                             ReleaseSemaphore(semaphore),
                             Return(mockFuture)));
 
-    globalCapabilitiesDirectoryClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(capParticipantId,
+                                              mockLocalCapabilitiesDirectoryStore,
+                                              onSuccess,
+                                              onError,
+                                              onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     testMessagingQosForCustomHeaderGbidKey(gbids[0], messagingQosCapture);
@@ -784,16 +820,19 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveTaskExpiryDateHasCorrect
     auto mockTaskSequencerRef = mockTaskSequencer.get();
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                                                  clusterControllerSettings, std::move(mockTaskSequencer));
+                    clusterControllerSettings, std::move(mockTaskSequencer));
     auto semaphore = std::make_shared<Semaphore>();
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
     TimePoint expectedTaskExpiryDate = TimePoint::max();
 
-    EXPECT_CALL(*mockTaskSequencerRef, add(_)).Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask),
-                            ReleaseSemaphore(semaphore)));
-    gcdClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    EXPECT_CALL(*mockTaskSequencerRef, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
+    gcdClient->remove(capParticipantId,
+                      mockLocalCapabilitiesDirectoryStore,
+                      onSuccess,
+                      onError,
+                      onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
     auto actualTaskExpiryDate = capturedTask._expiryDate;
     ASSERT_EQ(expectedTaskExpiryDate, actualTaskExpiryDate);
@@ -805,18 +844,21 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveUsesCorrectTtl)
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     auto semaphore = std::make_shared<Semaphore>();
 
-    EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(ReleaseSemaphore(semaphore),
-                            Return(gbids)));
+    EXPECT_CALL(
+            *mockLocalCapabilitiesDirectoryStore, getGbidsForParticipantId(Eq(capParticipantId), _))
+            .Times(1)
+            .WillOnce(DoAll(ReleaseSemaphore(semaphore), Return(gbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<5>(&messagingQosCapture),
                             ReleaseSemaphore(semaphore),
                             Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(capParticipantId,
+                                              mockLocalCapabilitiesDirectoryStore,
+                                              onSuccess,
+                                              onError,
+                                              onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     EXPECT_EQ(defaultTtl, messagingQosCapture->getTtl());
@@ -827,17 +869,20 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterSuccess)
     std::function<void()> onSuccessCallback;
     auto semaphore = std::make_shared<Semaphore>();
 
-    EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(ReleaseSemaphore(semaphore),
-                            Return(gbids)));
+    EXPECT_CALL(
+            *mockLocalCapabilitiesDirectoryStore, getGbidsForParticipantId(Eq(capParticipantId), _))
+            .Times(1)
+            .WillOnce(DoAll(ReleaseSemaphore(semaphore), Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<2>(&onSuccessCallback),
                             ReleaseSemaphore(semaphore),
                             Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(capParticipantId,
+                                              mockLocalCapabilitiesDirectoryStore,
+                                              onSuccess,
+                                              onError,
+                                              onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     onSuccessCallback();
@@ -849,26 +894,29 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveRetryAfterTimeout)
     auto semaphore = std::make_shared<Semaphore>();
     constexpr unsigned int numberOfTimeouts = 10;
 
-    EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(numberOfTimeouts + 1)
-            .WillRepeatedly(DoAll(ReleaseSemaphore(semaphore),
-                            Return(gbids)));
+    EXPECT_CALL(
+            *mockLocalCapabilitiesDirectoryStore, getGbidsForParticipantId(Eq(capParticipantId), _))
+            .Times(numberOfTimeouts + 1)
+            .WillRepeatedly(DoAll(ReleaseSemaphore(semaphore), Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .Times(numberOfTimeouts + 1)
             .WillRepeatedly(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
                                   ReleaseSemaphore(semaphore),
                                   Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(capParticipantId,
+                                              mockLocalCapabilitiesDirectoryStore,
+                                              onSuccess,
+                                              onError,
+                                              onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     const exceptions::JoynrTimeOutException timeoutException("Test timeout");
     for (unsigned int i = 0; i < numberOfTimeouts; i++) {
         onRuntimeErrorCallback(timeoutException);
         ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
-        ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "No retry after timeout number "
-                                                                 << i + 1 << ".";
+        ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)))
+                << "No retry after timeout number " << i + 1 << ".";
     }
 }
 
@@ -877,18 +925,21 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterRuntimeExcep
     std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
 
-    EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(ReleaseSemaphore(semaphore),
-                            Return(gbids)));
+    EXPECT_CALL(
+            *mockLocalCapabilitiesDirectoryStore, getGbidsForParticipantId(Eq(capParticipantId), _))
+            .Times(1)
+            .WillOnce(DoAll(ReleaseSemaphore(semaphore), Return(gbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
                             ReleaseSemaphore(semaphore),
                             Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(capParticipantId,
+                                              mockLocalCapabilitiesDirectoryStore,
+                                              onSuccess,
+                                              onError,
+                                              onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     onRuntimeErrorCallback(exceptions::JoynrRuntimeException("Some runtime exception"));
@@ -899,18 +950,21 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveNoRetryAfterApplicationE
     std::function<void(const types::DiscoveryError::Enum&)> onApplicationErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
 
-    EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(ReleaseSemaphore(semaphore),
-                            Return(gbids)));
+    EXPECT_CALL(
+            *mockLocalCapabilitiesDirectoryStore, getGbidsForParticipantId(Eq(capParticipantId), _))
+            .Times(1)
+            .WillOnce(DoAll(ReleaseSemaphore(semaphore), Return(gbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .WillOnce(DoAll(SaveArg<3>(&onApplicationErrorCallback),
                             ReleaseSemaphore(semaphore),
                             Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(capParticipantId,
+                                              mockLocalCapabilitiesDirectoryStore,
+                                              onSuccess,
+                                              onError,
+                                              onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     onApplicationErrorCallback(types::DiscoveryError::Enum::UNKNOWN_GBID);
@@ -920,18 +974,21 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveDeletionWhileRetry)
 {
     std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
-    EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(2)
-            .WillRepeatedly(DoAll(ReleaseSemaphore(semaphore),
-                            Return(gbids)));
+    EXPECT_CALL(
+            *mockLocalCapabilitiesDirectoryStore, getGbidsForParticipantId(Eq(capParticipantId), _))
+            .Times(2)
+            .WillRepeatedly(DoAll(ReleaseSemaphore(semaphore), Return(gbids)));
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
             .Times(2)
             .WillRepeatedly(DoAll(SaveArg<4>(&onRuntimeErrorCallback),
                                   ReleaseSemaphore(semaphore),
                                   Return(mockFuture)));
-    globalCapabilitiesDirectoryClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(capParticipantId,
+                                              mockLocalCapabilitiesDirectoryStore,
+                                              onSuccess,
+                                              onError,
+                                              onRuntimeError);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
     onRuntimeErrorCallback(exceptions::JoynrTimeOutException("Test timeout"));
@@ -943,16 +1000,20 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveParticipantNotRegistered
     std::vector<std::string> expectedGbids;
     auto lcdStoreSemaphore = std::make_shared<Semaphore>();
 
-    EXPECT_CALL(*mockLocalCapabilitiesDirectoryStore,
-                    getGbidsForParticipantId(Eq(capParticipantId), _)).Times(1)
-            .WillOnce(DoAll(ReleaseSemaphore(lcdStoreSemaphore),
-                            Return(expectedGbids)));
+    EXPECT_CALL(
+            *mockLocalCapabilitiesDirectoryStore, getGbidsForParticipantId(Eq(capParticipantId), _))
+            .Times(1)
+            .WillOnce(DoAll(ReleaseSemaphore(lcdStoreSemaphore), Return(expectedGbids)));
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
-                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _)).Times(0);
+                removeAsyncMock(Eq(capParticipantId), Eq(gbids), _, _, _, _))
+            .Times(0);
 
-    globalCapabilitiesDirectoryClient->remove(
-            capParticipantId, mockLocalCapabilitiesDirectoryStore, onSuccess, onError, onRuntimeError);
+    globalCapabilitiesDirectoryClient->remove(capParticipantId,
+                                              mockLocalCapabilitiesDirectoryStore,
+                                              onSuccess,
+                                              onError,
+                                              onRuntimeError);
     ASSERT_TRUE(lcdStoreSemaphore->waitFor(std::chrono::seconds(10)));
 }
 

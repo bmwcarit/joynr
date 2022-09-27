@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,12 +63,12 @@ class SubscriptionException;
 class SubscriptionQos;
 
 /**
-  * @class PublicationManager
-  * @brief Publication manager receives subscription requests and prepares publications,
-  * which are send back to the subscription manager.
-  * Responsible for deleting SubscriptionRequests and PublicationStates (the runnable notifies the
-  * SubscriptionManager when it terminates - this triggeres the delete).
-  */
+ * @class PublicationManager
+ * @brief Publication manager receives subscription requests and prepares publications,
+ * which are send back to the subscription manager.
+ * Responsible for deleting SubscriptionRequests and PublicationStates (the runnable notifies the
+ * SubscriptionManager when it terminates - this triggeres the delete).
+ */
 class JOYNR_EXPORT PublicationManager : public std::enable_shared_from_this<PublicationManager>
 {
 public:
@@ -160,33 +160,33 @@ public:
                  std::weak_ptr<IPublicationSender> publicationSender);
 
     /**
-      * @brief Publishes an onChange message when an attribute value changes
-      *
-      * @param subscriptionId A subscription that was listening on the attribute
-      * @param value The new attribute value
-      */
+     * @brief Publishes an onChange message when an attribute value changes
+     *
+     * @param subscriptionId A subscription that was listening on the attribute
+     * @param value The new attribute value
+     */
     template <typename T>
     void attributeValueChanged(const std::string& subscriptionId, const T& value);
 
     /**
-      * @brief Publishes an broadcast publication message when a broadcast occurs
-      *
-      * This method is virtual so that it can be overridden by a mock object.
-      * @param subscriptionId A subscription that was listening on the broadcast
-      * @param values The new broadcast values
-      */
+     * @brief Publishes an broadcast publication message when a broadcast occurs
+     *
+     * This method is virtual so that it can be overridden by a mock object.
+     * @param subscriptionId A subscription that was listening on the broadcast
+     * @param values The new broadcast values
+     */
     template <typename... Ts>
     void broadcastOccurred(const std::string& subscriptionId, const Ts&... values);
 
     /**
-      * @brief Publishes a multicast broadcast publication message
-      *
-      * This method is virtual so that it can be overridden by a mock object.
-      * @param broadcastName The name of the broadcast
-      * @param providerParticipantId The participantID of the provider
-      * @param partitions list of partitions the broadcast applies to
-      * @param values Broadcast's value
-      */
+     * @brief Publishes a multicast broadcast publication message
+     *
+     * This method is virtual so that it can be overridden by a mock object.
+     * @param broadcastName The name of the broadcast
+     * @param providerParticipantId The participantID of the provider
+     * @param partitions list of partitions the broadcast applies to
+     * @param values Broadcast's value
+     */
     template <typename... Ts>
     void broadcastOccurred(const std::string& broadcastName,
                            const std::string& providerParticipantId,

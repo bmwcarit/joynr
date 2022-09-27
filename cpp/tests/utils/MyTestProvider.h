@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,16 +22,17 @@
 #include "joynr/tests/DefaulttestProvider.h"
 
 // this class exposes the protected members of testAbstractProvider
-class MyTestProvider : public joynr::tests::DefaulttestProvider {
+class MyTestProvider : public joynr::tests::DefaulttestProvider
+{
 public:
-    using testAbstractProvider::locationChanged;
-    using testAbstractProvider::fireBroadcastWithEnumOutput;
-    using testAbstractProvider::fireLocationUpdate;
-    using testAbstractProvider::fireEmptyBroadcast;
-    using testAbstractProvider::fireLocationUpdateWithSpeed;
-    using testAbstractProvider::fireLocationUpdateSelective;
     using testAbstractProvider::fireBroadcastWithByteBufferParameter;
+    using testAbstractProvider::fireBroadcastWithEnumOutput;
     using testAbstractProvider::fireBroadcastWithFiltering;
+    using testAbstractProvider::fireEmptyBroadcast;
+    using testAbstractProvider::fireLocationUpdate;
+    using testAbstractProvider::fireLocationUpdateSelective;
+    using testAbstractProvider::fireLocationUpdateWithSpeed;
+    using testAbstractProvider::locationChanged;
 };
 
 #endif // TESTS_UTILS_MYTESTPROVIDER_H

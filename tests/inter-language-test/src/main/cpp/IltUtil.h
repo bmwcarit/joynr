@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,28 +19,28 @@
 
 #ifndef ILTUTIL_H
 #define ILTUTIL_H
-#include <iostream>
-#include <stdio.h>
-#include <functional>
-#include "math.h"
-#include <stdint.h>
-#include <string>
-#include <vector>
 #include "joynr/Logger.h"
 #include "joynr/exceptions/JoynrException.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedStructOfPrimitives.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/BaseStruct.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/BaseStructWithoutElements.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedExtendedBaseStruct.h"
 #include "joynr/interlanguagetest/Enumeration.h"
 #include "joynr/interlanguagetest/EnumerationWithoutDefinedValues.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedBaseStruct.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedExtendedEnumeration.h"
-#include "joynr/interlanguagetest/namedTypeCollection1/StructWithStringArray.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedInterfaceEnumerationInTypeCollection.h"
-#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues.h"
 #include "joynr/interlanguagetest/TestInterfaceAbstractProvider.h"
+#include "joynr/interlanguagetest/namedTypeCollection1/StructWithStringArray.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/BaseStruct.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/BaseStructWithoutElements.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedBaseStruct.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedEnumerationWithPartlyDefinedValues.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedExtendedBaseStruct.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedExtendedEnumeration.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedInterfaceEnumerationInTypeCollection.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedStructOfPrimitives.h"
+#include "joynr/interlanguagetest/namedTypeCollection2/ExtendedTypeCollectionEnumerationInTypeCollection.h"
+#include "math.h"
+#include <functional>
+#include <iostream>
+#include <stdint.h>
+#include <stdio.h>
+#include <string>
+#include <vector>
 
 using namespace joynr;
 
@@ -278,9 +278,10 @@ public:
     // ExtendedExtendedEnumerationArray
     static std::vector<
             joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedEnumeration::Enum>
-    fillExtendedExtendedEnumerationArray(std::vector<
-            joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedEnumeration::Enum>&
-                                                 extendedExtendedEnumerationArray)
+    fillExtendedExtendedEnumerationArray(
+            std::vector<joynr::interlanguagetest::namedTypeCollection2::
+                                ExtendedExtendedEnumeration::Enum>&
+                    extendedExtendedEnumerationArray)
     {
         extendedExtendedEnumerationArray.clear();
         extendedExtendedEnumerationArray.push_back(
@@ -303,9 +304,10 @@ public:
         return extendedExtendedEnumerationArray;
     }
 
-    static bool checkExtendedExtendedEnumerationArray(const std::vector<
-            joynr::interlanguagetest::namedTypeCollection2::ExtendedExtendedEnumeration::Enum>&
-                                                              extendedExtendedEnumerationArray)
+    static bool checkExtendedExtendedEnumerationArray(
+            const std::vector<joynr::interlanguagetest::namedTypeCollection2::
+                                      ExtendedExtendedEnumeration::Enum>&
+                    extendedExtendedEnumerationArray)
     {
         if (extendedExtendedEnumerationArray.size() != 2) {
             JOYNR_LOG_TRACE(
@@ -387,9 +389,10 @@ public:
         return structWithStringArrayArray;
     }
 
-    static bool checkStructWithStringArrayArray(const std::vector<
-            joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>&
-                                                        structWithStringArrayArray)
+    static bool checkStructWithStringArrayArray(
+            const std::vector<
+                    joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>&
+                    structWithStringArrayArray)
     {
         if (structWithStringArrayArray.size() != 2) {
             JOYNR_LOG_TRACE(logger(), "checkStructWithStringArrayArray: size != 2");
@@ -404,9 +407,10 @@ public:
         return true;
     }
 
-    static bool checkStructWithStringArrayArray(const std::vector<
-            joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray*>&
-                                                        structWithStringArrayArray)
+    static bool checkStructWithStringArrayArray(
+            const std::vector<
+                    joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray*>&
+                    structWithStringArrayArray)
     {
         if (structWithStringArrayArray.size() != 2) {
             JOYNR_LOG_TRACE(logger(), "checkStructWithStringArrayArray: size != 2");

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
+#include <chrono>
 #include <limits>
 #include <memory>
-#include <chrono>
 #include <sstream>
 
 #include "tests/utils/Gtest.h"
@@ -58,8 +58,8 @@
 #include "joynr/types/TestTypes/TStructExtended.h"
 #include "joynr/types/Version.h"
 
-#include "tests/PrettyPrint.h"
 #include "tests/JoynrTest.h"
+#include "tests/PrettyPrint.h"
 
 using namespace joynr;
 
@@ -123,14 +123,10 @@ TEST_F(JsonSerializerTest, serialize_deserialize_byte_array)
 
     std::stringstream jsonStringStream;
     jsonStringStream << R"({"_typeName":"joynr.Request",)"
-                     <<
-            R"("methodName":"serialize_deserialize_byte_array",)"
-                     <<
-            R"("paramDatatypes":["List"],)"
-                     <<
-            R"("params":[[1,2,3,255,254,253]],)"
-                     <<
-            R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
+                     << R"("methodName":"serialize_deserialize_byte_array",)"
+                     << R"("paramDatatypes":["List"],)"
+                     << R"("params":[[1,2,3,255,254,253]],)"
+                     << R"("requestReplyId":")" << request.getRequestReplyId() << R"("})";
     std::string expectedRequestJson = jsonStringStream.str();
 
     JOYNR_LOG_DEBUG(logger(), "expected: {}", expectedRequestJson);
@@ -352,13 +348,12 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStruct)
     tStruct.setTInt64(64);
     tStruct.setTString("myTestString");
 
-    std::string expectedTStruct(
-            R"({)"
-            R"("_typeName":"joynr.types.TestTypes.TStruct",)"
-            R"("tDouble":0.123456789,)"
-            R"("tInt64":64,)"
-            R"("tString":"myTestString")"
-            R"(})");
+    std::string expectedTStruct(R"({)"
+                                R"("_typeName":"joynr.types.TestTypes.TStruct",)"
+                                R"("tDouble":0.123456789,)"
+                                R"("tInt64":64,)"
+                                R"("tString":"myTestString")"
+                                R"(})");
 
     std::string serializedContent = joynr::serializer::serializeToJson(tStruct);
     JOYNR_LOG_DEBUG(logger(), serializedContent);
@@ -380,15 +375,14 @@ TEST_F(JsonSerializerTest, serialize_deserialize_TStructExtended)
     tStructExt.setTEnum(types::TestTypes::TEnum::TLITERALA);
     tStructExt.setTInt32(32);
 
-    std::string expectedTStructExt(
-            R"({)"
-            R"("_typeName":"joynr.types.TestTypes.TStructExtended",)"
-            R"("tDouble":0.123456789,)"
-            R"("tInt64":64,)"
-            R"("tString":"myTestString",)"
-            R"("tEnum":"TLITERALA",)"
-            R"("tInt32":32)"
-            R"(})");
+    std::string expectedTStructExt(R"({)"
+                                   R"("_typeName":"joynr.types.TestTypes.TStructExtended",)"
+                                   R"("tDouble":0.123456789,)"
+                                   R"("tInt64":64,)"
+                                   R"("tString":"myTestString",)"
+                                   R"("tEnum":"TLITERALA",)"
+                                   R"("tInt32":32)"
+                                   R"(})");
 
     std::string serializedTStructExt = joynr::serializer::serializeToJson(tStructExt);
     JOYNR_LOG_DEBUG(logger(), serializedTStructExt);
@@ -572,45 +566,44 @@ TEST_F(JsonSerializerTest, serialize_deserialize_trip)
                                                          0,
                                                          3317));
 
-    std::string expected(
-            R"({"_typeName":"joynr.types.Localisation.Trip",)"
-            R"("locations":[{"_typeName":"joynr.types.Localisation.GpsLocation",)"
-            R"("longitude":1.1,)"
-            R"("latitude":2.2,)"
-            R"("altitude":3.3,)"
-            R"("gpsFix":"MODE3D",)"
-            R"("heading":0.0,)"
-            R"("quality":0.0,)"
-            R"("elevation":0.0,)"
-            R"("bearing":0.0,)"
-            R"("gpsTime":0,)"
-            R"("deviceTime":0,)"
-            R"("time":17},)"
-            R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
-            R"("longitude":4.4,)"
-            R"("latitude":5.5,)"
-            R"("altitude":6.6,)"
-            R"("gpsFix":"MODE3D",)"
-            R"("heading":0.0,)"
-            R"("quality":0.0,)"
-            R"("elevation":0.0,)"
-            R"("bearing":0.0,)"
-            R"("gpsTime":0,)"
-            R"("deviceTime":0,)"
-            R"("time":317},)"
-            R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
-            R"("longitude":7.7,)"
-            R"("latitude":8.8,)"
-            R"("altitude":9.9,)"
-            R"("gpsFix":"MODE3D",)"
-            R"("heading":0.0,)"
-            R"("quality":0.0,)"
-            R"("elevation":0.0,)"
-            R"("bearing":0.0,)"
-            R"("gpsTime":0,)"
-            R"("deviceTime":0,)"
-            R"("time":3317}],)"
-            R"("tripTitle":"trip1_name"})");
+    std::string expected(R"({"_typeName":"joynr.types.Localisation.Trip",)"
+                         R"("locations":[{"_typeName":"joynr.types.Localisation.GpsLocation",)"
+                         R"("longitude":1.1,)"
+                         R"("latitude":2.2,)"
+                         R"("altitude":3.3,)"
+                         R"("gpsFix":"MODE3D",)"
+                         R"("heading":0.0,)"
+                         R"("quality":0.0,)"
+                         R"("elevation":0.0,)"
+                         R"("bearing":0.0,)"
+                         R"("gpsTime":0,)"
+                         R"("deviceTime":0,)"
+                         R"("time":17},)"
+                         R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
+                         R"("longitude":4.4,)"
+                         R"("latitude":5.5,)"
+                         R"("altitude":6.6,)"
+                         R"("gpsFix":"MODE3D",)"
+                         R"("heading":0.0,)"
+                         R"("quality":0.0,)"
+                         R"("elevation":0.0,)"
+                         R"("bearing":0.0,)"
+                         R"("gpsTime":0,)"
+                         R"("deviceTime":0,)"
+                         R"("time":317},)"
+                         R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
+                         R"("longitude":7.7,)"
+                         R"("latitude":8.8,)"
+                         R"("altitude":9.9,)"
+                         R"("gpsFix":"MODE3D",)"
+                         R"("heading":0.0,)"
+                         R"("quality":0.0,)"
+                         R"("elevation":0.0,)"
+                         R"("bearing":0.0,)"
+                         R"("gpsTime":0,)"
+                         R"("deviceTime":0,)"
+                         R"("time":3317}],)"
+                         R"("tripTitle":"trip1_name"})");
 
     // Expected literal is:
     types::Localisation::Trip trip1(locations, "trip1_name");
@@ -817,19 +810,18 @@ TEST_F(JsonSerializerTest, serialize_ProviderQos)
 TEST_F(JsonSerializerTest, deserialize_GPSLocation)
 {
 
-    std::string jsonGPS(
-            R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
-            R"("longitude": 1.1,)"
-            R"("latitude": 2.2,)"
-            R"("altitude": 3.3,)"
-            R"("gpsFix": "MODE3D",)"
-            R"("heading": 0.0,)"
-            R"("quality": 0.0,)"
-            R"("elevation": 0.0,)"
-            R"("bearing": 0.0,)"
-            R"("gpsTime": 0,)"
-            R"("deviceTime": 0,)"
-            R"("time": 17})");
+    std::string jsonGPS(R"({"_typeName":"joynr.types.Localisation.GpsLocation",)"
+                        R"("longitude": 1.1,)"
+                        R"("latitude": 2.2,)"
+                        R"("altitude": 3.3,)"
+                        R"("gpsFix": "MODE3D",)"
+                        R"("heading": 0.0,)"
+                        R"("quality": 0.0,)"
+                        R"("elevation": 0.0,)"
+                        R"("bearing": 0.0,)"
+                        R"("gpsTime": 0,)"
+                        R"("deviceTime": 0,)"
+                        R"("time": 17})");
 
     joynr::types::Localisation::GpsLocation receivedGps;
     joynr::serializer::deserializeFromJson(receivedGps, jsonGPS);
@@ -853,8 +845,7 @@ TEST_F(JsonSerializerTest, serialize_OnchangeWithKeepAliveSubscription)
     EXPECT_EQ(qos, desQos);
 }
 
-struct RoutingEntry
-{
+struct RoutingEntry {
     RoutingEntry() : address(nullptr), isGloballyVisible(true)
     {
     }

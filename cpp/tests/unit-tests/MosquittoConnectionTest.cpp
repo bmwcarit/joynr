@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,13 +18,13 @@
  */
 #include <chrono>
 #include <cmath>
-#include <ctime>
 #include <cstdint>
+#include <ctime>
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/ImmutableMessage.h"
@@ -43,15 +43,17 @@ using namespace joynr;
 class MosquittoConnectionTest : public ::testing::Test
 {
 public:
-    MosquittoConnectionTest() :
-        _settings("test-resources/MqttJoynrClusterControllerRuntimeTest.settings"),
-        _messagingSettings(_settings),
-        _ccSettings(_settings),
-        _brokerUrl(_messagingSettings.getBrokerUrl()),
-        _mqttKeepAliveTimeSeconds(_messagingSettings.getMqttKeepAliveTimeSeconds()),
-        _mqttReconnectDelayTimeSeconds(_messagingSettings.getMqttReconnectDelayTimeSeconds()),
-        _mqttReconnectMaxDelayTimeSeconds(_messagingSettings.getMqttReconnectMaxDelayTimeSeconds()),
-        _isMqttExponentialBackoffEnabled(_messagingSettings.getMqttExponentialBackoffEnabled())
+    MosquittoConnectionTest()
+            : _settings("test-resources/MqttJoynrClusterControllerRuntimeTest.settings"),
+              _messagingSettings(_settings),
+              _ccSettings(_settings),
+              _brokerUrl(_messagingSettings.getBrokerUrl()),
+              _mqttKeepAliveTimeSeconds(_messagingSettings.getMqttKeepAliveTimeSeconds()),
+              _mqttReconnectDelayTimeSeconds(_messagingSettings.getMqttReconnectDelayTimeSeconds()),
+              _mqttReconnectMaxDelayTimeSeconds(
+                      _messagingSettings.getMqttReconnectMaxDelayTimeSeconds()),
+              _isMqttExponentialBackoffEnabled(
+                      _messagingSettings.getMqttExponentialBackoffEnabled())
     {
     }
 
@@ -59,8 +61,8 @@ public:
 
 protected:
     std::shared_ptr<ImmutableMessage> createMessage(const TimePoint& expiryDate,
-            const std::string& recipient,
-            const std::string& payload = "")
+                                                    const std::string& recipient,
+                                                    const std::string& payload = "")
     {
         MutableMessage mutableMsg;
         mutableMsg.setExpiryDate(expiryDate);
@@ -80,27 +82,27 @@ protected:
             std::shared_ptr<joynr::Semaphore> readyToSendSemaphore,
             const std::string clientId,
             const std::string channelId,
-            const std::string gbid
-            )
+            const std::string gbid)
     {
-        auto mosquittoConnection = std::make_shared<MosquittoConnection>(
-                _ccSettings,
-                _brokerUrl,
-                _mqttKeepAliveTimeSeconds,
-                _mqttReconnectDelayTimeSeconds,
-                _mqttReconnectMaxDelayTimeSeconds,
-                _isMqttExponentialBackoffEnabled,
-                clientId,
-                gbid);
+        auto mosquittoConnection =
+                std::make_shared<MosquittoConnection>(_ccSettings,
+                                                      _brokerUrl,
+                                                      _mqttKeepAliveTimeSeconds,
+                                                      _mqttReconnectDelayTimeSeconds,
+                                                      _mqttReconnectMaxDelayTimeSeconds,
+                                                      _isMqttExponentialBackoffEnabled,
+                                                      clientId,
+                                                      gbid);
 
         // register connection to channelId
         mosquittoConnection->registerChannelId(channelId);
         // connection is established and ready to send messages
-        mosquittoConnection->registerReadyToSendChangedCallback([readyToSendSemaphore](bool readyToSend) {
-                if (readyToSend) {
-                    readyToSendSemaphore->notify();
-                }
-        });
+        mosquittoConnection->registerReadyToSendChangedCallback(
+                [readyToSendSemaphore](bool readyToSend) {
+                    if (readyToSend) {
+                        readyToSendSemaphore->notify();
+                    }
+                });
         return mosquittoConnection;
     }
 
@@ -131,14 +133,11 @@ TEST_F(MosquittoConnectionTest, generalTest)
     // both connections connect to the same broker
     auto readyToSendSemaphore1 = std::make_shared<joynr::Semaphore>(0);
     std::string gbid1("gbid1");
-    auto mosquittoConnection1 = createMosquittoConnection(
-                readyToSendSemaphore1,
-                clientId1,
-                channelId1,
-                gbid1);
+    auto mosquittoConnection1 =
+            createMosquittoConnection(readyToSendSemaphore1, clientId1, channelId1, gbid1);
     mosquittoConnection1->registerReceiveCallback([](smrf::ByteVector&& msg) {
-            std::ignore = msg;
-            ADD_FAILURE() << "We do not expect to receive msgs on connection1";
+        std::ignore = msg;
+        ADD_FAILURE() << "We do not expect to receive msgs on connection1";
     });
 
     // after connection is established, subscription to channel based topic
@@ -149,22 +148,20 @@ TEST_F(MosquittoConnectionTest, generalTest)
 
     auto readyToSendSemaphore2 = std::make_shared<joynr::Semaphore>(0);
     std::string gbid2("gbid2");
-    auto mosquittoConnection2 = createMosquittoConnection(
-                readyToSendSemaphore2,
-                clientId2,
-                channelId2,
-                gbid2);
+    auto mosquittoConnection2 =
+            createMosquittoConnection(readyToSendSemaphore2, clientId2, channelId2, gbid2);
 
     auto msgReceived2 = std::make_shared<joynr::Semaphore>(0);
     const std::string recipient2 = "recipient2";
     const std::string payload2 = "payload2";
 
-    mosquittoConnection2->registerReceiveCallback([recipient2, payload2, msgReceived2](smrf::ByteVector&& msg) {
-            auto immutableMessage = std::make_shared<ImmutableMessage>(msg);
-            EXPECT_EQ(immutableMessage->getRecipient(), recipient2);
-            EXPECT_EQ(MosquittoConnectionTest::payloadAsString(immutableMessage), payload2);
-            msgReceived2->notify();
-    });
+    mosquittoConnection2->registerReceiveCallback(
+            [recipient2, payload2, msgReceived2](smrf::ByteVector&& msg) {
+                auto immutableMessage = std::make_shared<ImmutableMessage>(msg);
+                EXPECT_EQ(immutableMessage->getRecipient(), recipient2);
+                EXPECT_EQ(MosquittoConnectionTest::payloadAsString(immutableMessage), payload2);
+                msgReceived2->notify();
+            });
 
     mosquittoConnection2->start();
     EXPECT_TRUE(readyToSendSemaphore2->waitFor(std::chrono::seconds(10)));
@@ -216,17 +213,13 @@ TEST_F(MosquittoConnectionTest, deliverMessageWithinItsExpiryIntervalAfterReconn
     // connection1
     auto readyToSendSemaphore1 = std::make_shared<joynr::Semaphore>(0);
     std::string gbid3("gbid3");
-    auto mosquittoConnection1 = createMosquittoConnection(
-                readyToSendSemaphore1,
-                clientId3,
-                channelId3,
-                gbid3);
+    auto mosquittoConnection1 =
+            createMosquittoConnection(readyToSendSemaphore1, clientId3, channelId3, gbid3);
 
     // we do not plan to receive msgs on connection1, but we have to
     // set registerReceiveCallback.
-    mosquittoConnection1->registerReceiveCallback([](smrf::ByteVector&& msg) {
-            std::ignore = msg;
-    });
+    mosquittoConnection1->registerReceiveCallback(
+            [](smrf::ByteVector&& msg) { std::ignore = msg; });
 
     mosquittoConnection1->start();
     EXPECT_TRUE(readyToSendSemaphore1->waitFor(std::chrono::seconds(5)));
@@ -235,22 +228,21 @@ TEST_F(MosquittoConnectionTest, deliverMessageWithinItsExpiryIntervalAfterReconn
     // connection2
     auto readyToSendSemaphore2 = std::make_shared<joynr::Semaphore>(0);
     std::string gbid4("gbid4");
-    auto mosquittoConnection2 = createMosquittoConnection(
-                readyToSendSemaphore2,
-                clientId4,
-                channelId4,
-                gbid4);
+    auto mosquittoConnection2 =
+            createMosquittoConnection(readyToSendSemaphore2, clientId4, channelId4, gbid4);
 
     const std::string dummyRecipient = "dummyRecipient";
     const std::string dummyPayload = "dummyPayload";
     // check the message has been received on mosquittoConnection2
     auto msgWithExpiryDateReceived = std::make_shared<joynr::Semaphore>(0);
-    mosquittoConnection2->registerReceiveCallback([dummyRecipient, dummyPayload, msgWithExpiryDateReceived](smrf::ByteVector&& msg) {
-            auto receivedImmutableMessage = std::make_shared<ImmutableMessage>(msg);
-            EXPECT_EQ(receivedImmutableMessage->getRecipient(), dummyRecipient);
-            EXPECT_EQ(MosquittoConnectionTest::payloadAsString(receivedImmutableMessage), dummyPayload);
-            msgWithExpiryDateReceived->notify();
-    });
+    mosquittoConnection2->registerReceiveCallback(
+            [dummyRecipient, dummyPayload, msgWithExpiryDateReceived](smrf::ByteVector&& msg) {
+                auto receivedImmutableMessage = std::make_shared<ImmutableMessage>(msg);
+                EXPECT_EQ(receivedImmutableMessage->getRecipient(), dummyRecipient);
+                EXPECT_EQ(MosquittoConnectionTest::payloadAsString(receivedImmutableMessage),
+                          dummyPayload);
+                msgWithExpiryDateReceived->notify();
+            });
 
     mosquittoConnection2->start();
     EXPECT_TRUE(readyToSendSemaphore2->waitFor(std::chrono::seconds(10)));
@@ -306,18 +298,14 @@ TEST_F(MosquittoConnectionTest, noMessageDeliveryWhenExceedingItsExpiryIntervalA
     // connection1
     auto readyToSendSemaphore1 = std::make_shared<joynr::Semaphore>(0);
     std::string gbid5("gbid5");
-    auto mosquittoConnection1 = createMosquittoConnection(
-                readyToSendSemaphore1,
-                clientId5,
-                channelId5,
-                gbid5
-                );
+    auto mosquittoConnection1 =
+            createMosquittoConnection(readyToSendSemaphore1, clientId5, channelId5, gbid5);
 
     // we do not plan to receive msgs on connection1, but we have to
     // set registerReceiveCallback.
     mosquittoConnection1->registerReceiveCallback([](smrf::ByteVector&& msg) {
-            std::ignore = msg;
-            ADD_FAILURE() << "We do not expect to receive msgs on connection1";
+        std::ignore = msg;
+        ADD_FAILURE() << "We do not expect to receive msgs on connection1";
     });
 
     mosquittoConnection1->start();
@@ -327,21 +315,18 @@ TEST_F(MosquittoConnectionTest, noMessageDeliveryWhenExceedingItsExpiryIntervalA
     // connection2
     auto readyToSendSemaphore2 = std::make_shared<joynr::Semaphore>(0);
     std::string gbid6("gbid6");
-    auto mosquittoConnection2 = createMosquittoConnection(
-                readyToSendSemaphore2,
-                clientId6,
-                channelId6,
-                gbid6
-                );
+    auto mosquittoConnection2 =
+            createMosquittoConnection(readyToSendSemaphore2, clientId6, channelId6, gbid6);
 
     const std::string anotherDummyRecipient = "anotherDummyRecipient";
     const std::string anotherDummyPayload = "anotherDummyPayload";
     // check the message has been received on mosquittoConnection2
     auto msgWithExpiryDateReceived = std::make_shared<joynr::Semaphore>(0);
-    mosquittoConnection2->registerReceiveCallback([msgWithExpiryDateReceived](smrf::ByteVector&& msg) {
-            std::ignore = msg;
-            msgWithExpiryDateReceived->notify();
-    });
+    mosquittoConnection2->registerReceiveCallback(
+            [msgWithExpiryDateReceived](smrf::ByteVector&& msg) {
+                std::ignore = msg;
+                msgWithExpiryDateReceived->notify();
+            });
 
     mosquittoConnection2->start();
     EXPECT_TRUE(readyToSendSemaphore2->waitFor(std::chrono::seconds(10)));
@@ -353,7 +338,8 @@ TEST_F(MosquittoConnectionTest, noMessageDeliveryWhenExceedingItsExpiryIntervalA
     const std::function<void(const exceptions::JoynrRuntimeException&)>& onFailure = nullptr;
     const auto now = TimePoint::now();
     const std::int64_t msgDurationMs = 3000; // 3sec
-    auto immutableMessage = createMessage(now + msgDurationMs, anotherDummyRecipient, anotherDummyPayload);
+    auto immutableMessage =
+            createMessage(now + msgDurationMs, anotherDummyRecipient, anotherDummyPayload);
 
     std::chrono::milliseconds msgTtlMs = immutableMessage->getExpiryDate().relativeFromNow();
     std::uint32_t msgTtlSec = static_cast<std::uint32_t>(std::ceil(msgTtlMs.count() / 1000.0));

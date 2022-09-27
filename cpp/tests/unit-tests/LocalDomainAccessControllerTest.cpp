@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,15 +23,15 @@
 #include <string>
 #include <vector>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
+#include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
-#include "joynr/PrivateCopyAssign.h"
 
 #include "tests/JoynrTest.h"
 
@@ -88,8 +88,7 @@ private:
 class LocalDomainAccessControllerTest : public testing::TestWithParam<bool>
 {
 public:
-    LocalDomainAccessControllerTest()
-            : localDomainAccessStorePtr(nullptr)
+    LocalDomainAccessControllerTest() : localDomainAccessStorePtr(nullptr)
     {
     }
 
@@ -111,8 +110,8 @@ public:
             localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
         }
         localDomainAccessStorePtr = localDomainAccessStore.get();
-        localDomainAccessController = std::make_unique<LocalDomainAccessController>(
-                std::move(localDomainAccessStore));
+        localDomainAccessController =
+                std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
 
         userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
         masterAce = MasterAccessControlEntry(
@@ -126,7 +125,7 @@ public:
                 TEST_OPERATION1, // operation
                 Permission::NO,  // default comsumer permission
                 PERMISSIONS      // possible comsumer permissions
-                );
+        );
         ownerAce = OwnerAccessControlEntry(TEST_USER,       // uid
                                            TEST_DOMAIN1,    // domain
                                            TEST_INTERFACE1, // interface name
@@ -134,7 +133,7 @@ public:
                                            TrustLevel::LOW, // required ACE change trust level
                                            TEST_OPERATION1, // operation
                                            Permission::YES  // consumer permission
-                                           );
+        );
         masterRce = MasterRegistrationControlEntry(
                 TEST_USER,       // uid
                 TEST_DOMAIN1,    // domain
@@ -145,14 +144,14 @@ public:
                 TRUST_LEVELS,    // possible required control entry change trust levels
                 Permission::NO,  // default provider permission
                 PERMISSIONS      // possible provider permissions
-                );
+        );
         ownerRce = OwnerRegistrationControlEntry(TEST_USER,       // uid
                                                  TEST_DOMAIN1,    // domain
                                                  TEST_INTERFACE1, // interface name
                                                  TrustLevel::LOW, // required trust level
                                                  TrustLevel::LOW, // required ACE change trust level
                                                  Permission::YES  // provider permission
-                                                 );
+        );
     }
 
     static const std::string TEST_USER;
@@ -185,13 +184,9 @@ const std::string LocalDomainAccessControllerTest::TEST_OPERATION1("operation1")
 const std::vector<std::string> LocalDomainAccessControllerTest::DOMAINS = {
         LocalDomainAccessControllerTest::TEST_DOMAIN1};
 const std::vector<Permission::Enum> LocalDomainAccessControllerTest::PERMISSIONS = {
-        Permission::NO,
-        Permission::ASK,
-        Permission::YES};
+        Permission::NO, Permission::ASK, Permission::YES};
 const std::vector<TrustLevel::Enum> LocalDomainAccessControllerTest::TRUST_LEVELS = {
-        TrustLevel::LOW,
-        TrustLevel::MID,
-        TrustLevel::HIGH};
+        TrustLevel::LOW, TrustLevel::MID, TrustLevel::HIGH};
 
 //----- Tests ------------------------------------------------------------------
 
@@ -323,8 +318,8 @@ TEST(LocalDomainAccessControllerPersistedTest, persistedAcesAreUsed)
     joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
     auto localDomainAccessStore =
             std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
-    auto localDomainAccessController = std::make_unique<LocalDomainAccessController>(
-            std::move(localDomainAccessStore));
+    auto localDomainAccessController =
+            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
 
     EXPECT_EQ(Permission::NO,
               localDomainAccessController->getConsumerPermission(
@@ -424,8 +419,8 @@ TEST(LocalDomainAccessControllerPersistedTest, persistedRcesAreUsed)
     joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
     auto localDomainAccessStore =
             std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
-    auto localDomainAccessController = std::make_unique<LocalDomainAccessController>(
-            std::move(localDomainAccessStore));
+    auto localDomainAccessController =
+            std::make_unique<LocalDomainAccessController>(std::move(localDomainAccessStore));
 
     EXPECT_EQ(Permission::NO,
               localDomainAccessController->getProviderPermission(
