@@ -37,7 +37,7 @@ class WebSocketNode extends ws {
     public static WSN_CLOSING = ws.CLOSING;
     public static WSN_CLOSED = ws.CLOSED;
 
-    public constructor(remoteUrl: string, keychain: KeyChain, useUnencryptedTls: boolean) {
+    public constructor(remoteUrl: string, keychain: KeyChain) {
         const clientOptions: ws.ClientOptions = {};
         if (keychain) {
             clientOptions.cert = keychain.tlsCert;
@@ -45,10 +45,6 @@ class WebSocketNode extends ws {
             clientOptions.ca = keychain.tlsCa;
             clientOptions.rejectUnauthorized = true;
             clientOptions.checkServerIdentity = keychain.checkServerIdentity;
-        }
-
-        if (useUnencryptedTls) {
-            clientOptions.ciphers = "eNULL:@SECLEVEL=0";
         }
 
         super(remoteUrl, clientOptions);

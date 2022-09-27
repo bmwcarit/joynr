@@ -1,4 +1,3 @@
 [websocket]
 cluster-controller-messaging-url=ws://localhost:4242
 reconnect-sleep-time-ms=100
-tls-encryption=true

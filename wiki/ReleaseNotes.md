@@ -38,6 +38,8 @@ the versioning scheme [here](JoynrVersioning.md).
   * `WebSocketSettings::DEFAULT_TLS_ENCRYPTION`
   * `WebSocketSettings::getEncryptedTlsUsage()`
   * `WebSocketSettings::setEncryptedTlsUsage(..)`
+* **[TS]** The support for eNULL has been removed, consequently the following configuration related API has been removed in SharedWebSocketSettings:
+  * `SharedWebSocketSettings.provisioning.useUnencryptedTls`
 
 ## Other Changes
 None.
