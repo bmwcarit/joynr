@@ -42,7 +42,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +92,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
     private HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap;
     private final boolean cleanSession;
     private final JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
+    private final IHivemqMqttClientTrustManagerFactory trustManagerFactory;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -148,7 +148,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
                                    MqttClientIdProvider mqttClientIdProvider,
                                    JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
-                                   ShutdownNotifier shutdownNotifier) {
+                                   ShutdownNotifier shutdownNotifier,
+                                   IHivemqMqttClientTrustManagerFactory trustManagerFactory) {
         this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
         this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
         this.mqttGbidToConnectionTimeoutSecMap = mqttGbidToConnectionTimeoutSecMap;
@@ -159,6 +160,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
         receivingMqttClients = new HashMap<>(); // gbid to client
         this.cleanSession = cleanSession;
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
+        this.trustManagerFactory = trustManagerFactory;
         shutdownNotifier.registerForShutdown(this);
     }
 
@@ -309,9 +311,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
             logger.info("Setting up trust manager with {} / {} (password omitted)", trustStorePath, trustStoreType);
             if (trustStore != null) {
                 try {
-                    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                    trustManagerFactory.init(trustStore);
-                    sslConfig.trustManagerFactory(trustManagerFactory);
+                    sslConfig.trustManagerFactory(trustManagerFactory.getTrustManagerFactory(trustStore));
                     if (disableHostnameVerification) {
                         sslConfig.hostnameVerifier(new HostnameVerifier() {
                             public boolean verify(String hostname, SSLSession session) {

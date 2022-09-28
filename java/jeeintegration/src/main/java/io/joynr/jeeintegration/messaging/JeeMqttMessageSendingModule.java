@@ -53,6 +53,8 @@ import io.joynr.messaging.mqtt.MqttMultipleBackendPropertyProvider;
 import io.joynr.messaging.mqtt.MqttReplyToAddressFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientTrustManagerFactory;
+import io.joynr.messaging.mqtt.hivemq.client.IHivemqMqttClientTrustManagerFactory;
 import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.runtime.GlobalAddressProvider;
@@ -135,6 +137,7 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
         bind(MqttClientFactory.class).to(HivemqMqttClientFactory.class);
+        bind(IHivemqMqttClientTrustManagerFactory.class).to(HivemqMqttClientTrustManagerFactory.class);
         bind(MqttTopicPrefixProvider.class).to(DefaultMqttTopicPrefixProvider.class);
         bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
 

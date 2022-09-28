@@ -1,7 +1,7 @@
 /*-
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2022 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,15 @@
  */
 package io.joynr.messaging.mqtt.hivemq.client;
 
-import com.google.inject.AbstractModule;
-
-import io.joynr.messaging.mqtt.MqttClientFactory;
-import io.joynr.messaging.mqtt.MqttModule;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
- * Use this module if you want to use the HiveMQ MQTT Client backed implementation of MQTT communication for joynr.
+ * Allows injection of custom TrustManagerFactories
  */
-public class HivemqMqttClientModule extends AbstractModule {
-
-    @Override
-    protected void configure() {
-        install(new MqttModule());
-        bind(MqttClientFactory.class).to(HivemqMqttClientFactory.class);
-        bind(IHivemqMqttClientTrustManagerFactory.class).to(HivemqMqttClientTrustManagerFactory.class);
-    }
-
+public interface IHivemqMqttClientTrustManagerFactory {
+    public TrustManagerFactory getTrustManagerFactory(KeyStore trustStore) throws NoSuchAlgorithmException,
+                                                                           KeyStoreException;
 }
