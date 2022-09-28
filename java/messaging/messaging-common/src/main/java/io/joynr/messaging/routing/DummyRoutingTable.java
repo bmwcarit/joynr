@@ -36,15 +36,17 @@ public class DummyRoutingTable implements RoutingTable {
     }
 
     @Override
-    public void put(String participantId,
-                    Address address,
-                    boolean isGloballyVisible,
-                    long expiryDateMs,
-                    boolean isSticky) {
+    public boolean put(String participantId,
+                       Address address,
+                       boolean isGloballyVisible,
+                       long expiryDateMs,
+                       boolean isSticky) {
+        return true;
     }
 
     @Override
-    public void put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs) {
+    public boolean put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs) {
+        return true;
     }
 
     @Override

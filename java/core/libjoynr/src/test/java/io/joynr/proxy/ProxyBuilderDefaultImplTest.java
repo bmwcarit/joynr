@@ -22,12 +22,12 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -115,6 +115,11 @@ public class ProxyBuilderDefaultImplTest {
     private ProxyCreatedCallback<TestInterface> proxyCreatedCallback;
 
     public void setup(Set<String> domains) throws Exception {
+        final boolean resultOfAddNextHop = true;
+        setup(domains, resultOfAddNextHop);
+    }
+
+    public void setup(Set<String> domains, boolean resultOfAddNextHop) throws Exception {
         subject = new ProxyBuilderDefaultImpl<TestInterface>(localDiscoveryAggregator,
                                                              domains,
                                                              TestInterface.class,
@@ -128,13 +133,23 @@ public class ProxyBuilderDefaultImplTest {
         Field arbitratorField = ProxyBuilderDefaultImpl.class.getDeclaredField("arbitrator");
         arbitratorField.setAccessible(true);
         arbitratorField.set(subject, arbitrator);
-        when(proxyInvocationHandlerFactory.create(Mockito.<Set<String>> any(),
-                                                  eq(TestInterface.INTERFACE_NAME),
-                                                  Mockito.<String> any(),
-                                                  Mockito.<DiscoveryQos> any(),
-                                                  Mockito.<MessagingQos> any(),
-                                                  Mockito.<ShutdownNotifier> any(),
-                                                  Mockito.<Optional<StatelessAsyncCallback>> any())).thenReturn(proxyInvocationHandler);
+        if (resultOfAddNextHop) {
+            when(proxyInvocationHandlerFactory.create(Mockito.<Set<String>> any(),
+                                                      eq(TestInterface.INTERFACE_NAME),
+                                                      Mockito.<String> any(),
+                                                      Mockito.<DiscoveryQos> any(),
+                                                      Mockito.<MessagingQos> any(),
+                                                      Mockito.<ShutdownNotifier> any(),
+                                                      Mockito.<Optional<StatelessAsyncCallback>> any())).thenReturn(proxyInvocationHandler);
+        } else {
+            when(proxyInvocationHandlerFactory.create(Mockito.<Set<String>> any(),
+                                                      eq(TestInterface.INTERFACE_NAME),
+                                                      Mockito.<String> any(),
+                                                      Mockito.<DiscoveryQos> any(),
+                                                      Mockito.<MessagingQos> any(),
+                                                      Mockito.<ShutdownNotifier> any(),
+                                                      Mockito.<Optional<StatelessAsyncCallback>> any())).thenThrow(new JoynrRuntimeException("test: unable to addNextHop, as RoutingTable.put failed"));
+        }
     }
 
     @Test
@@ -169,6 +184,18 @@ public class ProxyBuilderDefaultImplTest {
         verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
         JoynrRuntimeException capturedException = exceptionCaptor.getValue();
         assertTrue(capturedException instanceof NoCompatibleProviderFoundException);
+    }
+
+    @Test
+    public void testOnProxyCreationErrorInvokedWithJoynrRuntimeExceptionWhenAddNextHopFails() throws Exception {
+        final String domain = "domain1";
+        final Set<String> domains = new HashSet<>(Arrays.asList(domain));
+        final boolean resultOfAddNextHop = false;
+        setup(domains, resultOfAddNextHop);
+        subject.build(proxyCreatedCallback);
+        verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
+        JoynrRuntimeException capturedException = exceptionCaptor.getValue();
+        assertTrue(capturedException instanceof JoynrRuntimeException);
     }
 
     @Test

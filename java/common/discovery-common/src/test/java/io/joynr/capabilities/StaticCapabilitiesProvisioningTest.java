@@ -21,13 +21,18 @@ package io.joynr.capabilities;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_CHANNEL_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID;
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DIRECTORIES_DOMAIN;
-import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -47,7 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
-import io.joynr.util.ObjectMapper;
 import com.google.inject.AbstractModule;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
@@ -56,6 +60,7 @@ import com.google.inject.name.Names;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.util.ObjectMapper;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
@@ -326,6 +331,8 @@ public class StaticCapabilitiesProvisioningTest {
                                     .toInstance(new String[]{ DEFAULT_GBID, "testgbid2" });
 
                 bind(ObjectMapper.class).toInstance(objectMapper);
+                doReturn(true).when(routingTable)
+                              .put(anyString(), any(Address.class), anyBoolean(), anyLong(), anyBoolean());
                 bind(RoutingTable.class).toInstance(routingTable);
                 bind(String.class).annotatedWith(Names.named(StaticCapabilitiesProvisioning.PROPERTY_PROVISIONED_CAPABILITIES_FILE))
                                   .toInstance(tmpFile.getAbsolutePath());

@@ -52,12 +52,12 @@ public abstract class AbstractGlobalMessagingSkeleton implements IMessagingSkele
         this.routingTable = routingTable;
     }
 
-    protected void registerGlobalRoutingEntry(final ImmutableMessage message, String gbid) {
+    protected boolean registerGlobalRoutingEntry(final ImmutableMessage message, String gbid) {
         final Message.MessageType messageType = message.getType();
         if (!MESSAGE_TYPE_REQUESTS.contains(messageType)) {
             logger.trace("Message type is: {}, no global routing entry added to the routing table for it ",
                          messageType);
-            return;
+            return false;
         }
 
         final String replyTo = message.getReplyTo();
@@ -74,16 +74,18 @@ public abstract class AbstractGlobalMessagingSkeleton implements IMessagingSkele
             // As the message was received from global, the sender is globally visible by definition.
             final boolean isGloballyVisible = true;
             final long expiryDateMs = message.getTtlMs();
-            routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs);
+            return routingTable.put(message.getSender(), address, isGloballyVisible, expiryDateMs);
         }
+        logger.error("Message ({}) has no replyTo. Reply might not be routable.", message.getTrackingInfo());
+        return false;
     }
 
-    protected void removeGlobalRoutingEntry(final ImmutableMessage message) {
+    protected void removeGlobalRoutingEntry(final ImmutableMessage message, boolean routingEntryRegistered) {
         if (message.isMessageProcessed()) {
             return;
         }
         message.messageProcessed();
-        if (MESSAGE_TYPE_REQUESTS.contains(message.getType())) {
+        if (routingEntryRegistered) {
             routingTable.remove(message.getSender());
         }
     }

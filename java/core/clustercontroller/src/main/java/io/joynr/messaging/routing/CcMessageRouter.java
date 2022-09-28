@@ -228,7 +228,9 @@ public class CcMessageRouter
     @Override
     public void addNextHop(String participantId, Address address, boolean isGloballyVisible) {
         final long expiryDateMs = Long.MAX_VALUE;
-        routingTable.put(participantId, address, isGloballyVisible, expiryDateMs);
+        if (!routingTable.put(participantId, address, isGloballyVisible, expiryDateMs)) {
+            throw (new JoynrRuntimeException("unable to addNextHop, as RoutingTable.put failed"));
+        }
     }
 
     @Override

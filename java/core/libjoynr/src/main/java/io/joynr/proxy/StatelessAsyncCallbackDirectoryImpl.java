@@ -88,6 +88,7 @@ public class StatelessAsyncCallbackDirectoryImpl implements StatelessAsyncCallba
                     statelessAsyncParticipantId,
                     libjoynrMessagingAddress,
                     isGloballyVisible);
+        // It will throw in case of wrong joynr configuration
         messageRouter.addNextHop(statelessAsyncParticipantId, libjoynrMessagingAddress, isGloballyVisible);
     }
 

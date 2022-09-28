@@ -284,6 +284,8 @@ void LibJoynrMessageRouter::addNextHopToParent(
     std::function<void(const exceptions::JoynrException&)> onErrorWrapper =
             [onError](const exceptions::JoynrException& error) {
         if (onError) {
+            JOYNR_LOG_TRACE(
+                    logger(), "parentRouter->addNextHopAsync failed: {}", error.getMessage());
             onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
         } else {
             JOYNR_LOG_WARN(logger(),
@@ -328,7 +330,13 @@ void LibJoynrMessageRouter::addNextHopToParent(
     } else if (onError) {
         std::string errorMsg = "Unsupported incoming address - ";
         errorMsg += _incomingAddress ? _incomingAddress->toString() : " NULL pointer";
+        JOYNR_LOG_ERROR(logger(), errorMsg);
         onError(joynr::exceptions::ProviderRuntimeException(errorMsg));
+    } else {
+        JOYNR_LOG_ERROR(logger(),
+                        "Unable to report error from addNextHopToParent, since onError function is "
+                        "empty. Error: Unsupported incoming address - {}",
+                        _incomingAddress ? _incomingAddress->toString() : " NULL pointer");
     }
 }
 
@@ -463,13 +471,16 @@ void LibJoynrMessageRouter::removeNextHop(
             onErrorWrapper = [onError = std::move(onError)](
                     const exceptions::JoynrRuntimeException& error)
     {
-        JOYNR_LOG_ERROR(logger(),
-                        "Unable to report error (received by calling "
-                        "parentRouter->removeNextHopAsync), since onError function is "
-                        "empty. Error message: {}",
-                        error.getMessage());
         if (onError) {
+            JOYNR_LOG_TRACE(
+                    logger(), "parentRouter->removeNextHopAsync failed: {}", error.getMessage());
             onError(exceptions::ProviderRuntimeException(error.getMessage()));
+        } else {
+            JOYNR_LOG_WARN(logger(),
+                           "Unable to report error (received by calling "
+                           "parentRouter->removeNextHopAsync), since onError function is "
+                           "empty. Error message: {}",
+                           error.getMessage());
         }
     };
 

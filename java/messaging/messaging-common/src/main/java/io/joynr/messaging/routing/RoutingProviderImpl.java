@@ -115,6 +115,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
 
     @Override
     public Promise<DeferredVoid> addNextHop(String participantId, MqttAddress address, Boolean isGloballyVisible) {
+        // If it throws, the error will be forwarded to the calling proxy
         messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }
@@ -129,6 +130,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
 
     @Override
     public Promise<DeferredVoid> addNextHop(String participantId, WebSocketAddress address, Boolean isGloballyVisible) {
+        // If it throws, the error will be forwarded to the calling proxy
         messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }
@@ -146,6 +148,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     public Promise<DeferredVoid> addNextHop(String participantId,
                                             BinderAddress binderAddress,
                                             Boolean isGloballyVisible) {
+        // If it throws, the error will be forwarded to the calling proxy
         messageRouter.addNextHop(participantId, binderAddress, isGloballyVisible);
         return resolvedDeferred();
     }
@@ -154,6 +157,7 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     public Promise<DeferredVoid> addNextHop(String participantId,
                                             WebSocketClientAddress address,
                                             Boolean isGloballyVisible) {
+        // If it throws, the error will be forwarded to the calling proxy
         messageRouter.addNextHop(participantId, address, isGloballyVisible);
         return resolvedDeferred();
     }

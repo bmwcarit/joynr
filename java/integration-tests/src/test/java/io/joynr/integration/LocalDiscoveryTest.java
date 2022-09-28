@@ -19,6 +19,7 @@
 package io.joynr.integration;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -224,6 +225,7 @@ public class LocalDiscoveryTest {
         MockitoAnnotations.openMocks(this);
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         final long defaultExpiryTime = 3628800000l;
+        doReturn(true).when(routingTableMock).put(anyString(), any(Address.class), anyBoolean(), anyLong());
         final LocalCapabilitiesDirectoryImpl localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioningMock,
                                                                                                              globalAddressProviderMock,
                                                                                                              localDiscoveryEntryStoreMock,

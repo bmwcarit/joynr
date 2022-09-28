@@ -58,8 +58,9 @@ public interface RoutingTable {
      * @param isGloballyVisible States whether the endpoint is globally visible or not
      * @param expiryDateMs Expiry date of the routing entry in milliseconds
      * @param isSticky If set to true, the routing entry never expires and cannot be replaced
+     * @return true if succeeded, false otherwise
      */
-    void put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky);
+    boolean put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs, boolean isSticky);
 
     /**
      * Overload of put method with isSticky set to false.
@@ -68,8 +69,9 @@ public interface RoutingTable {
      * @param address Address which shall be associated with the participant id
      * @param isGloballyVisible States whether the endpoint is globally visible or not
      * @param expiryDateMs Expiry date of the routing entry in milliseconds
+     * @return true if succeeded, false otherwise
      */
-    void put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs);
+    boolean put(String participantId, Address address, boolean isGloballyVisible, long expiryDateMs);
 
     boolean containsKey(String participantId);
 

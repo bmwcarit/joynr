@@ -277,6 +277,10 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                                                                                                    Optional.ofNullable(statelessAsyncCallback));
         proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
         proxyInvocationHandler.registerProxy(proxy);
+        // It is called by GuidedProxyBuilder.buildProxy. If there will be an exception because of a failing addNextHop
+        // This shall be forwarded to the user
+        // We should clean up unused routing entries / reference counts if createConnector throws but
+        // it is very unlikely to happen and in the worst case there are just some unused routing entries.
         proxyInvocationHandler.createConnector(result);
         logger.trace("Proxy participantId {} created: interface: {} domains: {} : {}",
                      proxyParticipantId,
@@ -316,12 +320,24 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         arbitrator.setArbitrationListener(new ArbitrationCallback() {
             @Override
             public void onSuccess(ArbitrationResult arbitrationResult) {
-                logger.debug("DISCOVERY proxy participantId {} {} created for: {}",
-                             proxyParticipantId,
-                             interfaceVersion,
-                             arbitrationResult.getDiscoveryEntries());
-                proxyInvocationHandler.createConnector(arbitrationResult);
-                callback.onProxyCreationFinished(proxy);
+                try {
+                    proxyInvocationHandler.createConnector(arbitrationResult);
+                    logger.debug("DISCOVERY proxy participantId {} {} created for: {}",
+                                 proxyParticipantId,
+                                 interfaceVersion,
+                                 arbitrationResult.getDiscoveryEntries());
+                    callback.onProxyCreationFinished(proxy);
+                } catch (Exception error) {
+                    // We should clean up unused routing entries / reference counts but
+                    // it is very unlikely to happen and in the worst case there are just some unused routing entries.
+                    logger.error("DISCOVERY Error creating proxy: interface: {} domains: {}, {}, Error:",
+                                 interfaceName,
+                                 domains,
+                                 interfaceVersion,
+                                 error);
+                    callback.onProxyCreationError(new JoynrRuntimeException("DISCOVERY Error creating proxy: interface: "
+                            + interfaceName + "domains: " + domains + ", " + interfaceVersion + ", Error: "));
+                }
             }
 
             @Override

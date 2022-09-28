@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -93,6 +92,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
     public void testTouchOfProvidersWithGlobalScope() throws Exception {
         JoynrRuntime runtime;
 
+        String domain = TEST_DOMAIN + System.currentTimeMillis();
         DiscoveryQos discoveryQos = new DiscoveryQos();
         discoveryQos.setArbitrationStrategy(ArbitrationStrategy.HighestPriority);
         discoveryQos.setDiscoveryTimeoutMs(DISCOVERY_TIMEOUT);
@@ -101,7 +101,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         Injector injector = createInjector();
         runtime = injector.getInstance(JoynrRuntime.class);
         try {
-            registerProvider(runtime, TEST_DOMAIN);
+            registerProvider(runtime, domain);
         } catch (Exception e) {
             runtime.shutdown(true);
             fail("Provider registration failed: " + e.toString());
@@ -132,7 +132,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
 
         // Perform first lookup
         long timeBeforeFirstLookup = System.currentTimeMillis();
-        String[] providerDomains = new String[]{ TEST_DOMAIN };
+        String[] providerDomains = new String[]{ domain };
         String interfaceName = test.INTERFACE_NAME;
         String[] lookupGbids = injector.getInstance(Key.get(String[].class,
                                                             Names.named(MessagingPropertyKeys.GBID_ARRAY)));
@@ -252,24 +252,28 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
         final Future<Void> futureSecondProxy = new Future<Void>();
 
         // Check if proxy is built before removeStale is called
-        runtimeSecond.getProxyBuilder(providerDomain, testProxy.class)
-                     .setDiscoveryQos(discoveryQos)
-                     .build(new ProxyCreatedCallback<testProxy>() {
-                         @Override
-                         public void onProxyCreationFinished(testProxy result) {
-                             futureFirstProxy.onSuccess(null);
-                         }
+        Properties additionalProperties = new Properties();
+        additionalProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "persistence_file");
+        Injector injector = createInjector(0, additionalProperties);
+        JoynrRuntime proxyRuntime = injector.getInstance(JoynrRuntime.class);
+        proxyRuntime.getProxyBuilder(providerDomain, testProxy.class)
+                    .setDiscoveryQos(discoveryQos)
+                    .build(new ProxyCreatedCallback<testProxy>() {
+                        @Override
+                        public void onProxyCreationFinished(testProxy result) {
+                            futureFirstProxy.onSuccess(null);
+                        }
 
-                         @Override
-                         public void onProxyCreationError(JoynrRuntimeException error) {
-                             futureFirstProxy.onFailure(error);
-                         }
-                     });
+                        @Override
+                        public void onProxyCreationError(JoynrRuntimeException error) {
+                            futureFirstProxy.onFailure(error);
+                        }
+                    });
         try {
             futureFirstProxy.get();
         } catch (Exception e) {
-            runtimeSecond.shutdown(true);
-            fail("runtimeSecond.getProxyBuilder().build() should have been successful!");
+            proxyRuntime.shutdown(true);
+            fail("proxyRuntime.getProxyBuilder().build() should have been successful!");
         }
 
         Thread.sleep(1000);
@@ -309,14 +313,18 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
     }
 
     private Injector createInjector() {
-        return createInjector(0);
+        return createInjector(0, null);
     }
 
-    private Injector createInjector(long removeStaleDelayMs) {
+    private Injector createInjector(long removeStaleDelayMs, Properties additionalProperties) {
         Properties properties = new Properties();
         properties.put(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS,
                        String.valueOf(FRESHNESS_UPDATE_INTERVAL_MS));
         properties.put(PROPERTY_CC_REMOVE_STALE_DELAY_MS, String.valueOf(removeStaleDelayMs));
+
+        if (additionalProperties != null) {
+            properties.putAll(additionalProperties);
+        }
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule())
                                       .with(new HivemqMqttClientModule(), new JoynrPropertiesModule(properties));
         return Guice.createInjector(runtimeModule);
@@ -327,7 +335,7 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
     }
 
     private JoynrRuntime createRuntime(int removeStaleDelay) {
-        Injector injector = createInjector(removeStaleDelay);
+        Injector injector = createInjector(removeStaleDelay, null);
         return injector.getInstance(JoynrRuntime.class);
     }
 
