@@ -51,6 +51,7 @@ declare -a normalBuildImages=(
     "joynr-base"
     "joynr-runtime-environment-base"
     "joynr-java-8"
+    "joynr-java-17"
 )
 declare -a scriptBuildImages=(
     "joynr-gcd-db"
