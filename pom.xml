@@ -946,6 +946,12 @@
 				<artifactId>smrf-api</artifactId>
 				<version>${smrf.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.reactivestreams</groupId>
+				<artifactId>reactive-streams</artifactId>
+				<type>jar</type>
+				<version>1.0.4</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
