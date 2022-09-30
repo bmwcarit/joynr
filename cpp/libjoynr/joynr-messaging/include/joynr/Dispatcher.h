@@ -47,9 +47,7 @@ class JOYNR_EXPORT Dispatcher : public std::enable_shared_from_this<Dispatcher>,
 {
 
 public:
-    Dispatcher(std::shared_ptr<IMessageSender> messageSender,
-               boost::asio::io_service& ioService,
-               int maxThreads = 1);
+    Dispatcher(std::shared_ptr<IMessageSender> messageSender, boost::asio::io_service& ioService);
 
     ~Dispatcher() override;
 

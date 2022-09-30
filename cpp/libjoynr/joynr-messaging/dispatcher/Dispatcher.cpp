@@ -56,8 +56,7 @@ namespace joynr
 {
 
 Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
-                       boost::asio::io_service& ioService,
-                       int maxThreads)
+                       boost::asio::io_service& ioService)
         : std::enable_shared_from_this<Dispatcher>(),
           IDispatcher(),
           _messageSender(std::move(messageSender)),
@@ -65,7 +64,7 @@ Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
           _replyCallerDirectory("Dispatcher-ReplyCallerDirectory", ioService),
           _publicationManager(),
           _subscriptionManager(nullptr),
-          _handleReceivedMessageThreadPool(std::make_shared<ThreadPool>("Dispatcher", maxThreads)),
+          _handleReceivedMessageThreadPool(std::make_shared<ThreadPool>("Dispatcher", 1)),
           _subscriptionHandlingMutex(),
           _isShuttingDown(false),
           _isShuttingDownLock()
