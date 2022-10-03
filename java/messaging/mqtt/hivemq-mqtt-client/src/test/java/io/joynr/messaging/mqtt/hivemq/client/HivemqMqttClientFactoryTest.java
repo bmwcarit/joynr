@@ -61,6 +61,8 @@ public class HivemqMqttClientFactoryTest {
     private JoynrStatusMetricsReceiver mockStatusReceiver;
     @Mock
     private ShutdownNotifier mockShutdownNotifier;
+    @Mock
+    private IHivemqMqttClientTrustManagerFactory trustManagerFactory;
 
     List<HivemqMqttClient> receivers = new ArrayList<>();
     List<HivemqMqttClient> senders = new ArrayList<>();
@@ -92,7 +94,8 @@ public class HivemqMqttClientFactoryTest {
                                               scheduledExecutorService,
                                               mockClientIdProvider,
                                               mockStatusReceiver,
-                                              mockShutdownNotifier);
+                                              mockShutdownNotifier,
+                                              trustManagerFactory);
     }
 
     private void createSendersAndReceivers() {

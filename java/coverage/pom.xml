@@ -75,6 +75,11 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java.messaging.mqtt</groupId>
+			<artifactId>hivemq-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.messaging.websocket</groupId>
 			<artifactId>joynr-websocket-client</artifactId>
 			<version>${project.version}</version>
@@ -151,6 +156,7 @@
 									<ignoredUnusedDeclaredDependency>io.joynr.java:javaapi</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging:messaging-common</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.mqtt:joynr-mqtt-client</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.mqtt:hivemq-mqtt-client</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.websocket:joynr-websocket-client</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.websocket:joynr-websocket-server</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>io.joynr.java.messaging.websocket:joynr-websocket-common</ignoredUnusedDeclaredDependency>
