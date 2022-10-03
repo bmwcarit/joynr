@@ -589,7 +589,7 @@
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-tree</artifactId>
 				<type>jar</type>
-				<version>9.3</version>
+				<version>9.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.reactivestreams</groupId>
