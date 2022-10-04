@@ -3,7 +3,8 @@ FROM joynr-base:latest
 ###################################################
 # uninstall java 11
 ###################################################
-RUN dnf remove -y java-11-openjdk \
+RUN dnf remove -y java-11-openjdk-devel \
+    java-11-openjdk \
     java-11-openjdk-headless \
     && dnf -y autoremove
 
