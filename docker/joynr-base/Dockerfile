@@ -38,6 +38,11 @@ RUN chmod 777 -R /data/scripts/
 RUN /data/scripts/setup-proxy.sh
 
 ###################################################
+# setup extra certs for general use w/o java
+###################################################
+RUN /data/scripts/setup-extra-certs.sh
+
+###################################################
 # set timezone
 ###################################################
 RUN rm /etc/localtime \
@@ -121,15 +126,16 @@ RUN alternatives --set java /usr/lib/jvm/java-11-openjdk*.x86_64/bin/java \
     && alternatives --set java_sdk_openjdk /usr/lib/jvm/java-11-openjdk*.x86_64
 
 ###################################################
-# setup extra certs
+# setup extra certs for java
 ###################################################
-RUN /data/scripts/setup-extra-certs.sh
+RUN /data/scripts/setup-extra-certs.sh java
 
 ###################################################
 # add git config
 ###################################################
 RUN git config --global user.email "dummy@dummy.com" \
-    && git config --global user.name "Dummy"
+    && git config --global user.name "Dummy" \
+    && git config --global http.postBuffer 524288000
 
 ###################################################
 # Generate certificates
@@ -293,7 +299,7 @@ RUN dnf update -y \
     ninja-build \
     psmisc \
     && dnf clean all \
-    && pip install gcovr
+    && pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org gcovr
 
 RUN chmod -R a+rw /opt \
     && chown -R 1000 /usr/local

@@ -42,7 +42,6 @@ zchunk=false
 gpgcheck=1
 installonly_limit=3
 clean_requirements_on_remove=false
-sslverify=false
 EOF
 # add dnf proxy configuration if available
 if [ -n "${http_proxy}" ]; then
@@ -74,9 +73,10 @@ EOF
 fi
 echo "Final Configuration /etc/wgetrc:"
 cat /etc/wgetrc
-echo "Setting up insecure curl configuration in /etc/.curlrc"
+# add curl configuration if needed, keep at least an
+# empty file since it is reference and must be present
+echo "Setting up curl configuration in /etc/.curlrc"
 cat > /etc/.curlrc << EOF
-insecure
 EOF
 echo "Setting up proxy configuration in /etc/profile.d/use-my-proxy.sh"
 cat > /etc/profile.d/use-my-proxy.sh <<EOF
@@ -101,10 +101,9 @@ CURL_HOME=/etc
 export CURL_HOME
 echo "Setting up npm configuration in \$HOME/.npmrc"
 cat > \$HOME/.npmrc << EOF2
-strict-ssl=false
 registry=https://registry.npmjs.org/
 EOF2
-MAVEN_OPTS="-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true -Xms2048m -Xmx2048m"
+MAVEN_OPTS="-Xms2048m -Xmx2048m"
 export MAVEN_OPTS
 echo "use-my-proxy.sh finished"
 EOF
