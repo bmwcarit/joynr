@@ -418,17 +418,6 @@ RUN export VALGRIND_VERSION=3.19.0 \
         && rm -rf /tmp/valgrind-$VALGRIND_VERSION /tmp/valgrind-$VALGRIND_VERSION.tar.bz2
 
 ###################################################
-# install gcovr for code coverage reports
-###################################################
-RUN . /etc/profile \
-    && dnf update -y \
-    && dnf install -y \
-    lcov \
-    python-pip \
-    && dnf clean all \
-    && pip install gcovr
-
-###################################################
 # install rapidjson
 ###################################################
 
