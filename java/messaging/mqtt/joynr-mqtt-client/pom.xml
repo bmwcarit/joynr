@@ -49,6 +49,11 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>libjoynr</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.smrf.java</groupId>
 			<artifactId>smrf-api</artifactId>
 		</dependency>
