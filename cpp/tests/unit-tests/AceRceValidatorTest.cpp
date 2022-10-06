@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -85,64 +85,64 @@ public:
     void init(const tags::Access&)
     {
         _masterEntry = MasterEntry(_TEST_USER,
-                                  std::string(),
-                                  std::string(),
-                                  TrustLevel::LOW,
-                                  _possibleRequiredTrustLevels,
-                                  TrustLevel::LOW,
-                                  _possibleRequiredChangeTrustLevels,
-                                  std::string(),
-                                  Permission::NO,
-                                  _possiblePermissions);
+                                   std::string(),
+                                   std::string(),
+                                   TrustLevel::LOW,
+                                   _possibleRequiredTrustLevels,
+                                   TrustLevel::LOW,
+                                   _possibleRequiredChangeTrustLevels,
+                                   std::string(),
+                                   Permission::NO,
+                                   _possiblePermissions);
 
         _mediatorEntry = MediatorEntry(_TEST_USER,
-                                      std::string(),
-                                      std::string(),
-                                      TrustLevel::LOW,
-                                      _possibleRequiredTrustLevels,
-                                      TrustLevel::LOW,
-                                      _possibleRequiredChangeTrustLevels,
-                                      std::string(),
-                                      Permission::NO,
-                                      _possiblePermissions);
+                                       std::string(),
+                                       std::string(),
+                                       TrustLevel::LOW,
+                                       _possibleRequiredTrustLevels,
+                                       TrustLevel::LOW,
+                                       _possibleRequiredChangeTrustLevels,
+                                       std::string(),
+                                       Permission::NO,
+                                       _possiblePermissions);
 
         _ownerEntry = OwnerEntry(_TEST_USER,
-                                std::string(),
-                                std::string(),
-                                TrustLevel::MID,
-                                TrustLevel::HIGH,
-                                std::string(),
-                                Permission::ASK);
+                                 std::string(),
+                                 std::string(),
+                                 TrustLevel::MID,
+                                 TrustLevel::HIGH,
+                                 std::string(),
+                                 Permission::ASK);
     }
 
     void init(const tags::Registration&)
     {
         _masterEntry = MasterEntry(_TEST_USER,
-                                  std::string(),
-                                  std::string(),
-                                  TrustLevel::LOW,
-                                  _possibleRequiredTrustLevels,
-                                  TrustLevel::LOW,
-                                  _possibleRequiredChangeTrustLevels,
-                                  Permission::NO,
-                                  _possiblePermissions);
+                                   std::string(),
+                                   std::string(),
+                                   TrustLevel::LOW,
+                                   _possibleRequiredTrustLevels,
+                                   TrustLevel::LOW,
+                                   _possibleRequiredChangeTrustLevels,
+                                   Permission::NO,
+                                   _possiblePermissions);
 
         _mediatorEntry = MediatorEntry(_TEST_USER,
-                                      std::string(),
-                                      std::string(),
-                                      TrustLevel::LOW,
-                                      _possibleRequiredTrustLevels,
-                                      TrustLevel::LOW,
-                                      _possibleRequiredChangeTrustLevels,
-                                      Permission::NO,
-                                      _possiblePermissions);
+                                       std::string(),
+                                       std::string(),
+                                       TrustLevel::LOW,
+                                       _possibleRequiredTrustLevels,
+                                       TrustLevel::LOW,
+                                       _possibleRequiredChangeTrustLevels,
+                                       Permission::NO,
+                                       _possiblePermissions);
 
         _ownerEntry = OwnerEntry(_TEST_USER,
-                                std::string(),
-                                std::string(),
-                                TrustLevel::MID,
-                                TrustLevel::HIGH,
-                                Permission::ASK);
+                                 std::string(),
+                                 std::string(),
+                                 TrustLevel::MID,
+                                 TrustLevel::HIGH,
+                                 Permission::ASK);
     }
 
 protected:
@@ -156,7 +156,7 @@ template <typename Tag>
 const std::string AceRceValidatorTest<Tag>::_TEST_USER("testUser");
 
 using TagTypes = ::testing::Types<tags::Access, tags::Registration>;
-TYPED_TEST_SUITE(AceRceValidatorTest, TagTypes,);
+TYPED_TEST_SUITE(AceRceValidatorTest, TagTypes, );
 
 TYPED_TEST(AceRceValidatorTest, TestMediatorInvalidPossiblePermissions)
 {

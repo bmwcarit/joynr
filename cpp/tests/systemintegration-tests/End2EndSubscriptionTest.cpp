@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,14 +19,14 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/MessagingSettings.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/PrivateCopyAssign.h"
-#include "joynr/Semaphore.h"
 #include "joynr/ReadWriteLock.h"
+#include "joynr/Semaphore.h"
 #include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/system/RoutingProxy.h"
@@ -120,7 +120,7 @@ public:
             {
                 ReadLocker locker(testProvider->_lockAttributeListeners);
                 if (testProvider->_attributeListeners.find(attributeName) !=
-                       testProvider->_attributeListeners.cend()) {
+                    testProvider->_attributeListeners.cend()) {
                     break;
                 }
             }
@@ -224,7 +224,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration)
     std::string subscriptionIdFromListener;
     std::string subscriptionIdFromFuture;
     EXPECT_CALL(*mockListener, onSubscribed(_))
-                .WillOnce(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+            .WillOnce(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
 
@@ -264,8 +264,9 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate)
     std::string subscriptionIdFromListener;
     std::string subscriptionIdFromFuture;
     EXPECT_CALL(*mockListener, onSubscribed(_))
-                .Times(2)
-                .WillRepeatedly(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+            .Times(2)
+            .WillRepeatedly(
+                    DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
 

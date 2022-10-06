@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,12 +32,12 @@
 #include <boost/asio/steady_timer.hpp>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
-#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/JoynrClusterControllerExport.h"
+#include "joynr/LcdPendingLookupsHandler.h"
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/Logger.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/LcdPendingLookupsHandler.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/system/DiscoveryAbstractProvider.h"
@@ -58,7 +58,7 @@ namespace capabilities
 {
 class CachingStorage;
 class Storage;
-}
+} // namespace capabilities
 
 namespace exceptions
 {
@@ -70,19 +70,19 @@ namespace types
 class DiscoveryEntry;
 class DiscoveryEntryWithMetaInfo;
 class DiscoveryQos;
-}
+} // namespace types
 
 /**
-  * The local capabilities directory is the "first point of call" for accessing
-  * any information related to the capabilities, i.e. in finding the channel id
-  * for a given interface and domain, or to return the interface address for a
-  * given channel id.
-  * This class is responsible for looking up its local cache first, and depending
-  * on whether the data is compatible with the users QoS (e.g. dataFreshness) the
-  * cached value will be returned.  Otherwise, a request will be made via the
-  * Global Capabilities Directory Client which will make the remote call to the
-  * backend to retrieve the data.
-  */
+ * The local capabilities directory is the "first point of call" for accessing
+ * any information related to the capabilities, i.e. in finding the channel id
+ * for a given interface and domain, or to return the interface address for a
+ * given channel id.
+ * This class is responsible for looking up its local cache first, and depending
+ * on whether the data is compatible with the users QoS (e.g. dataFreshness) the
+ * cached value will be returned.  Otherwise, a request will be made via the
+ * Global Capabilities Directory Client which will make the remote call to the
+ * backend to retrieve the data.
+ */
 class JOYNRCLUSTERCONTROLLER_EXPORT LocalCapabilitiesDirectory
         : public joynr::system::DiscoveryAbstractProvider,
           public joynr::system::ProviderReregistrationControllerProvider,
@@ -101,8 +101,7 @@ public:
             std::vector<std::string> knownGbids,
             std::int64_t defaultExpiryIntervalMs,
             const std::chrono::milliseconds reAddInterval = std::chrono::milliseconds(7 * 24 * 60 *
-                                                                                      60 *
-                                                                                      1000));
+                                                                                      60 * 1000));
 
     ~LocalCapabilitiesDirectory() override;
 

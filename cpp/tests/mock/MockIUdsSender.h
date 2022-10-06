@@ -23,7 +23,8 @@
 
 #include "joynr/IUdsSender.h"
 
-class MockIUdsSender : public joynr::IUdsSender {
+class MockIUdsSender : public joynr::IUdsSender
+{
 public:
     MOCK_METHOD0(dtorCalled, void());
     ~MockIUdsSender() override
@@ -31,8 +32,7 @@ public:
         dtorCalled();
     }
 
-    MOCK_METHOD2(send, void (const smrf::ByteArrayView& message,
-                             const SendFailed& onFailure));
+    MOCK_METHOD2(send, void(const smrf::ByteArrayView& message, const SendFailed& onFailure));
 };
 
 #endif // TESTS_MOCKIUDSSENDER_H

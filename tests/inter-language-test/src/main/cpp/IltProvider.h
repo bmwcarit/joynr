@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,12 +19,12 @@
 #ifndef MY_PROVIDER_H
 #define MY_PROVIDER_H
 
-#include "joynr/interlanguagetest/DefaultTestInterfaceProvider.h"
 #include "joynr/Logger.h"
+#include "joynr/interlanguagetest/DefaultTestInterfaceProvider.h"
 
 /**
-  * A TestInterface Provider with a circular list of radio stations
-  */
+ * A TestInterface Provider with a circular list of radio stations
+ */
 class IltProvider : public joynr::interlanguagetest::DefaultTestInterfaceProvider
 {
 public:
@@ -84,11 +84,10 @@ public:
             const std::vector<
                     joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>&
                     structWithStringArrayArrayArg,
-            std::function<void(
-                    const std::vector<uint64_t>& uInt64ArrayOut,
-                    const std::vector<
-                            joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray>&
-                            structWithStringArrayArrayOut)> onSuccess,
+            std::function<void(const std::vector<uint64_t>& uInt64ArrayOut,
+                               const std::vector<joynr::interlanguagetest::namedTypeCollection1::
+                                                         StructWithStringArray>&
+                                       structWithStringArrayArrayOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
@@ -135,26 +134,23 @@ public:
 
     void methodWithEnumTypeDefParameter(
             const joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::Enum& enumTypeDefIn,
-            std::function<
-                    void(const joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::Enum&
-                                 enumTypeDefOut)> onSuccess,
+            std::function<void(const joynr::interlanguagetest::typeDefCollection::TypeDefForEnum::
+                                       Enum& enumTypeDefOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
 
     void methodWithByteBufferTypeDefParameter(
             const joynr::interlanguagetest::typeDefCollection::TypeDefForByteBuffer&
                     byteBufferTypeDefIn,
-            std::function<
-                    void(const joynr::interlanguagetest::typeDefCollection::TypeDefForByteBuffer&
-                                 byteBufferTypeDefOut)> onSuccess,
+            std::function<void(const joynr::interlanguagetest::typeDefCollection::
+                                       TypeDefForByteBuffer& byteBufferTypeDefOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
 
     void methodWithArrayTypeDefParameter(
             const joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct& arrayTypeDefIn,
-            std::function<
-                    void(const joynr::interlanguagetest::typeDefCollection::ArrayTypeDefStruct&
-                                 arrayTypeDefOut)> onSuccess,
+            std::function<void(const joynr::interlanguagetest::typeDefCollection::
+                                       ArrayTypeDefStruct& arrayTypeDefOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
             override;
 
@@ -221,11 +217,10 @@ public:
             const int64_t& int64Arg,
             const joynr::interlanguagetest::namedTypeCollection2::BaseStruct& baseStructArg,
             const bool& booleanArg,
-            std::function<
-                    void(const double& doubleOut,
-                         const std::vector<std::string>& stringArrayOut,
-                         const joynr::interlanguagetest::namedTypeCollection2::ExtendedBaseStruct&
-                                 extendedBaseStructOut)> onSuccess,
+            std::function<void(const double& doubleOut,
+                               const std::vector<std::string>& stringArrayOut,
+                               const joynr::interlanguagetest::namedTypeCollection2::
+                                       ExtendedBaseStruct& extendedBaseStructOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 
@@ -246,11 +241,10 @@ public:
             const int64_t& int64Arg,
             const joynr::interlanguagetest::namedTypeCollection2::BaseStruct& baseStructArg,
             const bool& booleanArg,
-            std::function<
-                    void(const double& doubleOut,
-                         const std::vector<std::string>& stringArrayOut,
-                         const joynr::interlanguagetest::namedTypeCollection2::ExtendedBaseStruct&
-                                 extendedBaseStructOut)> onSuccess,
+            std::function<void(const double& doubleOut,
+                               const std::vector<std::string>& stringArrayOut,
+                               const joynr::interlanguagetest::namedTypeCollection2::
+                                       ExtendedBaseStruct& extendedBaseStructOut)> onSuccess,
             std::function<void(const joynr::exceptions::ProviderRuntimeException& exception)>
                     onError) override;
 

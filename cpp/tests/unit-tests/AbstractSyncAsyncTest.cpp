@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,11 +18,10 @@
  */
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/exceptions/MethodInvocationException.h"
 #include "joynr/IReplyCaller.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MessagingQos.h"
@@ -30,11 +29,12 @@
 #include "joynr/Reply.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/Request.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
 #include "joynr/SubscriptionStop.h"
+#include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/tests/Itest.h"
 #include "joynr/tests/testJoynrMessagingConnector.h"
 #include "joynr/types/Localisation/GpsLocation.h"
@@ -260,8 +260,9 @@ public:
     void testSync_getAttributeNotCached()
     {
         auto testFixture = createItestFixture();
-        setExpectationsForSendRequestCall("getLocation").WillOnce(
-                Invoke(&callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
+        setExpectationsForSendRequestCall("getLocation")
+                .WillOnce(Invoke(
+                        &callBackActions, &CallBackActions::executeCallBackGpsLocationResult));
 
         types::Localisation::GpsLocation gpsLocation;
         try {
@@ -632,8 +633,8 @@ public:
 
         asyncTestFixture->methodWithErrorEnumExtendedAsync(
                 [callback]() { callback->onSuccess(); },
-                [callback, expectedErrorEnum](
-                        const MethodWithErrorEnumExtendedErrorEnum::Enum& errorEnum) {
+                [callback,
+                 expectedErrorEnum](const MethodWithErrorEnumExtendedErrorEnum::Enum& errorEnum) {
                     EXPECT_EQ(expectedErrorEnum, errorEnum);
                     callback->onApplicationError(errorEnum);
                 });
@@ -694,8 +695,8 @@ public:
 
         asyncTestFixture->methodWithImplicitErrorEnumAsync(
                 [callback]() { callback->onSuccess(); },
-                [callback, expectedErrorEnum](
-                        const MethodWithImplicitErrorEnumErrorEnum::Enum& errorEnum) {
+                [callback,
+                 expectedErrorEnum](const MethodWithImplicitErrorEnumErrorEnum::Enum& errorEnum) {
                     EXPECT_EQ(expectedErrorEnum, errorEnum);
                     callback->onApplicationError(errorEnum);
                 });
@@ -781,7 +782,7 @@ public:
         EXPECT_CALL(*mockSubscriptionManager, unregisterSubscription(Eq(expectedSubscriptionId)));
 
         // sendSubscriptionStop should NOT be called on MessageSender
-        EXPECT_CALL(*mockMessageSender, sendSubscriptionStop(_,_,_,_)).Times(0);
+        EXPECT_CALL(*mockMessageSender, sendSubscriptionStop(_, _, _, _)).Times(0);
 
         testFixture->unsubscribeFromEmptyBroadcastBroadcast(subscriptionId);
     }
@@ -798,10 +799,8 @@ public:
         // sendSubscriptionStop SHOULD be called on MessageSender
         joynr::SubscriptionStop capturedSubscriptionStop;
         EXPECT_CALL(*mockMessageSender,
-                    sendSubscriptionStop(Eq(proxyParticipantId),
-                                         Eq(providerParticipantId),
-                                         _,
-                                         _)).Times(1)
+                    sendSubscriptionStop(Eq(proxyParticipantId), Eq(providerParticipantId), _, _))
+                .Times(1)
                 .WillOnce(SaveArg<3>(&capturedSubscriptionStop));
 
         testFixture->unsubscribeFromBooleanBroadcastBroadcast(subscriptionId);
@@ -827,5 +826,4 @@ protected:
     std::string providerParticipantId;
     std::shared_ptr<tests::Itest> asyncTestFixture;
     std::shared_ptr<exceptions::JoynrException> error;
-
 };

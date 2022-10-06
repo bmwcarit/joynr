@@ -35,7 +35,6 @@
 #include "joynr/types/ProviderQos.h"
 #include "joynr/types/Version.h"
 
-
 using namespace ::testing;
 using namespace joynr;
 
@@ -107,14 +106,14 @@ TEST(LCDUtilTest, test_filterDuplicates)
                                              false);
     providerQos.setScope(types::ProviderScope::GLOBAL);
     types::DiscoveryEntryWithMetaInfo entry1_1(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             "participantId1",
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey",
-                                             true);
+                                               "domain1",
+                                               "interface1",
+                                               "participantId1",
+                                               providerQos,
+                                               10000,
+                                               10000,
+                                               "testkey",
+                                               true);
     types::DiscoveryEntryWithMetaInfo entry3(providerVersion,
                                              "domain3",
                                              "interface3",
@@ -132,16 +131,16 @@ TEST(LCDUtilTest, test_filterDuplicates)
     globalCapabilitiesWithMetaInfo.push_back(entry1_1);
     globalCapabilitiesWithMetaInfo.push_back(entry3);
 
-    std::vector<types::DiscoveryEntryWithMetaInfo> result =
-            LCDUtil::filterDuplicates(std::move(localCapabilitiesWithMetaInfo), std::move(globalCapabilitiesWithMetaInfo));
+    std::vector<types::DiscoveryEntryWithMetaInfo> result = LCDUtil::filterDuplicates(
+            std::move(localCapabilitiesWithMetaInfo), std::move(globalCapabilitiesWithMetaInfo));
     ASSERT_EQ(3, result.size());
 
-    //TODO: Global entry should be preferred(according to the comment in the method), but the local one passes
-    // through the filter
+    // TODO: Global entry should be preferred(according to the comment in the method), but the local
+    // one passes
+    //  through the filter
     ASSERT_TRUE(std::find(result.begin(), result.end(), entry1) != result.end());
     ASSERT_TRUE(std::find(result.begin(), result.end(), entry2) != result.end());
     ASSERT_TRUE(std::find(result.begin(), result.end(), entry3) != result.end());
-
 }
 
 TEST(LCDUtilTest, test_containsOnlyEmptyString)
@@ -164,13 +163,13 @@ TEST(LCDUtilTest, test_optionalToVector)
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
     types::DiscoveryEntry entry(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             "participantId1",
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey");
+                                "domain1",
+                                "interface1",
+                                "participantId1",
+                                providerQos,
+                                10000,
+                                10000,
+                                "testkey");
 
     boost::optional<types::DiscoveryEntry> emptyOptional;
     boost::optional<types::DiscoveryEntry> filledOptional(entry);
@@ -188,13 +187,13 @@ TEST(LCDUtilTest, test_isGlobal)
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
     types::DiscoveryEntry entry(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             "participantId1",
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey");
+                                "domain1",
+                                "interface1",
+                                "participantId1",
+                                providerQos,
+                                10000,
+                                10000,
+                                "testkey");
     ASSERT_FALSE(LCDUtil::isGlobal(entry));
 
     providerQos.setScope(types::ProviderScope::GLOBAL);
@@ -211,13 +210,13 @@ TEST(LCDUtilTest, test_isEntryForGbid)
     std::string participantId = "participantId1";
     providerQos.setScope(types::ProviderScope::LOCAL);
     types::DiscoveryEntry entry(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             participantId,
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey");
+                                "domain1",
+                                "interface1",
+                                participantId,
+                                providerQos,
+                                10000,
+                                10000,
+                                "testkey");
     std::string gbid = "gbid1";
     std::string wrongGbid = "wrongGbid";
     std::unordered_set<std::string> testGbids;
@@ -242,21 +241,21 @@ TEST(LCDUtilTest, filterDiscoveryEntriesByGbids)
     std::string participantId = "participantId1";
     providerQos.setScope(types::ProviderScope::LOCAL);
     types::DiscoveryEntry entry(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             participantId,
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey");
+                                "domain1",
+                                "interface1",
+                                participantId,
+                                providerQos,
+                                10000,
+                                10000,
+                                "testkey");
     types::DiscoveryEntry otherEntry(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             "otherParticipantId",
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey");
+                                     "domain1",
+                                     "interface1",
+                                     "otherParticipantId",
+                                     providerQos,
+                                     10000,
+                                     10000,
+                                     "testkey");
     std::vector<types::DiscoveryEntry> discoveryEntryVector;
     discoveryEntryVector.push_back(entry);
     discoveryEntryVector.push_back(otherEntry);
@@ -272,7 +271,7 @@ TEST(LCDUtilTest, filterDiscoveryEntriesByGbids)
     participantIdsToGbidsMap[participantId] = testGbidsVector;
 
     auto resultVector = LCDUtil::filterDiscoveryEntriesByGbids(
-                cacheLock, discoveryEntryVector, testGbids, participantIdsToGbidsMap);
+            cacheLock, discoveryEntryVector, testGbids, participantIdsToGbidsMap);
     ASSERT_EQ(1, resultVector.size());
     ASSERT_EQ(entry, resultVector.at(0));
 }
@@ -284,21 +283,21 @@ TEST(LCDUtilTest, test_joinToString)
     std::string participantId = "participantId1";
     providerQos.setScope(types::ProviderScope::LOCAL);
     types::DiscoveryEntry entry(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             participantId,
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey");
+                                "domain1",
+                                "interface1",
+                                participantId,
+                                providerQos,
+                                10000,
+                                10000,
+                                "testkey");
     types::DiscoveryEntry otherEntry(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             "otherParticipantId",
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey");
+                                     "domain1",
+                                     "interface1",
+                                     "otherParticipantId",
+                                     providerQos,
+                                     10000,
+                                     10000,
+                                     "testkey");
     std::vector<types::DiscoveryEntry> discoveryEntryVector;
     discoveryEntryVector.push_back(entry);
     discoveryEntryVector.push_back(otherEntry);

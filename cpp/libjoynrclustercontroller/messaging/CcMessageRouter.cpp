@@ -690,45 +690,42 @@ void CcMessageRouter::addMulticastReceiver(
         std::function<void()> onSuccess,
         std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError)
 {
-    std::function<void()> onSuccessWrapper = [
-        thisWeakPtr = joynr::util::as_weak_ptr(
-                std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this())),
-        multicastId,
-        subscriberParticipantId,
-        onSuccess = std::move(onSuccess)
-    ]()
-    {
-        if (auto thisSharedPtr = thisWeakPtr.lock()) {
-            thisSharedPtr->_multicastReceiverDirectory.registerMulticastReceiver(
-                    multicastId, subscriberParticipantId);
-            JOYNR_LOG_TRACE(logger(),
-                            "added multicast receiver={} for multicastId={}",
-                            subscriberParticipantId,
-                            multicastId);
-            if (onSuccess) {
-                onSuccess();
-            }
-        } else {
-            JOYNR_LOG_ERROR(logger(),
-                            "error adding multicast receiver={} for multicastId={} because "
-                            "CcMessageRouter is no longer available",
-                            subscriberParticipantId,
-                            multicastId);
-        }
-    };
+    std::function<void()> onSuccessWrapper =
+            [thisWeakPtr = joynr::util::as_weak_ptr(
+                     std::dynamic_pointer_cast<CcMessageRouter>(shared_from_this())),
+             multicastId,
+             subscriberParticipantId,
+             onSuccess = std::move(onSuccess)]() {
+                if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                    thisSharedPtr->_multicastReceiverDirectory.registerMulticastReceiver(
+                            multicastId, subscriberParticipantId);
+                    JOYNR_LOG_TRACE(logger(),
+                                    "added multicast receiver={} for multicastId={}",
+                                    subscriberParticipantId,
+                                    multicastId);
+                    if (onSuccess) {
+                        onSuccess();
+                    }
+                } else {
+                    JOYNR_LOG_ERROR(logger(),
+                                    "error adding multicast receiver={} for multicastId={} because "
+                                    "CcMessageRouter is no longer available",
+                                    subscriberParticipantId,
+                                    multicastId);
+                }
+            };
     std::function<void(const exceptions::JoynrRuntimeException&)> onErrorWrapper =
-            [ onError = std::move(onError), subscriberParticipantId, multicastId ](
-                    const exceptions::JoynrRuntimeException& error)
-    {
-        JOYNR_LOG_ERROR(logger(),
-                        "error adding multicast receiver={} for multicastId={}, error: {}",
-                        subscriberParticipantId,
-                        multicastId,
-                        error.getMessage());
-        if (onError) {
-            onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
-        }
-    };
+            [onError = std::move(onError), subscriberParticipantId, multicastId](
+                    const exceptions::JoynrRuntimeException& error) {
+                JOYNR_LOG_ERROR(logger(),
+                                "error adding multicast receiver={} for multicastId={}, error: {}",
+                                subscriberParticipantId,
+                                multicastId,
+                                error.getMessage());
+                if (onError) {
+                    onError(joynr::exceptions::ProviderRuntimeException(error.getMessage()));
+                }
+            };
 
     registerMulticastInSkeleton(multicastId,
                                 providerParticipantId,

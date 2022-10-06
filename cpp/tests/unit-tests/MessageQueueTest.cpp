@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +20,8 @@
 #include <cstdint>
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/ImmutableMessage.h"
 #include "joynr/MessageQueue.h"
@@ -40,8 +40,8 @@ public:
     MessageQueueTest()
             : _messageQueue(),
               _expiryDate(std::chrono::time_point_cast<std::chrono::milliseconds>(
-                                 std::chrono::system_clock::now()) +
-                         std::chrono::milliseconds(100))
+                                  std::chrono::system_clock::now()) +
+                          std::chrono::milliseconds(100))
     {
     }
 
@@ -258,12 +258,15 @@ TEST_F(MessageQueueWithLimitTest, queueLimitExceeded_droppedMessagesReturned)
     const std::string recipient[messageCount] = {"TEST1", "TEST2", "TEST3", "TEST4", "TEST5"};
 
     std::deque<std::shared_ptr<ImmutableMessage>> droppedMessages{};
-    std::shared_ptr<ImmutableMessage> immutableMessages [messageCount];
+    std::shared_ptr<ImmutableMessage> immutableMessages[messageCount];
     for (int i = 0; i < messageCount; i++) {
         immutableMessages[i] = this->createMessage(expiryDate[i], recipient[i], "", "rq");
-        auto recentDroppedMessages = messageQueue.queueMessage(immutableMessages[i]->getRecipient(), immutableMessages[i]);
-        if(!recentDroppedMessages.empty()) {
-            droppedMessages.insert(droppedMessages.begin(), recentDroppedMessages.cbegin(), recentDroppedMessages.cend());
+        auto recentDroppedMessages = messageQueue.queueMessage(
+                immutableMessages[i]->getRecipient(), immutableMessages[i]);
+        if (!recentDroppedMessages.empty()) {
+            droppedMessages.insert(droppedMessages.begin(),
+                                   recentDroppedMessages.cbegin(),
+                                   recentDroppedMessages.cend());
         }
     }
 

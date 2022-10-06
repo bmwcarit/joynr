@@ -26,8 +26,7 @@ namespace joynr
 namespace tests
 {
 
-struct DummyKeyChainParameters
-{
+struct DummyKeyChainParameters {
     std::string pubCertFileName;
     std::string privKeyFileName;
     std::string rootCertFileName;

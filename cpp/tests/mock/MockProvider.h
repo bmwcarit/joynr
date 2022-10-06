@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,12 +24,13 @@
 #include "tests/utils/Gmock.h"
 
 #include "joynr/AbstractJoynrProvider.h"
-#include "joynr/RequestCallerFactory.h"
 #include "joynr/RequestCaller.h"
+#include "joynr/RequestCallerFactory.h"
 
 #include "joynr/types/ProviderQos.h"
 
-class MockProvider : public joynr::AbstractJoynrProvider {
+class MockProvider : public joynr::AbstractJoynrProvider
+{
 public:
     static const std::int32_t MAJOR_VERSION;
     static const std::int32_t MINOR_VERSION;
@@ -43,11 +44,12 @@ public:
 namespace joynr
 {
 template <>
-inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockProvider>(std::shared_ptr<MockProvider> provider)
+inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockProvider>(
+        std::shared_ptr<MockProvider> provider)
 {
     std::ignore = provider;
     return std::shared_ptr<RequestCaller>(nullptr);
 }
-} // namespace joynr;
+} // namespace joynr
 
 #endif // TESTS_MOCK_MOCKPROVIDER_H

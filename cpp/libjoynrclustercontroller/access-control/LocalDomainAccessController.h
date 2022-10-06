@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,7 +46,7 @@ class MasterAccessControlEntry;
 class MasterRegistrationControlEntry;
 class OwnerAccessControlEntry;
 class OwnerRegistrationControlEntry;
-}
+} // namespace DacTypes
 } // namespace infrastructure
 
 class LocalDomainAccessStore;
@@ -91,18 +91,18 @@ public:
                          infrastructure::DacTypes::Role::Enum role);
 
     /**
-      * Get consumer permission to access an interface
-      *
-      * @param userId        The user accessing the interface
-      * @param domain        The domain that is being accessed
-      * @param interfaceName The interface that is being accessed
-      * @param trustLevel    The trust level of the device accessing the interface
-      * @param callbacks     Object that will receive the result and then be deleted
-      *
-      * Use :
-      *    getConsumerPermission(String, String, String, String, TrustLevel, callbacks)
-      * to gain exact Permission on interface operation.
-      */
+     * Get consumer permission to access an interface
+     *
+     * @param userId        The user accessing the interface
+     * @param domain        The domain that is being accessed
+     * @param interfaceName The interface that is being accessed
+     * @param trustLevel    The trust level of the device accessing the interface
+     * @param callbacks     Object that will receive the result and then be deleted
+     *
+     * Use :
+     *    getConsumerPermission(String, String, String, String, TrustLevel, callbacks)
+     * to gain exact Permission on interface operation.
+     */
     virtual void getConsumerPermission(const std::string& userId,
                                        const std::string& domain,
                                        const std::string& interfaceName,
@@ -110,18 +110,18 @@ public:
                                        std::shared_ptr<IGetPermissionCallback> callback);
 
     /**
-      * Get consumer permission to access an interface operation
-      *
-      * @param userId        The user accessing the interface
-      * @param domain        The domain that is being accessed
-      * @param interfaceName The interface that is being accessed
-      * @param operation     The operation user requests to execute on interface
-      * @param trustLevel    The trust level of the device accessing the interface
-      * @return the permission.
-      *
-      * This synchronous function assumes that the data to do ACL checks is available
-      * and has been obtained through a call to getConsumerPermission()
-      */
+     * Get consumer permission to access an interface operation
+     *
+     * @param userId        The user accessing the interface
+     * @param domain        The domain that is being accessed
+     * @param interfaceName The interface that is being accessed
+     * @param operation     The operation user requests to execute on interface
+     * @param trustLevel    The trust level of the device accessing the interface
+     * @return the permission.
+     *
+     * This synchronous function assumes that the data to do ACL checks is available
+     * and has been obtained through a call to getConsumerPermission()
+     */
     virtual infrastructure::DacTypes::Permission::Enum getConsumerPermission(
             const std::string& userId,
             const std::string& domain,
@@ -130,18 +130,18 @@ public:
             infrastructure::DacTypes::TrustLevel::Enum trustLevel);
 
     /**
-      * Get provider permission to register for an interface
-      *
-      * @param userId        The user registering for the interface
-      * @param domain        The domain that is being registered for
-      * @param interfaceName The interface that is being accessed
-      * @param trustLevel    The trust level of the device accessing the interface
-      * @param callbacks     Object that will receive the result and then be deleted
-      *
-      * Use :
-      *    getProviderPermission(String, String, String, TrustLevel, callbacks)
-      * to gain exact Permission on interface registration.
-      */
+     * Get provider permission to register for an interface
+     *
+     * @param userId        The user registering for the interface
+     * @param domain        The domain that is being registered for
+     * @param interfaceName The interface that is being accessed
+     * @param trustLevel    The trust level of the device accessing the interface
+     * @param callbacks     Object that will receive the result and then be deleted
+     *
+     * Use :
+     *    getProviderPermission(String, String, String, TrustLevel, callbacks)
+     * to gain exact Permission on interface registration.
+     */
     virtual void getProviderPermission(const std::string& userId,
                                        const std::string& domain,
                                        const std::string& interfaceName,

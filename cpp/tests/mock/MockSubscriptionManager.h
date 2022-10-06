@@ -21,48 +21,45 @@
 
 #include "tests/utils/Gmock.h"
 
-#include "joynr/SubscriptionManager.h"
 #include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/SubscriptionManager.h"
 #include "joynr/SubscriptionRequest.h"
 
-class MockSubscriptionManager : public joynr::SubscriptionManager {
+class MockSubscriptionManager : public joynr::SubscriptionManager
+{
 public:
     using SubscriptionManager::SubscriptionManager;
 
-    MOCK_METHOD1(getSubscriptionCallback,std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
-    MOCK_METHOD5(registerSubscription,void(const std::string& subscribeToName,
-                                           std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
-                                           std::shared_ptr<joynr::ISubscriptionListenerBase> subscriptionListener,
-                                           std::shared_ptr<joynr::SubscriptionQos> qos,
-                                           joynr::SubscriptionRequest& subscriptionRequest));
-    MOCK_METHOD10(registerSubscription,void(const std::string& subscribeToName,
-                                           const std::string& subscriberParticipantId,
-                                           const std::string& providerParticipantId,
-                                           const std::vector<std::string>& partitions,
-                                           std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
-                                           std::shared_ptr<joynr::ISubscriptionListenerBase> subscriptionListener,
-                                           std::shared_ptr<joynr::SubscriptionQos> qos,
-                                           joynr::MulticastSubscriptionRequest& subscriptionRequest,
-                                           std::function<void()> onSuccess,
-                                           std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
+    MOCK_METHOD1(getSubscriptionCallback,
+                 std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& subscriptionId));
+    MOCK_METHOD5(registerSubscription,
+                 void(const std::string& subscribeToName,
+                      std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+                      std::shared_ptr<joynr::ISubscriptionListenerBase> subscriptionListener,
+                      std::shared_ptr<joynr::SubscriptionQos> qos,
+                      joynr::SubscriptionRequest& subscriptionRequest));
+    MOCK_METHOD10(
+            registerSubscription,
+            void(const std::string& subscribeToName,
+                 const std::string& subscriberParticipantId,
+                 const std::string& providerParticipantId,
+                 const std::vector<std::string>& partitions,
+                 std::shared_ptr<joynr::ISubscriptionCallback> subscriptionCaller,
+                 std::shared_ptr<joynr::ISubscriptionListenerBase> subscriptionListener,
+                 std::shared_ptr<joynr::SubscriptionQos> qos,
+                 joynr::MulticastSubscriptionRequest& subscriptionRequest,
+                 std::function<void()> onSuccess,
+                 std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError));
     MOCK_METHOD1(unregisterSubscription, void(const std::string& subscriptionId));
-    MOCK_METHOD1(touchSubscriptionState,void(const std::string& subscriptionId));
+    MOCK_METHOD1(touchSubscriptionState, void(const std::string& subscriptionId));
+    MOCK_METHOD1(getMulticastSubscriptionCallback,
+                 std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& multicastId));
     MOCK_METHOD1(
-        getMulticastSubscriptionCallback,
-        std::shared_ptr<joynr::ISubscriptionCallback>(const std::string& multicastId)
-    );
-    MOCK_METHOD1(
-        getSubscriptionListener,
-        std::shared_ptr<joynr::ISubscriptionListenerBase>(
-                const std::string& subscriptionId
-        )
-    );
-    MOCK_METHOD1(
-        getMulticastSubscriptionListeners,
-        std::forward_list<std::shared_ptr<joynr::ISubscriptionListenerBase>>(
-                const std::string& multicastId
-        )
-    );
+            getSubscriptionListener,
+            std::shared_ptr<joynr::ISubscriptionListenerBase>(const std::string& subscriptionId));
+    MOCK_METHOD1(getMulticastSubscriptionListeners,
+                 std::forward_list<std::shared_ptr<joynr::ISubscriptionListenerBase>>(
+                         const std::string& multicastId));
 };
 
 #endif // TESTS_MOCK_MOCKSUBSCRIPTIONMANAGER_H

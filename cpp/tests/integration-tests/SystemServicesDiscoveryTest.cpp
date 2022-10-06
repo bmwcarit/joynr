@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +19,8 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/CapabilityUtils.h"
 #include "joynr/DiscoveryQos.h"
@@ -94,7 +94,8 @@ public:
                 .WillRepeatedly(Return(serializedMqttAddress));
         EXPECT_CALL(
                 *(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)),
-                getGlobalClusterControllerAddress()).WillRepeatedly(ReturnRef(mqttGlobalAddress));
+                getGlobalClusterControllerAddress())
+                .WillRepeatedly(ReturnRef(mqttGlobalAddress));
 
         // runtime can only be created, after MockCommunicationManager has been told to return
         // a channelId for getReceiveChannelId.
@@ -118,7 +119,8 @@ public:
         test::util::resetAndWaitUntilDestroyed(mockMessageReceiverMqtt);
         test::util::resetAndWaitUntilDestroyed(mockMessageSenderMqtt);
         std::remove(ClusterControllerSettings::
-                            DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+                            DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
+                                    .c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 
@@ -139,7 +141,7 @@ protected:
                 1,                                            // priority
                 joynr::types::ProviderScope::LOCAL,           // scope for provider registration
                 false // provider supports on change subscriptions
-                );
+        );
         joynr::types::Version providerVersion(47, 11);
         joynr::types::DiscoveryEntry discoveryEntry(providerVersion,
                                                     domain,
@@ -219,7 +221,7 @@ TEST_F(SystemServicesDiscoveryTest, lookupUnknownParticipantReturnsEmptyResult)
             5000,                                     // discovery ttl
             joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
             false // provider must support on change subscriptions
-            );
+    );
 
     try {
         discoveryProxy->lookup(result, {domain}, interfaceName, discoveryQos);
@@ -239,7 +241,7 @@ TEST_F(SystemServicesDiscoveryTest, add)
             5000,                                     // discovery ttl
             joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
             false // provider must support on change subscriptions
-            );
+    );
     genericAddLookupRemoveDiscoveryEntryTest(result, domain, interfaceName, discoveryQosLocal);
 }
 
@@ -253,7 +255,7 @@ TEST_F(SystemServicesDiscoveryTest, remove)
             5000,                                     // discovery ttl
             joynr::types::DiscoveryScope::LOCAL_ONLY, // discovery scope
             false // provider must support on change subscriptions
-            );
+    );
     genericAddLookupRemoveDiscoveryEntryTest(result, domain, interfaceName, discoveryQosLocal);
 
     result.clear();

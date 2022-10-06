@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -37,9 +37,9 @@
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/Util.h"
 #include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/Util.h"
 
 // This is not good... Coming from "../../libjoynr/websocket
 #include "WebSocketMessagingStubFactory.h"
@@ -125,21 +125,21 @@ public:
 
         // new connections are handled in onInitMessageReceived; if initialization was successful,
         // any further messages for this connection are handled in onMessageReceived
-        _endpoint.set_message_handler([thisWeakPtr =
-                                               joynr::util::as_weak_ptr(this->shared_from_this())](
-                ConnectionHandle hdl, MessagePtr message) {
-            if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                thisSharedPtr->onInitMessageReceived(hdl, message);
-            }
-        });
+        _endpoint.set_message_handler(
+                [thisWeakPtr = joynr::util::as_weak_ptr(this->shared_from_this())](
+                        ConnectionHandle hdl, MessagePtr message) {
+                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                        thisSharedPtr->onInitMessageReceived(hdl, message);
+                    }
+                });
 
-        _receiver.registerReceiveCallback([thisWeakPtr = joynr::util::as_weak_ptr(
-                                                   this->shared_from_this())](
-                ConnectionHandle && hdl, smrf::ByteVector && msg) {
-            if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                thisSharedPtr->onMessageReceived(std::move(hdl), std::move(msg));
-            }
-        });
+        _receiver.registerReceiveCallback(
+                [thisWeakPtr = joynr::util::as_weak_ptr(this->shared_from_this())](
+                        ConnectionHandle&& hdl, smrf::ByteVector&& msg) {
+                    if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                        thisSharedPtr->onMessageReceived(std::move(hdl), std::move(msg));
+                    }
+                });
     }
 
     /**
@@ -227,8 +227,7 @@ protected:
     }
 
     // List of client connections
-    struct CertEntry
-    {
+    struct CertEntry {
         CertEntry() : _webSocketClientAddress(), _ownerId()
         {
         }
@@ -363,8 +362,7 @@ private:
         }
 
         auto onFailure = [trackingInfo = immutableMessage->getTrackingInfo()](
-                const exceptions::JoynrRuntimeException& e)
-        {
+                                 const exceptions::JoynrRuntimeException& e) {
             JOYNR_LOG_ERROR(logger(),
                             "Incoming Message {} could not be sent! reason: {}",
                             trackingInfo,

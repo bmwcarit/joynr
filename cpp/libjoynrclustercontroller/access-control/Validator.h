@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,8 +23,8 @@
 #include <boost/optional.hpp>
 
 #include "joynr/infrastructure/DacTypes/MasterAccessControlEntry.h"
-#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/MasterRegistrationControlEntry.h"
+#include "joynr/infrastructure/DacTypes/OwnerAccessControlEntry.h"
 #include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 
 namespace joynr
@@ -32,11 +32,9 @@ namespace joynr
 
 namespace tags
 {
-struct Access
-{
+struct Access {
 };
-struct Registration
-{
+struct Registration {
 };
 } // namespace tags
 
@@ -44,16 +42,14 @@ template <typename Tag>
 struct LinkTagWithControlEntries;
 
 template <>
-struct LinkTagWithControlEntries<tags::Access>
-{
+struct LinkTagWithControlEntries<tags::Access> {
     using MasterEntry = infrastructure::DacTypes::MasterAccessControlEntry;
     using MediatorEntry = MasterEntry;
     using OwnerEntry = infrastructure::DacTypes::OwnerAccessControlEntry;
 };
 
 template <>
-struct LinkTagWithControlEntries<tags::Registration>
-{
+struct LinkTagWithControlEntries<tags::Registration> {
     using MasterEntry = infrastructure::DacTypes::MasterRegistrationControlEntry;
     using MediatorEntry = MasterEntry;
     using OwnerEntry = infrastructure::DacTypes::OwnerRegistrationControlEntry;

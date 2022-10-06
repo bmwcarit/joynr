@@ -23,45 +23,45 @@
 
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 
-class MockLocalDomainAccessController : public joynr::LocalDomainAccessController {
+class MockLocalDomainAccessController : public joynr::LocalDomainAccessController
+{
 public:
     using joynr::LocalDomainAccessController::LocalDomainAccessController;
 
     MOCK_METHOD5(getConsumerPermission,
-                 void(
-                     const std::string& userId,
-                     const std::string& domain,
-                     const std::string& interfaceName,
-                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                     std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback> callback));
+                 void(const std::string& userId,
+                      const std::string& domain,
+                      const std::string& interfaceName,
+                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                      std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback>
+                              callback));
 
     MOCK_METHOD5(getConsumerPermission,
                  joynr::infrastructure::DacTypes::Permission::Enum(
-                     const std::string& userId,
-                     const std::string& domain,
-                     const std::string& interfaceName,
-                     const std::string& operation,
-                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
+                         const std::string& userId,
+                         const std::string& domain,
+                         const std::string& interfaceName,
+                         const std::string& operation,
+                         joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
     MOCK_METHOD5(getProviderPermission,
-                 void(
-                     const std::string& userId,
-                     const std::string& domain,
-                     const std::string& interfaceName,
-                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
-                     std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback> callback));
+                 void(const std::string& userId,
+                      const std::string& domain,
+                      const std::string& interfaceName,
+                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                      std::shared_ptr<joynr::LocalDomainAccessController::IGetPermissionCallback>
+                              callback));
 
     MOCK_METHOD4(getProviderPermission,
                  joynr::infrastructure::DacTypes::Permission::Enum(
-                     const std::string& userId,
-                     const std::string& domain,
-                     const std::string& interfaceName,
-                     joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
+                         const std::string& userId,
+                         const std::string& domain,
+                         const std::string& interfaceName,
+                         joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
 
     MOCK_METHOD3(hasRole,
-                 bool(
-                     const std::string& userId,
-                     const std::string& domain,
-                     joynr::infrastructure::DacTypes::Role::Enum role));
+                 bool(const std::string& userId,
+                      const std::string& domain,
+                      joynr::infrastructure::DacTypes::Role::Enum role));
 };
 
 #endif // TESTS_MOCK_MOCKLOCALDOMAINACCESSCONTROLLER_H

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,14 +17,14 @@
  * #L%
  */
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
-#include <cstdint>
+#include "tests/utils/Gtest.h"
 #include <chrono>
+#include <cstdint>
 
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/PeriodicSubscriptionQos.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
 
 using namespace joynr;
 
@@ -38,7 +38,8 @@ public:
     std::int64_t nowPlusTimeSpan(const std::int64_t& timeSpan)
     {
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch()).count();
+                                   std::chrono::system_clock::now().time_since_epoch())
+                                   .count();
         return now + timeSpan;
     }
 };

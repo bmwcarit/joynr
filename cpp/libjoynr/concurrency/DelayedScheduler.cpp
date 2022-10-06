@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -78,46 +78,47 @@ DelayedScheduler::RunnableHandle DelayedScheduler::schedule(std::shared_ptr<Runn
     _delayedRunnables.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(newRunnableHandle),
-            std::forward_as_tuple(runnable,
-                                  _ioService,
-                                  std::chrono::milliseconds(delay),
-                                  [
-                                    thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-                                    newRunnableHandle
-                                  ](const boost::system::error_code& errorCode) {
-                auto thisSharedPtr = thisWeakPtr.lock();
-                if (!thisSharedPtr) {
-                    JOYNR_LOG_ERROR(logger(),
-                                    "Failed to schedule delayed runnable because "
-                                    "DelayedScheduler no longer exists");
-                    return;
-                }
-                if (!errorCode) {
-                    std::lock_guard<std::mutex> lock2(thisSharedPtr->_writeLock);
-                    {
-                        // Look up the runnable because it might have been removed
-                        // by another thread while we were waiting for the mutex.
-                        auto it = thisSharedPtr->_delayedRunnables.find(newRunnableHandle);
-
-                        if (it == thisSharedPtr->_delayedRunnables.end()) {
-                            JOYNR_LOG_WARN(logger(),
-                                           "Timed runnable with ID {} not found while scheduling.",
-                                           newRunnableHandle);
+            std::forward_as_tuple(
+                    runnable,
+                    _ioService,
+                    std::chrono::milliseconds(delay),
+                    [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                     newRunnableHandle](const boost::system::error_code& errorCode) {
+                        auto thisSharedPtr = thisWeakPtr.lock();
+                        if (!thisSharedPtr) {
+                            JOYNR_LOG_ERROR(logger(),
+                                            "Failed to schedule delayed runnable because "
+                                            "DelayedScheduler no longer exists");
                             return;
                         }
+                        if (!errorCode) {
+                            std::lock_guard<std::mutex> lock2(thisSharedPtr->_writeLock);
+                            {
+                                // Look up the runnable because it might have been removed
+                                // by another thread while we were waiting for the mutex.
+                                auto it = thisSharedPtr->_delayedRunnables.find(newRunnableHandle);
 
-                        if (!thisSharedPtr->_stoppingDelayedScheduler) {
-                            std::shared_ptr<Runnable> runnableLocal = it->second.takeRunnable();
-                            thisSharedPtr->_onWorkAvailable(runnableLocal);
+                                if (it == thisSharedPtr->_delayedRunnables.end()) {
+                                    JOYNR_LOG_WARN(
+                                            logger(),
+                                            "Timed runnable with ID {} not found while scheduling.",
+                                            newRunnableHandle);
+                                    return;
+                                }
+
+                                if (!thisSharedPtr->_stoppingDelayedScheduler) {
+                                    std::shared_ptr<Runnable> runnableLocal =
+                                            it->second.takeRunnable();
+                                    thisSharedPtr->_onWorkAvailable(runnableLocal);
+                                }
+                                thisSharedPtr->_delayedRunnables.erase(it);
+                            }
+                        } else if (errorCode != boost::system::errc::operation_canceled) {
+                            JOYNR_LOG_ERROR(logger(),
+                                            "Failed to schedule delayed runnable: {}",
+                                            errorCode.message());
                         }
-                        thisSharedPtr->_delayedRunnables.erase(it);
-                    }
-                } else if (errorCode != boost::system::errc::operation_canceled) {
-                    JOYNR_LOG_ERROR(logger(),
-                                    "Failed to schedule delayed runnable: {}",
-                                    errorCode.message());
-                }
-            }));
+                    }));
 
     JOYNR_LOG_TRACE(logger(), "Added timer with ID {}", newRunnableHandle);
 

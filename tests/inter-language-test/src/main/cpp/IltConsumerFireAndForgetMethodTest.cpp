@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,11 +18,11 @@
  */
 #include "IltAbstractConsumerTest.h"
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/SubscriptionListener.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SubscriptionListener.h"
+#include "joynr/exceptions/JoynrException.h"
 
 using namespace ::testing;
 
@@ -115,8 +115,8 @@ void IltConsumerFireAndForgetMethodTest::subscribeToAttributeFireAndForget(
     EXPECT_CALL(*mockInt32SubscriptionListener, onError(_)).Times(0);
     JOYNR_ASSERT_NO_THROW({
         testInterfaceProxy.setAttributeFireAndForget(0);
-        testInterfaceProxy.subscribeToAttributeFireAndForget(
-                                   mockInt32SubscriptionListener, subscriptionQos)
+        testInterfaceProxy
+                .subscribeToAttributeFireAndForget(mockInt32SubscriptionListener, subscriptionQos)
                 ->get(subscriptionIdFutureTimeoutMs, attributeFireAndForgetSubscriptionId);
         EXPECT_TRUE(onSubscribedSemaphore.waitFor(
                 std::chrono::milliseconds(subscriptionIdFutureTimeoutMs)));

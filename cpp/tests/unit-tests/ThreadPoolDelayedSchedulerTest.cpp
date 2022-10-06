@@ -16,21 +16,21 @@
  * limitations under the License.
  * #L%
  */
-#include <cstdint>
 #include <cassert>
 #include <chrono>
+#include <cstdint>
 
 #include "tests/utils/Gtest.h"
 
-#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockRunnable.h"
+#include "tests/mock/MockRunnableWithAccuracy.h"
 #include "tests/utils/PtrUtils.h"
 #include "tests/utils/TestRunnable.h"
-#include "tests/mock/MockRunnableWithAccuracy.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -43,8 +43,7 @@ class ThreadPoolDelayedSchedulerTest : public testing::Test
 {
 public:
     ThreadPoolDelayedSchedulerTest()
-            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              semaphore(0)
+            : singleThreadedIOService(std::make_shared<SingleThreadedIOService>()), semaphore(0)
     {
         singleThreadedIOService->start();
     }
@@ -115,9 +114,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, testAccuracyOfDelayedScheduler)
     auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(1000);
 
     EXPECT_CALL(*runnable1, runCalled()).Times(1);
-    EXPECT_CALL(*runnable1, runCalledInTime())
-                                    .Times(1)
-                                    .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, runCalledInTime()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
     EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
 
@@ -140,9 +137,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, callDtorOfRunnablesAfterSchedulerHasExpir
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
-    EXPECT_CALL(*runnable1, run())
-                            .Times(1)
-                            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, run()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
     EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
 
@@ -164,9 +159,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, scheduleAndUnscheduleRunnable)
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(1000);
 
-    EXPECT_CALL(*runnable1, dtorCalled())
-                            .Times(1)
-                            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*runnable1, runCalled()).Times(0);
     EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
 
@@ -195,9 +188,7 @@ TEST_F(ThreadPoolDelayedSchedulerTest, useDefaultDelay)
     auto runnable1 = std::make_shared<StrictMock<MockRunnableWithAccuracy>>(1000);
 
     EXPECT_CALL(*runnable1, runCalled()).Times(1);
-    EXPECT_CALL(*runnable1, runCalledInTime())
-                           .Times(1)
-                           .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, runCalledInTime()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
     EXPECT_CALL(*runnable1, shutdown()).Times(AnyNumber());
 

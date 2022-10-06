@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,16 +48,12 @@ void CapabilitiesRegistrar::removeAsync(
         std::function<void()> onSuccess,
         std::function<void(const exceptions::JoynrRuntimeException&)> onError) noexcept
 {
-    auto onSuccessWrapper = [
-        dispatcher = this->_dispatcher,
-        messageRouter = util::as_weak_ptr(_messageRouter),
-        participantId,
-        onSuccess = std::move(onSuccess),
-        onError
-    ]()
-    {
-        auto onSuccessWrapper = [ dispatcher, participantId, onSuccess = std::move(onSuccess) ]()
-        {
+    auto onSuccessWrapper = [dispatcher = this->_dispatcher,
+                             messageRouter = util::as_weak_ptr(_messageRouter),
+                             participantId,
+                             onSuccess = std::move(onSuccess),
+                             onError]() {
+        auto onSuccessWrapper = [dispatcher, participantId, onSuccess = std::move(onSuccess)]() {
             dispatcher->removeRequestCaller(participantId);
             onSuccess();
         };

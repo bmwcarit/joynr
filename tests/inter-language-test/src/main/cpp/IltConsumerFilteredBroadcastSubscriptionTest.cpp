@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,11 +18,11 @@
  */
 #include "IltAbstractConsumerTest.h"
 #include "joynr/ISubscriptionListener.h"
-#include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/serializer/Serializer.h"
-#include "joynr/interlanguagetest/TestInterfaceBroadcastWithFilteringBroadcastFilterParameters.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SubscriptionListener.h"
+#include "joynr/interlanguagetest/TestInterfaceBroadcastWithFilteringBroadcastFilterParameters.h"
+#include "joynr/serializer/Serializer.h"
 
 using namespace ::testing;
 
@@ -72,8 +72,9 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
 
     auto mockBroadcastWithFilteringBroadcastListener =
             std::make_shared<MockBroadcastWithFilteringBroadcastListener>();
-    EXPECT_CALL(*mockBroadcastWithFilteringBroadcastListener, onError(_)).Times(0).WillRepeatedly(
-            ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockBroadcastWithFilteringBroadcastListener, onError(_))
+            .Times(0)
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
     EXPECT_CALL(*mockBroadcastWithFilteringBroadcastListener,
                 onReceive(Eq("fireBroadcast"),
                           _,
@@ -124,9 +125,10 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
                                 ExtendedTypeCollectionEnumerationInTypeCollection::
                                         ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
         std::string filterEnumOfInterestJson(
-                "\"" + joynr::interlanguagetest::namedTypeCollection2::
-                               ExtendedTypeCollectionEnumerationInTypeCollection::getLiteral(
-                                       filterEnumOfInterest) +
+                "\"" +
+                joynr::interlanguagetest::namedTypeCollection2::
+                        ExtendedTypeCollectionEnumerationInTypeCollection::getLiteral(
+                                filterEnumOfInterest) +
                 "\"");
 
         joynr::interlanguagetest::namedTypeCollection1::StructWithStringArray
@@ -154,8 +156,9 @@ TEST_F(IltConsumerFilteredBroadcastSubscriptionTest, callSubscribeBroadcastWithF
         int64_t publicationTtl = UnicastSubscriptionQos::DEFAULT_PUBLICATION_TTL_MS();
         auto subscriptionQos = std::make_shared<joynr::OnChangeSubscriptionQos>(
                 validity, publicationTtl, minInterval_ms);
-        testInterfaceProxy->subscribeToBroadcastWithFilteringBroadcast(
-                                    filterParameters, listener, subscriptionQos)
+        testInterfaceProxy
+                ->subscribeToBroadcastWithFilteringBroadcast(
+                        filterParameters, listener, subscriptionQos)
                 ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerFilteredBroadcastSubscriptionTestLogger,

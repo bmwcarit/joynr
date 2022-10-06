@@ -18,14 +18,14 @@
  */
 #include "tests/utils/Gtest.h"
 
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Settings.h"
+#include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/DefaultMultipleVersionsInterfaceProvider.h"
-#include "joynr/tests/v1/DefaultMultipleVersionsInterfaceProvider.h"
-#include "joynr/tests/v2/DefaultMultipleVersionsInterfaceProvider.h"
 #include "joynr/tests/MultipleVersionsInterfaceProxy.h"
+#include "joynr/tests/v1/DefaultMultipleVersionsInterfaceProvider.h"
 #include "joynr/tests/v1/MultipleVersionsInterfaceProxy.h"
+#include "joynr/tests/v2/DefaultMultipleVersionsInterfaceProvider.h"
 #include "joynr/tests/v2/MultipleVersionsInterfaceProxy.h"
 
 #include "tests/JoynrTest.h"
@@ -44,8 +44,10 @@ protected:
     {
         const Settings libjoynrSettings1("test-resources/libjoynrSystemIntegration1.settings");
         const Settings libjoynrSettings2("test-resources/libjoynrSystemIntegration2.settings");
-        auto settings1 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
-        auto settings2 = std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest2.settings");
+        auto settings1 =
+                std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest1.settings");
+        auto settings2 =
+                std::make_unique<Settings>("test-resources/MqttSystemIntegrationTest2.settings");
         Settings::merge(libjoynrSettings1, *settings1, false);
         Settings::merge(libjoynrSettings2, *settings2, false);
 
@@ -107,10 +109,12 @@ protected:
             selectedRuntime = runtime1;
         }
 
-        auto testProvider1 = std::make_shared<tests::v1::DefaultMultipleVersionsInterfaceProvider>();
+        auto testProvider1 =
+                std::make_shared<tests::v1::DefaultMultipleVersionsInterfaceProvider>();
         runtime1->registerProvider<tests::v1::MultipleVersionsInterfaceProvider>(
                 testDomain, testProvider1, providerQos);
-        auto testProvider2 = std::make_shared<tests::v2::DefaultMultipleVersionsInterfaceProvider>();
+        auto testProvider2 =
+                std::make_shared<tests::v2::DefaultMultipleVersionsInterfaceProvider>();
         selectedRuntime->registerProvider<tests::v2::MultipleVersionsInterfaceProvider>(
                 testDomain, testProvider2, providerQos);
 
@@ -145,7 +149,7 @@ TEST_F(MultipleVersionsTest, twoProxiesOfDifferentVersioningTypesVsOneProvider)
     runtime1->registerProvider<tests::MultipleVersionsInterfaceProvider>(
             testDomain, testProvider, providerQos);
 
-    //tests::MultipleVersionsInterfaceProxy has interface version 2 with no version generation
+    // tests::MultipleVersionsInterfaceProxy has interface version 2 with no version generation
     setAndCheckAttribute<tests::MultipleVersionsInterfaceProxy>(runtime1, expectedUInt8Result1);
     setAndCheckAttribute<tests::v2::MultipleVersionsInterfaceProxy>(runtime1, expectedUInt8Result2);
 

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -70,7 +70,7 @@ namespace RoutingTypes
 {
 class Address;
 }
-}
+} // namespace system
 
 LibJoynrRuntime::LibJoynrRuntime(
         std::unique_ptr<Settings> settings,
@@ -149,10 +149,11 @@ void LibJoynrRuntime::init(
 {
     // create messaging stub factory
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
-    middlewareMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
-        messagingStubFactory->remove(std::move(destinationAddress));
-    });
+    middlewareMessagingStubFactory->registerOnMessagingStubClosedCallback(
+            [messagingStubFactory](std::shared_ptr<const joynr::system::RoutingTypes::Address>
+                                           destinationAddress) {
+                messagingStubFactory->remove(std::move(destinationAddress));
+            });
     messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
     messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
@@ -207,16 +208,16 @@ void LibJoynrRuntime::init(
 
     _discoveryProxy = std::make_shared<LocalDiscoveryAggregator>(getProvisionedEntries());
 
-    auto onSuccessBuildInternalProxies =
-            [ thisSharedPtr = shared_from_this(), this, onSuccess, onError ]()
-    {
-        auto onSuccessGetGlobalAddress =
-                [thisSharedPtr, this, onSuccess, onError](const std::string& globalAddress) {
+    auto onSuccessBuildInternalProxies = [thisSharedPtr = shared_from_this(),
+                                          this,
+                                          onSuccess,
+                                          onError]() {
+        auto onSuccessGetGlobalAddress = [thisSharedPtr, this, onSuccess, onError](
+                                                 const std::string& globalAddress) {
             const std::string savedGlobalAddress(globalAddress);
 
             auto onSuccessGetReplyToAddress = [thisSharedPtr, this, onSuccess, savedGlobalAddress](
-                    const std::string& replyAddress) {
-
+                                                      const std::string& replyAddress) {
                 _messageSender->setReplyToAddress(replyAddress);
 
                 _capabilitiesRegistrar = std::make_unique<CapabilitiesRegistrar>(
@@ -236,13 +237,13 @@ void LibJoynrRuntime::init(
 
             auto onErrorGetReplyToAddress =
                     [onError](const joynr::exceptions::JoynrRuntimeException& error) {
-                JOYNR_LOG_FATAL(logger(),
-                                "onErrorGetReplyToAddress: got exception: {}",
-                                error.getMessage());
-                if (onError) {
-                    onError(error);
-                }
-            };
+                        JOYNR_LOG_FATAL(logger(),
+                                        "onErrorGetReplyToAddress: got exception: {}",
+                                        error.getMessage());
+                        if (onError) {
+                            onError(error);
+                        }
+                    };
 
             _ccRoutingProxy->getReplyToAddressAsync(
                     std::move(onSuccessGetReplyToAddress), std::move(onErrorGetReplyToAddress));
@@ -250,12 +251,13 @@ void LibJoynrRuntime::init(
 
         auto onErrorGetGlobalAddress =
                 [onError](const joynr::exceptions::JoynrRuntimeException& error) {
-            JOYNR_LOG_FATAL(
-                    logger(), "onErrorGetGlobalAddress: got exception: {}", error.getMessage());
-            if (onError) {
-                onError(error);
-            }
-        };
+                    JOYNR_LOG_FATAL(logger(),
+                                    "onErrorGetGlobalAddress: got exception: {}",
+                                    error.getMessage());
+                    if (onError) {
+                        onError(error);
+                    }
+                };
 
         _ccRoutingProxy->getGlobalAddressAsync(
                 std::move(onSuccessGetGlobalAddress), std::move(onErrorGetGlobalAddress));
@@ -263,12 +265,13 @@ void LibJoynrRuntime::init(
 
     auto onErrorBuildInternalProxies =
             [onError](const joynr::exceptions::JoynrRuntimeException& error) {
-        JOYNR_LOG_FATAL(
-                logger(), "onErrorBuildInternalProxies: got exception: {}", error.getMessage());
-        if (onError) {
-            onError(error);
-        }
-    };
+                JOYNR_LOG_FATAL(logger(),
+                                "onErrorBuildInternalProxies: got exception: {}",
+                                error.getMessage());
+                if (onError) {
+                    onError(error);
+                }
+            };
 
     buildInternalProxies(joynrMessagingConnectorFactory,
                          onSuccessBuildInternalProxies,
@@ -305,75 +308,72 @@ void LibJoynrRuntime::buildInternalProxies(
 
     // the following adds a RoutingEntry only to local RoutingTable since parentRouter is not set
     // yet
-    auto onSuccessAddNextHopRoutingProxy = [
-        onSuccess,
-        onError,
-        connectorFactory,
-        systemServicesDomain,
-        joynrInternalMessagingQos,
-        thisSharedPtr = shared_from_this(),
-        this
-    ]()
-    {
-
+    auto onSuccessAddNextHopRoutingProxy = [onSuccess,
+                                            onError,
+                                            connectorFactory,
+                                            systemServicesDomain,
+                                            joynrInternalMessagingQos,
+                                            thisSharedPtr = shared_from_this(),
+                                            this]() {
         // the following call invokes another addNextHopToParent after setting the parentRouter
         // this results in async call to cluster controller; we need to wait for it to finish
         // since without an entry in the RoutingTable of the cluster controller any further
         // responses to requests over the routingProxy could be discarded
 
-        auto onSuccessSetParentRouter = [
-            onSuccess,
-            onError,
-            connectorFactory,
-            systemServicesDomain,
-            joynrInternalMessagingQos,
-            thisSharedPtr = shared_from_this(),
-            this // need to capture this as well because shared_ptr does not allow to access
-                 // protected / private members
-        ]()
-        {
-            auto clusterControllerDiscovery =
-                    std::make_shared<joynr::system::DiscoveryProxy>(thisSharedPtr,
-                                                                    connectorFactory,
-                                                                    systemServicesDomain,
-                                                                    joynrInternalMessagingQos);
-            const std::string ccDiscoveryProviderParticipantId =
-                    _systemServicesSettings.getCcDiscoveryProviderParticipantId();
-            const joynr::types::DiscoveryEntryWithMetaInfo ccDiscoveryEntry =
-                    getProvisionedEntries()[ccDiscoveryProviderParticipantId];
-            clusterControllerDiscovery->handleArbitrationFinished(ccDiscoveryEntry);
+        auto onSuccessSetParentRouter =
+                [onSuccess,
+                 onError,
+                 connectorFactory,
+                 systemServicesDomain,
+                 joynrInternalMessagingQos,
+                 thisSharedPtr = shared_from_this(),
+                 this // need to capture this as well because shared_ptr does not allow to access
+                      // protected / private members
+        ]() {
+                    auto clusterControllerDiscovery =
+                            std::make_shared<joynr::system::DiscoveryProxy>(
+                                    thisSharedPtr,
+                                    connectorFactory,
+                                    systemServicesDomain,
+                                    joynrInternalMessagingQos);
+                    const std::string ccDiscoveryProviderParticipantId =
+                            _systemServicesSettings.getCcDiscoveryProviderParticipantId();
+                    const joynr::types::DiscoveryEntryWithMetaInfo ccDiscoveryEntry =
+                            getProvisionedEntries()[ccDiscoveryProviderParticipantId];
+                    clusterControllerDiscovery->handleArbitrationFinished(ccDiscoveryEntry);
 
-            auto onSuccessAddNextHopDiscoveryProxy =
-                    [onSuccess, clusterControllerDiscovery, thisSharedPtr, this]() {
-                _discoveryProxy->setDiscoveryProxy(clusterControllerDiscovery);
-                onSuccess();
-            };
+                    auto onSuccessAddNextHopDiscoveryProxy =
+                            [onSuccess, clusterControllerDiscovery, thisSharedPtr, this]() {
+                                _discoveryProxy->setDiscoveryProxy(clusterControllerDiscovery);
+                                onSuccess();
+                            };
 
-            auto onErrorAddNextHopDiscoveryProxy =
-                    [onError](const joynr::exceptions::ProviderRuntimeException& error) {
-                JOYNR_LOG_FATAL(logger(),
-                                "Failed to call add next hop for "
-                                "clusterControllerDiscovery: {}",
-                                error.getMessage());
-                onError(error);
-            };
+                    auto onErrorAddNextHopDiscoveryProxy =
+                            [onError](const joynr::exceptions::ProviderRuntimeException& error) {
+                                JOYNR_LOG_FATAL(logger(),
+                                                "Failed to call add next hop for "
+                                                "clusterControllerDiscovery: {}",
+                                                error.getMessage());
+                                onError(error);
+                            };
 
-            _libJoynrMessageRouter->addNextHop(clusterControllerDiscovery->getProxyParticipantId(),
-                                               _dispatcherAddress,
-                                               isGloballyVisible,
-                                               expiryDateMs,
-                                               isSticky,
-                                               onSuccessAddNextHopDiscoveryProxy,
-                                               onErrorAddNextHopDiscoveryProxy);
-        };
+                    _libJoynrMessageRouter->addNextHop(
+                            clusterControllerDiscovery->getProxyParticipantId(),
+                            _dispatcherAddress,
+                            isGloballyVisible,
+                            expiryDateMs,
+                            isSticky,
+                            onSuccessAddNextHopDiscoveryProxy,
+                            onErrorAddNextHopDiscoveryProxy);
+                };
 
         auto onErrorSetParentRouter =
                 [onError](const joynr::exceptions::ProviderRuntimeException& error) {
-            JOYNR_LOG_FATAL(logger(),
-                            "Failed to call setParentRouter for RoutingProxy: {}",
-                            error.getMessage());
-            onError(error);
-        };
+                    JOYNR_LOG_FATAL(logger(),
+                                    "Failed to call setParentRouter for RoutingProxy: {}",
+                                    error.getMessage());
+                    onError(error);
+                };
 
         _libJoynrMessageRouter->setParentRouter(
                 _ccRoutingProxy, onSuccessSetParentRouter, onErrorSetParentRouter);
@@ -381,9 +381,9 @@ void LibJoynrRuntime::buildInternalProxies(
 
     auto onErrorAddNextHopRoutingProxy =
             [onError](const joynr::exceptions::ProviderRuntimeException& error) {
-        JOYNR_LOG_FATAL(logger(), "Failed to call setParentRouter: {}", error.getMessage());
-        onError(error);
-    };
+                JOYNR_LOG_FATAL(logger(), "Failed to call setParentRouter: {}", error.getMessage());
+                onError(error);
+            };
 
     _libJoynrMessageRouter->addNextHop(_ccRoutingProxy->getProxyParticipantId(),
                                        _dispatcherAddress,

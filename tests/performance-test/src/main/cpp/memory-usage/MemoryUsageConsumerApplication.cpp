@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,16 +19,16 @@
 #include <chrono>
 #include <csignal>
 #include <cstdint>
-#include <string>
 #include <memory>
+#include <string>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include "joynr/DiscoveryQos.h"
-#include "joynr/TimePoint.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
+#include "joynr/TimePoint.h"
 
 #include "joynr/tests/performance/EchoProxy.h"
 
@@ -121,9 +121,10 @@ int main(int argc, char* argv[])
     // implementation.
     std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
             [&](const joynr::exceptions::JoynrRuntimeException& exception) {
-        JOYNR_LOG_ERROR(
-                logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
-    };
+                JOYNR_LOG_ERROR(
+                        logger,
+                        "Unexpected joynr runtime error occured: " + exception.getMessage());
+            };
 
     // Initialise the joynr runtime
     std::string pathToMessagingSettings(dir + "/resources/memory-usage-consumer.settings");

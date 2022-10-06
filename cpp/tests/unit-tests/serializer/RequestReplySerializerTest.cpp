@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,34 +17,34 @@
  * #L%
  */
 
-#include <sstream>
-#include <utility>
-#include <typeinfo>
 #include <memory>
-#include <tuple>
+#include <sstream>
 #include <string>
+#include <tuple>
+#include <typeinfo>
+#include <utility>
 
 #include "tests/utils/Gtest.h"
 
-#include "joynr/MutableMessageFactory.h"
-#include "joynr/MutableMessage.h"
 #include "joynr/ImmutableMessage.h"
-#include "joynr/MessagingQos.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/exceptions/JoynrException.h"
 #include "joynr/Logger.h"
+#include "joynr/MessagingQos.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/MutableMessageFactory.h"
+#include "joynr/Reply.h"
+#include "joynr/Request.h"
+#include "joynr/exceptions/JoynrException.h"
 
-#include "joynr/types/TestTypes/TEverythingStruct.h"
-#include "joynr/types/TestTypes/TEverythingExtendedStruct.h"
-#include "joynr/types/TestTypes/TStruct.h"
-#include "joynr/types/TestTypes/TEnum.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/tests/test/MethodWithErrorEnumExtendedErrorEnum.h"
+#include "joynr/types/GlobalDiscoveryEntry.h"
 #include "joynr/types/Localisation/GpsLocation.h"
 #include "joynr/types/Localisation/Trip.h"
+#include "joynr/types/TestTypes/TEnum.h"
+#include "joynr/types/TestTypes/TEverythingExtendedStruct.h"
+#include "joynr/types/TestTypes/TEverythingStruct.h"
+#include "joynr/types/TestTypes/TStruct.h"
 #include "joynr/types/Version.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/types/GlobalDiscoveryEntry.h"
 
 #include "joynr/serializer/Serializer.h"
 
@@ -218,7 +218,8 @@ protected:
 
     std::tuple<joynr::types::TestTypes::TEverythingStruct,
                joynr::types::TestTypes::TEverythingExtendedStruct,
-               joynr::types::TestTypes::TEnum::Enum> complexParametersValues;
+               joynr::types::TestTypes::TEnum::Enum>
+            complexParametersValues;
 
     std::tuple<std::string, int, float, bool> primitiveParametersValues;
 
@@ -226,8 +227,7 @@ protected:
     ADD_LOGGER(RequestReplySerializerTest)
 };
 
-struct JsonSerializer
-{
+struct JsonSerializer {
     template <typename Stream>
     using OutputArchive = muesli::JsonOutputArchive<Stream>;
 
@@ -238,7 +238,7 @@ struct JsonSerializer
 // typelist of serializers which shall be tested in the following tests
 using Serializers = ::testing::Types<JsonSerializer>;
 
-TYPED_TEST_SUITE(RequestReplySerializerTest, Serializers,);
+TYPED_TEST_SUITE(RequestReplySerializerTest, Serializers, );
 
 TYPED_TEST(RequestReplySerializerTest, exampleDeserializerJoynrReplyWithProviderRuntimeException)
 {
@@ -315,8 +315,8 @@ TYPED_TEST(RequestReplySerializerTest, serializeMessage)
 
 TYPED_TEST(RequestReplySerializerTest, serialize_deserialize_RequestWithGpsLocationList)
 {
-    using joynr::types::Localisation::GpsLocation;
     using joynr::types::Localisation::GpsFixEnum;
+    using joynr::types::Localisation::GpsLocation;
     using joynr::types::Localisation::Trip;
 
     using GpsLocationList = std::vector<GpsLocation>;

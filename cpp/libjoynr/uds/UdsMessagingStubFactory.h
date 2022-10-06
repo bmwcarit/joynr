@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -57,19 +57,21 @@ public:
     virtual void addServer(const joynr::system::RoutingTypes::UdsAddress& serverAddress,
                            std::shared_ptr<IUdsSender> udsSender);
     virtual void onMessagingStubClosed(const joynr::system::RoutingTypes::Address& address);
-    virtual void registerOnMessagingStubClosedCallback(std::function<
-            void(std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
-                                                               _onMessagingStubClosedCallback)
-            override;
+    virtual void registerOnMessagingStubClosedCallback(
+            std::function<void(
+                    std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
+                    _onMessagingStubClosedCallback) override;
 
 private:
-    std::function<void(std::shared_ptr<const joynr::system::RoutingTypes::Address>
-                               destinationAddress)> _onMessagingStubClosedCallback;
+    std::function<void(
+            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress)>
+            _onMessagingStubClosedCallback;
     std::unordered_map<joynr::system::RoutingTypes::UdsAddress, std::shared_ptr<IMessagingStub>>
             _serverStubMap;
     std::mutex _serverStubMapMutex;
     std::unordered_map<joynr::system::RoutingTypes::UdsClientAddress,
-                       std::shared_ptr<IMessagingStub>> _clientStubMap;
+                       std::shared_ptr<IMessagingStub>>
+            _clientStubMap;
     std::mutex _clientStubMapMutex;
 
     ADD_LOGGER(UdsMessagingStubFactory)

@@ -133,10 +133,9 @@ std::shared_ptr<joynr::Future<joynr::DiscoveryResult>> GuidedProxyBuilder::disco
     }
 
     std::shared_ptr<GuidedProxyBuilder> thisSharedPtr = this->shared_from_this();
-    auto onArbitrationSuccess =
-            [ thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr), this, future ](
-                    const ArbitrationResult& arbitrationResult)
-    {
+    auto onArbitrationSuccess = [thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
+                                 this,
+                                 future](const ArbitrationResult& arbitrationResult) {
         auto proxyBuilderSharedPtr = thisWeakPtr.lock();
         if (proxyBuilderSharedPtr == nullptr) {
             const exceptions::DiscoveryException error(_runtimeAlreadyDestroyed);
@@ -152,9 +151,8 @@ std::shared_ptr<joynr::Future<joynr::DiscoveryResult>> GuidedProxyBuilder::disco
         future->onSuccess(discoveryResult);
     };
 
-    auto onArbitrationError = [ thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr), future ](
-            const exceptions::DiscoveryException& exception)
-    {
+    auto onArbitrationError = [thisWeakPtr = joynr::util::as_weak_ptr(thisSharedPtr),
+                               future](const exceptions::DiscoveryException& exception) {
         auto proxyBuilderSharedPtr = thisWeakPtr.lock();
         if (proxyBuilderSharedPtr == nullptr) {
             const exceptions::DiscoveryException error(_runtimeAlreadyDestroyed);

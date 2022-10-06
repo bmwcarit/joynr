@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,9 +25,9 @@
 #include <memory>
 #include <string>
 
-#include <boost/algorithm/string/predicate.hpp>
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
+#include <boost/algorithm/string/predicate.hpp>
 
 #include "joynr/Future.h"
 #include "joynr/MulticastSubscriptionQos.h"
@@ -97,7 +97,8 @@ protected:
                       std::ostream_iterator<std::string>(firePartitions, " "));
             EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(5)))
                     << "Partitions used for subscription: " + subscriptionPartitions.str()
-                    << std::endl << "Partitions used for fire broadcast" + firePartitions.str();
+                    << std::endl
+                    << "Partitions used for fire broadcast" + firePartitions.str();
 
             testProxy->unsubscribeFromLocationUpdateBroadcast(subscriptionId);
 
@@ -119,8 +120,9 @@ protected:
         EXPECT_CALL(*mockSubscriptionListener1, onReceive(_)).Times(0);
 
         // Shall receive a publication
-        EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
-                ReleaseSemaphore(&semaphore));
+        EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+                .Times(1)
+                .WillOnce(ReleaseSemaphore(&semaphore));
 
         auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
         subscriptionQos->setValidityMs(500000);
@@ -206,11 +208,13 @@ TEST_P(End2EndBroadcastTest, updateBroadcastSubscription)
     std::shared_ptr<MockGpsSubscriptionListener> mockSubscriptionListener2 =
             std::make_shared<MockGpsSubscriptionListener>();
 
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(_)).Times(1).WillOnce(
-            ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
-            ReleaseSemaphore(&altSemaphore));
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -252,11 +256,13 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastTwice)
     auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
     auto mockSubscriptionListener2 = std::make_shared<MockGpsSubscriptionListener>();
 
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(_)).Times(1).WillOnce(
-            ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
-            ReleaseSemaphore(&altSemaphore));
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -309,8 +315,9 @@ TEST_P(End2EndBroadcastTest, subscribeAndUnsubscribeFromBroadcast_OneOutput)
 
     delayForMqttSubscribeOrUnsubscribe();
 
-    EXPECT_CALL(*subscriptionListener, onReceive(Eq(gpsLocation2))).Times(1).WillOnce(
-            ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*subscriptionListener, onReceive(Eq(gpsLocation2)))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
     testProvider->fireLocationUpdate(gpsLocation2);
 
@@ -357,8 +364,9 @@ TEST_P(End2EndBroadcastTest, subscribeToBroadcast_OneOutput)
     // Waiting between broadcast is neccessary because otherwise the publications could be omitted.
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4))).Times(1).WillOnce(
-            ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4)))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
     testProvider->fireLocationUpdate(gpsLocation4);
 
     // ensure to wait long enough before ending
@@ -585,10 +593,11 @@ TEST_P(End2EndBroadcastTest, subscribeToAttributeWithoutProvider)
 
     // Initial attribute publication on subscription + one publication
     // Use a semaphore to count and wait on calls to the mock listener attribute
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation))).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation)))
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(&semaphore));
-
+    EXPECT_CALL(*mockListenerAttribute, onReceive(Eq(gpsLocation2)))
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
     std::shared_ptr<joynr::Future<std::string>> subscriptionAttributeResult =
             testProxy->subscribeToLocation(mockListenerAttribute, subscriptionQosAttribute);
@@ -634,11 +643,13 @@ TEST_P(End2EndBroadcastTest, subscribeToSameBroadcastWithDifferentPartitions)
     // Use a semaphore to count and wait on calls to the mock listener
     // we expect to notifications before updating the subscription
     // on the second call we release the sync semaphore
-    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_)).Times(1).WillOnce(
-            ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
-            ReleaseSemaphore(&altSemaphore));
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
 
     std::shared_ptr<MyTestProvider> testProvider = registerProvider();
 
@@ -756,11 +767,13 @@ TEST_P(End2EndBroadcastTest, sendBroadcastMessageOnlyOnceIfMultipleProxiesAreOnS
     delayForMqttSubscribeOrUnsubscribe();
 
     // Each proxy will receive a message exactly one time
-    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_)).Times(1).WillOnce(
-            ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockSubscriptionListener1, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
-    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_)).Times(1).WillOnce(
-            ReleaseSemaphore(&altSemaphore));
+    EXPECT_CALL(*mockSubscriptionListener2, onReceive(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(&altSemaphore));
 
     testProvider->fireLocationUpdate(gpsLocation2, partitions);
 
@@ -794,7 +807,6 @@ TEST_P(End2EndBroadcastTest, publishAfterProxyDestruction)
             testProxyBuilder->setMessagingQos(MessagingQos(qosRoundTripTTL))
                     ->setDiscoveryQos(discoveryQos)
                     ->build();
-
 
     auto subscriptionQos = std::make_shared<MulticastSubscriptionQos>();
     subscriptionQos->setValidityMs(500000);

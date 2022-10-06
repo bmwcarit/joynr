@@ -17,21 +17,21 @@
  * #L%
  */
 
-#include <cstdlib>
-#include <string>
-#include <chrono>
-#include <thread>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/program_options.hpp>
+#include <chrono>
+#include <cstdlib>
+#include <string>
+#include <thread>
 
-#include <joynr/Logger.h>
 #include <joynr/JoynrRuntime.h>
+#include <joynr/Logger.h>
 #include <joynr/Settings.h>
 #include <joynr/WebSocketSettings.h>
 
-#include <joynr/tests/DummyKeychainImpl.h>
 #include <joynr/tests/DummyKeyChainParameters.h>
+#include <joynr/tests/DummyKeychainImpl.h>
 
 #include "../provider/PerformanceTestEchoProvider.h"
 
@@ -108,9 +108,9 @@ int main(int argc, char* argv[])
         // implementation.
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
                 [&](const joynr::exceptions::JoynrRuntimeException& exception) {
-            std::cout << "Unexpected joynr runtime error occured: " << exception.getMessage()
-                      << std::endl;
-        };
+                    std::cout << "Unexpected joynr runtime error occured: "
+                              << exception.getMessage() << std::endl;
+                };
 
         std::shared_ptr<joynr::JoynrRuntime> runtime(joynr::JoynrRuntime::createRuntime(
                 std::move(joynrSettings), std::move(onFatalRuntimeError), std::move(keyChain)));

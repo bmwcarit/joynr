@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,21 +16,21 @@
  * limitations under the License.
  * #L%
  */
+#include <cstdint>
 #include <memory>
 #include <string>
-#include <cstdint>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
-#include "joynr/tests/testProvider.h"
-#include "joynr/tests/testProxy.h"
-#include "joynr/vehicle/GpsProxy.h"
-#include "joynr/types/ProviderQos.h"
 #include "joynr/Future.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/Settings.h"
 #include "joynr/PrivateCopyAssign.h"
+#include "joynr/Settings.h"
+#include "joynr/tests/testProvider.h"
+#include "joynr/tests/testProxy.h"
+#include "joynr/types/ProviderQos.h"
+#include "joynr/vehicle/GpsProxy.h"
 #include "tests/JoynrTest.h"
 
 #include "tests/mock/MockGpsProvider.h"
@@ -190,7 +190,7 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
                                                                    100,  // minInterval_ms
                                                                    200,  // maxInterval_ms
                                                                    1000  // alertInterval_ms
-                                                                   );
+            );
     std::shared_ptr<Future<std::string>> subscriptionIdFuture =
             testProxy->subscribeToLocation(subscriptionListener, subscriptionQos);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
@@ -247,5 +247,5 @@ TEST_P(End2EndRPCTest, proxy_call_delay_response_destroy_proxy)
 using namespace std::string_literals;
 
 INSTANTIATE_TEST_SUITE_P(Mqtt,
-                        End2EndRPCTest,
-                        testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));
+                         End2EndRPCTest,
+                         testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));

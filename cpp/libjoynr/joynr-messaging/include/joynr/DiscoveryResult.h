@@ -19,13 +19,13 @@
 #ifndef DISCOVERYRESULT_H
 #define DISCOVERYRESULT_H
 
+#include <boost/optional.hpp>
 #include <string>
 #include <vector>
-#include <boost/optional.hpp>
 
+#include "joynr/types/CustomParameter.h"
 #include "joynr/types/DiscoveryEntry.h"
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
-#include "joynr/types/CustomParameter.h"
 
 namespace joynr
 {

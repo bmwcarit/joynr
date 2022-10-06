@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,10 +26,10 @@
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/BrowserAddress.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketAddress.h"
-#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/system/RoutingTypes/UdsClientAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketAddress.h"
+#include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
 #include "tests/mock/MockDispatcher.h"
 #include "tests/mock/MockInProcessMessagingSkeleton.h"
@@ -311,27 +311,23 @@ TEST_F(LibJoynrMessageRouterTest, removeMulticastReceiver_callsOnErrorWhenNoRout
     const std::string multicastId("multicastId");
     const std::string subscriberParticipantId("subscriberParticipantId");
     const std::string providerParticipantId("testProviderParticipantId");
-    EXPECT_CALL(*mockRoutingProxyRef,
-                removeMulticastReceiverAsyncMock(
-                        _, _, _, _, _, _))
-            .Times(0);
+    EXPECT_CALL(*mockRoutingProxyRef, removeMulticastReceiverAsyncMock(_, _, _, _, _, _)).Times(0);
     Semaphore errorCallbackCalled;
     joynr::exceptions::ProviderRuntimeException callException;
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
-            [&errorCallbackCalled, &callException](const joynr::exceptions::ProviderRuntimeException& e) {
-        callException = e;
-        errorCallbackCalled.notify();
-    };
+            [&errorCallbackCalled,
+             &callException](const joynr::exceptions::ProviderRuntimeException& e) {
+                callException = e;
+                errorCallbackCalled.notify();
+            };
     auto onSuccess = []() { FAIL() << "onSuccess called"; };
     _messageRouter->removeMulticastReceiver(
-            multicastId,
-            subscriberParticipantId,
-            providerParticipantId,
-            onSuccess,
-            onError);
+            multicastId, subscriberParticipantId, providerParticipantId, onSuccess, onError);
     EXPECT_TRUE(errorCallbackCalled.waitFor(std::chrono::milliseconds(5000)));
     EXPECT_THAT(callException.what(), HasSubstr("unable to removeMulticastReceiver. "));
-    EXPECT_THAT(callException.what(), HasSubstr("No routing entry for multicast provider (providerParticipantId=testProviderParticipantId) found."));
+    EXPECT_THAT(callException.what(),
+                HasSubstr("No routing entry for multicast provider "
+                          "(providerParticipantId=testProviderParticipantId) found."));
 }
 
 TEST_F(LibJoynrMessageRouterTest, addMulticastReceiver_callsParentRouter)
@@ -1011,8 +1007,8 @@ TEST_F(LibJoynrMessageRouterTest, invalidIncomingAddress)
     joynr::exceptions::ProviderRuntimeException callException;
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
             [&callException](const joynr::exceptions::ProviderRuntimeException& e) {
-        callException = e;
-    };
+                callException = e;
+            };
     messageRouter.setParentRouter(parentProxyMock, onSuccess, onError);
 
     EXPECT_THAT(callException.what(), HasSubstr("incoming address"));

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,10 +29,10 @@
 #include "joynr/ISubscriptionListener.h"
 #include "joynr/MulticastReceiverDirectory.h"
 #include "joynr/MulticastSubscriptionRequest.h"
-#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/SubscriptionQos.h"
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionUtil.h"
+#include "joynr/ThreadPoolDelayedScheduler.h"
 #include "joynr/Util.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/exceptions/SubscriptionException.h"
@@ -118,9 +118,9 @@ void SubscriptionManager::registerSubscription(
         unregisterSubscription(subscriptionId);
     }
 
-    const std::int64_t timeNow1 =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count();
+    const std::int64_t timeNow1 = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                          std::chrono::system_clock::now().time_since_epoch())
+                                          .count();
 
     const std::int64_t subscriptionExpiryDateMs = qos->getExpiryDateMs();
     const std::int64_t alertAfterInterval = SubscriptionUtil::getAlertInterval(qos);
@@ -160,7 +160,8 @@ void SubscriptionManager::registerSubscription(
         } else if (subscriptionExpiryDateMs != SubscriptionQos::NO_EXPIRY_DATE()) {
             const std::int64_t timeNow2 =
                     std::chrono::duration_cast<std::chrono::milliseconds>(
-                            std::chrono::system_clock::now().time_since_epoch()).count();
+                            std::chrono::system_clock::now().time_since_epoch())
+                            .count();
 
             subscription->_subscriptionEndRunnableHandle = _missedPublicationScheduler->schedule(
                     std::make_shared<SubscriptionEndRunnable>(subscriptionId, shared_from_this()),
@@ -316,11 +317,11 @@ void SubscriptionManager::unregisterSubscription(const std::string& subscription
         std::shared_ptr<ISubscriptionListenerBase> subscriptionListener =
                 subscription->_subscriptionListener;
         auto onError = [subscriptionId, multicastId, subscriptionListener](
-                const joynr::exceptions::ProviderRuntimeException& error) {
-            std::string message = "Unsubscribe from subscription (ID=" + subscriptionId +
-                                  ", multicastId=" + multicastId +
-                                  ") failed. Could not remove multicast receiver: " +
-                                  error.getMessage();
+                               const joynr::exceptions::ProviderRuntimeException& error) {
+            std::string message =
+                    "Unsubscribe from subscription (ID=" + subscriptionId +
+                    ", multicastId=" + multicastId +
+                    ") failed. Could not remove multicast receiver: " + error.getMessage();
             exceptions::SubscriptionException subscriptionException(message, subscriptionId);
             subscriptionListener->onError(subscriptionException);
         };
@@ -400,7 +401,8 @@ void SubscriptionManager::touchSubscriptionState(const std::string& subscription
     }
     {
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch()).count();
+                                   std::chrono::system_clock::now().time_since_epoch())
+                                   .count();
         std::lock_guard<std::recursive_mutex> subscriptionLocker(subscription->_mutex);
         subscription->_timeOfLastPublication = now;
     }
@@ -510,8 +512,8 @@ SubscriptionManager::Subscription::Subscription(
 }
 
 /**
-  *  SubscriptionManager::MissedPublicationRunnable
-  */
+ *  SubscriptionManager::MissedPublicationRunnable
+ */
 SubscriptionManager::MissedPublicationRunnable::MissedPublicationRunnable(
         const TimePoint& expiryDate,
         std::int64_t expectedIntervalMSecs,
@@ -540,7 +542,8 @@ void SubscriptionManager::MissedPublicationRunnable::run()
     if (!isExpired() && !_subscription->_isStopped) {
         std::int64_t delay = 0;
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch()).count();
+                                   std::chrono::system_clock::now().time_since_epoch())
+                                   .count();
         std::int64_t timeSinceLastPublication = now - _subscription->_timeOfLastPublication;
         bool publicationInTime = timeSinceLastPublication < _alertAfterInterval;
         if (publicationInTime) {

@@ -32,5 +32,6 @@ public:
 
 TEST_F(IltConsumerMethodInvocationExceptionTest, consumerCallsNotExistingMethod)
 {
-    EXPECT_THROW(testInterfaceProxy->notExistingMethodForTest(), joynr::exceptions::MethodInvocationException);
+    EXPECT_THROW(testInterfaceProxy->notExistingMethodForTest(),
+                 joynr::exceptions::MethodInvocationException);
 }

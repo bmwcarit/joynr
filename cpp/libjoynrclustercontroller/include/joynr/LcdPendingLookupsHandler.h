@@ -19,10 +19,10 @@
 #ifndef LCDPENDINGLOOKUPSHANDLER_H
 #define LCDPENDINGLOOKUPSHANDLER_H
 
+#include "joynr/InterfaceAddress.h"
+#include <memory>
 #include <unordered_map>
 #include <vector>
-#include <memory>
-#include "joynr/InterfaceAddress.h"
 
 namespace joynr
 {
@@ -31,7 +31,7 @@ namespace types
 {
 class DiscoveryEntry;
 class DiscoveryQos;
-}
+} // namespace types
 
 class ILocalCapabilitiesCallback;
 class LcdPendingLookupsHandler
@@ -60,6 +60,6 @@ private:
     std::unordered_map<InterfaceAddress, std::vector<std::shared_ptr<ILocalCapabilitiesCallback>>>
             _pendingLookups;
 };
-}
+} // namespace joynr
 
 #endif // LCDPENDINGLOOKUPSHANDLER_H

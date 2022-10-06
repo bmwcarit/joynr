@@ -33,8 +33,8 @@
 #include <joynr/tests/DummyKeyChainParameters.h>
 #include <joynr/tests/DummyKeychainImpl.h>
 #elif REAL_KEYCHAIN
-#include <libcertmanager/public.h>
 #include <libcertmanager/private.h>
+#include <libcertmanager/public.h>
 #endif
 
 namespace joynr
@@ -125,9 +125,9 @@ std::shared_ptr<joynr::JoynrRuntime> createRuntime(const std::string& pathToSett
     // implementation.
     std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
             [](const joynr::exceptions::JoynrRuntimeException& exception) {
-        std::cout << "Unexpected joynr runtime error occured: " << exception.getMessage()
-                  << std::endl;
-    };
+                std::cout << "Unexpected joynr runtime error occured: " << exception.getMessage()
+                          << std::endl;
+            };
 
     std::shared_ptr<JoynrRuntime> runtime;
     try {

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +20,8 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Dispatcher.h"
 #include "joynr/ImmutableMessage.h"
@@ -47,16 +47,16 @@
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
-#include "tests/mock/MockTestRequestCaller.h"
-#include "tests/mock/MockTestProvider.h"
 #include "tests/mock/MockSubscriptionListener.h"
+#include "tests/mock/MockTestProvider.h"
+#include "tests/mock/MockTestRequestCaller.h"
 
 using namespace ::testing;
 using namespace joynr;
 
 /**
-  * Is an integration test. Tests from Dispatcher -> SubscriptionListener and RequestCaller
-  */
+ * Is an integration test. Tests from Dispatcher -> SubscriptionListener and RequestCaller
+ */
 class SubscriptionTest : public ::testing::Test
 {
 public:
@@ -69,16 +69,16 @@ public:
               _mockTestEnumSubscriptionListener(
                       new MockSubscriptionListenerOneType<tests::testTypes::TestEnum::Enum>()),
               _gpsLocation1(1.1,
-                           2.2,
-                           3.3,
-                           types::Localisation::GpsFixEnum::MODE2D,
-                           0.0,
-                           0.0,
-                           0.0,
-                           0.0,
-                           444,
-                           444,
-                           444),
+                            2.2,
+                            3.3,
+                            types::Localisation::GpsFixEnum::MODE2D,
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0,
+                            444,
+                            444,
+                            444),
               _qos(2000),
               _providerParticipantId("providerParticipantId"),
               _proxyParticipantId("proxyParticipantId"),
@@ -98,10 +98,10 @@ public:
     void prepareAfterExpectationsAreDone()
     {
         _messageSender = std::make_shared<MessageSender>(_mockMessageRouter, nullptr);
-        _publicationManager = std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
-                                                           _messageSender);
-        _dispatcher = std::make_shared<Dispatcher>(_messageSender,
-                                                      _singleThreadedIOService->getIOService());
+        _publicationManager = std::make_shared<PublicationManager>(
+                _singleThreadedIOService->getIOService(), _messageSender);
+        _dispatcher = std::make_shared<Dispatcher>(
+                _messageSender, _singleThreadedIOService->getIOService());
         _subscriptionManager = std::make_shared<SubscriptionManager>(
                 _singleThreadedIOService->getIOService(), _mockMessageRouter);
         _dispatcher->registerPublicationManager(_publicationManager);
@@ -153,18 +153,19 @@ private:
 };
 
 /**
-  * Trigger:    The dispatcher receives a SubscriptionRequest.
-  * Expected:   The PublicationManager creates a PublisherRunnable and polls
-  *             the MockCaller for the attribute.
-  */
+ * Trigger:    The dispatcher receives a SubscriptionRequest.
+ * Expected:   The PublicationManager creates a PublisherRunnable and polls
+ *             the MockCaller for the attribute.
+ */
 TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute)
 {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     auto semaphore = std::make_shared<Semaphore>(0);
-    EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _)).WillRepeatedly(DoAll(
-            Invoke(_mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
-            ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _))
+            .WillRepeatedly(DoAll(Invoke(_mockRequestCaller.get(),
+                                         &MockTestRequestCaller::invokeLocationOnSuccessFct),
+                                  ReleaseSemaphore(semaphore)));
 
     prepareAfterExpectationsAreDone();
 
@@ -175,15 +176,19 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute)
                                                                    1000, // minInterval_ms
                                                                    2000, // maxInterval_ms
                                                                    1000  // alertInterval_ms
-                                                                   );
+            );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
-    MutableMessage mutableMessage = _messageFactory.createSubscriptionRequest(
-            _proxyParticipantId, _providerParticipantId, _qos, subscriptionRequest, _isLocalMessage);
+    MutableMessage mutableMessage =
+            _messageFactory.createSubscriptionRequest(_proxyParticipantId,
+                                                      _providerParticipantId,
+                                                      _qos,
+                                                      subscriptionRequest,
+                                                      _isLocalMessage);
 
     _dispatcher->addRequestCaller(_providerParticipantId, _mockRequestCaller);
     _dispatcher->receive(mutableMessage.getImmutableMessage());
@@ -193,10 +198,10 @@ TEST_F(SubscriptionTest, receive_subscriptionRequestAndPollAttribute)
 }
 
 /**
-  * Trigger:    The dispatcher receives a Publication.
-  * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
-  *             Interpreter executes it correctly
-  */
+ * Trigger:    The dispatcher receives a Publication.
+ * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
+ *             Interpreter executes it correctly
+ */
 TEST_F(SubscriptionTest, receive_publication)
 {
     // Use a semaphore to count and wait on calls to the mockGpsLocationListener
@@ -213,7 +218,7 @@ TEST_F(SubscriptionTest, receive_publication)
                                                                    1000, // minInterval_ms
                                                                    2000, // maxInterval_ms
                                                                    1000  // alertInterval_ms
-                                                                   );
+            );
 
     SubscriptionRequest subscriptionRequest;
     // construct a reply containing a GpsLocation
@@ -228,10 +233,10 @@ TEST_F(SubscriptionTest, receive_publication)
 
     // subscriptionRequest is an out param
     _subscriptionManager->registerSubscription(attributeName,
-                                              subscriptionCallback,
-                                              _mockGpsLocationListener,
-                                              subscriptionQos,
-                                              subscriptionRequest);
+                                               subscriptionCallback,
+                                               _mockGpsLocationListener,
+                                               subscriptionQos,
+                                               subscriptionRequest);
     // incoming publication from the provider
     MutableMessage mutableMessage = _messageFactory.createSubscriptionPublication(
             _providerParticipantId, _proxyParticipantId, _qos, subscriptionPublication);
@@ -265,7 +270,7 @@ void SubscriptionTest::receive_publicationWithException(
                                                                    1000, // minInterval_ms
                                                                    2000, // maxInterval_ms
                                                                    1000  // alertInterval_ms
-                                                                   );
+            );
 
     SubscriptionRequest subscriptionRequest;
 
@@ -274,10 +279,10 @@ void SubscriptionTest::receive_publicationWithException(
             subscriptionRequest.getSubscriptionId(), future, _subscriptionManager, nullptr);
 
     _subscriptionManager->registerSubscription(attributeName,
-                                              subscriptionCallback,
-                                              mockIntListener,
-                                              subscriptionQos,
-                                              subscriptionRequest);
+                                               subscriptionCallback,
+                                               mockIntListener,
+                                               subscriptionQos,
+                                               subscriptionRequest);
 
     // construct a subscriptionPublication containing a ProviderRuntimeException
     SubscriptionPublication subscriptionPublication;
@@ -308,10 +313,10 @@ TEST_F(SubscriptionTest, receive_publicationWithMethodInvocationException)
 }
 
 /**
-  * Trigger:    The dispatcher receives an enum Publication.
-  * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
-  *             Interpreter executes it correctly
-  */
+ * Trigger:    The dispatcher receives an enum Publication.
+ * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
+ *             Interpreter executes it correctly
+ */
 TEST_F(SubscriptionTest, receive_enumPublication)
 {
     // Use a semaphore to count and wait on calls to the mockTestEnumSubscriptionListener
@@ -330,7 +335,7 @@ TEST_F(SubscriptionTest, receive_enumPublication)
                                                                    1000, // minInterval_ms
                                                                    2000, // maxInterval_ms
                                                                    1000  // alertInterval_ms
-                                                                   );
+            );
 
     SubscriptionRequest subscriptionRequest;
     // construct a reply containing a GpsLocation
@@ -344,10 +349,10 @@ TEST_F(SubscriptionTest, receive_enumPublication)
 
     // subscriptionRequest is an out param
     _subscriptionManager->registerSubscription(attributeName,
-                                              subscriptionCallback,
-                                              _mockTestEnumSubscriptionListener,
-                                              subscriptionQos,
-                                              subscriptionRequest);
+                                               subscriptionCallback,
+                                               _mockTestEnumSubscriptionListener,
+                                               subscriptionQos,
+                                               subscriptionRequest);
     // incoming publication from the provider
     MutableMessage mutableMessage = _messageFactory.createSubscriptionPublication(
             _providerParticipantId, _proxyParticipantId, _qos, subscriptionPublication);
@@ -360,20 +365,21 @@ TEST_F(SubscriptionTest, receive_enumPublication)
 }
 
 /**
-  * Precondition: Dispatcher receives a SubscriptionRequest for a not(yet) existing Provider.
-  * Trigger:    The provider is registered.
-  * Expected:   The PublicationManager registers the provider and notifies the PublicationManager
-  *             to restore waiting Subscriptions
-  */
+ * Precondition: Dispatcher receives a SubscriptionRequest for a not(yet) existing Provider.
+ * Trigger:    The provider is registered.
+ * Expected:   The PublicationManager registers the provider and notifies the PublicationManager
+ *             to restore waiting Subscriptions
+ */
 TEST_F(SubscriptionTest, receive_RestoresSubscription)
 {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     auto semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*_mockRequestCaller,
-                getLocationMock(A<std::function<void(const types::Localisation::GpsLocation&)>>(),
-                                A<std::function<void(const std::shared_ptr<
-                                        joynr::exceptions::ProviderRuntimeException>&)>>()))
+                getLocationMock(
+                        A<std::function<void(const types::Localisation::GpsLocation&)>>(),
+                        A<std::function<void(const std::shared_ptr<
+                                             joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(DoAll(Invoke(_mockRequestCaller.get(),
                                    &MockTestRequestCaller::invokeLocationOnSuccessFct),
                             ReleaseSemaphore(semaphore)));
@@ -387,7 +393,7 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription)
                                                                    1000, // minInterval_ms
                                                                    2000, // maxInterval_ms
                                                                    1000  // alertInterval_ms
-                                                                   );
+            );
     std::string subscriptionId = "SubscriptionID";
 
     SubscriptionRequest subscriptionRequest;
@@ -395,8 +401,12 @@ TEST_F(SubscriptionTest, receive_RestoresSubscription)
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
-    MutableMessage mutableMessage = _messageFactory.createSubscriptionRequest(
-            _proxyParticipantId, _providerParticipantId, _qos, subscriptionRequest, _isLocalMessage);
+    MutableMessage mutableMessage =
+            _messageFactory.createSubscriptionRequest(_proxyParticipantId,
+                                                      _providerParticipantId,
+                                                      _qos,
+                                                      subscriptionRequest,
+                                                      _isLocalMessage);
     // first received message with subscription request
 
     _dispatcher->receive(mutableMessage.getImmutableMessage());
@@ -416,7 +426,7 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam)
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(800,  // validity_ms
                                                                      1000, // publication ttl
                                                                      0     // minInterval_ms
-                                                                     );
+    );
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     auto semaphore = std::make_shared<Semaphore>(0);
@@ -431,8 +441,9 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam)
             getListOfStrings(
                     A<std::function<void(const std::vector<std::string>&)>>(),
                     A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>()))
-            .WillOnce(DoAll(Invoke(_provider.get(), &MockTestProvider::invokeListOfStringsOnSuccess),
-                            ReleaseSemaphore(semaphore)));
+            .WillOnce(
+                    DoAll(Invoke(_provider.get(), &MockTestProvider::invokeListOfStringsOnSuccess),
+                          ReleaseSemaphore(semaphore)));
 
     /* ensure the serialization succeeds and the first publication and the subscriptionReply are
      * sent to the proxy */
@@ -441,15 +452,16 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithSingleArrayParam)
                 route(AllOf(A<ImmutableMessagePtr>(),
                             MessageHasSender(_providerParticipantId),
                             MessageHasRecipient(_proxyParticipantId)),
-                      _)).Times(3);
+                      _))
+            .Times(3);
 
     prepareAfterExpectationsAreDone();
 
     _publicationManager->add(_proxyParticipantId,
-                            _providerParticipantId,
-                            _requestCaller,
-                            subscriptionRequest,
-                            _messageSender);
+                             _providerParticipantId,
+                             _requestCaller,
+                             subscriptionRequest,
+                             _messageSender);
 
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(15)));
 
@@ -493,12 +505,12 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithProviderRuntimeException)
     prepareAfterExpectationsAreDone();
 
     auto subscriptionQos =
-            std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(1999,  // validity_ms
+            std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(1999, // validity_ms
                                                                    2000, // publication ttl
-                                                                   20,  // minInterval_ms
-                                                                   1000,  // maxInterval_ms
+                                                                   20,   // minInterval_ms
+                                                                   1000, // maxInterval_ms
                                                                    2200  // alertInterval_ms
-                                                                   );
+            );
 
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -506,10 +518,10 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithProviderRuntimeException)
     subscriptionRequest.setQos(subscriptionQos);
 
     _publicationManager->add(_proxyParticipantId,
-                            _providerParticipantId,
-                            _requestCaller,
-                            subscriptionRequest,
-                            _messageSender);
+                             _providerParticipantId,
+                             _requestCaller,
+                             subscriptionRequest,
+                             _messageSender);
 
     // wait for the 2 async publications
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
@@ -517,18 +529,19 @@ TEST_F(SubscriptionTest, sendPublication_attributeWithProviderRuntimeException)
 }
 
 /**
-  * Precondition: A provider is registered and there is at least one subscription for it.
-  * Trigger:    The request caller is removed from the dispatcher
-  * Expected:   The PublicationManager stops all subscriptions for this provider
-  */
+ * Precondition: A provider is registered and there is at least one subscription for it.
+ * Trigger:    The request caller is removed from the dispatcher
+ * Expected:   The PublicationManager stops all subscriptions for this provider
+ */
 TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications)
 {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     auto semaphore = std::make_shared<Semaphore>(0);
-    EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _)).WillRepeatedly(DoAll(
-            Invoke(_mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
-            ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _))
+            .WillRepeatedly(DoAll(Invoke(_mockRequestCaller.get(),
+                                         &MockTestRequestCaller::invokeLocationOnSuccessFct),
+                                  ReleaseSemaphore(semaphore)));
 
     prepareAfterExpectationsAreDone();
 
@@ -539,7 +552,7 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications)
                                                                    10,   // minInterval_ms
                                                                    100,  // maxInterval_ms
                                                                    1100  // alertInterval_ms
-                                                                   );
+            );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
@@ -547,8 +560,12 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications)
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
-    MutableMessage mutableMessage = _messageFactory.createSubscriptionRequest(
-            _proxyParticipantId, _providerParticipantId, _qos, subscriptionRequest, _isLocalMessage);
+    MutableMessage mutableMessage =
+            _messageFactory.createSubscriptionRequest(_proxyParticipantId,
+                                                      _providerParticipantId,
+                                                      _qos,
+                                                      subscriptionRequest,
+                                                      _isLocalMessage);
     // first received message with subscription request
     _dispatcher->receive(mutableMessage.getImmutableMessage());
     // wait for two requests from the subscription
@@ -562,18 +579,19 @@ TEST_F(SubscriptionTest, removeRequestCaller_stopsPublications)
 }
 
 /**
-  * Precondition: A provider is registered and there is at least one subscription for it.
-  * Trigger:    A subscription stop message is received
-  * Expected:   The PublicationManager stops the publications for this provider
-  */
+ * Precondition: A provider is registered and there is at least one subscription for it.
+ * Trigger:    A subscription stop message is received
+ * Expected:   The PublicationManager stops the publications for this provider
+ */
 TEST_F(SubscriptionTest, stopMessage_stopsPublications)
 {
 
     // Use a semaphore to count and wait on calls to the mockRequestCaller
     auto semaphore = std::make_shared<Semaphore>(0);
-    EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _)).WillRepeatedly(DoAll(
-            Invoke(_mockRequestCaller.get(), &MockTestRequestCaller::invokeLocationOnSuccessFct),
-            ReleaseSemaphore(semaphore)));
+    EXPECT_CALL(*_mockRequestCaller, getLocationMock(_, _))
+            .WillRepeatedly(DoAll(Invoke(_mockRequestCaller.get(),
+                                         &MockTestRequestCaller::invokeLocationOnSuccessFct),
+                                  ReleaseSemaphore(semaphore)));
 
     prepareAfterExpectationsAreDone();
 
@@ -585,15 +603,19 @@ TEST_F(SubscriptionTest, stopMessage_stopsPublications)
                                                                    10,   // minInterval_ms
                                                                    500,  // maxInterval_ms
                                                                    1100  // alertInterval_ms
-                                                                   );
+            );
     std::string subscriptionId = "SubscriptionID";
     SubscriptionRequest subscriptionRequest;
     subscriptionRequest.setSubscriptionId(subscriptionId);
     subscriptionRequest.setSubscribeToName(attributeName);
     subscriptionRequest.setQos(subscriptionQos);
 
-    MutableMessage mutableMessage = _messageFactory.createSubscriptionRequest(
-            _proxyParticipantId, _providerParticipantId, _qos, subscriptionRequest, _isLocalMessage);
+    MutableMessage mutableMessage =
+            _messageFactory.createSubscriptionRequest(_proxyParticipantId,
+                                                      _providerParticipantId,
+                                                      _qos,
+                                                      subscriptionRequest,
+                                                      _isLocalMessage);
     // first received message with subscription request
     _dispatcher->receive(mutableMessage.getImmutableMessage());
 

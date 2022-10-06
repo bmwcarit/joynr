@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,18 +17,18 @@
  * #L%
  */
 
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <thread>
-#include <chrono>
 
 #include "tests/utils/Gtest.h"
 #include <gmock/gmock-matchers.h>
 
 #include "joynr/CapabilitiesStorage.h"
-#include "joynr/types/Version.h"
-#include "joynr/types/DiscoveryQos.h"
 #include "joynr/types/DiscoveryEntry.h"
+#include "joynr/types/DiscoveryQos.h"
+#include "joynr/types/Version.h"
 
 using namespace ::testing;
 using namespace joynr;
@@ -89,7 +89,7 @@ class CapabilitiesStorageTest : public CapabilitiesStorageTestBase
 
 using StorageTypes = ::testing::Types<capabilities::Storage, capabilities::CachingStorage>;
 
-TYPED_TEST_SUITE(CapabilitiesStorageTest, StorageTypes,);
+TYPED_TEST_SUITE(CapabilitiesStorageTest, StorageTypes, );
 
 TYPED_TEST(CapabilitiesStorageTest, initiallyEmpty)
 {
@@ -150,7 +150,8 @@ TYPED_TEST(CapabilitiesStorageTest, removeExpiredEntries)
 {
     TypeParam storage;
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                       std::chrono::system_clock::now().time_since_epoch()).count();
+                       std::chrono::system_clock::now().time_since_epoch())
+                       .count();
 
     joynr::types::DiscoveryEntry entry1(this->version,
                                         this->domain,

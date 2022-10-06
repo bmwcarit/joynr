@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,13 +28,13 @@
 #include <regex>
 #include <stdexcept>
 
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/ostream_iterator.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/archive/iterators/base64_from_binary.hpp>
-#include <boost/archive/iterators/transform_width.hpp>
-#include <boost/archive/iterators/ostream_iterator.hpp>
 
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 
@@ -89,8 +89,8 @@ void writeToFile(const std::string& fileName,
     std::ofstream file;
     file.open(fileName, mode);
     if (!file.is_open()) {
-        throw std::runtime_error("Could not open file " + fileName + " for writing: " +
-                                 std::strerror(errno));
+        throw std::runtime_error("Could not open file " + fileName +
+                                 " for writing: " + std::strerror(errno));
     }
 
     // append input string to file
@@ -120,8 +120,8 @@ std::string loadStringFromFile(const std::string& fileName)
     // read from file
     std::ifstream inStream(fileName.c_str(), std::ios::in | std::ios::binary);
     if (!inStream.is_open()) {
-        throw std::runtime_error("Could not open file " + fileName + " for reading: " +
-                                 std::strerror(errno));
+        throw std::runtime_error("Could not open file " + fileName +
+                                 " for reading: " + std::strerror(errno));
     }
 
     // validate the file size
@@ -154,8 +154,7 @@ std::string attributeGetterFromName(const std::string& attributeName)
 }
 
 template <class CharType>
-struct base64url_from_6_bit
-{
+struct base64url_from_6_bit {
     typedef CharType result_type;
     CharType operator()(CharType t) const
     {
@@ -201,7 +200,8 @@ std::string createUuid()
                                                         // of 8 bit bytes
                     const char*,
                     6,
-                    8>> base64_text; // compose all the above operations in to a new iterator
+                    8>>
+            base64_text; // compose all the above operations in to a new iterator
 
     std::stringstream result;
     std::copy(base64_text(uuid.begin()),

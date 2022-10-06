@@ -113,97 +113,94 @@ void Arbitrator::startArbitration(
 
     _filterByVersionAndArbitrationStrategy = filterByVersionAndArbitrationStrategy;
 
-    _arbitrationThread =
-            std::thread([thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this())]() {
-                auto thisSharedPtr = thisWeakPtr.lock();
-                if (!thisSharedPtr) {
-                    return;
-                }
+    _arbitrationThread = std::thread([thisWeakPtr =
+                                              joynr::util::as_weak_ptr(shared_from_this())]() {
+        auto thisSharedPtr = thisWeakPtr.lock();
+        if (!thisSharedPtr) {
+            return;
+        }
 
-                thisSharedPtr->_arbitrationFinished = false;
-                thisSharedPtr->_arbitrationFailedForever = false;
+        thisSharedPtr->_arbitrationFinished = false;
+        thisSharedPtr->_arbitrationFailedForever = false;
 
-                JOYNR_LOG_TRACE(
-                        logger(),
+        JOYNR_LOG_TRACE(logger(),
                         "Entering arbitration thread for domain: [{}], interface: {}, GBIDs = >{}<",
                         thisSharedPtr->_serializedDomainsList,
                         thisSharedPtr->_interfaceName,
                         thisSharedPtr->_gbidString);
 
-                while (!thisSharedPtr->_arbitrationStopped) {
-                    thisSharedPtr->attemptArbitration();
+        while (!thisSharedPtr->_arbitrationStopped) {
+            thisSharedPtr->attemptArbitration();
 
-                    // exit if arbitration has finished successfully
-                    if (thisSharedPtr->_arbitrationFinished) {
-                        thisSharedPtr->assertNoPendingFuture();
-                        return;
-                    }
+            // exit if arbitration has finished successfully
+            if (thisSharedPtr->_arbitrationFinished) {
+                thisSharedPtr->assertNoPendingFuture();
+                return;
+            }
 
-                    // check if we should break the loop and report errors to the user
-                    if (thisSharedPtr->_arbitrationStopped) {
-                        // stopArbitration has been invoked
-                        break;
-                    }
+            // check if we should break the loop and report errors to the user
+            if (thisSharedPtr->_arbitrationStopped) {
+                // stopArbitration has been invoked
+                break;
+            }
 
-                    // If there are no suitable providers, retry the arbitration after the retry
-                    // interval
-                    // elapsed
-                    const std::int64_t durationMs = thisSharedPtr->getDurationMs();
+            // If there are no suitable providers, retry the arbitration after the retry
+            // interval
+            // elapsed
+            const std::int64_t durationMs = thisSharedPtr->getDurationMs();
 
-                    if (thisSharedPtr->_discoveryQos.getDiscoveryTimeoutMs() <= durationMs) {
-                        // discovery timeout reached
-                        break;
-                    } else if (thisSharedPtr->_arbitrationFailedForever) {
-                        // arbitration failed -> inform caller immediately
-                        break;
-                    } else if (thisSharedPtr->_discoveryQos.getDiscoveryTimeoutMs() - durationMs <=
-                               thisSharedPtr->_discoveryQos.getRetryIntervalMs()) {
-                        // no retry possible -> inform caller about cancelled arbitration
-                        // immediately
-                        break;
-                    } else {
-                        // wait for retry interval and attempt a new arbitration
-                        JOYNR_LOG_TRACE(logger(),
-                                        "Rescheduling arbitration with delay {}ms",
-                                        thisSharedPtr->_discoveryQos.getRetryIntervalMs());
-                        auto waitIntervalMs = std::chrono::milliseconds(
+            if (thisSharedPtr->_discoveryQos.getDiscoveryTimeoutMs() <= durationMs) {
+                // discovery timeout reached
+                break;
+            } else if (thisSharedPtr->_arbitrationFailedForever) {
+                // arbitration failed -> inform caller immediately
+                break;
+            } else if (thisSharedPtr->_discoveryQos.getDiscoveryTimeoutMs() - durationMs <=
+                       thisSharedPtr->_discoveryQos.getRetryIntervalMs()) {
+                // no retry possible -> inform caller about cancelled arbitration
+                // immediately
+                break;
+            } else {
+                // wait for retry interval and attempt a new arbitration
+                JOYNR_LOG_TRACE(logger(),
+                                "Rescheduling arbitration with delay {}ms",
                                 thisSharedPtr->_discoveryQos.getRetryIntervalMs());
-                        thisSharedPtr->_semaphore.waitFor(waitIntervalMs);
-                    }
-                }
+                auto waitIntervalMs = std::chrono::milliseconds(
+                        thisSharedPtr->_discoveryQos.getRetryIntervalMs());
+                thisSharedPtr->_semaphore.waitFor(waitIntervalMs);
+            }
+        }
 
-                if (thisSharedPtr->_onErrorCallback) {
-                    if (thisSharedPtr->_arbitrationStopped) {
-                        thisSharedPtr->_arbitrationError.setMessage(
-                                "Shutting Down Arbitration for interface " +
-                                thisSharedPtr->_interfaceName);
-                        std::call_once(thisSharedPtr->_onceFlag,
-                                       thisSharedPtr->_onErrorCallback,
-                                       thisSharedPtr->_arbitrationError);
-                        // If this point is reached the arbitration timed out
-                    } else if (thisSharedPtr->_discoveredIncompatibleVersions.empty()) {
-                        std::call_once(thisSharedPtr->_onceFlag,
-                                       thisSharedPtr->_onErrorCallback,
-                                       thisSharedPtr->_arbitrationError);
-                    } else {
-                        std::call_once(thisSharedPtr->_onceFlag,
-                                       thisSharedPtr->_onErrorCallback,
-                                       exceptions::NoCompatibleProviderFoundException(
-                                               thisSharedPtr->_discoveredIncompatibleVersions));
-                    }
-                    thisSharedPtr->_onSuccessCallback = nullptr;
-                    thisSharedPtr->_onErrorCallback = nullptr;
-                }
+        if (thisSharedPtr->_onErrorCallback) {
+            if (thisSharedPtr->_arbitrationStopped) {
+                thisSharedPtr->_arbitrationError.setMessage(
+                        "Shutting Down Arbitration for interface " + thisSharedPtr->_interfaceName);
+                std::call_once(thisSharedPtr->_onceFlag,
+                               thisSharedPtr->_onErrorCallback,
+                               thisSharedPtr->_arbitrationError);
+                // If this point is reached the arbitration timed out
+            } else if (thisSharedPtr->_discoveredIncompatibleVersions.empty()) {
+                std::call_once(thisSharedPtr->_onceFlag,
+                               thisSharedPtr->_onErrorCallback,
+                               thisSharedPtr->_arbitrationError);
+            } else {
+                std::call_once(thisSharedPtr->_onceFlag,
+                               thisSharedPtr->_onErrorCallback,
+                               exceptions::NoCompatibleProviderFoundException(
+                                       thisSharedPtr->_discoveredIncompatibleVersions));
+            }
+            thisSharedPtr->_onSuccessCallback = nullptr;
+            thisSharedPtr->_onErrorCallback = nullptr;
+        }
 
-                thisSharedPtr->_arbitrationRunning = false;
-                JOYNR_LOG_DEBUG(
-                        logger(),
+        thisSharedPtr->_arbitrationRunning = false;
+        JOYNR_LOG_DEBUG(logger(),
                         "Exiting arbitration thread for domain: [{}], interface: {}, GBIDs = >{}<",
                         thisSharedPtr->_serializedDomainsList,
                         thisSharedPtr->_interfaceName,
                         thisSharedPtr->_gbidString);
-                thisSharedPtr->assertNoPendingFuture();
-            });
+        thisSharedPtr->assertNoPendingFuture();
+    });
 }
 
 void Arbitrator::stopArbitration()
@@ -220,15 +217,16 @@ void Arbitrator::stopArbitration()
         // check if there is a pending future and stop it if still in progress
         auto error = std::make_shared<joynr::exceptions::JoynrRuntimeException>(
                 "Shutting Down Arbitration for interface " + _interfaceName);
-        boost::apply_visitor([error](auto& future) {
-                                 if (future) {
-                                     if (future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
-                                         future->onError(error);
-                                     }
-                                     future.reset();
-                                 }
-                             },
-                             _pendingFuture);
+        boost::apply_visitor(
+                [error](auto& future) {
+                    if (future) {
+                        if (future->getStatus() == StatusCodeEnum::IN_PROGRESS) {
+                            future->onError(error);
+                        }
+                        future.reset();
+                    }
+                },
+                _pendingFuture);
     }
 
     _semaphore.notify();
@@ -242,23 +240,25 @@ void Arbitrator::stopArbitration()
 void Arbitrator::validatePendingFuture()
 {
     std::unique_lock<std::mutex> lock(_pendingFutureMutex);
-    boost::apply_visitor([](auto& future) {
-                             if (future) {
-                                 assert(future->getStatus() != StatusCodeEnum::IN_PROGRESS);
-                                 future.reset();
-                             }
-                         },
-                         _pendingFuture);
+    boost::apply_visitor(
+            [](auto& future) {
+                if (future) {
+                    assert(future->getStatus() != StatusCodeEnum::IN_PROGRESS);
+                    future.reset();
+                }
+            },
+            _pendingFuture);
 }
 
 void Arbitrator::assertNoPendingFuture()
 {
     std::unique_lock<std::mutex> lock(_pendingFutureMutex);
-    boost::apply_visitor([](auto& future) {
-                             assert(!future);
-                             std::ignore = future;
-                         },
-                         _pendingFuture);
+    boost::apply_visitor(
+            [](auto& future) {
+                assert(!future);
+                std::ignore = future;
+            },
+            _pendingFuture);
 }
 
 void Arbitrator::attemptArbitration()

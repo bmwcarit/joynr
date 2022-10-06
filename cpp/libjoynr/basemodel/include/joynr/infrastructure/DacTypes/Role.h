@@ -40,8 +40,7 @@ namespace DacTypes
  *
  * @version 0.0
  */
-struct Role : public joynr::exceptions::ApplicationExceptionError
-{
+struct Role : public joynr::exceptions::ApplicationExceptionError {
 
     using ApplicationExceptionError::ApplicationExceptionError;
     Role() = default;
@@ -131,8 +130,7 @@ namespace std
  * std::unordered_map, std::unordered_multimap as default hash function.
  */
 template <>
-struct hash<joynr::infrastructure::DacTypes::Role::Enum>
-{
+struct hash<joynr::infrastructure::DacTypes::Role::Enum> {
 
     /**
      * @brief method overriding default implementation of operator ()
@@ -153,8 +151,7 @@ MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::infrastructure::DacTypes::Role,
 namespace muesli
 {
 template <>
-struct EnumTraits<joynr::infrastructure::DacTypes::Role::Enum>
-{
+struct EnumTraits<joynr::infrastructure::DacTypes::Role::Enum> {
     using Wrapper = joynr::infrastructure::DacTypes::Role;
 };
 } // namespace muesli

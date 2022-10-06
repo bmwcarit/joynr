@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,14 +39,14 @@ class IMessagingStub;
 class IMiddlewareMessagingStubFactory;
 
 /**
-  * Creates/Stores <Middleware>MessagingStubs. MessagingStubs are used to contact remote
-  *ClusterControllers (HttpCommunicationManager)
-  * and libjoynrs (dummy<Libjoynr>Skeleton) on the machine.
-  * A libjoynr does not need a MessagingStubFactory, as each libJoynr has one MessagingStub that
-  *connects it to its cc,
-  * and will nevere use any other MessagingStubs.
-  *
-  */
+ * Creates/Stores <Middleware>MessagingStubs. MessagingStubs are used to contact remote
+ *ClusterControllers (HttpCommunicationManager)
+ * and libjoynrs (dummy<Libjoynr>Skeleton) on the machine.
+ * A libjoynr does not need a MessagingStubFactory, as each libJoynr has one MessagingStub that
+ *connects it to its cc,
+ * and will nevere use any other MessagingStubs.
+ *
+ */
 
 class MessagingStubFactory : public IMessagingStubFactory
 {
@@ -56,8 +56,9 @@ public:
     // Those Skeletons must be registered before the MessagingStubFactory is used.
     MessagingStubFactory();
 
-    std::shared_ptr<IMessagingStub> create(const std::shared_ptr<
-            const joynr::system::RoutingTypes::Address>& destinationAddress) override;
+    std::shared_ptr<IMessagingStub> create(
+            const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress)
+            override;
     void remove(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                         destinationAddress) override;
     bool contains(const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
@@ -71,15 +72,13 @@ private:
 
     using Address = joynr::system::RoutingTypes::Address;
     using AddressPtr = std::shared_ptr<const Address>;
-    struct AddressPtrHash
-    {
+    struct AddressPtrHash {
         std::size_t operator()(const AddressPtr& addressPtr) const
         {
             return addressPtr->hashCode();
         }
     };
-    struct AddressPtrCompare
-    {
+    struct AddressPtrCompare {
         bool operator()(const AddressPtr& p1, const AddressPtr& p2) const
         {
             return *p1 == *p2;

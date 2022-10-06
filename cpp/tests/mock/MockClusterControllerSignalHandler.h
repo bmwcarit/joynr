@@ -23,7 +23,7 @@
 
 #include "joynr/IClusterControllerSignalHandler.h"
 
-class MockClusterControllerSignalHandler: public joynr::IClusterControllerSignalHandler
+class MockClusterControllerSignalHandler : public joynr::IClusterControllerSignalHandler
 {
 public:
     MOCK_METHOD0(shutdownClusterController, void());

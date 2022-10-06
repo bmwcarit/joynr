@@ -116,4 +116,4 @@ void LcdPendingLookupsHandler::callbackCalled(
         }
     }
 }
-}
+} // namespace joynr

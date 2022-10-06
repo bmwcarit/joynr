@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -154,7 +154,8 @@ PublicationManager::PublicationManager(boost::asio::io_service& ioService,
 bool isSubscriptionExpired(const std::shared_ptr<SubscriptionQos> qos, int offset = 0)
 {
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                               std::chrono::system_clock::now().time_since_epoch()).count();
+                               std::chrono::system_clock::now().time_since_epoch())
+                               .count();
     return qos->getExpiryDateMs() != SubscriptionQos::NO_EXPIRY_DATE() &&
            qos->getExpiryDateMs() < (now + offset);
 }
@@ -717,7 +718,8 @@ void PublicationManager::sendSubscriptionPublication(
                 std::move(subscriptionPublication));
         // Make note of when this publication was sent
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch()).count();
+                                   std::chrono::system_clock::now().time_since_epoch())
+                                   .count();
         publication->_timeOfLastPublication = now;
 
         {
@@ -769,7 +771,8 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         // See if the publication is needed
         const std::shared_ptr<SubscriptionQos> qos = subscriptionRequest->getQos();
         std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                   std::chrono::system_clock::now().time_since_epoch()).count();
+                                   std::chrono::system_clock::now().time_since_epoch())
+                                   .count();
         std::int64_t publicationInterval = SubscriptionUtil::getPeriodicPublicationInterval(qos);
 
         // check if the subscription qos needs a periodic publication
@@ -811,9 +814,12 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         std::string attributeGetter(
                 util::attributeGetterFromName(subscriptionRequest->getSubscribeToName()));
 
-        std::function<void(Reply && )> onSuccess =
-                [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
-                        Reply&& response) {
+        std::function<void(Reply &&)> onSuccess = [publication,
+                                                   publicationInterval,
+                                                   qos,
+                                                   subscriptionRequest,
+                                                   this,
+                                                   subscriptionId](Reply&& response) {
             sendPublication(
                     publication, subscriptionRequest, subscriptionRequest, std::move(response));
 
@@ -830,22 +836,24 @@ void PublicationManager::pollSubscription(const std::string& subscriptionId)
         std::function<void(const std::shared_ptr<exceptions::JoynrException>&)> onError =
                 [publication, publicationInterval, qos, subscriptionRequest, this, subscriptionId](
                         const std::shared_ptr<exceptions::JoynrException>& exception) {
+                    std::shared_ptr<exceptions::JoynrRuntimeException> runtimeError =
+                            std::dynamic_pointer_cast<exceptions::JoynrRuntimeException>(exception);
+                    assert(runtimeError);
+                    sendPublicationError(publication,
+                                         subscriptionRequest,
+                                         subscriptionRequest,
+                                         std::move(runtimeError));
 
-            std::shared_ptr<exceptions::JoynrRuntimeException> runtimeError =
-                    std::dynamic_pointer_cast<exceptions::JoynrRuntimeException>(exception);
-            assert(runtimeError);
-            sendPublicationError(
-                    publication, subscriptionRequest, subscriptionRequest, std::move(runtimeError));
-
-            // Reschedule the next poll
-            if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
-                JOYNR_LOG_TRACE(
-                        logger(), "rescheduling runnable with delay: {}", publicationInterval);
-                _delayedScheduler->schedule(
-                        std::make_shared<PublisherRunnable>(shared_from_this(), subscriptionId),
-                        std::chrono::milliseconds(publicationInterval));
-            }
-        };
+                    // Reschedule the next poll
+                    if (publicationInterval > 0 && (!isSubscriptionExpired(qos))) {
+                        JOYNR_LOG_TRACE(logger(),
+                                        "rescheduling runnable with delay: {}",
+                                        publicationInterval);
+                        _delayedScheduler->schedule(std::make_shared<PublisherRunnable>(
+                                                            shared_from_this(), subscriptionId),
+                                                    std::chrono::milliseconds(publicationInterval));
+                    }
+                };
 
         JOYNR_LOG_TRACE(logger(), "run: executing requestInterpreter= {}", attributeGetter);
         Request dummyRequest;
@@ -880,7 +888,8 @@ std::int64_t PublicationManager::getTimeUntilNextPublication(
     std::lock_guard<std::recursive_mutex> publicationLocker((publication->_mutex));
     // Check the last publication time against the min interval
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                               std::chrono::system_clock::now().time_since_epoch()).count();
+                               std::chrono::system_clock::now().time_since_epoch())
+                               .count();
     std::int64_t minInterval = SubscriptionUtil::getMinInterval(qos);
 
     std::int64_t timeSinceLast = now - publication->_timeOfLastPublication;

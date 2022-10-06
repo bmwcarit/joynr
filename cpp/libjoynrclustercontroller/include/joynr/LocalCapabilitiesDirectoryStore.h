@@ -39,13 +39,13 @@ namespace capabilities
 {
 class Storage;
 class CachingStorage;
-}
+} // namespace capabilities
 
 namespace types
 {
 class DiscoveryEntry;
 class DiscoveryQos;
-}
+} // namespace types
 
 class LocalCapabilitiesDirectoryStore
 {
@@ -55,10 +55,10 @@ public:
     virtual ~LocalCapabilitiesDirectoryStore();
 
     /*
-      * Returns a list of locally cached capabilitiy entries. This method is used
-      * when capabilities from the global directory are received, to check if a new
-      * local provider was registered in the meantime.
-      */
+     * Returns a list of locally cached capabilitiy entries. This method is used
+     * when capabilities from the global directory are received, to check if a new
+     * local provider was registered in the meantime.
+     */
     virtual std::vector<types::DiscoveryEntry> getLocalCapabilities(
             const std::string& participantId);
     virtual std::vector<types::DiscoveryEntry> getLocalCapabilities(

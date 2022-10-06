@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,17 +20,19 @@
 #ifndef TESTRUNNABLE_H
 #define TESTRUNNABLE_H
 
-#include "joynr/Runnable.h"
 #include "joynr/Logger.h"
+#include "joynr/Runnable.h"
 
 namespace joynr
 {
 
-class TestRunnable : public Runnable {
+class TestRunnable : public Runnable
+{
 public:
     TestRunnable();
     void shutdown();
     void run();
+
 private:
     ADD_LOGGER(TestRunnable)
 };

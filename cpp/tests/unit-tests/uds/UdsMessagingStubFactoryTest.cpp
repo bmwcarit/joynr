@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,9 +22,9 @@
 
 #include "joynr/MessagingStubFactory.h"
 #include "joynr/Semaphore.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/system/RoutingTypes/UdsClientAddress.h"
-#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
@@ -144,8 +144,7 @@ TEST_F(UdsMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromUdsMessagi
 
     auto clientAddressCopy =
             std::make_shared<system::RoutingTypes::UdsClientAddress>(_udsClientAddress);
-    auto serverAddressCopy =
-            std::make_shared<system::RoutingTypes::UdsAddress>(_udsServerAddress);
+    auto serverAddressCopy = std::make_shared<system::RoutingTypes::UdsAddress>(_udsServerAddress);
 
     // test without OnMessagingStubClosedCallback set
     udsMessagingStubFactory.addClient(_udsClientAddress, udsClientSender);
@@ -168,11 +167,11 @@ TEST_F(UdsMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromUdsMessagi
     EXPECT_TRUE(udsMessagingStubFactory.create(_udsServerAddress).get() != nullptr);
 
     udsMessagingStubFactory.registerOnMessagingStubClosedCallback(
-            [semaphore](std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
+            [semaphore](std::shared_ptr<const joynr::system::RoutingTypes::Address>
+                                destinationAddress) {
                 std::ignore = destinationAddress;
                 semaphore->notify();
-            }
-    );
+            });
 
     udsMessagingStubFactory.onMessagingStubClosed(*clientAddressCopy);
     EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(2)));
@@ -195,8 +194,7 @@ TEST_F(UdsMessagingStubFactoryTest, callingOnMessagingStubClosedWithWrongAddress
             std::make_shared<system::RoutingTypes::WebSocketAddress>(_webSocketAddress);
     auto webSocketClientAddressCopy =
             std::make_shared<system::RoutingTypes::WebSocketClientAddress>(_webSocketClientAddress);
-    auto mqttAddressCopy =
-            std::make_shared<system::RoutingTypes::MqttAddress>(_mqttAddress);
+    auto mqttAddressCopy = std::make_shared<system::RoutingTypes::MqttAddress>(_mqttAddress);
 
     udsMessagingStubFactory.onMessagingStubClosed(*webSocketAddressCopy);
     udsMessagingStubFactory.onMessagingStubClosed(*webSocketClientAddressCopy);
@@ -207,20 +205,19 @@ TEST_F(UdsMessagingStubFactoryTest, callingOnMessagingStubClosedWithWrongAddress
 TEST_F(UdsMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMessagingStubFactory)
 {
     auto udsMessagingStubFactory = std::make_shared<UdsMessagingStubFactory>();
-    auto address =
-            std::make_shared<system::RoutingTypes::UdsClientAddress>(_udsClientAddress);
-    auto addressCopy =
-            std::make_shared<system::RoutingTypes::UdsClientAddress>(_udsClientAddress);
+    auto address = std::make_shared<system::RoutingTypes::UdsClientAddress>(_udsClientAddress);
+    auto addressCopy = std::make_shared<system::RoutingTypes::UdsClientAddress>(_udsClientAddress);
     auto udsSender = std::make_shared<MockIUdsSender>();
 
     udsMessagingStubFactory->addClient(
             joynr::system::RoutingTypes::UdsClientAddress(*address), udsSender);
 
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
-    udsMessagingStubFactory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
-        messagingStubFactory->remove(destinationAddress);
-    });
+    udsMessagingStubFactory->registerOnMessagingStubClosedCallback(
+            [messagingStubFactory](std::shared_ptr<const joynr::system::RoutingTypes::Address>
+                                           destinationAddress) {
+                messagingStubFactory->remove(destinationAddress);
+            });
     messagingStubFactory->registerStubFactory(udsMessagingStubFactory);
 
     EXPECT_NE(nullptr, messagingStubFactory->create(address).get());

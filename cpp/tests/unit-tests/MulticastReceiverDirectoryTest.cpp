@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +19,8 @@
 
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/MulticastReceiverDirectory.h"
 
@@ -176,33 +176,25 @@ TEST_F(MulticastReceiverDirectoryTest, getReceiversWithWildCards)
 
     subscribeToMulticastID = "provider/brod/a";
     receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
-    expectedReceivers = {listOfSubscribersId[0],
-                         listOfSubscribersId[1],
-                         listOfSubscribersId[4],
+    expectedReceivers = {listOfSubscribersId[0], listOfSubscribersId[1], listOfSubscribersId[4],
                          listOfSubscribersId[5]};
     EXPECT_EQ(expectedReceivers, receivers);
 
     subscribeToMulticastID = "provider/brod/a/z";
     receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
-    expectedReceivers = {listOfSubscribersId[2],
-                         listOfSubscribersId[4],
-                         listOfSubscribersId[5],
+    expectedReceivers = {listOfSubscribersId[2], listOfSubscribersId[4], listOfSubscribersId[5],
                          listOfSubscribersId[7]};
     EXPECT_EQ(expectedReceivers, receivers);
 
     subscribeToMulticastID = "provider/brod/a/b/a";
     receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
-    expectedReceivers = {listOfSubscribersId[4],
-                         listOfSubscribersId[5],
-                         listOfSubscribersId[6],
+    expectedReceivers = {listOfSubscribersId[4], listOfSubscribersId[5], listOfSubscribersId[6],
                          listOfSubscribersId[7]};
     EXPECT_EQ(expectedReceivers, receivers);
 
     subscribeToMulticastID = "provider/brod/a/z/b";
     receivers = multicastReceiverDirectory.getReceivers(subscribeToMulticastID);
-    expectedReceivers = {listOfSubscribersId[3],
-                         listOfSubscribersId[4],
-                         listOfSubscribersId[5],
+    expectedReceivers = {listOfSubscribersId[3], listOfSubscribersId[4], listOfSubscribersId[5],
                          listOfSubscribersId[7]};
     EXPECT_EQ(expectedReceivers, receivers);
 

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,8 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/IMessageSender.h"
 #include "joynr/InterfaceRegistrar.h"
@@ -35,23 +35,23 @@
 #include "joynr/tests/testRequestInterpreter.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockMessageSender.h"
 #include "tests/mock/MockPublicationSender.h"
 #include "tests/mock/MockTestRequestCaller.h"
-#include "tests/mock/MockMessageSender.h"
 
-using ::testing::A;
 using ::testing::_;
+using ::testing::A;
 using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::Between;
 using ::testing::ByRef;
-using ::testing::ReturnRef;
+using ::testing::Eq;
+using ::testing::MakeMatcher;
+using ::testing::Matcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
-using ::testing::Matcher;
-using ::testing::MakeMatcher;
 using ::testing::Mock;
-using ::testing::Eq;
+using ::testing::ReturnRef;
 
 using namespace joynr;
 
@@ -172,7 +172,8 @@ void PublicationManagerTtlUpliftTest::testSubscriptionWithoutTtlUplift(
                                                           toleranceMs,
                                                           logger()), // messaging QoS
                                       _                              // subscription reply
-                                      )).Times(1);
+                                      ))
+            .Times(1);
 
     // sending initial value plus the attributeValueChanged
     EXPECT_CALL(
@@ -286,13 +287,14 @@ void PublicationManagerTtlUpliftTest::testSubscriptionWithTtlUplift(
     std::this_thread::sleep_for(std::chrono::milliseconds(ttlUpliftMs));
 }
 
-bool PublicationManagerTtlUpliftTest::isSlowSystem() {
+bool PublicationManagerTtlUpliftTest::isSlowSystem()
+{
     return std::getenv("OECORE_SDK_VERSION") != nullptr;
 }
 
 TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithoutTtlUplift)
 {
-    if(isSlowSystem()) {
+    if (isSlowSystem()) {
         return;
     }
     auto publicationManager = std::make_shared<PublicationManager>(
@@ -334,7 +336,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithoutTtlUplif
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplift)
 {
-    if(isSlowSystem()) {
+    if (isSlowSystem()) {
         return;
     }
     auto publicationManager = std::make_shared<PublicationManager>(
@@ -376,7 +378,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithoutTtlUplif
 
 TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift)
 {
-    if(isSlowSystem()) {
+    if (isSlowSystem()) {
         return;
     }
     auto publicationManager = std::make_shared<PublicationManager>(
@@ -418,7 +420,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUplift)
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift)
 {
-    if(isSlowSystem()) {
+    if (isSlowSystem()) {
         return;
     }
     auto publicationManager = std::make_shared<PublicationManager>(
@@ -460,7 +462,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift)
 
 TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWithNoExpiryDate)
 {
-    if(isSlowSystem()) {
+    if (isSlowSystem()) {
         return;
     }
     auto publicationManager = std::make_shared<PublicationManager>(
@@ -505,7 +507,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testAttributeSubscriptionWithTtlUpliftWi
 
 TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWithNoExpiryDate)
 {
-    if(isSlowSystem()) {
+    if (isSlowSystem()) {
         return;
     }
     auto publicationManager = std::make_shared<PublicationManager>(
@@ -551,7 +553,7 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUpliftWi
 TEST_F(PublicationManagerTtlUpliftTest,
        DISABLED_testAttributeSubscriptionWithTtlUpliftWithLargeExpiryDate)
 {
-    if(isSlowSystem()) {
+    if (isSlowSystem()) {
         return;
     }
     auto publicationManager = std::make_shared<PublicationManager>(
@@ -569,7 +571,8 @@ TEST_F(PublicationManagerTtlUpliftTest,
 
     std::int64_t sleepDurationMs = 300;
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                               std::chrono::system_clock::now().time_since_epoch()).count();
+                               std::chrono::system_clock::now().time_since_epoch())
+                               .count();
     std::int64_t expectedSubscriptionReplyTtlMs = expiryDateMs - now;
     std::int64_t expectedPublicationTtlMs = publicationTtlMs;
 
@@ -600,7 +603,7 @@ TEST_F(PublicationManagerTtlUpliftTest,
 TEST_F(PublicationManagerTtlUpliftTest,
        DISABLED_testBroadcastSubscriptionWithTtlUpliftWithLargeExpiryDate)
 {
-    if(isSlowSystem()) {
+    if (isSlowSystem()) {
         return;
     }
     auto publicationManager = std::make_shared<PublicationManager>(
@@ -618,7 +621,8 @@ TEST_F(PublicationManagerTtlUpliftTest,
 
     std::int64_t sleepDurationMs = 300;
     std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                               std::chrono::system_clock::now().time_since_epoch()).count();
+                               std::chrono::system_clock::now().time_since_epoch())
+                               .count();
     std::int64_t expectedSubscriptionReplyTtlMs = expiryDateMs - now;
     std::int64_t expectedPublicationTtlMs = publicationTtlMs;
 

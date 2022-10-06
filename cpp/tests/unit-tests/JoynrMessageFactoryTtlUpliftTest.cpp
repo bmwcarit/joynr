@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,10 +23,11 @@
 #include "tests/utils/Gtest.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
-#include "joynr/MutableMessageFactory.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
+#include "joynr/MutableMessage.h"
+#include "joynr/MutableMessageFactory.h"
 #include "joynr/Reply.h"
 #include "joynr/Request.h"
 #include "joynr/SubscriptionPublication.h"
@@ -34,7 +35,6 @@
 #include "joynr/SubscriptionRequest.h"
 #include "joynr/SubscriptionStop.h"
 #include "joynr/TimePoint.h"
-#include "joynr/MutableMessage.h"
 
 using namespace joynr;
 
@@ -168,8 +168,8 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_BroadcastSubscriptionRequ
 TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUplift_SubscriptionReply_noUplift)
 {
     SubscriptionReply reply;
-    MutableMessage message =
-            _factoryWithTtlUplift.createSubscriptionReply(_senderID, _receiverID, _messagingQos, reply);
+    MutableMessage message = _factoryWithTtlUplift.createSubscriptionReply(
+            _senderID, _receiverID, _messagingQos, reply);
 
     checkMessageExpiryDate(message, _ttl);
 }
@@ -206,15 +206,15 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
 
     //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count();
     //    messagingQos.setTtl(ttl);
-    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos, request);
-    //    timePoint = message.getHeaderExpiryDate();
-    //    EXPECT_EQ(expectedTimePoint, timePoint);
+    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos,
+    //    request); timePoint = message.getHeaderExpiryDate(); EXPECT_EQ(expectedTimePoint,
+    //    timePoint);
 
     //    ttl = DispatcherUtils::getMaxAbsoluteTime().time_since_epoch().count() - ttlUplift;
     //    messagingQos.setTtl(ttl);
-    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos, request);
-    //    timePoint = message.getHeaderExpiryDate();
-    //    EXPECT_EQ(expectedTimePoint, timePoint);
+    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos,
+    //    request); timePoint = message.getHeaderExpiryDate(); EXPECT_EQ(expectedTimePoint,
+    //    timePoint);
 
     auto now = TimePoint::now();
     localTtl = (TimePoint::max() - std::chrono::milliseconds(_ttlUplift)).relativeFromNow().count();
@@ -235,7 +235,7 @@ TEST_F(JoynrMessageFactoryTtlUpliftTest, testTtlUpliftWithLargeTtl)
     //            - std::chrono::time_point_cast<std::chrono::milliseconds>(
     //                std::chrono::system_clock::now()).time_since_epoch().count() + 1;
     //    messagingQos.setTtl(ttl);
-    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos, request);
-    //    timePoint = message.getHeaderExpiryDate();
-    //    EXPECT_EQ(expectedTimePoint, timePoint);
+    //    message = _factoryWithTtlUplift.createRequest(_senderID, _receiverID, messagingQos,
+    //    request); timePoint = message.getHeaderExpiryDate(); EXPECT_EQ(expectedTimePoint,
+    //    timePoint);
 }

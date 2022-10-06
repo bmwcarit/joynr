@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,8 +25,8 @@
 #include <thread>
 #include <vector>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include <sys/types.h>
 
@@ -63,8 +63,7 @@ protected:
     static std::function<void(const joynr::exceptions::JoynrRuntimeException&)>
             _ignoreClientFatalRuntimeErrors;
 
-    struct AtomicCounter
-    {
+    struct AtomicCounter {
         AtomicCounter() : _c(0)
         {
         }
@@ -180,10 +179,12 @@ protected:
                 [&mock](const joynr::system::RoutingTypes::UdsClientAddress& id) {
                     mock.disconnected(id);
                 });
-        udsServerTest->setReceiveCallback([&mock](
-                const joynr::system::RoutingTypes::UdsClientAddress& id,
-                smrf::ByteVector&& val,
-                const std::string& creator) { mock.received(id, std::move(val), creator); });
+        udsServerTest->setReceiveCallback(
+                [&mock](const joynr::system::RoutingTypes::UdsClientAddress& id,
+                        smrf::ByteVector&& val,
+                        const std::string& creator) {
+                    mock.received(id, std::move(val), creator);
+                });
         return udsServerTest;
     }
 
@@ -232,10 +233,11 @@ protected:
         return _clientConnected.load();
     }
 
-    static void sendToClient(std::shared_ptr<joynr::IUdsSender>& user,
-                             const smrf::ByteVector& msg,
-                             const joynr::IUdsSender::SendFailed& callback =
-                                     [](const joynr::exceptions::JoynrRuntimeException&) {})
+    static void sendToClient(
+            std::shared_ptr<joynr::IUdsSender>& user,
+            const smrf::ByteVector& msg,
+            const joynr::IUdsSender::SendFailed& callback =
+                    [](const joynr::exceptions::JoynrRuntimeException&) {})
     {
         user->send(smrf::ByteArrayView(msg), callback);
     }
@@ -249,7 +251,8 @@ protected:
         });
     }
 
-    static std::string getUserName() {
+    static std::string getUserName()
+    {
         std::string username;
         struct passwd passwd;
         struct passwd* result;

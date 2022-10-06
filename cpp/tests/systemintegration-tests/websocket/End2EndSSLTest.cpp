@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,8 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include <mococrw/x509.h>
 
@@ -35,27 +35,25 @@
 #include "joynr/vehicle/GpsProxy.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
-#include "tests/mock/MockKeychain.h"
 #include "tests/mock/MockGpsProvider.h"
+#include "tests/mock/MockKeychain.h"
 #include "tests/mock/TestJoynrClusterControllerRuntime.h"
-
+#include "tests/utils/TestLibJoynrWebSocketRuntime.h"
 
 using namespace ::testing;
 using namespace joynr;
 
 /*********************************************************************************************************
-*
-* To run this test you must use {joynr}/docker/joynr-base/scripts/docker/gen-certificates.sh with the
-*config from
-* {joynr}/docker/joynr-base/openssl.conf to generate test certificates in /data/ssl-data as done in
-* {joynr}/docker/joynr-base/Dockerfile.
-*
-* The certificates may not be stored in the git repository for security reasons (even if they are
-*only test
-* certificates!)
-*
-**********************************************************************************************************/
+ *
+ * To run this test you must use {joynr}/docker/joynr-base/scripts/docker/gen-certificates.sh with
+ *the config from {joynr}/docker/joynr-base/openssl.conf to generate test certificates in
+ * /data/ssl-data as done in {joynr}/docker/joynr-base/Dockerfile.
+ *
+ * The certificates may not be stored in the git repository for security reasons (even if they are
+ *only test
+ * certificates!)
+ *
+ **********************************************************************************************************/
 class End2EndSSLTest : public TestWithParam<std::tuple<std::string, std::string, bool>>
 {
 public:
@@ -80,7 +78,8 @@ public:
 
         // Delete persisted files
         std::remove(ClusterControllerSettings::
-                            DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+                            DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
+                                    .c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 

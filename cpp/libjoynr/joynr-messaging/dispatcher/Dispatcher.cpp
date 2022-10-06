@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -212,15 +212,12 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
     const std::string& requestReplyId = request.getRequestReplyId();
     TimePoint requestExpiryDate = message->getExpiryDate();
 
-    auto onSuccess = [
-        requestReplyId,
-        requestExpiryDate,
-        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-        senderId,
-        receiverId,
-        message
-    ](Reply && reply) mutable
-    {
+    auto onSuccess = [requestReplyId,
+                      requestExpiryDate,
+                      thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                      senderId,
+                      receiverId,
+                      message](Reply&& reply) mutable {
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             JOYNR_LOG_TRACE(logger(),
                             "Got reply from RequestInterpreter for requestReplyId {}",
@@ -252,15 +249,12 @@ void Dispatcher::handleRequestReceived(std::shared_ptr<ImmutableMessage> message
         }
     };
 
-    auto onError = [
-        requestReplyId,
-        requestExpiryDate,
-        thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-        senderId,
-        receiverId,
-        message
-    ](const std::shared_ptr<exceptions::JoynrException>& exception) mutable
-    {
+    auto onError = [requestReplyId,
+                    requestExpiryDate,
+                    thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
+                    senderId,
+                    receiverId,
+                    message](const std::shared_ptr<exceptions::JoynrException>& exception) mutable {
         assert(exception);
         if (auto thisSharedPtr = thisWeakPtr.lock()) {
             JOYNR_LOG_WARN(logger(),

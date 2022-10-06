@@ -18,12 +18,12 @@
  */
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
+#include "joynr/Settings.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/tests/testProxy.h"
-#include "joynr/Settings.h"
 
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
@@ -35,7 +35,8 @@
 using namespace ::testing;
 using namespace joynr;
 
-class MockDifferentVersionProvider : public joynr::AbstractJoynrProvider {
+class MockDifferentVersionProvider : public joynr::AbstractJoynrProvider
+{
 public:
     static const std::int32_t MAJOR_VERSION;
     static const std::int32_t MINOR_VERSION;
@@ -58,7 +59,8 @@ const std::string& MockDifferentVersionProvider::getInterfaceName() const
     return INTERFACE_NAME();
 }
 
-class MockSameMajorAndHigherMinorVersionProvider : public joynr::AbstractJoynrProvider {
+class MockSameMajorAndHigherMinorVersionProvider : public joynr::AbstractJoynrProvider
+{
 public:
     static const std::int32_t MAJOR_VERSION;
     static const std::int32_t MINOR_VERSION;
@@ -81,7 +83,8 @@ const std::string& MockSameMajorAndHigherMinorVersionProvider::getInterfaceName(
     return INTERFACE_NAME();
 }
 
-class MockSameMajorAndLowerMinorVersionProvider : public joynr::AbstractJoynrProvider {
+class MockSameMajorAndLowerMinorVersionProvider : public joynr::AbstractJoynrProvider
+{
 public:
     static const std::int32_t MAJOR_VERSION;
     static const std::int32_t MINOR_VERSION;
@@ -107,26 +110,31 @@ const std::string& MockSameMajorAndLowerMinorVersionProvider::getInterfaceName()
 namespace joynr
 {
 template <>
-inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockDifferentVersionProvider>(std::shared_ptr<MockDifferentVersionProvider> provider)
+inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockDifferentVersionProvider>(
+        std::shared_ptr<MockDifferentVersionProvider> provider)
 {
     std::ignore = provider;
     return std::shared_ptr<RequestCaller>(nullptr);
 }
 
 template <>
-inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockSameMajorAndHigherMinorVersionProvider>(std::shared_ptr<MockSameMajorAndHigherMinorVersionProvider> provider)
+inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<
+        MockSameMajorAndHigherMinorVersionProvider>(
+        std::shared_ptr<MockSameMajorAndHigherMinorVersionProvider> provider)
 {
     std::ignore = provider;
     return std::shared_ptr<RequestCaller>(nullptr);
 }
 
 template <>
-inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<MockSameMajorAndLowerMinorVersionProvider>(std::shared_ptr<MockSameMajorAndLowerMinorVersionProvider> provider)
+inline std::shared_ptr<RequestCaller> RequestCallerFactory::create<
+        MockSameMajorAndLowerMinorVersionProvider>(
+        std::shared_ptr<MockSameMajorAndLowerMinorVersionProvider> provider)
 {
     std::ignore = provider;
     return std::shared_ptr<RequestCaller>(nullptr);
 }
-} // namespace joynr;
+} // namespace joynr
 
 class GuidedProxyBuilderTest : public ::testing::Test
 {
@@ -167,8 +175,8 @@ protected:
         auto mockProvider = std::make_shared<MockTestProvider>();
         types::ProviderQos providerQos;
         providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-        std::string participantId = runtime->registerProvider<tests::testProvider>(
-                domain, mockProvider, providerQos);
+        std::string participantId =
+                runtime->registerProvider<tests::testProvider>(domain, mockProvider, providerQos);
 
         return participantId;
     }
@@ -190,15 +198,16 @@ TEST_F(GuidedProxyBuilderTest, discover_succeeds)
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     DiscoveryResult actualDiscoveryResult = testGuidedProxyBuilder->discover();
     EXPECT_TRUE(actualDiscoveryResult.getAllDiscoveryEntries().size() == 2);
 
     bool foundParticipantId1 = false;
     bool foundParticipantId2 = false;
-    std::vector<joynr::types::DiscoveryEntry> actualDiscoveryEntries = actualDiscoveryResult.getAllDiscoveryEntries();
+    std::vector<joynr::types::DiscoveryEntry> actualDiscoveryEntries =
+            actualDiscoveryResult.getAllDiscoveryEntries();
     for (const auto& entry : actualDiscoveryEntries) {
         if (entry.getParticipantId() == participantId1) {
             foundParticipantId1 = true;
@@ -230,8 +239,8 @@ TEST_F(GuidedProxyBuilderTest, discoverAsync_succeeds)
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     DiscoveryResult actualDiscoveryResult;
 
@@ -246,7 +255,8 @@ TEST_F(GuidedProxyBuilderTest, discoverAsync_succeeds)
 
     bool foundParticipantId1 = false;
     bool foundParticipantId2 = false;
-    std::vector<joynr::types::DiscoveryEntry> actualDiscoveryEntries = actualDiscoveryResult.getAllDiscoveryEntries();
+    std::vector<joynr::types::DiscoveryEntry> actualDiscoveryEntries =
+            actualDiscoveryResult.getAllDiscoveryEntries();
     for (const auto& entry : actualDiscoveryEntries) {
         if (entry.getParticipantId() == participantId1) {
             foundParticipantId1 = true;
@@ -267,8 +277,8 @@ TEST_F(GuidedProxyBuilderTest, discover_throwsException)
     const std::string domain = TEST_DOMAIN;
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     EXPECT_THROW(testGuidedProxyBuilder->discover(), exceptions::DiscoveryException);
 }
@@ -280,11 +290,12 @@ TEST_F(GuidedProxyBuilderTest, buildProxy_succeeds_and_performs_proxyCall)
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     JOYNR_EXPECT_NO_THROW(testGuidedProxyBuilder->discover());
-    std::shared_ptr<tests::testProxy> testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
+    std::shared_ptr<tests::testProxy> testProxy =
+            testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
 
     EXPECT_NE(testProxy, nullptr);
 
@@ -304,13 +315,14 @@ TEST_F(GuidedProxyBuilderTest, buildProxy_throwsException_whenDiscoverHasNotBeen
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     bool exceptionThrown = false;
     bool messageFound = false;
     try {
-        std::shared_ptr<tests::testProxy> testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
+        std::shared_ptr<tests::testProxy> testProxy =
+                testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
     } catch (const exceptions::DiscoveryException& e) {
         exceptionThrown = true;
         std::string exceptionMessage = e.getMessage();
@@ -331,8 +343,8 @@ TEST_F(GuidedProxyBuilderTest, buildProxy_throwsException_whenEntryWithParticipa
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     JOYNR_EXPECT_NO_THROW(testGuidedProxyBuilder->discover());
 
@@ -340,7 +352,8 @@ TEST_F(GuidedProxyBuilderTest, buildProxy_throwsException_whenEntryWithParticipa
     bool messageFound = false;
     std::string wrongParticipantId = "wrongParticipantId";
     try {
-        std::shared_ptr<tests::testProxy> testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(wrongParticipantId);
+        std::shared_ptr<tests::testProxy> testProxy =
+                testGuidedProxyBuilder->buildProxy<tests::testProxy>(wrongParticipantId);
     } catch (const exceptions::DiscoveryException& e) {
         exceptionThrown = true;
         std::string exceptionMessage = e.getMessage();
@@ -365,14 +378,15 @@ TEST_F(GuidedProxyBuilderTest, buildProxy_throwsException_whenVersionDoNotMatch)
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     JOYNR_EXPECT_NO_THROW(testGuidedProxyBuilder->discover());
     bool exceptionThrown = false;
     bool messageFound = false;
     try {
-        std::shared_ptr<tests::testProxy> testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
+        std::shared_ptr<tests::testProxy> testProxy =
+                testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
     } catch (const exceptions::DiscoveryException& e) {
         exceptionThrown = true;
         std::string exceptionMessage = e.getMessage();
@@ -392,17 +406,19 @@ TEST_F(GuidedProxyBuilderTest, buildProxy_succeeds_whenMinorProviderVersionHighe
     auto mockProvider = std::make_shared<MockSameMajorAndHigherMinorVersionProvider>();
     types::ProviderQos providerQos;
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    std::string participantId = runtime->registerProvider<MockSameMajorAndHigherMinorVersionProvider>(
-            domain, mockProvider, providerQos);
+    std::string participantId =
+            runtime->registerProvider<MockSameMajorAndHigherMinorVersionProvider>(
+                    domain, mockProvider, providerQos);
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     JOYNR_EXPECT_NO_THROW(testGuidedProxyBuilder->discover());
     std::shared_ptr<tests::testProxy> testProxy;
-    JOYNR_EXPECT_NO_THROW(testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId));
+    JOYNR_EXPECT_NO_THROW(
+            testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId));
     EXPECT_NE(testProxy, nullptr);
     runtime->unregisterProvider(participantId);
 }
@@ -413,19 +429,21 @@ TEST_F(GuidedProxyBuilderTest, buildProxy_throwsException_whenMinorProviderVersi
     auto mockProvider = std::make_shared<MockSameMajorAndLowerMinorVersionProvider>();
     types::ProviderQos providerQos;
     providerQos.setScope(joynr::types::ProviderScope::LOCAL);
-    std::string participantId = runtime->registerProvider<MockSameMajorAndLowerMinorVersionProvider>(
-            domain, mockProvider, providerQos);
+    std::string participantId =
+            runtime->registerProvider<MockSameMajorAndLowerMinorVersionProvider>(
+                    domain, mockProvider, providerQos);
 
     std::shared_ptr<GuidedProxyBuilder> testGuidedProxyBuilder =
             runtime->createGuidedProxyBuilder<tests::testProxy>(domain)
-            ->setMessagingQos(messagingQos)
-            ->setDiscoveryQos(discoveryQos);
+                    ->setMessagingQos(messagingQos)
+                    ->setDiscoveryQos(discoveryQos);
 
     JOYNR_EXPECT_NO_THROW(testGuidedProxyBuilder->discover());
     bool exceptionThrown = false;
     bool messageFound = false;
     try {
-        std::shared_ptr<tests::testProxy> testProxy = testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
+        std::shared_ptr<tests::testProxy> testProxy =
+                testGuidedProxyBuilder->buildProxy<tests::testProxy>(participantId);
     } catch (const exceptions::DiscoveryException& e) {
         exceptionThrown = true;
         std::string exceptionMessage = e.getMessage();

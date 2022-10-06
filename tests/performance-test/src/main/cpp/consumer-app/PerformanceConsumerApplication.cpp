@@ -18,8 +18,8 @@
  */
 
 #include <cstddef>
-#include <string>
 #include <memory>
+#include <string>
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -29,8 +29,8 @@
 #include <joynr/Settings.h>
 #include <joynr/WebSocketSettings.h>
 
-#include <joynr/tests/DummyKeychainImpl.h>
 #include <joynr/tests/DummyKeyChainParameters.h>
+#include <joynr/tests/DummyKeychainImpl.h>
 
 #include "../common/Enum.h"
 #include "PerformanceConsumer.h"
@@ -123,9 +123,9 @@ int main(int argc, char* argv[])
         // implementation.
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
                 [&](const joynr::exceptions::JoynrRuntimeException& exception) {
-            std::cout << "Unexpected joynr runtime error occured: " << exception.getMessage()
-                      << std::endl;
-        };
+                    std::cout << "Unexpected joynr runtime error occured: "
+                              << exception.getMessage() << std::endl;
+                };
 
         std::shared_ptr<joynr::JoynrRuntime> runtime(joynr::JoynrRuntime::createRuntime(
                 std::move(joynrSettings), std::move(onFatalRuntimeError), std::move(keyChain)));

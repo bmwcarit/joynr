@@ -91,8 +91,8 @@
 #include "libjoynr/in-process/InProcessMessagingSkeleton.h"
 #include "libjoynr/in-process/InProcessMessagingStubFactory.h"
 #include "libjoynr/joynr-messaging/DummyPlatformSecurityManager.h"
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/uds/UdsMessagingStubFactory.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 
 #include "libjoynrclustercontroller/ClusterControllerCallContext.h"
 #include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
@@ -223,9 +223,9 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
 void JoynrClusterControllerRuntime::init()
 {
     /**
-      * libjoynr side skeleton & dispatcher
-      * This needs some preparation of libjoynr and clustercontroller parts.
-      */
+     * libjoynr side skeleton & dispatcher
+     * This needs some preparation of libjoynr and clustercontroller parts.
+     */
     fillAvailableGbidsVector();
     /*
      * Even if MQTT messaging is not enabled, the corresponding data vector entries need to be
@@ -421,15 +421,16 @@ void JoynrClusterControllerRuntime::init()
     if (_clusterControllerSettings.isWebSocketEnabled()) {
         // setup CC WebSocket interface
         _wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
-        _wsMessagingStubFactory->registerOnMessagingStubClosedCallback([
-            messagingStubFactory,
-            ccMessageRouterWeakPtr = joynr::util::as_weak_ptr(_ccMessageRouter)
-        ](const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
-            if (auto ccMessageRouterSharedPtr = ccMessageRouterWeakPtr.lock()) {
-                ccMessageRouterSharedPtr->removeRoutingEntries(destinationAddress);
-            }
-            messagingStubFactory->remove(destinationAddress);
-        });
+        _wsMessagingStubFactory->registerOnMessagingStubClosedCallback(
+                [messagingStubFactory,
+                 ccMessageRouterWeakPtr = joynr::util::as_weak_ptr(_ccMessageRouter)](
+                        const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                                destinationAddress) {
+                    if (auto ccMessageRouterSharedPtr = ccMessageRouterWeakPtr.lock()) {
+                        ccMessageRouterSharedPtr->removeRoutingEntries(destinationAddress);
+                    }
+                    messagingStubFactory->remove(destinationAddress);
+                });
 
         messagingStubFactory->registerStubFactory(_wsMessagingStubFactory);
     }
@@ -437,15 +438,16 @@ void JoynrClusterControllerRuntime::init()
     if (_clusterControllerSettings.isUdsEnabled()) {
         // setup CC Uds interface
         _udsMessagingStubFactory = std::make_unique<UdsMessagingStubFactory>();
-        _udsMessagingStubFactory->registerOnMessagingStubClosedCallback([
-            messagingStubFactory,
-            ccMessageRouterWeakPtr = joynr::util::as_weak_ptr(_ccMessageRouter)
-        ](const std::shared_ptr<const joynr::system::RoutingTypes::Address>& destinationAddress) {
-            if (auto ccMessageRouterSharedPtr = ccMessageRouterWeakPtr.lock()) {
-                ccMessageRouterSharedPtr->removeRoutingEntries(destinationAddress);
-            }
-            messagingStubFactory->remove(destinationAddress);
-        });
+        _udsMessagingStubFactory->registerOnMessagingStubClosedCallback(
+                [messagingStubFactory,
+                 ccMessageRouterWeakPtr = joynr::util::as_weak_ptr(_ccMessageRouter)](
+                        const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
+                                destinationAddress) {
+                    if (auto ccMessageRouterSharedPtr = ccMessageRouterWeakPtr.lock()) {
+                        ccMessageRouterSharedPtr->removeRoutingEntries(destinationAddress);
+                    }
+                    messagingStubFactory->remove(destinationAddress);
+                });
 
         messagingStubFactory->registerStubFactory(_udsMessagingStubFactory);
     }
@@ -463,9 +465,9 @@ void JoynrClusterControllerRuntime::init()
     _libJoynrMessagingSkeleton = std::make_shared<InProcessMessagingSkeleton>(_joynrDispatcher);
 
     /**
-      * ClusterController side MQTT
-      *
-      */
+     * ClusterController side MQTT
+     *
+     */
     if (_doMqttMessaging) {
         // create MqttMessagingSkeletonFactory only once and use it to create multiple skeletons
         if (!_mqttMessagingSkeletonFactory) {
@@ -490,11 +492,9 @@ void JoynrClusterControllerRuntime::init()
                     _availableGbids[brokerIndex],
                     _messagingSettings.getTtlUpliftMs());
 
-            connectionData->getMqttMessageReceiver()
-                    ->registerReceiveCallback([mqttMessagingSkeletonWeakPtr =
-                                                       joynr::util::as_weak_ptr(
-                                                               mqttMessagingSkeleton)](
-                            smrf::ByteVector && msg) {
+            connectionData->getMqttMessageReceiver()->registerReceiveCallback(
+                    [mqttMessagingSkeletonWeakPtr = joynr::util::as_weak_ptr(
+                             mqttMessagingSkeleton)](smrf::ByteVector&& msg) {
                         if (auto mqttMessagingSkeletonSharedPtr =
                                     mqttMessagingSkeletonWeakPtr.lock()) {
                             mqttMessagingSkeletonSharedPtr->onMessageReceived(std::move(msg));
@@ -523,9 +523,9 @@ void JoynrClusterControllerRuntime::init()
     }
 
     /**
-      * libJoynr side
-      *
-      */
+     * libJoynr side
+     *
+     */
     _publicationManager =
             std::make_shared<PublicationManager>(_singleThreadedIOService->getIOService(),
                                                  _messageSender,
@@ -990,10 +990,10 @@ void JoynrClusterControllerRuntime::scheduleRemoveStaleTimer()
                         timerError.value(),
                         timerError.message());
     } else {
-        _removeStaleTimer.async_wait([
-            lcdWeakPtr = joynr::util::as_weak_ptr(_localCapabilitiesDirectory),
-            ccStartTimeMs = _clusterControllerStartDateMs
-        ](const boost::system::error_code& localTimerError) {
+        _removeStaleTimer.async_wait([lcdWeakPtr =
+                                              joynr::util::as_weak_ptr(_localCapabilitiesDirectory),
+                                      ccStartTimeMs = _clusterControllerStartDateMs](
+                                             const boost::system::error_code& localTimerError) {
             if (localTimerError == boost::asio::error::operation_aborted) {
                 JOYNR_LOG_ERROR(
                         logger(),

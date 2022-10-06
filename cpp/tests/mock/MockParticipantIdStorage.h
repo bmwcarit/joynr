@@ -23,13 +23,21 @@
 
 #include "joynr/ParticipantIdStorage.h"
 
-class MockParticipantIdStorage : public joynr::ParticipantIdStorage {
+class MockParticipantIdStorage : public joynr::ParticipantIdStorage
+{
 public:
-    MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock_filename")) {
-
+    MockParticipantIdStorage() : ParticipantIdStorage(std::string("mock_filename"))
+    {
     }
-    MOCK_METHOD3(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, std::int32_t majorVersion));
-    MOCK_METHOD4(getProviderParticipantId, std::string(const std::string& domain, const std::string& interfaceName, std::int32_t majorVersion, const std::string& defaultValue));
+    MOCK_METHOD3(getProviderParticipantId,
+                 std::string(const std::string& domain,
+                             const std::string& interfaceName,
+                             std::int32_t majorVersion));
+    MOCK_METHOD4(getProviderParticipantId,
+                 std::string(const std::string& domain,
+                             const std::string& interfaceName,
+                             std::int32_t majorVersion,
+                             const std::string& defaultValue));
 };
 
 #endif // TESTS_MOCK_MOCKPARTICIPANTIDSTORAGE_H

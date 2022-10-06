@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,19 +48,19 @@ public:
     ~MqttReceiver() override = default;
 
     /**
-      * Gets the serialized address of the receive channel for incoming messages.
-      */
+     * Gets the serialized address of the receive channel for incoming messages.
+     */
     const std::string getSerializedGlobalClusterControllerAddress() const override;
 
     /**
-      * Gets the address of the receive channel for incoming messages.
-      */
+     * Gets the address of the receive channel for incoming messages.
+     */
     const system::RoutingTypes::MqttAddress& getGlobalClusterControllerAddress() const override;
 
     /**
-      * Checks the MessageSettings and updates the configuration.
-      * Can be called at any time to read settings.
-      */
+     * Checks the MessageSettings and updates the configuration.
+     * Can be called at any time to read settings.
+     */
     void updateSettings() override;
 
     bool isConnected() override;
@@ -68,9 +68,9 @@ public:
     void startReceiveQueue() override;
 
     /**
-      * stops the receiveQue. This might ungracefully terminate the thread of the
+     * stops the receiveQue. This might ungracefully terminate the thread of the
      * LongPollingMessageReceiver.
-      */
+     */
     void stopReceiveQueue() override;
 
     void registerReceiveCallback(

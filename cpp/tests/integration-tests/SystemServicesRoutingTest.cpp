@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,13 +19,13 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
-#include "joynr/Settings.h"
 #include "joynr/LibjoynrSettings.h"
-#include "joynr/system/RoutingProxy.h"
+#include "joynr/Settings.h"
 #include "joynr/serializer/Serializer.h"
+#include "joynr/system/RoutingProxy.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockTransportMessageReceiver.h"
@@ -65,13 +65,15 @@ public:
 
         std::string serializedMqttAddress = joynr::serializer::serializeToJson(mqttGlobalAddress);
 
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(
-                              mockMessageReceiverMqtt).get()),
-                    getSerializedGlobalClusterControllerAddress())
+        EXPECT_CALL(
+                *(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)
+                          .get()),
+                getSerializedGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::Return(serializedMqttAddress));
-        EXPECT_CALL(*(std::dynamic_pointer_cast<MockTransportMessageReceiver>(
-                              mockMessageReceiverMqtt).get()),
-                    getGlobalClusterControllerAddress())
+        EXPECT_CALL(
+                *(std::dynamic_pointer_cast<MockTransportMessageReceiver>(mockMessageReceiverMqtt)
+                          .get()),
+                getGlobalClusterControllerAddress())
                 .WillRepeatedly(::testing::ReturnRef(mqttGlobalAddress));
 
         // runtime can only be created, after MockMessageReceiver has been told to return
@@ -99,7 +101,8 @@ public:
 
         // Delete persisted files
         std::remove(ClusterControllerSettings::
-                            DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME().c_str());
+                            DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
+                                    .c_str());
         std::remove(LibjoynrSettings::DEFAULT_PARTICIPANT_IDS_PERSISTENCE_FILENAME().c_str());
     }
 

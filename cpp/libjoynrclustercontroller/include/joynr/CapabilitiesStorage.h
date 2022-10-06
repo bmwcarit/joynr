@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,14 +22,14 @@
 #include <string>
 #include <vector>
 
-#include <boost/multi_index_container.hpp>
+#include <boost/mpl/push_front.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/sequenced_index.hpp>
-#include <boost/mpl/push_front.hpp>
+#include <boost/multi_index_container.hpp>
 #include <boost/optional.hpp>
 
 #include <muesli/Traits.h>
@@ -67,8 +67,7 @@ using ExpiryDateKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(DiscoveryEntry,
 
 namespace bmi = boost::multi_index;
 
-struct LocalDiscoveryEntry : public DiscoveryEntry
-{
+struct LocalDiscoveryEntry : public DiscoveryEntry {
     LocalDiscoveryEntry() : DiscoveryEntry(), gbids()
     {
     }
@@ -97,8 +96,7 @@ using Container = bmi::multi_index_container<
 
 using Timestamp = std::chrono::time_point<std::chrono::system_clock>;
 
-struct CachedDiscoveryEntry : public DiscoveryEntry
-{
+struct CachedDiscoveryEntry : public DiscoveryEntry {
     CachedDiscoveryEntry(const DiscoveryEntry& entry, Timestamp timestamp)
             : DiscoveryEntry(entry), _timestamp(timestamp)
     {
@@ -196,7 +194,8 @@ public:
     {
         auto& index = _container.template get<tags::ExpiryDate>();
         auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-                           std::chrono::system_clock::now().time_since_epoch()).count();
+                           std::chrono::system_clock::now().time_since_epoch())
+                           .count();
         auto last = index.lower_bound(now);
         std::vector<DiscoveryEntry> removedEntries(index.begin(), last);
         index.erase(index.begin(), last);
@@ -281,8 +280,7 @@ protected:
         return result;
     }
 
-    struct NoFilter
-    {
+    struct NoFilter {
         template <typename T>
         bool operator()(T&&) const
         {
@@ -393,8 +391,7 @@ MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::capabilities::Storage,
 namespace muesli
 {
 template <>
-struct SkipIntroOutroTraits<joynr::capabilities::Storage> : std::true_type
-{
+struct SkipIntroOutroTraits<joynr::capabilities::Storage> : std::true_type {
 };
 } // namespace muesli
 

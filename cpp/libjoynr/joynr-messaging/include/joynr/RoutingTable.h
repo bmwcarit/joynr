@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,12 +30,12 @@
 #include <utility>
 #include <vector>
 
-#include <boost/system/error_code.hpp>
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/member.hpp>
 #include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
 #include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index_container.hpp>
 #include <boost/optional.hpp>
+#include <boost/system/error_code.hpp>
 
 #include "joynr/InProcessMessagingAddress.h"
 #include "joynr/Logger.h"
@@ -57,8 +57,7 @@ struct ExpiryDate;
 } // namespace tags
 
 // record to be stored in multi index
-struct RoutingEntry
-{
+struct RoutingEntry {
     RoutingEntry()
             : participantId(),
               address(),
@@ -215,15 +214,13 @@ public:
     }
 
 private:
-    struct AddressEqual
-    {
+    struct AddressEqual {
     public:
         bool operator()(std::shared_ptr<const joynr::system::RoutingTypes::Address> lhs,
                         std::shared_ptr<const joynr::system::RoutingTypes::Address> rhs) const;
     };
 
-    struct AddressHash
-    {
+    struct AddressHash {
     public:
         size_t operator()(
                 std::shared_ptr<const joynr::system::RoutingTypes::Address> address) const;
@@ -264,8 +261,7 @@ private:
 namespace muesli
 {
 template <>
-struct SkipIntroOutroTraits<joynr::RoutingTable> : std::true_type
-{
+struct SkipIntroOutroTraits<joynr::RoutingTable> : std::true_type {
 };
 } // namespace muesli
 

@@ -23,10 +23,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <map>
 
 #include <boost/asio/steady_timer.hpp>
 #include <boost/system/error_code.hpp>
@@ -84,7 +84,7 @@ namespace capabilities
 {
 class CachingStorage;
 class Storage;
-}
+} // namespace capabilities
 
 namespace types
 {

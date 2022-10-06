@@ -82,4 +82,4 @@ void AbstractGlobalMessagingSkeleton::registerGlobalRoutingEntryIfRequired(
         }
     }
 }
-}
+} // namespace joynr

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,22 +17,21 @@
  * #L%
  */
 
-#include <memory>
 #include <algorithm>
+#include <memory>
 #include <numeric>
 
-#include "joynr/tests/performance/EchoProxy.h"
-#include "../provider/PerformanceTestEchoProvider.h"
 #include "../common/PerformanceTest.h"
-#include "joynr/types/ProviderQos.h"
+#include "../provider/PerformanceTestEchoProvider.h"
 #include "joynr/Settings.h"
+#include "joynr/tests/performance/EchoProxy.h"
+#include "joynr/types/ProviderQos.h"
 
 #include "ShortCircuitRuntime.h"
 
 using namespace joynr;
 
-struct ShortCircuitTest : public PerformanceTest
-{
+struct ShortCircuitTest : public PerformanceTest {
     using ByteArray = std::vector<std::int8_t>;
 
     ShortCircuitTest(std::uint64_t runs)

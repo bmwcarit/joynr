@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,17 +30,17 @@
 #include "joynr/types/DiscoveryEntryWithMetaInfo.h"
 
 #include "tests/JoynrTest.h"
-#include "tests/mock/MockSubscriptionManager.h"
 #include "tests/mock/MockGpsFloatSubscriptionListener.h"
+#include "tests/mock/MockSubscriptionManager.h"
 
-using ::testing::A;
 using ::testing::_;
-using ::testing::Return;
-using ::testing::Eq;
-using ::testing::NotNull;
+using ::testing::A;
 using ::testing::AllOf;
-using ::testing::Property;
+using ::testing::Eq;
 using ::testing::Invoke;
+using ::testing::NotNull;
+using ::testing::Property;
+using ::testing::Return;
 using ::testing::Unused;
 
 using namespace joynr;
@@ -279,8 +279,7 @@ TEST_F(TestJoynrMessagingConnectorTest, subscribeToAttribute)
     testSubscribeToAttribute();
 }
 
-TEST_F(TestJoynrMessagingConnectorTest,
-       doNotSendSubscriptionStopForMulticastSubscription)
+TEST_F(TestJoynrMessagingConnectorTest, doNotSendSubscriptionStopForMulticastSubscription)
 {
     doNotSendSubscriptionStopForMulticastSubscription();
 }
@@ -298,15 +297,15 @@ TEST_F(TestJoynrMessagingConnectorTest, testBroadcastListenerWrapper)
 
     EXPECT_CALL(*mockSubscriptionManager,
                 registerSubscription(Eq("locationUpdateWithSpeed"), // subscribeToName
-                                     _, // subscriberParticipantId
-                                     _, // providerParticipantId
-                                     _, // partitions
-                                     _, // subscriptionCaller
-                                     _, // subscriptionListener
-                                     _, // messaging QoS
-                                     _, // subscriptionRequest
-                                     _, // onSuccess
-                                     _  // onError
+                                     _,                             // subscriberParticipantId
+                                     _,                             // providerParticipantId
+                                     _,                             // partitions
+                                     _,                             // subscriptionCaller
+                                     _,                             // subscriptionListener
+                                     _,                             // messaging QoS
+                                     _,                             // subscriptionRequest
+                                     _,                             // onSuccess
+                                     _                              // onError
                                      ))
             .WillOnce(testing::Invoke(
                     this, &TestJoynrMessagingConnectorTest::invokeMulticastSubscriptionCallback));

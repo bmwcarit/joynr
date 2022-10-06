@@ -24,8 +24,8 @@
 #include <thread>
 #include <vector>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Semaphore.h"
 #include "joynr/TaskSequencer.h"
@@ -37,7 +37,11 @@ using namespace joynr;
 class TaskSequencerTest : public ::testing::Test
 {
 public:
-    TaskSequencerTest() : _creationCounter{0}, _executionCounter{0}, _actualTimeoutDateMs(), _fulfillDelayedFuture(false)
+    TaskSequencerTest()
+            : _creationCounter{0},
+              _executionCounter{0},
+              _actualTimeoutDateMs(),
+              _fulfillDelayedFuture(false)
     {
     }
 
@@ -57,8 +61,7 @@ protected:
 
     using TestTaskSequencer = TaskSequencer<std::uint64_t>;
 
-    struct TaskState
-    {
+    struct TaskState {
         std::uint64_t creationNo;
         std::uint64_t executionNo;
 
@@ -68,12 +71,14 @@ protected:
         }
     };
 
-    TestTaskSequencer::TaskWithExpiryDate createTestTaskWithExpiryDate(const TimePoint& expiryDate, bool fulfillPromise = true,
-                                                                       bool fulfillDelayed = false) {
+    TestTaskSequencer::TaskWithExpiryDate createTestTaskWithExpiryDate(const TimePoint& expiryDate,
+                                                                       bool fulfillPromise = true,
+                                                                       bool fulfillDelayed = false)
+    {
         TestTaskSequencer::TaskWithExpiryDate timeoutTask;
         timeoutTask._task = createTestTask(fulfillPromise, fulfillDelayed);
         timeoutTask._expiryDate = expiryDate;
-        timeoutTask._timeout = [&](){
+        timeoutTask._timeout = [&]() {
             std::unique_lock<std::mutex> lock(_actualTimeoutDateMsMutex);
             _actualTimeoutDateMs.push_back(TimePoint::now().toMilliseconds());
         };
@@ -84,7 +89,8 @@ protected:
     {
         auto creationId = _creationCounter;
         _creationCounter++;
-        return std::bind(&TaskSequencerTest::createTestFuture, this, creationId, fulfillPromise, fulfillDelayed);
+        return std::bind(&TaskSequencerTest::createTestFuture, this, creationId, fulfillPromise,
+                         fulfillDelayed);
     }
 
     std::shared_ptr<TestFuture> createTestFuture(const std::uint64_t& creationId,
@@ -94,7 +100,7 @@ protected:
         auto newFuture = std::make_shared<TestFuture>();
         if (fulfillPromise) {
             if (fulfillDelayed) {
-                _fulfillFuture = std::async([this, newFuture, creationId](){
+                _fulfillFuture = std::async([this, newFuture, creationId]() {
                     while (!_fulfillDelayedFuture) {
                         std::this_thread::sleep_for(std::chrono::milliseconds(10));
                     }
@@ -159,7 +165,8 @@ TEST_F(TaskSequencerTest, addSequence)
         test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(10000)));
         expectedSequence.push_back({i, i});
     }
-    const auto sequence = waitForTestFutureCreation(expectedSequence.size(), std::chrono::seconds{20});
+    const auto sequence =
+            waitForTestFutureCreation(expectedSequence.size(), std::chrono::seconds{20});
     EXPECT_THAT(sequence, ::testing::ContainerEq(expectedSequence));
 }
 
@@ -178,7 +185,8 @@ TEST_F(TaskSequencerTest, addConcurrency)
         addAsync.push_back(std::async([&test, task]() mutable { test.add(std::move(task)); }));
     }
     addAsync.clear();
-    const auto sequence = waitForTestFutureCreation(expectedExecutions.size(), std::chrono::seconds{60});
+    const auto sequence =
+            waitForTestFutureCreation(expectedExecutions.size(), std::chrono::seconds{60});
     std::set<std::uint64_t> executions;
     for (auto taskState : sequence) {
         executions.insert(taskState.executionNo);
@@ -214,9 +222,11 @@ TEST_F(TaskSequencerTest, cancelReleasesTaskMemory)
     TestTaskSequencer test;
     auto sharedPromise = std::make_shared<std::uint64_t>(42);
     std::weak_ptr<std::uint64_t> refPromise(sharedPromise);
-    test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000), false)); // Block execution, so next task remains in task queue
+    test.add(createTestTaskWithExpiryDate(
+            TimePoint::fromRelativeMs(5000),
+            false)); // Block execution, so next task remains in task queue
     test.add({[this, sharedPromise]() { return createTestFuture(*sharedPromise); },
-              TimePoint::fromRelativeMs(10000), [](){}});
+              TimePoint::fromRelativeMs(10000), []() {}});
     sharedPromise.reset();
     std::this_thread::yield();
     EXPECT_FALSE(refPromise.expired()) << "Test setup does not capture memory in task queue.";
@@ -230,10 +240,11 @@ TEST_F(TaskSequencerTest, cancelReleasesFutureMemory)
     auto sharedPromise = std::make_shared<std::uint64_t>(42);
     std::weak_ptr<std::uint64_t> refPromise(sharedPromise);
     test.add({[sharedPromise]() {
-        auto newFuture = std::make_shared<TestFuture>();
-        newFuture->_memorySharedByPromise = sharedPromise;
-        return newFuture;
-    }, TimePoint::fromRelativeMs(5000), [](){}});
+                  auto newFuture = std::make_shared<TestFuture>();
+                  newFuture->_memorySharedByPromise = sharedPromise;
+                  return newFuture;
+              },
+              TimePoint::fromRelativeMs(5000), []() {}});
     sharedPromise.reset();
     std::this_thread::yield();
     EXPECT_FALSE(refPromise.expired()) << "Test setup does not capture memory in future";
@@ -244,12 +255,11 @@ TEST_F(TaskSequencerTest, cancelReleasesFutureMemory)
 TEST_F(TaskSequencerTest, runRobustness)
 {
     TestTaskSequencer test;
-    test.add({[]() { return std::shared_ptr<TestFuture>(); },
-              TimePoint::fromRelativeMs(5000), [](){}});
-    test.add({[]() -> std::shared_ptr<TestFuture> { throw 42; },
-              TimePoint::fromRelativeMs(5000), [](){}});
-    test.add({nullptr,
-              TimePoint::fromRelativeMs(5000), [](){}});
+    test.add({[]() { return std::shared_ptr<TestFuture>(); }, TimePoint::fromRelativeMs(5000),
+              []() {}});
+    test.add({[]() -> std::shared_ptr<TestFuture> { throw 42; }, TimePoint::fromRelativeMs(5000),
+              []() {}});
+    test.add({nullptr, TimePoint::fromRelativeMs(5000), []() {}});
     test.add(createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000)));
     auto sequence = waitForTestFutureCreation(1);
     EXPECT_EQ(1, sequence.size());
@@ -280,14 +290,19 @@ TEST_F(TaskSequencerTest, taskTimeoutCalledForQueuedTasksWhenOtherTaskIsRunning)
     TestTaskSequencer test;
     TimePoint expectedTimeoutDateMs = TimePoint::fromRelativeMs(1500);
     // add a task that blocks the sequencer until the other tasks are enqueued
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000), true, true);
+    TestTaskSequencer::TaskWithExpiryDate task1 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000), true, true);
     // add a task that won't be finished and blocks the following tasks
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000), false);
-    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
-    TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
+    TestTaskSequencer::TaskWithExpiryDate task2 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000), false);
+    TestTaskSequencer::TaskWithExpiryDate task3 =
+            createTestTaskWithExpiryDate(expectedTimeoutDateMs);
+    TestTaskSequencer::TaskWithExpiryDate task4 =
+            createTestTaskWithExpiryDate(expectedTimeoutDateMs);
     test.add(task1);
     auto sequence = waitForTestFutureCreation(1, std::chrono::seconds{10});
-    // TaskSequencer is blocked now until the future of task1 is ready because it waits forever by default.
+    // TaskSequencer is blocked now until the future of task1 is ready because it waits forever by
+    // default.
     test.add(task2);
     test.add(task3);
     test.add(task4);
@@ -306,7 +321,6 @@ TEST_F(TaskSequencerTest, taskTimeoutCalledForQueuedTasksWhenOtherTaskIsRunning)
     waitForTimeouts(2, expectedTimeoutDateMs);
     // TaskSequencer is still blocked in task2
     EXPECT_EQ(2, sequence.size());
-    
 }
 
 TEST_F(TaskSequencerTest, taskTimeoutCalledForNewTasksWhenOtherTaskIsRunning)
@@ -317,9 +331,12 @@ TEST_F(TaskSequencerTest, taskTimeoutCalledForNewTasksWhenOtherTaskIsRunning)
     TestTaskSequencer test(std::chrono::milliseconds(1000));
     TimePoint expectedTimeoutDateMs = TimePoint::fromRelativeMs(1500);
     // add a task that won't be finished and blocks the following tasks
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000), false);
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
-    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(expectedTimeoutDateMs);
+    TestTaskSequencer::TaskWithExpiryDate task1 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000), false);
+    TestTaskSequencer::TaskWithExpiryDate task2 =
+            createTestTaskWithExpiryDate(expectedTimeoutDateMs);
+    TestTaskSequencer::TaskWithExpiryDate task3 =
+            createTestTaskWithExpiryDate(expectedTimeoutDateMs);
     test.add(task1);
     auto sequence = waitForTestFutureCreation(1, std::chrono::seconds{10});
     // TaskSequencer is blocked now in task1 that will never finish
@@ -340,11 +357,15 @@ TEST_F(TaskSequencerTest, taskTimeoutCalledForNewTasksWhenOtherTaskIsRunning)
 TEST_F(TaskSequencerTest, testTaskTimeoutNotCalledWithoutExpiredTasks)
 {
     TestTaskSequencer test(std::chrono::milliseconds(1000));
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(500));
+    TestTaskSequencer::TaskWithExpiryDate task1 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(500));
     // add a task that won't be finished and blocks the following tasks
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000), false);
-    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000));
-    TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000));
+    TestTaskSequencer::TaskWithExpiryDate task2 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000), false);
+    TestTaskSequencer::TaskWithExpiryDate task3 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000));
+    TestTaskSequencer::TaskWithExpiryDate task4 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(600000));
     test.add(task1);
     test.add(task2);
     test.add(task3);
@@ -369,9 +390,12 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForTaskToBeExecutedNext)
 {
     TestTaskSequencer test;
     // add already expired task to the queue
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(-10000));
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000));
-    TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000));
+    TestTaskSequencer::TaskWithExpiryDate task1 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(-10000));
+    TestTaskSequencer::TaskWithExpiryDate task2 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000));
+    TestTaskSequencer::TaskWithExpiryDate task3 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(5000));
     // wait some time before TaskSequncer starts to run
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     TimePoint expectedTimeoutDateMs = TimePoint::now();
@@ -387,18 +411,24 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForTaskToBeExecutedNext)
     EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
 }
 
-TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksBeforeOtherTaskIsStarted) {
+TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksBeforeOtherTaskIsStarted)
+{
     TestTaskSequencer test;
     // add a task that blocks the sequencer until the other tasks are enqueued
-    TestTaskSequencer::TaskWithExpiryDate task1 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000), true, true);
-    TestTaskSequencer::TaskWithExpiryDate task2 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000));
-    // add task that will be removed after the future of task1 is ready, during calculation of timeToWait for task2
+    TestTaskSequencer::TaskWithExpiryDate task1 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(2000), true, true);
+    TestTaskSequencer::TaskWithExpiryDate task2 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(1000));
+    // add task that will be removed after the future of task1 is ready, during calculation of
+    // timeToWait for task2
     TestTaskSequencer::TaskWithExpiryDate task3 = createTestTaskWithExpiryDate(TimePoint::now());
-    TestTaskSequencer::TaskWithExpiryDate task4 = createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(10000));
+    TestTaskSequencer::TaskWithExpiryDate task4 =
+            createTestTaskWithExpiryDate(TimePoint::fromRelativeMs(10000));
     test.add(task1);
     auto sequence = waitForTestFutureCreation(1, std::chrono::seconds{10});
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    // TaskSequencer is blocked now until the future of task1 is ready because it waits forever by default.
+    // TaskSequencer is blocked now until the future of task1 is ready because it waits forever by
+    // default.
     test.add(task2);
     test.add(task3);
     test.add(task4);
@@ -412,8 +442,10 @@ TEST_F(TaskSequencerTest, testTaskTimeoutCalledForQueuedTasksBeforeOtherTaskIsSt
     EXPECT_TRUE(_actualTimeoutDateMs[0] >= expectedTimeoutDateMs.toMilliseconds());
 }
 
-TEST_F(TaskSequencerTest, testStartedTaskDoesNotBlockTaskQueue) {
-    // This test verifies that already started tasks do not prevent new tasks from being inserted into the TaskQueue while running
+TEST_F(TaskSequencerTest, testStartedTaskDoesNotBlockTaskQueue)
+{
+    // This test verifies that already started tasks do not prevent new tasks from being inserted
+    // into the TaskQueue while running
     auto test = std::make_shared<TestTaskSequencer>();
     // First semaphore to signal tot the test that the running task reached the blocking point
     auto semaphore1 = std::make_shared<joynr::Semaphore>(0);
@@ -424,25 +456,28 @@ TEST_F(TaskSequencerTest, testStartedTaskDoesNotBlockTaskQueue) {
 
     // Add task to tasksequencer that unblocks semaphore 1 awaits semaphore 2
     test->add({[this, semaphore1, semaphore2, semaphore3]() {
-            semaphore1->notify();
-            semaphore2->wait();
-            semaphore3->notify();
-            return createTestFuture(43);
-    }, TimePoint::fromRelativeMs(5000), [](){}});
+                   semaphore1->notify();
+                   semaphore2->wait();
+                   semaphore3->notify();
+                   return createTestFuture(43);
+               },
+               TimePoint::fromRelativeMs(5000), []() {}});
 
     // Wait for semaphore 1 to be unblocked
     ASSERT_TRUE(semaphore1->waitFor(std::chrono::milliseconds(5000)));
     // Start a thread that tries to add any new task and then unblocks blocking semaphore 2
     std::thread taskAddingThread([this, test, semaphore2]() {
         test->add({[this]() {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            return createTestFuture(44);
-        }, TimePoint::fromRelativeMs(5000), [](){}});
+                       std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                       return createTestFuture(44);
+                   },
+                   TimePoint::fromRelativeMs(5000), []() {}});
         semaphore2->notify();
     });
     // Expect that blocking semaphore 3 is released after a timeout
     EXPECT_TRUE(semaphore3->waitFor(std::chrono::milliseconds(5000)));
-    // Safety mechanism to release the deadlock if it occurs (the test already failed through the expect)
+    // Safety mechanism to release the deadlock if it occurs (the test already failed through the
+    // expect)
     semaphore2->notify();
     taskAddingThread.join();
 }

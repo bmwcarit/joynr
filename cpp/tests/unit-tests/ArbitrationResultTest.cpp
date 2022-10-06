@@ -23,12 +23,12 @@
 
 #include "joynr/ArbitrationResult.h"
 
-class ArbitrationResultTest: public ::testing::Test
+class ArbitrationResultTest : public ::testing::Test
 {
 public:
-    ArbitrationResultTest()
-        : arbitrationResult()
-    {}
+    ArbitrationResultTest() : arbitrationResult()
+    {
+    }
 
     joynr::ArbitrationResult arbitrationResult;
 };
@@ -43,11 +43,14 @@ TEST_F(ArbitrationResultTest, testDiscoveryEntriesIsEmptySuccess)
 
 TEST_F(ArbitrationResultTest, testDiscoveryEntriesIsEmptyFailed)
 {
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry1 = joynr::types::DiscoveryEntryWithMetaInfo();
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry1 =
+            joynr::types::DiscoveryEntryWithMetaInfo();
     discoveryEntry1.setParticipantId("participantId1");
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry2 = joynr::types::DiscoveryEntryWithMetaInfo();
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry2 =
+            joynr::types::DiscoveryEntryWithMetaInfo();
     discoveryEntry2.setParticipantId("participantId2");
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedDiscoveryEntries {discoveryEntry2, discoveryEntry1};
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedDiscoveryEntries{
+            discoveryEntry2, discoveryEntry1};
 
     arbitrationResult = joynr::ArbitrationResult(expectedDiscoveryEntries);
 
@@ -57,14 +60,18 @@ TEST_F(ArbitrationResultTest, testDiscoveryEntriesIsEmptyFailed)
 
 TEST_F(ArbitrationResultTest, testGetDiscoveryEntries)
 {
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry1 = joynr::types::DiscoveryEntryWithMetaInfo();
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry1 =
+            joynr::types::DiscoveryEntryWithMetaInfo();
     discoveryEntry1.setParticipantId("participantId1");
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry2 = joynr::types::DiscoveryEntryWithMetaInfo();
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry2 =
+            joynr::types::DiscoveryEntryWithMetaInfo();
     discoveryEntry2.setParticipantId("participantId2");
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedDiscoveryEntries {discoveryEntry2, discoveryEntry1};
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedDiscoveryEntries{
+            discoveryEntry2, discoveryEntry1};
 
     arbitrationResult = joynr::ArbitrationResult(expectedDiscoveryEntries);
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> actualDiscoveryEntries = arbitrationResult.getDiscoveryEntries();
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> actualDiscoveryEntries =
+            arbitrationResult.getDiscoveryEntries();
 
     bool discoveryEntry1Found = false;
     bool discoveryEntry2Found = false;
@@ -83,16 +90,21 @@ TEST_F(ArbitrationResultTest, testGetDiscoveryEntries)
 TEST_F(ArbitrationResultTest, testSetDiscoveryEntries)
 {
     arbitrationResult = joynr::ArbitrationResult();
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> actualDiscoveryEntriesBeforeSet = arbitrationResult.getDiscoveryEntries();
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> actualDiscoveryEntriesBeforeSet =
+            arbitrationResult.getDiscoveryEntries();
     EXPECT_TRUE(actualDiscoveryEntriesBeforeSet.empty());
 
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry1 = joynr::types::DiscoveryEntryWithMetaInfo();
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry1 =
+            joynr::types::DiscoveryEntryWithMetaInfo();
     discoveryEntry1.setParticipantId("participantId1");
-    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry2 = joynr::types::DiscoveryEntryWithMetaInfo();
+    joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry2 =
+            joynr::types::DiscoveryEntryWithMetaInfo();
     discoveryEntry2.setParticipantId("participantId2");
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedDiscoveryEntriesAfterSet {discoveryEntry2, discoveryEntry1};
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedDiscoveryEntriesAfterSet{
+            discoveryEntry2, discoveryEntry1};
     arbitrationResult.setDiscoveryEntries(expectedDiscoveryEntriesAfterSet);
-    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> actualDiscoveryEntriesAfterSet = arbitrationResult.getDiscoveryEntries();
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> actualDiscoveryEntriesAfterSet =
+            arbitrationResult.getDiscoveryEntries();
 
     bool discoveryEntry1Found = false;
     bool discoveryEntry2Found = false;
@@ -107,4 +119,3 @@ TEST_F(ArbitrationResultTest, testSetDiscoveryEntries)
     EXPECT_TRUE(discoveryEntry1Found && discoveryEntry2Found);
     EXPECT_EQ(expectedDiscoveryEntriesAfterSet.size(), actualDiscoveryEntriesAfterSet.size());
 }
-

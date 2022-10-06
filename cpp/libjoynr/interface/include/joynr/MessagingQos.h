@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,8 +32,8 @@ namespace joynr
 {
 
 /**
-  * @brief Class for messaging quality of service settings
-  */
+ * @brief Class for messaging quality of service settings
+ */
 class JOYNR_EXPORT MessagingQos
 {
 public:
@@ -177,10 +177,10 @@ private:
     void checkCustomHeaderKeyValue(const std::string& key, const std::string& value) const;
 
     /**
-      * @brief printing MessagingQos with google-test and google-mock
-      * @param messagingQos the object to be printed
-      * @param os the destination output stream the print should go into
-      */
+     * @brief printing MessagingQos with google-test and google-mock
+     * @param messagingQos the object to be printed
+     * @param os the destination output stream the print should go into
+     */
     friend void PrintTo(const MessagingQos& messagingQos, ::std::ostream* os);
 };
 

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,30 +19,30 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
-#include "joynr/PrivateCopyAssign.h"
+#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/Dispatcher.h"
+#include "joynr/Future.h"
 #include "joynr/ImmutableMessage.h"
-#include "joynr/MutableMessage.h"
+#include "joynr/InterfaceRegistrar.h"
+#include "joynr/LibjoynrSettings.h"
 #include "joynr/MessageSender.h"
 #include "joynr/MessagingQos.h"
+#include "joynr/MutableMessage.h"
 #include "joynr/MutableMessageFactory.h"
-#include "joynr/Dispatcher.h"
-#include "joynr/UnicastSubscriptionCallback.h"
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/InterfaceRegistrar.h"
-#include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/LibjoynrSettings.h"
+#include "joynr/PrivateCopyAssign.h"
+#include "joynr/Reply.h"
+#include "joynr/Request.h"
 #include "joynr/SingleThreadedIOService.h"
-#include "joynr/types/Localisation/GpsLocation.h"
-#include "joynr/Future.h"
 #include "joynr/SubscriptionManager.h"
-#include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/tests/Itest.h"
+#include "joynr/tests/testRequestInterpreter.h"
+#include "joynr/types/Localisation/GpsLocation.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
@@ -52,8 +52,8 @@ using namespace ::testing;
 using namespace joynr;
 
 /**
-  * Is an integration test. Tests from Dispatcher -> SubscriptionListener and RequestCaller
-  */
+ * Is an integration test. Tests from Dispatcher -> SubscriptionListener and RequestCaller
+ */
 class BroadcastSubscriptionTest : public ::testing::Test
 {
 public:
@@ -130,11 +130,11 @@ private:
 };
 
 /**
-  * Trigger:    The dispatcher receives a Publication from a broadcast with a single output
+ * Trigger:    The dispatcher receives a Publication from a broadcast with a single output
  * parameter.
-  * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
-  *             Interpreter executes it correctly
-  */
+ * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
+ *             Interpreter executes it correctly
+ */
 TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
 {
 
@@ -149,7 +149,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(80,   // validity_ms
                                                                      1000, // publication ttl
                                                                      100   // minInterval_ms
-                                                                     );
+    );
 
     BroadcastSubscriptionRequest subscriptionRequest;
     // construct a reply containing a GpsLocation
@@ -180,11 +180,11 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
 }
 
 /**
-  * Trigger:    The dispatcher receives a Publication from a broadcast with multiple output
+ * Trigger:    The dispatcher receives a Publication from a broadcast with multiple output
  * parameters.
-  * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
-  *             Interpreter executes it correctly
-  */
+ * Expected:   The SubscriptionManager retrieves the correct SubscriptionCallback and the
+ *             Interpreter executes it correctly
+ */
 TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters)
 {
 
@@ -199,7 +199,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters)
     auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(80,   // validity_ms
                                                                      1000, // publication ttl
                                                                      100   // minInterval_ms
-                                                                     );
+    );
 
     BroadcastSubscriptionRequest subscriptionRequest;
     // construct a reply containing a GpsLocation

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,22 +21,22 @@
 #include <cstdint>
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/BroadcastSubscriptionRequest.h"
+#include "joynr/ImmutableMessage.h"
 #include "joynr/Message.h"
+#include "joynr/MessagingQos.h"
 #include "joynr/MulticastPublication.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/MutableMessage.h"
 #include "joynr/MutableMessageFactory.h"
-#include "joynr/ImmutableMessage.h"
-#include "joynr/MessagingQos.h"
 #include "joynr/Request.h"
-#include "joynr/serializer/Serializer.h"
 #include "joynr/Settings.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionRequest.h"
+#include "joynr/serializer/Serializer.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
 
 #include "libjoynr/uds/UdsLibJoynrMessagingSkeleton.h"
@@ -52,8 +52,8 @@ class UdsLibJoynrMessagingSkeletonTest : public ::testing::Test
 public:
     UdsLibJoynrMessagingSkeletonTest()
             : _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              _mockMessageRouter(
-                      std::make_shared<MockMessageRouter>(_singleThreadedIOService->getIOService())),
+              _mockMessageRouter(std::make_shared<MockMessageRouter>(
+                      _singleThreadedIOService->getIOService())),
               _messageFactory(),
               _mutableMessage(),
               _senderID("senderID"),
@@ -108,8 +108,7 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitTest)
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
 
-    auto onFailure =
-            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
+    auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     udsLibJoynrMessagingSkeleton.transmit(immutableMessage, onFailure);
 }
 
@@ -121,7 +120,8 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, onMessageReceivedTest)
     EXPECT_CALL(*_mockMessageRouter,
                 route(AllOf(MessageHasType(_mutableMessage.getType()),
                             ImmutableMessageHasPayload(_mutableMessage.getPayload())),
-                      _)).Times(1);
+                      _))
+            .Times(1);
 
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     udsLibJoynrMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
@@ -130,13 +130,13 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, onMessageReceivedTest)
 TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitSetsReceivedFromGlobalForMulticastPublications)
 {
     MulticastPublication publication;
-    _mutableMessage = _messageFactory.createMulticastPublication(_senderID, _qosSettings, publication);
+    _mutableMessage =
+            _messageFactory.createMulticastPublication(_senderID, _qosSettings, publication);
 
     UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
-    auto onFailure =
-            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
+    auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
     udsLibJoynrMessagingSkeleton.transmit(immutableMessage, onFailure);
     EXPECT_TRUE(immutableMessage->isReceivedFromGlobal());
@@ -151,7 +151,8 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitDoesNotSetReceivedFromGlobalFor
     transmitDoesNotSetIsReceivedFromGlobal();
 }
 
-TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitDoesNotSetReceivedFromGlobalForSubscriptionRequests)
+TEST_F(UdsLibJoynrMessagingSkeletonTest,
+       transmitDoesNotSetReceivedFromGlobalForSubscriptionRequests)
 {
     SubscriptionRequest request;
     _mutableMessage = _messageFactory.createSubscriptionRequest(
@@ -160,7 +161,8 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitDoesNotSetReceivedFromGlobalFor
     transmitDoesNotSetIsReceivedFromGlobal();
 }
 
-TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitDoesNotSetIsReceivedFromGlobalForBroadcastSubscriptionRequests)
+TEST_F(UdsLibJoynrMessagingSkeletonTest,
+       transmitDoesNotSetIsReceivedFromGlobalForBroadcastSubscriptionRequests)
 {
     BroadcastSubscriptionRequest request;
     _mutableMessage = _messageFactory.createBroadcastSubscriptionRequest(
@@ -169,7 +171,8 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitDoesNotSetIsReceivedFromGlobalF
     transmitDoesNotSetIsReceivedFromGlobal();
 }
 
-TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitDoesNotSetIsReceivedFromGlobalForMulticastSubscriptionRequests)
+TEST_F(UdsLibJoynrMessagingSkeletonTest,
+       transmitDoesNotSetIsReceivedFromGlobalForMulticastSubscriptionRequests)
 {
     MulticastSubscriptionRequest request;
     _mutableMessage = _messageFactory.createMulticastSubscriptionRequest(
@@ -183,8 +186,7 @@ void UdsLibJoynrMessagingSkeletonTest::transmitDoesNotSetIsReceivedFromGlobal()
     UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
-    auto onFailure =
-            [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
+    auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
     udsLibJoynrMessagingSkeleton.transmit(immutableMessage, onFailure);
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());

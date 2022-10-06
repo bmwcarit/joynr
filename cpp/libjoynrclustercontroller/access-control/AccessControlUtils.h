@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,8 +52,7 @@ using namespace joynr::infrastructure::DacTypes;
  * Dummy types for Mediator classes
  * ================================================================
  */
-struct MediatorAccessControlEntry : public dac::MasterAccessControlEntry
-{
+struct MediatorAccessControlEntry : public dac::MasterAccessControlEntry {
     using MasterAccessControlEntry::MasterAccessControlEntry;
     MediatorAccessControlEntry() = default;
 
@@ -73,8 +72,7 @@ struct MediatorAccessControlEntry : public dac::MasterAccessControlEntry
         archive(muesli::BaseClass<joynr::infrastructure::DacTypes::MasterAccessControlEntry>(this));
     }
 };
-struct MediatorRegistrationControlEntry : public dac::MasterRegistrationControlEntry
-{
+struct MediatorRegistrationControlEntry : public dac::MasterRegistrationControlEntry {
     using MasterRegistrationControlEntry::MasterRegistrationControlEntry;
 
     MediatorRegistrationControlEntry() = default;
@@ -118,46 +116,38 @@ template <typename T>
 struct MetaTableView;
 
 template <>
-struct MetaTableView<dac::MasterAccessControlEntry>
-{
+struct MetaTableView<dac::MasterAccessControlEntry> {
     using tag = tableTags::access;
 };
 
 template <>
-struct MetaTableView<dac::MediatorAccessControlEntry>
-{
+struct MetaTableView<dac::MediatorAccessControlEntry> {
     using tag = tableTags::access;
 };
 
 template <>
-struct MetaTableView<dac::OwnerAccessControlEntry>
-{
+struct MetaTableView<dac::OwnerAccessControlEntry> {
     using tag = tableTags::access;
 };
 
 template <>
-struct MetaTableView<dac::MasterRegistrationControlEntry>
-{
+struct MetaTableView<dac::MasterRegistrationControlEntry> {
     using tag = tableTags::registration;
 };
 
 template <>
-struct MetaTableView<dac::MediatorRegistrationControlEntry>
-{
+struct MetaTableView<dac::MediatorRegistrationControlEntry> {
     using tag = tableTags::registration;
 };
 
 template <>
-struct MetaTableView<dac::OwnerRegistrationControlEntry>
-{
+struct MetaTableView<dac::OwnerRegistrationControlEntry> {
     using tag = tableTags::registration;
 };
 
-struct TableViewTraitsBase
-{
+struct TableViewTraitsBase {
     // this custom comparator ensures that wildcards come last
-    struct WildcardComparator
-    {
+    struct WildcardComparator {
         bool operator()(const std::string& lhs, const std::string& rhs) const
         {
             if (lhs == WILDCARD) {
@@ -171,8 +161,7 @@ struct TableViewTraitsBase
     };
 
     // this comparator can only be used in the result set
-    struct SetUnionComparator
-    {
+    struct SetUnionComparator {
         bool operator()(const std::string& lhs, const std::string& rhs) const
         {
             // sort wildcard always at the end
@@ -209,8 +198,7 @@ struct TableViewTraitsBase
 
 // result set
 template <typename Entry>
-struct TableViewResultSet : TableViewTraitsBase
-{
+struct TableViewResultSet : TableViewTraitsBase {
     using Type = bmi::multi_index_container<
             Entry,
             bmi::indexed_by<
@@ -224,8 +212,7 @@ template <typename AccessTag, typename Entry>
 struct TableViewTraits;
 
 template <typename Entry>
-struct TableViewTraits<tableTags::access, Entry> : TableViewTraitsBase
-{
+struct TableViewTraits<tableTags::access, Entry> : TableViewTraitsBase {
     using OperationKey = BOOST_MULTI_INDEX_CONST_MEM_FUN(Entry, const std::string&, getOperation);
 
     using Type = bmi::ordered_unique<
@@ -238,8 +225,7 @@ struct TableViewTraits<tableTags::access, Entry> : TableViewTraitsBase
 };
 
 template <typename Entry>
-struct TableViewTraits<tableTags::registration, Entry> : TableViewTraitsBase
-{
+struct TableViewTraits<tableTags::registration, Entry> : TableViewTraitsBase {
     using Type = bmi::ordered_unique<
             bmi::tag<tags::UidDomainInterfaceOperation>,
             bmi::composite_key<Entry, UidKey, DomainKey, InterfaceKey>,
@@ -247,8 +233,7 @@ struct TableViewTraits<tableTags::registration, Entry> : TableViewTraitsBase
 };
 
 template <typename Entry>
-struct TableMaker
-{
+struct TableMaker {
     using Tag = typename MetaTableView<Entry>::tag;
     using TableViewType = typename TableViewTraits<Tag, Entry>::Type;
     using DomainKey = typename TableViewTraits<Tag, Entry>::DomainKey;
@@ -291,22 +276,18 @@ namespace std
  * std::unordered_map, std::unordered_multimap as default hash function.
  */
 template <>
-struct hash<joynr::access_control::dac::MediatorAccessControlEntry>
-{
-    std::size_t operator()(
-            const joynr::access_control::dac::
-                    MediatorAccessControlEntry& mediatorAccessControlEntryValue) const
+struct hash<joynr::access_control::dac::MediatorAccessControlEntry> {
+    std::size_t operator()(const joynr::access_control::dac::MediatorAccessControlEntry&
+                                   mediatorAccessControlEntryValue) const
     {
         return mediatorAccessControlEntryValue.hashCode();
     }
 };
 
 template <>
-struct hash<joynr::access_control::dac::MediatorRegistrationControlEntry>
-{
-    std::size_t operator()(
-            const joynr::access_control::dac::
-                    MediatorRegistrationControlEntry& mediatorRegistarationControlEntryValue) const
+struct hash<joynr::access_control::dac::MediatorRegistrationControlEntry> {
+    std::size_t operator()(const joynr::access_control::dac::MediatorRegistrationControlEntry&
+                                   mediatorRegistarationControlEntryValue) const
     {
         return mediatorRegistarationControlEntryValue.hashCode();
     }

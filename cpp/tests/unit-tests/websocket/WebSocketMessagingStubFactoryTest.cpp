@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,11 +27,11 @@
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
 
-#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 #include "libjoynr/websocket/WebSocketMessagingStub.h"
+#include "libjoynr/websocket/WebSocketMessagingStubFactory.h"
 
-#include "tests/mock/MockWebSocketSendInterface.h"
 #include "tests/mock/MockWebSocketClient.h"
+#include "tests/mock/MockWebSocketSendInterface.h"
 
 using namespace ::testing;
 
@@ -131,10 +131,11 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
             joynr::system::RoutingTypes::WebSocketClientAddress(*address), websocket->getSender());
 
     auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
-    factory->registerOnMessagingStubClosedCallback([messagingStubFactory](
-            std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
-        messagingStubFactory->remove(destinationAddress);
-    });
+    factory->registerOnMessagingStubClosedCallback(
+            [messagingStubFactory](std::shared_ptr<const joynr::system::RoutingTypes::Address>
+                                           destinationAddress) {
+                messagingStubFactory->remove(destinationAddress);
+            });
     messagingStubFactory->registerStubFactory(std::move(factory));
 
     EXPECT_NE(nullptr, messagingStubFactory->create(address).get());

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,12 +17,12 @@
  * #L%
  */
 
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 #include <memory>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "tests/JoynrTest.h"
 
@@ -30,25 +30,25 @@
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/LibJoynrMessageRouter.h"
 
+#include "joynr/ImmutableMessage.h"
+#include "joynr/Message.h"
+#include "joynr/MessageQueue.h"
+#include "joynr/MessagingStubFactory.h"
+#include "joynr/MqttMulticastAddressCalculator.h"
+#include "joynr/MulticastMessagingSkeletonDirectory.h"
+#include "joynr/MutableMessage.h"
 #include "joynr/Semaphore.h"
+#include "joynr/Settings.h"
+#include "joynr/SingleThreadedIOService.h"
+#include "joynr/WebSocketMulticastAddressCalculator.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketAddress.h"
 #include "joynr/system/RoutingTypes/WebSocketClientAddress.h"
-#include "joynr/MessagingStubFactory.h"
-#include "joynr/MessageQueue.h"
-#include "joynr/MulticastMessagingSkeletonDirectory.h"
-#include "joynr/MqttMulticastAddressCalculator.h"
-#include "joynr/SingleThreadedIOService.h"
-#include "joynr/WebSocketMulticastAddressCalculator.h"
-#include "joynr/Message.h"
-#include "joynr/MutableMessage.h"
-#include "joynr/ImmutableMessage.h"
-#include "joynr/Settings.h"
 
+#include "tests/mock/MockMessageQueue.h"
 #include "tests/mock/MockMessagingStub.h"
 #include "tests/mock/MockMessagingStubFactory.h"
-#include "tests/mock/MockMessageQueue.h"
 
 using namespace joynr;
 
@@ -94,7 +94,7 @@ public:
 
     ~MessageRouterTest() override
     {
-        if(_messageRouterWithMockedMessageQueue) {
+        if (_messageRouterWithMockedMessageQueue) {
             _messageRouterWithMockedMessageQueue->shutdown();
         }
         EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
@@ -110,7 +110,8 @@ protected:
             std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {},
             std::uint64_t messageQueueLimit = 0)
     {
-        auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>(messageQueueLimit);
+        auto messageQueueForMessageRouter =
+                std::make_unique<MessageQueue<std::string>>(messageQueueLimit);
         _messageQueue = messageQueueForMessageRouter.get();
 
         auto transportNotAvailableQueue =
@@ -137,7 +138,8 @@ protected:
             std::vector<std::shared_ptr<ITransportStatus>> transportStatuses = {})
     {
         constexpr std::uint64_t messageQueueLimit = 4;
-        auto mockedMessageQueueForMessageRouter = std::make_unique<MockMessageQueue<std::string>>(messageQueueLimit);
+        auto mockedMessageQueueForMessageRouter =
+                std::make_unique<MockMessageQueue<std::string>>(messageQueueLimit);
         _mockedMessageQueue = mockedMessageQueueForMessageRouter.get();
 
         auto mockedTransportNotAvailableQueue =
@@ -170,7 +172,8 @@ protected:
 
         _messagingSettings.setRoutingTableCleanupIntervalMs(5000);
         _messagingSettings.setSendMsgRetryInterval(_sendMsgRetryInterval);
-        auto messageQueueForMessageRouter = std::make_unique<MessageQueue<std::string>>(messageQueueLimit);
+        auto messageQueueForMessageRouter =
+                std::make_unique<MessageQueue<std::string>>(messageQueueLimit);
         _messageQueue = messageQueueForMessageRouter.get();
 
         auto transportNotAvailableQueue =
@@ -206,8 +209,8 @@ protected:
                 "messageNotificationProviderParticipantIdMockedMessageQueue");
 
         constexpr std::uint64_t messageQueueLimit = 4;
-        auto mockedMessageQueueForMessageRouter = std::make_unique<
-                MockMessageQueue<std::string>>(messageQueueLimit);
+        auto mockedMessageQueueForMessageRouter =
+                std::make_unique<MockMessageQueue<std::string>>(messageQueueLimit);
         _mockedMessageQueue = mockedMessageQueueForMessageRouter.get();
 
         auto mockedTransportNotAvailableQueue =
@@ -268,19 +271,19 @@ protected:
         joynr::Semaphore semaphore(0);
         std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
         auto mockMessagingStub = std::make_shared<MockMessagingStub>();
-        using ::testing::Return;
         using ::testing::_;
         using ::testing::A;
+        using ::testing::Return;
         ON_CALL(*_messagingStubFactory, create(_)).WillByDefault(Return(mockMessagingStub));
         ON_CALL(*mockMessagingStub,
                 transmit(immutableMessage,
-                         A<const std::function<
-                                 void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
+                         A<const std::function<void(
+                                 const joynr::exceptions::JoynrRuntimeException&)>&>()))
                 .WillByDefault(ReleaseSemaphore(&semaphore));
         EXPECT_CALL(*mockMessagingStub,
                     transmit(immutableMessage,
-                             A<const std::function<
-                                     void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
+                             A<const std::function<void(
+                                     const joynr::exceptions::JoynrRuntimeException&)>&>()));
         _messageRouter->route(immutableMessage);
         EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(2)));
     }
@@ -291,4 +294,4 @@ private:
 
 typedef ::testing::Types<LibJoynrMessageRouter, CcMessageRouter> MessageRouterTypes;
 
-TYPED_TEST_SUITE(MessageRouterTest, MessageRouterTypes,);
+TYPED_TEST_SUITE(MessageRouterTest, MessageRouterTypes, );

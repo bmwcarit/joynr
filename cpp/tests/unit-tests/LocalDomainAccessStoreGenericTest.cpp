@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,54 +33,42 @@ namespace
 namespace tags
 {
 // Testing functions
-struct Domain
-{
+struct Domain {
 };
-struct Interface
-{
+struct Interface {
 };
 
 // Matching Type
-struct ExactMatch
-{
+struct ExactMatch {
 };
-struct WildcardMatch
-{
+struct WildcardMatch {
 };
-struct OnlyWildcardMatch
-{
+struct OnlyWildcardMatch {
 };
-}
+} // namespace tags
 
 template <typename T>
-struct IsACE : std::false_type
-{
+struct IsACE : std::false_type {
 };
 template <>
-struct IsACE<MasterAccessControlEntry> : std::true_type
-{
+struct IsACE<MasterAccessControlEntry> : std::true_type {
 };
 template <>
-struct IsACE<OwnerAccessControlEntry> : std::true_type
-{
+struct IsACE<OwnerAccessControlEntry> : std::true_type {
 };
 
 template <typename T>
-struct IsRCE : std::false_type
-{
+struct IsRCE : std::false_type {
 };
 template <>
-struct IsRCE<MasterRegistrationControlEntry> : std::true_type
-{
+struct IsRCE<MasterRegistrationControlEntry> : std::true_type {
 };
 template <>
-struct IsRCE<OwnerRegistrationControlEntry> : std::true_type
-{
+struct IsRCE<OwnerRegistrationControlEntry> : std::true_type {
 };
 
 template <typename FunctionType, typename ControlEntry>
-struct BaseTestRunner
-{
+struct BaseTestRunner {
     BaseTestRunner() : userId("userId"), operationName("operationName")
     {
     }
@@ -271,14 +259,12 @@ struct TestRunner;
 
 template <typename FunctionType, typename ControlEntry>
 struct TestRunner<tags::WildcardMatch, FunctionType, ControlEntry>
-        : public BaseTestRunner<FunctionType, ControlEntry>
-{
+        : public BaseTestRunner<FunctionType, ControlEntry> {
 };
 
 template <typename FunctionType, typename ControlEntry>
 struct TestRunner<tags::ExactMatch, FunctionType, ControlEntry>
-        : public BaseTestRunner<FunctionType, ControlEntry>
-{
+        : public BaseTestRunner<FunctionType, ControlEntry> {
     std::string getQueryInterface() override
     {
         return BaseTestRunner<FunctionType, ControlEntry>::getExpectedInterface();
@@ -292,8 +278,7 @@ struct TestRunner<tags::ExactMatch, FunctionType, ControlEntry>
 
 template <typename FunctionType, typename ControlEntry>
 struct TestRunner<tags::OnlyWildcardMatch, FunctionType, ControlEntry>
-        : public BaseTestRunner<FunctionType, ControlEntry>
-{
+        : public BaseTestRunner<FunctionType, ControlEntry> {
     std::string getExpectedDomain() override
     {
         return "*";
@@ -305,15 +290,13 @@ struct TestRunner<tags::OnlyWildcardMatch, FunctionType, ControlEntry>
     }
 };
 
-struct MakePair
-{
+struct MakePair {
     template <typename x, typename y>
-    struct apply
-    {
+    struct apply {
         using type = std::pair<x, y>;
     };
 };
-}
+} // namespace
 
 // Permutation space
 using setFunctions = boost::mpl::vector<tags::Domain, tags::Interface>;
@@ -337,8 +320,7 @@ template <typename TypeList>
 struct TypeListToTestingTypes;
 
 template <typename... Ts>
-struct TypeListToTestingTypes<muesli::detail::TypeList<Ts...>>
-{
+struct TypeListToTestingTypes<muesli::detail::TypeList<Ts...>> {
     using type = ::testing::Types<Ts...>;
 };
 
@@ -346,11 +328,10 @@ struct TypeListToTestingTypes<muesli::detail::TypeList<Ts...>>
 using TagTypes = typename TypeListToTestingTypes<TagTypeList>::type;
 
 template <typename Tag>
-struct LocalDomainAccessStoreGenericTypedTest : public ::testing::Test
-{
+struct LocalDomainAccessStoreGenericTypedTest : public ::testing::Test {
 };
 
-TYPED_TEST_SUITE(LocalDomainAccessStoreGenericTypedTest, TagTypes,);
+TYPED_TEST_SUITE(LocalDomainAccessStoreGenericTypedTest, TagTypes, );
 TYPED_TEST(LocalDomainAccessStoreGenericTypedTest, updateAndRemoveDomainOrInterfaceWithWildCard)
 {
     // ===============================================================

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,9 +25,10 @@
 #include "joynr/StatusCode.h"
 #include "joynr/types/DiscoveryEntry.h"
 
-//void initPretty(void);
+// void initPretty(void);
 
-namespace joynr {
+namespace joynr
+{
 
 // NOTE: Choosing the right PrintTo method is done by template magic by
 //       the compiler. Therefore, the point in time when the PrintTo method
@@ -39,14 +40,16 @@ namespace joynr {
 //    class MessagingQos;
 //    void PrintTo(const MessagingQos& value, ::std::ostream* os);
 
-namespace system {
-    class DiscoveryEntry;
-    void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os);
-    class WebSocketAddress;
-    void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
+namespace system
+{
+class DiscoveryEntry;
+void PrintTo(const joynr::types::DiscoveryEntry& value, ::std::ostream* os);
+class WebSocketAddress;
+void PrintTo(const joynr::system::WebSocketAddress& value, ::std::ostream* os);
 } // namespace system
 
-namespace exceptions {
+namespace exceptions
+{
 
 class JoynrException;
 void PrintTo(const joynr::exceptions::JoynrException& value, ::std::ostream* os);
@@ -73,7 +76,8 @@ class DiscoveryException;
 void PrintTo(const joynr::exceptions::DiscoveryException& value, ::std::ostream* os);
 
 class NoCompatibleProviderFoundException;
-void PrintTo(const joynr::exceptions::NoCompatibleProviderFoundException& value, ::std::ostream* os);
+void PrintTo(const joynr::exceptions::NoCompatibleProviderFoundException& value,
+             ::std::ostream* os);
 
 class ProviderRuntimeException;
 void PrintTo(const joynr::exceptions::ProviderRuntimeException& value, ::std::ostream* os);

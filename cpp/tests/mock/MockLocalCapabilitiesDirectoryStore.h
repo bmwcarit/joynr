@@ -24,52 +24,65 @@
 namespace joynr
 {
 
-class MockLocalCapabilitiesDirectoryStore : public joynr::LocalCapabilitiesDirectoryStore {
+class MockLocalCapabilitiesDirectoryStore : public joynr::LocalCapabilitiesDirectoryStore
+{
 public:
     MockLocalCapabilitiesDirectoryStore() = default;
     MockLocalCapabilitiesDirectoryStore(
             std::shared_ptr<capabilities::CachingStorage> globalLookupCache,
-            std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities) :
-        _globalLookupCache{globalLookupCache},
-        _locallyRegisteredCapabilities{locallyRegisteredCapabilities} {}
+            std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities)
+            : _globalLookupCache{globalLookupCache},
+              _locallyRegisteredCapabilities{locallyRegisteredCapabilities}
+    {
+    }
 
-    MOCK_METHOD1(getLocalCapabilities, std::vector<types::DiscoveryEntry> (const std::string& participantId));
-    MOCK_METHOD1(getLocalCapabilities, std::vector<types::DiscoveryEntry> (const std::vector<InterfaceAddress>&
-                                                                           interfaceAddresses));
-    MOCK_METHOD1(insertInLocalCapabilitiesStorage, void (const types::DiscoveryEntry& entry));
-    MOCK_METHOD2(insertInGlobalLookupCache, void (const types::DiscoveryEntry& entry,
-                                                  const std::vector<std::string>& gbids));
-    MOCK_METHOD4(getLocalAndCachedCapabilities, bool (const std::string& participantId,
-                                                      const joynr::types::DiscoveryQos& discoveryQos,
-                                                      const std::vector<std::string>& gbids,
-                                                      std::shared_ptr<ILocalCapabilitiesCallback> callback));
-    MOCK_METHOD4(getLocalAndCachedCapabilities, bool (const std::vector<InterfaceAddress>& interfaceAddresses,
-                                                          const joynr::types::DiscoveryQos& discoveryQos,
-                                                          const std::vector<std::string>& gbids,
-                                                          std::shared_ptr<ILocalCapabilitiesCallback> callback));
-    MOCK_METHOD2(getGbidsForParticipantId, std::vector<std::string> (const std::string& participantId,
-                                                                     const std::unique_lock<std::recursive_mutex>& cacheLock));
-    MOCK_CONST_METHOD0(getAllGlobalCapabilities, std::vector<types::DiscoveryEntry> ());
-    MOCK_METHOD2(eraseParticipantIdToGbidMapping, void(const std::string& participantId,
-                                                       const std::unique_lock<std::recursive_mutex>& cacheLock));
-    std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache(const std::unique_lock<std::recursive_mutex>& cacheLock) override {
-        if(_globalLookupCache) {
+    MOCK_METHOD1(getLocalCapabilities,
+                 std::vector<types::DiscoveryEntry>(const std::string& participantId));
+    MOCK_METHOD1(getLocalCapabilities,
+                 std::vector<types::DiscoveryEntry>(
+                         const std::vector<InterfaceAddress>& interfaceAddresses));
+    MOCK_METHOD1(insertInLocalCapabilitiesStorage, void(const types::DiscoveryEntry& entry));
+    MOCK_METHOD2(insertInGlobalLookupCache,
+                 void(const types::DiscoveryEntry& entry, const std::vector<std::string>& gbids));
+    MOCK_METHOD4(getLocalAndCachedCapabilities,
+                 bool(const std::string& participantId,
+                      const joynr::types::DiscoveryQos& discoveryQos,
+                      const std::vector<std::string>& gbids,
+                      std::shared_ptr<ILocalCapabilitiesCallback> callback));
+    MOCK_METHOD4(getLocalAndCachedCapabilities,
+                 bool(const std::vector<InterfaceAddress>& interfaceAddresses,
+                      const joynr::types::DiscoveryQos& discoveryQos,
+                      const std::vector<std::string>& gbids,
+                      std::shared_ptr<ILocalCapabilitiesCallback> callback));
+    MOCK_METHOD2(getGbidsForParticipantId,
+                 std::vector<std::string>(const std::string& participantId,
+                                          const std::unique_lock<std::recursive_mutex>& cacheLock));
+    MOCK_CONST_METHOD0(getAllGlobalCapabilities, std::vector<types::DiscoveryEntry>());
+    MOCK_METHOD2(eraseParticipantIdToGbidMapping,
+                 void(const std::string& participantId,
+                      const std::unique_lock<std::recursive_mutex>& cacheLock));
+    std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache(
+            const std::unique_lock<std::recursive_mutex>& cacheLock) override
+    {
+        if (_globalLookupCache) {
             return _globalLookupCache;
         }
         return joynr::LocalCapabilitiesDirectoryStore::getGlobalLookupCache(cacheLock);
     }
-    std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities(const std::unique_lock<std::recursive_mutex>& cacheLock) override {
-        if(_locallyRegisteredCapabilities) {
+    std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities(
+            const std::unique_lock<std::recursive_mutex>& cacheLock) override
+    {
+        if (_locallyRegisteredCapabilities) {
             return _locallyRegisteredCapabilities;
         }
         return joynr::LocalCapabilitiesDirectoryStore::getLocallyRegisteredCapabilities(cacheLock);
     }
+
 private:
     std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
     std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
 };
 
-} //namespace joynr
-
+} // namespace joynr
 
 #endif // TESTS_MOCK_MOCKLOCALCAPABILITIESDIRECTORYSTORE_H

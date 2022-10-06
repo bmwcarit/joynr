@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,14 +19,14 @@
 
 #include "IltHelper.h"
 #include "IltProvider.h"
-#include "joynr/JoynrRuntime.h"
 #include "IltStringBroadcastFilter.h"
+#include "joynr/JoynrRuntime.h"
 #include "joynr/Semaphore.h"
 #include "joynr/types/ProviderQos.h"
-#include <memory>
-#include <string>
 #include <iostream>
+#include <memory>
 #include <signal.h>
+#include <string>
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -77,10 +77,10 @@ int main(int argc, char* argv[])
     // implementation.
     std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
             [&](const joynr::exceptions::JoynrRuntimeException& exception) {
-        JOYNR_LOG_ERROR(
-                logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
-        semaphore.notify();
-    };
+                JOYNR_LOG_ERROR(logger, "Unexpected joynr runtime error occured: " +
+                                                exception.getMessage());
+                semaphore.notify();
+            };
 
     // Initialise the JOYn runtime
     std::string pathToMessagingSettings(dir + "/resources/ilt-provider.settings");

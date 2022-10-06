@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -96,9 +96,11 @@ void UdsMessagingStubFactory::addClient(const system::RoutingTypes::UdsClientAdd
     {
         auto udsClientStub = std::make_shared<UdsMessagingStub>(std::move(udsSender));
         std::lock_guard<std::mutex> lock(_clientStubMapMutex);
-        inserted = _clientStubMap.insert(std::pair<joynr::system::RoutingTypes::UdsClientAddress,
-                                                   std::shared_ptr<IMessagingStub>>(
-                                                 clientAddress, std::move(udsClientStub))).second;
+        inserted = _clientStubMap
+                           .insert(std::pair<joynr::system::RoutingTypes::UdsClientAddress,
+                                             std::shared_ptr<IMessagingStub>>(
+                                   clientAddress, std::move(udsClientStub)))
+                           .second;
     }
     if (inserted) {
         JOYNR_LOG_INFO(logger(), "Added messaging stub for address: {}", clientAddress.toString());
@@ -117,9 +119,11 @@ void UdsMessagingStubFactory::addServer(
     {
         auto udsServerStub = std::make_shared<UdsMessagingStub>(std::move(udsSender));
         std::lock_guard<std::mutex> lock(_serverStubMapMutex);
-        inserted = _serverStubMap.insert(std::pair<joynr::system::RoutingTypes::UdsAddress,
-                                                   std::shared_ptr<IMessagingStub>>(
-                                                 serverAddress, std::move(udsServerStub))).second;
+        inserted = _serverStubMap
+                           .insert(std::pair<joynr::system::RoutingTypes::UdsAddress,
+                                             std::shared_ptr<IMessagingStub>>(
+                                   serverAddress, std::move(udsServerStub)))
+                           .second;
     }
     if (inserted) {
         JOYNR_LOG_INFO(logger(), "Added messaging stub for address: {}", serverAddress.toString());

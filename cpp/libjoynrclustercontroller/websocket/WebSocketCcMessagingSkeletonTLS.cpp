@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -62,11 +62,11 @@ void WebSocketCcMessagingSkeletonTLS::init()
     ::SSL_load_error_strings();
     ::OpenSSL_add_all_algorithms();
 
-    _endpoint
-            .set_tls_init_handler([thisWeakPtr = joynr::util::as_weak_ptr(std::dynamic_pointer_cast<
-                                           WebSocketCcMessagingSkeletonTLS>(
-                                           this->shared_from_this()))](ConnectionHandle hdl)
-                                          ->std::shared_ptr<SSLContext> {
+    _endpoint.set_tls_init_handler(
+            [thisWeakPtr = joynr::util::as_weak_ptr(
+                     std::dynamic_pointer_cast<WebSocketCcMessagingSkeletonTLS>(
+                             this->shared_from_this()))](
+                    ConnectionHandle hdl) -> std::shared_ptr<SSLContext> {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
                     return thisSharedPtr->createSSLContext(thisSharedPtr->_caPemFile,
                                                            thisSharedPtr->_certPemFile,
@@ -157,12 +157,11 @@ std::shared_ptr<WebSocketCcMessagingSkeletonTLS::SSLContext> WebSocketCcMessagin
 
         using VerifyContext = websocketpp::lib::asio::ssl::verify_context;
 
-        auto getCNFromCertificate = [
-            thisWeakPtr = joynr::util::as_weak_ptr(std::dynamic_pointer_cast<
-                    WebSocketCcMessagingSkeletonTLS>(this->shared_from_this())),
-            hdl = std::move(hdl)
-        ](bool preverified, VerifyContext& ctx)
-        {
+        auto getCNFromCertificate = [thisWeakPtr = joynr::util::as_weak_ptr(
+                                             std::dynamic_pointer_cast<
+                                                     WebSocketCcMessagingSkeletonTLS>(
+                                                     this->shared_from_this())),
+                                     hdl = std::move(hdl)](bool preverified, VerifyContext& ctx) {
             JOYNR_LOG_TRACE(logger(), "getCNFromCertificate: preverified = {}", preverified);
             if (auto thisSharedPtr = thisWeakPtr.lock()) {
                 // getting cert out of the verification context

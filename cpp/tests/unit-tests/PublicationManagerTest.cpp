@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,44 +23,44 @@
 #include <string>
 #include <thread>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/CallContextStorage.h"
-#include "joynr/InterfaceRegistrar.h"
-#include "joynr/tests/testRequestInterpreter.h"
-#include "joynr/SubscriptionPublication.h"
-#include "joynr/SubscriptionAttributeListener.h"
-#include "joynr/UnicastBroadcastListener.h"
-#include "joynr/PeriodicSubscriptionQos.h"
-#include "joynr/OnChangeSubscriptionQos.h"
-#include "joynr/MulticastSubscriptionQos.h"
-#include "joynr/LibjoynrSettings.h"
-#include "tests/utils/TimeUtils.h"
-#include "joynr/Logger.h"
-#include "joynr/exceptions/MethodInvocationException.h"
-#include "joynr/SingleThreadedIOService.h"
-#include "joynr/SubscriptionReply.h"
-#include "joynr/Semaphore.h"
 #include "joynr/IMessageSender.h"
+#include "joynr/InterfaceRegistrar.h"
+#include "joynr/LibjoynrSettings.h"
+#include "joynr/Logger.h"
+#include "joynr/MulticastSubscriptionQos.h"
+#include "joynr/OnChangeSubscriptionQos.h"
+#include "joynr/PeriodicSubscriptionQos.h"
+#include "joynr/Semaphore.h"
+#include "joynr/SingleThreadedIOService.h"
+#include "joynr/SubscriptionAttributeListener.h"
+#include "joynr/SubscriptionPublication.h"
+#include "joynr/SubscriptionReply.h"
+#include "joynr/UnicastBroadcastListener.h"
+#include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/tests/testRequestInterpreter.h"
+#include "tests/utils/TimeUtils.h"
 
 #include "tests/JoynrTest.h"
+#include "tests/mock/MockMessageSender.h"
 #include "tests/mock/MockPublicationSender.h"
 #include "tests/mock/MockTestRequestCaller.h"
-#include "tests/mock/MockMessageSender.h"
 
-using ::testing::A;
 using ::testing::_;
+using ::testing::A;
 using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::Between;
 using ::testing::ByRef;
-using ::testing::ReturnRef;
+using ::testing::Eq;
+using ::testing::MakeMatcher;
+using ::testing::Matcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
-using ::testing::Matcher;
-using ::testing::MakeMatcher;
-using ::testing::Eq;
+using ::testing::ReturnRef;
 
 using namespace joynr;
 
@@ -88,7 +88,7 @@ public:
     void invokeLocationAndSaveCallContext(
             std::function<void(const joynr::types::Localisation::GpsLocation&)> onSuccess,
             std::function<void(const std::shared_ptr<joynr::exceptions::ProviderRuntimeException>&)>
-                    /*onError*/)
+            /*onError*/)
     {
         onSuccess(joynr::types::Localisation::GpsLocation());
         _savedCallContext = CallContextStorage::get();
@@ -279,7 +279,8 @@ TEST_F(PublicationManagerTest, add_onChangeSubscription)
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(Between(1, 2));
+                    ))
+            .Times(Between(1, 2));
 
     // Expect a call to set up the on change subscription
     std::string attributeName = "Location";
@@ -344,7 +345,8 @@ TEST_F(PublicationManagerTest, add_onChangeWithNoExpiryDate)
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(2);
+                    ))
+            .Times(2);
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -416,7 +418,9 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(2).WillOnce(ReleaseSemaphore(&semaphore));
+                    ))
+            .Times(2)
+            .WillOnce(ReleaseSemaphore(&semaphore));
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -492,7 +496,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId)
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(3);
+                    ))
+            .Times(3);
 
     EXPECT_CALL(
             *mockPublicationSender2,
@@ -501,7 +506,8 @@ TEST_F(PublicationManagerTest, attribute_add_withExistingSubscriptionId)
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(2);
+                    ))
+            .Times(2);
 
     EXPECT_CALL(*requestCaller, registerAttributeListener(attributeName, _))
             .Times(1)
@@ -614,7 +620,8 @@ TEST_F(PublicationManagerTest,
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(3);
+                    ))
+            .Times(3);
 
     EXPECT_CALL(*requestCaller, registerAttributeListener(attributeName, _))
             .Times(2)
@@ -706,7 +713,8 @@ TEST_F(PublicationManagerTest, attribtue_add_withExistingSubscriptionId_testQos_
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(3);
+                    ))
+            .Times(3);
 
     EXPECT_CALL(*requestCaller, registerAttributeListener(attributeName, _))
             .Times(2)
@@ -806,7 +814,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId)
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(2);
+                    ))
+            .Times(2);
 
     EXPECT_CALL(
             *mockPublicationSender2,
@@ -815,7 +824,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId)
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(1);
+                    ))
+            .Times(1);
 
     EXPECT_CALL(*requestCaller, registerBroadcastListener(broadcastName, _))
             .Times(1)
@@ -924,7 +934,8 @@ TEST_F(PublicationManagerTest,
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(2);
+                    ))
+            .Times(2);
 
     EXPECT_CALL(*requestCaller, registerBroadcastListener(broadcastName, _))
             .Times(2)
@@ -1012,7 +1023,8 @@ TEST_F(PublicationManagerTest, broadcast_add_withExistingSubscriptionId_testQos_
                     _,                                                  // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(1);
+                    ))
+            .Times(1);
 
     EXPECT_CALL(*requestCaller, registerBroadcastListener(broadcastName, _))
             .Times(2)
@@ -1090,7 +1102,8 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription)
                                                 _, // receiver participant ID
                                                 _, // messaging QoS
                                                 _  // subscription publication
-                                                )).Times(1);
+                                                ))
+            .Times(1);
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -1169,7 +1182,8 @@ TEST_F(PublicationManagerTest, forwardProviderRuntimeExceptionToPublicationSende
                     Eq(senderId),                                       // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(2);
+                    ))
+            .Times(2);
 
     auto publicationManager = std::make_shared<PublicationManager>(
             _singleThreadedIOService->getIOService(), _messageSender);
@@ -1222,7 +1236,8 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
                     Eq(senderId),                                       // receiver participant ID
                     _,                                                  // messaging QoS
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
-                    )).Times(2);
+                    ))
+            .Times(2);
 
     auto publicationManager = std::make_shared<PublicationManager>(
             _singleThreadedIOService->getIOService(), _messageSender);

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,9 +19,9 @@
 
 #include "../common/PerformanceTest.h"
 
-#include <vector>
 #include <numeric>
 #include <string>
+#include <vector>
 
 #include <boost/type_index.hpp>
 
@@ -118,8 +118,8 @@ private:
 
     std::string getTestName(const std::string& testType) const
     {
-        return testType + " " + boost::typeindex::type_id<Generator>().pretty_name() + " length=" +
-               std::to_string(length);
+        return testType + " " + boost::typeindex::type_id<Generator>().pretty_name() +
+               " length=" + std::to_string(length);
     }
 
     std::uint64_t runs;
@@ -150,8 +150,7 @@ std::string getFilledString(std::size_t length)
 }
 } // namespace helper
 
-struct ByteArray
-{
+struct ByteArray {
     using type = std::vector<std::int8_t>;
     static joynr::Request generateRequest(std::size_t length)
     {
@@ -163,8 +162,7 @@ struct ByteArray
     }
 };
 
-struct String
-{
+struct String {
     using type = std::string;
 
     static joynr::Request generateRequest(std::size_t length)
@@ -177,8 +175,7 @@ struct String
     }
 };
 
-struct ComplexStruct
-{
+struct ComplexStruct {
     using type = joynr::tests::performance::Types::ComplexStruct;
 
     static joynr::Request generateRequest(std::size_t length)

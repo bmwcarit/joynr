@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,9 @@
  * limitations under the License.
  * #L%
  */
+#include <numeric>
 #include <string>
 #include <unordered_map>
-#include <numeric>
 
 #include "tests/utils/Gtest.h"
 
@@ -223,8 +223,7 @@ TEST_F(RadixTreeTest, callParentsOnRoot)
 TEST_F(RadixTreeTest, visit)
 {
     std::size_t nodeCount = 0;
-    auto fun = [&nodeCount, data = data ](const auto& node, const auto& keyVector)
-    {
+    auto fun = [&nodeCount, data = data](const auto& node, const auto& keyVector) {
         const std::string key =
                 std::accumulate(keyVector.begin(),
                                 keyVector.end(),

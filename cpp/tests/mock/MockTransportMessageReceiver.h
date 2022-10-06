@@ -29,11 +29,13 @@ public:
     MockTransportMessageReceiver() = default;
     MOCK_METHOD0(init, void());
     MOCK_CONST_METHOD0(getSerializedGlobalClusterControllerAddress, const std::string());
-    MOCK_CONST_METHOD0(getGlobalClusterControllerAddress, const joynr::system::RoutingTypes::Address&());
+    MOCK_CONST_METHOD0(getGlobalClusterControllerAddress,
+                       const joynr::system::RoutingTypes::Address&());
     MOCK_METHOD0(startReceiveQueue, void());
     MOCK_METHOD0(stopReceiveQueue, void());
     MOCK_METHOD0(updateSettings, void());
-    MOCK_METHOD1(registerReceiveCallback, void(std::function<void(smrf::ByteVector&&)> onMessageReceived));
+    MOCK_METHOD1(registerReceiveCallback,
+                 void(std::function<void(smrf::ByteVector&&)> onMessageReceived));
     MOCK_METHOD0(isConnected, bool());
 };
 

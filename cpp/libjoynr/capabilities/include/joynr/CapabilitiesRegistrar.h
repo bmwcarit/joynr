@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -96,9 +96,9 @@ public:
         provider->registerBroadcastListener(
                 std::make_shared<MulticastBroadcastListener>(participantId, _publicationManager));
 
-        const std::int64_t now =
-                std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::system_clock::now().time_since_epoch()).count();
+        const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                         std::chrono::system_clock::now().time_since_epoch())
+                                         .count();
         const std::int64_t lastSeenDateMs = now;
         const std::int64_t defaultExpiryDateMs = now + _defaultExpiryIntervalMs;
         const std::string defaultPublicKeyId("");
@@ -127,25 +127,22 @@ public:
             }
         }
 
-        auto onSuccessWrapper = [
-            domain,
-            interfaceName,
-            majorVersion = T::MAJOR_VERSION,
-            caller,
-            participantIdStorage = util::as_weak_ptr(_participantIdStorage),
-            messageRouter = util::as_weak_ptr(_messageRouter),
-            participantId,
-            discoveryProxy = util::as_weak_ptr(_discoveryProxy),
-            entry = std::move(entry),
-            awaitGlobalRegistration,
-            onSuccess = std::move(onSuccess),
-            onError,
-            persist,
-            isInternalProvider,
-            addToAll,
-            gbids
-        ]()
-        {
+        auto onSuccessWrapper = [domain,
+                                 interfaceName,
+                                 majorVersion = T::MAJOR_VERSION,
+                                 caller,
+                                 participantIdStorage = util::as_weak_ptr(_participantIdStorage),
+                                 messageRouter = util::as_weak_ptr(_messageRouter),
+                                 participantId,
+                                 discoveryProxy = util::as_weak_ptr(_discoveryProxy),
+                                 entry = std::move(entry),
+                                 awaitGlobalRegistration,
+                                 onSuccess = std::move(onSuccess),
+                                 onError,
+                                 persist,
+                                 isInternalProvider,
+                                 addToAll,
+                                 gbids]() {
             if (persist) {
                 // Sync persistency to disk now that registration is done.
                 if (auto participantIdStoragePtr = participantIdStorage.lock()) {
@@ -154,31 +151,28 @@ public:
                 }
             }
 
-            auto onErrorWrapper = [
-                participantId,
-                messageRouter = std::move(messageRouter),
-                onError = std::move(onError)
-            ](const joynr::exceptions::JoynrRuntimeException& error)
-            {
+            auto onErrorWrapper = [participantId,
+                                   messageRouter = std::move(messageRouter),
+                                   onError = std::move(onError)](
+                                          const joynr::exceptions::JoynrRuntimeException& error) {
                 if (auto ptr = messageRouter.lock()) {
                     ptr->removeNextHop(participantId);
                 }
                 onError(error);
             };
 
-            auto onApplicationErrorWrapper = [
-                participantId,
-                messageRouter = std::move(messageRouter),
-                onError = std::move(onError)
-            ](const joynr::types::DiscoveryError::Enum& errorEnum)
-            {
-                if (auto ptr = messageRouter.lock()) {
-                    ptr->removeNextHop(participantId);
-                }
-                onError(joynr::exceptions::JoynrRuntimeException(
-                        "Registration failed with DiscoveryError " +
-                        joynr::types::DiscoveryError::getLiteral(errorEnum)));
-            };
+            auto onApplicationErrorWrapper =
+                    [participantId,
+                     messageRouter = std::move(messageRouter),
+                     onError = std::move(onError)](
+                            const joynr::types::DiscoveryError::Enum& errorEnum) {
+                        if (auto ptr = messageRouter.lock()) {
+                            ptr->removeNextHop(participantId);
+                        }
+                        onError(joynr::exceptions::JoynrRuntimeException(
+                                "Registration failed with DiscoveryError " +
+                                joynr::types::DiscoveryError::getLiteral(errorEnum)));
+                    };
 
             if (auto discoveryProxyPtr = discoveryProxy.lock()) {
                 if (isInternalProvider) {
@@ -295,18 +289,19 @@ public:
         // Get the provider participant Id - the persisted provider Id has priority
         std::string participantId = _participantIdStorage->getProviderParticipantId(
                 domain, interfaceName, T::MAJOR_VERSION);
-        removeAsync(participantId,
-                    [participantId, domain, interfaceName, onSuccess]() {
-                        JOYNR_LOG_INFO(logger(),
-                                       "Unregistered Provider: participantId: {}, domain: {}, "
-                                       "interfaceName: {}",
-                                       participantId,
-                                       domain,
-                                       interfaceName);
+        removeAsync(
+                participantId,
+                [participantId, domain, interfaceName, onSuccess]() {
+                    JOYNR_LOG_INFO(logger(),
+                                   "Unregistered Provider: participantId: {}, domain: {}, "
+                                   "interfaceName: {}",
+                                   participantId,
+                                   domain,
+                                   interfaceName);
 
-                        onSuccess();
-                    },
-                    std::move(onError));
+                    onSuccess();
+                },
+                std::move(onError));
         return participantId;
     }
 

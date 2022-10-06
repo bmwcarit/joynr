@@ -19,8 +19,8 @@
 #ifndef TESTS_MOCK_MOCKDELAYEDSCHEDULER_H
 #define TESTS_MOCK_MOCKDELAYEDSCHEDULER_H
 
-#include <boost/asio.hpp>
 #include "tests/utils/Gmock.h"
+#include <boost/asio.hpp>
 
 #include "joynr/DelayedScheduler.h"
 
@@ -28,12 +28,16 @@ class MockDelayedScheduler : public joynr::DelayedScheduler
 {
 public:
     MockDelayedScheduler(boost::asio::io_service& ioService)
-        : DelayedScheduler([](std::shared_ptr<joynr::Runnable>){ assert(false); }, ioService, std::chrono::milliseconds::zero())
+            : DelayedScheduler([](std::shared_ptr<joynr::Runnable>) { assert(false); },
+                               ioService,
+                               std::chrono::milliseconds::zero())
     {
     }
 
-    MOCK_METHOD1(unschedule, void (joynr::DelayedScheduler::RunnableHandle));
-    MOCK_METHOD2(schedule, DelayedScheduler::RunnableHandle (std::shared_ptr<joynr::Runnable>, std::chrono::milliseconds delay));
+    MOCK_METHOD1(unschedule, void(joynr::DelayedScheduler::RunnableHandle));
+    MOCK_METHOD2(schedule,
+                 DelayedScheduler::RunnableHandle(std::shared_ptr<joynr::Runnable>,
+                                                  std::chrono::milliseconds delay));
 };
 
 #endif // TESTS_MOCK_MOCKDELAYEDSCHEDULER_H

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,9 +18,9 @@
  */
 #include "IltAbstractConsumerTest.h"
 #include "joynr/ISubscriptionListener.h"
-#include "joynr/SubscriptionListener.h"
 #include "joynr/OnChangeSubscriptionQos.h"
 #include "joynr/Semaphore.h"
+#include "joynr/SubscriptionListener.h"
 
 using namespace ::testing;
 
@@ -58,8 +58,9 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
 
     auto mockEnumerationSubscriptionListener =
             std::make_shared<MockEnumerationSubscriptionListener>();
-    EXPECT_CALL(*mockEnumerationSubscriptionListener, onError(_)).Times(0).WillRepeatedly(
-            ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockEnumerationSubscriptionListener, onError(_))
+            .Times(0)
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
     EXPECT_CALL(*mockEnumerationSubscriptionListener, onReceive(Eq(enumerationArg)))
             .Times(1)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
@@ -72,8 +73,8 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeEnumeration)
 
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeEnumeration - register subscription");
-        testInterfaceProxy->subscribeToAttributeEnumeration(listener, subscriptionQos)->get(
-                subscriptionIdFutureTimeoutMs, subscriptionId);
+        testInterfaceProxy->subscribeToAttributeEnumeration(listener, subscriptionQos)
+                ->get(subscriptionIdFutureTimeoutMs, subscriptionId);
 
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,
                        "callSubscribeAttributeEnumeration - subscription registered");
@@ -118,8 +119,9 @@ TEST_F(IltConsumerAttributeSubscriptionTest, callSubscribeAttributeWithException
             onError(providerRuntimeException("Exception from getAttributeWithExceptionFromGetter")))
             .Times(1)
             .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
-    EXPECT_CALL(*mockEnumerationSubscriptionListener, onReceive(_)).Times(0).WillRepeatedly(
-            ReleaseSemaphore(&publicationSemaphore));
+    EXPECT_CALL(*mockEnumerationSubscriptionListener, onReceive(_))
+            .Times(0)
+            .WillRepeatedly(ReleaseSemaphore(&publicationSemaphore));
     std::shared_ptr<ISubscriptionListener<bool>> listener(mockEnumerationSubscriptionListener);
     JOYNR_ASSERT_NO_THROW({
         JOYNR_LOG_INFO(iltConsumerAttributeSubscriptionTestLogger,

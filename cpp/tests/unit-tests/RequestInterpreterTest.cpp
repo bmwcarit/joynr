@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,25 +18,25 @@
  */
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
-#include "joynr/serializer/Serializer.h"
-#include "joynr/InterfaceRegistrar.h"
-#include "joynr/Request.h"
-#include "joynr/Reply.h"
-#include "joynr/vehicle/IGps.h"
-#include "joynr/vehicle/GpsRequestInterpreter.h"
-#include "joynr/tests/testRequestInterpreter.h"
 #include "joynr/IRequestInterpreter.h"
+#include "joynr/InterfaceRegistrar.h"
+#include "joynr/Reply.h"
+#include "joynr/Request.h"
 #include "joynr/exceptions/MethodInvocationException.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/tests/testRequestInterpreter.h"
+#include "joynr/vehicle/GpsRequestInterpreter.h"
+#include "joynr/vehicle/IGps.h"
 
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockCallback.h"
 #include "tests/mock/MockTestRequestCaller.h"
 
-using ::testing::A;
 using ::testing::_;
+using ::testing::A;
 
 MATCHER_P(methodInvocationExceptionWithProviderVersion, expectedProviderVersion, "")
 {
@@ -147,14 +147,16 @@ TEST_F(RequestInterpreterTest, execute_callsMethodOnRequestCallerWithProviderRun
     std::string methodName = "methodWithProviderRuntimeException";
 
     auto callback = std::make_shared<MockCallback<void>>();
-    auto onSuccess =
-            [](joynr::Reply&&) { ADD_FAILURE() << "unexpected call of onSuccess function"; };
+    auto onSuccess = [](joynr::Reply&&) {
+        ADD_FAILURE() << "unexpected call of onSuccess function";
+    };
     auto onError = [callback](const std::shared_ptr<exceptions::JoynrException>& exception) {
         callback->onError(*exception);
     };
     EXPECT_CALL(*callback,
                 onError(joynrException(joynr::exceptions::ProviderRuntimeException::TYPE_NAME(),
-                                       mockCaller->_providerRuntimeExceptionTestMsg))).Times(1);
+                                       mockCaller->_providerRuntimeExceptionTestMsg)))
+            .Times(1);
 
     Request request = initRequest(methodName, {});
     interpreter.execute(mockCaller, request, onSuccess, onError);
@@ -174,14 +176,16 @@ TEST_F(RequestInterpreterTest, execute_callsGetterMethodOnRequestCallerWithProvi
     std::string methodName = "getAttributeWithProviderRuntimeException";
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
-    auto onSuccess =
-            [](joynr::Reply&&) { ADD_FAILURE() << "unexpected call of onSuccess function"; };
+    auto onSuccess = [](joynr::Reply&&) {
+        ADD_FAILURE() << "unexpected call of onSuccess function";
+    };
     auto onError = [callback](const std::shared_ptr<exceptions::JoynrException>& exception) {
         callback->onError(*exception);
     };
     EXPECT_CALL(*callback,
                 onError(joynrException(joynr::exceptions::ProviderRuntimeException::TYPE_NAME(),
-                                       mockCaller->_providerRuntimeExceptionTestMsg))).Times(1);
+                                       mockCaller->_providerRuntimeExceptionTestMsg)))
+            .Times(1);
 
     Request request = initRequest(methodName, {});
     interpreter.execute(mockCaller, request, onSuccess, onError);
@@ -198,8 +202,9 @@ TEST_F(RequestInterpreterTest, execute_callsMethodWithInvalidArguments)
     paramDatatypes.push_back("Integer[]");
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
-    auto onSuccess =
-            [](joynr::Reply&&) { ADD_FAILURE() << "unexpected call of onSuccess function"; };
+    auto onSuccess = [](joynr::Reply&&) {
+        ADD_FAILURE() << "unexpected call of onSuccess function";
+    };
     auto onError = [callback](const std::shared_ptr<exceptions::JoynrException>& exception) {
         callback->onError(*exception);
     };
@@ -222,8 +227,9 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments)
     std::vector<std::string> paramDatatypes = {"Doesn'tMatter"};
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
-    auto onSuccess =
-            [](joynr::Reply&&) { ADD_FAILURE() << "unexpected call of onSuccess function"; };
+    auto onSuccess = [](joynr::Reply&&) {
+        ADD_FAILURE() << "unexpected call of onSuccess function";
+    };
     auto onError = [callback](const std::shared_ptr<exceptions::JoynrException>& exception) {
         callback->onError(*exception);
     };
@@ -246,8 +252,9 @@ TEST_F(RequestInterpreterTest, execute_callsSetterMethodWithInvalidArguments2)
     std::vector<std::string> paramDatatypes = {"Doesn'tMatter"};
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
-    auto onSuccess =
-            [](joynr::Reply&&) { ADD_FAILURE() << "unexpected call of onSuccess function"; };
+    auto onSuccess = [](joynr::Reply&&) {
+        ADD_FAILURE() << "unexpected call of onSuccess function";
+    };
     auto onError = [callback](const std::shared_ptr<exceptions::JoynrException>& exception) {
         callback->onError(*exception);
     };
@@ -268,8 +275,9 @@ TEST_F(RequestInterpreterTest, execute_callsNonExistingMethod)
     std::string methodName = "execute_callsNonExistingMethod";
 
     auto callback = std::make_shared<MockCallback<std::int32_t>>();
-    auto onSuccess =
-            [](joynr::Reply&&) { ADD_FAILURE() << "unexpected call of onSuccess function"; };
+    auto onSuccess = [](joynr::Reply&&) {
+        ADD_FAILURE() << "unexpected call of onSuccess function";
+    };
     auto onError = [callback](const std::shared_ptr<exceptions::JoynrException>& exception) {
         callback->onError(*exception);
     };

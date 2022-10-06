@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,15 +44,15 @@ class ProviderRuntimeException;
 } // namespace exceptions
 
 /**
-  * @class ISubscriptionManager
-  * @brief The subscription manager is used by the proxy (via the appropriate connector)
-  * to manage a subscription. This includes the registration and unregistration of attribute
-  * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
+ * @class ISubscriptionManager
+ * @brief The subscription manager is used by the proxy (via the appropriate connector)
+ * to manage a subscription. This includes the registration and unregistration of attribute
+ * subscriptions. In order to subscribe, a SubscriptionListener is passed in from the application
  * and
-  * packaged into a callback by the connector.
-  * This listener is notified (via the callback) when a subscription is missed or when a publication
-  * arrives.
-  */
+ * packaged into a callback by the connector.
+ * This listener is notified (via the callback) when a subscription is missed or when a publication
+ * arrives.
+ */
 class JOYNR_EXPORT ISubscriptionManager
 {
 

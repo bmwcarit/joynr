@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,30 +20,30 @@
 #include <memory>
 #include <string>
 
-#include "tests/utils/Gtest.h"
 #include "tests/utils/Gmock.h"
+#include "tests/utils/Gtest.h"
 
 #include "joynr/Future.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Settings.h"
 #include "joynr/tests/testProxy.h"
 
+#include "joynr/TimePoint.h"
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockSubscriptionListener.h"
 #include "tests/mock/MockTestProvider.h"
-#include "tests/utils/PtrUtils.h"
-#include "joynr/TimePoint.h"
 #include "tests/mock/TestJoynrClusterControllerRuntime.h"
+#include "tests/utils/PtrUtils.h"
 
 using namespace ::testing;
 
 using namespace joynr;
 
 /*
-  * This test tries to create two combined Runtimes and will test communication
-  * between the two Runtimes via MqttReceiver
-  *
-  */
+ * This test tries to create two combined Runtimes and will test communication
+ * between the two Runtimes via MqttReceiver
+ *
+ */
 class End2EndPerformanceTest : public TestWithParam<std::tuple<std::string, std::string>>
 {
 public:

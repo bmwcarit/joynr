@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,8 @@
 
 #include "tests/utils/Gtest.h"
 
-#include "joynr/UdsSettings.h"
 #include "joynr/Settings.h"
+#include "joynr/UdsSettings.h"
 #include "joynr/system/RoutingTypes/UdsAddress.h"
 #include "joynr/system/RoutingTypes/UdsClientAddress.h"
 
@@ -58,7 +58,8 @@ TEST_F(UdsSettingsTest, intializedWithDefaultSettings)
     EXPECT_TRUE(udsSettings.contains(UdsSettings::SETTING_SENDING_QUEUE_SIZE()));
 
     EXPECT_EQ(udsSettings.getSocketPath(), joynr::UdsSettings::DEFAULT_SOCKET_PATH());
-    EXPECT_EQ(udsSettings.getConnectSleepTimeMs(), joynr::UdsSettings::DEFAULT_CONNECT_SLEEP_TIME_MS());
+    EXPECT_EQ(udsSettings.getConnectSleepTimeMs(),
+              joynr::UdsSettings::DEFAULT_CONNECT_SLEEP_TIME_MS());
     EXPECT_NE(udsSettings.getClientId(), "");
     EXPECT_EQ(udsSettings.getSendingQueueSize(), joynr::UdsSettings::DEFAULT_SENDING_QUEUE_SIZE());
 }
@@ -122,7 +123,6 @@ TEST_F(UdsSettingsTest, createClientMessagingAddress)
 
     udsSettings.setClientId(expectedClientId);
 
-    const auto createdAddress =
-            udsSettings.createClientMessagingAddress();
+    const auto createdAddress = udsSettings.createClientMessagingAddress();
     EXPECT_EQ(expectedAddress, createdAddress);
 }

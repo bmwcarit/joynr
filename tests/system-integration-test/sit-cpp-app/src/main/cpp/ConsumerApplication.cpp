@@ -21,8 +21,8 @@
 #include <cstdlib>
 #include <limits>
 #include <memory>
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem/operations.hpp>
