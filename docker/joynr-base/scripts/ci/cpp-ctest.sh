@@ -17,12 +17,13 @@ rm -f *.junit.xml
 
 START=$(date +%s)
 
-./g_UnitTests --gtest_shuffle --gtest_output="xml:g_UnitTests.junit.xml"
+cd ..
+ctest --verbose
 
 SUCCESS=$?
 if [ "$SUCCESS" != "0" ]; then
     echo '########################################################'
-    echo '# C++ Unit Tests failed with exit code:' $SUCCESS
+    echo '# C++ Tests failed with exit code:' $SUCCESS
     echo '########################################################'
 fi
 
