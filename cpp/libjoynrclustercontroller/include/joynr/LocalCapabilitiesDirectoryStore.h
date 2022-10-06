@@ -95,8 +95,9 @@ public:
     virtual std::vector<std::string> getGbidsForParticipantId(
             const std::string& participantId,
             const std::unique_lock<std::recursive_mutex>& cacheLock);
-    std::vector<types::DiscoveryEntry> searchLocalCache(
-            const std::vector<InterfaceAddress>& interfaceAddress);
+    std::vector<types::DiscoveryEntry> searchLocal(
+            const std::vector<InterfaceAddress>& interfaceAddress,
+            const types::DiscoveryScope::Enum& scope = types::DiscoveryScope::LOCAL_THEN_GLOBAL);
 
     std::recursive_mutex& getCacheLock();
     virtual void eraseParticipantIdToGbidMapping(
@@ -108,21 +109,32 @@ public:
             const std::unique_lock<std::recursive_mutex>& cacheLock);
 
 private:
-    boost::optional<types::DiscoveryEntry> searchCaches(const std::string& participantId,
-                                                        types::DiscoveryScope::Enum scope,
-                                                        const std::vector<std::string>& gbids,
-                                                        std::chrono::milliseconds maxCacheAge);
+    boost::optional<types::DiscoveryEntry> searchLocal(const std::string& participantId,
+                                                       const types::DiscoveryScope::Enum& scope);
+
+    boost::optional<types::DiscoveryEntry> searchGlobalCache(const std::string& participantId,
+                                                             const std::vector<std::string>& gbids,
+                                                             std::chrono::milliseconds maxCacheAge);
+
     std::vector<types::DiscoveryEntry> searchGlobalCache(
             const std::vector<InterfaceAddress>& interfaceAddress,
             const std::vector<std::string>& gbids,
             std::chrono::milliseconds maxCacheAge);
-    bool callReceiverIfPossible(joynr::types::DiscoveryScope::Enum& scope,
-                                std::vector<types::DiscoveryEntry>&& localCapabilities,
-                                std::vector<types::DiscoveryEntry>&& globalCapabilities,
-                                std::shared_ptr<ILocalCapabilitiesCallback> callback);
+    bool callReceiverIfPossible(
+            joynr::types::DiscoveryScope::Enum& scope,
+            const std::vector<joynr::types::DiscoveryEntry>& localCapabilities,
+            const std::vector<joynr::types::DiscoveryEntry>& globallyCachedCapabilities,
+            std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     void mapGbidsToGlobalProviderParticipantId(const std::string& participantId,
                                                std::vector<std::string>& allGbids);
+
+    const std::unordered_set<types::DiscoveryScope::Enum> _includeLocalScopes{
+            types::DiscoveryScope::LOCAL_ONLY, types::DiscoveryScope::LOCAL_AND_GLOBAL,
+            types::DiscoveryScope::LOCAL_THEN_GLOBAL};
+    const std::unordered_set<types::DiscoveryScope::Enum> _includeGlobalScopes{
+            types::DiscoveryScope::GLOBAL_ONLY, types::DiscoveryScope::LOCAL_AND_GLOBAL,
+            types::DiscoveryScope::LOCAL_THEN_GLOBAL};
 
     std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
     std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;

@@ -328,7 +328,7 @@ void LocalCapabilitiesDirectory::addInternal(
                     discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
             _lcdPendingLookupsHandler.callPendingLookups(
                     interfaceAddress,
-                    _localCapabilitiesDirectoryStore->searchLocalCache({interfaceAddress}));
+                    _localCapabilitiesDirectoryStore->searchLocal({interfaceAddress}));
         }
     }
 
@@ -413,7 +413,7 @@ void LocalCapabilitiesDirectory::addInternal(
                                                           globalDiscoveryEntry.getInterfaceName());
                         thisSharedPtr->_lcdPendingLookupsHandler.callPendingLookups(
                                 interfaceAddress,
-                                thisSharedPtr->_localCapabilitiesDirectoryStore->searchLocalCache(
+                                thisSharedPtr->_localCapabilitiesDirectoryStore->searchLocal(
                                         {interfaceAddress}));
                     }
                 } else {
@@ -589,9 +589,10 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
         }
     }
 
-    callback->capabilitiesReceived(std::move(globalEntries));
+    callback->capabilitiesReceived(globalEntries);
 }
 
+// base lookup by particiapntId
 void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                                         const joynr::types::DiscoveryQos& discoveryQos,
                                         const std::vector<std::string>& gbids,
@@ -646,6 +647,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     }
 }
 
+// base lookup by domains and interface
 void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                         const std::string& interfaceName,
                                         const std::vector<std::string>& gbids,
@@ -1021,7 +1023,7 @@ void LocalCapabilitiesDirectory::lookup(
              onError,
              participantId](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    if (capabilities.size() == 0) {
+                    if (capabilities.empty()) {
                         joynr::exceptions::ProviderRuntimeException exception(
                                 "No capabilities found for participantId \"" + participantId +
                                 "\" and default GBID: " + thisSharedPtr->_knownGbids[0]);
@@ -1079,7 +1081,7 @@ void LocalCapabilitiesDirectory::lookup(
              participantId,
              gbidsForLookup](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    if (capabilities.size() == 0) {
+                    if (capabilities.empty()) {
                         const std::string gbidString = boost::algorithm::join(gbidsForLookup, ", ");
                         JOYNR_LOG_DEBUG(
                                 logger(),
@@ -1239,13 +1241,13 @@ void LocalCapabilitiesDirectory::remove(
                     const std::string gbidString = boost::algorithm::join(
                             lCDStoreSharedPtr->getGbidsForParticipantId(participantId, cacheLock),
                             ", ");
-                    JOYNR_LOG_WARN(
-                            logger(),
-                            "Failed to remove participantId {} globally for GBIDs >{}<: {} ({})",
-                            participantId,
-                            gbidString,
-                            exception.getMessage(),
-                            exception.getTypeName());
+                    JOYNR_LOG_WARN(logger(),
+                                   "Failed to remove participantId {} globally for GBIDs >{}<: "
+                                   "{} ({})",
+                                   participantId,
+                                   gbidString,
+                                   exception.getMessage(),
+                                   exception.getTypeName());
                 }
             };
 

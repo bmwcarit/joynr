@@ -251,18 +251,18 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, countGlobalCapabilities)
 }
 
 // It's basically the same method....
-TEST_F(LocalCapabilitiesDirectoryStoreTest, searchLocalCacheAndGetLocalCapabilities)
+TEST_F(LocalCapabilitiesDirectoryStoreTest, searchLocalAndGetLocalCapabilities)
 {
     InterfaceAddress interfaceAddress(_localEntry.getDomain(), _localEntry.getInterfaceName());
     std::vector<InterfaceAddress> interfaceAddresses;
     interfaceAddresses.push_back(interfaceAddress);
 
-    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.searchLocalCache(interfaceAddresses).size());
+    ASSERT_EQ(0, _localCapabilitiesDirectoryStore.searchLocal(interfaceAddresses).size());
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocalCapabilities(interfaceAddresses).size());
 
     _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
 
-    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.searchLocalCache(interfaceAddresses).size());
+    ASSERT_EQ(1, _localCapabilitiesDirectoryStore.searchLocal(interfaceAddresses).size());
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocalCapabilities(interfaceAddresses).size());
 }
 
