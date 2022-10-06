@@ -337,6 +337,7 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
+							<argLine>--add-exports java.base/sun.net.www=ALL-UNNAMED --add-exports java.base/sun.security.util=ALL-UNNAMED --add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED ${surefireArgs}</argLine>
 							<systemPropertyVariables>
 								<!-- configure log levels for arquillian tests -->
 								<java.util.logging.config.file>src/integrationTest/resources/logging.properties</java.util.logging.config.file>
