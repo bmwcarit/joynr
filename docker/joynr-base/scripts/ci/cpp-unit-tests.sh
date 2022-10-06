@@ -17,8 +17,7 @@ rm -f *.junit.xml
 
 START=$(date +%s)
 
-cd ..
-ctest
+./g_UnitTests --gtest_shuffle --gtest_output="xml:g_UnitTests.junit.xml"
 
 SUCCESS=$?
 if [ "$SUCCESS" != "0" ]; then
