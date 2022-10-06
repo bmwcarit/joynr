@@ -344,24 +344,20 @@ if(${BUILD_INTEGRATION_TESTS})
     endif()
     GetSourceFiles(g_IntegrationTests_SOURCES INPUT_DIR integration-tests EXCLUDES ${excludedIntegrationTests})
 
-    AddTest(
-       g_IntegrationTests
-       ${test_HEADERS}
-       ${test_SOURCES}
-       ${g_IntegrationTests_SOURCES}
-    )
-
-    target_link_libraries(g_IntegrationTests PRIVATE
+    RegisterToCtest(g_IntegrationTests
+    SOURCES
+        ${test_SOURCES}
+        ${test_HEADERS}
+        ${g_IntegrationTests_SOURCES}
+    LIBRARIES
         TestGenerated
         ${test_TARGET_LIBRARIES}
         JoynrMocks
         Joynr::JoynrClusterControllerRuntime
-    )
-    # JoynrRuntime::createRuntime must be found from JoynrClusterControllerRuntime,
-    # not from JoynrWsRuntime. Therefore, do not link Joynr::JoynrWsRuntime.
-    target_link_objlibraries(g_IntegrationTests
-        PUBLIC Joynr::JoynrLibJoynrRuntime
-    )
+        Joynr::JoynrLibJoynrRuntime
+    INCLUDES
+        "${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
 
     if(${JOYNR_SUPPORT_WEBSOCKET})
         target_link_objlibraries(g_IntegrationTests
@@ -374,11 +370,6 @@ if(${BUILD_INTEGRATION_TESTS})
             PUBLIC Joynr::JoynrUdsRuntimeWithoutJoynrRuntime
         )
     endif()
-
-    target_include_directories(
-        g_IntegrationTests
-        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/.."
-    )
 
     install(TARGETS g_IntegrationTests TestGenerated
         RUNTIME DESTINATION ${JOYNR_INSTALL_TEST_DIR}
