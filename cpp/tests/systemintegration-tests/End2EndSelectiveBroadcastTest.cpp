@@ -100,7 +100,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering)
                       Eq(enumerationArrayOut),
                       Eq(structWithStringArrayOut),
                       Eq(structWithStringArrayArrayOut)))
-            .WillByDefault(ReleaseSemaphore(&semaphore));
+            .WillByDefault(ReleaseSemaphore(semaphore));
 
     std::shared_ptr<ISubscriptionListener<std::string,
                                           std::vector<std::string>,
@@ -117,7 +117,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering)
                    Eq(structWithStringArrayOut),
                    Eq(structWithStringArrayArrayOut),
                    _))
-            .WillByDefault(DoAll(ReleaseSemaphore(&altSemaphore), Return(true)));
+            .WillByDefault(DoAll(ReleaseSemaphore(altSemaphore), Return(true)));
 
     testOneShotBroadcastSubscriptionWithFiltering(
             subscriptionListener,
@@ -150,7 +150,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToBroadcastWithFiltering)
             structWithStringArrayArrayOut);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(altSemaphore.waitFor(std::chrono::seconds(3)));
+    ASSERT_TRUE(altSemaphore->waitFor(std::chrono::seconds(3)));
 }
 
 TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSuccess)
@@ -159,11 +159,11 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3))).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation3))).WillOnce(ReleaseSemaphore(semaphore));
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4))).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation4))).WillOnce(ReleaseSemaphore(semaphore));
 
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> subscriptionListener(
             mockListener);
@@ -193,7 +193,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
     testProvider->fireLocationUpdateSelective(gpsLocation2);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -202,7 +202,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
     testProvider->fireLocationUpdateSelective(gpsLocation3);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
 
     // Waiting between broadcast occurences for at least the minInterval is neccessary because
     // otherwise the publications could be omitted.
@@ -211,7 +211,7 @@ TEST_P(End2EndSelectiveBroadcastTest, subscribeToSelectiveBroadcast_FilterSucces
     testProvider->fireLocationUpdateSelective(gpsLocation4);
 
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
     JOYNR_EXPECT_NO_THROW(
             testProxy->unsubscribeFromLocationUpdateSelectiveBroadcast(subscriptionId));
 }
@@ -273,7 +273,7 @@ TEST_P(End2EndSelectiveBroadcastTest, publishAfterProxyDestruction)
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
     // Use a semaphore to count and wait on calls to the mock listener
-    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*mockListener, onReceive(Eq(gpsLocation2))).WillOnce(ReleaseSemaphore(semaphore));
 
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> subscriptionListener(
             mockListener);
@@ -312,12 +312,12 @@ TEST_P(End2EndSelectiveBroadcastTest, publishAfterProxyDestruction)
 
     // Destruct the proxy
     test::util::resetAndWaitUntilDestroyed(testProxy);
-    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
+    EXPECT_FALSE(semaphore->waitFor(std::chrono::milliseconds(500)));
 
     // Send message
     testProvider->fireLocationUpdateSelective(gpsLocation2);
     // Wait for a subscription message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
 
     bool resolved{false};
     routingProxy->resolveNextHop(resolved, participantId);
