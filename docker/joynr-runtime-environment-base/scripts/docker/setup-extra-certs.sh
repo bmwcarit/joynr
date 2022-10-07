@@ -5,9 +5,22 @@ then
     cd /data/scripts/extra-certs
     for file in *
     do
-        echo "Importing $file"
-        /usr/bin/keytool -importcert -file $file -alias $file -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt
+        if [ "$1" == "java" ]
+        then
+            echo "Importing $file to Java keystore."
+            /usr/bin/keytool -importcert -file $file -alias $file -keystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit -noprompt
+        else
+            echo "Copying $file to /etc/pki/ca-trust/source/anchors"
+            cp $file /etc/pki/ca-trust/source/anchors
+        fi
     done
-    echo "Import extra certs finished."
+    if [ "$1" != "java" ]
+    then
+        echo "Running update-ca-trust."
+        update-ca-trust
+    fi
+    echo "Importing extra certs finished."
+else
+    echo "No extra certs specified."
 fi
 exit 0

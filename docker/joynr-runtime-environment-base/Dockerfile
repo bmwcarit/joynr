@@ -19,13 +19,18 @@ RUN mkdir /home/joynr/build
 ###################################################
 # copy scripts and set start command
 ###################################################
-COPY scripts/docker/setup-proxy.sh /data/scripts/setup-proxy.sh
-COPY scripts/docker/setup-extra-certs.sh /data/scripts/setup-extra-certs.sh
+COPY scripts/docker /data/scripts
+RUN chmod 777 -R /data/scripts/
 
 ###################################################
 # Setup dnf.conf
 ###################################################
 RUN /data/scripts/setup-proxy.sh
+
+###################################################
+# setup extra certs for general use w/o java
+###################################################
+RUN /data/scripts/setup-extra-certs.sh
 
 ###################################################
 # install base packages
@@ -88,6 +93,6 @@ RUN alternatives --set java /usr/lib/jvm/java-11-openjdk*.x86_64/bin/java \
 	&& alternatives --set java_sdk_openjdk /usr/lib/jvm/java-11-openjdk*.x86_64
 
 ###################################################
-# setup extra certs
+# setup extra certs for java
 ###################################################
-RUN /data/scripts/setup-extra-certs.sh
+RUN /data/scripts/setup-extra-certs.sh java
