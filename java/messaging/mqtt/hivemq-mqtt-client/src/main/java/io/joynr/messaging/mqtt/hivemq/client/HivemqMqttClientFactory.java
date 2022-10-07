@@ -58,6 +58,10 @@ import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext;
 import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedListener;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientBuilder;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
+import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5ConnAckException;
+import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5DisconnectException;
+import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAck;
+import com.hivemq.client.mqtt.mqtt5.message.disconnect.Mqtt5Disconnect;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
@@ -427,12 +431,28 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
         @Override
         public void onDisconnected(MqttClientDisconnectedContext context) {
-            logger.info("{}: HiveMQ MQTT client disconnected: source: {}",
+            Throwable cause = context.getCause();
+            logger.info("{}: HiveMQ MQTT client disconnected: source: {}{}",
                         clientInformation,
                         context.getSource(),
-                        context.getCause());
+                        getCauseMessage(cause),
+                        cause);
             connectionStatusMetrics.setConnected(false);
             connectionStatusMetrics.increaseConnectionDrops();
+        }
+
+        private String getCauseMessage(Throwable cause) {
+            String message = "";
+            if (cause instanceof Mqtt5DisconnectException) {
+                Mqtt5DisconnectException disconnectException = (Mqtt5DisconnectException) cause;
+                Mqtt5Disconnect disconnect = disconnectException.getMqttMessage();
+                message = ", " + disconnect;
+            } else if (cause instanceof Mqtt5ConnAckException) {
+                Mqtt5ConnAckException mqtt5ConnAckException = (Mqtt5ConnAckException) cause;
+                Mqtt5ConnAck connAck = mqtt5ConnAckException.getMqttMessage();
+                message = ", " + connAck;
+            }
+            return message;
         }
 
     }
