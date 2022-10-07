@@ -161,10 +161,10 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
     auto callback = std::make_shared<GlobalCapabilitiesMock>();
 
     // use a semaphore to wait for capabilities to be received
-    Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(
             *callback, capabilitiesReceived(A<const std::vector<types::GlobalDiscoveryEntry>&>()))
-            .WillRepeatedly(DoAll(ReleaseSemaphore(&semaphore), Return()));
+            .WillRepeatedly(DoAll(ReleaseSemaphore(semaphore), Return()));
     std::function<void(const std::vector<types::GlobalDiscoveryEntry>&)> onSuccess =
             [&](const std::vector<types::GlobalDiscoveryEntry>& capabilities) {
                 callback->capabilitiesReceived(capabilities);
@@ -180,7 +180,7 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
             onSuccess,
             [](const joynr::types::DiscoveryError::Enum& /*error*/) {},
             [](const joynr::exceptions::JoynrRuntimeException& /*exception*/) {});
-    semaphore.waitFor(std::chrono::seconds(10));
+    semaphore->waitFor(std::chrono::seconds(10));
     JOYNR_LOG_DEBUG(logger(), "finished get capabilities");
 }
 
