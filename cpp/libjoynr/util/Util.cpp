@@ -80,11 +80,10 @@ bool fileExists(const std::string& fileName)
     return fileToTest.good();
 }
 
-//  __attribute__((no_sanitize("undefined")))
-void writeToFile(const std::string& fileName,
-                 const std::string& strToSave,
-                 std::ios_base::openmode mode,
-                 bool syncFile)
+__attribute__((no_sanitize("undefined"))) void writeToFile(const std::string& fileName,
+                                                           const std::string& strToSave,
+                                                           std::ios_base::openmode mode,
+                                                           bool syncFile)
 {
     std::ofstream file;
     file.open(fileName, mode);
