@@ -47,7 +47,7 @@ public:
               libjoynrProxyRuntime(),
               testDomain("testDomain"),
               settingsPath("test-resources/websocket-cc-tls.settings"),
-              semaphore()
+              semaphore(std::make_shared<Semaphore>(0))
     {
         clusterControllerRuntime = std::make_shared<TestJoynrClusterControllerRuntime>(
                 std::make_unique<Settings>(settingsPath), failOnFatalRuntimeError);
@@ -98,7 +98,7 @@ protected:
 
     const std::string testDomain;
     std::string settingsPath;
-    Semaphore semaphore;
+    std::shared_ptr<Semaphore> semaphore;
 };
 
 class MockSubscriptionListener : public joynr::ISubscriptionListener<std::string, std::string>
@@ -154,6 +154,8 @@ TEST_F(MessageNotificationTest, messageToDisconnectedProviderCausesBroadcast)
     auto mockListener = std::make_shared<MockSubscriptionListener>();
     EXPECT_CALL(*mockListener, onSubscribed(_)).Times(1);
     EXPECT_CALL(*mockListener, onError(_)).Times(0);
+    EXPECT_CALL(*mockListener, onReceive(Eq(providerParticipantId), _))
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     joynr::system::MessageNotificationMessageQueuedForDeliveryBroadcastFilterParameters
             filterParameters;
@@ -174,12 +176,9 @@ TEST_F(MessageNotificationTest, messageToDisconnectedProviderCausesBroadcast)
 
     auto onError = [](const joynr::exceptions::JoynrRuntimeException&) {};
 
-    EXPECT_CALL(*mockListener, onReceive(Eq(providerParticipantId), _))
-            .WillOnce(ReleaseSemaphore(&semaphore));
-
     testProxy->addNumbersAsync(1, 2, 3, onSuccess, onError);
 
     // 6. wait for a broadcast message to arrive
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
     messageNotificationProxy->unsubscribeFromMessageQueuedForDeliveryBroadcast(subscriptionId);
 }
