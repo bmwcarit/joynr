@@ -1,0 +1,46 @@
+From 44c4a27918daf870d370e965ac3ab5949612d284 Mon Sep 17 00:00:00 2001
+From: Guido Ostkamp <Guido.Ostkamp@partner.bmw.de>
+Date: Fri, 16 Sep 2022 14:46:10 +0200
+Subject: Fixed CMakeLists.txt
+
+* require modern cmake version
+* use debug option '-g' for compilation of test binaries
+* fix boost package specification
+---
+ CMakeLists.txt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a15b087..35d5be8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,7 +2,7 @@
+ ############ Setup project and cmake
+ # Minimum cmake requirement. We should require a quite recent
+ # cmake for the dependency find macros etc. to be up to date.
+-cmake_minimum_required (VERSION 2.8.8)
++cmake_minimum_required (VERSION 3.10)
+ 
+ ############ Paths
+ 
+@@ -130,7 +130,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
+         endif()
+         set (WEBSOCKETPP_PLATFORM_TLS_LIBS ssl crypto)
+         set (WEBSOCKETPP_BOOST_LIBS system thread)
+-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
++        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -g")
+         if (NOT APPLE)
+             add_definitions (-DNDEBUG -Wall -Wcast-align) # todo: should we use CMAKE_C_FLAGS for these?
+         endif ()
+@@ -215,7 +215,7 @@ if (BUILD_TESTS OR BUILD_EXAMPLES)
+     set (Boost_USE_MULTITHREADED TRUE)
+     set (Boost_ADDITIONAL_VERSIONS "1.39.0" "1.40.0" "1.41.0" "1.42.0" "1.43.0" "1.44.0" "1.46.1") # todo: someone who knows better spesify these!
+ 
+-    find_package (Boost 1.39.0 COMPONENTS "${WEBSOCKETPP_BOOST_LIBS}")
++    find_package (Boost 1.66.0 REQUIRED COMPONENTS ${WEBSOCKETPP_BOOST_LIBS})
+ 
+     if (Boost_FOUND)
+         # Boost is a project wide global dependency.
+-- 
+2.25.1
+

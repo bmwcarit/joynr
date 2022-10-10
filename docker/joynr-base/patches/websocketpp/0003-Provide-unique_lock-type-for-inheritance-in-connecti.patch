@@ -1,0 +1,24 @@
+From 6f746478ffc7cf3cf58b079c85e9cc9571b64596 Mon Sep 17 00:00:00 2001
+From: Guido Ostkamp <Guido.Ostkamp@partner.bmw.de>
+Date: Fri, 16 Sep 2022 14:51:45 +0200
+Subject: Provide unique_lock type for inheritance in connection
+
+---
+ websocketpp/connection.hpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/websocketpp/connection.hpp b/websocketpp/connection.hpp
+index d019fce..3a2fd1d 100644
+--- a/websocketpp/connection.hpp
++++ b/websocketpp/connection.hpp
+@@ -260,6 +260,7 @@ public:
+     typedef lib::function<void(ptr)> termination_handler;
+ 
+     typedef typename concurrency_type::scoped_lock_type scoped_lock_type;
++    typedef typename concurrency_type::unique_lock_type unique_lock_type;
+     typedef typename concurrency_type::mutex_type mutex_type;
+ 
+     typedef typename config::request_type request_type;
+-- 
+2.25.1
+

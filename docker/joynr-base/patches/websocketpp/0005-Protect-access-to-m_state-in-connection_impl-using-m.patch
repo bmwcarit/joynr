@@ -1,0 +1,209 @@
+From 6d5ce84273211bcb5fdbbc8363f18fb953edf908 Mon Sep 17 00:00:00 2001
+From: Guido Ostkamp <Guido.Ostkamp@partner.bmw.de>
+Date: Fri, 16 Sep 2022 14:56:54 +0200
+Subject: Protect access to m_state in connection_impl using
+ m_connection_state_lock
+
+---
+ websocketpp/impl/connection_impl.hpp | 43 ++++++++++++++++++++++++----
+ 1 file changed, 38 insertions(+), 5 deletions(-)
+
+diff --git a/websocketpp/impl/connection_impl.hpp b/websocketpp/impl/connection_impl.hpp
+index bf88c95..15ecc3c 100644
+--- a/websocketpp/impl/connection_impl.hpp
++++ b/websocketpp/impl/connection_impl.hpp
+@@ -75,7 +75,7 @@ size_t connection<config>::get_buffered_amount() const {
+ 
+ template <typename config>
+ session::state::value connection<config>::get_state() const {
+-    //scoped_lock_type lock(m_connection_state_lock);
++    scoped_lock_type lock(m_connection_state_lock);
+     return m_state;
+ }
+ 
+@@ -828,6 +828,7 @@ void connection<config>::handle_read_handshake(lib::error_code const & ec,
+     }
+ 
+     if (ecm) {
++        scoped_lock_type lock(m_connection_state_lock);
+         if (ecm == transport::error::eof && m_state == session::state::closed) {
+             // we expect to get eof if the connection is closed already
+             m_alog->write(log::alevel::devel,
+@@ -965,6 +966,7 @@ template <typename config>
+ void connection<config>::handle_read_frame(lib::error_code const & ec,
+     size_t bytes_transferred)
+ {
++    unique_lock_type lock(m_connection_state_lock);
+     //m_alog->write(log::alevel::devel,"connection handle_read_frame");
+ 
+     lib::error_code ecm = ec;
+@@ -1014,6 +1016,8 @@ void connection<config>::handle_read_frame(lib::error_code const & ec,
+         return;
+     }
+ 
++    lock.unlock();
++
+     // Boundaries checking. TODO: How much of this should be done?
+     /*if (bytes_transferred > config::connection_read_buffer_size) {
+         m_elog->write(log::elevel::fatal,"Fatal boundaries checking error");
+@@ -1063,6 +1067,7 @@ void connection<config>::handle_read_frame(lib::error_code const & ec,
+                 return;
+             } else {
+                 lib::error_code close_ec;
++                // close needs the lock released
+                 this->close(
+                     processor::error::to_ws(consume_ec),
+                     consume_ec.message(),
+@@ -1071,7 +1076,11 @@ void connection<config>::handle_read_frame(lib::error_code const & ec,
+ 
+                 if (close_ec) {
+                     log_err(log::elevel::fatal, "Protocol error close frame ", close_ec);
++                    // terminate must be called with lock acquired
++                    lock.lock();
+                     this->terminate(close_ec);
++                    // not really required due to RAII, but better to understand
++                    lock.unlock();
+                     return;
+                 }
+             }
+@@ -1091,10 +1100,15 @@ void connection<config>::handle_read_frame(lib::error_code const & ec,
+                 m_alog->write(log::alevel::devel, "null message from m_processor");
+             } else if (!is_control(msg->get_opcode())) {
+                 // data message, dispatch to user
++                lock.lock();
+                 if (m_state != session::state::open) {
++                    lock.unlock();
+                     m_elog->write(log::elevel::warn, "got non-close frame while closing");
+                 } else if (m_message_handler) {
++                    lock.unlock();
+                     m_message_handler(m_connection_hdl, msg);
++                } else {
++                   lock.unlock();
+                 }
+             } else {
+                 process_control_frame(msg);
+@@ -1193,6 +1207,7 @@ lib::error_code connection<config>::process_handshake_request() {
+             m_is_http = true;
+             m_http_handler(m_connection_hdl);
+             
++            scoped_lock_type lock(m_connection_state_lock);
+             if (m_state == session::state::closed) {
+                 return error::make_error_code(error::http_connection_ended);
+             }
+@@ -1373,6 +1388,7 @@ void connection<config>::handle_write_http_response(lib::error_code const & ec)
+     }
+ 
+     if (ecm) {
++        scoped_lock_type lock(m_connection_state_lock);
+         if (ecm == transport::error::eof && m_state == session::state::closed) {
+             // we expect to get eof if the connection is closed already
+             m_alog->write(log::alevel::devel,
+@@ -1414,14 +1430,18 @@ void connection<config>::handle_write_http_response(lib::error_code const & ec)
+             m_ec = make_error_code(error::http_connection_ended);
+         }        
+         
++        scoped_lock_type lock(m_connection_state_lock);
+         this->terminate(m_ec);
+         return;
+     }
+ 
+     this->log_open_result();
+ 
+-    m_internal_state = istate::PROCESS_CONNECTION;
+-    m_state = session::state::open;
++    {
++       scoped_lock_type lock(m_connection_state_lock);
++       m_internal_state = istate::PROCESS_CONNECTION;
++       m_state = session::state::open;
++    }
+ 
+     if (m_open_handler) {
+         m_open_handler(m_connection_hdl);
+@@ -1517,6 +1537,7 @@ void connection<config>::handle_send_http_request(lib::error_code const & ec) {
+     }
+ 
+     if (ecm) {
++        scoped_lock_type lock(m_connection_state_lock);
+         if (ecm == transport::error::eof && m_state == session::state::closed) {
+             // we expect to get eof if the connection is closed already
+             m_alog->write(log::alevel::devel,
+@@ -1570,6 +1591,7 @@ void connection<config>::handle_read_http_response(lib::error_code const & ec,
+     }
+ 
+     if (ecm) {
++        scoped_lock_type lock(m_connection_state_lock);
+         if (ecm == transport::error::eof && m_state == session::state::closed) {
+             // we expect to get eof if the connection is closed already
+             m_alog->write(log::alevel::devel,
+@@ -1589,6 +1611,7 @@ void connection<config>::handle_read_http_response(lib::error_code const & ec,
+     } catch (http::exception & e) {
+         m_elog->write(log::elevel::rerror,
+             std::string("error in handle_read_http_response: ")+e.what());
++        scoped_lock_type lock(m_connection_state_lock);
+         this->terminate(make_error_code(error::general));
+         return;
+     }
+@@ -1607,6 +1630,7 @@ void connection<config>::handle_read_http_response(lib::error_code const & ec,
+         );
+         if (validate_ec) {
+             log_err(log::elevel::rerror,"Server handshake response",validate_ec);
++            scoped_lock_type lock(m_connection_state_lock);
+             this->terminate(validate_ec);
+             return;
+         }
+@@ -1626,13 +1650,17 @@ void connection<config>::handle_read_http_response(lib::error_code const & ec,
+             // an unextended connection.
+             m_alog->write(log::alevel::devel, "Extension negotiation failed: "
+                 + neg_results.first.message());
++            scoped_lock_type lock(m_connection_state_lock);
+             this->terminate(make_error_code(error::extension_neg_failed));
+             // TODO: close connection with reason 1010 (and list extensions)
+         }
+ 
+         // response is valid, connection can now be assumed to be open      
+-        m_internal_state = istate::PROCESS_CONNECTION;
+-        m_state = session::state::open;
++        {
++           scoped_lock_type lock(m_connection_state_lock);
++           m_internal_state = istate::PROCESS_CONNECTION;
++           m_state = session::state::open;
++        }
+ 
+         this->log_open_result();
+ 
+@@ -1674,6 +1702,8 @@ void connection<config>::handle_open_handshake_timeout(
+         // TODO: ignore or fail here?
+     } else {
+         m_alog->write(log::alevel::devel,"open handshake timer expired");
++
++        scoped_lock_type lock(m_connection_state_lock);
+         terminate(make_error_code(error::open_handshake_timeout));
+     }
+ }
+@@ -1945,6 +1975,7 @@ void connection<config>::process_control_frame(typename config::message_type::pt
+     s << "Control frame received with opcode " << op;
+     m_alog->write(log::alevel::control,s.str());
+ 
++    unique_lock_type lock(m_connection_state_lock);
+     if (m_state == session::state::closed) {
+         m_elog->write(log::elevel::warn,"got frame in state closed");
+         return;
+@@ -1953,6 +1984,7 @@ void connection<config>::process_control_frame(typename config::message_type::pt
+         m_elog->write(log::elevel::warn,"got non-close frame in state closing");
+         return;
+     }
++    lock.unlock();
+ 
+     if (op == frame::opcode::PING) {
+         bool should_reply = true;
+@@ -2017,6 +2049,7 @@ void connection<config>::process_control_frame(typename config::message_type::pt
+             return;
+         }
+ 
++        lock.lock();
+         if (m_state == session::state::open) {
+             s.str("");
+             s << "Received close frame with code " << m_remote_close_code
+-- 
+2.25.1
+

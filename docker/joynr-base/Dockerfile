@@ -188,20 +188,16 @@ RUN chmod -R 777 /opt/payara5
 # 938e17a3 Fix incorrect authentication-method property type in mosquitto_sub man.
 # 0bdf630c (tag: v1.6.12) Merge branch 'fixes'
 ###################################################################################
-COPY 0001-Introduce-mosquitto_connect_bind_async_v5-API.patch /tmp/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch
-COPY 0002-Added-reconnect_session_expiry_interval-to-struct-mo.patch /tmp/0002-Added-reconnect_session_expiry_interval-to-struct-mo.patch
-COPY 0003-Introduced-option-MOSQ_OPT_RECONNECT_SESSION_EXPIRY_.patch /tmp/0003-Introduced-option-MOSQ_OPT_RECONNECT_SESSION_EXPIRY_.patch
-COPY 0004-mosquitto_reconnect-supports-MQTTv5-session-expiry.patch /tmp/0004-mosquitto_reconnect-supports-MQTTv5-session-expiry.patch
+RUN mkdir -p /tmp/patches/mosquitto
+COPY patches/mosquitto /tmp/patches/mosquitto
 RUN . /etc/profile \
     && cd /opt \
     && git clone https://github.com/eclipse/mosquitto \
     && cd mosquitto \
     && git checkout 298d8494 \
-    && git am -k /tmp/0001-Introduce-mosquitto_connect_bind_async_v5-API.patch \
-    && git am -k /tmp/0002-Added-reconnect_session_expiry_interval-to-struct-mo.patch \
-    && git am -k /tmp/0003-Introduced-option-MOSQ_OPT_RECONNECT_SESSION_EXPIRY_.patch \
-    && git am -k /tmp/0004-mosquitto_reconnect-supports-MQTTv5-session-expiry.patch \
-    && make WITH_WEBSOCKETS=no DOCDIRS= prefix=/usr install -j4
+    && git am -k /tmp/patches/mosquitto/*.patch \
+    && make WITH_WEBSOCKETS=no DOCDIRS= prefix=/usr install -j4 \
+    && rm -fr /tmp/patches/mosquitto
 
 ###################################################
 # copy mosquitto.conf
@@ -324,17 +320,21 @@ RUN cd /opt \
 # install websocket++
 ###################################################
 
+RUN mkdir -p /tmp/patches/websocketpp
+COPY patches/websocketpp /tmp/patches/websocketpp
 RUN cd /opt \
     && . /etc/profile \
     && git clone https://github.com/zaphoyd/websocketpp.git \
     && cd websocketpp \
     && git checkout 0.8.2 \
+    && git am -k /tmp/patches/websocketpp/*.patch \
     && mkdir build \
     && cd build \
     && cmake .. \
     && make install -j"$(nproc)" \
     && cd /opt/ \
-    && rm -rf websocketpp
+    && rm -rf websocketpp \
+    && rm -fr /tmp/patches/websocketpp
 
 ###################################################
 # install DLT
