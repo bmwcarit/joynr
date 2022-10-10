@@ -64,18 +64,22 @@ TEST(ThreadPoolTest, startAndShutdown_callDtorOfRunnablesCorrect)
     // Dtor called after the test
     auto runnable2 = std::make_shared<StrictMock<MockRunnable>>();
 
-    joynr::Semaphore semaphore1(0);
-    EXPECT_CALL(*runnable1, run()).Times(1).WillOnce(ReleaseSemaphore(&semaphore1));
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    auto semaphore1 = std::make_shared<Semaphore>(0);
+    auto dtorSemaphore1 = std::make_shared<Semaphore>(0);
+    EXPECT_CALL(*runnable1, run()).Times(1).WillOnce(ReleaseSemaphore(semaphore1));
+    EXPECT_CALL(*runnable1, shutdown()).Times(AtMost(1));
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore1));
     pool->execute(std::move(runnable1));
 
-    joynr::Semaphore semaphore2(0);
-    EXPECT_CALL(*runnable2, run()).Times(1).WillOnce(ReleaseSemaphore(&semaphore2));
-    EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
+    auto semaphore2 = std::make_shared<Semaphore>(0);
+    auto dtorSemaphore2 = std::make_shared<Semaphore>(0);
+    EXPECT_CALL(*runnable2, run()).Times(1).WillOnce(ReleaseSemaphore(semaphore2));
+    EXPECT_CALL(*runnable2, shutdown()).Times(AtMost(1));
+    EXPECT_CALL(*runnable2, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore2));
     pool->execute(std::move(runnable2));
 
-    EXPECT_TRUE(semaphore1.waitFor(std::chrono::milliseconds(1000)));
-    EXPECT_TRUE(semaphore2.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore1->waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore2->waitFor(std::chrono::milliseconds(1000)));
 
     // At this point both Runnables have been removed from scheduler
     // and were executed by a thread from Threadpool.
@@ -84,6 +88,9 @@ TEST(ThreadPoolTest, startAndShutdown_callDtorOfRunnablesCorrect)
     // as well, which should invoke the destructor.
 
     pool->shutdown();
+
+    EXPECT_TRUE(dtorSemaphore1->waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(dtorSemaphore2->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST(ThreadPoolTest, callDtorOfRunnabeAfterWorkHasDone)
@@ -93,17 +100,20 @@ TEST(ThreadPoolTest, callDtorOfRunnabeAfterWorkHasDone)
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
-    joynr::Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
+    auto dtorSemaphore = std::make_shared<Semaphore>(0);
 
-    EXPECT_CALL(*runnable1, run()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, run()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
     EXPECT_CALL(*runnable1, shutdown()).Times(AtMost(1));
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore));;
 
     pool->execute(std::move(runnable1));
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
 
     pool->shutdown();
+
+    EXPECT_TRUE(dtorSemaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST(ThreadPoolTest, testEndlessRunningRunnableToQuitWithShutdownCall)
@@ -113,22 +123,25 @@ TEST(ThreadPoolTest, testEndlessRunningRunnableToQuitWithShutdownCall)
 
     auto runnable1 = std::make_shared<StrictMock<MockRunnableBlocking>>();
 
-    joynr::Semaphore semaphore(0);
+    auto semaphore = std::make_shared<Semaphore>(0);
+    auto dtorSemaphore = std::make_shared<Semaphore>(0);
 
-    EXPECT_CALL(*runnable1, runEntry()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*runnable1, runEntry()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
     EXPECT_CALL(*runnable1, shutdownCalled()).Times(1);
     EXPECT_CALL(*runnable1, runExit()).Times(1);
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore));;
 
     pool->execute(std::move(runnable1));
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
 
     // the ThreadPool shutdown should find the Runnable in the
     // _currentlyRunning set and invoke its shutdown. This unblocks
     // the Runnables run() so that it can finish and get destructed
 
     pool->shutdown();
+
+    EXPECT_TRUE(dtorSemaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST(ThreadPoolTest, shutdownThreadPoolWhileRunnableIsInQueue)
@@ -139,14 +152,15 @@ TEST(ThreadPoolTest, shutdownThreadPoolWhileRunnableIsInQueue)
     auto runnable1 = std::make_shared<StrictMock<MockRunnableBlocking>>();
     auto runnable2 = std::make_shared<StrictMock<MockRunnableBlocking>>();
 
-    joynr::Semaphore semaphore1(0);
+    auto semaphore1 = std::make_shared<Semaphore>(0);
+    auto dtorSemaphore1 = std::make_shared<Semaphore>(0);
 
-    EXPECT_CALL(*runnable1, runEntry()).Times(1).WillOnce(ReleaseSemaphore(&semaphore1));
+    EXPECT_CALL(*runnable1, runEntry()).Times(1).WillOnce(ReleaseSemaphore(semaphore1));
     EXPECT_CALL(*runnable1, shutdownCalled()).Times(1);
     EXPECT_CALL(*runnable1, runExit()).Times(1);
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore1));
     pool->execute(std::move(runnable1));
-    EXPECT_TRUE(semaphore1.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore1->waitFor(std::chrono::milliseconds(1000)));
 
     // the runnable1 is being processed and runnable2 still
     // sits in the queue of the scheduler. The ThreadPool shutdown
@@ -154,12 +168,16 @@ TEST(ThreadPoolTest, shutdownThreadPoolWhileRunnableIsInQueue)
     // to continue with runnable2 since shutdown has been
     // signaled meanwhile. runnable2 is just getting destructed
     // without ever have been run or shutdown.
+    auto dtorSemaphore2 = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*runnable2, runEntry()).Times(0);
     EXPECT_CALL(*runnable2, shutdownCalled()).Times(0);
-    EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable2, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore2));
     pool->execute(std::move(runnable2));
 
     pool->shutdown();
+
+    EXPECT_TRUE(dtorSemaphore1->waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(dtorSemaphore2->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST(ThreadPoolTest, finishWorkWhileAnotherRunnableIsInTheQueue)
@@ -170,20 +188,22 @@ TEST(ThreadPoolTest, finishWorkWhileAnotherRunnableIsInTheQueue)
     auto runnable1 = std::make_shared<StrictMock<MockRunnableBlocking>>();
     auto runnable2 = std::make_shared<StrictMock<MockRunnableBlocking>>();
 
-    joynr::Semaphore semaphore1(0);
-    EXPECT_CALL(*runnable1, runEntry()).Times(1).WillOnce(ReleaseSemaphore(&semaphore1));
+    auto semaphore1 = std::make_shared<Semaphore>(0);
+    auto dtorSemaphore1 = std::make_shared<Semaphore>(0);
+    EXPECT_CALL(*runnable1, runEntry()).Times(1).WillOnce(ReleaseSemaphore(semaphore1));
     EXPECT_CALL(*runnable1, runExit()).Times(1);
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore1));
     pool->execute(runnable1);
 
-    joynr::Semaphore semaphore2(0);
-    EXPECT_CALL(*runnable2, runEntry()).Times(1).WillOnce(ReleaseSemaphore(&semaphore2));
+    auto semaphore2 = std::make_shared<Semaphore>(0);
+    auto dtorSemaphore2 = std::make_shared<Semaphore>(0);
+    EXPECT_CALL(*runnable2, runEntry()).Times(1).WillOnce(ReleaseSemaphore(semaphore2));
     EXPECT_CALL(*runnable2, shutdownCalled()).Times(1);
     EXPECT_CALL(*runnable2, runExit()).Times(1);
-    EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
+    EXPECT_CALL(*runnable2, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore2));
     pool->execute(std::move(runnable2));
 
-    EXPECT_TRUE(semaphore1.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore1->waitFor(std::chrono::milliseconds(1000)));
 
     // runnable1 has reached blocking state in run() and is part of
     // _currentlyRunning of ThreadPool.
@@ -194,10 +214,13 @@ TEST(ThreadPoolTest, finishWorkWhileAnotherRunnableIsInTheQueue)
     runnable1->manualShutdown();
     runnable1.reset();
 
-    EXPECT_TRUE(semaphore2.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore2->waitFor(std::chrono::milliseconds(1000)));
 
     // runnable2 has now been inserted in _currentlyRunning and gets blocked
     // in its run() until notified by calling shutdown
 
     pool->shutdown();
+
+    EXPECT_TRUE(dtorSemaphore1->waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(dtorSemaphore2->waitFor(std::chrono::milliseconds(1000)));
 }
