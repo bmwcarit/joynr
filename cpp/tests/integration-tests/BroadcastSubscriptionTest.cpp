@@ -139,10 +139,10 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
 {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
-    Semaphore semaphore(0);
+    std::shared_ptr<Semaphore> semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(
             *mockSubscriptionListenerOne, onReceive(A<const types::Localisation::GpsLocation&>()))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+            .WillRepeatedly(ReleaseSemaphore(semaphore));
 
     // register the subscription on the consumer side
     std::string subscribeToName = "locationUpdate";
@@ -175,8 +175,8 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(250)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
+    ASSERT_FALSE(semaphore->waitFor(std::chrono::milliseconds(250)));
 }
 
 /**
@@ -189,10 +189,10 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters)
 {
 
     // Use a semaphore to count and wait on calls to the mockSubscriptionListener
-    Semaphore semaphore(0);
+    std::shared_ptr<Semaphore> semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*mockSubscriptionListenerTwo,
                 onReceive(A<const types::Localisation::GpsLocation&>(), A<const double&>()))
-            .WillRepeatedly(ReleaseSemaphore(&semaphore));
+            .WillRepeatedly(ReleaseSemaphore(semaphore));
 
     // register the subscription on the consumer side
     std::string subscribeToName = "locationUpdateWithSpeed";
@@ -225,6 +225,6 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters)
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(1)));
-    ASSERT_FALSE(semaphore.waitFor(std::chrono::milliseconds(250)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
+    ASSERT_FALSE(semaphore->waitFor(std::chrono::milliseconds(250)));
 }
