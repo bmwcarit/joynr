@@ -45,7 +45,6 @@ public:
     static std::string SETTING_ADDITIONAL_BACKEND_BROKER_URL(std::uint8_t index);
     static std::string SETTING_ADDITIONAL_BACKEND_GBID(std::uint8_t index);
     static std::string SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(std::uint8_t index);
-    static std::string SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(std::uint8_t index);
 
     static const std::string& SETTING_DISCOVERY_DIRECTORIES_DOMAIN();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
@@ -54,18 +53,12 @@ public:
     static const std::string& SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static const std::string& SETTING_MQTT_RECONNECT_MAX_DELAY();
     static const std::string& SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED();
-    static const std::string& SETTING_MQTT_CONNECTION_TIMEOUT_MS();
-    static const std::string& SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES();
-    static const std::string& SETTING_INDEX();
     static const std::string& SETTING_SEND_MSG_RETRY_INTERVAL();
     static const std::string& SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
 
     static const std::string& SETTING_CERTIFICATE_AUTHORITY();
-    static const std::string& SETTING_CLIENT_CERTIFICATE();
-    static const std::string& SETTING_CLIENT_CERTIFICATE_PASSWORD();
 
     static const std::string& SETTING_PERSISTENCE_FILENAME();
-    static const std::string& SETTING_BROKER_TIMEOUT_MS();
 
     static const std::string& SETTING_DISCOVERY_DEFAULT_TIMEOUT_MS();
     static const std::string& SETTING_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS();
@@ -82,29 +75,16 @@ public:
      * @return the key used in settings for the maximum TTL message value.
      */
     static const std::string& SETTING_MAXIMUM_TTL_MS();
-    /**
-     * @brief SETTING_DISCOVERY_MESSAGES_TTL_MS Time-to-live of messages used
-     * in communication between the local discovery service and the discovery
-     * backend service.
-     *
-     * @return the TTL used for discovery messages send to the backend
-     * discovery service.
-     */
-    static const std::string& SETTING_DISCOVERY_MESSAGES_TTL_MS();
-    static const std::string& SETTING_SEND_MESSAGE_MAX_TTL();
     static const std::string& SETTING_TTL_UPLIFT_MS();
 
     static const std::string& DEFAULT_GBID();
     static const std::string& DEFAULT_MESSAGING_SETTINGS_FILENAME();
     static const std::string& DEFAULT_PERSISTENCE_FILENAME();
     static std::int64_t DEFAULT_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS();
-    static std::int64_t DEFAULT_BROKER_TIMEOUT_MS();
-    static std::int64_t DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS();
     static std::int64_t DEFAULT_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS();
     static std::int64_t DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS();
     static std::int64_t DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS();
-    static std::int64_t DEFAULT_SEND_MESSAGE_MAX_TTL();
     static std::uint64_t DEFAULT_TTL_UPLIFT_MS();
     static bool DEFAULT_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS();
 
@@ -117,7 +97,6 @@ public:
     static std::chrono::seconds DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS();
     static std::chrono::seconds DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static bool DEFAULT_MQTT_ENABLED();
-    static std::chrono::milliseconds DEFAULT_MQTT_CONNECTION_TIMEOUT_MS();
 
     BrokerUrl getBrokerUrl() const;
     std::string getBrokerUrlString() const;
@@ -134,7 +113,6 @@ public:
     std::chrono::seconds getAdditionalBackendMqttKeepAliveTimeSeconds(std::uint8_t index) const;
     void setAdditionalBackendMqttKeepAliveTimeSeconds(std::chrono::seconds mqttKeepAliveTimeSeconds,
                                                       std::uint8_t index);
-    std::chrono::milliseconds getAdditionalBackendMqttConnectionTimeoutMs(std::uint8_t index) const;
 
     std::string getDiscoveryDirectoriesDomain() const;
 
@@ -149,23 +127,14 @@ public:
     void setMqttReconnectMaxDelayTimeSeconds(std::chrono::seconds mqttReconnectMaxDelayTimeSeconds);
     bool getMqttExponentialBackoffEnabled() const;
     void setMqttExponentialBackoffEnabled(const bool& enable);
-    std::chrono::milliseconds getMqttConnectionTimeoutMs() const;
-    void setIndex(std::int64_t index);
-    std::int64_t getIndex() const;
     std::int64_t getDiscoveryEntryExpiryIntervalMs() const;
     void setDiscoveryEntryExpiryIntervalMs(std::int64_t expiryIntervalMs);
     std::uint32_t getSendMsgRetryInterval() const;
     void setSendMsgRetryInterval(const std::uint32_t& retryInterval);
     std::string getCertificateAuthority() const;
     void setCertificateAuthority(const std::string& certificateAuthority);
-    std::string getClientCertificate() const;
-    void setClientCertificate(const std::string& clientCertificate);
-    std::string getClientCertificatePassword() const;
-    void setClientCertificatePassword(const std::string& clientCertificatePassword);
     std::string getMessagingPropertiesPersistenceFilename() const;
     void setMessagingPropertiesPersistenceFilename(const std::string& persistenceFilename);
-    std::int64_t getBrokerTimeoutMs() const;
-    void setBrokerTimeoutMs(std::int64_t timeout_ms);
     std::int64_t getRoutingTableGracePeriodMs() const;
     void setRoutingTableGracePeriodMs(std::int64_t routingTableGracePeriodMs);
     std::int64_t getRoutingTableCleanupIntervalMs() const;
@@ -185,10 +154,6 @@ public:
      * @param maximumTtlMs the new maximum TTL for joynr messages.
      */
     void setMaximumTtlMs(std::uint64_t maximumTtlMs);
-    std::int64_t getDiscoveryMessagesTtl() const;
-    void setDiscoveryMessagesTtl(std::int64_t ttl_ms);
-    std::int64_t getSendMsgMaxTtl() const;
-    void setSendMsgMaxTtl(std::int64_t ttl_ms);
     void setTtlUpliftMs(std::uint64_t ttlUpliftMs);
     std::uint64_t getTtlUpliftMs() const;
 

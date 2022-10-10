@@ -5,12 +5,10 @@ gbid=defaultGbid
 additional-backend-0-broker-url=mqtt://additional-backend-host-0:1883/
 additional-backend-0-gbid=additional-gbid-0
 additional-backend-0-mqtt-keep-alive-time-seconds=10
-additional-backend-0-mqtt-connection-timeout-ms=20
 
 additional-backend-1-broker-url=mqtt://additional-backend-host-1:1883/
 additional-backend-1-gbid=additional-gbid-1
 additional-backend-1-mqtt-keep-alive-time-seconds=30
-additional-backend-1-mqtt-connection-timeout-ms=40
 
 discovery-directories-domain=io.joynr
 

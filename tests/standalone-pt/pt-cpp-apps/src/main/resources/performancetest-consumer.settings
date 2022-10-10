@@ -3,7 +3,6 @@ persistence-file=performancetest-consumer-messaging-settings.persist
 broker-url=mqtt://mqttbroker:1883/
 max-ttl-ms=2592000000
 discovery-directories-domain=io.joynr
-discovery-messages-ttl=1814400000
 mqtt-connection-timeout-ms=1000
 mqtt-keep-alive-time-seconds=60
 capabilities-directory-participantid=capabilitiesdirectory_participantid

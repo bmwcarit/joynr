@@ -8,7 +8,6 @@ capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAdd
 capabilities-directory-participantid=capabilitiesdirectory_participantid
 
 send-msg-retry-interval=500
-index=0
 persistence-file=joynr-systemintegrationtest1.settings
 
 [capabilitiesClient]

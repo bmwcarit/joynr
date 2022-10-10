@@ -1,6 +1,5 @@
 [messaging]
 send-msg-retry-interval=500
-index=0
 
 [capabilitiesClient]
 fakeDomain=integrationDomain

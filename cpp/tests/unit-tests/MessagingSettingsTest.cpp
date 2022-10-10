@@ -75,10 +75,6 @@ TEST_F(MessagingSettingsTest, intializedWithDefaultSettings)
             MessagingSettings::SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS()));
     EXPECT_EQ(messagingSettings.getMqttReconnectDelayTimeSeconds().count(),
               MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECONDS().count());
-    EXPECT_TRUE(
-            messagingSettings.contains(MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
-    EXPECT_EQ(messagingSettings.getMqttConnectionTimeoutMs().count(),
-              MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
     EXPECT_EQ(messagingSettings.getTtlUpliftMs(), MessagingSettings::DEFAULT_TTL_UPLIFT_MS());
     EXPECT_TRUE(
             messagingSettings.contains(MessagingSettings::SETTING_ROUTING_TABLE_GRACE_PERIOD_MS()));
@@ -152,19 +148,6 @@ void checkAdditionalBackendGbidSettings(MessagingSettings messagingSettings,
     std::string gbid = messagingSettings.getAdditionalBackendGbid(index);
 
     EXPECT_EQ(expectedGbid, gbid);
-}
-void checkAdditionalBackendMqttConnectionTimeout(
-        MessagingSettings messagingSettings,
-        std::chrono::milliseconds expectedBrokerMqttConnectionTimeout,
-        std::uint8_t index)
-{
-    EXPECT_TRUE(messagingSettings.contains(
-            MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)));
-
-    std::chrono::milliseconds brokerConnectionTimeoutMs =
-            messagingSettings.getAdditionalBackendMqttConnectionTimeoutMs(index);
-
-    EXPECT_EQ(expectedBrokerMqttConnectionTimeout.count(), brokerConnectionTimeoutMs.count());
 }
 void checkAdditionalBackendMqttKeepAliveTimeSeconds(
         MessagingSettings messagingSettings,
@@ -256,12 +239,10 @@ TEST_F(MessagingSettingsTest, mqttWithAdditionalBackends)
     std::string expectedAdditionalBackend0Url("mqtt://additional-backend-host-0:1883/");
     std::string expectedAdditionalBackend0Gbid("additional-gbid-0");
     std::chrono::seconds expectedAdditionalBackend0KeepAliveSeconds(10);
-    std::chrono::milliseconds expectedAdditionalBackend0ConnectionTimeoutMs(20);
 
     std::string expectedAdditionalBackend1Url("mqtt://additional-backend-host-1:1883/");
     std::string expectedAdditionalBackend1Gbid("additional-gbid-1");
     std::chrono::seconds expectedAdditionalBackend1KeepAliveSeconds(30);
-    std::chrono::milliseconds expectedAdditionalBackend1ConnectionTimeoutMs(40);
 
     Settings testSettings(testSettingsFileNameMqttWithGbid);
     EXPECT_TRUE(testSettings.isLoaded());
@@ -269,15 +250,11 @@ TEST_F(MessagingSettingsTest, mqttWithAdditionalBackends)
 
     checkAdditionalBackendUrlSettings(messagingSettings, expectedAdditionalBackend0Url, 0);
     checkAdditionalBackendGbidSettings(messagingSettings, expectedAdditionalBackend0Gbid, 0);
-    checkAdditionalBackendMqttConnectionTimeout(
-            messagingSettings, expectedAdditionalBackend0ConnectionTimeoutMs, 0);
     checkAdditionalBackendMqttKeepAliveTimeSeconds(
             messagingSettings, expectedAdditionalBackend0KeepAliveSeconds, 0);
 
     checkAdditionalBackendUrlSettings(messagingSettings, expectedAdditionalBackend1Url, 1);
     checkAdditionalBackendGbidSettings(messagingSettings, expectedAdditionalBackend1Gbid, 1);
-    checkAdditionalBackendMqttConnectionTimeout(
-            messagingSettings, expectedAdditionalBackend1ConnectionTimeoutMs, 1);
     checkAdditionalBackendMqttKeepAliveTimeSeconds(
             messagingSettings, expectedAdditionalBackend1KeepAliveSeconds, 1);
 }
@@ -325,20 +302,16 @@ TEST_F(MessagingSettingsTest, mqttWithAdditionalBackendsWithoutDefaultMqttInfo)
     std::string expectedAdditionalBackend2Gbid("additional-gbid-2");
     std::chrono::seconds expectedAdditionalBackend2KeepAliveSeconds(
             MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS());
-    std::chrono::milliseconds expectedAdditionalBackend2ConnectionTimeoutMs(
-            MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS());
+
 
     std::string expectedAdditionalBackend3Url("mqtt://additional-backend-host-3:1883/");
     std::string expectedAdditionalBackend3Gbid("additional-gbid-3");
     std::chrono::seconds expectedAdditionalBackend3KeepAliveSeconds(20);
-    std::chrono::milliseconds expectedAdditionalBackend3ConnectionTimeoutMs(
-            MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS());
 
     std::string expectedAdditionalBackend4Url("mqtt://additional-backend-host-4:1883/");
     std::string expectedAdditionalBackend4Gbid("additional-gbid-4");
     std::chrono::seconds expectedAdditionalBackend4KeepAliveSeconds(
             MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS());
-    std::chrono::milliseconds expectedAdditionalBackend4ConnectionTimeoutMs(500);
 
     testSettingsAdditionalBroker.set(MessagingSettings::SETTING_ADDITIONAL_BACKEND_BROKER_URL(2),
                                      expectedAdditionalBackend2Url);
@@ -357,25 +330,16 @@ TEST_F(MessagingSettingsTest, mqttWithAdditionalBackendsWithoutDefaultMqttInfo)
                                      expectedAdditionalBackend4Url);
     testSettingsAdditionalBroker.set(
             MessagingSettings::SETTING_ADDITIONAL_BACKEND_GBID(4), expectedAdditionalBackend4Gbid);
-    testSettingsAdditionalBroker.set(
-            MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(4),
-            expectedAdditionalBackend4ConnectionTimeoutMs.count());
 
     MessagingSettings messagingSettings(testSettingsAdditionalBroker);
     EXPECT_TRUE(testSettingsAdditionalBroker.isLoaded());
 
-    checkAdditionalBackendMqttConnectionTimeout(
-            messagingSettings, expectedAdditionalBackend2ConnectionTimeoutMs, 2);
     checkAdditionalBackendMqttKeepAliveTimeSeconds(
             messagingSettings, expectedAdditionalBackend2KeepAliveSeconds, 2);
 
-    checkAdditionalBackendMqttConnectionTimeout(
-            messagingSettings, expectedAdditionalBackend3ConnectionTimeoutMs, 3);
     checkAdditionalBackendMqttKeepAliveTimeSeconds(
             messagingSettings, expectedAdditionalBackend3KeepAliveSeconds, 3);
 
-    checkAdditionalBackendMqttConnectionTimeout(
-            messagingSettings, expectedAdditionalBackend4ConnectionTimeoutMs, 4);
     checkAdditionalBackendMqttKeepAliveTimeSeconds(
             messagingSettings, expectedAdditionalBackend4KeepAliveSeconds, 4);
 }
