@@ -51,7 +51,7 @@ public:
     void WaitXTimes(std::uint64_t x)
     {
         for (std::uint64_t i = 0; i < x; ++i) {
-            ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(1)));
+            ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(1)));
         }
     }
 

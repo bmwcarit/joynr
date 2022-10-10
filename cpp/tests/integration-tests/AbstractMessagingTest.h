@@ -66,7 +66,7 @@ public:
     MessagingQos _qos;
     std::shared_ptr<MockDispatcher> _dispatcher;
     std::shared_ptr<MockInProcessMessagingSkeleton> _inProcessMessagingSkeleton;
-    Semaphore _semaphore;
+    std::shared_ptr<Semaphore> _semaphore;
     const bool _isLocalMessage;
 
     MutableMessageFactory _messageFactory;
@@ -89,7 +89,7 @@ public:
               _dispatcher(),
               _inProcessMessagingSkeleton(
                       std::make_shared<MockInProcessMessagingSkeleton>(_dispatcher)),
-              _semaphore(0),
+              _semaphore(std::make_shared<Semaphore>(0)),
               _isLocalMessage(false),
               _messageFactory(),
               _mockMessageReceiver(new MockTransportMessageReceiver()),
@@ -128,7 +128,7 @@ public:
     void WaitXTimes(std::uint64_t x)
     {
         for (std::uint64_t i = 0; i < x; ++i) {
-            ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(1)));
+            ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(1)));
         }
     }
 
@@ -158,11 +158,11 @@ public:
         // MessageSender should receive the message
         EXPECT_CALL(*_mockMessageSender, sendMessage(_, _, _))
                 .Times(1)
-                .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+                .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
         EXPECT_CALL(*mockDispatcher, addReplyCaller(_, _, _))
                 .Times(1)
-                .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+                .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
         MessageSender messageSender(_messageRouter, nullptr);
         std::shared_ptr<IReplyCaller> replyCaller;
@@ -205,7 +205,7 @@ public:
         // InProcessMessagingSkeleton should receive the message
         EXPECT_CALL(*_inProcessMessagingSkeleton, transmit(Eq(immutableMessage), _))
                 .Times(1)
-                .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+                .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
         // MessageSender should not receive the message
         EXPECT_CALL(*_mockMessageSender, sendMessage(_, _, _)).Times(0);
@@ -242,7 +242,7 @@ public:
         // *CommunicationManager should receive the message
         EXPECT_CALL(*_mockMessageSender, sendMessage(_, Eq(immutableMessage), _))
                 .Times(1)
-                .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+                .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
         const bool isGloballyVisible = false;
         constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
@@ -273,12 +273,12 @@ public:
         // MessageSender should receive message
         EXPECT_CALL(*_mockMessageSender, sendMessage(_, Eq(immutableMessage1), _))
                 .Times(1)
-                .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+                .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
         // InProcessMessagingSkeleton should receive twice message2
         EXPECT_CALL(*_inProcessMessagingSkeleton, transmit(Eq(immutableMessage2), _))
                 .Times(2)
-                .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+                .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
         EXPECT_CALL(*_mockMessageReceiver, getSerializedGlobalClusterControllerAddress())
                 .WillRepeatedly(Return(_globalClusterControllerAddress));
