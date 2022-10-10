@@ -383,16 +383,7 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeAllowsEmptyGbid)
     runtime->init();
     runtime->startExternalCommunication();
 
-    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
     auto mockTestProvider = std::make_shared<MockTestProvider>();
-    types::ProviderQos providerQos;
-    std::chrono::milliseconds millisSinceEpoch =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch());
-    providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
-    providerQos.setSupportsOnChangeSubscriptions(true);
-
     EXPECT_CALL(
             *mockTestProvider,
             getLocation(
@@ -400,6 +391,15 @@ TEST_F(JoynrClusterControllerRuntimeTest, runtimeAllowsEmptyGbid)
                     A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>()))
             .WillOnce(Invoke(
                     this, &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation));
+
+    std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     std::string participantId =
             runtime->registerProvider<tests::testProvider>(domain, mockTestProvider, providerQos);
@@ -528,15 +528,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
 {
     createRuntimeMqtt();
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    auto mockTestProvider = std::make_shared<MockTestProvider>();
-    types::ProviderQos providerQos;
-    std::chrono::milliseconds millisSinceEpoch =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch());
-    providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
-    providerQos.setSupportsOnChangeSubscriptions(true);
 
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
     EXPECT_CALL(
             *mockTestProvider,
             getLocation(
@@ -545,6 +538,17 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
             .Times(AtLeast(1))
             .WillRepeatedly(Invoke(
                     this, &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation));
+
+    auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
+    EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation)).Times(AtLeast(1));
+
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     runtime->startExternalCommunication();
     std::string participantId =
@@ -562,9 +566,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, registerAndSubscribeToLocalProvider)
             testProxyBuilder->setMessagingQos(MessagingQos(5000))
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
-
-    auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
-    EXPECT_CALL(*mockSubscriptionListener, onReceive(gpsLocation)).Times(AtLeast(1));
 
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(480,  // validity
@@ -585,15 +586,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
 {
     createRuntimeMqtt();
     std::string domain("JoynrClusterControllerRuntimeTest.Domain.A");
-    auto mockTestProvider = std::make_shared<MockTestProvider>();
-    types::ProviderQos providerQos;
-    std::chrono::milliseconds millisSinceEpoch =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch());
-    providerQos.setPriority(millisSinceEpoch.count());
-    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
-    providerQos.setSupportsOnChangeSubscriptions(true);
 
+    auto mockTestProvider = std::make_shared<MockTestProvider>();
     EXPECT_CALL(
             *mockTestProvider,
             getLocation(
@@ -601,6 +595,18 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
                     A<std::function<void(const joynr::exceptions::ProviderRuntimeException&)>>()))
             .WillRepeatedly(Invoke(
                     this, &JoynrClusterControllerRuntimeTest::invokeOnSuccessWithGpsLocation));
+
+    auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
+    ON_CALL(*mockSubscriptionListener, onReceive(Eq(gpsLocation)))
+            .WillByDefault(ReleaseSemaphore(semaphore));
+
+    types::ProviderQos providerQos;
+    std::chrono::milliseconds millisSinceEpoch =
+            std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch());
+    providerQos.setPriority(millisSinceEpoch.count());
+    providerQos.setScope(joynr::types::ProviderScope::GLOBAL);
+    providerQos.setSupportsOnChangeSubscriptions(true);
 
     runtime->startExternalCommunication();
     std::string participantId =
@@ -619,8 +625,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
                     ->setDiscoveryQos(discoveryQos)
                     ->build());
 
-    auto mockSubscriptionListener = std::make_shared<MockGpsSubscriptionListener>();
-
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(2000, // validity
                                                                    1000, // publication ttl
@@ -628,9 +632,6 @@ TEST_F(JoynrClusterControllerRuntimeTest, unsubscribeFromLocalProvider)
                                                                    1000, // max interval
                                                                    10000 // alert after interval
             );
-    ON_CALL(*mockSubscriptionListener, onReceive(Eq(gpsLocation)))
-            .WillByDefault(ReleaseSemaphore(semaphore));
-
     auto future = testProxy->subscribeToLocation(mockSubscriptionListener, subscriptionQos);
 
     std::string subscriptionId;
@@ -651,6 +652,8 @@ TEST_F(JoynrClusterControllerRuntimeTest, localCommunicationUds)
     createRuntimeMqtt();
     runtime->start();
     MockUdsClientCallbacks mockClientCallbacks;
+    EXPECT_CALL(mockClientCallbacks, connected()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
+    EXPECT_CALL(mockClientCallbacks, disconnected()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
     UdsSettings settings(testSettings);
     UdsClient client(settings, [](const exceptions::JoynrRuntimeException&) {});
     client.setConnectCallback(std::bind(&MockUdsClientCallbacks::connected, &mockClientCallbacks));
@@ -660,13 +663,10 @@ TEST_F(JoynrClusterControllerRuntimeTest, localCommunicationUds)
         mockClientCallbacks.received(std::move(val));
     });
 
-    EXPECT_CALL(mockClientCallbacks, connected()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
     client.start();
     ASSERT_TRUE(semaphore->waitFor(waitPeriodForClientServerCommunication))
             << "UDS client could not connect.";
-    Mock::VerifyAndClearExpectations(&mockClientCallbacks);
 
-    EXPECT_CALL(mockClientCallbacks, disconnected()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
     shutdownRuntime();
     ASSERT_TRUE(semaphore->waitFor(waitPeriodForClientServerCommunication))
             << "UDS client could not disconnected when runtime is shutting down.";
