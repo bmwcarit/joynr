@@ -48,12 +48,12 @@ public:
             : runtimeAcON(),
               runtimeACRetry(),
               runtimeAcOFF(),
-              testProvider(nullptr),
+              testProvider(std::make_shared<MockTestProvider>()),
               testProxy(nullptr),
               providerQos(),
               domain("End2EndAccessControlTest"),
               providerParticipantId(),
-              semaphore(0),
+              semaphore(std::make_shared<Semaphore>(0)),
               AC_ENTRIES_FILE("CCAccessControl.entries"),
               MESSAGINGQOS_TTL(10000)
     {
@@ -62,7 +62,6 @@ public:
     void registerProviderAndBuildProxy(std::shared_ptr<JoynrRuntime> providerRuntime,
                                        std::shared_ptr<JoynrRuntime> proxyRuntime)
     {
-        testProvider = std::make_shared<MockTestProvider>();
         providerParticipantId = providerRuntime->registerProvider<tests::testProvider>(
                 domain, testProvider, providerQos, true, true);
 
@@ -143,7 +142,7 @@ protected:
 
     std::string domain;
     std::string providerParticipantId;
-    joynr::Semaphore semaphore;
+    std::shared_ptr<joynr::Semaphore> semaphore;
 
     const std::string AC_ENTRIES_FILE;
     const std::uint64_t MESSAGINGQOS_TTL;
@@ -152,42 +151,38 @@ protected:
 TEST_F(End2EndAccessControlTest,
        queuedMsgsForUnavailableProviderAreAcCheckedWhenProviderIsRegisteredAgain_permissionYes)
 {
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(1).WillOnce(
+                ReleaseSemaphore(semaphore));
+
     // consumer has permission
     // in this method provider is registered and proxy is built
     initSingleCcRuntimeWithACRetryInterval("AccessControlYesPermission.entries");
     runtimeACRetry->unregisterProvider(providerParticipantId);
 
-    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
-
     joynr::MessagingQos messagingQoS(MESSAGINGQOS_TTL);
     testProxy->methodWithNoInputParametersAsync(nullptr, nullptr, messagingQoS);
 
     // This sleep to give the proxy call chance to reach the provider
-    std::this_thread::sleep_for(std::chrono::milliseconds(MESSAGINGQOS_TTL / 2));
-    Mock::VerifyAndClearExpectations(testProvider.get());
-
-    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_FALSE(semaphore->waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL / 2)));
 
     // registering the provider again, queued messages should be delivered
     providerParticipantId = runtimeACRetry->registerProvider<tests::testProvider>(
             domain, testProvider, providerQos, true, true);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
 }
 
 TEST_F(End2EndAccessControlTest,
        queuedMsgsForUnavailableProviderAreAcCheckedWhenProviderIsRegisteredAgain_permissionNo)
 {
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
+
     // consumer has no permission
     // in this method provider is registered and proxy is built
     initSingleCcRuntimeWithACRetryInterval("AccessControlNoPermission.entries");
     runtimeACRetry->unregisterProvider(providerParticipantId);
 
-    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
-
-    auto onError = [&](const joynr::exceptions::JoynrRuntimeException&) { semaphore.notify(); };
+    auto onError = [&](const joynr::exceptions::JoynrRuntimeException&) { semaphore->notify(); };
 
     joynr::MessagingQos messagingQoS(static_cast<std::uint64_t>(MESSAGINGQOS_TTL));
     testProxy->methodWithNoInputParametersAsync(nullptr, onError, messagingQoS);
@@ -199,15 +194,16 @@ TEST_F(End2EndAccessControlTest,
     providerParticipantId = runtimeACRetry->registerProvider<tests::testProvider>(
             domain, testProvider, providerQos, true, true);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
 }
 
 TEST_F(End2EndAccessControlTest, proxyDoesNotHavePermission)
 {
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
+
     initSeparateCcRuntimesForProxyAndProvider("AccessControlNoPermission.entries");
     // If AccessControl is active, the proxy cannot call methodWithNoInputParameters (see
     // AC_ENTRIES_FILE file)
-    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(0);
 
     std::int32_t outputParameter = 0;
 
@@ -218,10 +214,10 @@ TEST_F(End2EndAccessControlTest, proxyDoesNotHavePermission)
 
 TEST_F(End2EndAccessControlTest, proxyDoesHavePermission)
 {
-    initSeparateCcRuntimesForProxyAndProvider("AccessControlYesPermission.entries");
     EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _))
             .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
+    initSeparateCcRuntimesForProxyAndProvider("AccessControlYesPermission.entries");
     testProxy->methodWithNoInputParametersAsync();
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(MESSAGINGQOS_TTL)));
 }

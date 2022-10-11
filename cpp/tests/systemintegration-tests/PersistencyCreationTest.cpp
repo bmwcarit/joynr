@@ -44,7 +44,6 @@ public:
               testProxy(nullptr),
               domain("PersistencyCreationTest"),
               providerParticipantId(),
-              semaphore(0),
               MESSAGINGQOS_TTL(1000)
     {
     }
@@ -104,7 +103,6 @@ protected:
 
     std::string domain;
     std::string providerParticipantId;
-    joynr::Semaphore semaphore;
 
     const std::uint64_t MESSAGINGQOS_TTL;
 };

@@ -55,7 +55,7 @@ using namespace joynr;
 class CombinedEnd2EndTest : public testing::TestWithParam<std::tuple<std::string, std::string>>
 {
 public:
-    CombinedEnd2EndTest() : _semaphore(0)
+    CombinedEnd2EndTest() : _semaphore(std::make_shared<Semaphore>(0))
     {
         auto baseUuid = util::createUuid();
         _uuid = "_" + baseUuid.substr(1, baseUuid.length() - 2);
@@ -95,7 +95,7 @@ protected:
     std::shared_ptr<JoynrRuntime> _runtime2;
     std::string _uuid;
     std::string _domainName;
-    Semaphore _semaphore;
+    std::shared_ptr<Semaphore> _semaphore;
     DiscoveryQos _discoveryQos;
 };
 
@@ -539,7 +539,7 @@ TEST_P(CombinedEnd2EndTest, subscribeViaMqttReceiverAndReceiveReply)
 
     // Use a _semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*subscriptionListener, onReceive(A<const types::Localisation::GpsLocation&>()))
-            .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+            .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
     // Provider: (_runtime1)
 
@@ -580,8 +580,8 @@ TEST_P(CombinedEnd2EndTest, subscribeViaMqttReceiverAndReceiveReply)
     std::string subscriptionId;
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
 
     testProxy->unsubscribeFromLocation(subscriptionId);
     _runtime1->unregisterProvider(participantId);
@@ -597,7 +597,7 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
     auto testProvider = std::make_shared<MockTestProvider>();
     EXPECT_CALL(*testProvider,
                 methodFireAndForget(expectedIntParam, expectedStringParam, expectedComplexParam))
-            .WillOnce(ReleaseSemaphore(&_semaphore));
+            .WillOnce(ReleaseSemaphore(_semaphore));
     types::ProviderQos providerQos;
     std::chrono::milliseconds millisSinceEpoch =
             std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -621,7 +621,7 @@ TEST_P(CombinedEnd2EndTest, callFireAndForgetMethod)
 
     testProxy->methodFireAndForget(expectedIntParam, expectedStringParam, expectedComplexParam);
 
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
     _runtime1->unregisterProvider(participantId);
 }
 
@@ -632,7 +632,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     // Use a _semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*subscriptionListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .Times(4)
-            .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+            .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
     // Provider: (_runtime1)
 
@@ -686,7 +686,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     };
 
     // Wait for initial publication to arrive
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
 
     // Change the location multiple times
     invokeSetter(1);
@@ -696,9 +696,9 @@ TEST_P(CombinedEnd2EndTest, subscribeToOnChange)
     invokeSetter(3);
 
     // Wait for 3 subscription messages to arrive
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
     JOYNR_ASSERT_NO_THROW({ testProxy->unsubscribeFromLocation(subscriptionId); });
     _runtime1->unregisterProvider(participantId);
 }
@@ -712,7 +712,7 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
     std::vector<int> expectedValues = {1000, 2000, 3000};
     // Use a _semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*subscriptionListener, onReceive(Eq(expectedValues)))
-            .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+            .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
     // Provider: (_runtime1)
 
@@ -747,8 +747,8 @@ TEST_P(CombinedEnd2EndTest, subscribeToListAttribute)
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
 
     testProxy->unsubscribeFromListOfInts(subscriptionId);
     _runtime1->unregisterProvider(providerParticipantId);
@@ -823,7 +823,7 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaMqttReceiver)
 
     // Use a _semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
-            .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+            .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> subscriptionListener(
             mockListener);
@@ -864,16 +864,16 @@ TEST_P(CombinedEnd2EndTest, unsubscribeViaMqttReceiver)
     JOYNR_ASSERT_NO_THROW({ future->get(5000, subscriptionId); });
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
 
     gpsProxy->unsubscribeFromLocation(subscriptionId);
 
     // Check that the unsubscribe is eventually successful
-    ASSERT_FALSE(_semaphore.waitFor(std::chrono::seconds(10)));
-    ASSERT_FALSE(_semaphore.waitFor(std::chrono::seconds(10)));
-    ASSERT_FALSE(_semaphore.waitFor(std::chrono::seconds(10)));
-    ASSERT_FALSE(_semaphore.waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(_semaphore->waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(_semaphore->waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(_semaphore->waitFor(std::chrono::seconds(10)));
+    ASSERT_FALSE(_semaphore->waitFor(std::chrono::seconds(10)));
     JOYNR_ASSERT_NO_THROW({ gpsProxy->unsubscribeFromLocation(subscriptionId); });
     _runtime1->unregisterProvider(participantId);
 }
@@ -959,10 +959,9 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread)
 {
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
 
-    // Use a _semaphore to count and wait on calls to the mock listener
-    // Semaphore _semaphore(0);
+    // Use _semaphore to count and wait on calls to the mock listener
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
-            .WillRepeatedly(ReleaseSemaphore(&_semaphore));
+            .WillRepeatedly(ReleaseSemaphore(_semaphore));
 
     std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> subscriptionListener(
             mockListener);
@@ -985,8 +984,8 @@ TEST_P(CombinedEnd2EndTest, subscribeInBackgroundThread)
     std::async(std::launch::async, subscribeToLocation, subscriptionListener, testProxy);
 
     // Wait for 2 subscription messages to arrive
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
-    ASSERT_TRUE(_semaphore.waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
+    ASSERT_TRUE(_semaphore->waitFor(std::chrono::seconds(20)));
 
     unsubscribeFromLocation(testProxy);
 

@@ -55,7 +55,7 @@ public:
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
-    joynr::Semaphore semaphore;
+    std::shared_ptr<Semaphore> semaphore;
     unsigned long registerProviderWait;
     unsigned long subscribeToAttributeWait;
     joynr::types::Localisation::GpsLocation gpsLocation;
@@ -68,7 +68,7 @@ public:
               baseUuid(util::createUuid()),
               uuid("_" + baseUuid.substr(1, baseUuid.length() - 2)),
               domainName("cppEnd2EndSubscriptionTest_Domain" + uuid),
-              semaphore(0),
+              semaphore(std::make_shared<Semaphore>(0)),
               registerProviderWait(1000),
               subscribeToAttributeWait(2000),
               providerParticipantId()
@@ -187,7 +187,7 @@ protected:
 
         // Use a semaphore to count and wait on calls to the mock listener
         ON_CALL(*mockListener, onReceive(Eq(expectedValue)))
-                .WillByDefault(ReleaseSemaphore(&semaphore));
+                .WillByDefault(ReleaseSemaphore(semaphore));
 
         std::shared_ptr<ISubscriptionListener<T>> subscriptionListener(mockListener);
 
@@ -209,7 +209,7 @@ protected:
         waitForAttributeSubscriptionArrivedAtProvider(testProvider, attributeName);
 
         // Wait for a subscription message to arrive
-        EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
         unsubscribeFrom(testProxy, subscriptionId);
     }
 };
@@ -224,7 +224,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration)
     std::string subscriptionIdFromListener;
     std::string subscriptionIdFromFuture;
     EXPECT_CALL(*mockListener, onSubscribed(_))
-            .WillOnce(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+            .WillOnce(DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(semaphore)));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
 
@@ -251,7 +251,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionRegistration)
 
     // Wait for a subscription reply message to arrive
     JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionIdFromFuture););
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
     JOYNR_EXPECT_NO_THROW(testProxy->unsubscribeFromTestAttribute(subscriptionIdFromFuture));
 }
@@ -266,7 +266,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate)
     EXPECT_CALL(*mockListener, onSubscribed(_))
             .Times(2)
             .WillRepeatedly(
-                    DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(&semaphore)));
+                    DoAll(SaveArg<0>(&subscriptionIdFromListener), ReleaseSemaphore(semaphore)));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
 
@@ -293,7 +293,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate)
 
     // Wait for a subscription reply message to arrive
     JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionIdFromFuture););
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
 
     // update subscription
@@ -306,7 +306,7 @@ TEST_P(End2EndSubscriptionTest, waitForSuccessfulSubscriptionUpdate)
 
     // Wait for a subscription reply message to arrive
     JOYNR_EXPECT_NO_THROW(subscriptionIdFuture->get(5000, subscriptionIdFromFuture););
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
     EXPECT_EQ(subscriptionIdFromFuture, subscriptionIdFromListener);
     // subscription id from update is the same as the original subscription id
     EXPECT_EQ(subscriptionId, subscriptionIdFromFuture);
@@ -363,7 +363,7 @@ TEST_P(End2EndSubscriptionTest, publishAfterProxyDestruction)
 {
     auto mockListener = new MockSubscriptionListenerOneType<int32_t>();
 
-    ON_CALL(*mockListener, onReceive(Eq(42))).WillByDefault(ReleaseSemaphore(&semaphore));
+    ON_CALL(*mockListener, onReceive(Eq(42))).WillByDefault(ReleaseSemaphore(semaphore));
 
     std::shared_ptr<ISubscriptionListener<int32_t>> subscriptionListener(mockListener);
     std::shared_ptr<tests::DefaulttestProvider> testProvider = registerProvider();
@@ -397,7 +397,7 @@ TEST_P(End2EndSubscriptionTest, publishAfterProxyDestruction)
 
     // Destruct the proxy
     test::util::resetAndWaitUntilDestroyed(testProxy);
-    EXPECT_FALSE(semaphore.waitFor(std::chrono::milliseconds(500)));
+    EXPECT_FALSE(semaphore->waitFor(std::chrono::milliseconds(500)));
 
     testProvider->setTestAttribute(
             42,
@@ -406,7 +406,7 @@ TEST_P(End2EndSubscriptionTest, publishAfterProxyDestruction)
                 ADD_FAILURE() << "exception from setTestAttribute: " << error.getMessage();
             });
     // Wait for a subscription reply message to arrive
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
 
     bool resolved{false};
     routingProxy->resolveNextHop(resolved, participantId);

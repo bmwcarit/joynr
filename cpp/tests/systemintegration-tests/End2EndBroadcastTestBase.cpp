@@ -62,8 +62,8 @@ public:
     std::string baseUuid;
     std::string uuid;
     std::string domainName;
-    Semaphore semaphore;
-    Semaphore altSemaphore;
+    std::shared_ptr<Semaphore> semaphore;
+    std::shared_ptr<Semaphore> altSemaphore;
     joynr::tests::TestLocationUpdateSelectiveBroadcastFilterParameters filterParameters;
     std::shared_ptr<MockLocationUpdatedSelectiveFilter> filter;
     std::uint16_t subscribeToAttributeWait;
@@ -79,8 +79,8 @@ public:
               baseUuid(util::createUuid()),
               uuid("_" + baseUuid.substr(1, baseUuid.length() - 2)),
               domainName("cppEnd2EndBroadcastTest_Domain" + uuid),
-              semaphore(0),
-              altSemaphore(0),
+              semaphore(std::make_shared<Semaphore>(0)),
+              altSemaphore(std::make_shared<Semaphore>(0)),
               filter(std::make_shared<MockLocationUpdatedSelectiveFilter>()),
               subscribeToAttributeWait(2000),
               subscribeToBroadcastWait(2000),
@@ -236,7 +236,7 @@ protected:
 
         // Use a semaphore to count and wait on calls to the mock listener
         EXPECT_CALL(*mockListener, onReceive(Eq(expectedValue)))
-                .WillOnce(ReleaseSemaphore(&semaphore));
+                .WillOnce(ReleaseSemaphore(semaphore));
 
         testOneShotBroadcastSubscription(
                 mockListener, subscribeTo, unsubscribeFrom, fireBroadcast, expectedValue);
@@ -269,7 +269,7 @@ protected:
         (*testProvider.*fireBroadcast)(expectedValues..., partitions);
 
         // Wait for a subscription message to arrive
-        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
         unsubscribeFrom(testProxy.get(), subscriptionId);
 
         delayForMqttSubscribeOrUnsubscribe();
@@ -321,7 +321,7 @@ protected:
         (*testProvider.*fireBroadcast)(expectedValues...);
 
         // Wait for a subscription message to arrive
-        ASSERT_TRUE(semaphore.waitFor(std::chrono::seconds(3)));
+        ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(3)));
         unsubscribeFrom(testProxy.get(), subscriptionId);
     }
 

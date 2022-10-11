@@ -178,11 +178,10 @@ TEST_P(End2EndRPCTest, _call_subscribeTo_and_get_expected_result)
                     ->build();
 
     MockGpsSubscriptionListener* mockListener = new MockGpsSubscriptionListener();
-    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> subscriptionListener(
-            mockListener);
-
     EXPECT_CALL(*mockListener, onReceive(A<const types::Localisation::GpsLocation&>()))
             .Times(AtLeast(2));
+    std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>> subscriptionListener(
+            mockListener);
 
     auto subscriptionQos =
             std::make_shared<OnChangeWithKeepAliveSubscriptionQos>(800,  // validity_ms
