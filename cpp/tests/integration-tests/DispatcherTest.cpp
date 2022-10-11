@@ -209,15 +209,13 @@ TEST_F(DispatcherTest, receive_interpreteRequestAndCallOperation)
     reply.setRequestReplyId(requestReplyId);
     MutableMessage expectedReply =
             messageFactory.createReply(proxyParticipantId, providerParticipantId, qos, {}, reply);
-
-    JOYNR_LOG_DEBUG(logger(), "expectedReply.payload()={}", expectedReply.getPayload());
-
     // setup MockMessaging to expect the response
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             ImmutableMessageHasPayload(expectedReply.getPayload())),
                       _))
             .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
+    JOYNR_LOG_DEBUG(logger(), "expectedReply.payload()={}", expectedReply.getPayload());
 
     // test code: send the request through the dispatcher->
     // This should cause our mock messaging to receive a reply from the mock provider
@@ -266,7 +264,11 @@ TEST_F(DispatcherTest, receive_customHeadersCopied)
 TEST_F(DispatcherTest, compressFlagIsRetained)
 {
     const bool isCompressed = true;
-
+    EXPECT_CALL(*mockMessageRouter,
+                route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
+                            MessageIsCompressed(isCompressed)),
+                      _))
+            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
     EXPECT_CALL(*mockRequestCaller,
                 getLocationMock(
                         A<std::function<void(const joynr::types::Localisation::GpsLocation&)>>(),
@@ -282,12 +284,6 @@ TEST_F(DispatcherTest, compressFlagIsRetained)
 
     MutableMessage mutableMessage = messageFactory.createRequest(
             proxyParticipantId, providerParticipantId, qos, request, isLocalMessage);
-
-    EXPECT_CALL(*mockMessageRouter,
-                route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
-                            MessageIsCompressed(isCompressed)),
-                      _))
-            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
@@ -305,10 +301,6 @@ void DispatcherTest::testEffortFromRequestIsRetainedImpl(
                                              joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
-    Request request;
-    request.setRequestReplyId(requestReplyId);
-    request.setMethodName("getLocation");
-
     if (expectedEffort) {
         qos.setEffort(*expectedEffort);
 
@@ -317,14 +309,18 @@ void DispatcherTest::testEffortFromRequestIsRetainedImpl(
         }
     }
 
-    MutableMessage mutableMessage = messageFactory.createRequest(
-            proxyParticipantId, providerParticipantId, qos, request, isLocalMessage);
-
     EXPECT_CALL(*mockMessageRouter,
                 route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
                             MessageUsesEffort(expectedEffort)),
                       _))
             .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
+
+    Request request;
+    request.setRequestReplyId(requestReplyId);
+    request.setMethodName("getLocation");
+
+    MutableMessage mutableMessage = messageFactory.createRequest(
+            proxyParticipantId, providerParticipantId, qos, request, isLocalMessage);
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
@@ -357,6 +353,13 @@ TEST_F(DispatcherTest, requestWithInvalidEffort_replyUsesDefaultEffort)
                                              joynr::exceptions::ProviderRuntimeException>&)>>()))
             .WillOnce(Invoke(this, &DispatcherTest::invokeOnSuccessWithGpsLocation));
 
+    const boost::optional<MessagingQosEffort::Enum> expectedEffort;
+    EXPECT_CALL(*mockMessageRouter,
+                route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
+                            MessageUsesEffort(expectedEffort)),
+                      _))
+            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
+
     Request request;
     request.setRequestReplyId(requestReplyId);
     request.setMethodName("getLocation");
@@ -365,13 +368,6 @@ TEST_F(DispatcherTest, requestWithInvalidEffort_replyUsesDefaultEffort)
             proxyParticipantId, providerParticipantId, qos, request, isLocalMessage);
 
     mutableMessage.setEffort("INVALID_EFFORT");
-
-    const boost::optional<MessagingQosEffort::Enum> expectedEffort;
-    EXPECT_CALL(*mockMessageRouter,
-                route(AllOf(MessageHasType(joynr::Message::VALUE_MESSAGE_TYPE_REPLY()),
-                            MessageUsesEffort(expectedEffort)),
-                      _))
-            .WillOnce(ReleaseSemaphore(getLocationCalledSemaphore));
 
     dispatcher->addRequestCaller(providerParticipantId, mockRequestCaller);
     dispatcher->receive(mutableMessage.getImmutableMessage());
