@@ -329,13 +329,13 @@
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy</artifactId>
 				<type>jar</type>
-				<version>1.12.4</version>
+				<version>1.12.14</version>
 			</dependency>
 			<dependency>
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy-agent</artifactId>
 				<type>jar</type>
-				<version>1.12.4</version>
+				<version>1.12.14</version>
 			</dependency>
 			<dependency>
 				<groupId>net.jodah</groupId>
@@ -749,7 +749,13 @@
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
 				<type>jar</type>
-				<version>4.2.0</version>
+				<version>4.8.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-inline</artifactId>
+				<type>jar</type>
+				<version>4.8.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.objenesis</groupId>
