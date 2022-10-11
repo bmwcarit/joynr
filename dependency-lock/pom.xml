@@ -563,127 +563,127 @@
 				<groupId>org.jboss.arquillian.config</groupId>
 				<artifactId>arquillian-config-api</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.config</groupId>
 				<artifactId>arquillian-config-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.config</groupId>
 				<artifactId>arquillian-config-spi</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-spi</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-test-api</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-test-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-test-spi</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.core</groupId>
 				<artifactId>arquillian-core-api</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.core</groupId>
 				<artifactId>arquillian-core-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.core</groupId>
 				<artifactId>arquillian-core-spi</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.junit</groupId>
 				<artifactId>arquillian-junit-container</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.junit</groupId>
 				<artifactId>arquillian-junit-core</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.protocol</groupId>
 				<artifactId>arquillian-protocol-servlet</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.test</groupId>
 				<artifactId>arquillian-test-api</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.test</groupId>
 				<artifactId>arquillian-test-impl-base</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.test</groupId>
 				<artifactId>arquillian-test-spi</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.testenricher</groupId>
 				<artifactId>arquillian-testenricher-cdi</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.testenricher</groupId>
 				<artifactId>arquillian-testenricher-ejb</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.testenricher</groupId>
 				<artifactId>arquillian-testenricher-initialcontext</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.testenricher</groupId>
 				<artifactId>arquillian-testenricher-resource</artifactId>
 				<type>jar</type>
-				<version>1.6.0.Final</version>
+				<version>1.7.0.Alpha12</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.logging</groupId>
