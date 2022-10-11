@@ -22,10 +22,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +45,15 @@ import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.statusmetrics.ConnectionStatusMetrics;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
+import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory.ResubscribeHandler;
+import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory.DisconnectedListener;
+
+import com.hivemq.client.mqtt.exceptions.ConnectionFailedException;
+import com.hivemq.client.mqtt.lifecycle.MqttClientConnectedContext;
+import com.hivemq.client.mqtt.lifecycle.MqttClientDisconnectedContext;
+import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5ConnAckException;
+import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5DisconnectException;
 
 public class HivemqMqttClientFactoryTest {
 
@@ -63,6 +75,10 @@ public class HivemqMqttClientFactoryTest {
     private ShutdownNotifier mockShutdownNotifier;
     @Mock
     private IHivemqMqttClientTrustManagerFactory trustManagerFactory;
+    @Mock
+    private MqttClientDisconnectedContext mockMqttClientDisconnectedContext;
+    @Mock
+    private MqttClientConnectedContext mockMqttClientConnectedcontext;
 
     List<HivemqMqttClient> receivers = new ArrayList<>();
     List<HivemqMqttClient> senders = new ArrayList<>();
@@ -183,4 +199,81 @@ public class HivemqMqttClientFactoryTest {
         }
     }
 
+    @Test
+    public void initializeDisconnectListener() {
+        ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
+        DisconnectedListener disconnectedListener = new DisconnectedListener(connectionStatusMetrics);
+        assertNotNull(disconnectedListener);
+    }
+
+    @Test
+    public void testOnDisconnectWithDisconnect() {
+        ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
+        DisconnectedListener disconnectedListener = new DisconnectedListener(connectionStatusMetrics);
+        Mqtt5DisconnectException disconnectException = mock(Mqtt5DisconnectException.class);
+        when(mockMqttClientDisconnectedContext.getCause()).thenReturn(disconnectException);
+
+        disconnectedListener.onDisconnected(mockMqttClientDisconnectedContext);
+
+        assertFalse(connectionStatusMetrics.isConnected());
+        assertEquals(1, connectionStatusMetrics.getConnectionDrops());
+    }
+
+    @Test
+    public void testOnDisconnectWithConnAck() {
+        ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
+        DisconnectedListener disconnectedListener = new DisconnectedListener(connectionStatusMetrics);
+        Mqtt5ConnAckException connAckException = mock(Mqtt5ConnAckException.class);
+        when(mockMqttClientDisconnectedContext.getCause()).thenReturn(connAckException);
+
+        disconnectedListener.onDisconnected(mockMqttClientDisconnectedContext);
+
+        assertFalse(connectionStatusMetrics.isConnected());
+        assertEquals(1, connectionStatusMetrics.getConnectionDrops());
+    }
+
+    @Test
+    public void testOnDisconnectWithNull() {
+        ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
+        DisconnectedListener disconnectedListener = new DisconnectedListener(connectionStatusMetrics);
+        when(mockMqttClientDisconnectedContext.getCause()).thenReturn(null);
+
+        disconnectedListener.onDisconnected(mockMqttClientDisconnectedContext);
+
+        assertFalse(connectionStatusMetrics.isConnected());
+        assertEquals(1, connectionStatusMetrics.getConnectionDrops());
+    }
+
+    @Test
+    public void testOnDisconnectWithConnectionFailed() {
+        ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
+        DisconnectedListener disconnectedListener = new DisconnectedListener(connectionStatusMetrics);
+        ConnectionFailedException connectionFailedException = mock(ConnectionFailedException.class);
+        when(mockMqttClientDisconnectedContext.getCause()).thenReturn(connectionFailedException);
+
+        disconnectedListener.onDisconnected(mockMqttClientDisconnectedContext);
+
+        assertFalse(connectionStatusMetrics.isConnected());
+        assertEquals(1, connectionStatusMetrics.getConnectionDrops());
+    }
+
+    @Test
+    public void initializeResubscribeHandler() {
+        ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
+        ResubscribeHandler resubscribeHandler = new ResubscribeHandler(connectionStatusMetrics);
+        assertNotNull(resubscribeHandler);
+    }
+
+    @Test
+    public void testResubscribeHandlerSetClient() {
+        ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
+        ResubscribeHandler resubscribeHandler = new ResubscribeHandler(connectionStatusMetrics);
+        HivemqMqttClient client = mock(HivemqMqttClient.class);
+        resubscribeHandler.setClient(client);
+
+        resubscribeHandler.onConnected(mockMqttClientConnectedcontext);
+
+        verify(client).resubscribe();
+        assertTrue(connectionStatusMetrics.isConnected());
+    }
 }
