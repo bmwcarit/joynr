@@ -36,7 +36,6 @@ public class MessageQueue {
     private static final Logger logger = LoggerFactory.getLogger(MessageQueue.class);
 
     public static final String PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT = "io.joynr.messaging.queue.shutdown.timeout";
-    private static final long STARTUP_GRACE_PERIOD_MS = 1000;
 
     private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
     private final long shutdownTimeoutMs;
