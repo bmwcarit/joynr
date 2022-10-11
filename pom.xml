@@ -431,6 +431,7 @@
 		<jacoco.version>0.8.7</jacoco.version>
 		<sonarsource.version>3.9.1.2184</sonarsource.version>
 		<surefire.version>3.0.0-M3</surefire.version>
+		<ow2_asm.version>9.4</ow2_asm.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
 	</properties>
 
@@ -974,6 +975,30 @@
 				<artifactId>jakarta.annotation-api</artifactId>
 				<type>jar</type>
 				<version>2.1.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm</artifactId>
+				<type>jar</type>
+				<version>${ow2_asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-analysis</artifactId>
+				<type>jar</type>
+				<version>${ow2_asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-commons</artifactId>
+				<type>jar</type>
+				<version>${ow2_asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-tree</artifactId>
+				<type>jar</type>
+				<version>${ow2_asm.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
