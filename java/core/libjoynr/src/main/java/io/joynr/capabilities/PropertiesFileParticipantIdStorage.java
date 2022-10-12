@@ -107,7 +107,8 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         String participantId;
         synchronized (persistedParticipantIds) {
             participantId = createUuidString();
-            if (persistedParticipantIds.putIfAbsent(token, participantId) == null) {
+            Object previousParticipantId = persistedParticipantIds.putIfAbsent(token, participantId);
+            if (previousParticipantId == null) {
                 FileOutputStream fileOutputStream = null;
                 try {
                     fileOutputStream = new FileOutputStream(persistenceFileName);
@@ -124,6 +125,8 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
                         }
                     }
                 }
+            } else {
+                participantId = (String) previousParticipantId;
             }
         }
         return participantId;
