@@ -826,89 +826,6 @@ public class MyHealthCheck {
 }
 ```
 
-## Overriding Jackson library used at runtime
-
-The following information only applies to Glassfish / Payara 4.1.
-
-### glassfish-web.xml
-
-joynr ships with a newer version of Jackson than is used by Glassfish / Payara 4.1.
-Generally, this shouldn't be a problem. If, however, you observe errors relating
-to the JSON serialisation, try setting up your WAR to use the Jackson libraries
-shipped with joynr.
-
-In order to do this, you must provide the following content in the
-`glassfish-web.xml` file (situated in the `WEB-INF` folder of your WAR):
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN"
-    "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
-<glassfish-web-app>
-  <class-loader delegate="false" />
-</glassfish-web-app>
-```
-
-... here, the `<class-loader delegate="false" />` part is the relevant bit.
-
-### Deactivate MoxyJson
-
-Apparently Glassfish / Payara 4.1 ships with MoxyJson which may cause problems like
-the following, when you try to parse JSON within your application.
-
-    [2016-09-01T16:27:37.782+0200] [Payara 4.1] [SEVERE] []   [org.glassfish.jersey.message.internal.WriterInterceptorExecutor] [tid: _ThreadID=28 _ThreadName=http-listener-1(3)] [timeMillis: 1472740057782] [levelValue: 1000] [[MessageBodyWriter not found for media type=application/json, type=class xxx.JsonClass, genericType=class xxx.JsonClass.]]
-
-To integrate your own dependency you need to disable the MoxyJson with the below code.
-
-```java
-@ApplicationPath("/")
-public class ApplicationConfig extends Application {
-
-  @Override
-  public Map<String, Object> getProperties() {
-    final Map<String, Object> properties = new HashMap<String, Object>();
-    properties.put("jersey.config.server.disableMoxyJson", true);
-
-    return properties;
-  }
-}
-```
-
-Then add your own dependencies, e.g. in this case only the following because the others
-are referenced by the joynr lib itself. Be aware to check the version of the joynr
-referenced libs.
-
-```xml
-<dependency>
-  <groupId>com.fasterxml.jackson.jaxrs</groupId>
-  <artifactId>jackson-jaxrs-json-provider</artifactId>
-  <version>2.9.8</version>
-</dependency>
-<dependency>
-  <groupId>com.fasterxml.jackson.dataformat</groupId>
-  <artifactId>jackson-dataformat-xml</artifactId>
-  <version>2.9.8</version>
-</dependency>
-```
-
-Finally in case you're using JSON: Not setting a value to the @JsonProperty annotations
-will cause a NoMessageBodyWriter found exception. To avoid that use the following on
-relevant getters of your class.
-
-```java
-@JsonProperty("randomName")
-public String getRandomName(){
-...
-}
-```
-
-Here are some references:
-
-* [Moxy in general](https://blogs.oracle.com/theaquarium/entry/moxy_is_the_new_default)
-* [Jersey configuration reference](https://jersey.github.io/documentation/latest/appendix-properties.html)
-* [Jersey deployment reference](https://jersey.github.io/documentation/latest/deployment.html)
-* [Payara blog re. JEE Microservices](http://blog.payara.fish/building-restful-java-ee-microservices-with-payara-embedded)
-
 ## Message Processors
 
 By providing EJBs (or CDI Beans) which implement the `JoynrMessageProcessor` interface
@@ -1023,3 +940,86 @@ You'll also likely want to change the way the FIDL file is included in the API p
 example it is obtained from the `radio-app` Maven dependency, but you will probably want to have it
 in, e.g., `${project.root}/my-api/src/main/model/my.fidl`, and then reference that file directly
 in the generator configuration. See the [joynr Generator Documentation](generator.md) for details.
+
+## Overriding Jackson library used at runtime
+
+The following information only applies to Glassfish / Payara 4.1.
+
+### glassfish-web.xml
+
+joynr ships with a newer version of Jackson than is used by Glassfish / Payara 4.1.
+Generally, this shouldn't be a problem. If, however, you observe errors relating
+to the JSON serialisation, try setting up your WAR to use the Jackson libraries
+shipped with joynr.
+
+In order to do this, you must provide the following content in the
+`glassfish-web.xml` file (situated in the `WEB-INF` folder of your WAR):
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glassfish-web-app PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN"
+    "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd">
+<glassfish-web-app>
+  <class-loader delegate="false" />
+</glassfish-web-app>
+```
+
+... here, the `<class-loader delegate="false" />` part is the relevant bit.
+
+### Deactivate MoxyJson
+
+Apparently Glassfish / Payara 4.1 ships with MoxyJson which may cause problems like
+the following, when you try to parse JSON within your application.
+
+    [2016-09-01T16:27:37.782+0200] [Payara 4.1] [SEVERE] []   [org.glassfish.jersey.message.internal.WriterInterceptorExecutor] [tid: _ThreadID=28 _ThreadName=http-listener-1(3)] [timeMillis: 1472740057782] [levelValue: 1000] [[MessageBodyWriter not found for media type=application/json, type=class xxx.JsonClass, genericType=class xxx.JsonClass.]]
+
+To integrate your own dependency you need to disable the MoxyJson with the below code.
+
+```java
+@ApplicationPath("/")
+public class ApplicationConfig extends Application {
+
+  @Override
+  public Map<String, Object> getProperties() {
+    final Map<String, Object> properties = new HashMap<String, Object>();
+    properties.put("jersey.config.server.disableMoxyJson", true);
+
+    return properties;
+  }
+}
+```
+
+Then add your own dependencies, e.g. in this case only the following because the others
+are referenced by the joynr lib itself. Be aware to check the version of the joynr
+referenced libs.
+
+```xml
+<dependency>
+  <groupId>com.fasterxml.jackson.jaxrs</groupId>
+  <artifactId>jackson-jaxrs-json-provider</artifactId>
+  <version>2.9.8</version>
+</dependency>
+<dependency>
+  <groupId>com.fasterxml.jackson.dataformat</groupId>
+  <artifactId>jackson-dataformat-xml</artifactId>
+  <version>2.9.8</version>
+</dependency>
+```
+
+Finally in case you're using JSON: Not setting a value to the @JsonProperty annotations
+will cause a NoMessageBodyWriter found exception. To avoid that use the following on
+relevant getters of your class.
+
+```java
+@JsonProperty("randomName")
+public String getRandomName(){
+...
+}
+```
+
+Here are some references:
+
+* [Moxy in general](https://blogs.oracle.com/theaquarium/entry/moxy_is_the_new_default)
+* [Jersey configuration reference](https://jersey.github.io/documentation/latest/appendix-properties.html)
+* [Jersey deployment reference](https://jersey.github.io/documentation/latest/deployment.html)
+* [Payara blog re. JEE Microservices](http://blog.payara.fish/building-restful-java-ee-microservices-with-payara-embedded)
