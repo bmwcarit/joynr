@@ -127,9 +127,11 @@ public:
             }
         }
 
+        // dispatcher is captured here to avoid compilation problem with gcc 7.x
         auto onSuccessWrapper = [domain,
                                  interfaceName,
                                  majorVersion = T::MAJOR_VERSION,
+                                 dispatcher = this->_dispatcher,
                                  caller,
                                  participantIdStorage = util::as_weak_ptr(_participantIdStorage),
                                  messageRouter = util::as_weak_ptr(_messageRouter),
