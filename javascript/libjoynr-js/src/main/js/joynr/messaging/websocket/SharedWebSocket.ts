@@ -46,7 +46,7 @@ function webSocketAddressToUrl(address: WebSocketAddress): string {
 interface SharedWebSocketSettings {
     localAddress: WebSocketClientAddress;
     remoteAddress: WebSocketAddress;
-    provisioning: { reconnectSleepTimeMs?: number; useUnencryptedTls?: boolean };
+    provisioning: { reconnectSleepTimeMs?: number };
     keychain: any;
 }
 
@@ -67,7 +67,6 @@ class SharedWebSocket {
     private onmessageCallback: any = null;
     private remoteUrl: any;
     private localAddress: WebSocketClientAddress;
-    private useUnencryptedTls: boolean; // default to unencrypted Tls communication
     private reconnectSleepTimeMs: number; // default value = 1000ms
     private websocket: WebSocketNode | null = null;
     private keychain: any;
@@ -85,7 +84,6 @@ class SharedWebSocket {
     public constructor(settings: SharedWebSocketSettings) {
         settings.provisioning = settings.provisioning || {};
         this.reconnectSleepTimeMs = settings.provisioning.reconnectSleepTimeMs || 1000;
-        this.useUnencryptedTls = settings.provisioning.useUnencryptedTls !== false;
         this.localAddress = settings.localAddress;
         this.remoteUrl = webSocketAddressToUrl(settings.remoteAddress);
         this.webSocketSendAsync = util.promisify((marshaledMessage: Buffer, cb: any) =>
@@ -141,7 +139,7 @@ class SharedWebSocket {
         if (this.closed) {
             return;
         }
-        this.websocket = new WebSocketNode(this.remoteUrl, this.keychain, this.useUnencryptedTls);
+        this.websocket = new WebSocketNode(this.remoteUrl, this.keychain);
         this.websocket.onopen = this.onOpen;
         this.websocket.onclose = this.onClose;
         this.websocket.onerror = this.onError;

@@ -42,8 +42,7 @@ public:
             const system::RoutingTypes::WebSocketAddress& serverAddress,
             const std::string& caPemFile,
             const std::string& certPemFile,
-            const std::string& privateKeyPemFile,
-            bool /*useEncryptedTls*/);
+            const std::string& privateKeyPemFile);
 
     virtual void init() override;
 

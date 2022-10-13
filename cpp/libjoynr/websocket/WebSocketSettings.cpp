@@ -39,10 +39,6 @@ void WebSocketSettings::checkSettings()
 {
     assert(_settings.contains(SETTING_CC_MESSAGING_URL()));
     assert(_settings.contains(SETTING_RECONNECT_SLEEP_TIME_MS()));
-
-    if (!_settings.contains(SETTING_TLS_ENCRYPTION())) {
-        setEncryptedTlsUsage(DEFAULT_TLS_ENCRYPTION());
-    }
 }
 
 const std::string& WebSocketSettings::SETTING_CC_MESSAGING_URL()
@@ -75,21 +71,10 @@ const std::string& WebSocketSettings::SETTING_PRIVATE_KEY_PEM_FILENAME()
     return value;
 }
 
-const std::string& WebSocketSettings::SETTING_TLS_ENCRYPTION()
-{
-    static const std::string value("websocket/tls-encryption");
-    return value;
-}
-
 const std::string& WebSocketSettings::DEFAULT_WEBSOCKET_SETTINGS_FILENAME()
 {
     static const std::string value("default-websocket.settings");
     return value;
-}
-
-bool WebSocketSettings::DEFAULT_TLS_ENCRYPTION()
-{
-    return true;
 }
 
 std::string WebSocketSettings::getClusterControllerMessagingUrl() const
@@ -120,16 +105,6 @@ joynr::system::RoutingTypes::WebSocketAddress WebSocketSettings::
 
     return system::RoutingTypes::WebSocketAddress(
             protocol, url.getHost(), url.getPort(), url.getPath());
-}
-
-bool WebSocketSettings::getEncryptedTlsUsage() const
-{
-    return _settings.get<bool>(WebSocketSettings::SETTING_TLS_ENCRYPTION());
-}
-
-void WebSocketSettings::setEncryptedTlsUsage(bool encryptedTls)
-{
-    _settings.set(WebSocketSettings::SETTING_TLS_ENCRYPTION(), encryptedTls);
 }
 
 std::chrono::milliseconds WebSocketSettings::getReconnectSleepTimeMs() const
@@ -202,11 +177,6 @@ void WebSocketSettings::printSettings() const
                    "SETTING: {} = {}",
                    SETTING_PRIVATE_KEY_PEM_FILENAME(),
                    _settings.get<std::string>(SETTING_PRIVATE_KEY_PEM_FILENAME()));
-
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_TLS_ENCRYPTION(),
-                   _settings.get<std::string>(SETTING_TLS_ENCRYPTION()));
 }
 
 } // namespace joynr

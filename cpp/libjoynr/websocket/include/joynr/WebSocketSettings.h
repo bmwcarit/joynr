@@ -45,10 +45,8 @@ public:
     static const std::string& SETTING_CERTIFICATE_AUTHORITY_PEM_FILENAME();
     static const std::string& SETTING_CERTIFICATE_PEM_FILENAME();
     static const std::string& SETTING_PRIVATE_KEY_PEM_FILENAME();
-    static const std::string& SETTING_TLS_ENCRYPTION();
 
     static const std::string& DEFAULT_WEBSOCKET_SETTINGS_FILENAME();
-    static bool DEFAULT_TLS_ENCRYPTION();
 
     explicit WebSocketSettings(Settings& settings);
     WebSocketSettings(const WebSocketSettings&) = default;
@@ -62,9 +60,6 @@ public:
 
     std::chrono::milliseconds getReconnectSleepTimeMs() const;
     void setReconnectSleepTimeMs(const std::chrono::milliseconds reconnectSleepTimeMs);
-
-    bool getEncryptedTlsUsage() const;
-    void setEncryptedTlsUsage(bool encryptedTls);
 
     /*************************************************************************************
      * The certificate / key properties are only used internally and may be removed later
