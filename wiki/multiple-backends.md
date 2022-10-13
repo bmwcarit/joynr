@@ -66,10 +66,6 @@ MQTT specific settings for multiple backends:
       `messaging/additional-backend-1-mqtt-keep-alive-time-seconds`, etc.
 * connection timeout ***OPTIONAL, default=60***:
   * Java: [PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC](JavaSettings.md#property_key_mqtt_connection_timeouts_sec)
-  * C\+\+:
-    * setting for first broker: `messaging/mqtt-connection-timeout-ms`
-    * additional brokers: `messaging/additional-backend-0-mqtt-connection-timeout-ms`,
-      `messaging/additional-backend-1-mqtt-connection-timeout-ms`, etc.
 
 
 ## (Global) Provider registration with multiple backends

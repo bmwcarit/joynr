@@ -10,11 +10,8 @@ capabilities-directory-participantid=capabilitiesdirectory_participantid
 mqtt-keep-alive-time-seconds=60
 mqtt-reconnect-sleep-time-ms=1000
 
-index=0
 send-msg-retry-interval=500
 persistence-file=joynr.settings
-broker-timeout=
-max-send-ttl=
 
 [uds]
 socket-path=./uds-libjoynr-ilt.sock

@@ -18,16 +18,8 @@ gbid=joynrdefaultgbid
 additional-backend-0-broker-url=mqtt://mqttbroker-2:1883/
 additional-backend-0-gbid=othergbid
 additional-backend-0-mqtt-keep-alive-time-seconds=60
-additional-backend-0-mqtt-connection-timeout-ms=1000
 
 discovery-directories-domain=io.joynr
-# TTL in msecs of messages used in communication between local discovery service and backend
-# discovery service.
-# If backend discovery service is not available at the time the provider is registered, the provider
-# will be added anyway to the backend discovery if the backend discovery service becomes available
-# within the TTL.
-# 1814400 = 21 days
-discovery-messages-ttl=1814400
 
 capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"joynrdefaultgbid","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
@@ -39,11 +31,8 @@ mqtt-keep-alive-time-seconds=60
 mqtt-reconnect-sleep-time-ms=1000
 
 
-index=0
 send-msg-retry-interval=500
 persistence-file=joynr.settings
-broker-timeout=
-max-send-ttl=
 
 [websocket]
 certificate-authority-pem-filename=/data/ssl-data/certs/ca.cert.pem

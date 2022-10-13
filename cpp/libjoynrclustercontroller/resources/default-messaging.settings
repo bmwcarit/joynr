@@ -18,13 +18,6 @@ discovery-entry-expiry-interval-ms=3628800000
 broker-url=mqtt://@JOYNR_SERVER_HOST@:@JOYNR_SERVER_MQTT_PORT@/
 
 discovery-directories-domain=io.joynr
-# TTL in msecs of messages used in communication between local discovery service and backend
-# discovery service.
-# If backend discovery service is not available at the time the provider is registered, the provider
-# will be added anyway to the backend discovery if the backend discovery service becomes available
-# within the TTL.
-# 1814400000 = 21 days
-discovery-messages-ttl=1814400000
 
 capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"@JOYNR_DEFAULT_GBID@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
@@ -39,8 +32,6 @@ mqtt-connection-timeout-ms=1000
 
 send-msg-retry-interval=500
 persistence-file=joynr.settings
-broker-timeout=
-max-send-ttl=
 
 # Default setting for the discoveryTimeoutMs value of joynr::DiscoveryQos
 # when no specific setting has been provided per API call.

@@ -171,7 +171,8 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, registerAndRetrieveCapability
             };
 
     JOYNR_LOG_DEBUG(logger(), "get capabilities");
-    std::int64_t defaultDiscoveryMessageTtl = messagingSettings.getDiscoveryMessagesTtl();
+    // 40 seconds
+    std::int64_t defaultDiscoveryMessageTtl = 40000;
     globalCapabilitiesDirectoryClient->lookup(
             {capDomain},
             capInterface,

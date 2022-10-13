@@ -2,6 +2,62 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.21.6
+
+## API relevant changes
+* **[C++]** The following configuration related APIs have been removed in MessagingSettings:
+  * `MessagingSettings::getClientCertificate()`
+  * `MessagingSettings::setClientCertificate(...)`
+  * `MessagingSettings::SETTING_CLIENT_CERTIFICATE()`
+  * `MessagingSettings::getClientCertificatePassword()`
+  * `MessagingSettings::setClientCertificatePassword(...)`
+  * `MessagingSettings::SETTING_CLIENT_CERTIFICATE_PASSWORD()`
+  * `MessagingSettings::getMqttConnectionTimeoutMs()`
+  * `MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()`
+  * `MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS`
+  * `MessagingSettings::getAdditionalBackendMqttConnectionTimeoutMs()`
+  * `MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS()`
+  * `MessagingSettings::getIndex()`
+  * `MessagingSettings::setIndex(...)`
+  * `MessagingSettings::SETTING_INDEX()`
+  * `MessagingSettings::getBrokerTimeoutMs()`
+  * `MessagingSettings::setBrokerTimeoutMs(...)`
+  * `MessagingSettings::SETTING_BROKER_TIMEOUT_MS()`
+  * `MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()`
+  * `MessagingSettings::getDiscoveryMessagesTtl()`
+  * `MessagingSettings::setDiscoveryMessagesTtl(...)`
+  * `MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()`
+  * `MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS`
+  * `MessagingSettings::getSendMsgMaxTtl()`
+  * `MessagingSettings::setSendMsgMaxTtl(...)`
+  * `MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()`
+  * `MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()`
+  * `MessagingSettings::SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES()`
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+* **[C++]** The following settings have been removed and will be ignored, if present:
+```
+  [messaging]
+  index
+  broker-timeout
+  max-send-ttl
+  mqtt-connection-timeout-ms
+  additional-backend-mqtt-connection-timeout-ms
+  discovery-messages-ttl
+  client-certificate-password
+  client-certificate
+  max-send-ttl
+```
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.21.5
 
 ## API relevant changes

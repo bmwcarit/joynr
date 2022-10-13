@@ -75,15 +75,6 @@ std::string MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_S
     return concatenatedValue;
 }
 
-std::string MessagingSettings::SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(
-        std::uint8_t index)
-{
-    static const std::string valueSection("messaging/additional-backend-");
-    static const std::string valueName("-mqtt-connection-timeout-ms");
-    const std::string concatenatedValue = valueSection + std::to_string(index) + valueName;
-    return concatenatedValue;
-}
-
 const std::string& MessagingSettings::SETTING_DISCOVERY_DIRECTORIES_DOMAIN()
 {
     static const std::string value("messaging/discovery-directories-domain");
@@ -105,18 +96,6 @@ const std::string& MessagingSettings::SETTING_CAPABILITIES_DIRECTORY_PARTICIPANT
 const std::string& MessagingSettings::SETTING_CERTIFICATE_AUTHORITY()
 {
     static const std::string value("messaging/certificate-authority");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_CLIENT_CERTIFICATE()
-{
-    static const std::string value("messaging/client-certificate");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_CLIENT_CERTIFICATE_PASSWORD()
-{
-    static const std::string value("messaging/client-certificate-password");
     return value;
 }
 
@@ -150,21 +129,9 @@ const std::string& MessagingSettings::SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_MQTT_CONNECTION_TIMEOUT_MS()
-{
-    static const std::string value("messaging/mqtt-connection-timeout-ms");
-    return value;
-}
-
 const std::string& MessagingSettings::SETTING_DISCARD_UNROUTABLE_REPLIES_AND_PUBLICATIONS()
 {
     static const std::string value("messaging/discard-unroutable-replies-and-publications");
-    return value;
-}
-
-std::chrono::milliseconds MessagingSettings::DEFAULT_MQTT_CONNECTION_TIMEOUT_MS()
-{
-    static const std::chrono::milliseconds value(1000);
     return value;
 }
 
@@ -177,12 +144,6 @@ std::chrono::seconds MessagingSettings::DEFAULT_MQTT_RECONNECT_DELAY_TIME_SECOND
 bool MessagingSettings::DEFAULT_MQTT_ENABLED()
 {
     static const bool value = false;
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_INDEX()
-{
-    static const std::string value("messaging/index");
     return value;
 }
 
@@ -214,26 +175,6 @@ void MessagingSettings::setCertificateAuthority(const std::string& certificateAu
     _settings.set(SETTING_CERTIFICATE_AUTHORITY(), certificateAuthority);
 }
 
-std::string MessagingSettings::getClientCertificate() const
-{
-    return _settings.get<std::string>(SETTING_CLIENT_CERTIFICATE());
-}
-
-void MessagingSettings::setClientCertificate(const std::string& clientCertificate)
-{
-    _settings.set(SETTING_CLIENT_CERTIFICATE(), clientCertificate);
-}
-
-std::string MessagingSettings::getClientCertificatePassword() const
-{
-    return _settings.get<std::string>(SETTING_CLIENT_CERTIFICATE_PASSWORD());
-}
-
-void MessagingSettings::setClientCertificatePassword(const std::string& clientCertificatePassword)
-{
-    _settings.set(SETTING_CLIENT_CERTIFICATE_PASSWORD(), clientCertificatePassword);
-}
-
 const std::string& MessagingSettings::DEFAULT_GBID()
 {
     static const std::string value("joynrdefaultgbid");
@@ -249,12 +190,6 @@ const std::string& MessagingSettings::DEFAULT_MESSAGING_SETTINGS_FILENAME()
 const std::string& MessagingSettings::DEFAULT_PERSISTENCE_FILENAME()
 {
     static const std::string value("joynr.settings");
-    return value;
-}
-
-const std::string& MessagingSettings::SETTING_BROKER_TIMEOUT_MS()
-{
-    static const std::string value("messaging/broker-timeout");
     return value;
 }
 
@@ -282,12 +217,6 @@ const std::string& MessagingSettings::SETTING_ROUTING_TABLE_CLEANUP_INTERVAL_MS(
     return value;
 }
 
-std::int64_t MessagingSettings::DEFAULT_BROKER_TIMEOUT_MS()
-{
-    // 20 seconds
-    return (20 * 1000);
-}
-
 std::int64_t MessagingSettings::DEFAULT_DISCOVERY_DEFAULT_TIMEOUT_MS()
 {
     // 10 minutes
@@ -312,18 +241,6 @@ const std::string& MessagingSettings::SETTING_MAXIMUM_TTL_MS()
     return value;
 }
 
-const std::string& MessagingSettings::SETTING_DISCOVERY_MESSAGES_TTL_MS()
-{
-    static const std::string value("messaging/discovery-messages-ttl");
-    return value;
-}
-
-std::int64_t MessagingSettings::DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS()
-{
-    // 40 seconds
-    return (40 * 1000);
-}
-
 std::int64_t MessagingSettings::DEFAULT_ROUTING_TABLE_GRACE_PERIOD_MS()
 {
     // 60 seconds
@@ -334,18 +251,6 @@ std::int64_t MessagingSettings::DEFAULT_ROUTING_TABLE_CLEANUP_INTERVAL_MS()
 {
     // 60 seconds
     return (60 * 1000);
-}
-
-const std::string& MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()
-{
-    static const std::string value("messaging/max-send-ttl");
-    return value;
-}
-
-std::int64_t MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()
-{
-    // 10 minutes
-    return (10 * 60 * 1000);
 }
 
 std::uint64_t MessagingSettings::DEFAULT_TTL_UPLIFT_MS()
@@ -439,13 +344,6 @@ void MessagingSettings::setAdditionalBackendMqttKeepAliveTimeSeconds(
                   mqttKeepAliveTimeSeconds.count());
 }
 
-std::chrono::milliseconds MessagingSettings::getAdditionalBackendMqttConnectionTimeoutMs(
-        std::uint8_t index) const
-{
-    return std::chrono::milliseconds(_settings.get<std::int64_t>(
-            SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)));
-}
-
 std::string MessagingSettings::getDiscoveryDirectoriesDomain() const
 {
     return _settings.get<std::string>(SETTING_DISCOVERY_DIRECTORIES_DOMAIN());
@@ -496,22 +394,6 @@ void MessagingSettings::setMqttReconnectMaxDelayTimeSeconds(
     _settings.set(SETTING_MQTT_RECONNECT_MAX_DELAY(), mqttReconnectMaxDelayTimeSeconds.count());
 }
 
-std::chrono::milliseconds MessagingSettings::getMqttConnectionTimeoutMs() const
-{
-    return std::chrono::milliseconds(
-            _settings.get<std::int64_t>(SETTING_MQTT_CONNECTION_TIMEOUT_MS()));
-}
-
-std::int64_t MessagingSettings::getIndex() const
-{
-    return _settings.get<std::int64_t>(SETTING_INDEX());
-}
-
-void MessagingSettings::setIndex(std::int64_t index)
-{
-    _settings.set(SETTING_INDEX(), index);
-}
-
 std::int64_t MessagingSettings::getDiscoveryEntryExpiryIntervalMs() const
 {
     return _settings.get<std::int64_t>(SETTING_DISCOVERY_ENTRY_EXPIRY_INTERVAL_MS());
@@ -552,16 +434,6 @@ void MessagingSettings::setMessagingPropertiesPersistenceFilename(const std::str
     _settings.set(SETTING_PERSISTENCE_FILENAME(), filename);
 }
 
-std::int64_t MessagingSettings::getBrokerTimeoutMs() const
-{
-    return _settings.get<std::int64_t>(SETTING_BROKER_TIMEOUT_MS());
-}
-
-void MessagingSettings::setBrokerTimeoutMs(std::int64_t timeout_ms)
-{
-    _settings.set(SETTING_BROKER_TIMEOUT_MS(), timeout_ms);
-}
-
 std::uint64_t MessagingSettings::getMaximumTtlMs() const
 {
     return _settings.get<std::uint64_t>(SETTING_MAXIMUM_TTL_MS());
@@ -570,26 +442,6 @@ std::uint64_t MessagingSettings::getMaximumTtlMs() const
 void MessagingSettings::setMaximumTtlMs(std::uint64_t maximumTtlMs)
 {
     _settings.set(SETTING_MAXIMUM_TTL_MS(), maximumTtlMs);
-}
-
-std::int64_t MessagingSettings::getDiscoveryMessagesTtl() const
-{
-    return _settings.get<std::int64_t>(SETTING_DISCOVERY_MESSAGES_TTL_MS());
-}
-
-void MessagingSettings::setDiscoveryMessagesTtl(std::int64_t ttl_ms)
-{
-    _settings.set(SETTING_DISCOVERY_MESSAGES_TTL_MS(), ttl_ms);
-}
-
-std::int64_t MessagingSettings::getSendMsgMaxTtl() const
-{
-    return _settings.get<std::int64_t>(SETTING_SEND_MESSAGE_MAX_TTL());
-}
-
-void MessagingSettings::setSendMsgMaxTtl(std::int64_t ttl_ms)
-{
-    _settings.set(SETTING_SEND_MESSAGE_MAX_TTL(), ttl_ms);
 }
 
 void MessagingSettings::setTtlUpliftMs(std::uint64_t ttlUpliftMs)
@@ -689,21 +541,11 @@ void MessagingSettings::checkSettings()
     if (!_settings.contains(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED())) {
         _settings.set(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED(), DEFAULT_MQTT_ENABLED());
     }
-    if (!_settings.contains(SETTING_MQTT_CONNECTION_TIMEOUT_MS())) {
-        _settings.set(
-                SETTING_MQTT_CONNECTION_TIMEOUT_MS(), DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
-    }
-    if (!_settings.contains(SETTING_INDEX())) {
-        _settings.set(SETTING_INDEX(), 0);
-    }
     if (!_settings.contains(SETTING_SEND_MSG_RETRY_INTERVAL())) {
         _settings.set(SETTING_SEND_MSG_RETRY_INTERVAL(), 5000);
     }
     if (!_settings.contains(SETTING_PERSISTENCE_FILENAME())) {
         _settings.set(SETTING_PERSISTENCE_FILENAME(), DEFAULT_PERSISTENCE_FILENAME());
-    }
-    if (!_settings.contains(SETTING_DISCOVERY_MESSAGES_TTL_MS())) {
-        _settings.set(SETTING_DISCOVERY_MESSAGES_TTL_MS(), DEFAULT_DISCOVERY_REQUEST_TIMEOUT_MS());
     }
     if (!_settings.contains(SETTING_MAXIMUM_TTL_MS())) {
         setMaximumTtlMs(DEFAULT_MAXIMUM_TTL_MS());
@@ -750,16 +592,6 @@ void MessagingSettings::checkSettings()
 
 void MessagingSettings::checkAndSetDefaultMqttSettings(std::uint8_t index)
 {
-    if (!_settings.contains(SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index))) {
-        _settings.set(SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index),
-                      DEFAULT_MQTT_CONNECTION_TIMEOUT_MS().count());
-        JOYNR_LOG_TRACE(logger(),
-                        "backend index {}: Setting {} set to default {}",
-                        index,
-                        SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index),
-                        _settings.get<std::string>(
-                                SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)));
-    }
     if (!_settings.contains(SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index))) {
         _settings.set(SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index),
                       DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS().count());
@@ -813,15 +645,12 @@ bool MessagingSettings::checkMultipleBackendsSettings()
         checkAndSetDefaultMqttSettings(index);
 
         JOYNR_LOG_TRACE(logger(),
-                        "Backend Index {}: {} = {}, {} = {}, {} = {}, {} = {}",
+                        "Backend Index {}: {} = {}, {} = {}, {} = {}",
                         index,
                         SETTING_ADDITIONAL_BACKEND_GBID(index),
                         _settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_GBID(index)),
                         SETTING_ADDITIONAL_BACKEND_BROKER_URL(index),
                         _settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)),
-                        SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index),
-                        _settings.get<std::string>(
-                                SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)),
                         SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index),
                         _settings.get<std::string>(
                                 SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index)));
@@ -865,11 +694,6 @@ void MessagingSettings::printAdditionalBackendsSettings() const
                        "SETTING: {} = {}",
                        SETTING_ADDITIONAL_BACKEND_BROKER_URL(index),
                        _settings.get<std::string>(SETTING_ADDITIONAL_BACKEND_BROKER_URL(index)));
-        JOYNR_LOG_INFO(logger(),
-                       "SETTING: {} = {}",
-                       SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index),
-                       _settings.get<std::string>(
-                               SETTING_ADDITIONAL_BACKEND_MQTT_CONNECTION_TIMEOUT_MS(index)));
         JOYNR_LOG_INFO(logger(),
                        "SETTING: {} = {}",
                        SETTING_ADDITIONAL_BACKEND_MQTT_KEEP_ALIVE_TIME_SECONDS(index),
@@ -921,20 +745,12 @@ void MessagingSettings::printSettings() const
                    _settings.get<std::string>(SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
-                   SETTING_INDEX(),
-                   _settings.get<std::string>(SETTING_INDEX()));
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
                    SETTING_SEND_MSG_RETRY_INTERVAL(),
                    _settings.get<std::string>(SETTING_SEND_MSG_RETRY_INTERVAL()));
     JOYNR_LOG_INFO(logger(),
                    "SETTING: {} = {}",
                    SETTING_PERSISTENCE_FILENAME(),
                    _settings.get<std::string>(SETTING_PERSISTENCE_FILENAME()));
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_DISCOVERY_MESSAGES_TTL_MS(),
-                   _settings.get<std::string>(SETTING_DISCOVERY_MESSAGES_TTL_MS()));
     JOYNR_LOG_INFO(logger(), "SETTING: {} = {}", SETTING_MAXIMUM_TTL_MS(), getMaximumTtlMs());
     JOYNR_LOG_INFO(logger(), "SETTING: {} = {}", SETTING_TTL_UPLIFT_MS(), getTtlUpliftMs());
     JOYNR_LOG_INFO(logger(),

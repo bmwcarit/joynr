@@ -4,14 +4,11 @@ gbid=joynrdefaultgbid
 
 additional-backend-0-gbid=additional-gbid-0
 additional-backend-0-mqtt-keep-alive-time-seconds=10
-additional-backend-0-mqtt-connection-timeout-ms=20
 
 additional-backend-1-broker-url=mqtt://additional-backend-host-1:1883/
 additional-backend-1-mqtt-keep-alive-time-seconds=30
-additional-backend-1-mqtt-connection-timeout-ms=40
 
 send-msg-retry-interval=500
-index=0
 
 capabilities-directory-channelid={"_typeName":"joynr.system.RoutingTypes.MqttAddress","brokerUri":"@JOYNR_DEFAULT_GBID@","topic":"discoverydirectory_channelid/low/capabilitiesdirectory_participantid"}
 capabilities-directory-participantid=capabilitiesdirectory_participantid
