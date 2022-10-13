@@ -184,7 +184,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
 
     ON_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
             .WillByDefault(InvokeArgument<5>());
-    bool expectedIsGloballyVisible = true;
+    bool expectedIsGloballyVisible = false;
     EXPECT_CALL(*_mockMessageRouter,
                 addNextHop(Eq(_expectedParticipantId),
                            Eq(_dispatcherAddress),
@@ -193,6 +193,16 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
                            _,
                            _,
                            _));
+    expectedIsGloballyVisible = true;
+    EXPECT_CALL(*_mockMessageRouter,
+                addNextHop(Eq(_expectedParticipantId),
+                           Eq(_dispatcherAddress),
+                           Eq(expectedIsGloballyVisible),
+                           _,
+                           _,
+                           _,
+                           _))
+            .RetiresOnSaturation();
 
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
@@ -203,19 +213,7 @@ TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)
     _capabilitiesRegistrar->addAsync(_domain, _mockProvider, testQos, onSuccess, onError);
     future.get();
 
-    Mock::VerifyAndClearExpectations(_mockMessageRouter.get());
-
     testQos.setScope(types::ProviderScope::LOCAL);
-
-    expectedIsGloballyVisible = false;
-    EXPECT_CALL(*_mockMessageRouter,
-                addNextHop(Eq(_expectedParticipantId),
-                           Eq(_dispatcherAddress),
-                           Eq(expectedIsGloballyVisible),
-                           _,
-                           _,
-                           _,
-                           _));
 
     Future<void> future1;
     auto onSuccess1 = [&future1]() { future1.onSuccess(); };
