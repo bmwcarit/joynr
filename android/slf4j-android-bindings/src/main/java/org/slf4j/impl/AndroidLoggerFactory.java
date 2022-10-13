@@ -105,8 +105,8 @@ public class AndroidLoggerFactory implements ILoggerFactory {
      */
     private String forceValidName(String name) {
         if (name != null && name.length() > TAG_MAX_LENGTH) {
-            final String[] ars = name.split("[.]");
-            name = ars[ars.length - 1];
+            final String[] tokens = name.split("[.]");
+            name = tokens[tokens.length - 1];
 
             // Either we had no useful dot location at all or name still too long.
             // Take leading part and append '*' to indicate that it was truncated
