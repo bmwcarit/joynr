@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2022 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,26 +98,35 @@ public class PropertiesFileParticipantIdStorage implements ParticipantIdStorage 
         } else if (ProviderAnnotations.getInterfaceName(RoutingProvider.class).equals(interfaceName)) {
             participantId = routingProviderParticipantId;
         } else {
-            synchronized (persistedParticipantIds) {
-                participantId = createUuidString();
-                if (persistedParticipantIds.putIfAbsent(token, participantId) == null) {
-                    FileOutputStream fileOutputStream = null;
-                    try {
-                        fileOutputStream = new FileOutputStream(persistenceFileName);
-                        persistedParticipantIds.store(fileOutputStream, null);
-                    } catch (IOException e1) {
-                        logger.error("Error saving properties file for channelId", e1);
+            participantId = createVariableParticipantId(token);
+        }
+        return participantId;
+    }
 
-                    } finally {
-                        if (fileOutputStream != null) {
-                            try {
-                                fileOutputStream.close();
-                            } catch (IOException e) {
-                                logger.debug("Error closing output stream", e);
-                            }
+    protected String createVariableParticipantId(String token) {
+        String participantId;
+        synchronized (persistedParticipantIds) {
+            participantId = createUuidString();
+            Object previousParticipantId = persistedParticipantIds.putIfAbsent(token, participantId);
+            if (previousParticipantId == null) {
+                FileOutputStream fileOutputStream = null;
+                try {
+                    fileOutputStream = new FileOutputStream(persistenceFileName);
+                    persistedParticipantIds.store(fileOutputStream, null);
+                } catch (IOException e1) {
+                    logger.error("Error saving properties file for channelId", e1);
+
+                } finally {
+                    if (fileOutputStream != null) {
+                        try {
+                            fileOutputStream.close();
+                        } catch (IOException e) {
+                            logger.debug("Error closing output stream", e);
                         }
                     }
                 }
+            } else {
+                participantId = (String) previousParticipantId;
             }
         }
         return participantId;
