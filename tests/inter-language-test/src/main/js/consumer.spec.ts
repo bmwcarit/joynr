@@ -466,6 +466,7 @@ describe("Consumer test", () => {
                                 "callMethodFireAndForgetWithoutParameter - subscribeToAttributeFireAndForget unsubscribe - OK"
                             );
                             log("callMethodFireAndForgetWithoutParameter - DONE");
+                            // eslint-disable-next-line promise/no-callback-in-promise
                             done();
                         })
                         .catch((error: any) => {
@@ -550,6 +551,7 @@ describe("Consumer test", () => {
                                 "callMethodFireAndForgetWithInputParameter - subscribeToAttributeFireAndForget unsubscribe - OK"
                             );
                             log("callMethodFireAndForgetWithInputParameter - DONE");
+                            // eslint-disable-next-line promise/no-callback-in-promise
                             done();
                         })
                         .catch((error: any) => {

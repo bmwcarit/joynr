@@ -46,16 +46,16 @@ let attributeBaseStruct: any;
 let attributeExtendedExtendedBaseStruct: any;
 let attributeMapStringString: any;
 let attributeFireAndForget = 0;
-const typeDefValues : {
-    attributeInt64: any,
-    attributeString: any,
-    attributeStruct: any,
-    attributeMap: any,
-    attributeEnum: any,
-    attributeByteBufferTypeDef: any,
-    attributeArrayTypeDef: any,
-    attributeByteBuffer: any,
-    attributeArray: any
+const typeDefValues: {
+    attributeInt64: any;
+    attributeString: any;
+    attributeStruct: any;
+    attributeMap: any;
+    attributeEnum: any;
+    attributeByteBufferTypeDef: any;
+    attributeArrayTypeDef: any;
+    attributeByteBuffer: any;
+    attributeArray: any;
 } = {
     attributeInt64: 1,
     attributeString: "TypeDefString",
@@ -78,6 +78,9 @@ function genericSetterGetter(attributeName: keyof typeof typeDefValues) {
         get: async (): Promise<any> => {
             prettyLog(`IltProvider.get called for attribute ${attributeName}`);
             return typeDefValues[attributeName];
+        },
+        valueChanged: (_: any) => {
+            // do nothing
         }
     };
 }
@@ -92,6 +95,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeUInt8.set(${value}) called`);
             attributeUInt8 = value;
+        },
+        valueChanged: (_: number) => {
+            // do nothing
         }
     },
 
@@ -103,6 +109,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeDouble.set(${value}) called`);
             attributeDouble = value;
+        },
+        valueChanged: (_: number) => {
+            // do nothing
         }
     },
 
@@ -111,6 +120,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
             prettyLog("IltProvider.attributeBooleanReadonly.get() called");
             attributeBooleanReadonly = true;
             return attributeBooleanReadonly;
+        },
+        valueChanged: (_: boolean) => {
+            // do nothing
         }
     },
 
@@ -141,6 +153,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeArrayOfStringImplicit.set(${value}) called`);
             attributeArrayOfStringImplicit = value;
+        },
+        valueChanged: (_: string[]) => {
+            // do nothing
         }
     },
 
@@ -152,6 +167,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeByteBuffer.set(${value}) called`);
             attributeByteBuffer = value;
+        },
+        valueChanged: (_: number[]) => {
+            // do nothing
         }
     },
 
@@ -163,6 +181,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeEnumeration.set(${value}) called`);
             attributeEnumeration = value;
+        },
+        valueChanged: (_: Enumeration) => {
+            // do nothing
         }
     },
 
@@ -172,6 +193,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
             attributeExtendedEnumerationReadonly =
                 ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES;
             return attributeExtendedEnumerationReadonly;
+        },
+        valueChanged: (_: ExtendedEnumerationWithPartlyDefinedValues) => {
+            // do nothing
         }
     },
 
@@ -183,6 +207,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeBaseStruct.set(${value}) called`);
             attributeBaseStruct = value;
+        },
+        valueChanged: (_: any) => {
+            // do nothing
         }
     },
 
@@ -194,6 +221,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeExtendedExtendedBaseStruct.set(${value}) called`);
             attributeExtendedExtendedBaseStruct = value;
+        },
+        valueChanged: (_: any) => {
+            // do nothing
         }
     },
 
@@ -205,6 +235,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeMapStringString.set(${JSON.stringify(value)}) called`);
             attributeMapStringString = value;
+        },
+        valueChanged: (_: MapStringString) => {
+            // do nothing
         }
     },
 
@@ -230,6 +263,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         set: (value: any) => {
             prettyLog(`IltProvider.attributeFireAndForget.set(${value}) called`);
             attributeFireAndForget = value;
+        },
+        valueChanged: (_: any) => {
+            // do nothing
         }
     },
 
@@ -239,6 +275,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
             throw new joynr.exceptions.ProviderRuntimeException({
                 detailMessage: "Exception from getAttributeWithExceptionFromGetter"
             });
+        },
+        valueChanged: (_: boolean) => {
+            // do nothing
         }
     },
 
@@ -252,6 +291,9 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
             throw new joynr.exceptions.ProviderRuntimeException({
                 detailMessage: "Exception from setAttributeWithExceptionFromSetter"
             });
+        },
+        valueChanged: (_: boolean) => {
+            // do nothing
         }
     },
 
@@ -649,8 +691,6 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
     methodFireAndForgetWithoutParameter(opArgs) {
         prettyLog(`IltProvider.methodFireAndForgetWithoutParameter(${JSON.stringify(opArgs)}) called`);
         IltProvider.attributeFireAndForget.set(attributeFireAndForget + 1);
-        // TODO: no idea what the valueChanged does, because set would emit ValueChanged with value +1.
-        // @ts-ignore
         IltProvider.attributeFireAndForget.valueChanged(attributeFireAndForget);
     },
 
@@ -662,7 +702,6 @@ const IltProvider: TestInterfaceProvider.TestInterfaceProviderImplementation = {
         } else {
             IltProvider.attributeFireAndForget.set(opArgs.int32Arg);
         }
-        // @ts-ignore
         IltProvider.attributeFireAndForget.valueChanged(attributeFireAndForget);
     },
 

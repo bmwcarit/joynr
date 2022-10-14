@@ -118,97 +118,6 @@ export function createSettings(keys: (keyof typeof FillMap)[]): any {
 }
 
 /* StructOfPrimitives*/
-export function fillStructOfPrimitives(structOfPrimitives: StructOfPrimitives): StructOfPrimitives {
-    structOfPrimitives.booleanElement = true;
-    structOfPrimitives.doubleElement = 1.1;
-    structOfPrimitives.floatElement = 1.1;
-    structOfPrimitives.int8MinElement = -128;
-    structOfPrimitives.int8MaxElement = 127;
-    structOfPrimitives.int16MinElement = -32768;
-    structOfPrimitives.int16MaxElement = 32767;
-    structOfPrimitives.int32MinElement = -2147483648;
-    structOfPrimitives.int32MaxElement = 2147483647;
-    // The original 64-bit maximum values for Java and C++
-    // exceed the safe integer range of Javascript, hence
-    // we have to use reduced values.
-    // The original C++ values are
-    //structOfPrimitives.int64MinElement = -9223372036854775808;
-    //structOfPrimitives.int64MaxElement = 9223372036854775807;
-    structOfPrimitives.int64MinElement = -9007199254740991;
-    structOfPrimitives.int64MaxElement = 9007199254740991;
-    structOfPrimitives.constString = "Hiya";
-    structOfPrimitives.uInt8MinElement = 0;
-    if (useRestrictedUnsignedRange) {
-        structOfPrimitives.uInt8MaxElement = 127;
-    } else {
-        structOfPrimitives.uInt8MaxElement = 255;
-    }
-    structOfPrimitives.uInt16MinElement = 0;
-    if (useRestrictedUnsignedRange) {
-        structOfPrimitives.uInt16MaxElement = 32767;
-    } else {
-        structOfPrimitives.uInt16MaxElement = 65535;
-    }
-    structOfPrimitives.uInt32MinElement = 0;
-    if (useRestrictedUnsignedRange) {
-        structOfPrimitives.uInt32MaxElement = 2147483647;
-    } else {
-        structOfPrimitives.uInt32MaxElement = 4294967295;
-    }
-    structOfPrimitives.uInt64MinElement = 0;
-    // The original 64-bit maximum values for Java and C++
-    // exceeds the safe integer range of Javascript, hence
-    // we have to use reduced values.
-    // TODO: should be 18446744073709551615 (original C++)
-    // But the value would translate to
-    // 18437736874454810625 in C++
-    structOfPrimitives.uInt64MaxElement = 9007199254740991;
-
-    structOfPrimitives.booleanArray = [];
-    structOfPrimitives.booleanArray.push(true);
-    structOfPrimitives.booleanArray.push(false);
-    structOfPrimitives.doubleArray = [];
-    structOfPrimitives.doubleArray.push(1.1);
-    structOfPrimitives.doubleArray.push(2.2);
-    structOfPrimitives.floatArray = [];
-    structOfPrimitives.floatArray.push(1.1);
-    structOfPrimitives.floatArray.push(2.2);
-    structOfPrimitives.int8Array = [];
-    structOfPrimitives.int8Array.push(1);
-    structOfPrimitives.int8Array.push(2);
-    structOfPrimitives.int16Array = [];
-    structOfPrimitives.int16Array.push(1);
-    structOfPrimitives.int16Array.push(2);
-    structOfPrimitives.int32Array = [];
-    structOfPrimitives.int32Array.push(1);
-    structOfPrimitives.int32Array.push(2);
-    structOfPrimitives.int64Array = [];
-    structOfPrimitives.int64Array.push(1);
-    structOfPrimitives.int64Array.push(2);
-    structOfPrimitives.stringArray = [];
-    structOfPrimitives.stringArray.push("Hello");
-    structOfPrimitives.stringArray.push("World");
-    structOfPrimitives.uInt8Array = [];
-    structOfPrimitives.uInt8Array.push(1);
-    structOfPrimitives.uInt8Array.push(2);
-    structOfPrimitives.uInt16Array = [];
-    structOfPrimitives.uInt16Array.push(1);
-    structOfPrimitives.uInt16Array.push(2);
-    structOfPrimitives.uInt32Array = [];
-    structOfPrimitives.uInt32Array.push(1);
-    structOfPrimitives.uInt32Array.push(2);
-    structOfPrimitives.uInt64Array = [];
-    structOfPrimitives.uInt64Array.push(1);
-    structOfPrimitives.uInt64Array.push(2);
-
-    if (!checkStructOfPrimitives(structOfPrimitives)) {
-        throw new JoynrRuntimeException({
-            detailMessage: "Internal error in fillExtendedExtendedBaseStruct"
-        });
-    }
-    return structOfPrimitives;
-}
-
 export function checkStructOfPrimitives(structOfPrimitives: any): boolean {
     if (!structOfPrimitives) {
         log("checkStructOfPrimitives: not set");
@@ -526,39 +435,106 @@ export function checkStructOfPrimitives(structOfPrimitives: any): boolean {
     return true;
 }
 
+export function createStructOfPrimitivesMembers(): any {
+    const members: any = {};
+    members.booleanElement = true;
+    members.doubleElement = 1.1;
+    members.floatElement = 1.1;
+    members.int8MinElement = -128;
+    members.int8MaxElement = 127;
+    members.int16MinElement = -32768;
+    members.int16MaxElement = 32767;
+    members.int32MinElement = -2147483648;
+    members.int32MaxElement = 2147483647;
+    // The original 64-bit maximum values for Java and C++
+    // exceed the safe integer range of Javascript, hence
+    // we have to use reduced values.
+    // The original C++ values are
+    //members.int64MinElement = -9223372036854775808;
+    //members.int64MaxElement = 9223372036854775807;
+    members.int64MinElement = -9007199254740991;
+    members.int64MaxElement = 9007199254740991;
+    members.constString = "Hiya";
+    members.uInt8MinElement = 0;
+    if (useRestrictedUnsignedRange) {
+        members.uInt8MaxElement = 127;
+    } else {
+        members.uInt8MaxElement = 255;
+    }
+    members.uInt16MinElement = 0;
+    if (useRestrictedUnsignedRange) {
+        members.uInt16MaxElement = 32767;
+    } else {
+        members.uInt16MaxElement = 65535;
+    }
+    members.uInt32MinElement = 0;
+    if (useRestrictedUnsignedRange) {
+        members.uInt32MaxElement = 2147483647;
+    } else {
+        members.uInt32MaxElement = 4294967295;
+    }
+    members.uInt64MinElement = 0;
+    // The original 64-bit maximum values for Java and C++
+    // exceeds the safe integer range of Javascript, hence
+    // we have to use reduced values.
+    // TODO: should be 18446744073709551615 (original C++)
+    // But the value would translate to
+    // 18437736874454810625 in C++
+    members.uInt64MaxElement = 9007199254740991;
+
+    members.booleanArray = [];
+    members.booleanArray.push(true);
+    members.booleanArray.push(false);
+    members.doubleArray = [];
+    members.doubleArray.push(1.1);
+    members.doubleArray.push(2.2);
+    members.floatArray = [];
+    members.floatArray.push(1.1);
+    members.floatArray.push(2.2);
+    members.int8Array = [];
+    members.int8Array.push(1);
+    members.int8Array.push(2);
+    members.int16Array = [];
+    members.int16Array.push(1);
+    members.int16Array.push(2);
+    members.int32Array = [];
+    members.int32Array.push(1);
+    members.int32Array.push(2);
+    members.int64Array = [];
+    members.int64Array.push(1);
+    members.int64Array.push(2);
+    members.stringArray = [];
+    members.stringArray.push("Hello");
+    members.stringArray.push("World");
+    members.uInt8Array = [];
+    members.uInt8Array.push(1);
+    members.uInt8Array.push(2);
+    members.uInt16Array = [];
+    members.uInt16Array.push(1);
+    members.uInt16Array.push(2);
+    members.uInt32Array = [];
+    members.uInt32Array.push(1);
+    members.uInt32Array.push(2);
+    members.uInt64Array = [];
+    members.uInt64Array.push(1);
+    members.uInt64Array.push(2);
+
+    return members;
+}
+
 export function createStructOfPrimitives(): StructOfPrimitives {
-    // @ts-ignore
-    let structOfPrimitives = new StructOfPrimitives();
-    structOfPrimitives = fillStructOfPrimitives(structOfPrimitives);
+    const members = createStructOfPrimitivesMembers();
+    const structOfPrimitives = new StructOfPrimitives(members);
+
+    if (!checkStructOfPrimitives(structOfPrimitives)) {
+        throw new JoynrRuntimeException({
+            detailMessage: "Internal error in fillExtendedExtendedBaseStruct"
+        });
+    }
     return structOfPrimitives;
 }
 
 /* ExtendedStructOfPrimitives*/
-export function fillExtendedStructOfPrimitives(
-    extendedStructOfPrimitives: ExtendedStructOfPrimitives
-): ExtendedStructOfPrimitives {
-    extendedStructOfPrimitives.extendedStructElement = create("ExtendedBaseStruct");
-    fillStructOfPrimitives(extendedStructOfPrimitives);
-    if (!checkExtendedStructOfPrimitives(extendedStructOfPrimitives)) {
-        throw new JoynrRuntimeException({
-            detailMessage: "Internal error in checkExtendedStructOfPrimitives"
-        });
-    }
-    return extendedStructOfPrimitives;
-}
-
-export function createExtendedStructOfPrimitives(): ExtendedStructOfPrimitives {
-    // @ts-ignore
-    const extendedStructOfPrimitives = new ExtendedStructOfPrimitives();
-    extendedStructOfPrimitives.extendedEnumElement =
-        ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
-    fillExtendedStructOfPrimitives(extendedStructOfPrimitives);
-    if (!checkExtendedStructOfPrimitives(extendedStructOfPrimitives)) {
-        throw new JoynrRuntimeException({ detailMessage: "Internal error in checkExtendedStructOfPrimitives" });
-    }
-    return extendedStructOfPrimitives;
-}
-
 export function checkExtendedStructOfPrimitives(extendedStructOfPrimitives: ExtendedStructOfPrimitives): boolean {
     if (!extendedStructOfPrimitives) {
         log("checkExtendedStructOfPrimitives: extendedStructOfPrimitives not set");
@@ -580,6 +556,21 @@ export function checkExtendedStructOfPrimitives(extendedStructOfPrimitives: Exte
         return false;
     }
     return true;
+}
+
+export function createExtendedStructOfPrimitives(): ExtendedStructOfPrimitives {
+    const members = createStructOfPrimitivesMembers();
+    members.extendedStructElement = create("ExtendedBaseStruct");
+    members.extendedEnumElement =
+        ExtendedTypeCollectionEnumerationInTypeCollection.ENUM_2_VALUE_EXTENSION_FOR_TYPECOLLECTION;
+
+    const extendedStructOfPrimitives = new ExtendedStructOfPrimitives(members);
+    if (!checkExtendedStructOfPrimitives(extendedStructOfPrimitives)) {
+        throw new JoynrRuntimeException({
+            detailMessage: "Internal error in checkExtendedStructOfPrimitives"
+        });
+    }
+    return extendedStructOfPrimitives;
 }
 
 export function cmpFloat(a: number, b: number): boolean {
