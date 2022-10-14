@@ -332,16 +332,18 @@ class CppInterfaceUtil extends InterfaceUtil {
 			}
 		}
 		else if (const exceptions::ApplicationException* applicationError = dynamic_cast<const exceptions::ApplicationException*>(error.get())) {
+			const std::string& enumName = applicationError->getName();
 			if(onApplicationError) {
-				onApplicationError(muesli::EnumTraits<«getMethodErrorEnum(serviceInterface, method, generateVersion)»>::Wrapper::getEnum(applicationError->getName()));
+				const std::string errorMessage = "An ApplicationException with error " + enumName + " was received.";
+				JOYNR_LOG_INFO(logger(), errorMessage);
+				onApplicationError(muesli::EnumTraits<«getMethodErrorEnum(serviceInterface, method, generateVersion)»>::Wrapper::getEnum(enumName));
 			}
 			else {
-				const std::string errorMessage = "An ApplicationException type was received, but none was expected. Is the provider version incompatible with the consumer?";
+				const std::string errorMessage = "An ApplicationException with error " + enumName + " was received, but none was expected." \
+				" Is the provider version incompatible with the consumer?";
+				JOYNR_LOG_WARN(logger(), errorMessage);
 				if (onRuntimeError) {
 					onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
-				}
-				else {
-					JOYNR_LOG_ERROR(logger(), errorMessage);
 				}
 			}
 		}
