@@ -30,7 +30,15 @@ export interface ProviderWriteAttributeImpl<T> {
     set: (value: T) => void;
 }
 
+export interface ProviderNotifyAttributeImpl<T> {
+    valueChanged: (value: T) => void;
+}
+
 export type ProviderReadWriteAttributeImpl<T> = ProviderReadAttributeImpl<T> & ProviderWriteAttributeImpl<T>;
+export type ProviderReadNotifyAttributeImpl<T> = ProviderReadAttributeImpl<T> & ProviderNotifyAttributeImpl<T>;
+export type ProviderReadWriteNotifyAttributeImpl<T> = ProviderReadAttributeImpl<T> &
+    ProviderWriteAttributeImpl<T> &
+    ProviderNotifyAttributeImpl<T>;
 
 export abstract class JoynrProvider extends JoynrObject {
     public abstract interfaceName: string;
