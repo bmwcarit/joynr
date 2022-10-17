@@ -4,7 +4,8 @@ USER root
 
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
-RUN apt-get update \
+RUN rm /etc/apt/sources.list.d/zulu-openjdk.list \
+    && apt-get update \
     && apt-get install -y --no-install-recommends curl
 
 USER payara
