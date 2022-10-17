@@ -163,8 +163,10 @@ public class RequestReplyManagerImpl
                                  MessagingQos messagingQos) {
 
         if (shuttingDown) {
-            throw new IllegalStateException("Request: " + request.getRequestReplyId() + " failed. SenderImpl ID: "
-                    + System.identityHashCode(this) + ": joynr is shutting down");
+            final String message = String.format("Request: %s failed. SenderImpl ID: %s: joynr is shutting down",
+                                                 request.getRequestReplyId(),
+                                                 System.identityHashCode(this));
+            throw new IllegalStateException(message);
         }
 
         CompletableFuture<Reply> responseFuture = new CompletableFuture<>();
@@ -179,16 +181,20 @@ public class RequestReplyManagerImpl
         if (!shuttingDown) {
             try {
                 response = responseFuture.get();
-            } catch (InterruptedException e) {
-                logger.error("Request {} interrupted unexpectedly.", request.getRequestReplyId(), e);
-                throw new JoynrRequestInterruptedException("Request: " + request.getRequestReplyId()
-                        + " interrupted unexpectedly.");
-            } catch (ExecutionException e) {
-                throw new JoynrCommunicationException("Request: " + request.getRequestReplyId() + " failed: "
-                        + e.getMessage(), e);
-            } catch (CancellationException e) {
-                throw new JoynrShutdownException("Request: " + request.getRequestReplyId()
-                        + " interrupted by shutdown");
+            } catch (final InterruptedException e) {
+                final String message = String.format("Request %s interrupted unexpectedly.",
+                                                     request.getRequestReplyId());
+                logger.error(message, e);
+                throw new JoynrRequestInterruptedException(message);
+            } catch (final ExecutionException e) {
+                final String message = String.format("Request: %s failed: %s",
+                                                     request.getRequestReplyId(),
+                                                     e.getMessage());
+                throw new JoynrCommunicationException(message, e);
+            } catch (final CancellationException e) {
+                final String message = String.format("Request: %s interrupted by shutdown",
+                                                     request.getRequestReplyId());
+                throw new JoynrShutdownException(message);
             }
         }
         outstandingRequestFutures.remove(responseFuture);
@@ -269,7 +275,7 @@ public class RequestReplyManagerImpl
                 if (!requestItem.isExpired()) {
                     handleOneWayRequest(requestCaller, request);
                 } else {
-                    logger.warn("One-way request {} is expired. Not executing.", String.valueOf(request));
+                    logger.warn("One-way request {} is expired. Not executing.", request);
                 }
             }
         }
@@ -310,7 +316,7 @@ public class RequestReplyManagerImpl
         try {
             requestInterpreter.invokeMethod(requestCaller, request);
         } catch (Exception e) {
-            logger.error("Error while executing one-way request {}.", String.valueOf(request), e);
+            logger.error("Error while executing one-way request {}.", request, e);
         }
     }
 
@@ -335,7 +341,7 @@ public class RequestReplyManagerImpl
                 synchronized (requestQueueLock) {
                     ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>> queue = oneWayRequestQueue.get(providerParticipantId);
                     if (queue != null && queue.remove(requestItem)) {
-                        logger.warn("One-way request {} is expired. Not executing.", String.valueOf(oneWayRequest));
+                        logger.warn("One-way request {} is expired. Not executing.", oneWayRequest);
                         if (queue.isEmpty()) {
                             // cleanup
                             oneWayRequestQueue.remove(providerParticipantId);
