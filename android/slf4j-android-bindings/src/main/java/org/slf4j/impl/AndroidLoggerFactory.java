@@ -91,7 +91,7 @@ public class AndroidLoggerFactory implements ILoggerFactory {
         final AndroidLogger loggerPutBefore = loggerMap.putIfAbsent(tag, logger);
         if (null == loggerPutBefore) {
             if (!tag.equals(name) && logger.isInfoEnabled()) {
-                Log.i(AndroidLoggerFactory.class.getSimpleName(),
+                Log.d(AndroidLoggerFactory.class.getSimpleName(),
                       "SLF4J Logger name '" + name + "' exceeds maximum length of " + TAG_MAX_LENGTH
                               + " characters; using '" + tag + "' as the Android Log tag instead.");
             }
@@ -105,29 +105,8 @@ public class AndroidLoggerFactory implements ILoggerFactory {
      */
     private String forceValidName(String name) {
         if (name != null && name.length() > TAG_MAX_LENGTH) {
-            final StringTokenizer st = new StringTokenizer(name, ".");
-            if (st.hasMoreTokens()) // note that empty tokens are skipped, i.e., "aa..bb" has tokens "aa", "bb"
-            {
-                final StringBuilder sb = new StringBuilder();
-                String token;
-                do {
-                    token = st.nextToken();
-                    if (token.length() == 1) // token of one character appended as is
-                    {
-                        sb.append(token);
-                        sb.append('.');
-                    } else if (st.hasMoreTokens()) // truncate all but the last token
-                    {
-                        sb.append(token.charAt(0));
-                        sb.append("*.");
-                    } else // last token (usually class name) appended as is
-                    {
-                        sb.append(token);
-                    }
-                } while (st.hasMoreTokens());
-
-                name = sb.toString();
-            }
+            final String[] tokens = name.split("[.]");
+            name = tokens[tokens.length - 1];
 
             // Either we had no useful dot location at all or name still too long.
             // Take leading part and append '*' to indicate that it was truncated
