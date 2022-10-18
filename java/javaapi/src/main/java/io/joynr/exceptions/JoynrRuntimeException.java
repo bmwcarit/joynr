@@ -20,6 +20,8 @@ package io.joynr.exceptions;
 
 import javax.ejb.ApplicationException;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 @ApplicationException
 public class JoynrRuntimeException extends RuntimeException implements JoynrException {
     private static final long serialVersionUID = 1L;
@@ -38,6 +40,12 @@ public class JoynrRuntimeException extends RuntimeException implements JoynrExce
 
     public JoynrRuntimeException(Throwable cause) {
         super(cause);
+    }
+
+    @JsonProperty("detailMessage")
+    @Override
+    public String getMessage() {
+        return super.getMessage();
     }
 
     @Override

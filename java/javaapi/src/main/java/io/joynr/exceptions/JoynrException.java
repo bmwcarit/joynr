@@ -26,6 +26,9 @@ import io.joynr.subtypes.JoynrType;
 @JsonAutoDetect(getterVisibility = Visibility.NONE)
 public interface JoynrException extends JoynrType {
 
+    static final String JSON_FIELD_NAME_TYPE = "_typeName";
+    static final String JSON_FIELD_NAME_MESSAGE = "detailMessage";
+
     public boolean equals(Object obj);
 
     public int hashCode();

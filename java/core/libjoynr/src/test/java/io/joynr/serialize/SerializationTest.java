@@ -23,12 +23,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.concurrent.RejectedExecutionException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,21 +40,19 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import io.joynr.dispatching.subscription.PersistedSubscriptionRequest;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRequestInterruptedException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrSendBufferFullException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.serialize.JoynrExceptionDeserializationUtils;
 import io.joynr.pubsub.SubscriptionQos;
-import io.joynr.util.MultiMap;
 import io.joynr.util.ObjectMapper;
 import io.joynr.util.ReflectionUtils;
 import joynr.BroadcastSubscriptionRequest;
@@ -79,10 +75,11 @@ import joynr.tests.testBroadcastInterface;
 import joynr.tests.testTypes.ComplexTestType2;
 import joynr.tests.testTypes.TestEnum;
 import joynr.types.GlobalDiscoveryEntry;
+import joynr.types.ProviderQos;
+import joynr.types.Version;
 import joynr.types.Localisation.GpsFixEnum;
 import joynr.types.Localisation.GpsLocation;
 import joynr.types.Localisation.GpsPosition;
-import joynr.types.ProviderQos;
 import joynr.types.TestTypes.TEnum;
 import joynr.types.TestTypes.TEverythingExtendedStruct;
 import joynr.types.TestTypes.TEverythingMap;
@@ -91,7 +88,6 @@ import joynr.types.TestTypes.TStringKeyMap;
 import joynr.types.TestTypes.TStruct;
 import joynr.types.TestTypes.Vowel;
 import joynr.types.TestTypes.Word;
-import joynr.types.Version;
 
 /**
  * This test sends two messages in each direction, containing different TTL values. One with a very high TTL value to
@@ -149,7 +145,6 @@ public class SerializationTest {
 
         @Override
         public int hashCode() {
-            // TODO Auto-generated method stub
             return super.hashCode();
         }
     }
@@ -162,7 +157,7 @@ public class SerializationTest {
 
             @Override
             protected void configure() {
-                requestStaticInjection(Request.class);
+                requestStaticInjection(JoynrExceptionDeserializationUtils.class, Request.class);
 
             }
 
@@ -221,7 +216,6 @@ public class SerializationTest {
 
     @Test
     public void serializeDeserializeSubscriptionRequests() throws Exception {
-        String persistenceFileName = "target/test_persistenceSubscriptionRequests_" + createUuidString();
         String subscriptionId = "subscriptionId";
         String subscribedToName = "subscribedToName";
         SubscriptionQos qos = new OnChangeSubscriptionQos();
@@ -639,6 +633,20 @@ public class SerializationTest {
     }
 
     @Test
+    public void serializeReplyWithMethodInvocationExceptionWithVersion() throws IOException {
+
+        MethodInvocationException error = new MethodInvocationException("detail message: MessageInvocationException",
+                                                                        new Version(47, 11));
+        Reply reply = new Reply(createUuidString(), error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(reply);
+        System.out.println(writeValueAsString);
+
+        Reply receivedReply = objectMapper.readValue(writeValueAsString, Reply.class);
+        Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
     public void serializeReplyWithProviderRuntimenException() throws IOException {
 
         ProviderRuntimeException error = new ProviderRuntimeException("detail message: ProviderRuntimeException");
@@ -759,19 +767,6 @@ public class SerializationTest {
     public void serializeReplyWithJoynrRequestInterruptedException() throws IOException {
 
         JoynrRequestInterruptedException error = new JoynrRequestInterruptedException("detail message: JoynrRequestInterruptedException");
-        Reply reply = new Reply(createUuidString(), error);
-
-        String writeValueAsString = objectMapper.writeValueAsString(reply);
-        System.out.println(writeValueAsString);
-
-        Reply receivedReply = objectMapper.readValue(writeValueAsString, Reply.class);
-        Assert.assertEquals(reply, receivedReply);
-    }
-
-    @Test
-    public void serializeReplyWithJoynrSendBufferFullException() throws IOException {
-
-        JoynrSendBufferFullException error = new JoynrSendBufferFullException(new RejectedExecutionException("cause message"));
         Reply reply = new Reply(createUuidString(), error);
 
         String writeValueAsString = objectMapper.writeValueAsString(reply);
