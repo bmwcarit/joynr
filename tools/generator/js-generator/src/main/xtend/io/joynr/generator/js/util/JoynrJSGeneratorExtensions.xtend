@@ -41,7 +41,8 @@ class JoynrJSGeneratorExtensions extends JoynrGeneratorExtensions {
 		attributes.map[it.proxyAttributeName.toString()].stream().distinct().collect(Collectors.toList())
 	}
 	def getProviderAttributeImplName(FAttribute attribute)
-	'''ProviderRead«IF isWritable(attribute)»Write«ENDIF»AttributeImpl'''
+	'''ProviderRead«IF isWritable(attribute)»Write«ENDIF»«IF isNotifiable(attribute)»Notify«ENDIF»AttributeImpl'''
+
 	def List<String> getJoynrProviderImports(List<FAttribute> attributes){
 		var list = attributes.map[it.providerAttributeImplName.toString()].stream().distinct().collect(Collectors.toList());
 		list.add("JoynrProvider");

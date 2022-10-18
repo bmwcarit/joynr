@@ -51,6 +51,9 @@ function createAttributeImpl<T>(key: string, defaultValue?: T) {
         get: (): T => store[key],
         set: (value: T) => {
             store[key] = value;
+        },
+        valueChanged: (_: T) => {
+            // do nothing
         }
     };
 }
@@ -59,7 +62,10 @@ function createAttributeImpl<T>(key: string, defaultValue?: T) {
 function createReadAttributeImpl<T>(key: string, defaultValue?: T) {
     store[key] = defaultValue;
     return {
-        get: (): T => store[key]
+        get: (): T => store[key],
+        valueChanged: (_: T) => {
+            // do nothing
+        }
     };
 }
 
@@ -173,6 +179,9 @@ async function initializeTest(provisioningSuffix: string, providedDomain: string
                     throw new joynr.exceptions.ProviderRuntimeException({
                         detailMessage: "failure in failingSyncAttribute getter"
                     });
+                },
+                valueChanged: (_: number) => {
+                    // do nothing
                 }
             },
             failingAsyncAttribute: {
@@ -182,6 +191,9 @@ async function initializeTest(provisioningSuffix: string, providedDomain: string
                             detailMessage: "failure in failingSyncAttribute getter"
                         })
                     );
+                },
+                valueChanged: (_: number) => {
+                    // do nothing
                 }
             },
             isOn: createAttributeImpl<boolean>("inOn", true),

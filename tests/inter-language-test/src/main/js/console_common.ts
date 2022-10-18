@@ -25,11 +25,11 @@ const prettyLog = testbase.logging.prettyLog;
 export = (modes: any) => {
     prettyLog("The following options are available: ");
     for (const modeKey in modes) {
-        if (modes.hasOwnProperty(modeKey)) {
+        if (Object.prototype.hasOwnProperty.call(modes, modeKey)) {
             const mode = modes[modeKey];
             let optionsText = "";
             for (const optionKey in mode.options) {
-                if (mode.options.hasOwnProperty(optionKey)) {
+                if (Object.prototype.hasOwnProperty.call(mode.options, optionKey)) {
                     optionsText += `${mode.options[optionKey]}/`;
                 }
             }
