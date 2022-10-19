@@ -35,7 +35,7 @@ import io.joynr.jeeintegration.api.JoynrJeeMessageScoped;
  */
 public class JoynrJeeMessageContext implements Context {
 
-    private static JoynrJeeMessageContext instance;
+    private static JoynrJeeMessageContext instance = new JoynrJeeMessageContext();
 
     private ThreadLocal<Map<Contextual<?>, Object>> contextualStore = new ThreadLocal<>();
 
@@ -83,13 +83,6 @@ public class JoynrJeeMessageContext implements Context {
     }
 
     public static JoynrJeeMessageContext getInstance() {
-        if (instance == null) {
-            synchronized (JoynrJeeMessageContext.class) {
-                if (instance == null) {
-                    instance = new JoynrJeeMessageContext();
-                }
-            }
-        }
         return instance;
     }
 
