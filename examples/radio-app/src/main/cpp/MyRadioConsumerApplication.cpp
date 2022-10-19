@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,23 +21,23 @@
 #include <cassert>
 #include <fcntl.h>
 #include <limits>
-#include <string>
+#include <memory>
 #include <stdint.h>
+#include <string>
 #include <sys/select.h>
 #include <sys/socket.h>
-#include <memory>
 
 #include "MyRadioHelper.h"
-#include "joynr/vehicle/RadioProxy.h"
-#include "joynr/vehicle/RadioNewStationDiscoveredBroadcastFilterParameters.h"
-#include "joynr/JoynrRuntime.h"
-#include "joynr/ISubscriptionListener.h"
-#include "joynr/SubscriptionListener.h"
-#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
-#include "joynr/MulticastSubscriptionQos.h"
-#include "joynr/serializer/Serializer.h"
-#include "joynr/Logger.h"
 #include "joynr/Future.h"
+#include "joynr/ISubscriptionListener.h"
+#include "joynr/JoynrRuntime.h"
+#include "joynr/Logger.h"
+#include "joynr/MulticastSubscriptionQos.h"
+#include "joynr/OnChangeWithKeepAliveSubscriptionQos.h"
+#include "joynr/SubscriptionListener.h"
+#include "joynr/serializer/Serializer.h"
+#include "joynr/vehicle/RadioNewStationDiscoveredBroadcastFilterParameters.h"
+#include "joynr/vehicle/RadioProxy.h"
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -127,10 +127,10 @@ public:
     void onReceive(const vehicle::RadioStation& discoveredStation,
                    const vehicle::GeoPosition& geoPosition) override
     {
-        MyRadioHelper::prettyLog(logger(),
-                                 "BROADCAST SUBSCRIPTION new station discovered: " +
-                                         discoveredStation.toString() + " at " +
-                                         geoPosition.toString());
+        MyRadioHelper::prettyLog(
+                logger(),
+                "BROADCAST SUBSCRIPTION new station discovered: " + discoveredStation.toString() +
+                        " at " + geoPosition.toString());
     }
 
 private:
@@ -178,14 +178,15 @@ int main(int argc, char* argv[])
     std::atomic_bool isRuntimeOkay(true);
     std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
             [&](const joynr::exceptions::JoynrRuntimeException& exception) {
-        isRuntimeOkay.store(false);
-        MyRadioHelper::prettyLog(
-                logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
-        // make sure the background thread terminates, do not block
-        int opt = fcntl(fds[0], F_GETFL, 0);
-        fcntl(fds[0], F_SETFL, opt | O_NONBLOCK);
-        write(fds[0], "q", 1);
-    };
+                isRuntimeOkay.store(false);
+                MyRadioHelper::prettyLog(
+                        logger,
+                        "Unexpected joynr runtime error occured: " + exception.getMessage());
+                // make sure the background thread terminates, do not block
+                int opt = fcntl(fds[0], F_GETFL, 0);
+                fcntl(fds[0], F_SETFL, opt | O_NONBLOCK);
+                write(fds[0], "q", 1);
+            };
 
     std::string pathToMessagingSettings(dir + "/resources/radio-app-consumer.settings");
 

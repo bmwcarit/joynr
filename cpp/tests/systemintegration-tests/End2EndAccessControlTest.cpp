@@ -151,8 +151,9 @@ protected:
 TEST_F(End2EndAccessControlTest,
        queuedMsgsForUnavailableProviderAreAcCheckedWhenProviderIsRegisteredAgain_permissionYes)
 {
-    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _)).Times(1).WillOnce(
-                ReleaseSemaphore(semaphore));
+    EXPECT_CALL(*testProvider, methodWithNoInputParametersMock(_, _))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     // consumer has permission
     // in this method provider is registered and proxy is built

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,21 +17,21 @@
  * #L%
  */
 
+#include "GeocastBroadcastFilter.h"
 #include "MyRadioHelper.h"
 #include "MyRadioProvider.h"
 #include "TrafficServiceBroadcastFilter.h"
-#include "GeocastBroadcastFilter.h"
 #include "joynr/JoynrRuntime.h"
 #include "joynr/Logger.h"
 #include "joynr/types/ProviderQos.h"
 
 #include <atomic>
+#include <chrono>
 #include <fcntl.h>
 #include <memory>
 #include <string>
 #include <sys/select.h>
 #include <sys/socket.h>
-#include <chrono>
 #ifdef JOYNR_ENABLE_DLT_LOGGING
 #include <dlt/dlt.h>
 #endif // JOYNR_ENABLE_DLT_LOGGING
@@ -76,14 +76,15 @@ int main(int argc, char* argv[])
     std::atomic_bool isRuntimeOkay(true);
     std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onFatalRuntimeError =
             [&](const joynr::exceptions::JoynrRuntimeException& exception) {
-        isRuntimeOkay.store(false);
-        MyRadioHelper::prettyLog(
-                logger, "Unexpected joynr runtime error occured: " + exception.getMessage());
-        // make sure the background thread terminates, do not block
-        int opt = fcntl(fds[0], F_GETFL, 0);
-        fcntl(fds[0], F_SETFL, opt | O_NONBLOCK);
-        write(fds[0], "q", 1);
-    };
+                isRuntimeOkay.store(false);
+                MyRadioHelper::prettyLog(
+                        logger,
+                        "Unexpected joynr runtime error occured: " + exception.getMessage());
+                // make sure the background thread terminates, do not block
+                int opt = fcntl(fds[0], F_GETFL, 0);
+                fcntl(fds[0], F_SETFL, opt | O_NONBLOCK);
+                write(fds[0], "q", 1);
+            };
 
     std::string pathToMessagingSettings(dir + "/resources/radio-app-provider.settings");
     std::string pathToLibJoynrSettings(dir + "/resources/radio-app-provider.libjoynr.settings");
@@ -113,8 +114,8 @@ int main(int argc, char* argv[])
 
     std::function<void(const joynr::exceptions::ProviderRuntimeException&)> onError =
             [&](const joynr::exceptions::ProviderRuntimeException& exception) {
-        MyRadioHelper::prettyLog(logger, "Exception: " + exception.getMessage());
-    };
+                MyRadioHelper::prettyLog(logger, "Exception: " + exception.getMessage());
+            };
 
     // Run until the user hits q or a fatal runtime error happens (onFatalRuntimeError is called)
     int key;

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,8 +36,7 @@
 using Clock = std::chrono::steady_clock;
 using ClockResolution = std::chrono::microseconds;
 
-struct PerformanceTest
-{
+struct PerformanceTest {
     template <typename T1,
               typename T2,
               typename T3,
@@ -59,23 +58,20 @@ struct PerformanceTest
                                 T9 column9)
     {
         std::mutex logMutex;
-        auto isFileExists = [&csvFile] () {
-            return static_cast<bool>(std::ifstream(csvFile));
-        };
+        auto isFileExists = [&csvFile]() { return static_cast<bool>(std::ifstream(csvFile)); };
 
-        auto writeData = [&csvFile, &logMutex] (
-                const auto& column1,
-                const auto& column2,
-                const auto& column3,
-                const auto& column4,
-                const auto& column5,
-                const auto& column6,
-                const auto& column7,
-                const auto& column8,
-                const auto& column9) {
+        auto writeData = [&csvFile, &logMutex](const auto& column1,
+                                               const auto& column2,
+                                               const auto& column3,
+                                               const auto& column4,
+                                               const auto& column5,
+                                               const auto& column6,
+                                               const auto& column7,
+                                               const auto& column8,
+                                               const auto& column9) {
             std::lock_guard<std::mutex> csvLock(logMutex);
             std::fstream file;
-            file.open (csvFile, std::ios::out | std::ios::app);
+            file.open(csvFile, std::ios::out | std::ios::app);
             if (!file) {
                 std::cerr << "Failed to create/open file" << csvFile << "\n";
                 return;
@@ -93,7 +89,7 @@ struct PerformanceTest
         };
 
         // write headers only once
-        if(!isFileExists()) {
+        if (!isFileExists()) {
             writeData("ContainerId",
                       "Repetition",
                       "Calls",
@@ -126,16 +122,15 @@ struct PerformanceTest
         using DoubleSeconds = std::chrono::duration<double>;
         auto totalResponseTimeSec = std::chrono::duration_cast<DoubleSeconds>(totalDuration);
         double requestPerSec = durationVector.size() / totalResponseTimeSec.count();
-        auto getTimeStamp = [] () {
+        auto getTimeStamp = []() {
             boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
             std::stringstream ss;
-            ss << static_cast<int>(now.date().year())
-            << "-" << std::setfill('0') << std::setw(2) << (now.date().month().as_number())
-            << "-" << std::setfill('0') << std::setw(2) << now.date().day() << " "
-            << std::setfill('0') << std::setw(2) << now.time_of_day().hours() << ":"
-            << std::setfill('0') << std::setw(2) << now.time_of_day().minutes() << ":"
-            << std::setfill('0') << std::setw(2) << now.time_of_day().seconds() << "."
-            << now.time_of_day().total_milliseconds();
+            ss << static_cast<int>(now.date().year()) << "-" << std::setfill('0') << std::setw(2)
+               << (now.date().month().as_number()) << "-" << std::setfill('0') << std::setw(2)
+               << now.date().day() << " " << std::setfill('0') << std::setw(2)
+               << now.time_of_day().hours() << ":" << std::setfill('0') << std::setw(2)
+               << now.time_of_day().minutes() << ":" << std::setfill('0') << std::setw(2)
+               << now.time_of_day().seconds() << "." << now.time_of_day().total_milliseconds();
             return ss.str();
         };
 
@@ -150,19 +145,18 @@ struct PerformanceTest
         std::cerr << "AverageResponseTime:\t\t" << averageResponseTime << " [ms]" << std::endl;
         std::cerr << "RequestPerSec:\t\t" << requestPerSec << std::endl;
 
-        const std::string csvFile = "/home/joynr/build/results_cont_"+containerId+".csv";
+        const std::string csvFile = "/home/joynr/build/results_cont_" + containerId + ".csv";
         std::cerr << "Writing results to: " << csvFile << "\n";
         PerformanceTest::writeDataToFile(csvFile,
-                    containerId,
-                    repetition,
-                    calls,
-                    getTimeStamp(),
-                    totalResponseTimeSec.count(),
-                    maxResponseTime.count(),
-                    minResponseTime.count(),
-                    averageResponseTime,
-                    requestPerSec
-                    );
+                                         containerId,
+                                         repetition,
+                                         calls,
+                                         getTimeStamp(),
+                                         totalResponseTimeSec.count(),
+                                         maxResponseTime.count(),
+                                         minResponseTime.count(),
+                                         averageResponseTime,
+                                         requestPerSec);
     }
 };
 

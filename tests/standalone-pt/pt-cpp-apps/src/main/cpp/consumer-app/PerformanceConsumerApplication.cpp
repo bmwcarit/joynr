@@ -18,8 +18,8 @@
  */
 
 #include <cstddef>
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
@@ -31,8 +31,8 @@
 #include <joynr/Settings.h>
 #include <joynr/WebSocketSettings.h>
 
-#include <joynr/tests/DummyKeychainImpl.h>
 #include <joynr/tests/DummyKeyChainParameters.h>
+#include <joynr/tests/DummyKeychainImpl.h>
 
 #include "../common/Enum.h"
 #include "PerformanceConsumer.h"
