@@ -20,6 +20,7 @@ package io.joynr.types;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -45,6 +46,13 @@ public class MultipleVersionsTest {
         assertNotNull(structVersion1Interface.getFlag());
         assertNotNull(structVersion2Interface.getFlag1());
         assertNotNull(structVersion2Interface.getFlag2());
+
+        assertTrue(structVersion1AnonymousTypeCollection instanceof joynr.tests.v1.AnonymousVersionedStruct);
+        assertTrue(structVersion2AnonymousTypeCollection instanceof joynr.tests.v2.AnonymousVersionedStruct);
+        assertTrue(structVersion1NamedTypeCollection instanceof joynr.tests.v1.MultipleVersionsTypeCollection.VersionedStruct);
+        assertTrue(structVersion2NamedTypeCollection instanceof joynr.tests.v2.MultipleVersionsTypeCollection.VersionedStruct);
+        assertTrue(structVersion1Interface instanceof joynr.tests.v1.InterfaceVersionedStruct);
+        assertTrue(structVersion2Interface instanceof joynr.tests.v2.InterfaceVersionedStruct);
 
         assertNotEquals(structVersion1AnonymousTypeCollection, structVersion2AnonymousTypeCollection);
         assertNotEquals(structVersion1AnonymousTypeCollection, structVersion1NamedTypeCollection);
@@ -77,6 +85,10 @@ public class MultipleVersionsTest {
         assertNotNull(versionedStructNamedTypeCollection.getFlag2());
         assertNotNull(versionedStructInterface.getFlag1());
         assertNotNull(versionedStructInterface.getFlag2());
+
+        assertTrue(unversionedStructAnonymousTypeCollection instanceof AnonymousVersionedStruct);
+        assertTrue(versionedStructNamedTypeCollection instanceof VersionedStruct);
+        assertTrue(versionedStructInterface instanceof InterfaceVersionedStruct);
 
         assertNotEquals(unversionedStructAnonymousTypeCollection, versionedStructNamedTypeCollection);
         assertNotEquals(unversionedStructAnonymousTypeCollection, versionedStructInterface);
