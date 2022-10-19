@@ -41,6 +41,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.serialize.ApplicationExceptionDeserializer;
 import io.joynr.messaging.serialize.DiscoveryExceptionDeserializer;
 import io.joynr.messaging.serialize.IllegalAccessExceptionDeserializer;
@@ -60,13 +61,14 @@ import io.joynr.messaging.serialize.MethodInvocationExceptionDeserializer;
 import io.joynr.messaging.serialize.OneWayRequestDeserializer;
 import io.joynr.messaging.serialize.ProviderRuntimeExceptionDeserializer;
 import io.joynr.messaging.serialize.RequestDeserializer;
+import io.joynr.messaging.serialize.SubscriptionExceptionDeserializer;
 import io.joynr.util.ObjectMapper;
 import joynr.OneWayRequest;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
+import joynr.exceptions.IllegalAccessException;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
-import joynr.exceptions.IllegalAccessException;
 
 public class JsonMessageSerializerModule extends AbstractModule {
 
@@ -118,6 +120,7 @@ public class JsonMessageSerializerModule extends AbstractModule {
         module.addDeserializer(JoynrIllegalStateException.class, new JoynrIllegalStateExceptionDeserializer());
         module.addDeserializer(JoynrRequestInterruptedException.class,
                                new JoynrRequestInterruptedExceptionDeserializer());
+        module.addDeserializer(SubscriptionException.class, new SubscriptionExceptionDeserializer());
 
         module.setMixInAnnotation(Throwable.class, ThrowableMixIn.class);
         objectMapper.registerModule(module);
