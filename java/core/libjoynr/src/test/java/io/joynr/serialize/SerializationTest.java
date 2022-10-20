@@ -49,6 +49,7 @@ import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.exceptions.JoynrWaitExpiredException;
+import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.serialize.JoynrExceptionDeserializationUtils;
@@ -64,6 +65,7 @@ import joynr.Reply;
 import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionRequest;
+import joynr.SubscriptionReply;
 import joynr.SubscriptionStop;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.IllegalAccessException;
@@ -812,6 +814,21 @@ public class SerializationTest {
 
         Reply receivedReply = objectMapper.readValue(writeValueAsString, Reply.class);
         Assert.assertEquals(reply, receivedReply);
+    }
+
+    @Test
+    public void serializeSubscriptionReplyWithSubscriptionException() throws IOException {
+
+        final String subscriptionId = "subscriptionId";
+        SubscriptionException error = new SubscriptionException(subscriptionId, "detail message");
+        SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionId, error);
+
+        String writeValueAsString = objectMapper.writeValueAsString(subscriptionReply);
+        System.out.println(writeValueAsString);
+
+        SubscriptionReply receivedSubscriptionReply = objectMapper.readValue(writeValueAsString,
+                                                                             SubscriptionReply.class);
+        Assert.assertEquals(subscriptionReply, receivedSubscriptionReply);
     }
 
     @Test
