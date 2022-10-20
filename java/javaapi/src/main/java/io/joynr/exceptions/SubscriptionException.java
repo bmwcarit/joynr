@@ -19,15 +19,27 @@
 package io.joynr.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 public class SubscriptionException extends JoynrRuntimeException {
 
     private static final long serialVersionUID = 1L;
+
     @JsonProperty("subscriptionId")
     private final String subscriptionId;
 
     public String getSubscriptionId() {
         return this.subscriptionId;
+    }
+
+    /**
+    * DO NOT USE
+    * Constructor for deserializer
+    */
+    public SubscriptionException(String subscriptionId,
+                                 String errorMsg,
+                                 StdDeserializer<SubscriptionException> deserializer) {
+        this(subscriptionId, errorMsg);
     }
 
     public SubscriptionException(String subscriptionId) {
