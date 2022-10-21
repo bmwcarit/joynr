@@ -350,10 +350,10 @@ TEST_F(StdComplexDataTypeTest, equalsOperatorBaseCompareWithDerived)
     // intended object slicing:
     // only get those parts of TEverythingExtendedStruct which stem from TEverythingStruct
     TestTypes::TEverythingStruct* rhs = &tEverythingExtended1;
-    // in the lhs, additional attributes of a derived class object are sliced off to form the base class object
-    // the ThreadSanitizer complains about it.
-    // to avoid slicing, we can pass a pointer or a reference (as in the other case above)
-    // to the object as function arguments NOT the object itself.
+    // in the lhs, additional attributes of a derived class object are sliced off to form the base
+    // class object the ThreadSanitizer complains about it. to avoid slicing, we can pass a pointer
+    // or a reference (as in the other case above) to the object as function arguments NOT the
+    // object itself.
     TestTypes::TEverythingExtendedStruct* lhs = &tEverythingExtended1;
     EXPECT_TRUE(*lhs == *rhs);
     EXPECT_FALSE(*lhs != *rhs);

@@ -303,7 +303,6 @@ TEST_F(MessagingSettingsTest, mqttWithAdditionalBackendsWithoutDefaultMqttInfo)
     std::chrono::seconds expectedAdditionalBackend2KeepAliveSeconds(
             MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS());
 
-
     std::string expectedAdditionalBackend3Url("mqtt://additional-backend-host-3:1883/");
     std::string expectedAdditionalBackend3Gbid("additional-gbid-3");
     std::chrono::seconds expectedAdditionalBackend3KeepAliveSeconds(20);
