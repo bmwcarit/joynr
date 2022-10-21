@@ -1,4 +1,4 @@
-FROM openjdk:11-jre-slim
+FROM openjdk:17.0.1-jdk-slim
 
 COPY target/gcd.jar /gcd.jar
 COPY target/log4j*.properties /
