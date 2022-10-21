@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.discovery_entries
 (
     gbid character varying(255) COLLATE pg_catalog."default" NOT NULL,
     participantid character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    address text COLLATE pg_catalog."default",
+    address oid,
     clustercontrollerid character varying(255) COLLATE pg_catalog."default",
     domain character varying(255) COLLATE pg_catalog."default",
     expirydatems bigint,
