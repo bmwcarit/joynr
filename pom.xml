@@ -1005,6 +1005,12 @@
 				<type>jar</type>
 				<version>${ow2_asm.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>net.bytebuddy</groupId>
+				<artifactId>byte-buddy</artifactId>
+				<type>jar</type>
+				<version>1.12.14</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
