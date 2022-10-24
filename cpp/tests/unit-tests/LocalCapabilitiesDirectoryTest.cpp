@@ -173,10 +173,7 @@ public:
                       std::make_shared<LocalCapabilitiesDirectoryStore>()),
               _mockLocallyRegisteredCapabilities(std::make_shared<capabilities::MockStorage>()),
               _mockGlobalLookupCache(std::make_shared<capabilities::MockCachingStorage>()),
-              _mockLocalCapabilitiesDirectoryStore(
-                      std::make_shared<MockLocalCapabilitiesDirectoryStore>(
-                              _mockGlobalLookupCache,
-                              _mockLocallyRegisteredCapabilities)),
+
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _mockMessageRouter(std::make_shared<MockMessageRouter>(
                       _singleThreadedIOService->getIOService())),
@@ -254,6 +251,13 @@ public:
                                                               _entry.getExpiryDateMs(),
                                                               _entry.getPublicKeyId(),
                                                               _LOCAL_ADDRESS);
+    }
+
+    void initializeMockLocalCapabilitiesDirectoryStory()
+    {
+        _mockLocalCapabilitiesDirectoryStore =
+                std::make_shared<MockLocalCapabilitiesDirectoryStore>(
+                        _mockGlobalLookupCache, _mockLocallyRegisteredCapabilities);
     }
 
     void finalizeTestSetupAfterMockExpectationsAreDone()
@@ -432,6 +436,7 @@ public:
                 .InSequence(s)
                 .WillOnce(DoAll(SaveArg<1>(&capturedLCDStore), ReleaseSemaphore(_semaphore)));
 
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         _localCapabilitiesDirectory->add(_entry,
@@ -488,6 +493,8 @@ public:
                     lookup(Eq(_dummyParticipantIdsVector[1]), Eq(expectedGbids),
                            Eq(_discoveryQos.getDiscoveryTimeout()), _, _, _))
                 .Times(1);
+
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
         _localCapabilitiesDirectory->lookup(
                 _dummyParticipantIdsVector[1], _discoveryQos, gbidsForLookup, nullptr, nullptr);
@@ -510,6 +517,7 @@ public:
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createVoidOnSuccessFunction(),
@@ -648,7 +656,7 @@ public:
                         _, _, _, _, _))
                 .Times(1)
                 .WillOnce(InvokeArgument<4>(expectedError));
-
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         _localCapabilitiesDirectory->addToAll(_entry,
@@ -667,6 +675,7 @@ public:
                 .Times(1)
                 .WillOnce(InvokeArgument<5>(errorEnum));
 
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
@@ -686,6 +695,7 @@ public:
                 .Times(1)
                 .WillOnce(InvokeArgument<4>(errorEnum));
 
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         _localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[1],
@@ -704,6 +714,7 @@ public:
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
 
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
@@ -722,6 +733,7 @@ public:
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         _localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[1],
@@ -742,7 +754,7 @@ public:
                     add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
                 .Times(1)
                 .WillOnce(InvokeArgument<4>(expectedDiscoveryError));
-
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         _localCapabilitiesDirectory->add(
@@ -763,6 +775,7 @@ public:
                 .Times(1)
                 .WillOnce(InvokeArgument<4>(expectedDiscoveryError));
 
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         joynr::exceptions::ProviderRuntimeException expectedException(
@@ -792,6 +805,7 @@ public:
                                  const types::DiscoveryError::Enum& expectedDiscoveryError)
     {
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(_, _, _, _, _, _)).Times(0);
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
         const bool awaitGlobalRegistration = true;
         _localCapabilitiesDirectory->add(
@@ -831,6 +845,8 @@ protected:
                                _,
                                _))
                 .Times(0);
+
+        initializeMockLocalCapabilitiesDirectoryStory();
         finalizeTestSetupAfterMockExpectationsAreDone();
 
         std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
@@ -922,6 +938,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, add_global_invokesGcd)
     Sequence s;
 
     checkAddToGcdClient(_KNOWN_GBIDS, s);
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -937,6 +954,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addCapabilityWithSingleNonDefaultGbid)
     const bool awaitGlobalRegistration = true;
     Sequence s;
     checkAddToGcdClient(expectedGbids, s);
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry, awaitGlobalRegistration, gbids,
@@ -953,6 +971,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addUpdatesLastSeenDate)
     const bool awaitGlobalRegistration = true;
     Sequence s;
     checkAddToGcdClient(expectedGbids, s);
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry, awaitGlobalRegistration, gbids,
@@ -971,6 +990,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addWithGbids_global_multipleGbids_invokes
     const bool awaitGlobalRegistration = true;
     Sequence s;
     checkAddToGcdClient(expectedGbids, s);
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry, awaitGlobalRegistration, gbids,
@@ -987,6 +1007,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addWithGbids_global_emptyGbidVector_addsT
     const bool awaitGlobalRegistration = true;
     Sequence s;
     checkAddToGcdClient(expectedGbids, s);
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry,
@@ -1008,6 +1029,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addToAll_global_invokesGcd)
             .Times(1)
             .WillOnce(InvokeArgument<3>());
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
     _localCapabilitiesDirectory->addToAll(_entry, awaitGlobalRegistration,
                                           createVoidOnSuccessFunction(),
@@ -1026,6 +1048,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, add_local_doesNotInvokeGcd)
                 add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
             .Times(0);
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
     _localCapabilitiesDirectory->add(
             _entry, createVoidOnSuccessFunction(), _unexpectedProviderRuntimeExceptionFunction);
@@ -1039,7 +1062,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
     providerQos.setScope(types::ProviderScope::GLOBAL);
     _entry.setQos(providerQos);
     const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
-
+    initializeMockLocalCapabilitiesDirectoryStory();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry)))
             .Times(1);
@@ -1057,6 +1080,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
 TEST_F(LocalCapabilitiesDirectoryTest, testReAddAllGlobalDiscoveryEntriesPeriodically)
 {
     // make sure that there is only one runtime that is periodically calling touch
+    initializeMockLocalCapabilitiesDirectoryStory();
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     configureShortCapabilitiesFreshnessUpdateInterval();
     auto gcdSemaphore = std::make_shared<Semaphore>(0);
@@ -1078,7 +1102,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocalEntry_callsMockStorage)
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
     _entry.setQos(providerQos);
-
+    initializeMockLocalCapabilitiesDirectoryStory();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry)))
             .Times(1);
@@ -1096,6 +1120,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupLocalEntryByParticipantId_callsMock
     boost::optional<joynr::types::DiscoveryEntry> result = boost::none;
     _mockLocallyRegisteredCapabilities->setLookupByParticipantIdResult(result);
     std::vector<std::string> gbids{_KNOWN_GBIDS[1]};
+    initializeMockLocalCapabilitiesDirectoryStory();
 
     EXPECT_CALL(
             *_mockLocalCapabilitiesDirectoryStore,
@@ -1129,6 +1154,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalCapSucceeds_NextAddShallAddGloba
                     _, _, _, _))
             .InSequence(s)
             .WillOnce(InvokeArgument<3>());
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry,
@@ -1205,6 +1231,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addSameGbidTwiceInARow)
                     Eq(expectedGbids), _, _, _))
             .Times(2)
             .WillRepeatedly(InvokeArgument<3>());
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry,
@@ -1236,6 +1264,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, addDifferentGbidsAfterEachOther)
     checkAddToGcdClient(expectedGbids1, s);
     checkAddToGcdClient(expectedGbids2, s);
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry,
@@ -1281,6 +1310,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddKnownLocalEntryDoesNothing)
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry,
@@ -1303,6 +1334,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAll)
                     Eq(expectedGbids), _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<3>());
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->addToAll(_entry, awaitGlobalRegistration,
@@ -1322,6 +1355,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllLocal)
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->addToAll(_entry,
@@ -1357,6 +1392,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testAddToAllIsProperlyRejected_exception)
             .Times(1)
             .WillOnce(Invoke(
                     this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddWithException));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->addToAll(
@@ -1373,6 +1410,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 {
     const std::vector<std::string>& emptyDomains{};
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
     EXPECT_THROW(_localCapabilitiesDirectory->lookup(emptyDomains,
                                                      _INTERFACE_1_NAME,
@@ -1405,6 +1443,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList))
             .RetiresOnSaturation();
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     std::vector<types::DiscoveryEntryWithMetaInfo> result;
@@ -1461,6 +1500,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .WillOnce(InvokeArgument<3>());
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createVoidOnSuccessFunction(),
@@ -1514,6 +1555,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .WillOnce(InvokeArgument<3>());
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createVoidOnSuccessFunction(),
@@ -1573,6 +1616,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList))
             .RetiresOnSaturation();
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup(
@@ -1631,6 +1676,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList))
             .RetiresOnSaturation();
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup(
@@ -1669,6 +1716,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, Eq(multipleGbids), _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     const std::uint8_t& expectedReturnedGlobalEntries = 2;
@@ -1694,6 +1743,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, Eq(_KNOWN_GBIDS), _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     const std::uint8_t expectedReturnedGlobalEntries = 2;
@@ -1744,6 +1795,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillOnce(InvokeArgument<3>(onSuccessResult));
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(_entry,
@@ -1817,6 +1869,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterfaceWithGbidsIsProperl
             .Times(1)
             .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::
                                            fakeCapabilitiesClientLookupWithDiscoveryException));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup(
@@ -1863,6 +1917,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByParticipantIdWithGbidsIsProperlyR
                        Eq(_discoveryQos.getDiscoveryTimeout()), _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<5>(fakeDiscoveryException));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup(
@@ -1945,6 +2001,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByParticipantIdWithGbids_invalidGbi
 {
     const std::vector<std::string>& duplicateGbid{
             _KNOWN_GBIDS[1], _KNOWN_GBIDS[0], _KNOWN_GBIDS[1]};
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     testLookupByParticipantIdWithGbids_gbidValidationFails(
             duplicateGbid, types::DiscoveryError::INVALID_GBID);
 }
@@ -1958,6 +2016,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupByDomainInterface_globalOnly_emptyC
             lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, Eq(_KNOWN_GBIDS), _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntriesResultList));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     auto onSuccess = [this](const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
@@ -1998,6 +2058,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntriesResultList))
             .RetiresOnSaturation();
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     // add DiscoveryEntries to cache
@@ -2026,6 +2088,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, Eq(_KNOWN_GBIDS), _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntriesResultList));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     auto onSuccess = [this](const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
@@ -2047,6 +2111,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     // add local capability
@@ -2100,6 +2166,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntriesResultList))
             .RetiresOnSaturation();
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     // add DiscoveryEntries to cache
@@ -2130,6 +2198,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, _entry);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
     _localCapabilitiesDirectory->add(
             _entry, createVoidOnSuccessFunction(), _defaultProviderRuntimeExceptionError);
@@ -2167,6 +2237,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilities_invokesGcdClient)
                        _, _))
             .Times(1)
             .InSequence(s);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -2182,7 +2254,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_participantNotRegistered
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 remove(Eq(_dummyParticipantIdsVector[0]), _, _, _, _))
             .Times(1);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
+
     _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0],
                                         createVoidOnSuccessFunction(),
                                         _defaultProviderRuntimeExceptionError);
@@ -2207,6 +2282,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemove_localProvider_GcdNotCalled)
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 remove(Eq(_dummyParticipantIdsVector[0]), _, _, _, _))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -2251,14 +2328,17 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                     InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_SELECTED_BACKENDS),
                     ReleaseSemaphore(semaphore)));
 
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
-            .Times(1);
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(1);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
                 removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(1);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1);
+
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2280,14 +2360,17 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                     DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT),
                           ReleaseSemaphore(semaphore)));
 
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
-            .Times(1);
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(1);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
                 removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(1);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1);
+
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2307,14 +2390,17 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
             .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INVALID_GBID),
                             ReleaseSemaphore(semaphore)));
 
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
-            .Times(0);
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(0);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
                 removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(0);
+
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2334,14 +2420,17 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
             .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::UNKNOWN_GBID),
                             ReleaseSemaphore(semaphore)));
 
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
-            .Times(0);
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(0);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
                 removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(0);
+
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2361,14 +2450,17 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
             .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INTERNAL_ERROR),
                             ReleaseSemaphore(semaphore)));
 
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
-            .Times(0);
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(0);
     EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
                 removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(0);
+
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2436,6 +2528,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, reregisterGlobalCapabilities)
             .Times(1)
             .RetiresOnSaturation();
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -2542,6 +2635,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                     _,
                     _))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -2584,6 +2679,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -2618,6 +2715,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -2668,6 +2767,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addAddsToCache)
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _))
             .Times(1);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
@@ -2705,7 +2806,10 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocallyDoesNotCallCapabilitiesClient)
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                 add(Matcher<const types::GlobalDiscoveryEntry&>(_), _, _, _, _, _))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
+
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
 
@@ -2749,6 +2853,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressReturnsCachedVal
             .Times(1)
             .WillOnce(InvokeArgument<4>(onSuccessResult))
             .RetiresOnSaturation();
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
@@ -2776,6 +2882,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForInterfaceAddressDelegatesToCapab
                 lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, _, _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(onSuccessResult));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     auto onSuccess = [this](const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
@@ -2836,6 +2944,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsCachedValues
             .WillOnce(Invoke(
                     this, &LocalCapabilitiesDirectoryTest::fakeLookupByParticipantIdWithResult))
             .RetiresOnSaturation();
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryQos localDiscoveryQos;
@@ -2869,6 +2979,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdReturnsNoCapability
             .Times(1)
             .WillOnce(
                     Invoke(this, &LocalCapabilitiesDirectoryTest::fakeLookupNoEntryForParticipant));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryQos localDiscoveryQos;
@@ -2897,6 +3009,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupForParticipantIdDelegatesToCapabili
             .Times(1)
             .WillOnce(Invoke(
                     this, &LocalCapabilitiesDirectoryTest::fakeLookupByParticipantIdWithResult));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryQos localDiscoveryQos;
@@ -2936,6 +3050,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, clearRemovesEntries)
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
             .InSequence(s);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryQos localDiscoveryQos;
@@ -2992,6 +3108,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerMultipleGlobalCapabilitiesCheckIf
                     add(GlobalDiscoveryEntryMatcher(globalDiscoveryEntryInfo2), _, _, _, _, _))
                 .Times(1);
     }
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
@@ -3044,6 +3162,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeLocalCapabilityByParticipantId)
             .Times(1)
             .InSequence(s)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
@@ -3092,6 +3212,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocal)
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
             .Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
@@ -3151,6 +3273,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalThenGl
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -3225,7 +3349,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupLocalAndGlo
             .InSequence(s)
             .WillOnce(InvokeArgument<4>(onSuccessResult));
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
+
     _localCapabilitiesDirectory->add(
             entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
 
@@ -3301,6 +3427,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillRepeatedly(
                     DoAll(AcquireSemaphore(gcdSemaphore), InvokeArgument<4>(onSuccessResult)));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     auto thread = std::thread([&]() {
@@ -3342,6 +3470,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillRepeatedly(
                     DoAll(AcquireSemaphore(gcdSemaphore), InvokeArgument<4>(onSuccessResult)));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     auto thread = std::thread([&]() {
@@ -3379,6 +3509,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                     AcquireSemaphore(gcdSemaphore),
                     Invoke(this, &LocalCapabilitiesDirectoryTest::
                                          fakeCapabilitiesClientLookupWithDiscoveryException)));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     auto thread = std::thread([&]() {
@@ -3426,6 +3558,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(0);
 
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -3453,6 +3587,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillRepeatedly(InvokeArgument<4>(onSuccessResult));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME, _DOMAIN_2_NAME},
@@ -3479,6 +3615,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .WillRepeatedly(
                     Invoke(this, &LocalCapabilitiesDirectoryTest::
                                          fakeCapabilitiesClientLookupWithDiscoveryException));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup(
@@ -3520,6 +3658,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillRepeatedly(InvokeArgument<4>(onSuccessResult));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -3563,6 +3703,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .WillRepeatedly(
                     Invoke(this, &LocalCapabilitiesDirectoryTest::
                                          fakeCapabilitiesClientLookupWithDiscoveryException));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -3591,6 +3733,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillRepeatedly(InvokeArgument<4>(onSuccessResult));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME, _DOMAIN_2_NAME},
@@ -3677,6 +3821,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeGlobalExpiredEntries_ReturnNonExpir
             .WillOnce(InvokeArgument<4>(expectedResultInterface3))
             .RetiresOnSaturation();
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup(domainVector,
@@ -3732,6 +3877,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsNoLocalEntrie
             .WillRepeatedly(
                     Invoke(this, &LocalCapabilitiesDirectoryTest::
                                          fakeCapabilitiesClientLookupWithDiscoveryException));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->lookup(
@@ -3774,6 +3921,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             .Times(1)
             .WillRepeatedly(InvokeArgument<4>(onSuccessResult));
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -3817,6 +3965,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupGlobalOnly_GlobalFailsLocalEntries_
                     Invoke(this, &LocalCapabilitiesDirectoryTest::
                                          fakeCapabilitiesClientLookupWithDiscoveryException));
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -3889,6 +4038,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, lookupMultipeDomainsReturnsResultForMulti
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(0);
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -3944,6 +4094,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const std::vector<InterfaceAddress>& interfaceAddresses =
             LCDUtil::getInterfaceAddresses(domains, _INTERFACE_1_NAME);
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 getLocalAndCachedCapabilities(
                         Matcher<const std::vector<InterfaceAddress>&>(interfaceAddresses),
@@ -4099,6 +4250,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const std::vector<InterfaceAddress>& interfaceAddresses =
             LCDUtil::getInterfaceAddresses(domains, _INTERFACE_1_NAME);
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 getLocalAndCachedCapabilities(
                         Matcher<const std::vector<InterfaceAddress>&>(interfaceAddresses),
@@ -4174,6 +4326,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const std::vector<InterfaceAddress>& interfaceAddresses =
             LCDUtil::getInterfaceAddresses(domains, _INTERFACE_1_NAME);
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 getLocalAndCachedCapabilities(
                         Matcher<const std::vector<InterfaceAddress>&>(interfaceAddresses),
@@ -4258,6 +4411,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     discoveryQos.setCacheMaxAge(10000);
     discoveryQos.setDiscoveryTimeout(5000);
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 getLocalAndCachedCapabilities(
                         Matcher<const std::string&>(participantId1), _, Eq(_KNOWN_GBIDS), _))
@@ -4337,6 +4491,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerLocalCapability_lookupGlobalOnly)
             .WillRepeatedly(
                     InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -4402,6 +4557,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocal)
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
             .Times(1);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -4442,6 +4599,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
@@ -4505,6 +4663,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerCachedGlobalCapability_lookupGlob
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
             .Times(1);
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     types::DiscoveryEntry entry(_defaultProviderVersion,
@@ -4553,6 +4713,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
     // this is dangerous and should not be done
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _))
             .WillRepeatedly(InvokeArgument<4>(types::DiscoveryError::INTERNAL_ERROR));
+
+    initializeMockLocalCapabilitiesDirectoryStory();
 
     _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
             _clusterControllerSettingsForPersistencyTests,
@@ -4702,6 +4864,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
 
 TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)
 {
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
     const std::string& fileName = "test-resources/ListOfCapabilitiesToInject.json";
     _localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(fileName);
@@ -4726,6 +4889,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)
 
 TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnEmptyDomainsVector)
 {
+    initializeMockLocalCapabilitiesDirectoryStory();
     // there are no expectations for the mocks of _localCapabilitiesDirectory
     finalizeTestSetupAfterMockExpectationsAreDone();
 
@@ -4786,6 +4950,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
             .Times(1);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -4846,6 +5011,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
             .Times(1)
             .WillOnce(InvokeArgument<4>(globalEntryVec));
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -4878,6 +5044,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
 TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
 {
     // make sure that there is only one runtime that is periodically calling touch
+    initializeMockLocalCapabilitiesDirectoryStory();
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     configureShortCapabilitiesFreshnessUpdateInterval();
 
@@ -4924,6 +5091,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, callTouchPeriodically)
 TEST_F(LocalCapabilitiesDirectoryTest, touchNotCalled_noParticipantIdsToTouch_entryHasLocalScope)
 {
     // make sure that there is only one runtime that is periodically calling touch
+    initializeMockLocalCapabilitiesDirectoryStory();
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     configureShortCapabilitiesFreshnessUpdateInterval();
 
@@ -4951,6 +5119,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchNotCalled_noParticipantIdsToTouch_en
 TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_multipleParticipantIdsForSingleGbid)
 {
     // make sure that there is only one runtime that is periodically calling touch
+    initializeMockLocalCapabilitiesDirectoryStory();
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     configureShortCapabilitiesFreshnessUpdateInterval();
 
@@ -5021,6 +5190,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_multipleParticipantIdsFor
 TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_singleParticipantIdForMultipleGbids)
 {
     // make sure that there is only one runtime that is periodically calling touch
+    initializeMockLocalCapabilitiesDirectoryStory();
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     configureShortCapabilitiesFreshnessUpdateInterval();
 
@@ -5060,12 +5230,12 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledOnce_singleParticipantIdForMul
 
     EXPECT_EQ(capturedParticipantIds.size(), 1);
     EXPECT_EQ(capturedParticipantIds[0], participantId1);
-    Mock::VerifyAndClearExpectations(_globalCapabilitiesDirectoryClient.get());
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, touchCalledTwice_twoParticipantIdsForDifferentGbids)
 {
     // make sure that there is only one runtime that is periodically calling touch
+    initializeMockLocalCapabilitiesDirectoryStory();
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     configureShortCapabilitiesFreshnessUpdateInterval();
 
@@ -5137,6 +5307,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, touchCalledTwice_twoParticipantIdsForDiff
 TEST_F(LocalCapabilitiesDirectoryTest, touchRefreshesAllEntries_GcdTouchOnlyUsesGlobalOnes)
 {
     // make sure that there is only one runtime that is periodically calling touch
+    initializeMockLocalCapabilitiesDirectoryStory();
     test::util::resetAndWaitUntilDestroyed(_localCapabilitiesDirectoryWithMockCapStorage);
     configureShortCapabilitiesFreshnessUpdateInterval();
 
@@ -5292,6 +5463,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, addMultipleTimesSameProviderAwaitForGloba
             .WillOnce(DoAll(
                     Invoke(this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddSuccess),
                     ReleaseSemaphore(gcdSemaphore))); // invoke onSuccess
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->add(
@@ -5339,6 +5512,7 @@ TEST_P(LocalCapabilitiesDirectoryACMockTest, checkPermissionToRegisterWithMock)
     ON_CALL(*mockAccessController, hasProviderPermission(_, _, _, _))
             .WillByDefault(Return(this->_HAS_PERMISSION));
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectory->setAccessController(util::as_weak_ptr(mockAccessController));
@@ -5491,6 +5665,7 @@ TEST_P(LocalCapabilitiesDirectoryWithProviderScope,
                         this, &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientAddSuccess));
     }
 
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     for (int i = 0; i < numberOfDuplicatedEntriesToAdd; ++i) {
@@ -5529,6 +5704,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControll
                         this,
                         &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientRemoveStaleSuccess));
     }
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
     _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
 }
@@ -5545,6 +5722,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControll
                         this,
                         &LocalCapabilitiesDirectoryTest::fakeCapabilitiesClientRemoveStaleSuccess));
     }
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
     _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
 }
@@ -5558,6 +5737,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveStaleProvidersOfClusterControll
                 .WillOnce(Invoke(this, &LocalCapabilitiesDirectoryTest::
                                                fakeCapabilitiesClientRemoveStaleWithException));
     }
+
+    initializeMockLocalCapabilitiesDirectoryStory();
     finalizeTestSetupAfterMockExpectationsAreDone();
     _localCapabilitiesDirectory->removeStaleProvidersOfClusterController(maxLastSeenMs);
 }
