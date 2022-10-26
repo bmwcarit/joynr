@@ -25,6 +25,8 @@ import joynr.infrastructure.DacTypes.MasterAccessControlEntry;
 
 public class MasterAccessControlEntryDB extends MasterAccessControlEntry {
 
+    public static final String WILDCARD = "*";
+
     public static final com.googlecode.cqengine.attribute.Attribute<MasterAccessControlEntryDB, String> UID = new SimpleAttribute<MasterAccessControlEntryDB, String>("uid") {
         public String getValue(MasterAccessControlEntryDB masterAccessControlEntryDB, QueryOptions queryOptions) {
             return masterAccessControlEntryDB.getUid();
@@ -43,6 +45,11 @@ public class MasterAccessControlEntryDB extends MasterAccessControlEntry {
     public static final com.googlecode.cqengine.attribute.Attribute<MasterAccessControlEntryDB, String> OPERATION = new SimpleAttribute<MasterAccessControlEntryDB, String>("operation") {
         public String getValue(MasterAccessControlEntryDB masterAccessControlEntryDB, QueryOptions queryOptions) {
             return masterAccessControlEntryDB.getOperation();
+        }
+    };
+    public static final com.googlecode.cqengine.attribute.Attribute<MasterAccessControlEntryDB, Boolean> WILDCARDDOMAIN = new SimpleAttribute<MasterAccessControlEntryDB, Boolean>("wildcardDomain") {
+        public Boolean getValue(MasterAccessControlEntryDB masterAccessControlEntryDB, QueryOptions queryOptions) {
+            return masterAccessControlEntryDB.getDomain().endsWith(WILDCARD);
         }
     };
 

@@ -27,6 +27,7 @@ import static com.googlecode.cqengine.query.QueryFactory.queryOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ import joynr.infrastructure.DacTypes.Role;
 
 public class MasterRegistrationControlEntryStore {
     private static final String WILDCARD = "*";
+    private static final String WILDCARD_REGEX = "\\*";
     private static final Logger logger = LoggerFactory.getLogger(MasterRegistrationControlEntryStore.class);
 
     private DomainRoleEntryStore domainRoleEntryStore;
@@ -108,6 +110,7 @@ public class MasterRegistrationControlEntryStore {
     public MasterRegistrationControlEntry getControlEntry(String uid, String domain, String interfaceName) {
 
         MasterRegistrationControlEntry masterRce = null;
+        // Query matches for this configuration
         com.googlecode.cqengine.query.Query<MasterRegistrationControlEntryDB> cqQuery = and(or(equal(MasterRegistrationControlEntryDB.UID,
                                                                                                      uid),
                                                                                                equal(MasterRegistrationControlEntryDB.UID,
@@ -116,13 +119,44 @@ public class MasterRegistrationControlEntryStore {
                                                                                                   domain),
                                                                                             equal(MasterRegistrationControlEntryDB.INTERFACENAME,
                                                                                                   interfaceName));
+
         ResultSet<MasterRegistrationControlEntryDB> cqResult = masterRclDB.retrieve(cqQuery,
                                                                                     queryOptions(orderBy(descending(MasterRegistrationControlEntryDB.UID))));
+
         if (!cqResult.isEmpty()) {
             masterRce = cqResult.uniqueResult().getMasterRegistrationControlEntry();
+            return masterRce;
         }
 
-        return masterRce;
+        // Query Wildcards for this configuration
+        com.googlecode.cqengine.query.Query<MasterRegistrationControlEntryDB> cqQueryWithWildcard = and(or(equal(MasterRegistrationControlEntryDB.UID,
+                                                                                                                 uid),
+                                                                                                           equal(MasterRegistrationControlEntryDB.UID,
+                                                                                                                 WILDCARD)),
+                                                                                                        equal(MasterRegistrationControlEntryDB.WILDCARDDOMAIN,
+                                                                                                              true),
+                                                                                                        equal(MasterRegistrationControlEntryDB.INTERFACENAME,
+                                                                                                              interfaceName));
+
+        ResultSet<MasterRegistrationControlEntryDB> cqResultWithWildcard = masterRclDB.retrieve(cqQueryWithWildcard,
+                                                                                                queryOptions(orderBy(descending(MasterRegistrationControlEntryDB.UID))));
+
+        // For the Wildcards filter any that match the criteria
+        if (!cqResultWithWildcard.isEmpty()) {
+            List<MasterRegistrationControlEntryDB> matchingEntries = cqResultWithWildcard.stream()
+                                                                                         .filter(entry -> entry.getDomain()
+                                                                                                               .equals(WILDCARD)
+                                                                                                 || domain.startsWith(entry.getDomain()
+                                                                                                                           .split(WILDCARD_REGEX)[0]))
+                                                                                         .collect(Collectors.toList());
+
+            if (!matchingEntries.isEmpty()) {
+                masterRce = matchingEntries.get(0).getMasterRegistrationControlEntry();
+            }
+
+            return masterRce;
+        }
+        return null;
     }
 
     public Boolean updateControlEntry(MasterRegistrationControlEntry updatedMasterAce) {

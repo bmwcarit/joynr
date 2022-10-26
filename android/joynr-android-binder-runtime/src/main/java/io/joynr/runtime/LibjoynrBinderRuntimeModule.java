@@ -35,10 +35,8 @@ import io.joynr.messaging.GbidArrayFactory;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.routing.DummyRoutingTable;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
-import io.joynr.messaging.routing.LibjoynrBinderRoutingTableAddressValidator;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.messaging.routing.RoutingTableAddressValidator;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import joynr.system.RoutingTypes.Address;
@@ -69,7 +67,6 @@ public class LibjoynrBinderRuntimeModule extends AbstractRuntimeModule {
         bind(MulticastReceiverRegistrar.class).to(LibJoynrMessageRouter.class);
         bind(MessageSender.class).to(LibJoynrMessageSender.class);
         bind(RoutingTable.class).to(DummyRoutingTable.class).asEagerSingleton();
-        bind(RoutingTableAddressValidator.class).to(LibjoynrBinderRoutingTableAddressValidator.class);
         bind(Boolean.class).annotatedWith(Names.named(BinderMessagingSkeleton.BINDER_IS_MAIN_TRANSPORT))
                 .toInstance(Boolean.TRUE);
 

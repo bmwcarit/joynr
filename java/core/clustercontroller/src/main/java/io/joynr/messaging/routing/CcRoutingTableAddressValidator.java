@@ -34,6 +34,7 @@ import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.BinderAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.UdsAddress;
 import joynr.system.RoutingTypes.UdsClientAddress;
@@ -111,10 +112,12 @@ public class CcRoutingTableAddressValidator implements RoutingTableAddressValida
             return true;
         }
         if (!(oldEntry.getAddress() instanceof InProcessAddress)) {
-            if (newEntry.address instanceof WebSocketClientAddress || newEntry.address instanceof UdsClientAddress) {
+            if (newEntry.address instanceof WebSocketClientAddress || newEntry.address instanceof UdsClientAddress
+                    || newEntry.address instanceof BinderAddress) {
                 return true;
             } else if (!(oldEntry.getAddress() instanceof WebSocketClientAddress)
-                    && !(oldEntry.getAddress() instanceof UdsClientAddress)) {
+                    && !(oldEntry.getAddress() instanceof UdsClientAddress)
+                    && !(oldEntry.getAddress() instanceof BinderAddress)) {
                 // old address is MqttAddress or WebSocketAddress or UdsAddress
                 if (newEntry.address instanceof MqttAddress) {
                     return true;

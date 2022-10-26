@@ -41,6 +41,7 @@ import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
+import joynr.system.RoutingTypes.BinderAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcRoutingTableAddressValidatorTest {
@@ -234,6 +235,31 @@ public class CcRoutingTableAddressValidatorTest {
         final WebSocketAddress websocketAddress = new WebSocketAddress(WebSocketProtocol.WS, "host", 4242, "path");
         newEntry.setAddress(websocketAddress);
         assertFalse(validator.allowUpdate(oldEntry, newEntry));
+
+        final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
+        newEntry.setAddress(websocketClientAddress);
+        assertTrue(validator.allowUpdate(oldEntry, newEntry));
+
+        final InProcessAddress inProcessAddress = new InProcessAddress();
+        newEntry.setAddress(inProcessAddress);
+        assertTrue(validator.allowUpdate(oldEntry, newEntry));
+    }
+
+    @Test
+    public void allowUpdateOfBinderAddress() {
+        // precedence: InProcessAddress > WebSocketClientAddress/UdsClientAddress/BinderAddress > MqttAddress > WebSocketAddress/UdsAddress
+        final boolean isGloballyVisible = true;
+        final long expiryDateMs = Long.MAX_VALUE;
+        final BinderAddress oldAddress = new BinderAddress("test.package.name", 0);
+        final RoutingEntry oldEntry = new RoutingEntry(oldAddress, isGloballyVisible, expiryDateMs, false);
+
+        final MqttAddress mqttAddress = new MqttAddress("brokerUri", "topic");
+        final RoutingEntry newEntry = new RoutingEntry(mqttAddress, isGloballyVisible, expiryDateMs, false);
+        assertFalse(validator.allowUpdate(oldEntry, newEntry));
+
+        final BinderAddress binderAddress = new BinderAddress("package.name", 1);
+        newEntry.setAddress(binderAddress);
+        assertTrue(validator.allowUpdate(oldEntry, newEntry));
 
         final WebSocketClientAddress websocketClientAddress = new WebSocketClientAddress("webSocketId");
         newEntry.setAddress(websocketClientAddress);

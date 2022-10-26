@@ -28,6 +28,7 @@ import static com.googlecode.cqengine.query.QueryFactory.queryOptions;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,7 @@ import joynr.infrastructure.DacTypes.Role;
 
 public class MasterAccessControlEntryStore {
     private static final String WILDCARD = "*";
+    private static final String WILDCARD_REGEX = "\\*";
     private static final Logger logger = LoggerFactory.getLogger(MasterAccessControlEntryStore.class);
 
     private DomainRoleEntryStore domainRoleEntryStore;
@@ -168,6 +170,30 @@ public class MasterAccessControlEntryStore {
             cqResult = masterAclDB.retrieve(cqQueryWildcard);
             if (!cqResult.isEmpty()) {
                 masterAce = cqResult.uniqueResult().getMasterAccessControlEntry();
+            } else {
+                com.googlecode.cqengine.query.Query<MasterAccessControlEntryDB> cqQueryWildcardDomain = and(or(equal(MasterAccessControlEntryDB.UID,
+                                                                                                                     uid),
+                                                                                                               equal(MasterAccessControlEntryDB.UID,
+                                                                                                                     WILDCARD)),
+                                                                                                            equal(MasterAccessControlEntryDB.WILDCARDDOMAIN,
+                                                                                                                  true),
+                                                                                                            equal(MasterAccessControlEntryDB.INTERFACENAME,
+                                                                                                                  interfaceName),
+                                                                                                            equal(MasterAccessControlEntryDB.OPERATION,
+                                                                                                                  WILDCARD));
+                cqResult = masterAclDB.retrieve(cqQueryWildcardDomain);
+                if (!cqResult.isEmpty()) {
+                    List<MasterAccessControlEntryDB> matchingEntries = cqResult.stream()
+                                                                               .filter(entry -> entry.getDomain()
+                                                                                                     .equals(WILDCARD)
+                                                                                       || domain.startsWith(entry.getDomain()
+                                                                                                                 .split(WILDCARD_REGEX)[0]))
+                                                                               .collect(Collectors.toList());
+
+                    if (!matchingEntries.isEmpty()) {
+                        masterAce = matchingEntries.get(0).getMasterAccessControlEntry();
+                    }
+                }
             }
         }
 
