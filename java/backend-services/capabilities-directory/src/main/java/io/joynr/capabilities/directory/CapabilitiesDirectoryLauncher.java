@@ -238,8 +238,7 @@ public class CapabilitiesDirectoryLauncher {
     }
 
     private static void waitUntilShutdownRequested() {
-        try {
-            ServerSocket serverSocket = new ServerSocket(shutdownPort);
+        try (ServerSocket serverSocket = new ServerSocket(shutdownPort)) {
             serverSocket.accept();
             serverSocket.close();
         } catch (IOException e) {

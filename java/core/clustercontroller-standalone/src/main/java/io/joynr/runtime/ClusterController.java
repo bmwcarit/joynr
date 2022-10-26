@@ -48,6 +48,7 @@ public class ClusterController {
     private static final Logger logger = LoggerFactory.getLogger(ClusterController.class);
     private static Properties webSocketConfig;
     private static JoynrRuntime runtime;
+    private static final Object lock = new Object();
 
     public static void main(String[] args) {
         int port = 4242;
@@ -146,9 +147,9 @@ public class ClusterController {
             @Override
             public void run() {
                 logger.info("executing shutdown hook");
-                synchronized (this) {
+                synchronized (lock) {
                     logger.info("notifying any waiting thread from shutdown hook");
-                    notifyAll();
+                    lock.notifyAll();
                 }
                 logger.info("shutting down");
                 runtime.shutdown(false);
@@ -180,12 +181,14 @@ public class ClusterController {
                     + "This cluster controller will continue to run until its JVM gets terminated\n"
                     + "by the operating system. This can be triggered by sending a SIGTERM signal\n"
                     + "to the process running the JVM.");
-            synchronized (shutdownHook) {
+            synchronized (lock) {
                 logger.info("waiting on shutdown hook");
-                try {
-                    shutdownHook.wait();
-                } catch (InterruptedException e) {
-                    // ignore
+                while (shutdownHook.isAlive()) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
                 }
             }
         }
