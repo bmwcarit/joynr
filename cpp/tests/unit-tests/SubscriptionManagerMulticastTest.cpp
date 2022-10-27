@@ -56,17 +56,19 @@ public:
                               MockSubscriptionListenerOneType<types::Localisation::GpsLocation>>()),
               _qos(std::make_shared<MulticastSubscriptionQos>()),
               _future(std::make_shared<Future<std::string>>()),
-              _subscriptionManager(std::make_shared<SubscriptionManager>(
-                      _singleThreadedIOService->getIOService(),
-                      _mockMessageRouter)),
-              _subscriptionCallback(
-                      std::make_shared<
-                              MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
-                              "testSubscriptionId",
-                              _future,
-                              _subscriptionManager,
-                              nullptr))
+              _subscriptionManager(),
+              _subscriptionCallback()
+
     {
+    }
+
+    void finalizeObjectCreations()
+    {
+        _subscriptionManager = std::make_shared<SubscriptionManager>(
+                _singleThreadedIOService->getIOService(), _mockMessageRouter);
+        _subscriptionCallback =
+                std::make_shared<MulticastSubscriptionCallback<types::Localisation::GpsLocation>>(
+                        "testSubscriptionId", _future, _subscriptionManager, nullptr);
     }
 
 protected:
@@ -97,6 +99,7 @@ TEST_F(SubscriptionManagerMulticastTest, registerMulticastSubscription_registrat
                         _multicastId1, _subscriberParticipantId, _providerParticipantId1, _, _))
             .Times(1);
 
+    this->finalizeObjectCreations();
     _subscriptionManager->registerSubscription(
             _subscribeToName,
             _subscriberParticipantId,
@@ -124,6 +127,7 @@ TEST_F(SubscriptionManagerMulticastTest, unregisterMulticastSubscription_unregis
                         _multicastId1, _subscriberParticipantId, _providerParticipantId1, _, _))
             .Times(1);
 
+    this->finalizeObjectCreations();
     _subscriptionManager->registerSubscription(
             _subscribeToName,
             _subscriberParticipantId,
@@ -178,6 +182,7 @@ TEST_F(SubscriptionManagerMulticastTest,
                     subscriptionRequest_Provider3.getSubscriptionId(), _future,
                     _subscriptionManager, nullptr);
 
+    this->finalizeObjectCreations();
     _subscriptionManager->registerSubscription(
             _subscribeToName,
             _subscriberParticipantId,
@@ -249,12 +254,25 @@ TEST_F(SubscriptionManagerMulticastTest,
     std::string localMulticastId1 =
             _providerParticipantId1 + "/" + _subscribeToName + "/" + partition1;
     MulticastSubscriptionRequest subscriptionRequest1;
+    std::vector<std::string> partitions2 = {partition2};
+    std::string multicastId2 = _providerParticipantId1 + "/" + _subscribeToName + "/" + partition2;
+    MulticastSubscriptionRequest subscriptionRequest2;
 
     EXPECT_CALL(*_mockMessageRouter,
                 addMulticastReceiver(
+                        multicastId2, _subscriberParticipantId, _providerParticipantId1, _, _))
+            .Times(1);
+    EXPECT_CALL(*_mockMessageRouter,
+                addMulticastReceiver(
+                        localMulticastId1, _subscriberParticipantId, _providerParticipantId1, _, _))
+            .Times(1)
+            .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter,
+                removeMulticastReceiver(
                         localMulticastId1, _subscriberParticipantId, _providerParticipantId1, _, _))
             .Times(1);
 
+    this->finalizeObjectCreations();
     _subscriptionManager->registerSubscription(
             _subscribeToName,
             _subscriberParticipantId,
@@ -267,21 +285,7 @@ TEST_F(SubscriptionManagerMulticastTest,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) {});
 
-    testing::Mock::VerifyAndClearExpectations(_mockMessageRouter.get());
-
-    std::vector<std::string> partitions2 = {partition2};
-    std::string multicastId2 = _providerParticipantId1 + "/" + _subscribeToName + "/" + partition2;
-    MulticastSubscriptionRequest subscriptionRequest2;
     subscriptionRequest2.setSubscriptionId(subscriptionRequest1.getSubscriptionId());
-
-    EXPECT_CALL(*_mockMessageRouter,
-                removeMulticastReceiver(
-                        localMulticastId1, _subscriberParticipantId, _providerParticipantId1, _, _))
-            .Times(1);
-    EXPECT_CALL(*_mockMessageRouter,
-                addMulticastReceiver(
-                        multicastId2, _subscriberParticipantId, _providerParticipantId1, _, _))
-            .Times(1);
 
     _subscriptionManager->registerSubscription(
             _subscribeToName,
@@ -301,11 +305,15 @@ TEST_F(SubscriptionManagerMulticastTest,
 {
     MulticastSubscriptionRequest subscriptionRequest1;
 
+    EXPECT_CALL(*_mockMessageRouter, addMulticastReceiver(_, _, _, _, _)).Times(0);
     EXPECT_CALL(*_mockMessageRouter,
                 addMulticastReceiver(
                         _multicastId1, _subscriberParticipantId, _providerParticipantId1, _, _))
-            .Times(1);
+            .Times(1)
+            .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, removeMulticastReceiver(_, _, _, _, _)).Times(0);
 
+    this->finalizeObjectCreations();
     _subscriptionManager->registerSubscription(
             _subscribeToName,
             _subscriberParticipantId,
@@ -318,13 +326,8 @@ TEST_F(SubscriptionManagerMulticastTest,
             []() {},
             [](const joynr::exceptions::ProviderRuntimeException&) {});
 
-    testing::Mock::VerifyAndClearExpectations(_mockMessageRouter.get());
-
     MulticastSubscriptionRequest subscriptionRequest2;
     subscriptionRequest2.setSubscriptionId(subscriptionRequest1.getSubscriptionId());
-
-    EXPECT_CALL(*_mockMessageRouter, removeMulticastReceiver(_, _, _, _, _)).Times(0);
-    EXPECT_CALL(*_mockMessageRouter, addMulticastReceiver(_, _, _, _, _)).Times(0);
 
     _subscriptionManager->registerSubscription(
             _subscribeToName,
