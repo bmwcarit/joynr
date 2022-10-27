@@ -46,7 +46,7 @@
 			<dependency>
 				<groupId>ch.qos.reload4j</groupId>
 				<artifactId>reload4j</artifactId>
-				<version>1.2.19</version>
+				<version>1.2.22</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.errorprone</groupId>
@@ -156,37 +156,37 @@
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm</artifactId>
-				<version>7.0</version>
+				<version>9.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-analysis</artifactId>
-				<version>7.0</version>
+				<version>9.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-commons</artifactId>
-				<version>7.0</version>
+				<version>9.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-tree</artifactId>
-				<version>7.0</version>
+				<version>9.4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-util</artifactId>
-				<version>7.0</version>
+				<version>9.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>3.21.2</version>
+				<version>3.21.7</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java-util</artifactId>
-				<version>3.21.2</version>
+				<version>3.21.7</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.gson</groupId>

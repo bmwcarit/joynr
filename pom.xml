@@ -413,12 +413,12 @@
 			are referenced.
 		-->
 		<jersey.version>1.19.4</jersey.version>
-		<jackson.version>2.13.3</jackson.version>
+		<jackson.version>2.13.4</jackson.version>
 		<netty.version>4.1.80.Final</netty.version>
 		<guice.version>5.1.0</guice.version>
 		<jetty.version>11.0.11</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
-		<hibernate.version>5.5.7.Final</hibernate.version>
+		<hibernate.version>5.6.11.Final</hibernate.version>
 		<android.platform.version>9_r6</android.platform.version>
 		<android.platform.level>28</android.platform.level>
 		<skipTests>true</skipTests>
@@ -429,8 +429,9 @@
 		<log4j.version>2.17.2</log4j.version>
 		<smrf.version>0.3.3</smrf.version>
 		<jacoco.version>0.8.7</jacoco.version>
-		<sonarsource.version>3.7.0.1746</sonarsource.version>
+		<sonarsource.version>3.9.1.2184</sonarsource.version>
 		<surefire.version>3.0.0-M3</surefire.version>
+		<ow2_asm.version>9.4</ow2_asm.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
 	</properties>
 
@@ -460,6 +461,21 @@
 				<groupId>io.reactivex.rxjava2</groupId>
 				<artifactId>rxjava</artifactId>
 				<version>2.2.19</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest</artifactId>
+				<version>2.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-core</artifactId>
+				<version>2.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-library</artifactId>
+				<version>2.2</version>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
@@ -741,16 +757,6 @@
 				<version>${jersey.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-core</artifactId>
-				<version>1.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-library</artifactId>
-				<version>1.3</version>
-			</dependency>
-			<dependency>
 				<groupId>org.objenesis</groupId>
 				<artifactId>objenesis</artifactId>
 				<type>jar</type>
@@ -813,7 +819,7 @@
 			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
-				<version>42.4.1</version>
+				<version>42.5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
@@ -883,7 +889,7 @@
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
 				<artifactId>org.eclipse.osgi</artifactId>
-				<version>3.13.200</version>
+				<version>3.18.100</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.platform</groupId>
@@ -956,6 +962,54 @@
 				<artifactId>reactive-streams</artifactId>
 				<type>jar</type>
 				<version>1.0.4</version>
+            </dependency>
+			<dependency>
+				<groupId>org.xerial</groupId>
+				<artifactId>sqlite-jdbc</artifactId>
+				<type>jar</type>
+				<version>3.39.3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<type>jar</type>
+				<version>3.29.2-GA</version>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.annotation</groupId>
+				<artifactId>jakarta.annotation-api</artifactId>
+				<type>jar</type>
+				<version>2.1.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm</artifactId>
+				<type>jar</type>
+				<version>${ow2_asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-analysis</artifactId>
+				<type>jar</type>
+				<version>${ow2_asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-commons</artifactId>
+				<type>jar</type>
+				<version>${ow2_asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.asm</groupId>
+				<artifactId>asm-tree</artifactId>
+				<type>jar</type>
+				<version>${ow2_asm.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.bytebuddy</groupId>
+				<artifactId>byte-buddy</artifactId>
+				<type>jar</type>
+				<version>1.12.14</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -970,7 +1024,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>properties-maven-plugin</artifactId>
-					<version>1.0-alpha-2</version>
+					<version>1.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -1009,7 +1063,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.4.1</version>
 					<configuration>
 						<source>${generic.maven.compiler.source}</source>
 						<sourcepath>src/main</sourcepath>
@@ -1031,7 +1085,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-gpg-plugin</artifactId>
-					<version>1.6</version>
+					<version>3.0.1</version>
 				</plugin>
 				<plugin>
 					<groupId>com.github.spotbugs</groupId>
@@ -1091,7 +1145,7 @@
 						<dependency>
 							<groupId>com.google.guava</groupId>
 							<artifactId>guava</artifactId>
-							<version>30.1-jre</version>
+							<version>31.1-jre</version>
 						</dependency>
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
@@ -1609,7 +1663,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-plugin-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.6.4</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
