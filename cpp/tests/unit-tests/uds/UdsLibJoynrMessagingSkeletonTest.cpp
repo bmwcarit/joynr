@@ -104,17 +104,16 @@ protected:
 
 TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitTest)
 {
-    UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
 
+    UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     udsLibJoynrMessagingSkeleton.transmit(immutableMessage, onFailure);
 }
 
 TEST_F(UdsLibJoynrMessagingSkeletonTest, onMessageReceivedTest)
 {
-    UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     std::unique_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
 
     EXPECT_CALL(*_mockMessageRouter,
@@ -123,6 +122,7 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, onMessageReceivedTest)
                       _))
             .Times(1);
 
+    UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     udsLibJoynrMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
 }
@@ -133,11 +133,12 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest, transmitSetsReceivedFromGlobalForMultic
     _mutableMessage =
             _messageFactory.createMulticastPublication(_senderID, _qosSettings, publication);
 
-    UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
+    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
     auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
-    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
+
+    UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     udsLibJoynrMessagingSkeleton.transmit(immutableMessage, onFailure);
     EXPECT_TRUE(immutableMessage->isReceivedFromGlobal());
 }
@@ -183,11 +184,13 @@ TEST_F(UdsLibJoynrMessagingSkeletonTest,
 
 void UdsLibJoynrMessagingSkeletonTest::transmitDoesNotSetIsReceivedFromGlobal()
 {
-    UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
+    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
+
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
     auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
-    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
+
+    UdsLibJoynrMessagingSkeleton udsLibJoynrMessagingSkeleton(_mockMessageRouter);
     udsLibJoynrMessagingSkeleton.transmit(immutableMessage, onFailure);
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
 }
