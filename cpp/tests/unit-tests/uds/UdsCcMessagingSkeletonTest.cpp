@@ -103,9 +103,9 @@ protected:
 
 TEST_F(UdsCcMessagingSkeletonTest, transmitTest)
 {
-    UdsCcMessagingSkeleton udsCcMessagingSkeleton(_mockMessageRouter);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
+    UdsCcMessagingSkeleton udsCcMessagingSkeleton(_mockMessageRouter);
 
     auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     udsCcMessagingSkeleton.transmit(immutableMessage, onFailure);
@@ -113,14 +113,14 @@ TEST_F(UdsCcMessagingSkeletonTest, transmitTest)
 
 TEST_F(UdsCcMessagingSkeletonTest, onMessageReceivedTest)
 {
-    UdsCcMessagingSkeleton udsCcMessagingSkeleton(_mockMessageRouter);
     std::unique_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
-
     EXPECT_CALL(*_mockMessageRouter,
                 route(AllOf(MessageHasType(_mutableMessage.getType()),
                             ImmutableMessageHasPayload(_mutableMessage.getPayload())),
                       _))
             .Times(1);
+
+    UdsCcMessagingSkeleton udsCcMessagingSkeleton(_mockMessageRouter);
 
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     const std::string creator("anonoymous");
@@ -175,11 +175,12 @@ TEST_F(UdsCcMessagingSkeletonTest,
 
 void UdsCcMessagingSkeletonTest::transmitDoesNotSetIsReceivedFromGlobal()
 {
-    UdsCcMessagingSkeleton udsCcMessagingSkeleton(_mockMessageRouter);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
+    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
+
+    UdsCcMessagingSkeleton udsCcMessagingSkeleton(_mockMessageRouter);
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
     auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
-    EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
     udsCcMessagingSkeleton.transmit(immutableMessage, onFailure);
     EXPECT_FALSE(immutableMessage->isReceivedFromGlobal());
 }
