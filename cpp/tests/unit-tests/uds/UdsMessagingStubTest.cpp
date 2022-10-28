@@ -41,9 +41,8 @@ class UdsMessagingStubTest : public ::testing::Test
 public:
     UdsMessagingStubTest()
             : _mockIUdsSender(std::make_shared<MockIUdsSender>()),
-              _iUdsSender(_mockIUdsSender),
-              _udsMessagingStub(std::make_shared<UdsMessagingStub>(_iUdsSender)),
-              _semaphore(0),
+              _udsMessagingStub(),
+              _semaphore(std::make_shared<Semaphore>(0)),
               _mutableMessage(),
               _immutableMessage(nullptr)
     {
@@ -56,13 +55,17 @@ public:
         _immutableMessage = _mutableMessage.getImmutableMessage();
     }
 
+    void finalizeObjectsCreation()
+    {
+        _udsMessagingStub = std::make_shared<UdsMessagingStub>(_mockIUdsSender);
+    }
+
     ~UdsMessagingStubTest() = default;
 
 protected:
-    std::shared_ptr<MockIUdsSender> _mockIUdsSender = std::make_shared<MockIUdsSender>();
-    std::shared_ptr<IUdsSender> _iUdsSender;
+    std::shared_ptr<MockIUdsSender> _mockIUdsSender;
     std::shared_ptr<UdsMessagingStub> _udsMessagingStub;
-    Semaphore _semaphore;
+    std::shared_ptr<Semaphore> _semaphore;
     MutableMessage _mutableMessage;
     std::shared_ptr<ImmutableMessage> _immutableMessage;
 };
@@ -78,14 +81,16 @@ TEST_F(UdsMessagingStubTest, transmitCallsIUdsSenderSendWithCorrectArgs)
             send(A<const smrf::ByteArrayView&>(),
                  A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
             .WillOnce(DoAll(
-                    ::testing::SaveArg<0>(&capturedByteArrayView), ReleaseSemaphore(&_semaphore)));
+                    ::testing::SaveArg<0>(&capturedByteArrayView), ReleaseSemaphore(_semaphore)));
 
     EXPECT_CALL(*_mockIUdsSender, dtorCalled()).Times(1);
+
+    finalizeObjectsCreation();
 
     _udsMessagingStub->transmit(_immutableMessage, [](const exceptions::JoynrRuntimeException&) {
         FAIL() << "onFailure called";
     });
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::seconds(2)));
     std::string capturedData(capturedByteArrayView.data(),
                              capturedByteArrayView.data() + capturedByteArrayView.size());
     EXPECT_EQ(expectedData, capturedData);
@@ -98,15 +103,17 @@ TEST_F(UdsMessagingStubTest, transmitOnErrorIsInvokedWhenCalledFromUdsSenderSend
             *_mockIUdsSender,
             send(A<const smrf::ByteArrayView&>(),
                  A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()))
-            .WillOnce(DoAll(InvokeArgument<1>(expectedException), ReleaseSemaphore(&_semaphore)));
+            .WillOnce(DoAll(InvokeArgument<1>(expectedException), ReleaseSemaphore(_semaphore)));
 
     auto callback = std::make_shared<MockCallback<void>>();
     EXPECT_CALL(*callback, onError(Eq(expectedException))).Times(1);
     EXPECT_CALL(*_mockIUdsSender, dtorCalled()).Times(1);
 
+    finalizeObjectsCreation();
+
     _udsMessagingStub->transmit(
             _immutableMessage, [callback](const exceptions::JoynrRuntimeException& error) {
                 callback->onError(error);
             });
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::seconds(2)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::seconds(2)));
 }
