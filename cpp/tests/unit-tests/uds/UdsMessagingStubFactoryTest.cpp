@@ -88,13 +88,14 @@ TEST_F(UdsMessagingStubFactoryTest, createReturnsMessagingStubForKnownUdsOrUdsCl
     UdsMessagingStubFactory udsMessagingStubFactory;
     auto udsClientSender = std::make_shared<MockIUdsSender>();
     auto udsServerSender = std::make_shared<MockIUdsSender>();
+    EXPECT_CALL(*udsClientSender, dtorCalled());
+    EXPECT_CALL(*udsServerSender, dtorCalled());
 
     udsMessagingStubFactory.addClient(_udsClientAddress, udsClientSender);
     udsMessagingStubFactory.addServer(_udsServerAddress, udsServerSender);
     EXPECT_TRUE(udsMessagingStubFactory.create(_udsClientAddress).get() != nullptr);
     EXPECT_TRUE(udsMessagingStubFactory.create(_udsServerAddress).get() != nullptr);
-    EXPECT_CALL(*udsClientSender, dtorCalled());
-    EXPECT_CALL(*udsServerSender, dtorCalled());
+
 }
 
 TEST_F(UdsMessagingStubFactoryTest, addClientOraddServerDoesNotOverwriteExistingEntries)
@@ -104,6 +105,11 @@ TEST_F(UdsMessagingStubFactoryTest, addClientOraddServerDoesNotOverwriteExisting
     auto udsClientSender2 = std::make_shared<MockIUdsSender>();
     auto udsServerSender1 = std::make_shared<MockIUdsSender>();
     auto udsServerSender2 = std::make_shared<MockIUdsSender>();
+
+    EXPECT_CALL(*udsClientSender1, dtorCalled());
+    EXPECT_CALL(*udsServerSender1, dtorCalled());
+    EXPECT_CALL(*udsClientSender2, dtorCalled());
+    EXPECT_CALL(*udsServerSender2, dtorCalled());
 
     udsMessagingStubFactory.addClient(_udsClientAddress, udsClientSender1);
     udsMessagingStubFactory.addServer(_udsServerAddress, udsServerSender1);
@@ -119,11 +125,6 @@ TEST_F(UdsMessagingStubFactoryTest, addClientOraddServerDoesNotOverwriteExisting
 
     EXPECT_TRUE(clientStub1.get() == clientStub2.get());
     EXPECT_TRUE(serverStub1.get() == serverStub2.get());
-
-    EXPECT_CALL(*udsClientSender1, dtorCalled());
-    EXPECT_CALL(*udsServerSender1, dtorCalled());
-    EXPECT_CALL(*udsClientSender2, dtorCalled());
-    EXPECT_CALL(*udsServerSender2, dtorCalled());
 }
 
 TEST_F(UdsMessagingStubFactoryTest, createReturnsNullForNonUdsAddressTypes)
@@ -141,6 +142,9 @@ TEST_F(UdsMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromUdsMessagi
     auto udsClientSender = std::make_shared<MockIUdsSender>();
     auto udsServerSender = std::make_shared<MockIUdsSender>();
     auto semaphore = std::make_shared<Semaphore>(0);
+
+    EXPECT_CALL(*udsClientSender, dtorCalled());
+    EXPECT_CALL(*udsServerSender, dtorCalled());
 
     auto clientAddressCopy =
             std::make_shared<system::RoutingTypes::UdsClientAddress>(_udsClientAddress);
@@ -181,9 +185,6 @@ TEST_F(UdsMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromUdsMessagi
 
     EXPECT_TRUE((udsMessagingStubFactory.create(_udsClientAddress)).get() == nullptr);
     EXPECT_TRUE((udsMessagingStubFactory.create(_udsServerAddress)).get() == nullptr);
-
-    EXPECT_CALL(*udsClientSender, dtorCalled());
-    EXPECT_CALL(*udsServerSender, dtorCalled());
 }
 
 TEST_F(UdsMessagingStubFactoryTest, callingOnMessagingStubClosedWithWrongAddressTypeIsIgnored)
@@ -208,6 +209,7 @@ TEST_F(UdsMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMessagingS
     auto address = std::make_shared<system::RoutingTypes::UdsClientAddress>(_udsClientAddress);
     auto addressCopy = std::make_shared<system::RoutingTypes::UdsClientAddress>(_udsClientAddress);
     auto udsSender = std::make_shared<MockIUdsSender>();
+    EXPECT_CALL(*udsSender, dtorCalled());
 
     udsMessagingStubFactory->addClient(
             joynr::system::RoutingTypes::UdsClientAddress(*address), udsSender);
@@ -224,7 +226,6 @@ TEST_F(UdsMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMessagingS
     EXPECT_TRUE(messagingStubFactory->contains(address));
     EXPECT_TRUE(messagingStubFactory->contains(addressCopy));
 
-    EXPECT_CALL(*udsSender, dtorCalled());
     udsMessagingStubFactory->onMessagingStubClosed(*addressCopy);
 
     EXPECT_FALSE(messagingStubFactory->contains(address));
