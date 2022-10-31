@@ -141,26 +141,27 @@ TEST_F(UdsServerTest, sendToClient)
 
 TEST_F(UdsServerTest, robustness_sendException_otherClientsNotAffected)
 {
-    Semaphore connectionSemaphore, disconnectionSemaphore;
+    auto connectionSemaphore = std::make_shared<Semaphore>();
+    auto disconnectionSemaphore = std::make_shared<Semaphore>();
+
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> tmpSender, nominalSender, erroneousSender;
     EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
             .Times(2)
-            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender),
-                                  InvokeWithoutArgs(&connectionSemaphore, &Semaphore::notify)));
+            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender), ReleaseSemaphore(connectionSemaphore)));
     // disconnected called for erroneous sender, not for nominal one
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
-            .WillOnce(InvokeWithoutArgs(&disconnectionSemaphore, &Semaphore::notify));
+            .WillOnce(ReleaseSemaphore(disconnectionSemaphore));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
-    ASSERT_TRUE(connectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectionSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for nominal client.";
     nominalSender = tmpSender;
 
     _udsSettings.setClientId("ErrorCausedBySenderNotByClient");
     joynr::UdsClient otherClient(_udsSettings, _ignoreClientFatalRuntimeErrors);
     otherClient.start();
-    ASSERT_TRUE(connectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectionSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for other client.";
     erroneousSender = tmpSender;
 
@@ -168,7 +169,7 @@ TEST_F(UdsServerTest, robustness_sendException_otherClientsNotAffected)
             1UL + std::numeric_limits<UdsFrameBufferV1::BodyLength>::max();
     smrf::ByteArrayView viewCausingException(nullptr, sizeViolatingLimit);
     erroneousSender->send(viewCausingException, [](const exceptions::JoynrRuntimeException&) {});
-    ASSERT_TRUE(disconnectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(disconnectionSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive disconnection callback for other client.";
 
     // Connections / Senders are independent. Error in one does not affect the other-
@@ -177,14 +178,12 @@ TEST_F(UdsServerTest, robustness_sendException_otherClientsNotAffected)
     ASSERT_EQ(waitFor(_messagesReceivedByClient, 1), 1)
             << "Erroneous clients affected good client connection.";
     EXPECT_EQ(_messagesReceivedByClient[0], message);
-
-    // Assure that only the expected disconnection has been called
-    Mock::VerifyAndClearExpectations(&mockUdsServerCallbacks);
 }
 
 TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffected)
 {
-    Semaphore connectSemaphore, disconnectSemaphore;
+    auto connectSemaphore = std::make_shared<Semaphore>();
+    auto disconnectSemaphore = std::make_shared<Semaphore>();
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> tmpSender, goodClientSender, badClientSender;
     /*
@@ -193,17 +192,16 @@ TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffec
      */
     EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
             .Times(2)
-            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender),
-                                  InvokeWithoutArgs(&connectSemaphore, &Semaphore::notify)));
+            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender), ReleaseSemaphore(connectSemaphore)));
 
     // disconnected callback called for erroneous client, not for good client
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
             .Times(1)
-            .WillRepeatedly(InvokeWithoutArgs(&disconnectSemaphore, &Semaphore::notify));
+            .WillRepeatedly(ReleaseSemaphore(disconnectSemaphore));
 
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
-    ASSERT_TRUE(connectSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for good client.";
 
     goodClientSender = tmpSender;
@@ -220,10 +218,10 @@ TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffec
     joynr::UdsFrameBufferV1 initFrame(addr);
     EXPECT_TRUE(errorInFrameAfterInit.write(initFrame.raw()));
     EXPECT_TRUE(errorInFrameAfterInit.write(smrf::ByteVector(100, 0x01)));
-    ASSERT_TRUE(connectSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for bad client.";
     badClientSender = tmpSender;
-    ASSERT_TRUE(disconnectSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(disconnectSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive disconnection callback for erroneous message.";
 
     const smrf::ByteVector message(1, 1);
@@ -231,26 +229,23 @@ TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffec
     ASSERT_EQ(waitFor(_messagesReceivedByClient, 1), 1)
             << "Erroneous clients affected good client connection.";
     EXPECT_EQ(_messagesReceivedByClient[0], message);
-
-    // Disconnection currently only called for errorneous client
-    Mock::VerifyAndClearExpectations(&mockUdsServerCallbacks);
 }
 
 TEST_F(UdsServerTest, robustness_nonblockingRead)
 {
     const smrf::Byte goodMessage = 42;
-    Semaphore connectSemaphore, messageSemaphore;
+    auto connectSemaphore = std::make_shared<Semaphore>();
+    auto messageSemaphore = std::make_shared<Semaphore>();
     std::shared_ptr<joynr::IUdsSender> tmpSender, goodClientSender, badClientSender;
     MockUdsServerCallbacks mockUdsServerCallbacks;
     EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
             .Times(2)
-            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender),
-                                  InvokeWithoutArgs(&connectSemaphore, &Semaphore::notify)));
+            .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender), ReleaseSemaphore(connectSemaphore)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, ElementsAre(goodMessage), _))
-            .WillOnce(InvokeWithoutArgs(&messageSemaphore, &Semaphore::notify));
+            .WillOnce(ReleaseSemaphore(messageSemaphore));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
-    ASSERT_TRUE(connectSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for good client.";
     goodClientSender = tmpSender;
 
@@ -258,7 +253,7 @@ TEST_F(UdsServerTest, robustness_nonblockingRead)
     joynr::system::RoutingTypes::UdsClientAddress addr("invalidLengthMessage");
     joynr::UdsFrameBufferV1 initFrame(addr);
     EXPECT_TRUE(erroneousClient.write(initFrame.raw()));
-    ASSERT_TRUE(connectSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for bad client.";
     badClientSender = tmpSender;
 
@@ -289,37 +284,40 @@ TEST_F(UdsServerTest, robustness_nonblockingRead)
      * the next OP, if no bytes are in the underying OS UDS buffer.
      */
     sendFromClient(goodMessage);
-    ASSERT_TRUE(messageSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(messageSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive message from good client.";
 
     /*
      * Assure that no disconnection has been called yet and the content of the good-message
      * has been received.
      */
-    Mock::VerifyAndClearExpectations(&mockUdsServerCallbacks);
 }
 
 TEST_F(UdsServerTest, robustness_nonblockingWrite)
 {
-    Semaphore connectionSemaphore;
+    auto connectionSemaphore = std::make_shared<Semaphore>();
+    auto disconnectSemaphore = std::make_shared<Semaphore>(0);
+
     MockUdsServerCallbacks mockUdsServerCallbacks;
     std::shared_ptr<joynr::IUdsSender> tmpClientSender, goodClientSender, blockingClientSender;
     EXPECT_CALL(mockUdsServerCallbacks, connectedMock(_, _))
             .Times(2)
-            .WillRepeatedly(DoAll(SaveArg<1>(&tmpClientSender),
-                                  InvokeWithoutArgs(&connectionSemaphore, &Semaphore::notify)));
+            .WillRepeatedly(
+                    DoAll(SaveArg<1>(&tmpClientSender), ReleaseSemaphore(connectionSemaphore)));
     // disconnected not called, since no connection loss (UDS socket has per default no timeout)
-    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(0);
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
+            .Times(1)
+            .WillOnce(ReleaseSemaphore(disconnectSemaphore));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
-    ASSERT_TRUE(connectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectionSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for good client.";
     goodClientSender = tmpClientSender;
 
     _udsSettings.setClientId("blockMessageProcessing");
     BlockReceptionClient blockingClient(_udsSettings);
     blockingClient.start();
-    ASSERT_TRUE(connectionSemaphore.waitFor(_waitPeriodForClientServerCommunication))
+    ASSERT_TRUE(connectionSemaphore->waitFor(_waitPeriodForClientServerCommunication))
             << "Failed to receive connection callback for blocking client.";
     blockingClientSender = tmpClientSender;
 
@@ -343,9 +341,7 @@ TEST_F(UdsServerTest, robustness_nonblockingWrite)
     EXPECT_EQ(_messagesReceivedByClient[0], message);
 
     ASSERT_TRUE(blockingClient.stopBlockingAndWaitForReceivedBytes(1024 * 1024));
-
-    // Assure that no disconnection has been called yet
-    Mock::VerifyAndClearExpectations(&mockUdsServerCallbacks);
+    ASSERT_FALSE(disconnectSemaphore->getStatus());
 }
 
 TEST_F(UdsServerTest, sendToClientWhileClientDisconnection)

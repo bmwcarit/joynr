@@ -39,6 +39,7 @@
 #include "joynr/UdsServer.h"
 #include "joynr/UdsSettings.h"
 #include "joynr/system/RoutingTypes/UdsClientAddress.h"
+#include "tests/JoynrTest.h"
 
 #include "tests/mock/MockUdsClientCallbacks.h"
 
@@ -239,18 +240,17 @@ protected:
 
     void createClientAndGetRuntimeErrorMessage(std::string& errorMessage)
     {
-        joynr::Semaphore semaphore;
+        std::shared_ptr<joynr::Semaphore> semaphore = std::make_shared<joynr::Semaphore>();
         MockUdsClientCallbacks callbacks;
         joynr::exceptions::JoynrRuntimeException capturedException;
         EXPECT_CALL(callbacks, fatalRuntimeError(testing::_))
                 .WillOnce(testing::DoAll(
-                        testing::SaveArg<0>(&capturedException),
-                        testing::InvokeWithoutArgs(&semaphore, &joynr::Semaphore::notify)));
+                        testing::SaveArg<0>(&capturedException), ReleaseSemaphore(semaphore)));
         EXPECT_CALL(callbacks, disconnected()).Times(testing::AtMost(1));
 
         auto client = createClient(callbacks);
         client->start();
-        ASSERT_TRUE(semaphore.waitFor(_waitPeriodForClientServerCommunication))
+        ASSERT_TRUE(semaphore->waitFor(_waitPeriodForClientServerCommunication))
                 << std::string("No fatalRuntimeError callback received.");
         errorMessage = capturedException.getMessage();
     }
