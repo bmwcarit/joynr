@@ -192,10 +192,10 @@ MATCHER(isPointerToMqttAddress, "")
 
 TEST_F(MqttMessagingSkeletonTest, transmitTest)
 {
-    MqttMessagingSkeleton mqttMessagingSkeleton(
-            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
 
     auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
@@ -203,8 +203,6 @@ TEST_F(MqttMessagingSkeletonTest, transmitTest)
 
 TEST_F(MqttMessagingSkeletonTest, transmitTestWithMqttReplyToAddress)
 {
-    MqttMessagingSkeleton mqttMessagingSkeleton(
-            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     EXPECT_CALL(*_mockMessageRouter, route(immutableMessage, _)).Times(1);
     EXPECT_CALL(
@@ -224,12 +222,17 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithMqttReplyToAddress)
                           isPointerToMqttAddress()),
                     Eq(true), Eq(TimePoint::max().toMilliseconds()), Eq(false), _, _))
             .Times(1);
+
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
     auto onFailure = [](const exceptions::JoynrRuntimeException&) { FAIL() << "onFailure called"; };
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
 }
 
 TEST_F(MqttMessagingSkeletonTest, transmitTestWithBrokenReplyToAddress)
 {
+    EXPECT_CALL(*_mockMessageRouter, route(_, _)).Times(0);
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
     MqttMessagingSkeleton mqttMessagingSkeleton(
             _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
     _mutableMessage.setReplyTo("thisisinvalid::==");
@@ -239,8 +242,7 @@ TEST_F(MqttMessagingSkeletonTest, transmitTestWithBrokenReplyToAddress)
         SUCCEED() << "onFailure called";
         semaphore->notify();
     };
-    EXPECT_CALL(*_mockMessageRouter, route(_, _)).Times(0);
-    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
+
     mqttMessagingSkeleton.transmit(immutableMessage, onFailure);
     ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(10)));
 }
@@ -302,15 +304,14 @@ TEST_F(MqttMessagingSkeletonTest, transmitSetsIsReceivedFromGlobalForMulticastSu
 
 TEST_F(MqttMessagingSkeletonTest, onMessageReceivedTest)
 {
-    MqttMessagingSkeleton mqttMessagingSkeleton(
-            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
-    std::unique_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
-
     EXPECT_CALL(*_mockMessageRouter,
                 route(AllOf(MessageHasType(_mutableMessage.getType()),
                             ImmutableMessageHasPayload(_mutableMessage.getPayload())),
                       _))
             .Times(1);
+    MqttMessagingSkeleton mqttMessagingSkeleton(
+            _mockMessageRouter, nullptr, _ccSettings.getMqttMulticastTopicPrefix(), _testGbid);
+    std::unique_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
 
     smrf::ByteVector serializedMessage = immutableMessage->getSerializedMessage();
     mqttMessagingSkeleton.onMessageReceived(std::move(serializedMessage));
@@ -331,9 +332,9 @@ TEST_F(MqttMessagingSkeletonTest, registerMulticastSubscription_subscribesToMqtt
                                                                _isMqttExponentialBackoffEnabled,
                                                                _testGbid,
                                                                _receiverId);
+    EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId));
     MqttMessagingSkeleton mqttMessagingSkeleton(
             _mockMessageRouter, mockMqttReceiver, "", _testGbid);
-    EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId));
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
 }
 
@@ -350,10 +351,10 @@ TEST_F(MqttMessagingSkeletonTest, registerMulticastSubscription_subscribesToMqtt
                                                                _isMqttExponentialBackoffEnabled,
                                                                _testGbid,
                                                                _receiverId);
+    EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     MqttMessagingSkeleton mqttMessagingSkeleton(_mockMessageRouter, mockMqttReceiver,
                                                 _ccSettings.getMqttMulticastTopicPrefix(),
                                                 _testGbid);
-    EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
 }
@@ -371,13 +372,13 @@ TEST_F(MqttMessagingSkeletonTest, unregisterMulticastSubscription_unsubscribesFr
                                                                _isMqttExponentialBackoffEnabled,
                                                                _testGbid,
                                                                _receiverId);
+    EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
+    EXPECT_CALL(*mockMqttReceiver, unsubscribeFromTopic(multicastId));
+
     MqttMessagingSkeleton mqttMessagingSkeleton(_mockMessageRouter, mockMqttReceiver,
                                                 _ccSettings.getMqttMulticastTopicPrefix(),
                                                 _testGbid);
-    EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
-
-    EXPECT_CALL(*mockMqttReceiver, unsubscribeFromTopic(multicastId));
     mqttMessagingSkeleton.unregisterMulticastSubscription(multicastId);
 }
 
@@ -395,18 +396,16 @@ TEST_F(MqttMessagingSkeletonTest,
                                                                _isMqttExponentialBackoffEnabled,
                                                                _testGbid,
                                                                _receiverId);
+    EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
+    EXPECT_CALL(*mockMqttReceiver, unsubscribeFromTopic(multicastId)).Times(0);
+    EXPECT_CALL(*mockMqttReceiver, unsubscribeFromTopic(multicastId)).Times(1);
+
     MqttMessagingSkeleton mqttMessagingSkeleton(_mockMessageRouter, mockMqttReceiver,
                                                 _ccSettings.getMqttMulticastTopicPrefix(),
                                                 _testGbid);
-    EXPECT_CALL(*mockMqttReceiver, subscribeToTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
     mqttMessagingSkeleton.registerMulticastSubscription(multicastId);
-
-    EXPECT_CALL(*mockMqttReceiver, unsubscribeFromTopic(multicastId)).Times(0);
     mqttMessagingSkeleton.unregisterMulticastSubscription(multicastId);
-    Mock::VerifyAndClearExpectations(mockMqttReceiver.get());
-
-    EXPECT_CALL(*mockMqttReceiver, unsubscribeFromTopic(multicastId)).Times(1);
     mqttMessagingSkeleton.unregisterMulticastSubscription(multicastId);
 }
 
