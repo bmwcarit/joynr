@@ -48,25 +48,13 @@ class ReplyCallerTest : public ::testing::Test
 {
 public:
     ReplyCallerTest()
-            : intCallback(new MockCallbackWithJoynrException<int>()),
-              intFixture(std::bind(&MockCallbackWithJoynrException<int>::onSuccess,
-                                   intCallback,
-                                   std::placeholders::_1),
-                         std::bind(&MockCallbackWithJoynrException<int>::onError,
-                                   intCallback,
-                                   std::placeholders::_1)),
-              voidCallback(new MockCallbackWithJoynrException<void>()),
-              voidFixture(std::bind(&MockCallbackWithJoynrException<void>::onSuccess, voidCallback),
-                          std::bind(&MockCallbackWithJoynrException<void>::onError,
-                                    voidCallback,
-                                    std::placeholders::_1))
+            : intCallback(std::make_shared<MockCallbackWithJoynrException<int>>()),
+              voidCallback(std::make_shared<MockCallbackWithJoynrException<void>>())
     {
     }
 
     std::shared_ptr<MockCallbackWithJoynrException<int>> intCallback;
-    ReplyCaller<int> intFixture;
     std::shared_ptr<MockCallbackWithJoynrException<void>> voidCallback;
-    ReplyCaller<void> voidFixture;
 };
 
 typedef ReplyCallerTest ReplyCallerDeathTest;
@@ -75,6 +63,13 @@ TEST_F(ReplyCallerTest, timeOut)
 {
     EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
     EXPECT_CALL(*intCallback, onError(timeoutException())).Times(1);
+
+    ReplyCaller<int> intFixture(std::bind(&MockCallbackWithJoynrException<int>::onSuccess,
+                                          intCallback,
+                                          std::placeholders::_1),
+                                std::bind(&MockCallbackWithJoynrException<int>::onError,
+                                          intCallback,
+                                          std::placeholders::_1));
     intFixture.timeOut();
 }
 
@@ -82,6 +77,12 @@ TEST_F(ReplyCallerTest, timeOutForVoid)
 {
     EXPECT_CALL(*voidCallback, onSuccess()).Times(0);
     EXPECT_CALL(*voidCallback, onError(timeoutException())).Times(1);
+
+    ReplyCaller<void> voidFixture(
+            std::bind(&MockCallbackWithJoynrException<void>::onSuccess, voidCallback),
+            std::bind(&MockCallbackWithJoynrException<void>::onError,
+                      voidCallback,
+                      std::placeholders::_1));
     voidFixture.timeOut();
 }
 
@@ -93,6 +94,13 @@ TEST_F(ReplyCallerTest, errorReceived)
                         joynr::exceptions::ProviderRuntimeException::TYPE_NAME(), errorMsg))))
             .Times(1);
     EXPECT_CALL(*intCallback, onSuccess(_)).Times(0);
+
+    ReplyCaller<int> intFixture(std::bind(&MockCallbackWithJoynrException<int>::onSuccess,
+                                          intCallback,
+                                          std::placeholders::_1),
+                                std::bind(&MockCallbackWithJoynrException<int>::onError,
+                                          intCallback,
+                                          std::placeholders::_1));
     intFixture.returnError(std::make_shared<exceptions::ProviderRuntimeException>(errorMsg));
 }
 
@@ -104,6 +112,12 @@ TEST_F(ReplyCallerTest, errorReceivedForVoid)
                         joynr::exceptions::ProviderRuntimeException::TYPE_NAME(), errorMsg))))
             .Times(1);
     EXPECT_CALL(*voidCallback, onSuccess()).Times(0);
+
+    ReplyCaller<void> voidFixture(
+            std::bind(&MockCallbackWithJoynrException<void>::onSuccess, voidCallback),
+            std::bind(&MockCallbackWithJoynrException<void>::onError,
+                      voidCallback,
+                      std::placeholders::_1));
     voidFixture.returnError(std::make_shared<exceptions::ProviderRuntimeException>(errorMsg));
 }
 
@@ -111,6 +125,13 @@ TEST_F(ReplyCallerTest, resultReceived)
 {
     EXPECT_CALL(*intCallback, onSuccess(7));
     EXPECT_CALL(*intCallback, onError(_)).Times(0);
+
+    ReplyCaller<int> intFixture(std::bind(&MockCallbackWithJoynrException<int>::onSuccess,
+                                          intCallback,
+                                          std::placeholders::_1),
+                                std::bind(&MockCallbackWithJoynrException<int>::onError,
+                                          intCallback,
+                                          std::placeholders::_1));
     intFixture.returnValue(7);
 }
 
@@ -118,5 +139,11 @@ TEST_F(ReplyCallerTest, resultReceivedForVoid)
 {
     EXPECT_CALL(*voidCallback, onSuccess());
     EXPECT_CALL(*voidCallback, onError(_)).Times(0);
+
+    ReplyCaller<void> voidFixture(
+            std::bind(&MockCallbackWithJoynrException<void>::onSuccess, voidCallback),
+            std::bind(&MockCallbackWithJoynrException<void>::onError,
+                      voidCallback,
+                      std::placeholders::_1));
     voidFixture.returnValue();
 }
