@@ -70,7 +70,7 @@ public:
     PublicationManagerTest()
             : _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
               _messageSender(std::make_shared<MockMessageSender>()),
-              _getLocationCalledSemaphore(0)
+              _getLocationCalledSemaphore(std::make_shared<Semaphore>(0))
     {
         _singleThreadedIOService->start();
     }
@@ -92,7 +92,7 @@ public:
     {
         onSuccess(joynr::types::Localisation::GpsLocation());
         _savedCallContext = CallContextStorage::get();
-        _getLocationCalledSemaphore.notify();
+        _getLocationCalledSemaphore->notify();
     }
 
 protected:
@@ -101,7 +101,7 @@ protected:
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
     std::shared_ptr<IMessageSender> _messageSender;
     joynr::CallContext _savedCallContext;
-    joynr::Semaphore _getLocationCalledSemaphore;
+    std::shared_ptr<joynr::Semaphore> _getLocationCalledSemaphore;
     ADD_LOGGER(PublicationManagerTest)
 };
 
@@ -410,7 +410,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
     expectedPublication.setResponse(std::move(attributeValue));
     // Expect a single attribute change to send a publication + one publication when registering sub
     // request -> 2
-    joynr::Semaphore semaphore(0);
+    std::shared_ptr<joynr::Semaphore> semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(
             *mockPublicationSender,
             sendSubscriptionPublicationMock(
@@ -420,7 +420,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
                     SubscriptionPublicationMatcher(expectedPublication) // subscription publication
                     ))
             .Times(2)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     // Expect calls to register an unregister an attribute listener
     std::string attributeName("Location");
@@ -452,7 +452,7 @@ TEST_F(PublicationManagerTest, add_onChangeWithMinInterval)
             senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // Sleep so that the first publication is sent
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(500)));
 
     // Fake many attribute changes - but expect only one publication to be sent by this loop
     for (int i = 0; i < 10; i++) {
@@ -1113,10 +1113,10 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription)
             .Times(1)
             .WillRepeatedly(testing::SaveArg<1>(&attributeListener));
 
-    joynr::Semaphore semaphore(0);
+    std::shared_ptr<joynr::Semaphore> semaphore = std::make_shared<Semaphore>(0);
     EXPECT_CALL(*requestCaller, unregisterAttributeListener(attributeName, _))
             .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     auto publicationManager = std::make_shared<PublicationManager>(
             _singleThreadedIOService->getIOService(), _messageSender);
@@ -1140,7 +1140,7 @@ TEST_F(PublicationManagerTest, remove_onChangeSubscription)
             senderId, receiverId, requestCaller, subscriptionRequest, mockPublicationSender);
 
     // Wait for the subscription to expire
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(400)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(400)));
     publicationManager->shutdown();
 }
 
@@ -1254,7 +1254,7 @@ TEST_F(PublicationManagerTest, forwardMethodInvocationExceptionToPublicationSend
 void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(
         SubscriptionRequest& subscriptionRequest)
 {
-    joynr::Semaphore semaphore(0);
+    std::shared_ptr<joynr::Semaphore> semaphore = std::make_shared<Semaphore>(0);
     auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto publicationManager = std::make_shared<PublicationManager>(
             _singleThreadedIOService->getIOService(), _messageSender);
@@ -1276,7 +1276,7 @@ void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(
                                       Eq(expectedSubscriptionReply) // subscription reply
                                       ))
             .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     JOYNR_LOG_DEBUG(logger(), "adding subscription request");
     publicationManager->add(
@@ -1285,7 +1285,7 @@ void PublicationManagerTest::sendSubscriptionReplyOnSuccessfulRegistration(
     // remove subscription before deletion of mockPublicationSender
     publicationManager->removeAllSubscriptions(providerId);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(5000)));
     publicationManager->shutdown();
 }
 
@@ -1320,7 +1320,7 @@ TEST_F(PublicationManagerTest, multicast_sendSubscriptionReplyOnSuccessfulRegist
 void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(
         SubscriptionRequest& subscriptionRequest)
 {
-    joynr::Semaphore semaphore(0);
+    std::shared_ptr<joynr::Semaphore> semaphore = std::make_shared<Semaphore>(0);
     auto mockPublicationSender = std::make_shared<MockPublicationSender>();
     auto publicationManager = std::make_shared<PublicationManager>(
             _singleThreadedIOService->getIOService(), _messageSender);
@@ -1352,7 +1352,7 @@ void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(
                                       Eq(expectedSubscriptionReply) // subscription reply
                                       ))
             .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     // wait some time to ensure the subscription is expired
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -1362,7 +1362,7 @@ void PublicationManagerTest::sendSubscriptionExceptionOnExpiredRegistration(
     // remove subscription before deletion of mockPublicationSender
     publicationManager->removeAllSubscriptions(providerId);
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(5000)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(5000)));
     publicationManager->shutdown();
 }
 

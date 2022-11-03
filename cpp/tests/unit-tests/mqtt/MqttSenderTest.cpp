@@ -45,7 +45,8 @@ public:
     }
 
 protected:
-    void createMqttSender(std::string testSettingsFileNameMqtt, std::uint32_t maximumPacketSize)
+    void createMosquittoConnection(std::string testSettingsFileNameMqtt,
+                                   std::uint32_t maximumPacketSize)
     {
         Settings testSettings(testSettingsFileNameMqtt);
         MessagingSettings messagingSettings(testSettings);
@@ -68,13 +69,16 @@ protected:
                                                           clientId,
                                                           gbid);
 
-        mqttSender = std::make_shared<MqttSender>(mockMosquittoConnection);
-
         ON_CALL(*mockMosquittoConnection, isSubscribedToChannelTopic()).WillByDefault(Return(true));
         ON_CALL(*mockMosquittoConnection, getMqttQos()).WillByDefault(Return(0));
         ON_CALL(*mockMosquittoConnection, getMqttPrio()).WillByDefault(Return("low"));
         ON_CALL(*mockMosquittoConnection, getMqttMaximumPacketSize())
                 .WillByDefault(Return(maximumPacketSize));
+    }
+
+    void createMqttSender()
+    {
+        mqttSender = std::make_shared<MqttSender>(mockMosquittoConnection);
     }
 
     ADD_LOGGER(MqttSenderTest)
@@ -90,8 +94,10 @@ TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
     const std::string expectedTopic = mqttAddress.getTopic() + "/low";
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
-                     MqttSenderTest::noMqttMessagePacketSize);
+    createMosquittoConnection("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
+                              MqttSenderTest::noMqttMessagePacketSize);
+    EXPECT_CALL(*mockMosquittoConnection, publishMessage(Eq(expectedTopic), Eq(0), _, _, _, _, _));
+    createMqttSender();
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
     mutableMessage.setSender("testSender");
@@ -100,8 +106,6 @@ TEST_F(MqttSenderTest, messagePublishedToCorrectTopic)
 
     std::shared_ptr<joynr::ImmutableMessage> immutableMessage =
             mutableMessage.getImmutableMessage();
-
-    EXPECT_CALL(*mockMosquittoConnection, publishMessage(Eq(expectedTopic), Eq(0), _, _, _, _, _));
 
     mqttSender->sendMessage(
             mqttAddress, immutableMessage, [](const exceptions::JoynrRuntimeException& exception) {
@@ -114,8 +118,8 @@ TEST_F(MqttSenderTest, messagePublishedWithPrefixedCustomHeadersInMqtt5UserProps
     const std::string expectedTopic = mqttAddress.getTopic() + "/low";
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
-                     MqttSenderTest::noMqttMessagePacketSize);
+    createMosquittoConnection("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
+                              MqttSenderTest::noMqttMessagePacketSize);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
     mutableMessage.setSender("testSender");
@@ -146,6 +150,7 @@ TEST_F(MqttSenderTest, messagePublishedWithPrefixedCustomHeadersInMqtt5UserProps
                                Eq(immutableMessage->getPrefixedCustomHeaders()),
                                _,
                                _));
+    createMqttSender();
 
     mqttSender->sendMessage(
             mqttAddress, immutableMessage, [](const exceptions::JoynrRuntimeException& exception) {
@@ -163,8 +168,8 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
 
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
-                     MqttSenderTest::noMqttMessagePacketSize);
+    createMosquittoConnection("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
+                              MqttSenderTest::noMqttMessagePacketSize);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
     mutableMessage.setSender("testSender");
@@ -177,7 +182,10 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
             mutableMessage.getImmutableMessage();
 
     EXPECT_CALL(*mockMosquittoConnection,
-                publishMessage(_, _, _, Eq(expectedRoundedMsgTtlSec), _, _, _));
+                publishMessage(_, _, _, Eq(expectedRoundedMsgTtlSec), _, _, _))
+            .Times(2);
+
+    createMqttSender();
 
     mqttSender->sendMessage(mqttAddress, immutableMessage1, onFailure);
 
@@ -191,9 +199,6 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecAlwaysRoundedUp)
 
     std::shared_ptr<joynr::ImmutableMessage> immutableMessage2 =
             mutableMessage.getImmutableMessage();
-
-    EXPECT_CALL(*mockMosquittoConnection,
-                publishMessage(_, _, _, Eq(expectedRoundedMsgTtlSec), _, _, _));
 
     mqttSender->sendMessage(mqttAddress, immutableMessage2, onFailure);
 
@@ -214,8 +219,8 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecGreaterThanMaxIntervalAlways
 
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
-                     MqttSenderTest::noMqttMessagePacketSize);
+    createMosquittoConnection("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
+                              MqttSenderTest::noMqttMessagePacketSize);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_REQUEST());
     mutableMessage.setSender("testSender");
@@ -232,6 +237,7 @@ TEST_F(MqttSenderTest, messagePublishedWithMsgTtlSecGreaterThanMaxIntervalAlways
             *mockMosquittoConnection, publishMessage(_, _, _, Eq(expectedMaxMsgTtlSec), _, _, _))
             .Times(2);
 
+    createMqttSender();
     mqttSender->sendMessage(mqttAddress, immutableMessage1, onFailure);
 
     mutableMessage.setExpiryDate(TimePoint::fromAbsoluteMs(-1000));
@@ -247,8 +253,8 @@ TEST_F(MqttSenderTest, multicastMessagePublishedToCorrectTopic)
     const std::string expectedTopic = mqttAddress.getTopic();
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
-                     MqttSenderTest::noMqttMessagePacketSize);
+    createMosquittoConnection("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings",
+                              MqttSenderTest::noMqttMessagePacketSize);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
     mutableMessage.setSender("testSender");
@@ -260,6 +266,7 @@ TEST_F(MqttSenderTest, multicastMessagePublishedToCorrectTopic)
 
     EXPECT_CALL(*mockMosquittoConnection, publishMessage(Eq(expectedTopic), Eq(0), _, _, _, _, _));
 
+    createMqttSender();
     mqttSender->sendMessage(
             mqttAddress, immutableMessage, [](const exceptions::JoynrRuntimeException& exception) {
                 FAIL() << "sendMessage failed: " << exception.getMessage();
@@ -272,7 +279,8 @@ TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck)
     bool gotExpectedExceptionType;
     bool gotCalled;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits1.settings", 900);
+    createMosquittoConnection(
+            "test-resources/MqttSenderTestWithMaxMessageSizeLimits1.settings", 900);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
     mutableMessage.setSender("testSender");
@@ -283,6 +291,7 @@ TEST_F(MqttSenderTest, TestWithEnabledMessageSizeCheck)
             mutableMessage.getImmutableMessage();
 
     gotCalled = false;
+    createMqttSender();
     mqttSender->sendMessage(
             mqttAddress,
             immutableMessage,
@@ -336,7 +345,7 @@ TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck)
 {
     MutableMessage mutableMessage;
 
-    createMqttSender("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings", 0);
+    createMosquittoConnection("test-resources/MqttSenderTestWithMaxMessageSizeLimits2.settings", 0);
 
     mutableMessage.setType(joynr::Message::VALUE_MESSAGE_TYPE_MULTICAST());
     mutableMessage.setSender("testSender");
@@ -347,6 +356,7 @@ TEST_F(MqttSenderTest, TestWithDisabledMessageSizeCheck)
             mutableMessage.getImmutableMessage();
 
     bool gotCalled = false;
+    createMqttSender();
     mqttSender->sendMessage(
             mqttAddress, immutableMessage, [&gotCalled](const exceptions::JoynrRuntimeException&) {
                 gotCalled = true;

@@ -67,7 +67,7 @@ public:
                            10000,
                            10000,
                            _publicKeyId),
-              _semaphore(0)
+              _semaphore(std::make_shared<Semaphore>(0))
     {
         _qos.setScope(types::ProviderScope::LOCAL);
         _localEntry.setQos(_qos);
@@ -88,7 +88,7 @@ protected:
     types::ProviderQos _qos;
     types::DiscoveryEntry _localEntry;
     types::DiscoveryEntry _globalEntry;
-    Semaphore _semaphore;
+    std::shared_ptr<Semaphore> _semaphore;
 
     void test_getLocalAndCachedCapabilities_interfaceAddresses(
             types::DiscoveryQos discoveryQos,
@@ -299,7 +299,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
             [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
+                _semaphore->notify();
             };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
             [](const types::DiscoveryError::Enum& errorEnum) {
@@ -316,7 +316,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
 
     test_getLocalAndCachedCapabilities_interfaceAddresses(discoveryQos, localCapabilitiesCallback);
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest,
@@ -330,12 +330,12 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
                 for (auto entry : result) {
                     if (_localEntry.getParticipantId() == entry.getParticipantId() &&
                         !firstNotified) {
-                        _semaphore.notify();
+                        _semaphore->notify();
                         firstNotified = true;
                     }
                     if (_globalEntry.getParticipantId() == entry.getParticipantId() &&
                         !secondNotified) {
-                        _semaphore.notify();
+                        _semaphore->notify();
                         secondNotified = true;
                     }
                 }
@@ -355,8 +355,8 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
 
     test_getLocalAndCachedCapabilities_interfaceAddresses(discoveryQos, localCapabilitiesCallback);
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest,
@@ -366,7 +366,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
             [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
+                _semaphore->notify();
             };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
             [](const types::DiscoveryError::Enum& errorEnum) {
@@ -383,7 +383,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
 
     test_getLocalAndCachedCapabilities_interfaceAddresses(discoveryQos, localCapabilitiesCallback);
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest,
@@ -393,7 +393,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
             [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
+                _semaphore->notify();
             };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
             [](const types::DiscoveryError::Enum& errorEnum) {
@@ -410,7 +410,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
 
     test_getLocalAndCachedCapabilities_interfaceAddresses(discoveryQos, localCapabilitiesCallback);
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_local_only)
@@ -419,7 +419,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
             [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
+                _semaphore->notify();
             };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
             [](const types::DiscoveryError::Enum& errorEnum) {
@@ -442,7 +442,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
             _localEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest,
@@ -452,14 +452,14 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
             [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
+                _semaphore->notify();
             };
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)>
             onSuccessGlobal =
                     [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                         ASSERT_EQ(1, result.size());
                         ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
-                        _semaphore.notify();
+                        _semaphore->notify();
                     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
             [](const types::DiscoveryError::Enum& errorEnum) {
@@ -486,8 +486,8 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
             _globalEntry.getParticipantId(), discoveryQos, gbids, globalCapabilitiesCallback));
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest,
@@ -497,14 +497,14 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
             [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
+                _semaphore->notify();
             };
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)>
             onSuccessGlobal =
                     [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                         ASSERT_EQ(1, result.size());
                         ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
-                        _semaphore.notify();
+                        _semaphore->notify();
                     };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
             [](const types::DiscoveryError::Enum& errorEnum) {
@@ -531,8 +531,8 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
             _globalEntry.getParticipantId(), discoveryQos, gbids, globalCapabilitiesCallback));
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_participantId_global_only)
@@ -541,7 +541,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
             [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
                 ASSERT_EQ(1, result.size());
                 ASSERT_EQ(_globalEntry.getParticipantId(), result.at(0).getParticipantId());
-                _semaphore.notify();
+                _semaphore->notify();
             };
     std::function<void(const types::DiscoveryError::Enum&)> onError =
             [](const types::DiscoveryError::Enum& errorEnum) {
@@ -566,5 +566,5 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
     ASSERT_FALSE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
             _localEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }

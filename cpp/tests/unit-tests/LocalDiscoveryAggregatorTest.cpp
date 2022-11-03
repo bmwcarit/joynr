@@ -49,11 +49,11 @@ public:
             : _provisionedDiscoveryEntries(),
               _localDiscoveryAggregator(_provisionedDiscoveryEntries),
               _discoveryMock(std::make_shared<MockDiscovery>()),
-              _semaphore(0)
+              _semaphore(std::make_shared<Semaphore>(0))
     {
         _discoveryProxyNotSetOnError = [this](const exceptions::JoynrRuntimeException& error) {
             EXPECT_EQ("internal discoveryProxy not set", error.getMessage());
-            _semaphore.notify();
+            _semaphore->notify();
         };
     }
 
@@ -65,7 +65,7 @@ protected:
     std::map<std::string, types::DiscoveryEntryWithMetaInfo> _provisionedDiscoveryEntries;
     LocalDiscoveryAggregator _localDiscoveryAggregator;
     std::shared_ptr<MockDiscovery> _discoveryMock;
-    Semaphore _semaphore;
+    std::shared_ptr<Semaphore> _semaphore;
     std::function<void(const exceptions::JoynrRuntimeException&)> _discoveryProxyNotSetOnError;
 
 private:
@@ -77,7 +77,7 @@ TEST_F(LocalDiscoveryAggregatorTest, addAsync_proxyNotSet_reportsErrorViaCallbac
     const types::DiscoveryEntryWithMetaInfo discoveryEntry;
     auto future = _localDiscoveryAggregator.addAsync(
             discoveryEntry, false, nullptr, _discoveryProxyNotSetOnError);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
     try {
         future->get(100);
         FAIL() << "unexpected success";
@@ -93,7 +93,7 @@ TEST_F(LocalDiscoveryAggregatorTest,
     const std::vector<std::string> gbids = {"joynrdefaultgbid", "othergbid"};
     auto future = _localDiscoveryAggregator.addAsync(
             discoveryEntry, false, gbids, nullptr, nullptr, _discoveryProxyNotSetOnError);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
     try {
         future->get(100);
         FAIL() << "unexpected success";
@@ -107,7 +107,7 @@ TEST_F(LocalDiscoveryAggregatorTest, addToAllAsync_proxyNotSet_reportsErrorViaCa
     const types::DiscoveryEntryWithMetaInfo discoveryEntry;
     auto future = _localDiscoveryAggregator.addToAllAsync(
             discoveryEntry, false, nullptr, nullptr, _discoveryProxyNotSetOnError);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
     try {
         future->get(100);
         FAIL() << "unexpected success";
@@ -124,7 +124,7 @@ TEST_F(LocalDiscoveryAggregatorTest,
     const types::DiscoveryQos discoveryQos;
     auto future = _localDiscoveryAggregator.lookupAsync(
             domains, interfaceName, discoveryQos, nullptr, _discoveryProxyNotSetOnError);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
     try {
         std::vector<types::DiscoveryEntryWithMetaInfo> result;
         future->get(100, result);
@@ -148,7 +148,7 @@ TEST_F(LocalDiscoveryAggregatorTest,
                                                         nullptr,
                                                         nullptr,
                                                         _discoveryProxyNotSetOnError);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
     try {
         std::vector<types::DiscoveryEntryWithMetaInfo> result;
         future->get(100, result);
@@ -164,7 +164,7 @@ TEST_F(LocalDiscoveryAggregatorTest,
     const std::string participantId;
     auto future = _localDiscoveryAggregator.lookupAsync(
             participantId, nullptr, _discoveryProxyNotSetOnError);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
     try {
         types::DiscoveryEntryWithMetaInfo result;
         future->get(100, result);
@@ -182,7 +182,7 @@ TEST_F(LocalDiscoveryAggregatorTest,
     const std::vector<std::string> gbids = {"joynrdefaultgbid", "othergbid"};
     auto future = _localDiscoveryAggregator.lookupAsync(
             participantId, discoveryQos, gbids, nullptr, nullptr, _discoveryProxyNotSetOnError);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
     try {
         types::DiscoveryEntryWithMetaInfo result;
         future->get(100, result);
@@ -197,7 +197,7 @@ TEST_F(LocalDiscoveryAggregatorTest, removeAsync_proxyNotSet_reportsErrorViaCall
     const std::string participantId;
     auto future = _localDiscoveryAggregator.removeAsync(
             participantId, nullptr, _discoveryProxyNotSetOnError);
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
     try {
         future->get(100);
         FAIL() << "unexpected success";
@@ -208,20 +208,18 @@ TEST_F(LocalDiscoveryAggregatorTest, removeAsync_proxyNotSet_reportsErrorViaCall
 
 TEST_F(LocalDiscoveryAggregatorTest, addAsync_withoutAwaitGlobalRegistration_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
-
     types::DiscoveryEntryWithMetaInfo discoveryEntry;
     discoveryEntry.setParticipantId("testParticipantId");
     const joynr::MessagingQos messagingQos(2016);
     EXPECT_CALL(*_discoveryMock,
                 addAsyncMock(Eq(discoveryEntry), Eq(nullptr), Eq(nullptr), Eq(messagingQos)));
 
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.addAsync(discoveryEntry, nullptr, nullptr, messagingQos);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, addAsync_withAwaitGlobalRegistration_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
 
     types::DiscoveryEntryWithMetaInfo discoveryEntry;
     discoveryEntry.setParticipantId("testParticipantId");
@@ -234,14 +232,13 @@ TEST_F(LocalDiscoveryAggregatorTest, addAsync_withAwaitGlobalRegistration_callsP
                              Eq(nullptr),
                              Eq(messagingQos)));
 
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.addAsync(
             discoveryEntry, awaitGlobalRegistration, nullptr, nullptr, messagingQos);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, addAsync_withGbids_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
-
     types::DiscoveryEntryWithMetaInfo discoveryEntry;
     discoveryEntry.setParticipantId("testParticipantId");
     const bool awaitGlobalRegistration = true;
@@ -272,6 +269,8 @@ TEST_F(LocalDiscoveryAggregatorTest, addAsync_withGbids_callsProxy)
             .WillOnce(DoAll(::testing::SaveArg<2>(&capturedGbids),
                             InvokeArgument<3>(),
                             Return(mockFuture)));
+
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.addAsync(discoveryEntry,
                                        awaitGlobalRegistration,
                                        gbids,
@@ -285,8 +284,6 @@ TEST_F(LocalDiscoveryAggregatorTest, addAsync_withGbids_callsProxy)
 
 TEST_F(LocalDiscoveryAggregatorTest, addToAllAsync_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
-
     types::DiscoveryEntryWithMetaInfo discoveryEntry;
     discoveryEntry.setParticipantId("testParticipantId");
     const bool awaitGlobalRegistration = true;
@@ -299,26 +296,25 @@ TEST_F(LocalDiscoveryAggregatorTest, addToAllAsync_callsProxy)
                                   _, // onApplicationError
                                   _, // onRuntimeError
                                   Eq(messagingQos)));
+
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.addToAllAsync(
             discoveryEntry, awaitGlobalRegistration, nullptr, nullptr, nullptr, messagingQos);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, removeAsync_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
-
     const std::string participantId("testParticipantId");
     const joynr::MessagingQos messagingQos(1800);
     EXPECT_CALL(*_discoveryMock,
                 removeAsyncMock(Eq(participantId), Eq(nullptr), Eq(nullptr), Eq(messagingQos)));
 
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.removeAsync(participantId, nullptr, nullptr, messagingQos);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
-
     const std::vector<std::string> domains{"domain1", "domain2"};
     const std::string interfaceName("testInterfaceName");
     const types::DiscoveryQos discoveryQos(21, 22, types::DiscoveryScope::LOCAL_AND_GLOBAL, true);
@@ -334,14 +330,14 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_callsProxy)
                             _),
                     _,
                     Eq(messagingQos)));
+
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.lookupAsync(
             domains, interfaceName, discoveryQos, nullptr, nullptr, messagingQos);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_withGbids_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
-
     const std::vector<std::string> domains{"domain1", "domain2"};
     const std::string interfaceName("testInterfaceName");
     const types::DiscoveryQos discoveryQos(21, 22, types::DiscoveryScope::LOCAL_AND_GLOBAL, true);
@@ -356,26 +352,25 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_withGbids_callsP
                                 Eq(nullptr),
                                 Eq(nullptr),
                                 Eq(messagingQos)));
+
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.lookupAsync(
             domains, interfaceName, discoveryQos, gbids, nullptr, nullptr, nullptr, messagingQos);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
-
     const std::string participantId("testParticipantId");
     const joynr::MessagingQos messagingQos(1503);
     EXPECT_CALL(*_discoveryMock,
                 lookupAsyncMock(Eq(participantId), Eq(nullptr), Eq(nullptr), Eq(messagingQos)));
 
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.lookupAsync(participantId, nullptr, nullptr, messagingQos);
 }
 
 TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_withGbids_callsProxy)
 {
-    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
-
     const std::string participantId("testParticipantId");
     const types::DiscoveryQos discoveryQos(21, 22, types::DiscoveryScope::LOCAL_AND_GLOBAL, true);
     const std::vector<std::string> gbids = {"testGbid1", "testGbid2", "testGbid3"};
@@ -389,6 +384,7 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_withGbids_callsPro
                                 Eq(nullptr),
                                 Eq(messagingQos)));
 
+    _localDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     _localDiscoveryAggregator.lookupAsync(
             participantId, discoveryQos, gbids, nullptr, nullptr, nullptr, messagingQos);
 }
@@ -402,7 +398,6 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_d
     const types::DiscoveryEntryWithMetaInfo expectedDiscoveryEntry(provisionedDiscoveryEntry);
     _provisionedDiscoveryEntries.insert(std::make_pair(participantId, provisionedDiscoveryEntry));
     LocalDiscoveryAggregator testLocalDiscoveryAggregator(_provisionedDiscoveryEntries);
-    testLocalDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
 
     EXPECT_CALL(*_discoveryMock, lookupAsyncMock(_, _, _, _)).Times(0);
     EXPECT_CALL(*_discoveryMock, lookupAsyncMock(_, _, _, _, _, _, _)).Times(0);
@@ -410,9 +405,10 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_d
     auto onSuccess = [this,
                       &expectedDiscoveryEntry](const types::DiscoveryEntryWithMetaInfo& entry) {
         EXPECT_EQ(expectedDiscoveryEntry, entry);
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
+    testLocalDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     auto future = testLocalDiscoveryAggregator.lookupAsync(participantId, onSuccess, nullptr);
 
     types::DiscoveryEntryWithMetaInfo result;
@@ -420,7 +416,7 @@ TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncParticipantId_provisionedEntry_d
 
     EXPECT_EQ(expectedDiscoveryEntry, result);
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
 }
 
 TEST_F(LocalDiscoveryAggregatorTest,
@@ -433,15 +429,14 @@ TEST_F(LocalDiscoveryAggregatorTest,
     const types::DiscoveryEntryWithMetaInfo expectedDiscoveryEntry(provisionedDiscoveryEntry);
     _provisionedDiscoveryEntries.insert(std::make_pair(participantId, provisionedDiscoveryEntry));
     LocalDiscoveryAggregator testLocalDiscoveryAggregator(_provisionedDiscoveryEntries);
-    testLocalDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
 
     EXPECT_CALL(*_discoveryMock, lookupAsyncMock(_, _, _, _)).Times(0);
     EXPECT_CALL(*_discoveryMock, lookupAsyncMock(_, _, _, _, _, _, _)).Times(0);
-
+    testLocalDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
     auto onSuccess = [this,
                       &expectedDiscoveryEntry](const types::DiscoveryEntryWithMetaInfo& entry) {
         EXPECT_EQ(expectedDiscoveryEntry, entry);
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     const types::DiscoveryQos discoveryQos(21, 22, types::DiscoveryScope::LOCAL_AND_GLOBAL, true);
@@ -454,5 +449,5 @@ TEST_F(LocalDiscoveryAggregatorTest,
 
     EXPECT_EQ(expectedDiscoveryEntry, result);
 
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
 }

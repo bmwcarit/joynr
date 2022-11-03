@@ -156,8 +156,6 @@ TEST_F(MessageSenderTest, sendOneWayRequest_normal)
 
 TEST_F(MessageSenderTest, sendReply_normal)
 {
-    MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(mockDispatcher);
     Reply reply;
     reply.setRequestReplyId(util::createUuid());
     reply.setResponse(std::string("response"));
@@ -167,6 +165,8 @@ TEST_F(MessageSenderTest, sendReply_normal)
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_REPLY(), mutableMessage.getPayload());
 
+    MessageSender messageSender(mockMessageRouter, nullptr);
+    messageSender.registerDispatcher(mockDispatcher);
     messageSender.sendReply(senderID, receiverID, qosSettings, {}, reply);
 }
 
@@ -250,8 +250,7 @@ TEST_F(MessageSenderTest, removeRoutingEntry)
 
 TEST_F(MessageSenderTest, sendPublication_normal)
 {
-    MessageSender messageSender(mockMessageRouter, nullptr);
-    messageSender.registerDispatcher(mockDispatcher);
+
     SubscriptionPublication publication;
     publication.setSubscriptionId("ignoresubscriptionid");
     publication.setResponse(std::string("publication"));
@@ -261,6 +260,8 @@ TEST_F(MessageSenderTest, sendPublication_normal)
 
     expectRoutedMessage(Message::VALUE_MESSAGE_TYPE_PUBLICATION(), mutableMessage.getPayload());
 
+    MessageSender messageSender(mockMessageRouter, nullptr);
+    messageSender.registerDispatcher(mockDispatcher);
     messageSender.sendSubscriptionPublication(
             senderID, receiverID, qosSettings, std::move(publication));
 }

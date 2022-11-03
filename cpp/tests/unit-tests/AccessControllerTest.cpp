@@ -118,8 +118,6 @@ public:
             : _emptySettings(),
               _clusterControllerSettings(_emptySettings),
               _singleThreadedIOService(std::make_shared<SingleThreadedIOService>()),
-              _localDomainAccessControllerMock(std::make_shared<MockLocalDomainAccessController>(
-                      std::make_unique<LocalDomainAccessStore>())),
               _accessControllerCallback(std::make_shared<MockConsumerPermissionCallback>()),
               _messageRouter(std::make_shared<MockMessageRouter>(
                       _singleThreadedIOService->getIOService())),
@@ -130,13 +128,10 @@ public:
                       _localCapabilitiesDirectoryStore,
                       _singleThreadedIOService->getIOService(),
                       _defaultExpiryDateMs)),
-              _accessController(
-                      std::make_shared<AccessController>(_localCapabilitiesDirectoryMock,
-                                                         _localDomainAccessControllerMock)),
+              _accessController(),
               _messagingQos(MessagingQos(5000))
     {
         _singleThreadedIOService->start();
-        _localCapabilitiesDirectoryMock->init();
     }
 
     ~AccessControllerTest()
@@ -271,12 +266,19 @@ public:
     void testPermission(Permission::Enum testPermission, IAccessController::Enum expectedPermission)
     {
         prepareConsumerTest();
+        _localCapabilitiesDirectoryMock->init();
         ConsumerPermissionCallbackMaker makeCallback(testPermission);
+
+        _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
+                std::make_unique<LocalDomainAccessStore>());
         EXPECT_CALL(*_localDomainAccessControllerMock,
                     getConsumerPermission(
                             _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
                 .WillOnce(Invoke(
                         &makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
+
+        _accessController = std::make_shared<AccessController>(
+                _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
         EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(expectedPermission)).Times(1);
 
         std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
@@ -293,12 +295,19 @@ public:
                                       IAccessController::Enum expectedPermission)
     {
         prepareConsumerTestLocalRecipient();
+        _localCapabilitiesDirectoryMock->init();
         ConsumerPermissionCallbackMaker makeCallback(testPermission);
+
+        _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
+                std::make_unique<LocalDomainAccessStore>());
         EXPECT_CALL(*_localDomainAccessControllerMock,
                     getConsumerPermission(
                             _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
                 .WillOnce(Invoke(
                         &makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
+
+        _accessController = std::make_shared<AccessController>(
+                _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
         EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(expectedPermission)).Times(1);
 
         std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
@@ -357,13 +366,19 @@ const std::string AccessControllerTest::_TEST_PUBLICKEYID("publicKeyId");
 TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl)
 {
     prepareConsumerTest();
+    _localCapabilitiesDirectoryMock->init();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
+
+    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
+            std::make_unique<LocalDomainAccessStore>());
     EXPECT_CALL(*_localDomainAccessControllerMock,
                 getConsumerPermission(
                         _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
 
+    _accessController = std::make_shared<AccessController>(
+            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(IAccessController::Enum::YES))
             .Times(1);
 
@@ -377,7 +392,11 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl)
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl)
 {
     prepareConsumerTest();
+    _localCapabilitiesDirectoryMock->init();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
+
+    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
+            std::make_unique<LocalDomainAccessStore>());
     EXPECT_CALL(*_localDomainAccessControllerMock,
                 getConsumerPermission(
                         _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
@@ -391,6 +410,8 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl)
                                       TrustLevel::HIGH))
             .WillOnce(Return(permissionYes));
 
+    _accessController = std::make_shared<AccessController>(
+            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(IAccessController::Enum::YES))
             .Times(1);
 
@@ -404,13 +425,19 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl)
 TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessage)
 {
     prepareConsumerTest();
+    _localCapabilitiesDirectoryMock->init();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
+
+    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
+            std::make_unique<LocalDomainAccessStore>());
     EXPECT_CALL(*_localDomainAccessControllerMock,
                 getConsumerPermission(
                         _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::operationNeeded));
 
+    _accessController = std::make_shared<AccessController>(
+            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(IAccessController::Enum::NO))
             .Times(1);
 
@@ -427,9 +454,15 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
 TEST_F(AccessControllerTest, retryAccessControlCheckIfNoDiscoveryEntry)
 {
     prepareConsumerTestInRetryErrorCase();
+    _localCapabilitiesDirectoryMock->init();
+
+    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
+            std::make_unique<LocalDomainAccessStore>());
     EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(IAccessController::Enum::RETRY))
             .Times(1);
 
+    _accessController = std::make_shared<AccessController>(
+            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     immutableMessage->setCreator(_DUMMY_USERID);
     // pass the immutable message to hasConsumerPermission
@@ -442,11 +475,18 @@ TEST_F(AccessControllerTest, retryAccessControlCheckIfNoDiscoveryEntry)
 
 TEST_F(AccessControllerTest, hasProviderPermission)
 {
+    _localCapabilitiesDirectoryMock->init();
     Permission::Enum permissionYes = Permission::YES;
     DefaultValue<Permission::Enum>::Set(permissionYes);
+
+    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
+            std::make_unique<LocalDomainAccessStore>());
     EXPECT_CALL(*_localDomainAccessControllerMock, getProviderPermission(_, _, _, _))
             .Times(1)
             .WillOnce(Return(permissionYes));
+
+    _accessController = std::make_shared<AccessController>(
+            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     bool retval = _accessController->hasProviderPermission(
             _DUMMY_USERID, TrustLevel::HIGH, _TEST_DOMAIN, _TEST_INTERFACE);
     EXPECT_TRUE(retval);
@@ -454,11 +494,18 @@ TEST_F(AccessControllerTest, hasProviderPermission)
 
 TEST_F(AccessControllerTest, hasNoProviderPermission)
 {
+    _localCapabilitiesDirectoryMock->init();
     Permission::Enum permissionNo = Permission::NO;
     DefaultValue<Permission::Enum>::Set(permissionNo);
+
+    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
+            std::make_unique<LocalDomainAccessStore>());
     EXPECT_CALL(*_localDomainAccessControllerMock, getProviderPermission(_, _, _, _))
             .Times(1)
             .WillOnce(Return(permissionNo));
+
+    _accessController = std::make_shared<AccessController>(
+            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     bool retval = _accessController->hasProviderPermission(
             _DUMMY_USERID, TrustLevel::HIGH, _TEST_DOMAIN, _TEST_INTERFACE);
     EXPECT_FALSE(retval);

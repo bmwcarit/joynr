@@ -124,10 +124,11 @@ TEST_F(ImmutableMessageTest, TestMessageRoundtripInMutableMessage)
 TEST_F(ImmutableMessageTest, TestOwnerSigningCallbackInMutableMessage)
 {
     auto mockKeyChain = std::make_shared<MockKeychain>();
-    _mutableMessage.setKeychain(mockKeyChain);
     std::string signatureWithOwnerIdStr = std::string("testSignatureSignedWithOwnerId");
-
     ON_CALL(*mockKeyChain, getOwnerId()).WillByDefault(Return(signatureWithOwnerIdStr));
+
+    _mutableMessage.setKeychain(mockKeyChain);
+
     auto immutableMessage = _mutableMessage.getImmutableMessage();
     auto signatureByteArrayView = immutableMessage->getSignature();
     std::string signatureStr(signatureByteArrayView.data(),

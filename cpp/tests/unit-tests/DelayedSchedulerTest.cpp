@@ -115,13 +115,15 @@ TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCo
 
     // Dtor should be called
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
     scheduler->schedule(runnable1, std::chrono::milliseconds(100));
 
     // Dtor called after scheduler was cleaned
     auto runnable2 = std::make_shared<StrictMock<MockRunnable>>();
-    scheduler->schedule(runnable2, std::chrono::milliseconds(100));
+    EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+    scheduler->schedule(runnable2, std::chrono::milliseconds(100));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
@@ -129,49 +131,48 @@ TEST(DelayedSchedulerTest, startAndShutdownWithPendingWork_callDtorOfRunnablesCo
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    EXPECT_CALL(*runnable2, dtorCalled()).Times(1);
     singleThreadedIOService->stop();
 }
 
 TEST(DelayedSchedulerTest, testAccuracyOfDelayedScheduler)
 {
-    joynr::Semaphore semaphore;
+    std::shared_ptr<joynr::Semaphore> semaphore = std::make_shared<Semaphore>();
     auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
     singleThreadedIOService->start();
-    auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
+    auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1)))
             .Times(1);
-    EXPECT_CALL(*scheduler, workAvailableInTime()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
+    EXPECT_CALL(*scheduler, workAvailableInTime()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
 
     scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(1000)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
 
     scheduler->shutdown();
-
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
     singleThreadedIOService->stop();
 }
 
 TEST(DelayedSchedulerTest, avoidCallingDtorOfRunnablesAfterSchedulerHasExpired)
 {
-    joynr::Semaphore semaphore;
+    std::shared_ptr<joynr::Semaphore> semaphore = std::make_shared<Semaphore>();
     auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
     singleThreadedIOService->start();
-    auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
-    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
 
+    auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
+    auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1)))
             .Times(1)
-            .WillOnce(ReleaseSemaphore(&semaphore));
-
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+            .WillOnce(ReleaseSemaphore(semaphore));
 
     scheduler->schedule(runnable1, std::chrono::milliseconds(5));
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(500)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(500)));
 
     scheduler->shutdown();
     singleThreadedIOService->stop();
@@ -181,14 +182,17 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 {
     auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
     singleThreadedIOService->start();
-    auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
+
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
+
+    auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
+    EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1)))
+            .Times(0);
+
     DelayedScheduler::RunnableHandle handle =
             scheduler->schedule(runnable1, std::chrono::milliseconds(50));
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1);
-    EXPECT_CALL(*scheduler, workAvailableCalled(std::dynamic_pointer_cast<Runnable>(runnable1)))
-            .Times(0);
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
     scheduler->unschedule(handle);
 
@@ -200,22 +204,23 @@ TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_NoCallToRunnable)
 
 TEST(DelayedSchedulerTest, scheduleAndUnscheduleRunnable_CallDtorOnUnschedule)
 {
-    joynr::Semaphore semaphore;
+    std::shared_ptr<joynr::Semaphore> semaphore = std::make_shared<Semaphore>();
     auto singleThreadedIOService = std::make_shared<SingleThreadedIOService>();
     singleThreadedIOService->start();
-    auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
+
     auto runnable1 = std::make_shared<StrictMock<MockRunnable>>();
+    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
+
+    auto scheduler = std::make_shared<SimpleDelayedScheduler>(singleThreadedIOService);
     DelayedScheduler::RunnableHandle handle =
             scheduler->schedule(runnable1, std::chrono::milliseconds(50));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(&semaphore));
-
     scheduler->unschedule(handle);
     runnable1.reset();
 
-    EXPECT_TRUE(semaphore.waitFor(std::chrono::milliseconds(100)));
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(100)));
 
     scheduler->shutdown();
     singleThreadedIOService->stop();

@@ -37,12 +37,12 @@ TEST(IUdsSenderTest, mockIUdsSenderAPIsCanBeCalled)
     smrf::ByteArrayView byteArrayView = immutableMessage->getUnencryptedBody();
 
     auto mockIUdsSender = std::make_shared<MockIUdsSender>();
-    std::shared_ptr<IUdsSender> iUdsSender = mockIUdsSender;
-
     EXPECT_CALL(
             *mockIUdsSender,
             send(A<const smrf::ByteArrayView&>(),
                  A<const std::function<void(const joynr::exceptions::JoynrRuntimeException&)>&>()));
+    std::shared_ptr<IUdsSender> iUdsSender = mockIUdsSender;
+
     EXPECT_CALL(*mockIUdsSender, dtorCalled()).Times(1);
     iUdsSender->send(byteArrayView, [](const exceptions::JoynrRuntimeException& error) {
         std::ignore = error;

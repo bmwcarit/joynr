@@ -131,7 +131,8 @@ public:
               _defaultDiscoveryTimeoutMs(30000),
               _defaultRetryIntervalMs(1000),
               _publicKeyId("publicKeyId"),
-              _mockDiscovery(std::make_shared<MockDiscovery>())
+              _mockDiscovery(std::make_shared<MockDiscovery>()),
+              _semaphore(std::make_shared<Semaphore>())
     {
     }
 
@@ -153,7 +154,7 @@ protected:
     const std::string _publicKeyId;
     const std::shared_ptr<MockDiscovery> _mockDiscovery;
     const std::vector<std::string> _emptyGbidsVector;
-    Semaphore _semaphore;
+    std::shared_ptr<Semaphore> _semaphore;
 };
 
 TEST_F(ArbitratorTest, arbitrationTimeout_callsOnErrorIfNoRetryIsPossible)
@@ -179,7 +180,7 @@ TEST_F(ArbitratorTest, arbitrationTimeout_callsOnErrorIfNoRetryIsPossible)
         EXPECT_THAT(discoveryException,
                     joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                    "Arbitration could not be finished in time."));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto start = std::chrono::system_clock::now();
@@ -188,7 +189,7 @@ TEST_F(ArbitratorTest, arbitrationTimeout_callsOnErrorIfNoRetryIsPossible)
     mockArbitrator->startArbitration(onSuccess, onError);
 
     // Wait for timeout
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(discoveryTimeoutMs)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(discoveryTimeoutMs)));
 
     auto now = std::chrono::system_clock::now();
 
@@ -208,12 +209,6 @@ TEST_F(ArbitratorTest, arbitrationStrategy_lastSeen_selectsCorrectProvider)
     discoveryQos.setDiscoveryTimeoutMs(_defaultDiscoveryTimeoutMs);
     discoveryQos.setRetryIntervalMs(_defaultRetryIntervalMs);
     joynr::types::Version providerVersion(47, 11);
-    auto lastSeenArbitrator = ArbitratorFactory::createArbitrator(_domain,
-                                                                  _interfaceName,
-                                                                  providerVersion,
-                                                                  _mockDiscovery,
-                                                                  discoveryQos,
-                                                                  _emptyGbidsVector);
 
     std::int64_t latestLastSeenDateMs = 7;
     std::string lastSeenParticipantId = std::to_string(latestLastSeenDateMs);
@@ -256,13 +251,18 @@ TEST_F(ArbitratorTest, arbitrationStrategy_lastSeen_selectsCorrectProvider)
                                 _,  // onRuntimeError
                                 _)) // qos
             .WillOnce(DoAll(::testing::SaveArg<2>(&capturedDiscoveryQos), Return(mockFuture)));
-
+    auto lastSeenArbitrator = ArbitratorFactory::createArbitrator(_domain,
+                                                                  _interfaceName,
+                                                                  providerVersion,
+                                                                  _mockDiscovery,
+                                                                  discoveryQos,
+                                                                  _emptyGbidsVector);
     // Check that the correct participant was selected
     auto onSuccess = [this, &lastSeenParticipantId](const ArbitrationResult& arbitrationResult) {
         types::DiscoveryEntryWithMetaInfo discoveryEntry =
                 arbitrationResult.getDiscoveryEntries().front();
         EXPECT_EQ(lastSeenParticipantId, discoveryEntry.getParticipantId());
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto onError = [](const exceptions::DiscoveryException& e) {
@@ -271,7 +271,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_lastSeen_selectsCorrectProvider)
 
     lastSeenArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(
-            _semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
+            _semaphore->waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
 
     const auto capturedDiscoveryTimeout = capturedDiscoveryQos.getDiscoveryTimeout();
     const auto capturedCacheMaxAge = capturedDiscoveryQos.getCacheMaxAge();
@@ -295,13 +295,6 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_selectsCorrectProvide
     discoveryQos.setRetryIntervalMs(_defaultRetryIntervalMs);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     joynr::types::Version providerVersion(47, 11);
-    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
-                                                      _interfaceName,
-                                                      providerVersion,
-                                                      _mockDiscovery,
-                                                      discoveryQos,
-                                                      _emptyGbidsVector,
-                                                      move(_qosArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -338,13 +331,20 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_selectsCorrectProvide
     ON_CALL(*_mockDiscovery,
             lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillByDefault(Return(mockFuture));
+    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
+                                                      _interfaceName,
+                                                      providerVersion,
+                                                      _mockDiscovery,
+                                                      discoveryQos,
+                                                      _emptyGbidsVector,
+                                                      move(_qosArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &participantIds](const ArbitrationResult& arbitrationResult) {
         types::DiscoveryEntryWithMetaInfo discoveryEntry =
                 arbitrationResult.getDiscoveryEntries().front();
         EXPECT_EQ(participantIds.back(), discoveryEntry.getParticipantId());
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto onError = [](const exceptions::DiscoveryException& e) {
@@ -352,7 +352,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_selectsCorrectProvide
     };
 
     qosArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     qosArbitrator->stopArbitration();
 }
@@ -365,13 +365,6 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksVersion)
     discoveryQos.setRetryIntervalMs(_defaultRetryIntervalMs);
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     joynr::types::Version expectedVersion(47, 11);
-    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
-                                                      _interfaceName,
-                                                      expectedVersion,
-                                                      _mockDiscovery,
-                                                      discoveryQos,
-                                                      _emptyGbidsVector,
-                                                      move(_qosArbitrationStrategyFunction));
 
     // Create a list of discovery entries
     types::ProviderQos providerQos(
@@ -412,6 +405,13 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksVersion)
     ON_CALL(*_mockDiscovery,
             lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillByDefault(Return(mockFuture));
+    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
+                                                      _interfaceName,
+                                                      expectedVersion,
+                                                      _mockDiscovery,
+                                                      discoveryQos,
+                                                      _emptyGbidsVector,
+                                                      move(_qosArbitrationStrategyFunction));
 
     // Check that one of the expected participant was selected
     auto onSuccess = [this, &expectedParticipantIds](const ArbitrationResult& arbitrationResult) {
@@ -420,7 +420,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksVersion)
         EXPECT_TRUE(std::find(expectedParticipantIds.cbegin(),
                               expectedParticipantIds.cend(),
                               discoveryEntry.getParticipantId()) != expectedParticipantIds.cend());
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto onError = [](const exceptions::DiscoveryException& ex) {
@@ -428,7 +428,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksVersion)
     };
 
     qosArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     qosArbitrator->stopArbitration();
 }
@@ -442,13 +442,6 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksOnChange)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
     discoveryQos.setProviderMustSupportOnChange(true);
     joynr::types::Version providerVersion(47, 11);
-    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
-                                                      _interfaceName,
-                                                      providerVersion,
-                                                      _mockDiscovery,
-                                                      discoveryQos,
-                                                      _emptyGbidsVector,
-                                                      move(_qosArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -489,6 +482,13 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksOnChange)
     ON_CALL(*_mockDiscovery,
             lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillByDefault(Return(mockFuture));
+    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
+                                                      _interfaceName,
+                                                      providerVersion,
+                                                      _mockDiscovery,
+                                                      discoveryQos,
+                                                      _emptyGbidsVector,
+                                                      move(_qosArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantId](const ArbitrationResult& arbitrationResult) {
@@ -496,7 +496,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksOnChange)
                 arbitrationResult.getDiscoveryEntries().front();
         EXPECT_EQ(expectedParticipantId, discoveryEntry.getParticipantId());
         EXPECT_EQ(true, discoveryEntry.getQos().getSupportsOnChangeSubscriptions());
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto onError = [](const exceptions::DiscoveryException& e) {
@@ -504,7 +504,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksOnChange)
     };
 
     qosArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     qosArbitrator->stopArbitration();
 }
@@ -521,13 +521,6 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_selectsCorrectProvider)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version providerVersion(47, 11);
-    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
-                                                      _interfaceName,
-                                                      providerVersion,
-                                                      _mockDiscovery,
-                                                      discoveryQos,
-                                                      _emptyGbidsVector,
-                                                      move(_keywordArbitrationStrategyFunction));
 
     // Create a list of provider Qos and participant ids
     std::vector<types::ProviderQos> qosEntries;
@@ -578,13 +571,20 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_selectsCorrectProvider)
     ON_CALL(*_mockDiscovery,
             lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillByDefault(Return(mockFuture));
+    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
+                                                      _interfaceName,
+                                                      providerVersion,
+                                                      _mockDiscovery,
+                                                      discoveryQos,
+                                                      _emptyGbidsVector,
+                                                      move(_keywordArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantId](const ArbitrationResult& arbitrationResult) {
         types::DiscoveryEntryWithMetaInfo discoveryEntry =
                 arbitrationResult.getDiscoveryEntries().front();
         EXPECT_EQ(expectedParticipantId, discoveryEntry.getParticipantId());
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto onError = [](const exceptions::DiscoveryException& e) {
@@ -593,7 +593,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_selectsCorrectProvider)
 
     qosArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(
-            _semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
+            _semaphore->waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
     qosArbitrator->stopArbitration();
 }
 
@@ -609,13 +609,6 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_checksVersion)
     discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::KEYWORD);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version expectedVersion(47, 11);
-    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
-                                                      _interfaceName,
-                                                      expectedVersion,
-                                                      _mockDiscovery,
-                                                      discoveryQos,
-                                                      _emptyGbidsVector,
-                                                      move(_keywordArbitrationStrategyFunction));
 
     // Create a list of discovery entries with the correct keyword
     std::vector<types::CustomParameter> parameterList;
@@ -657,6 +650,13 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_checksVersion)
     ON_CALL(*_mockDiscovery,
             lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillByDefault(Return(mockFuture));
+    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
+                                                      _interfaceName,
+                                                      expectedVersion,
+                                                      _mockDiscovery,
+                                                      discoveryQos,
+                                                      _emptyGbidsVector,
+                                                      move(_keywordArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantIds](const ArbitrationResult& arbitrationResult) {
@@ -665,7 +665,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_checksVersion)
         EXPECT_TRUE(std::find(expectedParticipantIds.cbegin(),
                               expectedParticipantIds.cend(),
                               discoveryEntry.getParticipantId()) != expectedParticipantIds.cend());
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto onError = [](const exceptions::DiscoveryException& e) {
@@ -673,7 +673,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_checksVersion)
     };
 
     qosArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     qosArbitrator->stopArbitration();
 }
@@ -714,10 +714,10 @@ TEST_F(ArbitratorTest, allowFourRetries_expectFiveDiscoveryAttempts)
         types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
         FAIL() << "Got result: " << result.toString();
     };
-    auto onError = [this](const exceptions::DiscoveryException&) { _semaphore.notify(); };
+    auto onError = [this](const exceptions::DiscoveryException&) { _semaphore->notify(); };
 
     lastSeenArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     lastSeenArbitrator->stopArbitration();
 }
@@ -765,13 +765,6 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
     discoveryQos.setDiscoveryTimeoutMs(500);
     discoveryQos.setRetryIntervalMs(250);
     joynr::types::Version expectedVersion(47, 11);
-    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
-                                                      _interfaceName,
-                                                      expectedVersion,
-                                                      _mockDiscovery,
-                                                      discoveryQos,
-                                                      _emptyGbidsVector,
-                                                      move(_qosArbitrationStrategyFunction));
 
     // Create a list of discovery entries
     types::ProviderQos providerQos(
@@ -828,6 +821,13 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
                 lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
+    auto qosArbitrator = std::make_shared<Arbitrator>(_domain,
+                                                      _interfaceName,
+                                                      expectedVersion,
+                                                      _mockDiscovery,
+                                                      discoveryQos,
+                                                      _emptyGbidsVector,
+                                                      move(_qosArbitrationStrategyFunction));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -840,11 +840,11 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
     auto onError = [this,
                     &expectedVersions](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException, noCompatibleProviderFoundException(expectedVersions));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     qosArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     qosArbitrator->stopArbitration();
 }
@@ -862,14 +862,6 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
     discoveryQos.setRetryIntervalMs(250);
     discoveryQos.addCustomParameter("keyword", keywordValue);
     joynr::types::Version expectedVersion(47, 11);
-    auto keywordArbitrator =
-            std::make_shared<Arbitrator>(_domain,
-                                         _interfaceName,
-                                         expectedVersion,
-                                         _mockDiscovery,
-                                         discoveryQos,
-                                         _emptyGbidsVector,
-                                         move(_keywordArbitrationStrategyFunction));
 
     // Create a list of discovery entries with the correct keyword
     std::vector<types::CustomParameter> parameterList;
@@ -927,6 +919,14 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
                 lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
+    auto keywordArbitrator =
+            std::make_shared<Arbitrator>(_domain,
+                                         _interfaceName,
+                                         expectedVersion,
+                                         _mockDiscovery,
+                                         discoveryQos,
+                                         _emptyGbidsVector,
+                                         move(_keywordArbitrationStrategyFunction));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -939,11 +939,11 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
     auto onError = [this,
                     &expectedVersions](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException, noCompatibleProviderFoundException(expectedVersions));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     keywordArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     keywordArbitrator->stopArbitration();
 }
@@ -961,14 +961,6 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
     discoveryQos.setRetryIntervalMs(250);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     joynr::types::Version expectedVersion(47, 11);
-    auto fixedParticipantArbitrator =
-            std::make_shared<Arbitrator>(_domain,
-                                         _interfaceName,
-                                         expectedVersion,
-                                         _mockDiscovery,
-                                         discoveryQos,
-                                         _emptyGbidsVector,
-                                         move(_fixedParticipantArbitrationStrategyFunction));
 
     // Create a discovery entries with the correct participantId
     std::vector<types::CustomParameter> parameterList;
@@ -1008,6 +1000,14 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
     EXPECT_CALL(*_mockDiscovery, lookupAsyncMock(_, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
+    auto fixedParticipantArbitrator =
+            std::make_shared<Arbitrator>(_domain,
+                                         _interfaceName,
+                                         expectedVersion,
+                                         _mockDiscovery,
+                                         discoveryQos,
+                                         _emptyGbidsVector,
+                                         move(_fixedParticipantArbitrationStrategyFunction));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersion2);
@@ -1020,11 +1020,11 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
     auto onError = [this,
                     &expectedVersions](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException, noCompatibleProviderFoundException(expectedVersions));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     fixedParticipantArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     fixedParticipantArbitrator->stopArbitration();
 }
@@ -1038,14 +1038,7 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
     discoveryQos.setDiscoveryTimeoutMs(499);
     discoveryQos.setRetryIntervalMs(250);
     joynr::types::Version expectedVersion(47, 11);
-    auto lastSeenArbitrator =
-            std::make_shared<Arbitrator>(_domain,
-                                         _interfaceName,
-                                         expectedVersion,
-                                         _mockDiscovery,
-                                         discoveryQos,
-                                         _emptyGbidsVector,
-                                         move(_lastSeenArbitrationStrategyFunction));
+
 
     // Create a list of discovery entries
     types::ProviderQos providerQos(
@@ -1102,6 +1095,14 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
                 lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillOnce(Return(mockFuture1))
             .WillRepeatedly(Return(mockFuture2));
+    auto lastSeenArbitrator =
+            std::make_shared<Arbitrator>(_domain,
+                                         _interfaceName,
+                                         expectedVersion,
+                                         _mockDiscovery,
+                                         discoveryQos,
+                                         _emptyGbidsVector,
+                                         move(_lastSeenArbitrationStrategyFunction));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -1114,11 +1115,11 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
     auto onError = [this,
                     &expectedVersions](const exceptions::DiscoveryException& discoveryException) {
         EXPECT_THAT(discoveryException, noCompatibleProviderFoundException(expectedVersions));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     lastSeenArbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     lastSeenArbitrator->stopArbitration();
 }
@@ -1170,13 +1171,13 @@ TEST_F(ArbitratorTest,
         EXPECT_THAT(discoveryException,
                     joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                    expectedErrorMessage));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto start = std::chrono::system_clock::now();
 
     arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
 
     auto now = std::chrono::system_clock::now();
@@ -1234,13 +1235,13 @@ TEST_F(ArbitratorTest,
         EXPECT_THAT(discoveryException,
                     joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                    expectedErrorMessage));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto start = std::chrono::system_clock::now();
 
     arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
 
     auto now = std::chrono::system_clock::now();
@@ -1262,14 +1263,6 @@ TEST_F(ArbitratorTest, filterByVersionAndArbitrationStrategy_disabled_versionAnd
     discoveryQos.setDiscoveryTimeoutMs(_defaultDiscoveryTimeoutMs);
     discoveryQos.setRetryIntervalMs(_defaultRetryIntervalMs);
     joynr::types::Version providerVersion(47, 11);
-
-    auto arbitrator = std::make_shared<Arbitrator>(_domain,
-                                                   _interfaceName,
-                                                   providerVersion,
-                                                   _mockDiscovery,
-                                                   discoveryQos,
-                                                   _emptyGbidsVector,
-                                                   move(_lastSeenArbitrationStrategyFunction));
 
     types::ProviderQos providerQos(
             std::vector<types::CustomParameter>(), // custom provider parameters
@@ -1312,6 +1305,13 @@ TEST_F(ArbitratorTest, filterByVersionAndArbitrationStrategy_disabled_versionAnd
     ON_CALL(*_mockDiscovery,
             lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
             .WillByDefault(Return(mockFuture));
+    auto arbitrator = std::make_shared<Arbitrator>(_domain,
+                                                   _interfaceName,
+                                                   providerVersion,
+                                                   _mockDiscovery,
+                                                   discoveryQos,
+                                                   _emptyGbidsVector,
+                                                   move(_lastSeenArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &discoveryEntries, &discoveryEntry1, &discoveryEntry2](
@@ -1329,7 +1329,7 @@ TEST_F(ArbitratorTest, filterByVersionAndArbitrationStrategy_disabled_versionAnd
         }
         EXPECT_TRUE(foundDiscoveryEntry1);
         EXPECT_TRUE(foundDiscoveryEntry2);
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     auto onError = [](const exceptions::DiscoveryException& e) {
@@ -1338,7 +1338,7 @@ TEST_F(ArbitratorTest, filterByVersionAndArbitrationStrategy_disabled_versionAnd
 
     arbitrator->startArbitration(onSuccess, onError, false);
     EXPECT_TRUE(
-            _semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
+            _semaphore->waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
     arbitrator->stopArbitration();
 }
 
@@ -1393,11 +1393,11 @@ TEST_F(ArbitratorTest,
         EXPECT_THAT(discoveryException,
                     joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                    expectedErrorMessage));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
 
     const std::int64_t capturedGlobalRemainingTtlAtStart =
@@ -1462,11 +1462,11 @@ TEST_F(ArbitratorTest,
         EXPECT_THAT(discoveryException,
                     joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                    expectedErrorMessage));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
 
     constexpr std::uint64_t epsilon = 10000;
@@ -1531,11 +1531,11 @@ TEST_F(ArbitratorTest,
         EXPECT_THAT(discoveryException,
                     joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                    expectedErrorMessage));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
 
     const std::int64_t capturedGlobalRemainingTtlAtStart =
@@ -1597,11 +1597,11 @@ TEST_F(ArbitratorTest,
         EXPECT_THAT(discoveryException,
                     joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                    expectedErrorMessage));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
 
     constexpr std::uint64_t epsilon = 10000;
@@ -1688,11 +1688,11 @@ protected:
         auto arbitrator = ArbitratorFactory::createArbitrator(
                 _domain, _interfaceName, version, _mockDiscovery, discoveryQos, gbids);
 
-        auto onSuccess = [this](const ArbitrationResult&) { _semaphore.notify(); };
-        auto onError = [this](const exceptions::DiscoveryException&) { _semaphore.notify(); };
+        auto onSuccess = [this](const ArbitrationResult&) { _semaphore->notify(); };
+        auto onError = [this](const exceptions::DiscoveryException&) { _semaphore->notify(); };
 
         arbitrator->startArbitration(onSuccess, onError);
-        EXPECT_TRUE(_semaphore.waitFor(
+        EXPECT_TRUE(_semaphore->waitFor(
                 std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
 
         const auto capturedDiscoveryTimeout = capturedDiscoveryQos.getDiscoveryTimeout();
@@ -1775,13 +1775,13 @@ protected:
             EXPECT_THAT(discoveryException,
                         joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                        expectedErrorMessage));
-            _semaphore.notify();
+            _semaphore->notify();
         };
 
         auto start = std::chrono::system_clock::now();
 
         arbitrator->startArbitration(onSuccess, onError);
-        EXPECT_TRUE(_semaphore.waitFor(
+        EXPECT_TRUE(_semaphore->waitFor(
                 std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
 
         auto now = std::chrono::system_clock::now();
@@ -1893,11 +1893,11 @@ TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
         EXPECT_THAT(
                 discoveryException,
                 joynrException(exceptions::DiscoveryException::TYPE_NAME(), expectedExceptionMsg));
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     arbitrator->stopArbitration();
 }
@@ -1961,7 +1961,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
                                                types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT,
                                                _emptyGbidsVector,
                                                fixedParticipantId)));
-            _semaphore.notify();
+            _semaphore->notify();
         };
     } else {
         if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::KEYWORD) {
@@ -1993,7 +1993,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
             EXPECT_THAT(discoveryException,
                         joynrException(exceptions::DiscoveryException::TYPE_NAME(),
                                        _exceptionMsgNoEntriesFound));
-            _semaphore.notify();
+            _semaphore->notify();
         };
     }
 
@@ -2011,7 +2011,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
                                                    move(_qosArbitrationStrategyFunction));
 
     arbitrator->startArbitration(onSuccess, onError);
-    EXPECT_TRUE(_semaphore.waitFor(
+    EXPECT_TRUE(_semaphore->waitFor(
             std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs() * 10)));
     arbitrator->stopArbitration();
 }
@@ -2047,12 +2047,12 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
         EXPECT_CALL(
                 *_mockDiscovery,
                 lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
-                .WillOnce(DoAll(ReleaseSemaphore(&_semaphore), Return(mockFuture)));
+                .WillOnce(DoAll(ReleaseSemaphore(_semaphore), Return(mockFuture)));
     } else {
         EXPECT_CALL(
                 *_mockDiscovery,
                 lookupAsyncMock(Matcher<const std::vector<std::string>&>(_), _, _, _, _, _, _, _))
-                .WillOnce(DoAll(ReleaseSemaphore(&_semaphore),
+                .WillOnce(DoAll(ReleaseSemaphore(_semaphore),
                                 InvokeWithoutArgs(letThreadSleep<500>),
                                 Return(mockFuture)));
     }
@@ -2082,7 +2082,7 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
     arbitrator->startArbitration(onSuccess, onError);
 
     // Wait for a time shorter than the discovery
-    EXPECT_TRUE(_semaphore.waitFor(std::chrono::milliseconds(250)));
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(250)));
 
     if (testRetry) {
         // wait some time shorter than retryIntervalMs
@@ -2121,14 +2121,6 @@ TEST_F(ArbitratorTest, discoveryExceptionOnIncompatibleInterface)
     discoveryQos.setRetryIntervalMs(250);
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
     joynr::types::Version expectedVersion(47, 11);
-    auto fixedParticipantArbitrator =
-            std::make_shared<Arbitrator>(_domain,
-                                         _interfaceName,
-                                         expectedVersion,
-                                         _mockDiscovery,
-                                         discoveryQos,
-                                         _emptyGbidsVector,
-                                         std::move(_fixedParticipantArbitrationStrategyFunction));
 
     // generate DiscoveryEntry containing a wrong interfaceName
     joynr::types::DiscoveryEntryWithMetaInfo discoveryEntry(expectedVersion,
@@ -2148,6 +2140,14 @@ TEST_F(ArbitratorTest, discoveryExceptionOnIncompatibleInterface)
     // because GMOCK will return an invalid future
     EXPECT_CALL(*_mockDiscovery, lookupAsyncMock(Matcher<const std::string&>(_), _, _, _, _, _, _))
             .WillOnce(Return(mockFuture));
+    auto fixedParticipantArbitrator =
+            std::make_shared<Arbitrator>(_domain,
+                                         _interfaceName,
+                                         expectedVersion,
+                                         _mockDiscovery,
+                                         discoveryQos,
+                                         _emptyGbidsVector,
+                                         std::move(_fixedParticipantArbitrationStrategyFunction));
 
     auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
         types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
@@ -2162,11 +2162,11 @@ TEST_F(ArbitratorTest, discoveryExceptionOnIncompatibleInterface)
                 "expected: " +
                 _interfaceName + " actual: " + wrongInterfaceName);
         EXPECT_EQ(expectedErrorMsg, error.getMessage());
-        _semaphore.notify();
+        _semaphore->notify();
     };
 
     fixedParticipantArbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(
-            _semaphore.waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
+            _semaphore->waitFor(std::chrono::milliseconds(discoveryQos.getDiscoveryTimeoutMs())));
     fixedParticipantArbitrator->stopArbitration();
 }

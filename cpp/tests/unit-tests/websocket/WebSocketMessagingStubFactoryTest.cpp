@@ -99,6 +99,8 @@ TEST_F(WebSocketMessagingStubFactoryTest,
     WebSocketMessagingStubFactory factory;
     auto addressCopy = joynr::system::RoutingTypes::WebSocketClientAddress(webSocketClientAddress);
     auto websocket = std::make_shared<MockWebSocketClient>();
+    EXPECT_CALL(*websocket, dtorCalled());
+
     websocket->registerDisconnectCallback(
             [&factory, &addressCopy]() { factory.onMessagingStubClosed(addressCopy); });
 
@@ -108,7 +110,6 @@ TEST_F(WebSocketMessagingStubFactoryTest,
     std::shared_ptr<IMessagingStub> messagingStub(factory.create(webSocketClientAddress));
     EXPECT_TRUE(messagingStub.get() != nullptr);
 
-    EXPECT_CALL(*websocket, dtorCalled());
     std::thread(&MockWebSocketClient::signalDisconnect, websocket).detach();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -124,6 +125,8 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
     auto addressCopy =
             std::make_shared<system::RoutingTypes::WebSocketClientAddress>(webSocketClientAddress);
     auto websocket = std::make_shared<MockWebSocketClient>();
+    EXPECT_CALL(*websocket, dtorCalled());
+
     websocket->registerDisconnectCallback(
             [factory, addressCopy]() { factory->onMessagingStubClosed(*addressCopy); });
 
@@ -142,7 +145,6 @@ TEST_F(WebSocketMessagingStubFactoryTest, closedMessagingStubsAreRemovedFromMess
     EXPECT_TRUE(messagingStubFactory->contains(address));
     EXPECT_TRUE(messagingStubFactory->contains(addressCopy));
 
-    EXPECT_CALL(*websocket, dtorCalled());
     std::thread(&MockWebSocketClient::signalDisconnect, websocket).detach();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
