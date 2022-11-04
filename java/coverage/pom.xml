@@ -32,13 +32,6 @@
 			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- If we import this one, jacoco reports an error
-		<dependency>
-			<groupId>io.joynr.java.core</groupId>
-			<artifactId>clustercontroller-standalone</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr-websocket-runtime</artifactId>
@@ -57,6 +50,11 @@
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>clustercontroller-websocket-runtime</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.core</groupId>
+			<artifactId>clustercontroller-standalone</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -114,25 +112,26 @@
 			<artifactId>guice-integration</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!--
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>status-metrics</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.backend-services</groupId>
 			<artifactId>capabilities-directory</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		-->
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>jeeintegration</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		<!-- ignore integration test for now
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>integration-tests</artifactId>
-			<version>${project.groupId}:${project.artifactId}</version>
+			<version>${project.version}</version>
 		</dependency>
-		-->
 	</dependencies>
 	<build>
 		<pluginManagement>
@@ -165,6 +164,10 @@
 									<ignoredUnusedDeclaredDependency>io.joynr.java.common:discovery-common</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>io.joynr.java.common:guice-integration</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>io.joynr.java:jeeintegration</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.core:clustercontroller-standalone</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.common:status-metrics</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java.backend-services:capabilities-directory</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.joynr.java:integration-tests</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
 						</execution>
@@ -176,6 +179,9 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+						<excludes>org/apache/logging/log4j/util/*</excludes>
+            	</configuration>
 				<executions>
 					<execution>
 						<id>aggregate-report</id>
