@@ -59,8 +59,16 @@ echo '####################################################'
 
 cd /data/src
 
+JAVA_VERSION=$(java -XshowSettings:all -version 2>&1 | grep 'java.specification.version' | cut -f2 -d= | sed -e 's/ //g')
+ANDROID=''
+if [ $JAVA_VERSION -eq 11 ]
+then
+    echo "Java 11 detected, enabling android build"
+    ANDROID=',android'
+fi
+
 # 1st run; just build without tests to provide JAR file for GCD
-mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle$ANDROID \
 --projects io.joynr.java.backend-services:capabilities-directory -am \
 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests \
@@ -115,7 +123,7 @@ echo '####################################################'
 
 # 2nd run; now including test execution which requires mosquitto / GCD
 # generate site report
-mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle,android \
+mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle$ANDROID \
 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests=false \
 -DshowSuccess=true \
