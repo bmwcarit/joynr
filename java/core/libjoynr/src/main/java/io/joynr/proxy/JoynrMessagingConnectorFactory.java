@@ -26,13 +26,11 @@ import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.inject.Inject;
 
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.subscription.SubscriptionManager;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import joynr.MethodMetaInformation;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -99,13 +97,8 @@ public class JoynrMessagingConnectorFactory {
             return metaInformationMap.get(method);
         }
 
-        MethodMetaInformation metaInformation;
-        try {
-            metaInformation = new MethodMetaInformation(method);
-        } catch (JsonMappingException e) {
-            throw new JoynrRuntimeException(e);
-        }
-        MethodMetaInformation existingMetaInformation = metaInformationMap.putIfAbsent(method, metaInformation);
+        final MethodMetaInformation metaInformation = new MethodMetaInformation(method);
+        final MethodMetaInformation existingMetaInformation = metaInformationMap.putIfAbsent(method, metaInformation);
         if (existingMetaInformation != null) {
             // we only use putIfAbsent instead of .put, because putIfAbsent is threadsafe
             logger.debug("There was already a metaInformation object for that method in the map.");

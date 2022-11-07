@@ -22,8 +22,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.util.ReflectionUtils;
 
@@ -36,14 +34,14 @@ public class MethodMetaInformation {
     private JoynrRpcCallback callbackAnnotation;
     private int callbackIndex = -1;
 
-    public MethodMetaInformation(Method method) throws JsonMappingException {
+    public MethodMetaInformation(final Method method) {
         this.method = method;
         if (method.getParameterTypes().length > 0) {
             // create a list containing a list of annotations for each parameter
-            List<List<Annotation>> parameterAnnotations = ReflectionUtils.findAndMergeParameterAnnotations(method);
+            final List<List<Annotation>> parameterAnnotations = ReflectionUtils.findAndMergeParameterAnnotations(method);
             // for (List<Annotation> parameterAnnotation : parameterAnnotations) {
             for (int i = 0; i < parameterAnnotations.size(); i++) {
-                List<Annotation> parameterAnnotation = parameterAnnotations.get(i);
+                final List<Annotation> parameterAnnotation = parameterAnnotations.get(i);
 
                 if (findCallbackAnnotation(parameterAnnotation)) {
                     callbackIndex = i;
