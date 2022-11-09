@@ -888,7 +888,6 @@ TEST_F(PublicationManagerTtlUpliftTest, testBroadcastSubscriptionWithTtlUplift)
                                                                      semaphore3,
                                                                      requestCaller);
 
-    expectNoMoreSubscriptionPublications(mockPublicationSender, triggerPublication);
     publicationManager->shutdown();
 }
 
