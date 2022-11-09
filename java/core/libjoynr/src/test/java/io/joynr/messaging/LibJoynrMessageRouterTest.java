@@ -20,7 +20,6 @@ package io.joynr.messaging;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -56,7 +55,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.MutableMessageFactory;
-import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
@@ -261,36 +259,6 @@ public class LibJoynrMessageRouterTest {
         verify(messagingStubFactory, timeout(1000)).create(parentAddress);
         verify(messagingStub, timeout(1000)).transmit(eq(immutableMessage), any(), any());
         verify(dispatcherMock, never()).messageArrived(any());
-    }
-
-    @Test(expected = JoynrMessageExpiredException.class)
-    public void routeInOnExpiredMessageThrows() {
-        ImmutableMessage immutableMessage = null;
-        try {
-            joynrMessage.setTtlMs(0);
-            immutableMessage = joynrMessage.getImmutableMessage();
-            // incoming messages must have been received from cluster controller and have receivedFromGlobal set to true
-            immutableMessage.setReceivedFromGlobal(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
-        messageRouter.routeIn(immutableMessage);
-    }
-
-    @Test(expected = JoynrMessageExpiredException.class)
-    public void routeOutOnExpiredMessageThrows() {
-        ImmutableMessage immutableMessage = null;
-        try {
-            joynrMessage.setTtlMs(0);
-            immutableMessage = joynrMessage.getImmutableMessage();
-            // outgoing messages were not been received from cluster controller and thus have receivedFromGlobal set to false
-            immutableMessage.setReceivedFromGlobal(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
-        messageRouter.routeOut(immutableMessage);
     }
 
     @Test

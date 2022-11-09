@@ -453,7 +453,7 @@ public class TtlUpliftTest {
                                                         long sleepDurationMs,
                                                         long expectedSubscriptionReplyTtl,
                                                         long expectedPublicationTtlMs) throws InterruptedException {
-        final long toleranceMs = 50;
+        final long toleranceMs = 60;
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID, "location", qos);
 
         when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);

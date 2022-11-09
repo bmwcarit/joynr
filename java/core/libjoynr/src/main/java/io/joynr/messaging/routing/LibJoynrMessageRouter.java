@@ -269,14 +269,12 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     @Override
     public void routeIn(ImmutableMessage message) {
-        checkExpiry(message);
         DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, Set.of("incoming"), 0);
         messageQueue.put(delayableMessage);
     }
 
     @Override
     public void routeOut(ImmutableMessage message) {
-        checkExpiry(message);
         logger.trace("Scheduling outgoing message {} with delay {} and retries {}", message, 0, 0);
         DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, Set.of("outgoing"), 0);
         scheduleOutgoingMessage(delayableMessage);

@@ -19,16 +19,22 @@
 package io.joynr.messaging.routing;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.inject.Guice;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 
+import io.joynr.common.ExpiryDate;
+import io.joynr.exceptions.JoynrMessageExpiredException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
@@ -36,6 +42,16 @@ import joynr.ImmutableMessage;
 import joynr.MutableMessage;
 
 public class MessageRouterUtilTest {
+
+    private MutableMessage joynrMessage;
+
+    @Before
+    public void setUp() {
+        joynrMessage = new MutableMessage();
+        joynrMessage.setSender("Mock");
+        joynrMessage.setRecipient("Target");
+        joynrMessage.setPayload("1234".getBytes());
+    }
 
     private ImmutableMessage createMessage(boolean ttlAbsolute, long expiryDate) throws SecurityException,
                                                                                  EncodingException,
@@ -113,5 +129,70 @@ public class MessageRouterUtilTest {
             delays.add(MessageRouterUtil.createDelayWithExponentialBackoff(i));
         }
         assertFalse(delays.stream().anyMatch(d -> d != sendMsgRetryIntervalMs));
+    }
+
+    @Test
+    public void checkExpiry_ttlRelativeNotExpired() throws Exception {
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+        joynrMessage.setTtlAbsolute(false);
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        try {
+            MessageRouterUtil.checkExpiry(immutableMessage);
+        } catch (JoynrMessageNotSentException e) {
+            assertNotSame(e.getClass(), JoynrMessageExpiredException.class);
+            return;
+        }
+        fail("Relative ttl not supported");
+    }
+
+    @Test
+    public void checkExpiry_ttlRelativeExpired() throws Exception {
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1).getValue());
+        joynrMessage.setTtlAbsolute(false);
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        Thread.sleep(5);
+
+        try {
+            MessageRouterUtil.checkExpiry(immutableMessage);
+        } catch (JoynrMessageNotSentException e) {
+            assertNotSame(e.getClass(), JoynrMessageExpiredException.class);
+            return;
+        }
+        fail("Relative ttl not supported and message expired");
+    }
+
+    @Test
+    public void checkExpiry_ttlAbsoluteExpired() throws Exception {
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1).getValue());
+        joynrMessage.setTtlAbsolute(true);
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        Thread.sleep(5);
+
+        try {
+            MessageRouterUtil.checkExpiry(immutableMessage);
+        } catch (JoynrMessageExpiredException e) {
+            return;
+        }
+        fail("An expired message should throw");
+    }
+
+    @Test
+    public void checkExpiry_ttlAbsoluteNotExpired() throws Exception {
+        joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1000).getValue());
+        joynrMessage.setTtlAbsolute(true);
+
+        ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
+
+        try {
+            MessageRouterUtil.checkExpiry(immutableMessage);
+        } catch (JoynrMessageNotSentException e) {
+            assertNotSame(e.getClass(), JoynrMessageExpiredException.class);
+            fail("Absolute TTL should not be supported");
+        }
     }
 }

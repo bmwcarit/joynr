@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import io.joynr.messaging.FailureAction;
+import io.joynr.common.ExpiryDate;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MutableMessage;
@@ -66,18 +67,24 @@ final class MqttMessagingSkeletonTestUtil {
     }
 
     static ImmutableMessage createTestRequestMessage() throws Exception {
-        return createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
+        return createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, 100000, true);
     }
 
     static ImmutableMessage createTestMessage(Message.MessageType messageType) throws Exception {
+        return createTestMessage(messageType, 100000, true);
+    }
+
+    static ImmutableMessage createTestMessage(Message.MessageType messageType,
+                                              long ttlMS,
+                                              boolean ttlAbsolute) throws Exception {
         MutableMessage message = new MutableMessage();
 
         MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");
 
         message.setSender("someSender");
         message.setRecipient("someRecipient");
-        message.setTtlAbsolute(true);
-        message.setTtlMs(100000);
+        message.setTtlAbsolute(ttlAbsolute);
+        message.setTtlMs(ExpiryDate.fromRelativeTtl(ttlMS).getValue());
         message.setPayload(new byte[]{ 0, 1, 2 });
         message.setType(messageType);
         message.setReplyTo(RoutingTypesUtil.toAddressString(address));

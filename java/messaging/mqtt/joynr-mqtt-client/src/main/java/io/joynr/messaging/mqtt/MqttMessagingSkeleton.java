@@ -40,6 +40,7 @@ import io.joynr.messaging.routing.AbstractGlobalMessagingSkeleton;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageProcessedListener;
 import io.joynr.messaging.routing.MessageRouter;
+import io.joynr.messaging.routing.MessageRouterUtil;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
@@ -161,14 +162,18 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
             byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, Optional.of(context));
 
             ImmutableMessage message = new ImmutableMessage(processedMessage);
-            message.setContext(context);
-            message.setPrefixedExtraCustomHeaders(prefixedCustomHeaders);
 
             if (logger.isTraceEnabled()) {
                 logger.trace("<<< INCOMING FROM {} <<< {}", ownGbid, message);
             } else {
                 logger.debug("<<< INCOMING FROM {} <<< {}", ownGbid, message.getTrackingInfo());
             }
+
+            // If this fails, we quit the processing due to a thrown exception
+            MessageRouterUtil.checkExpiry(message);
+
+            message.setContext(context);
+            message.setPrefixedExtraCustomHeaders(prefixedCustomHeaders);
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {

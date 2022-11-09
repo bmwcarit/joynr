@@ -213,7 +213,7 @@ public class MqttMessagingSkeletonTest {
 
         ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
         final MqttAddress expectedAddress = new MqttAddress(ownGbid, "testTopic");
-        verify(routingTable).put(rqMessage.getSender(), expectedAddress, true, 100000L);
+        verify(routingTable).put(rqMessage.getSender(), expectedAddress, true, rqMessage.getTtlMs());
 
         verify(messageRouter).routeIn(captor.capture());
         assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
@@ -423,5 +423,38 @@ public class MqttMessagingSkeletonTest {
 
         verify(messageRouter, times(3 * 2 * maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
         assertEquals(0, subject.getDroppedMessagesCount());
+    }
+
+    @Test
+    public void testFailureActionCalledForExpiredAbsoluteMessage() throws Exception {
+        testFailureActionCalled(1, true, "Message is expired");
+    }
+
+    @Test
+    public void testFailureActionCalledForExpiredRelativeMessage() throws Exception {
+        testFailureActionCalled(1, false, "Relative ttl not supported");
+    }
+
+    @Test
+    public void testFailureActionCalledForNotExpiredRelativeMessage() throws Exception {
+        testFailureActionCalled(10000, false, "Relative ttl not supported");
+    }
+
+    private void testFailureActionCalled(long ttlMs, boolean ttlAbsolute, String failureText) throws Exception {
+        Semaphore semaphore = new Semaphore(0);
+        ImmutableMessage message = createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
+                                                     ttlMs,
+                                                     ttlAbsolute);
+        Thread.sleep(5);
+
+        subject.transmit(message.getSerializedMessage(),
+                         message.getCustomHeaders(),
+                         getExpectToBeCalledAction(semaphore));
+        assertTrue(failureText, semaphore.tryAcquire());
+        assertEquals(0, subject.getCurrentCountOfUnprocessedMqttRequests());
+        verify(messageRouter, never()).routeIn(any(ImmutableMessage.class));
+        verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
+        verify(routingTable,
+               never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong(), any(Boolean.class));
     }
 }
