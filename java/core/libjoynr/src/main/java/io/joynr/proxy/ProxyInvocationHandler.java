@@ -542,18 +542,20 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
 
         for (Iterator<MethodInvocation<?>> iterator = queuedRpcList.iterator(); iterator.hasNext();) {
             MethodInvocation<?> invocation = iterator.next();
-            try {
-                MethodMetaInformation metaInfo = new MethodMetaInformation(invocation.getMethod());
-                int callbackIndex = metaInfo.getCallbackIndex();
-                if (callbackIndex > -1) {
-                    ICallback callback = (ICallback) invocation.getArgs()[callbackIndex];
+
+            final MethodMetaInformation metaInfo = new MethodMetaInformation(invocation.getMethod());
+            final int callbackIndex = metaInfo.getCallbackIndex();
+            if (callbackIndex > -1) {
+                ICallback callback = (ICallback) invocation.getArgs()[callbackIndex];
+                try {
                     callback.onFailure(exception);
+                } catch (final Exception callbackException) {
+                    logger.error("Aborting call to method: {} but unable to call onError callback because of: ",
+                                 invocation.getMethod().getName(),
+                                 callbackException);
                 }
-            } catch (Exception metaInfoException) {
-                logger.error("Aborting call to method: {} but unable to call onError callback because of: ",
-                             invocation.getMethod().getName(),
-                             metaInfoException);
             }
+
             invocation.getFuture().onFailure(exception);
         }
 
