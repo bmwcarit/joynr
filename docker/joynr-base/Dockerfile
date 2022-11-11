@@ -3,7 +3,7 @@ FROM fedora:36
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
 # set this date to cause all images to be updated
-ENV REFRESHED_AT 2022-09-05-15-00
+ENV REFRESHED_AT 2022-11-11-15-00
 
 ###################################################
 # create data directories and volumes
@@ -124,6 +124,19 @@ RUN alternatives --set java /usr/lib/jvm/java-11-openjdk*.x86_64/bin/java \
     && alternatives --set javac /usr/lib/jvm/java-11-openjdk*.x86_64/bin/javac \
     && alternatives --set jre_openjdk /usr/lib/jvm/java-11-openjdk*.x86_64 \
     && alternatives --set java_sdk_openjdk /usr/lib/jvm/java-11-openjdk*.x86_64
+
+###################################################
+# Patch Java security configuration so that SHA1
+# signed classes are still accepted. This is
+# required for old plugins / dependencies required
+# by joynr generator which need to stay compatible
+# with Java 8 and thus cannot be updated.
+###################################################
+RUN mkdir -p /tmp/patches/java
+COPY patches/java /tmp/patches/java
+RUN cd /usr/lib/jvm/java-11/conf/security \
+    && patch < /tmp/patches/java/java-11.security.patch \
+    && rm -fr /tmp/patches/java
 
 ###################################################
 # setup extra certs for java
