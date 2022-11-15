@@ -33,16 +33,66 @@ the versioning scheme [here](JoynrVersioning.md).
   * `MessagingSettings::SETTING_SEND_MESSAGE_MAX_TTL()`
   * `MessagingSettings::DEFAULT_SEND_MESSAGE_MAX_TTL()`
   * `MessagingSettings::SETTING_MQTT_MAX_MESSAGE_SIZE_BYTES()`
-* **[C++]** The support for eNULL has been removed, consequently the following configuration related APIs have been removed in WebSocketSettings:
+* **[C++]** The support for eNULL has been removed, consequently the following configuration
+related APIs have been removed in WebSocketSettings:
   * `WebSocketSettings::SETTING_TLS_ENCRYPTION()`
   * `WebSocketSettings::DEFAULT_TLS_ENCRYPTION`
   * `WebSocketSettings::getEncryptedTlsUsage()`
   * `WebSocketSettings::setEncryptedTlsUsage(..)`
-* **[TS]** The support for eNULL has been removed, consequently the following configuration related API has been removed in SharedWebSocketSettings:
+* **[TS]** The support for eNULL has been removed, consequently the following configuration related
+API has been removed in SharedWebSocketSettings:
   * `SharedWebSocketSettings.provisioning.useUnencryptedTls`
+* **[Java]** Added ability to inject TrustManager into Hivemq Mqtt Clients
+* **[Java,Docker]** Patched java security settings to allow SHA1 signatures:  
+From java 11.0.17 and java 17.0.5 onwards the java default security configuration disables the use
+of SHA1 signatures.
+This causes failures when building the joynr generator framework which is required to stay
+compatible with Java 8, so that its required plugins and dependencies cannot be updated to a later
+version signed with another signature algorithm which is still supported.  
+**NOTE:** To be able to build joynr with Java 11.0.17 / Java 17.0.5 (or later), remove the
+disabling of SHA1 from your default java security configuration.  
+See also Java release notes:
+https://www.oracle.com/java/technologies/javase/11-0-17-relnotes.html#JDK-8269039 /
+https://www.oracle.com/java/technologies/javase/11-0-17-relnotes.html#JDK-8269039
 
 ## Other Changes
-None.
+* **[Java]** Updated dependencies (including transitive dependencies):
+```
+  * org.eclipse.platform:org.eclipse.osgi                3.13.200    -> 3.18.100
+  * org.hibernate:hibernate-*                            5.5.7.Final -> 5.6.11.Final
+  * org.hamcrest:hamcrest*                               1.3         -> 2.2
+  * com.google.guava:guava                               30.1-jre    -> 31.1-jre
+  * org.ow2.asm:asm*                                     7.0         -> 9.4
+  * com.google.protobuf:protobuf-java*                   3.21.2      -> 3.21.7
+  * jakarta.annotation:jakarta.annotation-api            2.1.0       -> 2.1.1
+  * org.javassist:javassist                              3.27.0-GA   -> 3.29.2-GA
+  * org.xerial:sqlite-jdbc                               3.27.2.1    -> 3.39.3.0
+  * com.fasterxml.jackson.core:jackson-*                 2.13.3      -> 2.13.4
+  * ch.qos.reload4j:reload4j                             1.2.19      -> 1.2.22
+  * org.postgresql:postgresql                            42.4.1      -> 42.5.0
+  * org.reactivestreams:reactive-streams                 1.0.3       -> 1.0.4
+  * org.apache.maven.plugins:maven-gpg-plugin            1.6         -> 3.0.1
+  * org.sonarsource.scanner.maven:sonar-maven-plugin     3.7.0.1746  -> 3.9.1.2184
+  * org.apache.maven.plugins:maven-javadoc-plugin        3.3.1       -> 3.4.1
+  * org.codehaus.mojo:properties-maven-plugin            1.0-alpha-2 -> 1.1.0
+  * org.apache.maven.plugins:maven-plugin-plugin         3.6.0       -> 3.6.4
+```
+* **[C++]** Improve logging of ApplicationException, enumName is always logged
+* **[Java]** Joynr now supports Java 17 except for joynr Android (it still requires Java 11)
+* **[Java]** Providers are forced to use fixed participantIds if shared subscriptions are enabled
+* **[Java]** Improved logging of mqtt disconnect: now also reason is logged in more detail
+* **[Android]** Fix cyclic or long logs on LoggerFactory  
+    Fixes cyclic or long logs and changes from log info to log debug on AndroidLoggerFactory
+* **[Android]** Fixed ACL wildcard handling
+* **[Generator,TS]** Fixed generation of Provider with notifiable attribute  
+    In case attribute was notifyable the valueChanged API was not
+    available because the wrong type was used (w/o Notify in the name)
+    e.g. ProviderReadWriteAttributeImpl was used instead of
+    ProviderReadWriteNotifyAttributeImpl
+* **[TS]** Fixed dependency problem caused by new minimist version  
+    Use fixed version 1.2.6 for minimist
+* **[TS]** Do not throw when dir exists while creating recursive dir path
+* **[Docker]** joynr-gcd now will use Java 17 instead of Java 11
 
 ## Configuration Property Changes
 * **[C++]** The following settings have been removed and will be ignored, if present:
@@ -63,10 +113,11 @@ None.
 ```
 
 ## Security Fixes
-None.
+* **[Docker]** Use secure connections in Docker containers
 
 ## Bug Fixes
-None.
+* **[C++]** Fixed compilation problem with gcc 7.x
+* **[C++]** Fixed problems reported by TSAN.
 
 # joynr 1.21.5
 
