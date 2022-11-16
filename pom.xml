@@ -414,7 +414,7 @@
 		-->
 		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.13.4</jackson.version>
-		<netty.version>4.1.80.Final</netty.version>
+		<netty.version>4.1.85.Final</netty.version>
 		<guice.version>5.1.0</guice.version>
 		<jetty.version>11.0.11</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
