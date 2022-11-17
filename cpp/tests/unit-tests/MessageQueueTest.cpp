@@ -41,7 +41,7 @@ public:
             : _messageQueue(),
               _expiryDate(std::chrono::time_point_cast<std::chrono::milliseconds>(
                                   std::chrono::system_clock::now()) +
-                          std::chrono::milliseconds(100))
+                          std::chrono::milliseconds(2000))
     {
     }
 
