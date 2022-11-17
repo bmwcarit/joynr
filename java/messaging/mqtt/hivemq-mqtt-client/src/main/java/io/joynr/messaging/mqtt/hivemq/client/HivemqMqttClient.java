@@ -77,6 +77,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private final int keepAliveTimeSeconds;
     private final int connectionTimeoutSec;
     private final int reconnectDelayMs;
+    private final int receiveMaximum;
     private final boolean isReceiver;
     private final boolean isSender;
     private final String clientInformation;
@@ -97,6 +98,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                             boolean cleanSession,
                             int connectionTimeoutSec,
                             int reconnectDelayMs,
+                            int receiveMaximum,
                             boolean isReceiver,
                             boolean isSender,
                             String gbid,
@@ -107,6 +109,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         this.cleanSession = cleanSession;
         this.connectionTimeoutSec = connectionTimeoutSec;
         this.reconnectDelayMs = reconnectDelayMs;
+        this.receiveMaximum = receiveMaximum;
         this.isReceiver = isReceiver;
         this.isSender = isSender;
         clientInformation = createClientInformationString(gbid);
@@ -176,6 +179,9 @@ public class HivemqMqttClient implements JoynrMqttClient {
             while (!client.getConfig().getState().isConnected()) {
                 logger.info("{}: Attempting to connect client, clean session={} ...", clientInformation, cleanSession);
                 Mqtt5Connect mqtt5Connect = Mqtt5Connect.builder()
+                                                        .restrictions()
+                                                        .receiveMaximum(receiveMaximum)
+                                                        .applyRestrictions()
                                                         .cleanStart(cleanSession)
                                                         .keepAlive(keepAliveTimeSeconds)
                                                         .noSessionExpiry()

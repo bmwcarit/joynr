@@ -93,6 +93,7 @@ public class HivemqMqttClientTest {
     private final boolean defaultCleanSession = false;
     private final int defaultConnectionTimeoutSec = 60;
     private final int defaultReconnectDelayMs = 1000;
+    private final int defaultReceiveMaximum = 65535;
     private final String defaultGbid = "HivemqMqttClientTest-GBID";
     @Mock
     private Mqtt5ClientConfig mockClientConfig;
@@ -154,6 +155,7 @@ public class HivemqMqttClientTest {
                                       defaultCleanSession,
                                       defaultConnectionTimeoutSec,
                                       defaultReconnectDelayMs,
+                                      defaultReceiveMaximum,
                                       true,
                                       true,
                                       defaultGbid,
@@ -499,6 +501,7 @@ public class HivemqMqttClientTest {
                                       defaultCleanSession,
                                       defaultConnectionTimeoutSec,
                                       defaultReconnectDelayMs,
+                                      defaultReceiveMaximum,
                                       true,
                                       true,
                                       defaultGbid,
@@ -533,6 +536,7 @@ public class HivemqMqttClientTest {
                                       defaultCleanSession,
                                       defaultConnectionTimeoutSec,
                                       defaultReconnectDelayMs,
+                                      defaultReceiveMaximum,
                                       true,
                                       true,
                                       defaultGbid,

@@ -466,6 +466,15 @@ drain on `prepareForShutdown` before timing out.
 
 ## MqttModule
 
+### `PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
+Define how many simultaneous unacknowledged QoS 1 and QoS 2 publications we are ready to receive
+from the Mqtt Broker.
+
+* **OPTIONAL**
+* **Type**: int
+* **User property**: `joynr.messaging.mqtt.receivemaximum`
+* **Default value**: `65535`
+
 ### `PROPERTY_MQTT_BROKER_URIS`
 List of URIs of the MQTT broker backend services for the cluster controller to connect to.
 

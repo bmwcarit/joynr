@@ -143,6 +143,10 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
     private int reconnectDelayMs;
 
     @Inject
+    @Named(MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM)
+    private int receiveMaximum;
+
+    @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
                                    @Named(MqttModule.MQTT_GBID_TO_BROKERURI_MAP) HashMap<String, String> mqttGbidToBrokerUriMap,
@@ -281,6 +285,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                                        cleanSession,
                                                        mqttGbidToConnectionTimeoutSecMap.get(gbid),
                                                        reconnectDelayMs,
+                                                       receiveMaximum,
                                                        isReceiver,
                                                        isSender,
                                                        gbid,
