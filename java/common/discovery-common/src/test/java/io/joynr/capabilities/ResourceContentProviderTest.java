@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public class ResourceContentProviderTest {
 
     @Before
     public void setup() throws Exception {
-        tmpFile = File.createTempFile("rcpt", ".txt");
+        tmpFile = Files.createTempFile("rcpt", ".txt").toFile();
         tmpFile.deleteOnExit();
         try (FileWriter writer = new FileWriter(tmpFile)) {
             writer.write("test");
