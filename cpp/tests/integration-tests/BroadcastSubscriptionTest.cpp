@@ -146,7 +146,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
 
     // register the subscription on the consumer side
     std::string subscribeToName = "locationUpdate";
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(80,   // validity_ms
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(1000, // validity_ms
                                                                      1000, // publication ttl
                                                                      100   // minInterval_ms
     );
@@ -175,7 +175,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_singleOutputParameter)
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(2)));
     ASSERT_FALSE(semaphore->waitFor(std::chrono::milliseconds(250)));
 }
 
@@ -196,7 +196,7 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters)
 
     // register the subscription on the consumer side
     std::string subscribeToName = "locationUpdateWithSpeed";
-    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(80,   // validity_ms
+    auto subscriptionQos = std::make_shared<OnChangeSubscriptionQos>(1000, // validity_ms
                                                                      1000, // publication ttl
                                                                      100   // minInterval_ms
     );
@@ -225,6 +225,6 @@ TEST_F(BroadcastSubscriptionTest, receive_publication_multipleOutputParameters)
     dispatcher->receive(mutableMessage.getImmutableMessage());
 
     // Assert that only one subscription message is received by the subscription listener
-    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(1)));
+    ASSERT_TRUE(semaphore->waitFor(std::chrono::seconds(2)));
     ASSERT_FALSE(semaphore->waitFor(std::chrono::milliseconds(250)));
 }
