@@ -2,14 +2,12 @@ project(Capabilities)
 
 set(SOURCES
     CapabilitiesRegistrar.cpp
-    CapabilityUtils.cpp
     LocalDiscoveryAggregator.cpp
     ParticipantIdStorage.cpp
 )
 
 set(PUBLIC_HEADERS
     include/joynr/CapabilitiesRegistrar.h
-    include/joynr/CapabilityUtils.h
     include/joynr/ILocalCapabilitiesCallback.h
     include/joynr/LocalDiscoveryAggregator.h
     include/joynr/ParticipantIdStorage.h

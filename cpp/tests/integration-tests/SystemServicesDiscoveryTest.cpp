@@ -22,8 +22,8 @@
 #include "tests/utils/Gmock.h"
 #include "tests/utils/Gtest.h"
 
-#include "joynr/CapabilityUtils.h"
 #include "joynr/DiscoveryQos.h"
+#include "joynr/LCDUtil.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/ProxyBuilder.h"
 #include "joynr/Settings.h"
@@ -152,7 +152,7 @@ protected:
                                                     expiryDateMs,
                                                     publicKeyId);
         std::vector<joynr::types::DiscoveryEntryWithMetaInfo> expectedResult;
-        auto expectedEntry = util::convert(true, discoveryEntry);
+        auto expectedEntry = LCDUtil::convert(true, discoveryEntry);
         expectedResult.push_back(expectedEntry);
 
         try {

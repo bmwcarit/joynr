@@ -39,7 +39,6 @@
 #include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"
 #include "joynr/CapabilitiesStorage.h"
-#include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/DiscoveryQos.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
@@ -554,7 +553,7 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
                 globalDiscoveryEntry.getParticipantId());
         if (localEntries2.empty()) {
             types::DiscoveryEntryWithMetaInfo convertedEntry =
-                    util::convert(false, globalDiscoveryEntry);
+                    LCDUtil::convert(false, globalDiscoveryEntry);
             capabilitiesMap.insert(
                     {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
             globalEntries.push_back(std::move(convertedEntry));
@@ -573,7 +572,7 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
 
     if (discoveryScope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL ||
         discoveryScope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
-        auto localEntriesWithMetaInfo = util::convert(true, localEntries);
+        auto localEntriesWithMetaInfo = LCDUtil::convert(true, localEntries);
         // combine local and global entries (duplicates are already filtered)
         globalEntries.insert(globalEntries.end(),
                              localEntriesWithMetaInfo.begin(),
@@ -583,7 +582,7 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
             // add globally registered local entries to the result
             if (localGlobalParticipantIds.find(localEntry.getParticipantId()) !=
                 localGlobalParticipantIds.cend()) {
-                auto localEntryWithMetaInfo = util::convert(true, localEntry);
+                auto localEntryWithMetaInfo = LCDUtil::convert(true, localEntry);
                 globalEntries.push_back(localEntryWithMetaInfo);
             }
         }

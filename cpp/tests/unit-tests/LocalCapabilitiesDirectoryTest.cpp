@@ -38,7 +38,6 @@
 #include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"
 #include "joynr/CapabilitiesStorage.h"
-#include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerDirectories.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/LCDUtil.h"
@@ -508,7 +507,7 @@ public:
         types::ProviderQos providerQos;
         providerQos.setScope(types::ProviderScope::GLOBAL);
         _entry.setQos(providerQos);
-        const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(false, _entry);
+        const types::DiscoveryEntryWithMetaInfo expectedEntry = LCDUtil::convert(false, _entry);
 
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(_, _, _, _, _, _))
                 .Times(1)
@@ -1427,7 +1426,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
             getGlobalDiscoveryEntries(_KNOWN_GBIDS.size());
     std::vector<types::DiscoveryEntryWithMetaInfo> expectedEntries;
     for (const auto& entry : discoveryEntryResultList) {
-        expectedEntries.push_back(util::convert(false, entry));
+        expectedEntries.push_back(LCDUtil::convert(false, entry));
     }
 
     // simulate global capability directory would store three entries.
@@ -1492,7 +1491,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
                 LCDUtil::toGlobalDiscoveryEntry(_entry, _LOCAL_ADDRESS);
     const std::vector<types::GlobalDiscoveryEntry>& globalEntryVec = {globalEntry};
 
-    const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(false, _entry);
+    const types::DiscoveryEntryWithMetaInfo expectedEntry = LCDUtil::convert(false, _entry);
 
     Sequence s;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
@@ -1549,7 +1548,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     providerQos.setScope(types::ProviderScope::GLOBAL);
     _entry.setQos(providerQos);
 
-    const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(false, _entry);
+    const types::DiscoveryEntryWithMetaInfo expectedEntry = LCDUtil::convert(false, _entry);
 
     Sequence s;
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
@@ -2123,7 +2122,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::GLOBAL);
     _entry.setQos(providerQos);
-    const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, _entry);
+    const types::DiscoveryEntryWithMetaInfo expectedEntry = LCDUtil::convert(true, _entry);
     _localCapabilitiesDirectory->add(
             _entry, createVoidOnSuccessFunction(), _unexpectedProviderRuntimeExceptionFunction);
     EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
@@ -2151,7 +2150,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     const std::vector<types::GlobalDiscoveryEntry> discoveryEntriesResultList =
             getGlobalDiscoveryEntries(1);
     const types::DiscoveryEntryWithMetaInfo expectedResult =
-            util::convert(false, discoveryEntriesResultList[0]);
+            LCDUtil::convert(false, discoveryEntriesResultList[0]);
 
     auto onSuccess =
             [this, &expectedResult](const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
@@ -2199,7 +2198,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     types::ProviderQos providerQos;
     providerQos.setScope(types::ProviderScope::LOCAL);
     _entry.setQos(providerQos);
-    const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, _entry);
+    const types::DiscoveryEntryWithMetaInfo expectedEntry = LCDUtil::convert(true, _entry);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
 
@@ -4951,7 +4950,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
                                 _lastSeenDateMs,
                                 _lastSeenDateMs + _defaultExpiryIntervalMs,
                                 _PUBLIC_KEY_ID);
-    const types::DiscoveryEntryWithMetaInfo expectedEntry = util::convert(true, entry);
+    const types::DiscoveryEntryWithMetaInfo expectedEntry = LCDUtil::convert(true, entry);
 
     types::GlobalDiscoveryEntry globalEntry =
             LCDUtil::toGlobalDiscoveryEntry(entry, _LOCAL_ADDRESS);
@@ -5004,7 +5003,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, localAndGlobalDoesNotReturnDuplicateEntri
                                 _lastSeenDateMs + _defaultExpiryIntervalMs,
                                 _PUBLIC_KEY_ID);
 
-    const types::DiscoveryEntryWithMetaInfo& expectedEntry = util::convert(true, entry);
+    const types::DiscoveryEntryWithMetaInfo& expectedEntry = LCDUtil::convert(true, entry);
     const types::GlobalDiscoveryEntry& globalEntry =
             types::GlobalDiscoveryEntry(entry.getProviderVersion(),
                                         entry.getDomain(),

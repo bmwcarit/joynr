@@ -17,8 +17,8 @@
  * #L%
  */
 #include "joynr/LcdPendingLookupsHandler.h"
-#include "joynr/CapabilityUtils.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
+#include "joynr/LCDUtil.h"
 #include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
@@ -38,7 +38,7 @@ void LcdPendingLookupsHandler::callPendingLookups(
     if (localCapabilities.empty()) {
         return;
     }
-    auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
+    auto localCapabilitiesWithMetaInfo = LCDUtil::convert(true, localCapabilities);
 
     std::vector<std::shared_ptr<ILocalCapabilitiesCallback>> callbacksToRemove;
     for (const std::shared_ptr<ILocalCapabilitiesCallback>& callback :

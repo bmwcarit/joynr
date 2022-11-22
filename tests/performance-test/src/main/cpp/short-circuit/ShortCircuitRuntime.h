@@ -24,11 +24,11 @@
 #include <tuple> // for std::ignore
 #include <vector>
 
-#include "joynr/CapabilityUtils.h"
 #include "joynr/ClusterControllerSettings.h"
 #include "joynr/IMessageRouter.h"
 #include "joynr/IPlatformSecurityManager.h"
 #include "joynr/JoynrRuntimeImpl.h"
+#include "joynr/LCDUtil.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/system/RoutingTypes/Address.h"
 #include "joynr/types/ProviderQos.h"
@@ -145,7 +145,7 @@ public:
             boost::optional<MessagingQos> qos = boost::none) noexcept override
     {
         std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
-        result.push_back(joynr::util::convert(true, entry));
+        result.push_back(joynr::LCDUtil::convert(true, entry));
         return resolve(result, onSuccess);
     }
 
@@ -182,7 +182,7 @@ public:
                     onRuntimeError = nullptr,
             boost::optional<MessagingQos> qos = boost::none) noexcept override
     {
-        return resolve(joynr::util::convert(true, entry), onSuccess);
+        return resolve(joynr::LCDUtil::convert(true, entry), onSuccess);
     }
 
     std::shared_ptr<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>> lookupAsync(
