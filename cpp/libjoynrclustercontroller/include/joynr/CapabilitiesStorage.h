@@ -268,7 +268,7 @@ protected:
     boost::optional<DiscoveryEntry> lookupByParticipantIdFiltered(const std::string& participantId,
                                                                   FilterFun filterFun) const
     {
-        boost::optional<DiscoveryEntry> result;
+        boost::optional<DiscoveryEntry> result = boost::none;
 
         auto& index = _container.template get<tags::ParticipantId>();
         auto it = index.find(participantId);

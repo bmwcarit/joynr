@@ -88,18 +88,17 @@ bool LocalCapabilitiesDirectoryStore::getLocalAndCachedCapabilities(
 {
     joynr::types::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
-    auto localCapabilities = searchLocalCache(interfaceAddresses);
-    auto cachedCapabilities =
-            scope == types::DiscoveryScope::LOCAL_ONLY
-                    ? std::vector<types::DiscoveryEntry>{}
-                    : searchGlobalCache(interfaceAddresses,
-                                        gbids,
-                                        std::chrono::milliseconds(discoveryQos.getCacheMaxAge()));
+    auto localCapabilities = searchLocal(interfaceAddresses, scope);
+    std::vector<types::DiscoveryEntry> globallyCachedEntries;
+    if (_includeGlobalScopes.find(scope) != _includeGlobalScopes.end()) {
+        globallyCachedEntries =
+                searchGlobalCache(interfaceAddresses,
+                                  gbids,
+                                  std::chrono::milliseconds(discoveryQos.getCacheMaxAge()));
+    }
 
-    return callReceiverIfPossible(scope,
-                                  std::move(localCapabilities),
-                                  std::move(cachedCapabilities),
-                                  std::move(callback));
+    return callReceiverIfPossible(
+            scope, localCapabilities, globallyCachedEntries, std::move(callback));
 }
 
 bool LocalCapabilitiesDirectoryStore::getLocalAndCachedCapabilities(
@@ -110,81 +109,106 @@ bool LocalCapabilitiesDirectoryStore::getLocalAndCachedCapabilities(
 {
     joynr::types::DiscoveryScope::Enum scope = discoveryQos.getDiscoveryScope();
 
-    boost::optional<types::DiscoveryEntry> localOrCachedCapability = searchCaches(
-            participantId, scope, gbids, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()));
-    auto localCapabilities = LCDUtil::optionalToVector(std::move(localOrCachedCapability));
-    std::vector<types::DiscoveryEntry> globalCapabilities(localCapabilities);
+    boost::optional<types::DiscoveryEntry> localCapability = searchLocal(participantId, scope);
+    boost::optional<types::DiscoveryEntry> globalCachedCapability = boost::none;
 
-    return callReceiverIfPossible(scope,
-                                  std::move(localCapabilities),
-                                  std::move(globalCapabilities),
-                                  std::move(callback));
+    if (localCapability) {
+        if (scope == types::DiscoveryScope::GLOBAL_ONLY) {
+            globalCachedCapability = localCapability;
+            localCapability = boost::none;
+        }
+    } else if (_includeGlobalScopes.find(scope) != _includeGlobalScopes.end()) {
+        globalCachedCapability = searchGlobalCache(
+                participantId, gbids, std::chrono::milliseconds(discoveryQos.getCacheMaxAge()));
+    }
+
+    auto localCapabilities = LCDUtil::optionalToVector(std::move(localCapability));
+    auto globallyCachedEntries = LCDUtil::optionalToVector(std::move(globalCachedCapability));
+
+    return callReceiverIfPossible(
+            scope, localCapabilities, globallyCachedEntries, std::move(callback));
 }
 
 bool LocalCapabilitiesDirectoryStore::callReceiverIfPossible(
         joynr::types::DiscoveryScope::Enum& scope,
-        std::vector<types::DiscoveryEntry>&& localCapabilities,
-        std::vector<types::DiscoveryEntry>&& globalCapabilities,
+        const std::vector<types::DiscoveryEntry>& localCapabilities,
+        const std::vector<types::DiscoveryEntry>& globallyCachedCapabilities,
         std::shared_ptr<ILocalCapabilitiesCallback> callback)
 {
     // return only local capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_ONLY) {
-        auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-        callback->capabilitiesReceived(std::move(localCapabilitiesWithMetaInfo));
+        // we call capabilitiesReceived for empty results, too
+        const auto& localCapsWithMetaInfo = util::convert(true, localCapabilities);
+        callback->capabilitiesReceived(localCapsWithMetaInfo);
         return true;
     }
 
     // return local then global capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
-        auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-        auto globalCapabilitiesWithMetaInfo = util::convert(false, globalCapabilities);
         if (!localCapabilities.empty()) {
-            callback->capabilitiesReceived(std::move(localCapabilitiesWithMetaInfo));
+            const auto& localCapsWithMetaInfo = util::convert(true, localCapabilities);
+            callback->capabilitiesReceived(localCapsWithMetaInfo);
             return true;
         }
-        if (!globalCapabilities.empty()) {
-            callback->capabilitiesReceived(std::move(globalCapabilitiesWithMetaInfo));
+        if (!globallyCachedCapabilities.empty()) {
+            const auto& globalCachedCapsWithMetaInfo =
+                    util::convert(false, globallyCachedCapabilities);
+            callback->capabilitiesReceived(globalCachedCapsWithMetaInfo);
             return true;
         }
     }
 
     // return local and global capabilities
-    if (scope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
-        if (!globalCapabilities.empty()) {
-            auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-            auto globalCapabilitiesWithMetaInfo = util::convert(false, globalCapabilities);
+    if (scope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL &&
+        !globallyCachedCapabilities.empty()) {
+        auto localCapsWithMetaInfo = util::convert(true, localCapabilities);
+        auto globalCachedCapsWithMetaInfo = util::convert(false, globallyCachedCapabilities);
 
-            // remove duplicates
-            auto resultVec = LCDUtil::filterDuplicates(std::move(localCapabilitiesWithMetaInfo),
-                                                       std::move(globalCapabilitiesWithMetaInfo));
-            callback->capabilitiesReceived(std::move(resultVec));
-            return true;
-        }
+        // merge and remove duplicated entries. If duplicate entries with the same
+        // participantId found, keep the local ones
+        const auto& localAndGlobalCapsWithMetaInfo = LCDUtil::filterDuplicates(
+                std::move(localCapsWithMetaInfo), std::move(globalCachedCapsWithMetaInfo));
+        callback->capabilitiesReceived(localAndGlobalCapsWithMetaInfo);
+        return true;
     }
 
-    // return the global cached entries
-    if (scope == joynr::types::DiscoveryScope::GLOBAL_ONLY) {
-        auto resultWithDuplicates = util::convert(false, globalCapabilities);
-        auto localCapabilitiesWithMetaInfo = util::convert(true, localCapabilities);
-        for (const auto& entry : localCapabilitiesWithMetaInfo) {
-            if (entry.getQos().getScope() == joynr::types::ProviderScope::GLOBAL) {
-                resultWithDuplicates.push_back(entry);
+    // return globally registered entries and the global cached entries
+    if (scope == joynr::types::DiscoveryScope::GLOBAL_ONLY && !globallyCachedCapabilities.empty()) {
+        // lookup remote entries in GCD if there are no cached entries
+        std::vector<types::DiscoveryEntry> globallyRegisteredEntries;
+        for (const auto& capability : localCapabilities) {
+            if (LCDUtil::isGlobal(capability)) {
+                globallyRegisteredEntries.push_back(capability);
             }
         }
-        if (!resultWithDuplicates.empty()) {
-            // remove duplicates
-            std::unordered_set<types::DiscoveryEntryWithMetaInfo,
-                               joynr::DiscoveryEntryHash,
-                               joynr::DiscoveryEntryKeyEq>
-                    resultSet(std::make_move_iterator(resultWithDuplicates.begin()),
-                              std::make_move_iterator(resultWithDuplicates.end()));
-            std::vector<types::DiscoveryEntryWithMetaInfo> result(
-                    resultSet.begin(), resultSet.end());
-            callback->capabilitiesReceived(std::move(result));
-            return true;
-        }
+        auto globallyRegisteredCapsWithMetaInfo = util::convert(true, globallyRegisteredEntries);
+        auto globalCachedCapsWithMetaInfo = util::convert(false, globallyCachedCapabilities);
+        // merge and remove duplicated entries. If duplicate entries with the same
+        // participantId found, keep the local ones
+        const auto& allGlobalCaps =
+                LCDUtil::filterDuplicates(std::move(globallyRegisteredCapsWithMetaInfo),
+                                          std::move(globalCachedCapsWithMetaInfo));
+        callback->capabilitiesReceived(allGlobalCaps);
+        return true;
     }
     return false;
+}
+
+void LocalCapabilitiesDirectoryStore::mapGbidsToGlobalProviderParticipantId(
+        const std::string& participantId,
+        std::vector<std::string>& allGbids)
+{
+    const auto foundMapping = _globalParticipantIdsToGbidsMap.find(participantId);
+    if (foundMapping != _globalParticipantIdsToGbidsMap.cend()) {
+        // entry already exists
+        const auto& oldGbids = foundMapping->second;
+        for (const auto& gbid : oldGbids) {
+            if (std::find(allGbids.cbegin(), allGbids.cend(), gbid) == allGbids.cend()) {
+                allGbids.emplace_back(gbid);
+            }
+        }
+    }
+    _globalParticipantIdsToGbidsMap[participantId] = allGbids;
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getLocalCapabilities(
@@ -198,7 +222,7 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getLocalCapa
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getLocalCapabilities(
         const std::vector<InterfaceAddress>& interfaceAddresses)
 {
-    return searchLocalCache(interfaceAddresses);
+    return searchLocal(interfaceAddresses);
 }
 
 void LocalCapabilitiesDirectoryStore::clear()
@@ -210,17 +234,31 @@ void LocalCapabilitiesDirectoryStore::clear()
 }
 
 void LocalCapabilitiesDirectoryStore::insertInLocalCapabilitiesStorage(
-        const types::DiscoveryEntry& entry)
+        const types::DiscoveryEntry& entry,
+        const std::vector<std::string>& gbids)
 {
-    std::lock_guard<std::recursive_mutex> localInsertionLock(_cacheLock);
+    std::unique_lock<std::recursive_mutex> localInsertionLock(_cacheLock);
+    // always remove cached remote entries with the same participantId.
+    auto cachedEntry = _globalLookupCache->lookupByParticipantId(entry.getParticipantId());
+    if (cachedEntry) {
+        JOYNR_LOG_WARN(logger(),
+                       "Add participantId {} removes cached entry with the same participantId: {}",
+                       entry.getParticipantId(),
+                       cachedEntry->toString());
+        _globalLookupCache->removeByParticipantId(entry.getParticipantId());
+        eraseParticipantIdToGbidMapping(cachedEntry->getParticipantId(), localInsertionLock);
+    }
 
-    auto found = _globalParticipantIdsToGbidsMap.find(entry.getParticipantId());
-    _locallyRegisteredCapabilities->insert(entry,
-                                           found != _globalParticipantIdsToGbidsMap.cend()
-                                                   ? found->second
-                                                   : std::vector<std::string>{});
+    std::vector<std::string> allGbids(gbids);
+    if (LCDUtil::isGlobal(entry)) {
+        _locallyRegisteredCapabilities->insert(entry, allGbids);
+        mapGbidsToGlobalProviderParticipantId(entry.getParticipantId(), allGbids);
+    } else {
+        _locallyRegisteredCapabilities->insert(entry);
+    }
+
     JOYNR_LOG_INFO(logger(),
-                   "Added local capability to cache {}, #localCapabilities: {}",
+                   "Added local capability {}, #localCapabilities: {}",
                    entry.toString(),
                    _locallyRegisteredCapabilities->size());
 }
@@ -231,21 +269,9 @@ void LocalCapabilitiesDirectoryStore::insertInGlobalLookupCache(
 {
     std::lock_guard<std::recursive_mutex> globalInsertionLock(_cacheLock);
 
-    _globalLookupCache->insert(entry);
-
-    const std::string& participantId = entry.getParticipantId();
     std::vector<std::string> allGbids(gbids);
-    const auto foundMapping = _globalParticipantIdsToGbidsMap.find(participantId);
-    if (foundMapping != _globalParticipantIdsToGbidsMap.cend()) {
-        // entry already exists
-        const auto& oldGbids = foundMapping->second;
-        for (const auto& gbid : oldGbids) {
-            if (std::find(allGbids.cbegin(), allGbids.cend(), gbid) == allGbids.cend()) {
-                allGbids.emplace_back(gbid);
-            }
-        }
-    }
-    _globalParticipantIdsToGbidsMap[participantId] = allGbids;
+    _globalLookupCache->insert(entry);
+    mapGbidsToGlobalProviderParticipantId(entry.getParticipantId(), allGbids);
 
     JOYNR_LOG_INFO(
             logger(),
@@ -253,6 +279,28 @@ void LocalCapabilitiesDirectoryStore::insertInGlobalLookupCache(
             entry.toString(),
             boost::algorithm::join(allGbids, ", "),
             _globalLookupCache->size());
+}
+
+boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchGlobalCache(
+        const std::string& participantId,
+        const std::vector<std::string>& gbids,
+        std::chrono::milliseconds maxCacheAge)
+{
+    std::unique_lock<std::recursive_mutex> lock(_cacheLock);
+    boost::optional<types::DiscoveryEntry> entry = boost::none;
+    if (maxCacheAge.count() >= 0) {
+        entry = _globalLookupCache->lookupCacheByParticipantId(participantId, maxCacheAge);
+    } else {
+        entry = _globalLookupCache->lookupByParticipantId(participantId);
+    }
+
+    if (entry) {
+        const std::unordered_set<std::string> gbidsSet(gbids.cbegin(), gbids.cend());
+        if (!LCDUtil::isEntryForGbid(lock, *entry, gbidsSet, _globalParticipantIdsToGbidsMap)) {
+            return boost::none;
+        }
+    }
+    return entry;
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchGlobalCache(
@@ -279,10 +327,27 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchGlobal
     return result;
 }
 
-std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchLocalCache(
-        const std::vector<InterfaceAddress>& interfaceAddresses)
+boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchLocal(
+        const std::string& participantId,
+        const types::DiscoveryScope::Enum& scope)
 {
+    // search locally registered entry in local store
     std::lock_guard<std::recursive_mutex> localSearchLock(_cacheLock);
+    boost::optional<types::DiscoveryEntry> entry =
+            _locallyRegisteredCapabilities->lookupByParticipantId(participantId);
+    if (entry && (_includeLocalScopes.find(scope) == _includeLocalScopes.end() &&
+                  entry->getQos().getScope() == types::ProviderScope::LOCAL)) {
+        // ignore the found entry
+        return boost::none;
+    }
+    return entry;
+}
+
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchLocal(
+        const std::vector<InterfaceAddress>& interfaceAddresses,
+        const types::DiscoveryScope::Enum& scope)
+{
+    std::unique_lock<std::recursive_mutex> localSearchLock(_cacheLock);
 
     std::vector<types::DiscoveryEntry> result;
     for (const auto& interfaceAddress : interfaceAddresses) {
@@ -291,40 +356,19 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchLocalC
 
         auto entries =
                 _locallyRegisteredCapabilities->lookupByDomainAndInterface(domain, interface);
-        result.insert(result.end(),
-                      std::make_move_iterator(entries.begin()),
-                      std::make_move_iterator(entries.end()));
-    }
-    return result;
-}
-
-boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchCaches(
-        const std::string& participantId,
-        joynr::types::DiscoveryScope::Enum scope,
-        const std::vector<std::string>& gbids,
-        std::chrono::milliseconds maxCacheAge)
-{
-    std::unique_lock<std::recursive_mutex> lock(_cacheLock);
-
-    // first search locally
-    auto entry = _locallyRegisteredCapabilities->lookupByParticipantId(participantId);
-    if (scope == types::DiscoveryScope::LOCAL_ONLY ||
-        (entry && scope != types::DiscoveryScope::GLOBAL_ONLY)) {
-        return entry;
-    }
-
-    if (maxCacheAge == std::chrono::milliseconds(-1)) {
-        entry = _globalLookupCache->lookupByParticipantId(participantId);
-    } else {
-        entry = _globalLookupCache->lookupCacheByParticipantId(participantId, maxCacheAge);
-    }
-    if (entry) {
-        const std::unordered_set<std::string> gbidsSet(gbids.cbegin(), gbids.cend());
-        if (!LCDUtil::isEntryForGbid(lock, *entry, gbidsSet, _globalParticipantIdsToGbidsMap)) {
-            return boost::none;
+        if (_includeLocalScopes.find(scope) != _includeLocalScopes.cend()) {
+            result.insert(result.end(),
+                          std::make_move_iterator(entries.begin()),
+                          std::make_move_iterator(entries.end()));
+        } else {
+            for (const auto& entry : entries) {
+                if (LCDUtil::isGlobal(entry)) {
+                    result.push_back(entry);
+                }
+            }
         }
     }
-    return entry;
+    return result;
 }
 
 std::recursive_mutex& LocalCapabilitiesDirectoryStore::getCacheLock()

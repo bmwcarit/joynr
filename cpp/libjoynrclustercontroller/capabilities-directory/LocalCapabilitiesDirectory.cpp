@@ -318,11 +318,8 @@ void LocalCapabilitiesDirectory::addInternal(
     if (!isGloballyVisible || !awaitGlobalRegistration) {
         std::lock_guard<std::recursive_mutex> lock1(
                 _localCapabilitiesDirectoryStore->getCacheLock());
-        if (isGloballyVisible) {
-            _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(discoveryEntry, gbids);
-        }
         // register locally
-        _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(discoveryEntry);
+        _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(discoveryEntry, gbids);
 
         updatePersistedFile();
         {
@@ -331,7 +328,7 @@ void LocalCapabilitiesDirectory::addInternal(
                     discoveryEntry.getDomain(), discoveryEntry.getInterfaceName());
             _lcdPendingLookupsHandler.callPendingLookups(
                     interfaceAddress,
-                    _localCapabilitiesDirectoryStore->searchLocalCache({interfaceAddress}));
+                    _localCapabilitiesDirectoryStore->searchLocal({interfaceAddress}));
         }
     }
 
@@ -396,10 +393,8 @@ void LocalCapabilitiesDirectory::addInternal(
                 std::lock_guard<std::recursive_mutex> cacheInsertionLock(
                         thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
                 if (awaitGlobalRegistration) {
-                    thisSharedPtr->_localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
-                            globalDiscoveryEntry, gbids);
                     thisSharedPtr->_localCapabilitiesDirectoryStore
-                            ->insertInLocalCapabilitiesStorage(globalDiscoveryEntry);
+                            ->insertInLocalCapabilitiesStorage(globalDiscoveryEntry, gbids);
                     JOYNR_LOG_INFO(logger(),
                                    "Global capability '{}' added successfully for GBIDs >{}<, "
                                    "#registeredGlobalCapabilities {}",
@@ -418,7 +413,7 @@ void LocalCapabilitiesDirectory::addInternal(
                                                           globalDiscoveryEntry.getInterfaceName());
                         thisSharedPtr->_lcdPendingLookupsHandler.callPendingLookups(
                                 interfaceAddress,
-                                thisSharedPtr->_localCapabilitiesDirectoryStore->searchLocalCache(
+                                thisSharedPtr->_localCapabilitiesDirectoryStore->searchLocal(
                                         {interfaceAddress}));
                     }
                 } else {
@@ -594,9 +589,10 @@ void LocalCapabilitiesDirectory::capabilitiesReceived(
         }
     }
 
-    callback->capabilitiesReceived(std::move(globalEntries));
+    callback->capabilitiesReceived(globalEntries);
 }
 
+// base lookup by particiapntId
 void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
                                         const joynr::types::DiscoveryQos& discoveryQos,
                                         const std::vector<std::string>& gbids,
@@ -651,6 +647,7 @@ void LocalCapabilitiesDirectory::lookup(const std::string& participantId,
     }
 }
 
+// base lookup by domains and interface
 void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                                         const std::string& interfaceName,
                                         const std::vector<std::string>& gbids,
@@ -1026,7 +1023,7 @@ void LocalCapabilitiesDirectory::lookup(
              onError,
              participantId](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    if (capabilities.size() == 0) {
+                    if (capabilities.empty()) {
                         joynr::exceptions::ProviderRuntimeException exception(
                                 "No capabilities found for participantId \"" + participantId +
                                 "\" and default GBID: " + thisSharedPtr->_knownGbids[0]);
@@ -1084,7 +1081,7 @@ void LocalCapabilitiesDirectory::lookup(
              participantId,
              gbidsForLookup](const std::vector<types::DiscoveryEntryWithMetaInfo>& capabilities) {
                 if (auto thisSharedPtr = thisWeakPtr.lock()) {
-                    if (capabilities.size() == 0) {
+                    if (capabilities.empty()) {
                         const std::string gbidString = boost::algorithm::join(gbidsForLookup, ", ");
                         JOYNR_LOG_DEBUG(
                                 logger(),
@@ -1244,13 +1241,13 @@ void LocalCapabilitiesDirectory::remove(
                     const std::string gbidString = boost::algorithm::join(
                             lCDStoreSharedPtr->getGbidsForParticipantId(participantId, cacheLock),
                             ", ");
-                    JOYNR_LOG_WARN(
-                            logger(),
-                            "Failed to remove participantId {} globally for GBIDs >{}<: {} ({})",
-                            participantId,
-                            gbidString,
-                            exception.getMessage(),
-                            exception.getTypeName());
+                    JOYNR_LOG_WARN(logger(),
+                                   "Failed to remove participantId {} globally for GBIDs >{}<: "
+                                   "{} ({})",
+                                   participantId,
+                                   gbidString,
+                                   exception.getMessage(),
+                                   exception.getTypeName());
                 }
             };
 
@@ -1329,14 +1326,6 @@ void LocalCapabilitiesDirectory::loadPersistedFile()
         joynr::serializer::deserializeFromJson(locallyRegisteredCapabilities, jsonString);
     } catch (const std::invalid_argument& ex) {
         JOYNR_LOG_ERROR(logger(), ex.what());
-    }
-
-    // insert all global capability entries into global cache
-    for (const auto& entry : *(_localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                 filePersistencyRetrievalLock))) {
-        if (entry.getQos().getScope() == types::ProviderScope::GLOBAL) {
-            _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(entry, entry.gbids);
-        }
     }
 }
 
