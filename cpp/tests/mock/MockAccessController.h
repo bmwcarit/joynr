@@ -21,12 +21,23 @@
 
 #include "tests/utils/Gmock.h"
 
-#include "joynr/access-control/IAccessController.h"
+#include "libjoynr/basemodel/generated/include/joynr/infrastructure/DacTypes/Permission.h"
+#include "libjoynr/basemodel/generated/include/joynr/infrastructure/DacTypes/TrustLevel.h"
+#include "libjoynrclustercontroller/access-control/AccessController.h"
 
-class MockAccessController : public joynr::IAccessController
+class MockAccessController : public joynr::AccessController
 {
 public:
-    MockAccessController() = default;
+    MockAccessController(
+            std::shared_ptr<joynr::LocalCapabilitiesDirectory> localCapabilitiesDirectory = nullptr,
+            std::shared_ptr<joynr::LocalDomainAccessStore> localDomainAccessStore = nullptr)
+            : AccessController(localCapabilitiesDirectory, localDomainAccessStore)
+    {
+    }
+    MockAccessController(std::shared_ptr<joynr::LocalDomainAccessStore> localDomainAccessStore)
+            : AccessController(nullptr, localDomainAccessStore)
+    {
+    }
 
     MOCK_METHOD3(
             hasConsumerPermission,
@@ -41,6 +52,11 @@ public:
                       const std::string& interfaceName));
 
     MOCK_METHOD1(addParticipantToWhitelist, void(const std::string& participantId));
+
+    MOCK_METHOD3(hasRole,
+                 bool(const std::string& userId,
+                      const std::string& domain,
+                      joynr::infrastructure::DacTypes::Role::Enum role));
 };
 
 #endif // TESTS_MOCK_MOCKACCESSCONTROLLER_H

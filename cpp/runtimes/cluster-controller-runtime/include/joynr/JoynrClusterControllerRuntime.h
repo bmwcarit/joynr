@@ -71,7 +71,6 @@ class JoynrClusterControllerMqttConnectionData;
 class GlobalCapabilitiesDirectoryClient;
 class LocalCapabilitiesDirectory;
 class LocalCapabilitiesDirectoryStore;
-class LocalDomainAccessController;
 class MqttReceiver;
 class MulticastMessagingSkeletonDirectory;
 class Settings;
@@ -171,7 +170,7 @@ protected:
 
     std::unique_ptr<Settings> _settings;
     LibjoynrSettings _libjoynrSettings;
-    std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
+
     ClusterControllerSettings _clusterControllerSettings;
 
     // skeleton and stub-factory register methods to the server, hence the server must be removed

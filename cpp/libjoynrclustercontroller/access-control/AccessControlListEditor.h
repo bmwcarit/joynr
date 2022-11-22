@@ -34,16 +34,15 @@
 namespace joynr
 {
 class LocalDomainAccessStore;
-class LocalDomainAccessController;
+class AccessController;
 
 class JOYNRCLUSTERCONTROLLER_EXPORT AccessControlListEditor
         : public joynr::infrastructure::AccessControlListEditorAbstractProvider
 {
 public:
-    explicit AccessControlListEditor(
-            std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
-            std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
-            bool auditMode);
+    explicit AccessControlListEditor(std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
+                                     std::shared_ptr<AccessController> accessController,
+                                     bool auditMode);
 
     void updateMasterAccessControlEntry(
             const joynr::infrastructure::DacTypes::MasterAccessControlEntry& updatedMasterAce,
@@ -130,7 +129,7 @@ private:
     bool hasRoleWorker(const std::string& domain, infrastructure::DacTypes::Role::Enum role);
 
     std::shared_ptr<LocalDomainAccessStore> _localDomainAccessStore;
-    std::shared_ptr<LocalDomainAccessController> _localDomainAccessController;
+    std::shared_ptr<AccessController> _accessController;
     bool _aclAudit;
 };
 

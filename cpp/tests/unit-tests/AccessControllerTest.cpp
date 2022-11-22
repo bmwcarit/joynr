@@ -41,8 +41,9 @@
 #include "libjoynrclustercontroller/access-control/AccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 
+#include "tests/JoynrTest.h"
+#include "tests/mock/MockAccessController.h"
 #include "tests/mock/MockLocalCapabilitiesDirectory.h"
-#include "tests/mock/MockLocalDomainAccessController.h"
 #include "tests/mock/MockMessageRouter.h"
 
 using namespace ::testing;
@@ -56,6 +57,10 @@ class MockConsumerPermissionCallback
 {
 public:
     MOCK_METHOD1(hasConsumerPermission, void(IAccessController::Enum hasPermission));
+};
+
+class MockLocalDomainAccessStore : public LocalDomainAccessStore
+{
 };
 
 template <typename... Ts>
@@ -79,12 +84,11 @@ public:
     {
     }
 
-    void consumerPermission(
-            const std::string& userId,
-            const std::string& domain,
-            const std::string& interfaceName,
-            TrustLevel::Enum trustLevel,
-            std::shared_ptr<LocalDomainAccessController::IGetPermissionCallback> callback)
+    void consumerPermission(const std::string& userId,
+                            const std::string& domain,
+                            const std::string& interfaceName,
+                            TrustLevel::Enum trustLevel,
+                            std::shared_ptr<AccessController::IGetPermissionCallback> callback)
     {
         std::ignore = userId;
         std::ignore = domain;
@@ -93,12 +97,11 @@ public:
         callback->permission(_permission);
     }
 
-    void operationNeeded(
-            const std::string& userId,
-            const std::string& domain,
-            const std::string& interfaceName,
-            TrustLevel::Enum trustLevel,
-            std::shared_ptr<LocalDomainAccessController::IGetPermissionCallback> callback)
+    void operationNeeded(const std::string& userId,
+                         const std::string& domain,
+                         const std::string& interfaceName,
+                         TrustLevel::Enum trustLevel,
+                         std::shared_ptr<AccessController::IGetPermissionCallback> callback)
     {
         std::ignore = userId;
         std::ignore = domain;
@@ -109,6 +112,46 @@ public:
 
 private:
     Permission::Enum _permission;
+};
+
+class MockAccessControllerProtectedScope : public joynr::AccessController
+{
+public:
+    MockAccessControllerProtectedScope(
+            std::shared_ptr<joynr::LocalCapabilitiesDirectory> localCapabilitiesDirectory,
+            std::shared_ptr<joynr::LocalDomainAccessStore> localDomainAccessStore)
+            : AccessController(localCapabilitiesDirectory, localDomainAccessStore)
+    {
+    }
+
+    MOCK_METHOD5(getConsumerPermission,
+                 void(const std::string& userId,
+                      const std::string& domain,
+                      const std::string& interfaceName,
+                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                      std::shared_ptr<joynr::AccessController::IGetPermissionCallback> callback));
+
+    MOCK_METHOD5(getConsumerPermission,
+                 joynr::infrastructure::DacTypes::Permission::Enum(
+                         const std::string& userId,
+                         const std::string& domain,
+                         const std::string& interfaceName,
+                         const std::string& operation,
+                         joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
+
+    MOCK_METHOD5(getProviderPermission,
+                 void(const std::string& userId,
+                      const std::string& domain,
+                      const std::string& interfaceName,
+                      joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel,
+                      std::shared_ptr<joynr::AccessController::IGetPermissionCallback> callback));
+
+    MOCK_METHOD4(getProviderPermission,
+                 joynr::infrastructure::DacTypes::Permission::Enum(
+                         const std::string& uid,
+                         const std::string& domain,
+                         const std::string& interfacename,
+                         joynr::infrastructure::DacTypes::TrustLevel::Enum trustLevel));
 };
 
 class AccessControllerTest : public ::testing::Test
@@ -128,7 +171,6 @@ public:
                       _localCapabilitiesDirectoryStore,
                       _singleThreadedIOService->getIOService(),
                       _defaultExpiryDateMs)),
-              _accessController(),
               _messagingQos(MessagingQos(5000))
     {
         _singleThreadedIOService->start();
@@ -269,22 +311,20 @@ public:
         _localCapabilitiesDirectoryMock->init();
         ConsumerPermissionCallbackMaker makeCallback(testPermission);
 
-        _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
-                std::make_unique<LocalDomainAccessStore>());
-        EXPECT_CALL(*_localDomainAccessControllerMock,
+        auto accessControllerProtectedScopeMock = std::make_shared<MockAccessControllerProtectedScope>(
+                _localCapabilitiesDirectoryMock, std::make_unique<LocalDomainAccessStore>());
+        EXPECT_CALL(*accessControllerProtectedScopeMock,
                     getConsumerPermission(
                             _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
                 .WillOnce(Invoke(
                         &makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
 
-        _accessController = std::make_shared<AccessController>(
-                _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
         EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(expectedPermission)).Times(1);
 
         std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
         immutableMessage->setCreator(_DUMMY_USERID);
         // pass the immutable message to hasConsumerPermission
-        _accessController->hasConsumerPermission(
+        accessControllerProtectedScopeMock->hasConsumerPermission(
                 immutableMessage,
                 std::static_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                         _accessControllerCallback),
@@ -298,22 +338,20 @@ public:
         _localCapabilitiesDirectoryMock->init();
         ConsumerPermissionCallbackMaker makeCallback(testPermission);
 
-        _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
-                std::make_unique<LocalDomainAccessStore>());
-        EXPECT_CALL(*_localDomainAccessControllerMock,
+        auto accessControllerProtectedScopeMock = std::make_shared<MockAccessControllerProtectedScope>(
+                _localCapabilitiesDirectoryMock, std::make_unique<LocalDomainAccessStore>());
+        EXPECT_CALL(*accessControllerProtectedScopeMock,
                     getConsumerPermission(
                             _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
                 .WillOnce(Invoke(
                         &makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
 
-        _accessController = std::make_shared<AccessController>(
-                _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
         EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(expectedPermission)).Times(1);
 
         std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
         immutableMessage->setCreator(_DUMMY_USERID);
         // pass the immutable message to hasConsumerPermission
-        _accessController->hasConsumerPermission(
+        accessControllerProtectedScopeMock->hasConsumerPermission(
                 immutableMessage,
                 std::static_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                         _accessControllerCallback),
@@ -324,12 +362,11 @@ protected:
     Settings _emptySettings;
     ClusterControllerSettings _clusterControllerSettings;
     std::shared_ptr<SingleThreadedIOService> _singleThreadedIOService;
-    std::shared_ptr<MockLocalDomainAccessController> _localDomainAccessControllerMock;
+    std::shared_ptr<MockLocalDomainAccessStore> _localDomainAccessStoreMock;
     std::shared_ptr<MockConsumerPermissionCallback> _accessControllerCallback;
     std::shared_ptr<MockMessageRouter> _messageRouter;
     std::shared_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
     std::shared_ptr<MockLocalCapabilitiesDirectory> _localCapabilitiesDirectoryMock;
-    std::shared_ptr<AccessController> _accessController;
     MutableMessageFactory _messageFactory;
     MutableMessage _mutableMessage;
     MessagingQos _messagingQos;
@@ -369,20 +406,18 @@ TEST_F(AccessControllerTest, accessWithInterfaceLevelAccessControl)
     _localCapabilitiesDirectoryMock->init();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
 
-    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
-            std::make_unique<LocalDomainAccessStore>());
-    EXPECT_CALL(*_localDomainAccessControllerMock,
+    auto accessControllerProtectedScopeMock = std::make_shared<MockAccessControllerProtectedScope>(
+            _localCapabilitiesDirectoryMock, std::make_unique<LocalDomainAccessStore>());
+    EXPECT_CALL(*accessControllerProtectedScopeMock,
                 getConsumerPermission(
                         _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::consumerPermission));
 
-    _accessController = std::make_shared<AccessController>(
-            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(IAccessController::Enum::YES))
             .Times(1);
 
-    _accessController->hasConsumerPermission(
+    accessControllerProtectedScopeMock->hasConsumerPermission(
             getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                     _accessControllerCallback),
@@ -395,9 +430,9 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl)
     _localCapabilitiesDirectoryMock->init();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
 
-    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
-            std::make_unique<LocalDomainAccessStore>());
-    EXPECT_CALL(*_localDomainAccessControllerMock,
+    auto accessControllerProtectedScopeMock = std::make_shared<MockAccessControllerProtectedScope>(
+            _localCapabilitiesDirectoryMock, std::make_unique<LocalDomainAccessStore>());
+    EXPECT_CALL(*accessControllerProtectedScopeMock,
                 getConsumerPermission(
                         _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
             .Times(1)
@@ -405,17 +440,15 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControl)
 
     Permission::Enum permissionYes = Permission::YES;
     DefaultValue<Permission::Enum>::Set(permissionYes);
-    EXPECT_CALL(*_localDomainAccessControllerMock,
+    EXPECT_CALL(*accessControllerProtectedScopeMock,
                 getConsumerPermission(_DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, _TEST_OPERATION,
                                       TrustLevel::HIGH))
             .WillOnce(Return(permissionYes));
 
-    _accessController = std::make_shared<AccessController>(
-            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(IAccessController::Enum::YES))
             .Times(1);
 
-    _accessController->hasConsumerPermission(
+    accessControllerProtectedScopeMock->hasConsumerPermission(
             getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                     _accessControllerCallback),
@@ -428,23 +461,21 @@ TEST_F(AccessControllerTest, accessWithOperationLevelAccessControlAndFaultyMessa
     _localCapabilitiesDirectoryMock->init();
     ConsumerPermissionCallbackMaker makeCallback(Permission::YES);
 
-    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
-            std::make_unique<LocalDomainAccessStore>());
-    EXPECT_CALL(*_localDomainAccessControllerMock,
+    auto accessControllerProtectedScopeMock = std::make_shared<MockAccessControllerProtectedScope>(
+            _localCapabilitiesDirectoryMock, std::make_unique<LocalDomainAccessStore>());
+    EXPECT_CALL(*accessControllerProtectedScopeMock,
                 getConsumerPermission(
                         _DUMMY_USERID, _TEST_DOMAIN, _TEST_INTERFACE, TrustLevel::HIGH, _))
             .Times(1)
             .WillOnce(Invoke(&makeCallback, &ConsumerPermissionCallbackMaker::operationNeeded));
 
-    _accessController = std::make_shared<AccessController>(
-            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(IAccessController::Enum::NO))
             .Times(1);
 
     std::string payload("invalid serialization of Request object");
     _mutableMessage.setPayload(payload);
 
-    _accessController->hasConsumerPermission(
+    accessControllerProtectedScopeMock->hasConsumerPermission(
             getImmutableMessage(),
             std::dynamic_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                     _accessControllerCallback),
@@ -456,17 +487,15 @@ TEST_F(AccessControllerTest, retryAccessControlCheckIfNoDiscoveryEntry)
     prepareConsumerTestInRetryErrorCase();
     _localCapabilitiesDirectoryMock->init();
 
-    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
-            std::make_unique<LocalDomainAccessStore>());
+    auto accessControllerProtectedScopeMock = std::make_shared<MockAccessControllerProtectedScope>(
+            _localCapabilitiesDirectoryMock, std::make_unique<LocalDomainAccessStore>());
     EXPECT_CALL(*_accessControllerCallback, hasConsumerPermission(IAccessController::Enum::RETRY))
             .Times(1);
 
-    _accessController = std::make_shared<AccessController>(
-            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
     std::shared_ptr<ImmutableMessage> immutableMessage = _mutableMessage.getImmutableMessage();
     immutableMessage->setCreator(_DUMMY_USERID);
     // pass the immutable message to hasConsumerPermission
-    _accessController->hasConsumerPermission(
+    accessControllerProtectedScopeMock->hasConsumerPermission(
             immutableMessage,
             std::static_pointer_cast<IAccessController::IHasConsumerPermissionCallback>(
                     _accessControllerCallback),
@@ -479,15 +508,13 @@ TEST_F(AccessControllerTest, hasProviderPermission)
     Permission::Enum permissionYes = Permission::YES;
     DefaultValue<Permission::Enum>::Set(permissionYes);
 
-    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
-            std::make_unique<LocalDomainAccessStore>());
-    EXPECT_CALL(*_localDomainAccessControllerMock, getProviderPermission(_, _, _, _))
+    auto accessControllerProtectedScopeMock = std::make_shared<MockAccessControllerProtectedScope>(
+            _localCapabilitiesDirectoryMock, std::make_unique<LocalDomainAccessStore>());
+    EXPECT_CALL(*accessControllerProtectedScopeMock, getProviderPermission(_, _, _, _))
             .Times(1)
             .WillOnce(Return(permissionYes));
 
-    _accessController = std::make_shared<AccessController>(
-            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
-    bool retval = _accessController->hasProviderPermission(
+    bool retval = accessControllerProtectedScopeMock->hasProviderPermission(
             _DUMMY_USERID, TrustLevel::HIGH, _TEST_DOMAIN, _TEST_INTERFACE);
     EXPECT_TRUE(retval);
 }
@@ -498,15 +525,13 @@ TEST_F(AccessControllerTest, hasNoProviderPermission)
     Permission::Enum permissionNo = Permission::NO;
     DefaultValue<Permission::Enum>::Set(permissionNo);
 
-    _localDomainAccessControllerMock = std::make_shared<MockLocalDomainAccessController>(
-            std::make_unique<LocalDomainAccessStore>());
-    EXPECT_CALL(*_localDomainAccessControllerMock, getProviderPermission(_, _, _, _))
+    auto accessControllerProtectedScopeMock = std::make_shared<MockAccessControllerProtectedScope>(
+            _localCapabilitiesDirectoryMock, std::make_unique<LocalDomainAccessStore>());
+    EXPECT_CALL(*accessControllerProtectedScopeMock, getProviderPermission(_, _, _, _))
             .Times(1)
             .WillOnce(Return(permissionNo));
 
-    _accessController = std::make_shared<AccessController>(
-            _localCapabilitiesDirectoryMock, _localDomainAccessControllerMock);
-    bool retval = _accessController->hasProviderPermission(
+    bool retval = accessControllerProtectedScopeMock->hasProviderPermission(
             _DUMMY_USERID, TrustLevel::HIGH, _TEST_DOMAIN, _TEST_INTERFACE);
     EXPECT_FALSE(retval);
 }
@@ -597,4 +622,402 @@ TYPED_TEST(AccessControllerSubscriptionTest, hasConsumerPermissionLocalRecipient
     this->createMutableMessage();
 
     this->testPermissionLocalRecipient(permissionNo, expectedPermissionFalse);
+}
+
+//-----  AccessController WithOrWithoutPersistFile tests
+//-------------------------------------------------------------
+
+// Consumer permissions are obtained asynchronously
+class PermissionCallback : public AccessController::IGetPermissionCallback
+{
+public:
+    PermissionCallback() : isValid(false), storedPermission(Permission::YES), sem(0)
+    {
+    }
+
+    ~PermissionCallback() = default;
+
+    void permission(Permission::Enum permission)
+    {
+        this->storedPermission = permission;
+        isValid = true;
+        sem.notify();
+    }
+
+    void operationNeeded()
+    {
+        sem.notify(); // isValid stays false
+    }
+
+    bool isPermissionAvailable() const
+    {
+        return isValid;
+    }
+
+    Permission::Enum getPermission() const
+    {
+        return storedPermission;
+    }
+
+    // Returns true if the callback was made
+    bool expectCallback(int millisecs)
+    {
+        return sem.waitFor(std::chrono::milliseconds(millisecs));
+    }
+
+private:
+    bool isValid;
+    Permission::Enum storedPermission;
+    Semaphore sem;
+};
+
+class AccessControllerProtectedScopeWrapper : public AccessController
+{
+public:
+    using AccessController::AccessController;
+    using AccessController::getConsumerPermission;
+    using AccessController::getProviderPermission;
+};
+
+class AccessControllerProtectedScopeTest : public testing::TestWithParam<bool>
+{
+public:
+    AccessControllerProtectedScopeTest() : localDomainAccessStorePtr(nullptr)
+    {
+    }
+
+    ~AccessControllerProtectedScopeTest() override
+    {
+        // Delete test specific files
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.settings");
+        joynr::test::util::removeFileInCurrentDirectory(".*\\.persist");
+    }
+
+    void SetUp() override
+    {
+        std::unique_ptr<LocalDomainAccessStore> localDomainAccessStore;
+        if (GetParam()) {
+            joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
+            localDomainAccessStore =
+                    std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
+        } else {
+            localDomainAccessStore = std::make_unique<LocalDomainAccessStore>();
+        }
+        localDomainAccessStorePtr = localDomainAccessStore.get();
+        _accessController = std::make_unique<AccessControllerProtectedScopeWrapper>(
+                nullptr, std::move(localDomainAccessStore));
+
+        userDre = DomainRoleEntry(TEST_USER, DOMAINS, Role::OWNER);
+        masterAce = MasterAccessControlEntry(
+                TEST_USER,       // uid
+                TEST_DOMAIN1,    // domain
+                TEST_INTERFACE1, // interface name
+                TrustLevel::LOW, // default required trust level
+                TRUST_LEVELS,    // possible required trust levels
+                TrustLevel::LOW, // default required control entry change trust level
+                TRUST_LEVELS,    // possible required control entry change trust levels
+                TEST_OPERATION1, // operation
+                Permission::NO,  // default comsumer permission
+                PERMISSIONS      // possible comsumer permissions
+        );
+        ownerAce = OwnerAccessControlEntry(TEST_USER,       // uid
+                                           TEST_DOMAIN1,    // domain
+                                           TEST_INTERFACE1, // interface name
+                                           TrustLevel::LOW, // required trust level
+                                           TrustLevel::LOW, // required ACE change trust level
+                                           TEST_OPERATION1, // operation
+                                           Permission::YES  // consumer permission
+        );
+        masterRce = MasterRegistrationControlEntry(
+                TEST_USER,       // uid
+                TEST_DOMAIN1,    // domain
+                TEST_INTERFACE1, // interface name
+                TrustLevel::LOW, // default required trust level
+                TRUST_LEVELS,    // possible required trust levels
+                TrustLevel::LOW, // default required control entry change trust level
+                TRUST_LEVELS,    // possible required control entry change trust levels
+                Permission::NO,  // default provider permission
+                PERMISSIONS      // possible provider permissions
+        );
+        ownerRce = OwnerRegistrationControlEntry(TEST_USER,       // uid
+                                                 TEST_DOMAIN1,    // domain
+                                                 TEST_INTERFACE1, // interface name
+                                                 TrustLevel::LOW, // required trust level
+                                                 TrustLevel::LOW, // required ACE change trust level
+                                                 Permission::YES  // provider permission
+        );
+    }
+
+    static const std::string TEST_USER;
+    static const std::string TEST_DOMAIN1;
+    static const std::string TEST_INTERFACE1;
+    static const std::string TEST_OPERATION1;
+    static const std::vector<std::string> DOMAINS;
+    static const std::vector<Permission::Enum> PERMISSIONS;
+    static const std::vector<TrustLevel::Enum> TRUST_LEVELS;
+
+protected:
+    LocalDomainAccessStore* localDomainAccessStorePtr;
+    std::unique_ptr<AccessControllerProtectedScopeWrapper> _accessController;
+
+    OwnerAccessControlEntry ownerAce;
+    MasterAccessControlEntry masterAce;
+    OwnerRegistrationControlEntry ownerRce;
+    MasterRegistrationControlEntry masterRce;
+    DomainRoleEntry userDre;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(AccessControllerProtectedScopeTest);
+};
+
+//----- Constants --------------------------------------------------------------
+const std::string AccessControllerProtectedScopeTest::TEST_USER("testUser");
+const std::string AccessControllerProtectedScopeTest::TEST_DOMAIN1("domain1");
+const std::string AccessControllerProtectedScopeTest::TEST_INTERFACE1("interface1");
+const std::string AccessControllerProtectedScopeTest::TEST_OPERATION1("operation1");
+const std::vector<std::string> AccessControllerProtectedScopeTest::DOMAINS = {
+        AccessControllerProtectedScopeTest::TEST_DOMAIN1};
+const std::vector<Permission::Enum> AccessControllerProtectedScopeTest::PERMISSIONS = {
+        Permission::NO, Permission::ASK, Permission::YES};
+const std::vector<TrustLevel::Enum> AccessControllerProtectedScopeTest::TRUST_LEVELS = {
+        TrustLevel::LOW, TrustLevel::MID, TrustLevel::HIGH};
+
+//----- Tests ------------------------------------------------------------------
+
+TEST_P(AccessControllerProtectedScopeTest, testHasRole)
+{
+    localDomainAccessStorePtr->updateDomainRole(userDre);
+    EXPECT_TRUE(_accessController->hasRole(AccessControllerProtectedScopeTest::TEST_USER,
+                                           AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                                           Role::OWNER));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, testHasRoleWithWildcard)
+{
+    const std::string wildcard = "*";
+    userDre.setDomains({wildcard});
+    localDomainAccessStorePtr->updateDomainRole(userDre);
+    EXPECT_TRUE(_accessController->hasRole(AccessControllerProtectedScopeTest::TEST_USER,
+                                           AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                                           Role::OWNER));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, consumerPermission)
+{
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
+    EXPECT_EQ(Permission::YES,
+              _accessController->getConsumerPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      AccessControllerProtectedScopeTest::TEST_OPERATION1,
+                      TrustLevel::HIGH));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, consumerPermissionInvalidOwnerAce)
+{
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
+
+    // Update the MasterACE so that it does not permit Permission::YES
+    std::vector<Permission::Enum> possiblePermissions = {Permission::NO, Permission::ASK};
+    masterAce.setDefaultConsumerPermission(Permission::ASK);
+    masterAce.setPossibleConsumerPermissions(possiblePermissions);
+    localDomainAccessStorePtr->updateMasterAccessControlEntry(masterAce);
+
+    EXPECT_EQ(Permission::NO,
+              _accessController->getConsumerPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      AccessControllerProtectedScopeTest::TEST_OPERATION1,
+                      TrustLevel::HIGH));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, consumerPermissionOwnerAceOverrulesMaster)
+{
+    ownerAce.setRequiredTrustLevel(TrustLevel::MID);
+    ownerAce.setConsumerPermission(Permission::ASK);
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStorePtr->updateMasterAccessControlEntry(masterAce);
+
+    EXPECT_EQ(Permission::ASK,
+              _accessController->getConsumerPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      AccessControllerProtectedScopeTest::TEST_OPERATION1,
+                      TrustLevel::HIGH));
+    EXPECT_EQ(Permission::NO,
+              _accessController->getConsumerPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      AccessControllerProtectedScopeTest::TEST_OPERATION1,
+                      TrustLevel::LOW));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, consumerPermissionOperationWildcard)
+{
+    ownerAce.setOperation(access_control::WILDCARD);
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
+
+    EXPECT_EQ(Permission::YES,
+              _accessController->getConsumerPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      AccessControllerProtectedScopeTest::TEST_OPERATION1,
+                      TrustLevel::HIGH));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, consumerPermissionAmbigious)
+{
+    // Setup the master with a wildcard operation
+    masterAce.setOperation(access_control::WILDCARD);
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStorePtr->updateMasterAccessControlEntry(masterAce);
+
+    // Get the consumer permission (async)
+    auto getConsumerPermissionCallback = std::make_shared<PermissionCallback>();
+
+    _accessController->getConsumerPermission(AccessControllerProtectedScopeTest::TEST_USER,
+                                             AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                                             AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                                             TrustLevel::HIGH,
+                                             getConsumerPermissionCallback);
+
+    EXPECT_TRUE(getConsumerPermissionCallback->expectCallback(1000));
+
+    // The operation is ambigious and interface level permission is not available
+    EXPECT_FALSE(getConsumerPermissionCallback->isPermissionAvailable());
+
+    // Operation level permission should work
+    EXPECT_EQ(Permission::YES,
+              _accessController->getConsumerPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      AccessControllerProtectedScopeTest::TEST_OPERATION1,
+                      TrustLevel::HIGH));
+}
+
+// true: with persist file
+// false: without
+INSTANTIATE_TEST_SUITE_P(WithOrWithoutPersistFile, AccessControllerProtectedScopeTest, Bool());
+
+TEST(AccessControllerPersistedTest, persistedAcesAreUsed)
+{
+    // Load persisted ACEs
+    joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
+    auto localDomainAccessStore =
+            std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
+    auto accessController = std::make_unique<AccessControllerProtectedScopeWrapper>(
+            nullptr, std::move(localDomainAccessStore));
+
+    EXPECT_EQ(Permission::NO,
+              accessController->getConsumerPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      AccessControllerProtectedScopeTest::TEST_OPERATION1,
+                      TrustLevel::HIGH));
+}
+
+// Registration control entries
+
+TEST_P(AccessControllerProtectedScopeTest, providerPermission)
+{
+    localDomainAccessStorePtr->updateOwnerRegistrationControlEntry(ownerRce);
+    EXPECT_EQ(Permission::YES,
+              _accessController->getProviderPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      TrustLevel::HIGH));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, providerPermissionInvalidOwnerRce)
+{
+    localDomainAccessStorePtr->updateOwnerRegistrationControlEntry(ownerRce);
+
+    // Update the MasterACE so that it does not permit Permission::YES
+    std::vector<Permission::Enum> possiblePermissions = {Permission::NO, Permission::ASK};
+    masterRce.setDefaultProviderPermission(Permission::ASK);
+    masterRce.setPossibleProviderPermissions(possiblePermissions);
+    localDomainAccessStorePtr->updateMasterRegistrationControlEntry(masterRce);
+
+    EXPECT_EQ(Permission::NO,
+              _accessController->getProviderPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      TrustLevel::HIGH));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, providerPermissionOwnerRceOverrulesMaster)
+{
+    ownerRce.setRequiredTrustLevel(TrustLevel::MID);
+    ownerRce.setProviderPermission(Permission::ASK);
+    localDomainAccessStorePtr->updateOwnerRegistrationControlEntry(ownerRce);
+    localDomainAccessStorePtr->updateMasterRegistrationControlEntry(masterRce);
+
+    EXPECT_EQ(Permission::ASK,
+              _accessController->getProviderPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      TrustLevel::HIGH));
+    EXPECT_EQ(Permission::NO,
+              _accessController->getProviderPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      TrustLevel::LOW));
+}
+
+TEST_P(AccessControllerProtectedScopeTest, DISABLED_providerPermissionAmbigious)
+{
+    // Setup the master with a wildcard operation
+    masterAce.setOperation(access_control::WILDCARD);
+    localDomainAccessStorePtr->updateOwnerAccessControlEntry(ownerAce);
+    localDomainAccessStorePtr->updateMasterAccessControlEntry(masterAce);
+
+    // Get the provider permission (async)
+    auto getProviderPermissionCallback = std::make_shared<PermissionCallback>();
+
+    _accessController->getProviderPermission(AccessControllerProtectedScopeTest::TEST_USER,
+                                             AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                                             AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                                             TrustLevel::HIGH,
+                                             getProviderPermissionCallback);
+
+    EXPECT_TRUE(getProviderPermissionCallback->expectCallback(1000));
+
+    // The operation is ambigious and interface level permission is not available
+    EXPECT_FALSE(getProviderPermissionCallback->isPermissionAvailable());
+
+    // Operation level permission should work
+    EXPECT_EQ(Permission::YES,
+              _accessController->getProviderPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      TrustLevel::HIGH));
+}
+
+TEST(AccessControllerPersistedTest, persistedRcesAreUsed)
+{
+    // Load persisted ACEs
+    joynr::test::util::copyTestResourceToCurrentDirectory("AccessStoreTest.persist");
+    auto localDomainAccessStore =
+            std::make_unique<LocalDomainAccessStore>("AccessStoreTest.persist");
+    auto accessController = std::make_unique<AccessControllerProtectedScopeWrapper>(
+            nullptr, std::move(localDomainAccessStore));
+
+    EXPECT_EQ(Permission::NO,
+              accessController->getProviderPermission(
+                      AccessControllerProtectedScopeTest::TEST_USER,
+                      AccessControllerProtectedScopeTest::TEST_DOMAIN1,
+                      AccessControllerProtectedScopeTest::TEST_INTERFACE1,
+                      TrustLevel::HIGH));
 }

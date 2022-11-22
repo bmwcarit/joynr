@@ -28,7 +28,7 @@
 #include "joynr/infrastructure/DacTypes/OwnerRegistrationControlEntry.h"
 #include "joynr/infrastructure/IAccessControlListEditor.h"
 
-#include "LocalDomainAccessController.h"
+#include "AccessController.h"
 #include "LocalDomainAccessStore.h"
 
 using namespace joynr::infrastructure::DacTypes;
@@ -43,10 +43,10 @@ class ProviderRuntimeException;
 
 AccessControlListEditor::AccessControlListEditor(
         std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore,
-        std::shared_ptr<LocalDomainAccessController> localDomainAccessController,
+        std::shared_ptr<AccessController> accessController,
         bool auditMode)
         : _localDomainAccessStore(std::move(localDomainAccessStore)),
-          _localDomainAccessController(std::move(localDomainAccessController)),
+          _accessController(std::move(accessController)),
           _aclAudit(auditMode)
 {
 }
@@ -269,7 +269,7 @@ bool AccessControlListEditor::hasRoleWorker(const std::string& domain,
                     uid,
                     joynr::infrastructure::DacTypes::Role::getLiteral(role));
 
-    bool hasRole = _localDomainAccessController->hasRole(uid, domain, role);
+    bool hasRole = _accessController->hasRole(uid, domain, role);
 
     if (_aclAudit) {
         if (!hasRole) {
