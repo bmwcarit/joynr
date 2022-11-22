@@ -8,8 +8,6 @@ set(SOURCES
     AccessControlUtils.h
     AccessController.cpp
     AccessController.h
-    LocalDomainAccessController.cpp
-    LocalDomainAccessController.h
     LocalDomainAccessStore.cpp
     LocalDomainAccessStore.h
     RadixTree.h

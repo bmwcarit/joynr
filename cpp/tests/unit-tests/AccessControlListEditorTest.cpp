@@ -20,6 +20,9 @@
 #include <chrono>
 #include <memory>
 
+#include "tests/mock/MockAccessController.h"
+#include "tests/mock/MockLocalCapabilitiesDirectory.h"
+#include "tests/mock/MockMessageRouter.h"
 #include "tests/utils/Gmock.h"
 #include "tests/utils/Gtest.h"
 
@@ -27,12 +30,15 @@
 
 #include "joynr/CallContext.h"
 #include "joynr/CallContextStorage.h"
+#include "joynr/ClusterControllerSettings.h"
+#include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/Semaphore.h"
+#include "joynr/Settings.h"
+#include "joynr/SingleThreadedIOService.h"
 #include "joynr/exceptions/JoynrException.h"
 #include "joynr/infrastructure/DacTypes/DomainRoleEntry.h"
+#include "libjoynrclustercontroller/access-control/AccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
-
-#include "tests/mock/MockLocalDomainAccessController.h"
 
 using namespace joynr;
 using ::testing::Return;
@@ -95,7 +101,7 @@ class AccessControlListEditorTest : public testing::Test
 public:
     AccessControlListEditorTest()
             : mockLocalDomainAccessStore(),
-              mockLocalDomainAccessController(),
+              mockAccessController(),
               aclEditor(),
               semaphore(std::make_shared<Semaphore>(0))
     {
@@ -121,7 +127,7 @@ protected:
         CallContext callContext;
         callContext.setPrincipal(testUidCallContext);
         CallContextStorage::set(std::move(callContext));
-        EXPECT_CALL(*mockLocalDomainAccessController, hasRole(testUidCallContext, testDomain, role))
+        EXPECT_CALL(*mockAccessController, hasRole(testUidCallContext, testDomain, role))
                 .Times(1)
                 .WillOnce(Return(returnValue));
     }
@@ -187,7 +193,7 @@ protected:
     }
 
     std::shared_ptr<MockLocalDomainAccessStore> mockLocalDomainAccessStore;
-    std::shared_ptr<MockLocalDomainAccessController> mockLocalDomainAccessController;
+    std::shared_ptr<MockAccessController> mockAccessController;
     std::shared_ptr<AccessControlListEditor> aclEditor;
 
     std::shared_ptr<Semaphore> semaphore;
@@ -200,6 +206,7 @@ protected:
     const static std::string testDomain;
     const static std::string testInterfaceName;
     const static std::string testOperation;
+    const std::int64_t _defaultExpiryDateMs = 60 * 60 * 1000;
 };
 
 const std::string AccessControlListEditorTest::testUid = "testUid";
@@ -216,12 +223,11 @@ TEST_F(AccessControlListEditorTest, updateMasterAccessControlEntry)
     EXPECT_CALL(*mockLocalDomainAccessStore, updateMasterAccessControlEntry(expectedMasterAce))
             .Times(1)
             .WillOnce(Return(true));
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateMasterAccessControlEntry(expectedMasterAce, onSuccessExpectTrue, onErrorFail);
     EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
@@ -234,12 +240,11 @@ TEST_F(AccessControlListEditorTest, updateMasterAccessControlEntryWithoutPermiss
     mockLocalDomainAccessStore = std::make_shared<MockLocalDomainAccessStore>();
     EXPECT_CALL(*mockLocalDomainAccessStore, updateMasterAccessControlEntry(expectedMasterAce))
             .Times(0);
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateMasterAccessControlEntry(expectedMasterAce, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
@@ -253,11 +258,10 @@ TEST_F(AccessControlListEditorTest, removeMasterAccessControlEntry)
             removeMasterAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation))
             .Times(1)
             .WillOnce(Return(true));
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeMasterAccessControlEntry(testUid,
                                               testDomain,
                                               testInterfaceName,
@@ -276,12 +280,11 @@ TEST_F(AccessControlListEditorTest, removeMasterAccessControlEntryWithoutPermiss
             removeMasterAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeMasterAccessControlEntry(testUid,
                                               testDomain,
                                               testInterfaceName,
@@ -302,12 +305,11 @@ TEST_F(AccessControlListEditorTest, updateMediatorAccessControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateMediatorAccessControlEntry(
             expectedMediatorAce, onSuccessExpectTrue, onErrorFail);
 
@@ -323,12 +325,11 @@ TEST_F(AccessControlListEditorTest, updateMediatorAccessControlEntryWithoutPermi
     EXPECT_CALL(*mockLocalDomainAccessStore, updateMediatorAccessControlEntry(expectedMediatorAce))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateMediatorAccessControlEntry(
             expectedMediatorAce, onSuccessExpectFalse, onErrorFail);
 
@@ -344,12 +345,11 @@ TEST_F(AccessControlListEditorTest, removeMediatorAccessControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeMediatorAccessControlEntry(testUid,
                                                 testDomain,
                                                 testInterfaceName,
@@ -368,12 +368,11 @@ TEST_F(AccessControlListEditorTest, removeMediatorAccessControlEntryWithoutPermi
             removeMediatorAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeMediatorAccessControlEntry(testUid,
                                                 testDomain,
                                                 testInterfaceName,
@@ -394,12 +393,11 @@ TEST_F(AccessControlListEditorTest, updateOwnerAccessControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateOwnerAccessControlEntry(expectedOwnerAce, onSuccessExpectTrue, onErrorFail);
 
     EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
@@ -414,12 +412,11 @@ TEST_F(AccessControlListEditorTest, updateOwnerAccessControlEntryWithoutPermissi
     EXPECT_CALL(*mockLocalDomainAccessStore, updateOwnerAccessControlEntry(expectedOwnerAce))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateOwnerAccessControlEntry(expectedOwnerAce, onSuccessExpectFalse, onErrorFail);
 
     EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(1000)));
@@ -434,12 +431,11 @@ TEST_F(AccessControlListEditorTest, removeOwnerAccessControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeOwnerAccessControlEntry(testUid,
                                              testDomain,
                                              testInterfaceName,
@@ -458,12 +454,11 @@ TEST_F(AccessControlListEditorTest, removeOwnerAccessControlEntryWithoutPermissi
             removeOwnerAccessControlEntry(testUid, testDomain, testInterfaceName, testOperation))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeOwnerAccessControlEntry(testUid,
                                              testDomain,
                                              testInterfaceName,
@@ -485,12 +480,11 @@ TEST_F(AccessControlListEditorTest, updateMasterRegistrationControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateMasterRegistrationControlEntry(
             expectedMasterRce, onSuccessExpectTrue, onErrorFail);
 
@@ -507,12 +501,11 @@ TEST_F(AccessControlListEditorTest, updateMasterRegistrationControlEntryWithoutP
             *mockLocalDomainAccessStore, updateMasterRegistrationControlEntry(expectedMasterRce))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateMasterRegistrationControlEntry(
             expectedMasterRce, onSuccessExpectFalse, onErrorFail);
 
@@ -527,12 +520,11 @@ TEST_F(AccessControlListEditorTest, removeMasterRegistrationControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeMasterRegistrationControlEntry(
             testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
 
@@ -546,12 +538,11 @@ TEST_F(AccessControlListEditorTest, removeMasterRegistrationControlEntryWithoutP
                 removeMasterRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeMasterRegistrationControlEntry(
             testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
 
@@ -569,12 +560,11 @@ TEST_F(AccessControlListEditorTest, updateMediatorRegistrationControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateMediatorRegistrationControlEntry(
             expectedMediatorRce, onSuccessExpectTrue, onErrorFail);
 
@@ -591,12 +581,11 @@ TEST_F(AccessControlListEditorTest, updateMediatorRegistrationControlEntryWithou
                 updateMediatorRegistrationControlEntry(expectedMediatorRce))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateMediatorRegistrationControlEntry(
             expectedMediatorRce, onSuccessExpectFalse, onErrorFail);
 
@@ -611,12 +600,11 @@ TEST_F(AccessControlListEditorTest, removeMediatorRegistrationControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeMediatorRegistrationControlEntry(
             testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
 
@@ -630,12 +618,11 @@ TEST_F(AccessControlListEditorTest, removeMediatorRegistrationControlEntryWithou
                 removeMediatorRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::MASTER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeMediatorRegistrationControlEntry(
             testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
 
@@ -652,12 +639,11 @@ TEST_F(AccessControlListEditorTest, updateOwnerRegistrationControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateOwnerRegistrationControlEntry(
             expectedOwnerRce, onSuccessExpectTrue, onErrorFail);
 
@@ -673,12 +659,11 @@ TEST_F(AccessControlListEditorTest, updateOwnerRegistrationControlEntryWithoutPe
     EXPECT_CALL(*mockLocalDomainAccessStore, updateOwnerRegistrationControlEntry(expectedOwnerRce))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->updateOwnerRegistrationControlEntry(
             expectedOwnerRce, onSuccessExpectFalse, onErrorFail);
 
@@ -693,12 +678,11 @@ TEST_F(AccessControlListEditorTest, removeOwnerRegistrationControlEntry)
             .Times(1)
             .WillOnce(Return(true));
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, true);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeOwnerRegistrationControlEntry(
             testUid, testDomain, testInterfaceName, onSuccessExpectTrue, onErrorFail);
 
@@ -712,12 +696,11 @@ TEST_F(AccessControlListEditorTest, removeOwnerRegistrationControlEntryWithoutPe
                 removeOwnerRegistrationControlEntry(testUid, testDomain, testInterfaceName))
             .Times(0);
 
-    mockLocalDomainAccessController =
-            std::make_shared<MockLocalDomainAccessController>(mockLocalDomainAccessStore);
+    mockAccessController = std::make_shared<MockAccessController>(mockLocalDomainAccessStore);
     setExpectationForCallToHasRole(infrastructure::DacTypes::Role::OWNER, false);
 
     aclEditor = std::make_shared<AccessControlListEditor>(
-            mockLocalDomainAccessStore, mockLocalDomainAccessController, false);
+            mockLocalDomainAccessStore, mockAccessController, false);
     aclEditor->removeOwnerRegistrationControlEntry(
             testUid, testDomain, testInterfaceName, onSuccessExpectFalse, onErrorFail);
 

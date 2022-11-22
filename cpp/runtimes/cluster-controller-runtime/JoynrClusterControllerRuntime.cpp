@@ -98,7 +98,6 @@
 #include "libjoynrclustercontroller/ClusterControllerCallContextStorage.h"
 #include "libjoynrclustercontroller/access-control/AccessControlListEditor.h"
 #include "libjoynrclustercontroller/access-control/AccessController.h"
-#include "libjoynrclustercontroller/access-control/LocalDomainAccessController.h"
 #include "libjoynrclustercontroller/access-control/LocalDomainAccessStore.h"
 #include "libjoynrclustercontroller/capabilities-directory/GlobalCapabilitiesDirectoryClient.h"
 #include "libjoynrclustercontroller/messaging/MessagingPropertiesPersistence.h"
@@ -134,7 +133,6 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _mqttMessagingSkeletonFactory(std::move(mqttMessagingSkeletonFactory)),
           _settings(std::move(settings)),
           _libjoynrSettings(*(this->_settings)),
-          _localDomainAccessController(nullptr),
           _clusterControllerSettings(*(this->_settings)),
           _udsSettings(*(this->_settings)),
           _udsCcMessagingSkeleton(nullptr),
@@ -692,11 +690,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
                 logger(), "Access control directory: {} does not exist.", aclEntriesPath.string());
     }
 
-    _localDomainAccessController =
-            std::make_shared<joynr::LocalDomainAccessController>(localDomainAccessStore);
-
     _accessController = std::make_shared<joynr::AccessController>(
-            _localCapabilitiesDirectory, _localDomainAccessController);
+            _localCapabilitiesDirectory, localDomainAccessStore);
 
     // whitelist provisioned entries into access controller
     for (const auto& entry : provisionedEntries) {
@@ -705,9 +700,8 @@ void JoynrClusterControllerRuntime::enableAccessController(
 
     _ccMessageRouter->setAccessController(util::as_weak_ptr(_accessController));
 
-    _aclEditor = std::make_shared<AccessControlListEditor>(localDomainAccessStore,
-                                                           _localDomainAccessController,
-                                                           _clusterControllerSettings.aclAudit());
+    _aclEditor = std::make_shared<AccessControlListEditor>(
+            localDomainAccessStore, _accessController, _clusterControllerSettings.aclAudit());
 
     // Set accessController also in LocalCapabilitiesDirectory
     _localCapabilitiesDirectory->setAccessController(util::as_weak_ptr(_accessController));

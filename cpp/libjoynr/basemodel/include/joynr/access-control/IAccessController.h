@@ -24,6 +24,7 @@
 #include <string>
 
 #include "joynr/JoynrExport.h"
+#include "joynr/infrastructure/DacTypes/Role.h"
 #include "joynr/infrastructure/DacTypes/TrustLevel.h"
 
 namespace joynr

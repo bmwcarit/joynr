@@ -814,8 +814,6 @@ EXCLUDE                = libjoynr/LibjoynrSettings.cpp \
                          libjoynrclustercontroller/access-control/AceValidator.cpp \
                          libjoynrclustercontroller/access-control/AceValidator.h \
                          libjoynrclustercontroller/access-control/IAccessController.h \
-                         libjoynrclustercontroller/access-control/LocalDomainAccessController.cpp \
-                         libjoynrclustercontroller/access-control/LocalDomainAccessController.h \
                          libjoynrclustercontroller/access-control/LocalDomainAccessStore.cpp \
                          libjoynrclustercontroller/access-control/LocalDomainAccessStore.h \
                          libjoynrclustercontroller/access-control/TrustLevelComparator.cpp \

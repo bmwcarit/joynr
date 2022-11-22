@@ -42,7 +42,7 @@
 #include "ClusterControllerCallContext.h"
 #include "ClusterControllerCallContextStorage.h"
 
-#include "LocalDomainAccessController.h"
+#include "LocalDomainAccessStore.h"
 
 namespace joynr
 {
@@ -54,7 +54,7 @@ using namespace types;
 //--------- InternalConsumerPermissionCallbacks --------------------------------
 
 class AccessController::LdacConsumerPermissionCallback
-        : public LocalDomainAccessController::IGetPermissionCallback
+        : public AccessController::IGetPermissionCallback
 {
 
 public:
@@ -66,7 +66,6 @@ public:
             TrustLevel::Enum trustlevel,
             std::shared_ptr<IAccessController::IHasConsumerPermissionCallback> _callback);
 
-    // Callbacks made from the LocalDomainAccessController
     void permission(Permission::Enum permission) override;
     void operationNeeded() override;
 
@@ -178,9 +177,8 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
     }
 
     // Get the permission for given operation
-    Permission::Enum permission =
-            _owningAccessController._localDomainAccessController->getConsumerPermission(
-                    _message->getCreator(), _domain, _interfaceName, operation, _trustlevel);
+    Permission::Enum permission = _owningAccessController.getConsumerPermission(
+            _message->getCreator(), _domain, _interfaceName, operation, _trustlevel);
     assert(permission != Permission::ASK && "Permission.ASK user dialog not yet implemented.");
 
     IAccessController::Enum hasPermission = IAccessController::Enum::NO;
@@ -204,9 +202,9 @@ void AccessController::LdacConsumerPermissionCallback::operationNeeded()
 
 AccessController::AccessController(
         std::shared_ptr<LocalCapabilitiesDirectory> localCapabilitiesDirectory,
-        std::shared_ptr<LocalDomainAccessController> localDomainAccessController)
+        std::shared_ptr<LocalDomainAccessStore> localDomainAccessStore)
         : _localCapabilitiesDirectory(localCapabilitiesDirectory),
-          _localDomainAccessController(localDomainAccessController),
+          _localDomainAccessStore(localDomainAccessStore),
           _whitelistParticipantIds(),
           _discoveryQos()
 {
@@ -288,7 +286,7 @@ void AccessController::hasConsumerPermission(
             // For now TrustLevel::HIGH is assumed.
 
             const std::string& msgCreatorUid = message->getCreator();
-            thisSharedPtr->_localDomainAccessController->getConsumerPermission(
+            thisSharedPtr->getConsumerPermission(
                     msgCreatorUid, domain, interfaceName, TrustLevel::HIGH, ldacCallback);
         }
     };
@@ -317,8 +315,110 @@ bool AccessController::hasProviderPermission(const std::string& userId,
         return true;
     }
 
-    return _localDomainAccessController->getProviderPermission(
-                   userId, domain, interfaceName, trustLevel) == Permission::Enum::YES;
+    return getProviderPermission(userId, domain, interfaceName, trustLevel) ==
+           Permission::Enum::YES;
+}
+
+bool AccessController::hasRole(const std::string& userId,
+                               const std::string& domain,
+                               Role::Enum role)
+{
+    JOYNR_LOG_TRACE(logger(), "execute: entering hasRole");
+
+    // See if the user has the given role
+    bool hasRole = false;
+    boost::optional<DomainRoleEntry> dre = _localDomainAccessStore->getDomainRole(userId, role);
+    if (dre) {
+        std::vector<std::string> domains = dre->getDomains();
+        const std::string wildcard = "*";
+        if (util::vectorContains(domains, domain) || util::vectorContains(domains, wildcard)) {
+            hasRole = true;
+        }
+    }
+
+    return hasRole;
+}
+
+void AccessController::getConsumerPermission(
+        const std::string& userId,
+        const std::string& domain,
+        const std::string& interfaceName,
+        TrustLevel::Enum trustLevel,
+        std::shared_ptr<AccessController::IGetPermissionCallback> callback)
+{
+    JOYNR_LOG_TRACE(logger(), "Entering getConsumerPermission with unknown operation");
+    // The operations of the ACEs should only contain wildcards, if not
+    // getConsumerPermission should be called with an operation
+    if (!_localDomainAccessStore->onlyWildcardOperations(userId, domain, interfaceName)) {
+        JOYNR_LOG_INFO(logger(), "Operation needed for ACL check.");
+        callback->operationNeeded();
+    } else {
+        // The operations are all wildcards
+        Permission::Enum permission = getConsumerPermission(
+                userId, domain, interfaceName, access_control::WILDCARD, trustLevel);
+        callback->permission(permission);
+    }
+}
+
+Permission::Enum AccessController::getConsumerPermission(const std::string& userId,
+                                                         const std::string& domain,
+                                                         const std::string& interfaceName,
+                                                         const std::string& operation,
+                                                         TrustLevel::Enum trustLevel)
+{
+    JOYNR_LOG_TRACE(logger(),
+                    "Entering getConsumerPermission with userID={} domain={} interfaceName={}",
+                    userId,
+                    domain,
+                    interfaceName);
+
+    boost::optional<MasterAccessControlEntry> masterAceOptional =
+            _localDomainAccessStore->getMasterAccessControlEntry(
+                    userId, domain, interfaceName, operation);
+    boost::optional<MasterAccessControlEntry> mediatorAceOptional =
+            _localDomainAccessStore->getMediatorAccessControlEntry(
+                    userId, domain, interfaceName, operation);
+    boost::optional<OwnerAccessControlEntry> ownerAceOptional =
+            _localDomainAccessStore->getOwnerAccessControlEntry(
+                    userId, domain, interfaceName, operation);
+
+    return _accessControlAlgorithm.getConsumerPermission(
+            masterAceOptional, mediatorAceOptional, ownerAceOptional, trustLevel);
+}
+
+void AccessController::getProviderPermission(
+        const std::string& userId,
+        const std::string& domain,
+        const std::string& interfaceName,
+        TrustLevel::Enum trustLevel,
+        std::shared_ptr<AccessController::IGetPermissionCallback> callback)
+{
+    JOYNR_LOG_TRACE(logger(), "Entering getProviderPermission with callback");
+    Permission::Enum permission = getProviderPermission(userId, domain, interfaceName, trustLevel);
+    callback->permission(permission);
+}
+
+Permission::Enum AccessController::getProviderPermission(const std::string& uid,
+                                                         const std::string& domain,
+                                                         const std::string& interfaceName,
+                                                         TrustLevel::Enum trustLevel)
+{
+    JOYNR_LOG_TRACE(logger(),
+                    "Entering getProviderPermission with userID={} domain={} interfaceName={}",
+                    uid,
+                    domain,
+                    interfaceName);
+
+    boost::optional<MasterRegistrationControlEntry> masterRceOptional =
+            _localDomainAccessStore->getMasterRegistrationControlEntry(uid, domain, interfaceName);
+    boost::optional<MasterRegistrationControlEntry> mediatorRceOptional =
+            _localDomainAccessStore->getMediatorRegistrationControlEntry(
+                    uid, domain, interfaceName);
+    boost::optional<OwnerRegistrationControlEntry> ownerRceOptional =
+            _localDomainAccessStore->getOwnerRegistrationControlEntry(uid, domain, interfaceName);
+
+    return _accessControlAlgorithm.getProviderPermission(
+            masterRceOptional, mediatorRceOptional, ownerRceOptional, trustLevel);
 }
 
 } // namespace joynr
