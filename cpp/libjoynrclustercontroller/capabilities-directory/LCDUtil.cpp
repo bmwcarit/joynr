@@ -200,4 +200,34 @@ std::vector<InterfaceAddress> LCDUtil::getInterfaceAddresses(
     return interfaceAddresses;
 }
 
+joynr::types::DiscoveryEntryWithMetaInfo LCDUtil::convert(bool isLocal,
+                                                          const joynr::types::DiscoveryEntry& entry)
+{
+    return joynr::types::DiscoveryEntryWithMetaInfo(entry.getProviderVersion(),
+                                                    entry.getDomain(),
+                                                    entry.getInterfaceName(),
+                                                    entry.getParticipantId(),
+                                                    entry.getQos(),
+                                                    entry.getLastSeenDateMs(),
+                                                    entry.getExpiryDateMs(),
+                                                    entry.getPublicKeyId(),
+                                                    isLocal);
+}
+
+std::vector<types::DiscoveryEntryWithMetaInfo> LCDUtil::convert(
+        bool isLocal,
+        const std::vector<types::DiscoveryEntry>& entries)
+{
+    std::vector<types::DiscoveryEntryWithMetaInfo> result;
+    result.reserve(entries.size());
+
+    std::transform(
+            entries.begin(),
+            entries.end(),
+            std::back_inserter(result),
+            [isLocal](const types::DiscoveryEntry& entry) { return convert(isLocal, entry); });
+
+    return result;
+}
+
 } // namespace joynr

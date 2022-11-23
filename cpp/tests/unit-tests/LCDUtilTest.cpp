@@ -280,64 +280,209 @@ TEST(LCDUtilTest, test_joinToString)
 {
     types::Version providerVersion(42, 42);
     types::ProviderQos providerQos;
-    std::string participantId = "participantId1";
     providerQos.setScope(types::ProviderScope::LOCAL);
     types::DiscoveryEntry entry(providerVersion,
                                 "domain1",
                                 "interface1",
-                                participantId,
+                                "participantId",
                                 providerQos,
                                 10000,
                                 10000,
                                 "testkey");
     types::DiscoveryEntry otherEntry(providerVersion,
-                                     "domain1",
-                                     "interface1",
+                                     "domain2",
+                                     "interface2",
                                      "otherParticipantId",
                                      providerQos,
-                                     10000,
-                                     10000,
+                                     1000,
+                                     1000,
                                      "testkey");
     std::vector<types::DiscoveryEntry> discoveryEntryVector;
     discoveryEntryVector.push_back(entry);
     discoveryEntryVector.push_back(otherEntry);
     std::string result = LCDUtil::joinToString(discoveryEntryVector);
     ASSERT_TRUE(result.length() > 0);
+    const std::string expected = entry.toString() + ", " + otherEntry.toString() + ", ";
+    ASSERT_EQ(expected, result);
 }
-
-#if 0
 
 TEST(LCDUtilTest, test_replaceGbidWithEmptyString)
 {
     system::RoutingTypes::MqttAddress mqttAddress("brokerUri", "topic");
+
     types::Version providerVersion(42, 42);
     types::ProviderQos providerQos;
-    std::string participantId = "participantId1";
     providerQos.setScope(types::ProviderScope::LOCAL);
-    types::GlobalDiscoveryEntry entry(providerVersion,
-                                             "domain1",
-                                             "interface1",
-                                             participantId,
-                                             providerQos,
-                                             10000,
-                                             10000,
-                                             "testkey",
-                                             mqttAddress.toString());
+    types::GlobalDiscoveryEntry firstEntry(providerVersion,
+                                           "domain1",
+                                           "interface1",
+                                           "participantId1",
+                                           providerQos,
+                                           10000,
+                                           10000,
+                                           "testkey",
+                                           joynr::serializer::serializeToJson(mqttAddress));
+    types::GlobalDiscoveryEntry otherEntry(providerVersion,
+                                           "domain2",
+                                           "interface2",
+                                           "participantId2",
+                                           providerQos,
+                                           1000,
+                                           1000,
+                                           "testkey",
+                                           joynr::serializer::serializeToJson(mqttAddress));
+
     std::vector<types::GlobalDiscoveryEntry> discoveryEntryVector;
-    discoveryEntryVector.push_back(entry);
+    discoveryEntryVector.push_back(firstEntry);
+    discoveryEntryVector.push_back(otherEntry);
+
     LCDUtil::replaceGbidWithEmptyString(discoveryEntryVector);
-    const std::string& serializedAddress = discoveryEntryVector.at(0).getAddress();
-    std::shared_ptr<system::RoutingTypes::Address> address;
-    try {
-        joynr::serializer::deserializeFromJson(address, serializedAddress);
-    } catch (const std::invalid_argument& e) {
-        FAIL() << "Error when deserializing address: " << e.what();
-    }
-    if (auto castAddress = dynamic_cast<system::RoutingTypes::MqttAddress*>(address.get())) {
-        ASSERT_EQ("", castAddress->getBrokerUri());
-    } else {
-        FAIL() << "Deserialized address is not a MQTT address";
+
+    for (auto entry : discoveryEntryVector) {
+        const std::string& serializedAddress = entry.getAddress();
+        std::shared_ptr<system::RoutingTypes::Address> address;
+        try {
+            joynr::serializer::deserializeFromJson(address, serializedAddress);
+        } catch (const std::invalid_argument& e) {
+            FAIL() << "Error when deserializing address: " << e.what();
+        }
+        if (auto castAddress = dynamic_cast<system::RoutingTypes::MqttAddress*>(address.get())) {
+            ASSERT_EQ("", castAddress->getBrokerUri());
+        } else {
+            FAIL() << "Deserialized address is not a MQTT address";
+        }
     }
 }
 
-#endif
+TEST(LCDUtilTest, test_toGlobalDiscoveryEntry)
+{
+    types::ProviderQos providerQos{};
+    types::DiscoveryEntry entry{joynr::types::Version{1, 1},
+                                "domain",
+                                "interfaceName",
+                                "participantId",
+                                providerQos,
+                                12,
+                                10,
+                                "publicKeyId"};
+
+    const std::string localAddress = "myLocalAddress";
+
+    auto globalEntry = LCDUtil::toGlobalDiscoveryEntry(entry, localAddress);
+
+    ASSERT_EQ(entry.getDomain(), globalEntry.getDomain());
+    ASSERT_EQ(entry.getParticipantId(), globalEntry.getParticipantId());
+    ASSERT_EQ(entry.getQos(), globalEntry.getQos());
+    ASSERT_EQ(entry.getLastSeenDateMs(), globalEntry.getLastSeenDateMs());
+    ASSERT_EQ(entry.getExpiryDateMs(), globalEntry.getExpiryDateMs());
+    ASSERT_EQ(entry.getPublicKeyId(), globalEntry.getPublicKeyId());
+    ASSERT_EQ(localAddress, globalEntry.getAddress());
+
+    ASSERT_EQ(entry, static_cast<types::DiscoveryEntry>(globalEntry));
+}
+
+TEST(LCDUtilTest, test_getInterfaceAddresses)
+{
+    const std::string interfaceName = "myInterfaceName";
+    const std::vector<std::string> domains = {"localDomain", "cachedDomain", "remoteDomain"};
+
+    auto interfaceAddresses = LCDUtil::getInterfaceAddresses(domains, interfaceName);
+
+    ASSERT_TRUE(interfaceAddresses.size() == domains.size());
+
+    ASSERT_TRUE(std::equal(interfaceAddresses.begin(),
+                           interfaceAddresses.end(),
+                           domains.begin(),
+                           [interfaceName](auto l, auto r) {
+                               return ((l.getDomain() == r) && (l.getInterface() == interfaceName));
+                           }));
+}
+
+void test_convertDiscoveryEntry(const bool isLocal)
+{
+    types::ProviderQos providerQos{};
+    providerQos.setScope(types::ProviderScope::LOCAL);
+
+    types::DiscoveryEntry entry{joynr::types::Version{1, 1},
+                                "domain",
+                                "interfaceName",
+                                "participantId",
+                                providerQos,
+                                12,
+                                10,
+                                "publicKeyId"};
+
+    auto result = LCDUtil::convert(isLocal, entry);
+
+    ASSERT_EQ(entry.getDomain(), result.getDomain());
+    ASSERT_EQ(entry.getParticipantId(), result.getParticipantId());
+    ASSERT_EQ(entry.getQos(), result.getQos());
+    ASSERT_EQ(entry.getLastSeenDateMs(), result.getLastSeenDateMs());
+    ASSERT_EQ(entry.getExpiryDateMs(), result.getExpiryDateMs());
+    ASSERT_EQ(entry.getPublicKeyId(), result.getPublicKeyId());
+    ASSERT_EQ(isLocal, result.getIsLocal());
+
+    ASSERT_EQ(entry, static_cast<types::DiscoveryEntry>(result));
+}
+
+TEST(LCDUtilTest, test_convertDiscoveryEntry_local)
+{
+    const bool isLocal = true;
+    test_convertDiscoveryEntry(isLocal);
+}
+
+TEST(LCDUtilTest, test_convertDiscoveryEntry_nonlocal)
+{
+    const bool isLocal = false;
+    test_convertDiscoveryEntry(isLocal);
+}
+
+void test_convertDiscoveryEntryVector(const bool isLocal)
+{
+    types::ProviderQos providerQos;
+
+    providerQos.setScope(types::ProviderScope::LOCAL);
+    types::DiscoveryEntry firstEntry{joynr::types::Version{1, 1},
+                                     "domain",
+                                     "interfaceName",
+                                     "participantId",
+                                     providerQos,
+                                     12,
+                                     10,
+                                     "publicKeyId"};
+
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+    types::DiscoveryEntry otherEntry{joynr::types::Version{2, 2},
+                                     "domain1",
+                                     "interfaceName1",
+                                     "participantId1",
+                                     providerQos,
+                                     1212,
+                                     1010,
+                                     "publicKeyId1"};
+
+    std::vector<types::DiscoveryEntry> entries;
+    entries.push_back(firstEntry);
+    entries.push_back(otherEntry);
+
+    auto convertedEntries = LCDUtil::convert(isLocal, entries);
+
+    ASSERT_TRUE(
+            std::equal(entries.begin(), entries.end(), convertedEntries.begin(),
+                       [](auto l, auto r) { return l == static_cast<types::DiscoveryEntry>(r); }));
+
+    for (auto entry : convertedEntries)
+        ASSERT_EQ(isLocal, entry.getIsLocal());
+}
+
+TEST(LCDUtilTest, test_convertDiscoveryEntryVector_local)
+{
+    const bool isLocal = true;
+    test_convertDiscoveryEntryVector(isLocal);
+}
+
+TEST(LCDUtilTest, test_convertDiscoveryEntryVector_nonlocal)
+{
+    const bool isLocal = false;
+    test_convertDiscoveryEntryVector(isLocal);
+}

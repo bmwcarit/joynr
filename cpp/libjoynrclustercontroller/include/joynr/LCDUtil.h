@@ -104,8 +104,16 @@ public:
             const std::vector<std::string>& domains,
             const std::string& interfaceName);
 
+    static types::DiscoveryEntryWithMetaInfo convert(bool isLocal,
+                                                     const types::DiscoveryEntry& entry);
+    static std::vector<types::DiscoveryEntryWithMetaInfo> convert(
+            bool isLocal,
+            const std::vector<types::DiscoveryEntry>& entries);
+
 private:
     ADD_LOGGER(LCDUtil)
 };
+
 } // namespace joynr
+
 #endif // LCDUTIL_H

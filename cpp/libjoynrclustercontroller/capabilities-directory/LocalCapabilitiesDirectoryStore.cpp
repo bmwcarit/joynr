@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "joynr/CapabilitiesStorage.h"
-#include "joynr/CapabilityUtils.h"
 #include "joynr/ILocalCapabilitiesCallback.h"
 #include "joynr/LCDUtil.h"
 #include "joynr/LocalCapabilitiesDirectoryStore.h"
@@ -138,7 +137,7 @@ bool LocalCapabilitiesDirectoryStore::callReceiverIfPossible(
     // return only local capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_ONLY) {
         // we call capabilitiesReceived for empty results, too
-        const auto& localCapsWithMetaInfo = util::convert(true, localCapabilities);
+        const auto& localCapsWithMetaInfo = LCDUtil::convert(true, localCapabilities);
         callback->capabilitiesReceived(localCapsWithMetaInfo);
         return true;
     }
@@ -146,13 +145,13 @@ bool LocalCapabilitiesDirectoryStore::callReceiverIfPossible(
     // return local then global capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL) {
         if (!localCapabilities.empty()) {
-            const auto& localCapsWithMetaInfo = util::convert(true, localCapabilities);
+            const auto& localCapsWithMetaInfo = LCDUtil::convert(true, localCapabilities);
             callback->capabilitiesReceived(localCapsWithMetaInfo);
             return true;
         }
         if (!globallyCachedCapabilities.empty()) {
             const auto& globalCachedCapsWithMetaInfo =
-                    util::convert(false, globallyCachedCapabilities);
+                    LCDUtil::convert(false, globallyCachedCapabilities);
             callback->capabilitiesReceived(globalCachedCapsWithMetaInfo);
             return true;
         }
@@ -161,8 +160,8 @@ bool LocalCapabilitiesDirectoryStore::callReceiverIfPossible(
     // return local and global capabilities
     if (scope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL &&
         !globallyCachedCapabilities.empty()) {
-        auto localCapsWithMetaInfo = util::convert(true, localCapabilities);
-        auto globalCachedCapsWithMetaInfo = util::convert(false, globallyCachedCapabilities);
+        auto localCapsWithMetaInfo = LCDUtil::convert(true, localCapabilities);
+        auto globalCachedCapsWithMetaInfo = LCDUtil::convert(false, globallyCachedCapabilities);
 
         // merge and remove duplicated entries. If duplicate entries with the same
         // participantId found, keep the local ones
@@ -181,8 +180,8 @@ bool LocalCapabilitiesDirectoryStore::callReceiverIfPossible(
                 globallyRegisteredEntries.push_back(capability);
             }
         }
-        auto globallyRegisteredCapsWithMetaInfo = util::convert(true, globallyRegisteredEntries);
-        auto globalCachedCapsWithMetaInfo = util::convert(false, globallyCachedCapabilities);
+        auto globallyRegisteredCapsWithMetaInfo = LCDUtil::convert(true, globallyRegisteredEntries);
+        auto globalCachedCapsWithMetaInfo = LCDUtil::convert(false, globallyCachedCapabilities);
         // merge and remove duplicated entries. If duplicate entries with the same
         // participantId found, keep the local ones
         const auto& allGlobalCaps =
