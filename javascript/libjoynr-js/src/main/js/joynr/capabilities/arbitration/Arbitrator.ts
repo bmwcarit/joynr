@@ -287,22 +287,22 @@ class Arbitrator {
                 }
             } catch (error) {
                 if (error instanceof ApplicationException) {
-                    errorMsg = `Discovery failed due to ${error.error.name}`;
+                    errorMsg = `Discovery failed due to DiscoveryError ${error.error.name} : ${error.detailMessage}`;
                     if (
                         error.error !== DiscoveryError.NO_ENTRY_FOR_PARTICIPANT &&
                         error.error !== DiscoveryError.NO_ENTRY_FOR_SELECTED_BACKENDS
                     ) {
                         log.error(
-                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to DiscoveryError: ${
-                                error.error.name
-                            }. Attempting no retry`
+                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} \
+                            failed due to DiscoveryError ${error.error.name} : ${error.detailMessage}. \
+                            Attempting no retry`
                         );
                         break;
                     } else {
                         log.info(
-                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} failed due to DiscoveryError: ${
-                                error.error.name
-                            }. Attempting retry in ${discoveryQos.discoveryRetryDelayMs} ms`
+                            `Discovery attempt for domains ${domains}, interface ${interfaceName}, gbids ${gbids} \
+                            failed due to DiscoveryError ${error.error.name} : ${error.detailMessage}. \
+                            Attempting retry in ${discoveryQos.discoveryRetryDelayMs} ms`
                         );
                     }
                 } else if (error.message) {
