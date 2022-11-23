@@ -59,6 +59,7 @@
 #include "joynr/types/ProviderScope.h"
 
 #include "IGlobalCapabilitiesDirectoryClient.h"
+#include "joynr/Future.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
@@ -537,58 +538,40 @@ std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectory::getCachedGlobalDi
 }
 
 void LocalCapabilitiesDirectory::capabilitiesReceived(
-        const std::vector<types::GlobalDiscoveryEntry>& results,
+        const std::vector<types::GlobalDiscoveryEntry>& receivedGlobalEntries,
         std::vector<types::DiscoveryEntry>&& localEntries,
         std::shared_ptr<ILocalCapabilitiesCallback> callback,
-        joynr::types::DiscoveryScope::Enum discoveryScope,
-        const std::vector<std::string>& domains)
+        joynr::types::DiscoveryScope::Enum discoveryScope)
 {
-    std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
-    std::vector<types::DiscoveryEntryWithMetaInfo> globalEntries;
-
-    std::unordered_set<std::string> localGlobalParticipantIds;
-    for (types::GlobalDiscoveryEntry globalDiscoveryEntry : results) {
+    std::vector<types::GlobalDiscoveryEntry> capabilities;
+    for (types::GlobalDiscoveryEntry globalDiscoveryEntry : receivedGlobalEntries) {
         // check whether this entry exists in the local store. if so, then skip it
         auto localEntries2 = _localCapabilitiesDirectoryStore->getLocalCapabilities(
                 globalDiscoveryEntry.getParticipantId());
         if (localEntries2.empty()) {
-            types::DiscoveryEntryWithMetaInfo convertedEntry =
-                    LCDUtil::convert(false, globalDiscoveryEntry);
-            capabilitiesMap.insert(
-                    {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
-            globalEntries.push_back(std::move(convertedEntry));
-        } else if (localEntries2[0].getQos().getScope() == types::ProviderScope::GLOBAL &&
-                   (domains.empty() ||
-                    (localEntries2[0].getInterfaceName() ==
-                             globalDiscoveryEntry.getInterfaceName() &&
-                     std::find(domains.begin(), domains.end(), localEntries2[0].getDomain()) !=
-                             domains.cend()))) {
-            // add globally registered local providers to global only lookup result
-            localGlobalParticipantIds.insert(globalDiscoveryEntry.getParticipantId());
+            capabilities.push_back(std::move(globalDiscoveryEntry));
         }
     }
     // stores remote entries in global cache
-    registerReceivedCapabilities(std::move(capabilitiesMap));
+    auto result = registerReceivedCapabilities(std::move(capabilities));
 
     if (discoveryScope == joynr::types::DiscoveryScope::LOCAL_THEN_GLOBAL ||
         discoveryScope == joynr::types::DiscoveryScope::LOCAL_AND_GLOBAL) {
         auto localEntriesWithMetaInfo = LCDUtil::convert(true, localEntries);
         // combine local and global entries (duplicates are already filtered)
-        globalEntries.insert(globalEntries.end(),
-                             localEntriesWithMetaInfo.begin(),
-                             localEntriesWithMetaInfo.end());
+        result.insert(
+                result.end(), localEntriesWithMetaInfo.begin(), localEntriesWithMetaInfo.end());
     } else { // GLOBAL_ONLY
-        for (auto localEntry : localEntries) {
+        for (const auto& localEntry : localEntries) {
             // add globally registered local entries to the result
-            if (localGlobalParticipantIds.find(localEntry.getParticipantId()) !=
-                localGlobalParticipantIds.cend()) {
+            if (types::ProviderScope::GLOBAL == localEntry.getQos().getScope()) {
                 auto localEntryWithMetaInfo = LCDUtil::convert(true, localEntry);
-                globalEntries.push_back(localEntryWithMetaInfo);
+                result.push_back(localEntryWithMetaInfo);
             }
         }
     }
 
-    callback->capabilitiesReceived(globalEntries);
+    callback->capabilitiesReceived(result);
 }
 
 // base lookup by particiapntId
@@ -664,7 +647,6 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
     if (!receiverCalled) {
         // search for global entries in the global capabilities directory
         auto onSuccess = [thisWeakPtr = joynr::util::as_weak_ptr(shared_from_this()),
-                          domains,
                           interfaceAddresses,
                           callback,
                           discoveryQos,
@@ -684,8 +666,7 @@ void LocalCapabilitiesDirectory::lookup(const std::vector<std::string>& domains,
                             thisSharedPtr->_localCapabilitiesDirectoryStore->getLocalCapabilities(
                                     interfaceAddresses),
                             callback,
-                            discoveryQos.getDiscoveryScope(),
-                            domains);
+                            discoveryQos.getDiscoveryScope());
                     thisSharedPtr->_lcdPendingLookupsHandler.callbackCalled(
                             interfaceAddresses, callback);
                 }
@@ -759,11 +740,13 @@ bool LocalCapabilitiesDirectory::hasPendingLookups()
     return _lcdPendingLookupsHandler.hasPendingLookups();
 }
 
-void LocalCapabilitiesDirectory::registerReceivedCapabilities(
-        const std::unordered_multimap<std::string, types::DiscoveryEntry>&& capabilityEntries)
+std::vector<types::DiscoveryEntryWithMetaInfo> LocalCapabilitiesDirectory::
+        registerReceivedCapabilities(
+                const std::vector<types::GlobalDiscoveryEntry>&& capabilityEntries)
 {
-    for (auto it = capabilityEntries.cbegin(); it != capabilityEntries.cend(); ++it) {
-        const std::string& serializedAddress = it->first;
+    std::vector<types::DiscoveryEntryWithMetaInfo> validGlobalEntries;
+    for (auto currentEntry : capabilityEntries) {
+        const std::string& serializedAddress = currentEntry.getAddress();
         std::shared_ptr<const system::RoutingTypes::Address> address;
         try {
             joynr::serializer::deserializeFromJson(address, serializedAddress);
@@ -775,35 +758,57 @@ void LocalCapabilitiesDirectory::registerReceivedCapabilities(
             continue;
         }
 
-        const types::DiscoveryEntry& currentEntry = it->second;
         const bool isGloballyVisible = LCDUtil::isGlobal(currentEntry);
         if (auto messageRouterSharedPtr = _messageRouter.lock()) {
             constexpr std::int64_t expiryDateMs = std::numeric_limits<std::int64_t>::max();
             const bool isSticky = false;
+            Future<void> future;
+            auto onSuccess = [&]() { future.onSuccess(); };
+            auto onError = [&](const joynr::exceptions::ProviderRuntimeException& e) {
+                future.onError(std::make_shared<exceptions::ProviderRuntimeException>(e));
+            };
             messageRouterSharedPtr->addNextHop(currentEntry.getParticipantId(),
                                                address,
                                                isGloballyVisible,
                                                expiryDateMs,
-                                               isSticky);
+                                               isSticky,
+                                               onSuccess,
+                                               onError);
+
+            try {
+                future.get();
+
+                types::DiscoveryEntryWithMetaInfo convertedEntry =
+                        LCDUtil::convert(false, currentEntry);
+                validGlobalEntries.push_back(std::move(convertedEntry));
+
+                std::vector<std::string> gbids;
+                if (auto mqttAddress =
+                            dynamic_cast<const system::RoutingTypes::MqttAddress*>(address.get())) {
+                    gbids.push_back(mqttAddress->getBrokerUri());
+                } else {
+                    // use default GBID for all other address types
+                    gbids.push_back(_knownGbids[0]);
+                }
+                _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
+                        std::move(currentEntry), std::move(gbids));
+
+            } catch (const joynr::exceptions::JoynrException& e) {
+                JOYNR_LOG_WARN(logger(),
+                               "Failed to register capability entry for participantId: {}, "
+                               "addNextHop failed: {}",
+                               currentEntry.getParticipantId(),
+                               e.what());
+            }
         } else {
             JOYNR_LOG_FATAL(logger(),
                             "could not addNextHop {} to {} because messageRouter is not available",
                             currentEntry.getParticipantId(),
                             serializedAddress);
-            return;
+            return {};
         }
-
-        std::vector<std::string> gbids;
-        if (auto mqttAddress =
-                    dynamic_cast<const system::RoutingTypes::MqttAddress*>(address.get())) {
-            gbids.push_back(mqttAddress->getBrokerUri());
-        } else {
-            // use default GBID for all other address types
-            gbids.push_back(_knownGbids[0]);
-        }
-        _localCapabilitiesDirectoryStore->insertInGlobalLookupCache(
-                std::move(currentEntry), std::move(gbids));
     }
+    return validGlobalEntries;
 }
 
 // inherited method from joynr::system::DiscoveryProvider
@@ -1361,15 +1366,8 @@ void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::str
         return;
     }
 
-    std::unordered_multimap<std::string, types::DiscoveryEntry> capabilitiesMap;
-    for (const auto& globalDiscoveryEntry : injectedGlobalCapabilities) {
-        // insert in map for messagerouter
-        capabilitiesMap.insert(
-                {globalDiscoveryEntry.getAddress(), std::move(globalDiscoveryEntry)});
-    }
-
     // insert found capabilities in messageRouter
-    registerReceivedCapabilities(std::move(capabilitiesMap));
+    registerReceivedCapabilities(std::move(injectedGlobalCapabilities));
 }
 
 void LocalCapabilitiesDirectory::scheduleCleanupTimer()

@@ -56,7 +56,8 @@ public:
                  void(const std::vector<joynr::types::GlobalDiscoveryEntry>& results));
 };
 
-class GlobalCapabilitiesDirectoryIntegrationTest : public TestWithParam<std::string>
+class GlobalCapabilitiesDirectoryIntegrationTest
+        : public TestWithParam<std::tuple<std::string, std::string>>
 {
 public:
     ADD_LOGGER(GlobalCapabilitiesDirectoryIntegrationTest)
@@ -68,7 +69,7 @@ public:
 
     GlobalCapabilitiesDirectoryIntegrationTest()
             : runtime(),
-              settings(std::make_unique<Settings>(GetParam())),
+              settings(std::make_unique<Settings>(std::get<0>(GetParam()))),
               messagingSettings(*settings),
               clusterControllerSettings(*settings),
               sysSettings(*settings)
@@ -216,8 +217,8 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
 
     // Start cluster controller runtime first time
     auto testRuntimeFirst = std::make_shared<TestJoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr,
-            removeStaleDelayMs);
+            std::make_unique<Settings>(std::get<0>(GetParam())), failOnFatalRuntimeError, nullptr,
+            nullptr, removeStaleDelayMs);
     testRuntimeFirst->init();
     testRuntimeFirst->start();
 
@@ -235,8 +236,8 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
 
     // Start cluster controller runtime second time
     auto testRuntimeSecond = std::make_shared<TestJoynrClusterControllerRuntime>(
-            std::make_unique<Settings>(GetParam()), failOnFatalRuntimeError, nullptr, nullptr,
-            removeStaleDelayMs);
+            std::make_unique<Settings>(std::get<0>(GetParam())), failOnFatalRuntimeError, nullptr,
+            nullptr, removeStaleDelayMs);
     testRuntimeSecond->init();
     testRuntimeSecond->start();
     // wait some time to make sure that removeStale has been published and processed
@@ -265,13 +266,14 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithoutDelay)
 /**
  * Test removing stale providers functionality of cluster controller with the delay after CC start
  *
- * Pre-conditions: start cluster controller first time, register two providers, shutdown cluster
- * controller without calling of unregisterProvider() method. Start cluster controller second time.
+ * Pre-conditions: Start first runtime (proxy-building) using second config (different CCID).
+ * Next start the second cluster controller runtime, register two providers, shutdown cluster
+ * controller without calling of unregisterProvider() method.
+ * Start third cluster controller whose role is to remove entries "orphaned" by second CC.
  *
- * Expected behavior: after the second start of cluster controller, first call of
- * testProxyBuilder->build() will be successful (because it is called before the call of
- * removeStale) and it will throw an exception at the second call because stale providers have been
- * removed after waiting for a delay.
+ * Expected behavior: first call of testProxyBuilder->build() will be successful (because it is
+ * called before the call of removeStale done by the third CC). Second call will throw an exception
+ * because stale providers have been removed after waiting for a delay.
  */
 TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
 {
@@ -297,8 +299,9 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
     discoveryQos.setCacheMaxAgeMs(0.0);
     discoveryQos.setRetryIntervalMs(discoveryTimeoutMs + 50);
 
-    // Start cluster controller runtime first time
-    auto settings1 = std::make_unique<Settings>(GetParam());
+    // This runtime is used to create proxy objects to stale entries.
+    // Uses different CCId than second and third runtimes.
+    auto settings1 = std::make_unique<Settings>(std::get<1>(GetParam()));
     ClusterControllerSettings ccSettings1(*settings1);
     ccSettings1.setUdsEnabled(false);
     auto testRuntimeFirst = std::make_shared<TestJoynrClusterControllerRuntime>(
@@ -306,27 +309,37 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
     testRuntimeFirst->init();
     testRuntimeFirst->start();
 
-    testRuntimeFirst->registerProvider<tests::testProvider>(
-            domainFirst, mockProvider, providerQosFirst, true, true);
-    testRuntimeFirst->registerProvider<tests::testProvider>(
-            domainSecond, mockProvider, providerQosSecond, true, true);
-
-    testRuntimeFirst->shutdown();
-    test::util::resetAndWaitUntilDestroyed(testRuntimeFirst);
-
-    // Start cluster controller runtime second time
-    auto settings2 = std::make_unique<Settings>(GetParam());
+    // Start second runtime. Register two providers and shut down without unregistering them.
+    auto settings2 = std::make_unique<Settings>(std::get<0>(GetParam()));
     ClusterControllerSettings ccSettings2(*settings2);
     ccSettings2.setUdsEnabled(false);
     auto testRuntimeSecond = std::make_shared<TestJoynrClusterControllerRuntime>(
             std::move(settings2), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
     testRuntimeSecond->init();
     testRuntimeSecond->start();
+
+    testRuntimeSecond->registerProvider<tests::testProvider>(
+            domainFirst, mockProvider, providerQosFirst, true, true);
+    testRuntimeSecond->registerProvider<tests::testProvider>(
+            domainSecond, mockProvider, providerQosSecond, true, true);
+
+    testRuntimeSecond->shutdown();
+    test::util::resetAndWaitUntilDestroyed(testRuntimeSecond);
+
+    // Start third runtime. This one has the same configuration
+    // as one that registered providers. This one will be used to remove stale entries.
+    auto settings3 = std::make_unique<Settings>(std::get<0>(GetParam()));
+    ClusterControllerSettings ccSettings3(*settings3);
+    ccSettings3.setUdsEnabled(false);
+    auto testRuntimeThird = std::make_shared<TestJoynrClusterControllerRuntime>(
+            std::move(settings3), failOnFatalRuntimeError, nullptr, nullptr, removeStaleDelayMs);
+    testRuntimeThird->init();
+    testRuntimeThird->start();
     // wait some time to make sure that cluster controller runtime has been started
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    // Check if proxy is built before removeStale is called
-    auto testProxyBuilder = testRuntimeSecond->createProxyBuilder<tests::testProxy>(domainFirst);
+    // Check if proxy is built before removeStale from the third runtime is called
+    auto testProxyBuilder = testRuntimeFirst->createProxyBuilder<tests::testProxy>(domainFirst);
     try {
         auto testProxy = testProxyBuilder->setMessagingQos(MessagingQos())
                                  ->setDiscoveryQos(discoveryQos)
@@ -335,11 +348,20 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
     } catch (const exceptions::JoynrException& e) {
         FAIL() << "Proxy creation failed unexpectedly: " << e.getMessage();
     }
-
-    // wait some time to make sure that removeStale has been published and processed
+    testProxyBuilder = testRuntimeFirst->createProxyBuilder<tests::testProxy>(domainSecond);
+    try {
+        auto testProxy = testProxyBuilder->setMessagingQos(MessagingQos())
+                                 ->setDiscoveryQos(discoveryQos)
+                                 ->build();
+        ASSERT_NE(nullptr, testProxy);
+    } catch (const exceptions::JoynrException& e) {
+        FAIL() << "Proxy creation failed unexpectedly: " << e.getMessage();
+    }
+    // wait some time to make sure that removeStale from the third testRuntime has been published
+    // and processed
     std::this_thread::sleep_for(std::chrono::milliseconds(removeStaleDelayMs + 200));
 
-    testProxyBuilder = testRuntimeSecond->createProxyBuilder<tests::testProxy>(domainSecond);
+    testProxyBuilder = testRuntimeFirst->createProxyBuilder<tests::testProxy>(domainFirst);
     try {
         testProxyBuilder->setMessagingQos(MessagingQos())->setDiscoveryQos(discoveryQos)->build();
         FAIL() << "Proxy creation succeeded unexpectedly";
@@ -350,9 +372,21 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testRemoveStaleWithDelay)
                 exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
         ASSERT_TRUE(messageFound);
     }
-
-    testRuntimeSecond->shutdown();
-    test::util::resetAndWaitUntilDestroyed(testRuntimeSecond);
+    testProxyBuilder = testRuntimeFirst->createProxyBuilder<tests::testProxy>(domainSecond);
+    try {
+        testProxyBuilder->setMessagingQos(MessagingQos())->setDiscoveryQos(discoveryQos)->build();
+        FAIL() << "Proxy creation succeeded unexpectedly";
+    } catch (const exceptions::JoynrException& e) {
+        std::string exceptionMessage = e.getMessage();
+        std::string expectedSubstring = "No entries found for domain";
+        bool messageFound =
+                exceptionMessage.find(expectedSubstring) != std::string::npos ? true : false;
+        ASSERT_TRUE(messageFound);
+    }
+    testRuntimeThird->shutdown();
+    test::util::resetAndWaitUntilDestroyed(testRuntimeThird);
+    testRuntimeFirst->shutdown();
+    test::util::resetAndWaitUntilDestroyed(testRuntimeFirst);
 }
 
 /**
@@ -487,6 +521,8 @@ TEST_P(GlobalCapabilitiesDirectoryIntegrationTest, testTouch_updatesGloballyRegi
 
 using namespace std::string_literals;
 
-INSTANTIATE_TEST_SUITE_P(Mqtt,
-                         GlobalCapabilitiesDirectoryIntegrationTest,
-                         testing::Values("test-resources/MqttSystemIntegrationTest1.settings"s));
+INSTANTIATE_TEST_SUITE_P(
+        Mqtt,
+        GlobalCapabilitiesDirectoryIntegrationTest,
+        testing::Values(std::make_tuple("test-resources/MqttSystemIntegrationTest1.settings"s,
+                                        "test-resources/MqttSystemIntegrationTest2.settings"s)));

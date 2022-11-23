@@ -25,6 +25,10 @@
 #include <string>
 #include <vector>
 
+#include <boost/multi_index/composite_key.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/mem_fun.hpp>
+#include <boost/multi_index_container.hpp>
 #include <boost/optional.hpp>
 
 #include "joynr/Future.h"
@@ -168,9 +172,31 @@ private:
             const std::string& participantId,
             std::function<void(const types::DiscoveryEntryWithMetaInfo&)> onSuccess) noexcept;
 
+    std::shared_ptr<joynr::Future<std::vector<types::DiscoveryEntryWithMetaInfo>>>
+    findProvisionedEntry(const std::vector<std::string>& domains,
+                         const std::string& interfaceName,
+                         std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>
+                                 onSuccess) noexcept;
+
     std::shared_ptr<joynr::system::IDiscoveryAsync> _discoveryProxy;
-    const std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo>
-            _provisionedDiscoveryEntries;
+
+    using ProvisionedDiscoveryEntriesConteriner = boost::multi_index_container<
+            joynr::types::DiscoveryEntryWithMetaInfo,
+            boost::multi_index::indexed_by<
+                    boost::multi_index::hashed_unique<BOOST_MULTI_INDEX_CONST_MEM_FUN(
+                            types::DiscoveryEntry,
+                            const std::string&,
+                            getParticipantId)>,
+                    boost::multi_index::hashed_non_unique<boost::multi_index::composite_key<
+                            joynr::types::DiscoveryEntryWithMetaInfo,
+                            BOOST_MULTI_INDEX_CONST_MEM_FUN(types::DiscoveryEntry,
+                                                            const std::string&,
+                                                            getDomain),
+                            BOOST_MULTI_INDEX_CONST_MEM_FUN(types::DiscoveryEntry,
+                                                            const std::string&,
+                                                            getInterfaceName)>>>>;
+
+    ProvisionedDiscoveryEntriesConteriner _provisionedDiscoveryEntries;
 };
 } // namespace joynr
 #endif // LOCALDISCOVERYAGGREGATOR_H
