@@ -20,7 +20,9 @@ package io.joynr.messaging.mqtt.hivemq.client;
 
 import com.google.inject.AbstractModule;
 
+import io.joynr.messaging.mqtt.JoynrMqttClientCreator;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttClientSignalService;
 import io.joynr.messaging.mqtt.MqttModule;
 
 /**
@@ -33,6 +35,8 @@ public class HivemqMqttClientModule extends AbstractModule {
         install(new MqttModule());
         bind(MqttClientFactory.class).to(HivemqMqttClientFactory.class);
         bind(IHivemqMqttClientTrustManagerFactory.class).to(HivemqMqttClientTrustManagerFactory.class);
+        bind(JoynrMqttClientCreator.class).to(HivemqMqttClientCreator.class);
+        bind(MqttClientSignalService.class).to(HivemqMqttClientFactory.class);
     }
 
 }

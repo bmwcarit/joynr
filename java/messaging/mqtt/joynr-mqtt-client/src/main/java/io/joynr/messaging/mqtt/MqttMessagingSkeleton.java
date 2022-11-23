@@ -62,7 +62,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     protected final String ownGbid;
     private final MessageRouter messageRouter;
     private final MessageProcessedHandler messageProcessedHandler;
-    private final MqttClientFactory mqttClientFactory;
+    protected final MqttClientFactory mqttClientFactory;
     private final ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount;
     private final MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private final RawMessagingPreprocessor rawMessagingPreprocessor;
@@ -105,12 +105,13 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     @Override
     public void init() {
         logger.debug("Initializing MQTT skeleton (ownGbid={}) ...", ownGbid);
-
         messageProcessedHandler.registerMessageProcessedListener(this);
-
         client.setMessageListener(this);
         client.start();
-        mqttClientFactory.createSender(ownGbid).start();
+        mqttClientFactory.connect(client);
+        JoynrMqttClient sender = mqttClientFactory.createSender(ownGbid);
+        sender.start();
+        mqttClientFactory.connect(sender);
         subscribe();
     }
 

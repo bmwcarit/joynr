@@ -27,9 +27,13 @@ public interface JoynrMqttClient {
 
     public void start();
 
-    public void setMessageListener(IMqttMessagingSkeleton rawMessaging);
+    public void connect();
+
+    public void disconnect();
 
     public void shutdown();
+
+    public void setMessageListener(IMqttMessagingSkeleton rawMessaging);
 
     public void publishMessage(String topic,
                                byte[] serializedMessage,

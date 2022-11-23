@@ -140,6 +140,7 @@ public class HivemqMqttClientIntegrationTest {
         properties.put(MqttModule.PROPERTY_KEY_MQTT_TRUSTSTORE_PWD, KEY_AND_TRUSTSTORE_PASSWORD);
         properties.put(MqttModule.PROPERTY_MQTT_BROKER_URIS,
                        "tcp://localhost:1883,mqtt://localhost:1883,ssl://localhost:8883,tls://localhost:8883,mqtts://localhost:8883");
+        properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECT_ON_START, "true");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC, "60,60,60,60,60");
         properties.put(MqttModule.PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC, "30,30,30,30,30");
         properties.put(ConfigurableMessagingSettings.PROPERTY_GBIDS,
@@ -201,7 +202,10 @@ public class HivemqMqttClientIntegrationTest {
         clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
+        clientSender.connect();
+
         clientReceiver.start();
+        clientReceiver.connect();
 
         clientReceiver.subscribe(ownTopic);
         // wait for subscription to be established
@@ -241,7 +245,10 @@ public class HivemqMqttClientIntegrationTest {
         clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
+        clientSender.connect();
+
         clientReceiver.start();
+        clientReceiver.connect();
 
         try {
             final int runs = 16;
@@ -345,7 +352,10 @@ public class HivemqMqttClientIntegrationTest {
         clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
+        clientSender.connect();
+
         clientReceiver.start();
+        clientReceiver.connect();
 
         clientReceiver.subscribe(ownTopic);
         // wait for subscription to be established
@@ -378,8 +388,9 @@ public class HivemqMqttClientIntegrationTest {
         createHivemqMqttClientFactory();
         HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
         client.setMessageListener(mockReceiver2);
-        assertFalse(client.isShutdown());
         client.start();
+        assertFalse(client.isShutdown());
+        client.connect();
 
         assertFalse(client.isShutdown());
         client.shutdown();
@@ -395,6 +406,7 @@ public class HivemqMqttClientIntegrationTest {
         HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
         client.setMessageListener(mockReceiver2);
         client.start();
+        client.connect();
 
         client.subscribe(testTopic);
         Thread.sleep(1000);
@@ -419,10 +431,12 @@ public class HivemqMqttClientIntegrationTest {
         clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
+        clientSender.connect();
 
         clientReceiver.subscribe(ownTopic);
         Thread.sleep(128);
         clientReceiver.start();
+        clientReceiver.connect();
         // wait for subscription to be established
         Thread.sleep(128);
 
@@ -459,12 +473,16 @@ public class HivemqMqttClientIntegrationTest {
         clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
+        clientSender.connect();
+
         clientReceiver.start();
+        clientReceiver.connect();
 
         clientReceiver.shutdown();
         clientReceiver.subscribe(ownTopic);
         Thread.sleep(128);
         clientReceiver.start();
+        clientReceiver.connect();
         // wait for subscription to be established
         Thread.sleep(128);
 
@@ -500,8 +518,10 @@ public class HivemqMqttClientIntegrationTest {
         clientSender.setMessageListener(mockReceiver2);
 
         clientSender.start();
+        clientSender.connect();
 
         clientReceiver.start();
+        clientReceiver.connect();
         clientReceiver.subscribe(ownTopic);
         // wait for subscription to be established
         Thread.sleep(128);
@@ -519,7 +539,9 @@ public class HivemqMqttClientIntegrationTest {
                                     mockSuccessAction,
                                     mockFailureAction);
         Thread.sleep(128);
+
         clientReceiver.start();
+        clientReceiver.connect();
 
         ArgumentCaptor<Mqtt5Publish> publishCaptor = ArgumentCaptor.forClass(Mqtt5Publish.class);
         verify(mockReceiver, timeout(500).times(1)).transmit(publishCaptor.capture(),
@@ -556,10 +578,14 @@ public class HivemqMqttClientIntegrationTest {
         });
 
         clientSender.setMessageListener(mockReceiver);
+
         clientSender.start();
+        clientSender.connect();
 
         clientReceiver.setMessageListener(mockReceiver2);
+
         clientReceiver.start();
+        clientReceiver.connect();
 
         clientReceiver.subscribe(ownTopic);
         // wait for subscription to be established
@@ -599,9 +625,11 @@ public class HivemqMqttClientIntegrationTest {
 
         clientSender.setMessageListener(mockReceiver);
         clientSender.start();
+        clientSender.connect();
 
         clientReceiver.setMessageListener(mockReceiver2);
         clientReceiver.start();
+        clientReceiver.connect();
 
         clientReceiver.subscribe(ownTopic);
         // wait for subscription to be established
@@ -618,6 +646,7 @@ public class HivemqMqttClientIntegrationTest {
         // wait some time to let the expiry interval decrease at the broker before receiving the message
         Thread.sleep(sleepTimeSec * 1000);
         clientReceiver.start();
+        clientReceiver.connect();
 
         assertTrue(cdl.await(10, TimeUnit.SECONDS));
         clientReceiver.unsubscribe(ownTopic);
@@ -634,8 +663,9 @@ public class HivemqMqttClientIntegrationTest {
         createHivemqMqttClientFactory();
         HivemqMqttClient client = (HivemqMqttClient) hivemqMqttClientFactory.createSender(gbids[0]);
         client.setMessageListener(mockReceiver2);
-        assertFalse(client.isShutdown());
         client.start();
+        assertFalse(client.isShutdown());
+        client.connect();
 
         Thread.sleep(1000);
 

@@ -129,32 +129,43 @@ public class MqttMessagingSkeletonTest {
                                             testBackendUid,
                                             mqttMessageInProgressObserver);
         verify(mqttClientFactory).createReceiver(ownGbid);
-        subject.init();
     }
 
     @Test
     public void testSkeletonCreatesAndStartsSenderAndReceiverForItsOwnGbid() {
-        verify(mqttClientFactory).createSender(ownGbid);
+        verify(mqttClientReceiver, never()).start();
+        verify(mqttClientSender, never()).start();
+        verify(mqttClientFactory, never()).connect(mqttClientReceiver);
+        verify(mqttClientFactory, never()).connect(mqttClientSender);
+        verify(mqttClientFactory, never()).createSender(ownGbid);
 
+        subject.init();
+
+        verify(mqttClientFactory).createSender(ownGbid);
         verify(mqttClientReceiver).start();
         verify(mqttClientSender).start();
+        verify(mqttClientFactory).connect(mqttClientReceiver);
+        verify(mqttClientFactory).connect(mqttClientSender);
     }
 
     @Test
     public void testSkeletonSubscribesToOwnTopic() {
+        subject.init();
         verify(mqttClientReceiver).subscribe(ownTopic + "/#");
         verify(mqttClientSender, times(0)).subscribe(anyString());
     }
 
     @Test
-    public void testSkeletonRegistersItselfAsMessageProcessedListener() {
-        verify(mockMessageProcessedHandler).registerMessageProcessedListener(eq(subject));
+    public void testSkeletonRegistersItselfAsMessageListener() {
+        subject.init();
+        verify(mqttClientReceiver).setMessageListener(subject);
+        verify(mqttClientSender, times(0)).setMessageListener(any(IMqttMessagingSkeleton.class));
     }
 
     @Test
-    public void testSkeletonRegistersItselfAsMessageListener() {
-        verify(mqttClientReceiver).setMessageListener(subject);
-        verify(mqttClientSender, times(0)).setMessageListener(any(IMqttMessagingSkeleton.class));
+    public void testSkeletonRegistersItselfAsMessageProcessedListener() {
+        subject.init();
+        verify(mockMessageProcessedHandler).registerMessageProcessedListener(eq(subject));
     }
 
     @Test

@@ -81,7 +81,8 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private final boolean isReceiver;
     private final boolean isSender;
     private final String clientInformation;
-    private AtomicBoolean shuttingDown = new AtomicBoolean(false);
+    private AtomicBoolean shuttingDown = new AtomicBoolean(true);
+    private boolean connected = false;
     private IMqttMessagingSkeleton messagingSkeleton;
     private ConnectionStatusMetricsImpl connectionStatusMetrics;
 
@@ -117,7 +118,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         this.publishesDisposable = null;
     }
 
-    private void registerPublishCallback() {
+    protected void registerPublishCallback() {
         if (!isReceiver || publishesDisposable != null) {
             return;
         }
@@ -165,16 +166,11 @@ public class HivemqMqttClient implements JoynrMqttClient {
         return clientIdBuilder.toString();
     }
 
-    @Override
-    public synchronized void start() {
-        shuttingDown.set(false);
-        logger.info("{}: Initializing HiveMQ MQTT client for address {}.",
-                    clientInformation,
-                    client.getConfig().getServerAddress());
-
-        assert (!isReceiver || messagingSkeleton != null);
-        registerPublishCallback();
-
+    public synchronized void connect() {
+        if (shuttingDown.get()) {
+            logger.error("{}: Client not started.", clientInformation);
+            return;
+        }
         if (!client.getConfig().getState().isConnected()) {
             while (!client.getConfig().getState().isConnected()) {
                 logger.info("{}: Attempting to connect client, clean session={} ...", clientInformation, cleanSession);
@@ -198,6 +194,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                           maxMsgSizeBytes);
                           })
                           .blockingGet();
+                    connected = true;
                 } catch (Exception e) {
                     logger.error("{}: Exception encountered while connecting MQTT client.", clientInformation, e);
                     do {
@@ -225,37 +222,66 @@ public class HivemqMqttClient implements JoynrMqttClient {
         }
     }
 
+    /**
+     * Tries to disconnect client
+     */
+    public synchronized void disconnect() {
+        if (!connected) {
+            return;
+        }
+        connected = false;
+        try {
+            logger.info("{}: Attempting to disconnect.", clientInformation);
+            client.disconnectWith().noSessionExpiry().applyDisconnect().doOnComplete(() -> {
+                logger.info("{}: Disconnected.", clientInformation);
+            }).onErrorComplete(throwable -> {
+                logger.error("{}: Error encountered from disconnect.", clientInformation, throwable);
+                return true;
+            }).blockingAwait(5000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            logger.error("{}: Exception thrown on disconnect.", clientInformation, e);
+        }
+    }
+
+    @Override
+    public synchronized void start() {
+        if (!shuttingDown.getAndSet(false)) {
+            logger.warn("{}: Client already started.", clientInformation);
+            return;
+        }
+        logger.info("{}: Initializing HiveMQ MQTT client for address {}.",
+                    clientInformation,
+                    client.getConfig().getServerAddress());
+
+        assert (!isReceiver || messagingSkeleton != null);
+        registerPublishCallback();
+    }
+
     @Override
     public void setMessageListener(IMqttMessagingSkeleton rawMessaging) {
-        assert (isReceiver && messagingSkeleton == null);
-        this.messagingSkeleton = rawMessaging;
+        if (isReceiver && messagingSkeleton == null) { // only add if skeleton is not already present
+            this.messagingSkeleton = rawMessaging;
+        }
     }
 
     @Override
     public synchronized void shutdown() {
-        if (!shuttingDown.getAndSet(true)) {
-            try {
-                logger.info("{}: Attempting to shutdown connection.", clientInformation);
-                client.disconnectWith().noSessionExpiry().applyDisconnect().doOnComplete(() -> {
-                    logger.info("{}: Disconnected.", clientInformation);
-                }).onErrorComplete(throwable -> {
-                    logger.error("{}: Error encountered from disconnect.", clientInformation, throwable);
-                    return true;
-                }).blockingAwait(5000, TimeUnit.MILLISECONDS);
-            } catch (Exception e) {
-                logger.error("{}: Exception thrown on disconnect.", clientInformation, e);
+        if (shuttingDown.getAndSet(true)) {
+            logger.warn("{}: Client already shutdown.", clientInformation);
+            return;
+        }
+        disconnect();
+        logger.debug("{}: Shutdown.", clientInformation);
+        if (publishesDisposable != null) {
+            publishesDisposable.dispose();
+            publishesDisposable = null;
+        }
+        synchronized (subscriptions) {
+            disposeSubscriptions();
+            for (Disposable unsubscribeDisposable : unsubscribeDisposables) {
+                unsubscribeDisposable.dispose();
             }
-            if (publishesDisposable != null) {
-                publishesDisposable.dispose();
-                publishesDisposable = null;
-            }
-            synchronized (subscriptions) {
-                disposeSubscriptions();
-                for (Disposable unsubscribeDisposable : unsubscribeDisposables) {
-                    unsubscribeDisposable.dispose();
-                }
-                obsoleteUnsubscribeDisposableCount.set(0);
-            }
+            obsoleteUnsubscribeDisposableCount.set(0);
         }
     }
 

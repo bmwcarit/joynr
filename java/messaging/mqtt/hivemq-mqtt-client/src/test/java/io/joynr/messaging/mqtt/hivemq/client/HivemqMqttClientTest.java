@@ -462,7 +462,7 @@ public class HivemqMqttClientTest {
     }
 
     @Test
-    public void startIncreasesNumberOfConnectionAttempts() {
+    public void connectIncreasesNumberOfConnectionAttempts() {
         doAnswer(new Answer<MqttClientState>() {
             int callCount = 0;
 
@@ -475,8 +475,6 @@ public class HivemqMqttClientTest {
                 return MqttClientState.CONNECTED;
             }
         }).when(mockClientConfig).getState();
-        client.setMessageListener(mockSkeleton);
-        verify(mockConnectionStatusMetrics, times(0)).increaseConnectionAttempts();
 
         // Mocking the connect behavior did not work because doReturn() calls the real implementation of timeout():
         // java.lang.NullPointerException: unit is null
@@ -488,8 +486,12 @@ public class HivemqMqttClientTest {
         // doReturn(mockConnectSingle).when(mockConnectSingle).timeout(anyLong(), any(TimeUnit.class));
         // doReturn(mockConnectSingle).when(mockConnectSingle).doOnSuccess(Matchers.<Consumer<? super Mqtt5ConnAck>>any());
 
+        client.setMessageListener(mockSkeleton);
         doThrow(new RuntimeException()).when(mockRxClient).connect(any(Mqtt5Connect.class));
-        client.start();
+        client.start(); // need to call start before connect, or connect wont work
+        verify(mockConnectionStatusMetrics, times(0)).increaseConnectionAttempts();
+
+        client.connect();
         verify(mockConnectionStatusMetrics, times(1)).increaseConnectionAttempts();
     }
 

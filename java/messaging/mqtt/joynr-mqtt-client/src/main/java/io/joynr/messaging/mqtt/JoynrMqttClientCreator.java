@@ -1,7 +1,7 @@
-/*
+/*-
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2022 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@
  */
 package io.joynr.messaging.mqtt;
 
-public interface MqttClientFactory {
+public interface JoynrMqttClientCreator {
 
-    JoynrMqttClient createSender(String gbid);
-
-    JoynrMqttClient createReceiver(String gbid);
-
-    JoynrMqttClient createReplyReceiver(String gbid);
-
-    void connect(JoynrMqttClient client);
+    public JoynrMqttClient createClient(String gbid,
+                                        String clientId,
+                                        boolean isReceiver,
+                                        boolean isSender,
+                                        boolean isReplyReceiver);
 
 }
