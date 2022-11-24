@@ -369,7 +369,8 @@ void Arbitrator::attemptArbitration()
             // fall through
             case types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS: {
                 _discoveredIncompatibleVersions.clear();
-                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error);
+                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error) +
+                            ", ErrorMessage: " + applicationException.getMessage();
                 JOYNR_LOG_INFO(logger(), errorMsg + ", continuing.");
                 break;
             }
@@ -381,7 +382,8 @@ void Arbitrator::attemptArbitration()
             // fall through to default
             default:
                 _discoveredIncompatibleVersions.clear();
-                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error);
+                errorMsg += "DiscoveryError: " + types::DiscoveryError::getLiteral(error) +
+                            ", ErrorMessage: " + applicationException.getMessage();
                 JOYNR_LOG_ERROR(logger(), errorMsg + ", giving up.");
                 _arbitrationFailedForever = true;
                 break;
