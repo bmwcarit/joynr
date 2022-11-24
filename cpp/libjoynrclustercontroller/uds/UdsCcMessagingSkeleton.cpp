@@ -45,6 +45,8 @@ void UdsCcMessagingSkeleton::transmit(
 {
     try {
         _messageRouter->route(std::move(message));
+    } catch (const exceptions::JoynrMessageExpiredException& e) {
+        JOYNR_LOG_WARN(logger(), "Could not transmit incoming message. Error: {}", e.getMessage());
     } catch (exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }

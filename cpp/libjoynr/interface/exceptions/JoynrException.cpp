@@ -55,6 +55,12 @@ const std::string& JoynrMessageNotSentException::TYPE_NAME()
     return TYPE_NAME;
 }
 
+const std::string& JoynrMessageExpiredException::TYPE_NAME()
+{
+    static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrMessageExpiredException";
+    return TYPE_NAME;
+}
+
 const std::string& JoynrDelayMessageException::TYPE_NAME()
 {
     static const std::string TYPE_NAME = "io.joynr.exceptions.JoynrDelayMessageException";
@@ -176,6 +182,21 @@ const std::string& JoynrMessageNotSentException::getTypeName() const
 JoynrMessageNotSentException* JoynrMessageNotSentException::clone() const
 {
     return new JoynrMessageNotSentException(const_cast<JoynrMessageNotSentException&>(*this));
+}
+
+JoynrMessageExpiredException::JoynrMessageExpiredException(const std::string& message) noexcept
+        : JoynrMessageNotSentException(message)
+{
+}
+
+const std::string& JoynrMessageExpiredException::getTypeName() const
+{
+    return JoynrMessageExpiredException::TYPE_NAME();
+}
+
+JoynrMessageExpiredException* JoynrMessageExpiredException::clone() const
+{
+    return new JoynrMessageExpiredException(const_cast<JoynrMessageExpiredException&>(*this));
 }
 
 const std::chrono::milliseconds JoynrDelayMessageException::DEFAULT_DELAY_MS(1000);

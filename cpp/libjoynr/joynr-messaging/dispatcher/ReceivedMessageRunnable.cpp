@@ -59,8 +59,10 @@ void ReceivedMessageRunnable::run()
                     messageType,
                     _message->getId());
     if (isExpired()) {
-        JOYNR_LOG_DEBUG(
-                logger(), "Dropping ReceivedMessageRunnable message, because it is expired");
+        const auto now = TimePoint::now();
+        JOYNR_LOG_WARN(logger(), "Received expired message (now={}), dropping: {}",
+                       now.toMilliseconds(), _message->getTrackingInfo());
+
         return;
     }
 

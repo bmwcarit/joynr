@@ -66,6 +66,9 @@ void PrintTo(const joynr::exceptions::JoynrTimeOutException& value, ::std::ostre
 class JoynrMessageNotSentException;
 void PrintTo(const joynr::exceptions::JoynrMessageNotSentException& value, ::std::ostream* os);
 
+class JoynrMessageExpiredException;
+void PrintTo(const joynr::exceptions::JoynrMessageExpiredException& value, ::std::ostream* os);
+
 class JoynrDelayMessageException;
 void PrintTo(const joynr::exceptions::JoynrDelayMessageException& value, ::std::ostream* os);
 

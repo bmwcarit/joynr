@@ -57,6 +57,8 @@ void UdsLibJoynrMessagingSkeleton::transmit(
                     message->toLogMessage());
             onFailure(exceptions::JoynrMessageNotSentException(std::move(errorMessage)));
         }
+    } catch (const exceptions::JoynrMessageExpiredException& e) {
+        JOYNR_LOG_WARN(logger(), "Could not transmit incoming message. Error: {}", e.getMessage());
     } catch (const exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }
