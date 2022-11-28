@@ -41,28 +41,42 @@ TEST_F(UdsServerTest, multipleServerReusingSocket)
 {
     std::shared_ptr<joynr::IUdsSender> sender1;
     std::shared_ptr<joynr::IUdsSender> sender2;
+    auto semaphore1 = std::make_shared<Semaphore>();
+    auto semaphore2 = std::make_shared<Semaphore>();
     MockUdsServerCallbacks mockUdsServerCallbacks1;
     MockUdsServerCallbacks mockUdsServerCallbacks2;
     EXPECT_CALL(mockUdsServerCallbacks1, connectedMock(_, _))
             .Times(1)
-            .WillOnce(SaveArg<1>(&sender1));
+            .WillOnce(DoAll(SaveArg<1>(&sender1) , ReleaseSemaphore(semaphore1)));
+    EXPECT_CALL(mockUdsServerCallbacks1, disconnected(_))
+            .Times(1);
     EXPECT_CALL(mockUdsServerCallbacks2, connectedMock(_, _))
             .Times(1)
-            .WillOnce(SaveArg<1>(&sender2));
+            .WillOnce(DoAll(SaveArg<1>(&sender2), ReleaseSemaphore(semaphore2)));
+    EXPECT_CALL(mockUdsServerCallbacks2, disconnected(_))
+            .Times(1);
     auto server1 = createServer(mockUdsServerCallbacks1);
     server1->start();
+    // expect client to get connected to server1
     ASSERT_EQ(waitClientConnected(true), true) << "Client is not connected to initial server.";
+    ASSERT_TRUE(semaphore1->waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to invoke connected callback of server 1.";
     auto server2 = createServer(mockUdsServerCallbacks2);
     server2->start();
     std::this_thread::yield();
+    // expect client to be still connected to server1
     ASSERT_EQ(waitClientConnected(true), true)
             << "Client lost connection after second server reuses socket.";
     server1.reset();
+    // expect client to now be disconnected since server1 got shutdown
     ASSERT_EQ(waitClientConnected(false), false)
             << "Client is not disconnected after initial server stopped.";
     restartClient();
+    // expect client to now be connected to server2 after restart
     ASSERT_EQ(waitClientConnected(true), true)
             << "Client is not connected to second server after restart.";
+    ASSERT_TRUE(semaphore2->waitFor(_waitPeriodForClientServerCommunication))
+            << "Failed to invoke connected callback of server 2.";
 }
 
 TEST_F(UdsServerTest, connectReceiveAndDisconnectFromClient_serverCallbacksCalled)
@@ -125,7 +139,7 @@ TEST_F(UdsServerTest, sendToClient)
             .WillOnce(DoAll(SaveArg<1>(&sender), ReleaseSemaphore(semaphore)));
     EXPECT_CALL(mockUdsServerCallbacks, receivedMock(_, _, _)).Times(0);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
-            .Times(0); // Server disconnects before client
+            .Times(1);
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
     ASSERT_TRUE(semaphore->waitFor(_waitPeriodForClientServerCommunication))
@@ -150,8 +164,9 @@ TEST_F(UdsServerTest, robustness_sendException_otherClientsNotAffected)
             .Times(2)
             .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender), ReleaseSemaphore(connectionSemaphore)));
     // disconnected called for erroneous sender, not for nominal one
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(1);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
-            .WillOnce(ReleaseSemaphore(disconnectionSemaphore));
+            .WillOnce(ReleaseSemaphore(disconnectionSemaphore)).RetiresOnSaturation();
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
     ASSERT_TRUE(connectionSemaphore->waitFor(_waitPeriodForClientServerCommunication))
@@ -194,10 +209,10 @@ TEST_F(UdsServerTest, robustness_disconnectsErroneousClients_goodClientsNotAffec
             .Times(2)
             .WillRepeatedly(DoAll(SaveArg<1>(&tmpSender), ReleaseSemaphore(connectSemaphore)));
 
-    // disconnected callback called for erroneous client, not for good client
+    // disconnected callback called first for erroneous client, later for good client
+    EXPECT_CALL(mockUdsServerCallbacks, disconnected(_)).Times(1);
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
-            .Times(1)
-            .WillRepeatedly(ReleaseSemaphore(disconnectSemaphore));
+            .WillOnce(ReleaseSemaphore(disconnectSemaphore)).RetiresOnSaturation();
 
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
@@ -306,8 +321,7 @@ TEST_F(UdsServerTest, robustness_nonblockingWrite)
                     DoAll(SaveArg<1>(&tmpClientSender), ReleaseSemaphore(connectionSemaphore)));
     // disconnected not called, since no connection loss (UDS socket has per default no timeout)
     EXPECT_CALL(mockUdsServerCallbacks, disconnected(_))
-            .Times(1)
-            .WillOnce(ReleaseSemaphore(disconnectSemaphore));
+            .WillRepeatedly(ReleaseSemaphore(disconnectSemaphore));
     auto server = createServer(mockUdsServerCallbacks);
     server->start();
     ASSERT_TRUE(connectionSemaphore->waitFor(_waitPeriodForClientServerCommunication))

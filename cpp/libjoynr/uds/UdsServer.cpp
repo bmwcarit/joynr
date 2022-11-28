@@ -41,7 +41,10 @@ UdsServer::UdsServer(const UdsSettings& settings)
           _endpoint(settings.getSocketPath()),
           _acceptor(*_ioContext),
           _started{false},
-          _acceptorMutex()
+          _acceptorMutex(),
+          _connectionMap(),
+          _connectionIndex(0),
+          _workGuard(std::make_shared<boost::asio::io_service::work>(*_ioContext))
 {
     _remoteConfig._maxSendQueueSize = settings.getSendingQueueSize();
 }
@@ -53,7 +56,29 @@ UdsServer::~UdsServer()
         boost::system::error_code ignore;
         std::unique_lock<std::mutex> acceptorLock(_acceptorMutex);
         _acceptor.cancel(ignore); // Acceptor will not create further connections
+
+        // shutdown all still existing connections
+        while (!_connectionMap.empty()) {
+            auto it = _connectionMap.cbegin();
+            std::weak_ptr<Connection> connection = it->second;
+            _connectionMap.erase(it);
+            if (auto connectionSharedPtr = connection.lock()) {
+                _acceptorMutex.unlock();
+                // shutdown must be invoked without lock to avoid
+                // potential deadlock situation
+                connectionSharedPtr->shutdown();
+                connectionSharedPtr.reset();
+                // wait until the object has been destructed
+                while (connection.lock()) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(25));
+                }
+                _acceptorMutex.lock();
+            }
+        }
+
+        _workGuard.reset();
         acceptorLock.unlock();
+
         _ioContext->stop();
         // Wait for worker before destructing members
         try {
@@ -134,22 +159,51 @@ void UdsServer::run()
 
 void UdsServer::doAcceptClient() noexcept
 {
-    _newConnection = std::make_shared<Connection>(_ioContext, _remoteConfig);
+    std::unique_lock<std::mutex> acceptorLock(_acceptorMutex);
+    if (!_started.load()) {
+        JOYNR_LOG_INFO(logger(),
+                       "Stop accepting new clients because UdsServer destructor has been invoked.");
+        return;
+    }
+
+    // check if some of the existing entries can be removed
+    // which is the case when the weak_ptr has expired since the
+    // connection object got already destructed
+    std::unordered_set<std::uint64_t> expiredEntries;
+    for (const auto& connectionsPair : _connectionMap) {
+        auto connectionIndex = connectionsPair.first;
+        auto connection = connectionsPair.second;
+        if (connection.expired()) {
+            expiredEntries.insert(connectionIndex);
+        }
+    }
+    for (const auto& connectionIndex : expiredEntries) {
+        _connectionMap.erase(connectionIndex);
+    }
+
+    uint64_t index = _connectionIndex++;
+    auto newConnection = std::make_shared<Connection>(_ioContext, _remoteConfig, index);
+    _connectionMap[index] = newConnection;
+
     _acceptor.async_accept(
-            _newConnection->getSocket(), [this](boost::system::error_code acceptFailure) {
+            newConnection->getSocket(),
+            [this, newConnection, index](boost::system::error_code acceptFailure) {
                 if (acceptFailure) {
                     JOYNR_LOG_ERROR(
                             logger(), "Failed to accept new client: {}", acceptFailure.message());
                 } else {
-                    JOYNR_LOG_INFO(logger(), "Connection request received from new client.");
-                    _newConnection->doReadInitHeader();
+                    JOYNR_LOG_INFO(logger(),
+                                   "Connection index {} request received from new client.",
+                                   index);
+                    newConnection->doReadInitHeader();
                     doAcceptClient();
                 }
             });
 }
 
 UdsServer::Connection::Connection(std::shared_ptr<boost::asio::io_service>& ioContext,
-                                  const ConnectionConfig& config) noexcept
+                                  const ConnectionConfig& config,
+                                  std::uint64_t connectionIndex) noexcept
         : _ioContext{ioContext},
           _socket(*ioContext),
           _connectedCallback{config._connectedCallback},
@@ -158,7 +212,8 @@ UdsServer::Connection::Connection(std::shared_ptr<boost::asio::io_service>& ioCo
           _isClosed{false},
           _username("connection not established"),
           _sendQueue(std::make_unique<UdsSendQueue<UdsFrameBufferV1>>(config._maxSendQueueSize)),
-          _readBuffer(std::make_unique<UdsFrameBufferV1>())
+          _readBuffer(std::make_unique<UdsFrameBufferV1>()),
+          _connectionIndex(connectionIndex)
 {
 }
 
@@ -197,7 +252,10 @@ std::string UdsServer::Connection::getUserName()
         username = std::string("anonymous");
         int storedErrno = errno;
         JOYNR_LOG_ERROR(
-                logger(), "Could not obtain peer credentials from socket, errno {}", storedErrno);
+                logger(),
+                "Connection index {} could not obtain peer credentials from socket, errno {}",
+                _connectionIndex,
+                storedErrno);
     }
     return username;
 }
@@ -213,17 +271,9 @@ void UdsServer::Connection::send(const smrf::ByteArrayView& msg,
     if (_isClosed.load()) {
         throw std::runtime_error("Connection already closed.");
     }
-    auto ioContext = _ioContext.lock();
-    if (!ioContext) {
-        JOYNR_LOG_WARN(logger(),
-                       "Forced close of connection to {} ({}) since server shutting down.",
-                       _address.getId(),
-                       getUserName());
-        return;
-    }
     try {
         // UdsFrameBufferV1 first since it can cause exception
-        ioContext->post(
+        _ioContext->post(
                 [frame = UdsFrameBufferV1(msg), self = shared_from_this(), callback]() mutable {
                     try {
                         if (self->_sendQueue->pushBack(std::move(frame), callback)) {
@@ -235,7 +285,7 @@ void UdsServer::Connection::send(const smrf::ByteArrayView& msg,
                 });
     } catch (const joynr::exceptions::JoynrRuntimeException& e) {
         // In case generation of frame buffer failed, close connection
-        ioContext->post([self = shared_from_this(), e]() mutable {
+        _ioContext->post([self = shared_from_this(), e]() mutable {
             self->doClose("Failed to construct message", e);
         });
         throw;
@@ -248,14 +298,15 @@ void UdsServer::Connection::shutdown()
         return;
     }
     const std::string clientId = _address.getId().empty() ? "[unknown ID]" : _address.getId();
-    JOYNR_LOG_INFO(logger(), "Closing connection to {} ({}).", clientId, getUserName());
-    auto ioContext = _ioContext.lock();
-    if (ioContext) {
-        ioContext->dispatch([self = shared_from_this()]() { self->doClose(); });
+    JOYNR_LOG_INFO(logger(),
+                   "Closing connection index {} to {} ({}).",
+                   _connectionIndex,
+                   clientId,
+                   _username);
+    if (_ioContext) {
+        _ioContext->dispatch([self = shared_from_this()]() { self->doClose(); });
     }
-    ioContext.reset();
-    // Wait till close is processed or the server is shutting down
-    while ((!_isClosed.load()) && (!_ioContext.expired())) {
+    while (!_isClosed.load()) {
         std::this_thread::yield();
     }
 }
@@ -284,11 +335,12 @@ void UdsServer::Connection::doReadInitBody() noexcept
                         try {
                             self->_username = self->getUserName();
                             self->_address = self->_readBuffer->readInit();
-                            JOYNR_LOG_INFO(
-                                    logger(),
-                                    "Initialize connection for client with User / ID: {} / {}",
-                                    self->_username,
-                                    self->_address.getId());
+                            JOYNR_LOG_INFO(logger(),
+                                           "Initialize connection index {} for client with User / "
+                                           "ID: {} / {}",
+                                           self->_connectionIndex,
+                                           self->_username,
+                                           self->_address.getId());
                             self->_connectedCallback(self->_address,
                                                      std::make_unique<UdsServer::UdsSender>(
                                                              std::weak_ptr<Connection>(self)));
@@ -372,7 +424,11 @@ void UdsServer::Connection::doClose(const std::string& errorMessage) noexcept
 {
     if (!_isClosed.load()) {
         const std::string clientId = _address.getId().empty() ? "[unknown ID]" : _address.getId();
-        JOYNR_LOG_FATAL(logger(), "Connection to {} corrupted: {}", clientId, errorMessage);
+        JOYNR_LOG_FATAL(logger(),
+                        "Connection index {} to {} corrupted: {}",
+                        _connectionIndex,
+                        clientId,
+                        errorMessage);
     }
     doClose();
 }
@@ -384,7 +440,10 @@ void UdsServer::Connection::doClose() noexcept
             try {
                 _disconnectedCallback(_address);
             } catch (const std::exception& e) {
-                JOYNR_LOG_ERROR(logger(), "Failed to process disconnection: {}", e.what());
+                JOYNR_LOG_ERROR(logger(),
+                                "Connection index {} failed to process disconnection: {}",
+                                _connectionIndex,
+                                e.what());
             }
         }
         boost::system::error_code ignore;
@@ -393,7 +452,10 @@ void UdsServer::Connection::doClose() noexcept
         try {
             _sendQueue->emptyQueueAndNotify("Connection closed.");
         } catch (const std::exception& e) {
-            JOYNR_LOG_ERROR(logger(), "Failed to process send-failure: {}", e.what());
+            JOYNR_LOG_ERROR(logger(),
+                            "Connection index {} failed to process send-failure: {}",
+                            _connectionIndex,
+                            e.what());
         }
     }
 }
