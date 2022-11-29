@@ -31,6 +31,7 @@ import io.joynr.android.binder.BinderMessagingSkeleton;
 import io.joynr.android.messaging.binder.BinderClientMessagingStubFactory;
 import io.joynr.android.messaging.binder.BinderMessagingSkeletonFactory;
 import io.joynr.android.messaging.binder.BinderMulticastAddressCalculator;
+import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.GbidArrayFactory;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.routing.DummyRoutingTable;
@@ -100,5 +101,12 @@ public class LibjoynrBinderRuntimeModule extends AbstractRuntimeModule {
     @Named(GBID_ARRAY)
     public String[] provideGbidArray(GbidArrayFactory gbidArrayFactory) {
         return gbidArrayFactory.create();
+    }
+
+    @Provides
+    @Singleton
+    @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS)
+    public int providesMaxParallelSends() {
+        return 10;
     }
 }
