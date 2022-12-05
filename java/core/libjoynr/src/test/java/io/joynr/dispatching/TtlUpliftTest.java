@@ -216,12 +216,12 @@ public class TtlUpliftTest {
         Method method = TestProvider.class.getMethod("methodWithStrings", new Class[]{ String.class });
         request = new Request(method.getName(), new String[]{ payload }, method.getParameterTypes());
         messagingQos = new MessagingQos(TTL);
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
     }
 
     @Test
     public void testDefaultTtlUpliftMs() {
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactory.createRequest(fromParticipantId,
                                                               toParticipantId,
                                                               request,
@@ -233,7 +233,7 @@ public class TtlUpliftTest {
 
     @Test
     public void testTtlUpliftMs_Request() {
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactoryWithTtlUplift.createRequest(fromParticipantId,
                                                                            toParticipantId,
                                                                            request,
@@ -246,7 +246,7 @@ public class TtlUpliftTest {
     @Test
     public void testTtlUpliftMs_Reply_noUplift() {
         Reply reply = new Reply();
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactoryWithTtlUplift.createReply(fromParticipantId,
                                                                          toParticipantId,
                                                                          reply,
@@ -258,7 +258,7 @@ public class TtlUpliftTest {
 
     @Test
     public void testTtlUpliftMs_OneWayRequest() {
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactoryWithTtlUplift.createOneWayRequest(fromParticipantId,
                                                                                  toParticipantId,
                                                                                  request,
@@ -271,7 +271,7 @@ public class TtlUpliftTest {
     @Test
     public void testTtlUpliftMs_SubscriptionReply() {
         SubscriptionReply subscriptionReply = new SubscriptionReply();
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactoryWithTtlUplift.createSubscriptionReply(fromParticipantId,
                                                                                      toParticipantId,
                                                                                      subscriptionReply,
@@ -284,7 +284,7 @@ public class TtlUpliftTest {
     @Test
     public void testTtlUpliftMs_SubscriptionRequest() {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest();
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactoryWithTtlUplift.createSubscriptionRequest(fromParticipantId,
                                                                                        toParticipantId,
                                                                                        subscriptionRequest,
@@ -297,7 +297,7 @@ public class TtlUpliftTest {
     @Test
     public void testTtlUpliftMs_Publication() {
         SubscriptionPublication subscriptionPublication = new SubscriptionPublication();
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactoryWithTtlUplift.createPublication(fromParticipantId,
                                                                                toParticipantId,
                                                                                subscriptionPublication,
@@ -310,7 +310,7 @@ public class TtlUpliftTest {
     @Test
     public void testTtlUpliftMs_SubscriptionStop() {
         SubscriptionStop subscriptionStop = new SubscriptionStop();
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactoryWithTtlUplift.createSubscriptionStop(fromParticipantId,
                                                                                     toParticipantId,
                                                                                     subscriptionStop,
@@ -323,7 +323,7 @@ public class TtlUpliftTest {
     @Test
     public void testTtlUpliftMs_Multicast() {
         MulticastPublication multicastPublication = new MulticastPublication();
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         MutableMessage message = messageFactoryWithTtlUplift.createMulticast(fromParticipantId,
                                                                              multicastPublication,
                                                                              messagingQos);

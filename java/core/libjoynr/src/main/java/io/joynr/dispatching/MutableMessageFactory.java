@@ -82,11 +82,11 @@ public class MutableMessageFactory {
                                          boolean upliftTtl) {
         ExpiryDate expiryDate;
         if (!upliftTtl) {
-            expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+            expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
         } else if (messagingQos.getRoundTripTtl_ms() > (Long.MAX_VALUE - ttlUpliftMs)) {
-            expiryDate = DispatcherUtils.convertTtlToExpirationDate(Long.MAX_VALUE);
+            expiryDate = ExpiryDate.fromRelativeTtl(Long.MAX_VALUE);
         } else {
-            expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms() + ttlUpliftMs);
+            expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms() + ttlUpliftMs);
         }
         MutableMessage message = new MutableMessage();
         message.setType(joynrMessageType);

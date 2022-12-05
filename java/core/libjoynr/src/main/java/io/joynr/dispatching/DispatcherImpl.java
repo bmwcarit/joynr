@@ -229,6 +229,10 @@ public class DispatcherImpl implements Dispatcher {
         }
     }
 
+    private static boolean isExpired(long ttlExpirationDate_ms) {
+        return System.currentTimeMillis() > ttlExpirationDate_ms;
+    }
+
     @Override
     public void messageArrived(final ImmutableMessage message) {
         if (message == null) {
@@ -237,7 +241,7 @@ public class DispatcherImpl implements Dispatcher {
         }
 
         final long expiryDate = message.getTtlMs();
-        if (DispatcherUtils.isExpired(expiryDate)) {
+        if (isExpired(expiryDate)) {
             if (logger.isTraceEnabled()) {
                 logger.trace("TTL expired, discarding message : {}", message);
             } else {
