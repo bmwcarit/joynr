@@ -2,6 +2,34 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.21.7
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Android]** Reduced the number of message worker threads in Android libjoynr runtime
+  (`ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS`, see the
+  [Java Configuration Reference](JavaSettings.md)). Android libjoynr runtime now uses only 10
+  message worker threads.
+* **[C++]** Reduced memory consumption for registered providers in the cluster controller by not
+  storing globally registered providers in the local store and the global lookup cache. Providers
+  are now only added to the local store.
+* **[TS]** If provider discovery during proxy creation fails with an ApplicationException, the
+  detail message of the exception is now logged and forwarded to the application in addition to the
+  error enum.
+ 
+## Configuration Property Changes
+* **[Java]** Introduced new property `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`, see the
+  [Java Configuration Reference](JavaSettings.md)) for details about this property.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[TS]** Fixed TypeScript build by adding fixed version `7.14.2` for transitive dependency
+  `@types/babel__traverse`.
+
 # joynr 1.21.6
 
 ## API relevant changes
