@@ -125,7 +125,7 @@ public class MutableMessageFactoryTest {
         String requestReplyId = request.getRequestReplyId();
         reply = new Reply(requestReplyId, objectMapper.<JsonNode> valueToTree(payload));
         messagingQos = new MessagingQos(TTL);
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(messagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
 
         String subscriptionId = "subscription";
         String attributeName = "attribute";
@@ -170,7 +170,7 @@ public class MutableMessageFactoryTest {
                                                                      toParticipantId,
                                                                      request,
                                                                      customMessagingQos);
-        expiryDate = DispatcherUtils.convertTtlToExpirationDate(customMessagingQos.getRoundTripTtl_ms());
+        expiryDate = ExpiryDate.fromRelativeTtl(customMessagingQos.getRoundTripTtl_ms());
         assertExpiryDateEquals(expiryDate.getValue(), message);
         assertEquals(String.valueOf(MessagingQosEffort.BEST_EFFORT), message.getEffort());
     }

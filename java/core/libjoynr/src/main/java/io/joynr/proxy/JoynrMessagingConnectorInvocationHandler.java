@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
-import io.joynr.dispatching.DispatcherUtils;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RpcAsyncRequestReplyCaller;
@@ -150,7 +149,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                                                    method,
                                                                                                    methodMetaInformation);
 
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(strippedArguments.messagingQos.getRoundTripTtl_ms());
+        ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(strippedArguments.messagingQos.getRoundTripTtl_ms());
 
         replyCallerDirectory.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, expiryDate);
         requestReplyManager.sendRequest(fromParticipantId,
@@ -231,7 +230,7 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
                                                                                       requestReplyId,
                                                                                       request);
-        ExpiryDate expiryDate = DispatcherUtils.convertTtlToExpirationDate(strippedArguments.messagingQos.getRoundTripTtl_ms());
+        ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(strippedArguments.messagingQos.getRoundTripTtl_ms());
         replyCallerDirectory.addReplyCaller(requestReplyId, synchronizedReplyCaller, expiryDate);
         reply = requestReplyManager.sendSyncRequest(fromParticipantId,
                                                     toDiscoveryEntries.iterator().next(),
