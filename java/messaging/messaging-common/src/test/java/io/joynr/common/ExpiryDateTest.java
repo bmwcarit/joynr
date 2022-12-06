@@ -18,6 +18,7 @@
  */
 package io.joynr.common;
 
+import static io.joynr.common.ExpiryDate.MAX_JS_INT;
 import static io.joynr.common.ExpiryDate.fromAbsolute;
 import static io.joynr.common.ExpiryDate.fromRelativeTtl;
 import static org.junit.Assert.assertEquals;
@@ -34,7 +35,6 @@ public class ExpiryDateTest {
     private static final long TWO_SECONDS = 2000L;
     private static final long LESS_THAN_SECOND = 100L;
     private static final long MAX_DIFF = 50L;
-    private static final long MAX_JS_INT = 9007199254740991L;
 
     private long currentTime;
 

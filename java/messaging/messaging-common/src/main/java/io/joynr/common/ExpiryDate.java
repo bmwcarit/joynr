@@ -28,6 +28,8 @@ import java.text.SimpleDateFormat;
 
 public class ExpiryDate {
 
+    public static final long MAX_JS_INT = 9007199254740991L;
+
     private long value;
     private long relativeTtl;
 
@@ -42,11 +44,11 @@ public class ExpiryDate {
         try {
             expiryDate = Math.addExact(creationTime, relativeTtl);
         } catch (ArithmeticException exception) {
-            expiryDate = Long.MAX_VALUE;
+            expiryDate = MAX_JS_INT;
         }
         // do not exceed Javascript max safe integer (2^53-1)
-        if (expiryDate > 9007199254740991L) {
-            expiryDate = 9007199254740991L;
+        if (expiryDate > MAX_JS_INT) {
+            expiryDate = MAX_JS_INT;
         }
         return new ExpiryDate(relativeTtl, expiryDate);
     }
