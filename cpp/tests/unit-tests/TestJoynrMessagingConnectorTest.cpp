@@ -239,6 +239,26 @@ TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsErrorEnum)
     testAsync_methodCallReturnsErrorEnum();
 }
 
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsErrorEnum_noCallbacksProvided)
+{
+    testAsync_methodCallReturnsErrorEnum_noCallbacksProvided();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodCallReturnsErrorEnum_noApplicationErrorCallbackProvided)
+{
+    testAsync_methodCallReturnsErrorEnum_noApplicationErrorCallbackProvided();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodWithoutModelledErrorReturnsErrorEnum_noCallbacksProvided)
+{
+    testAsync_methodWithoutModelledErrorReturnsErrorEnum_noCallbacksProvided();
+}
+
+TEST_F(TestJoynrMessagingConnectorTest, async_methodWithoutModelledErrorReturnsErrorEnums)
+{
+    testAsync_methodWithoutModelledErrorReturnsErrorEnum();
+}
+
 TEST_F(TestJoynrMessagingConnectorTest, sync_methodCallReturnsErrorEnum)
 {
     testSync_methodCallReturnsErrorEnum();

@@ -467,7 +467,6 @@ request.setParams(
 					methodName,
 					error->what()
 				);
-				future->onError(error);
 				«produceApplicationRuntimeErrorSplitForOnErrorWrapper(francaIntf, method, generateVersion)»
 			};
 
