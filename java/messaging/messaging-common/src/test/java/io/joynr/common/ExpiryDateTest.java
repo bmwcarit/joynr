@@ -20,7 +20,7 @@ package io.joynr.common;
 
 import static io.joynr.common.ExpiryDate.fromAbsolute;
 import static io.joynr.common.ExpiryDate.fromRelativeTtl;
-import static io.joynr.common.LongCalculations.MAX_JS_INT;
+import static io.joynr.common.ExpiryDateUtils.MAX_JS_INT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

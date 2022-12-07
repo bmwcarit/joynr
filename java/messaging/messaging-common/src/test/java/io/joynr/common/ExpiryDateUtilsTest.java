@@ -22,30 +22,30 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class LongCalculationsTest {
+public class ExpiryDateUtilsTest {
 
     @Test
     public void addAndLimitHappyPass() {
-        assertEquals(30, LongCalculations.addAndLimit(10, 20));
+        assertEquals(30, ExpiryDateUtils.addAndLimit(10, 20));
     }
 
     @Test
     public void addAndLimitReturnMaxAllowedValueIfOverflowOccurs() {
-        assertEquals(LongCalculations.MAX_JS_INT, LongCalculations.addAndLimit(Long.MAX_VALUE - 10, 20));
+        assertEquals(ExpiryDateUtils.MAX_JS_INT, ExpiryDateUtils.addAndLimit(Long.MAX_VALUE - 10, 20));
     }
 
     @Test
     public void addAndLimitReturnMaxAllowedValueIfSumExceedsIt() {
-        assertEquals(LongCalculations.MAX_JS_INT, LongCalculations.addAndLimit(LongCalculations.MAX_JS_INT - 10, 20));
+        assertEquals(ExpiryDateUtils.MAX_JS_INT, ExpiryDateUtils.addAndLimit(ExpiryDateUtils.MAX_JS_INT - 10, 20));
     }
 
     @Test
     public void subtractHappyPass() {
-        assertEquals(10, LongCalculations.subtract(30, 20));
+        assertEquals(10, ExpiryDateUtils.subtract(30, 20));
     }
 
     @Test
     public void subtractReturnsMinAllowedValueIffOverflowOccurs() {
-        assertEquals(Long.MIN_VALUE, LongCalculations.subtract(Long.MIN_VALUE + 10, 20));
+        assertEquals(Long.MIN_VALUE, ExpiryDateUtils.subtract(Long.MIN_VALUE + 10, 20));
     }
 }

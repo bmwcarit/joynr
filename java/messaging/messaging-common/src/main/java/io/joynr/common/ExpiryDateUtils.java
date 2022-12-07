@@ -18,7 +18,7 @@
  */
 package io.joynr.common;
 
-public class LongCalculations {
+public class ExpiryDateUtils {
 
     //JavaScript max safe integer (2^53-1)
     public static final long MAX_JS_INT = 9007199254740991L;
