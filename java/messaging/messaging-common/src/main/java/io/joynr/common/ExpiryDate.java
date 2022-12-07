@@ -28,8 +28,6 @@ import java.text.SimpleDateFormat;
 
 public class ExpiryDate {
 
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
-
     private final long value;
     private final long relativeTtl;
 
@@ -78,7 +76,8 @@ public class ExpiryDate {
 
     @Override
     public String toString() {
-        return "ExpiryDate in ms: " + value + " ExpiryDate: " + DATE_FORMAT.format(value) + " relativeTtl:"
+        final DateFormat dateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
+        return "ExpiryDate in ms: " + value + " ExpiryDate: " + dateFormatter.format(value) + " relativeTtl:"
                 + relativeTtl;
     }
 }
