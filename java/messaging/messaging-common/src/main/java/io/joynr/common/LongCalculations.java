@@ -18,26 +18,24 @@
  */
 package io.joynr.common;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 public class LongCalculations {
 
     //JavaScript max safe integer (2^53-1)
     public static final long MAX_JS_INT = 9007199254740991L;
 
-    private static final BiFunction<Long, Long, Long> ADD = (x, y) -> {
+    private static final LongToLongBiFunction ADD = (x, y) -> {
         try {
             return Math.addExact(x, y);
         } catch (final ArithmeticException exception) {
             return MAX_JS_INT;
         }
     };
-    private static final Function<Long, Long> LIMIT_MAX = x -> x > MAX_JS_INT ? MAX_JS_INT : x;
 
-    private static final BiFunction<Long, Long, Long> ADD_AND_LIMIT = ADD.andThen(LIMIT_MAX);
+    private static final LongToLongFunction LIMIT_MAX = x -> Math.min(x, MAX_JS_INT);
 
-    private static final BiFunction<Long, Long, Long> SUBTRACT = (x, y) -> {
+    private static final LongToLongBiFunction ADD_AND_LIMIT = ADD.andThen(LIMIT_MAX);
+
+    private static final LongToLongBiFunction SUBTRACT = (x, y) -> {
         try {
             return Math.subtractExact(x, y);
         } catch (final ArithmeticException exception) {
