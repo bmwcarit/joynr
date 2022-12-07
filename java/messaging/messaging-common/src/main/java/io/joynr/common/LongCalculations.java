@@ -23,25 +23,21 @@ public class LongCalculations {
     //JavaScript max safe integer (2^53-1)
     public static final long MAX_JS_INT = 9007199254740991L;
 
-    private static final LongToLongBiFunction ADD = (x, y) -> {
-        try {
-            return Math.addExact(x, y);
-        } catch (final ArithmeticException exception) {
-            return MAX_JS_INT;
-        }
-    };
-
+    private static final LongToLongBiFunction ADD = Math::addExact;
     private static final LongToLongFunction LIMIT_MAX = x -> Math.min(x, MAX_JS_INT);
-
     private static final LongToLongBiFunction ADD_AND_LIMIT = ADD.andThen(LIMIT_MAX);
+    private static final LongToLongBiFunction SUBTRACT = Math::subtractExact;
 
-    private static final LongToLongBiFunction SUBTRACT = (x, y) -> {
+    private static long clamp(final LongToLongBiFunction biFunction,
+                              final long clampValue,
+                              final long firstParam,
+                              final long secondParam) {
         try {
-            return Math.subtractExact(x, y);
+            return biFunction.apply(firstParam, secondParam);
         } catch (final ArithmeticException exception) {
-            return Long.MIN_VALUE;
+            return clampValue;
         }
-    };
+    }
 
     /**
      * Adds first argument to second.
@@ -51,7 +47,7 @@ public class LongCalculations {
      * @return result of sum
      */
     public static long addAndLimit(final long first, final long second) {
-        return ADD_AND_LIMIT.apply(first, second);
+        return clamp(ADD_AND_LIMIT, MAX_JS_INT, first, second);
     }
 
     /**
@@ -61,6 +57,6 @@ public class LongCalculations {
      * @return result of subtraction
      */
     public static long subtract(final long first, final long second) {
-        return SUBTRACT.apply(first, second);
+        return clamp(SUBTRACT, Long.MIN_VALUE, first, second);
     }
 }
