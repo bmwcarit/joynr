@@ -100,6 +100,11 @@ void PrintTo(const joynr::exceptions::JoynrMessageNotSentException& value, ::std
     printException(value, os);
 }
 
+void PrintTo(const joynr::exceptions::JoynrMessageExpiredException& value, ::std::ostream* os)
+{
+    printException(value, os);
+}
+
 void PrintTo(const joynr::exceptions::JoynrDelayMessageException& value, ::std::ostream* os)
 {
     printException(value, os);

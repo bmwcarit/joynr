@@ -212,11 +212,10 @@ void AbstractMessageRouter::checkExpiryDate(const ImmutableMessage& message)
     const auto now = TimePoint::now();
     if (now > message.getExpiryDate()) {
         const std::string errorMessage =
-                fmt::format("Received expired message (now={}). Dropping the message {}",
+                fmt::format("Message expired (now={}). Dropping the message {}",
                             now.toMilliseconds(),
                             message.getTrackingInfo());
-        JOYNR_LOG_WARN(logger(), errorMessage);
-        throw exceptions::JoynrMessageNotSentException(errorMessage);
+        throw exceptions::JoynrMessageExpiredException(errorMessage);
     }
 }
 
@@ -487,8 +486,10 @@ void AbstractMessageRouter::rescheduleQueuedMessagesForTransport(
                    _transportNotAvailableQueue->getNextMessageFor(transportStatus)) {
         try {
             route(nextImmutableMessage);
+        } catch (const exceptions::JoynrMessageExpiredException& e) {
+            JOYNR_LOG_WARN(logger(), "could not route queued message. {}", e.getMessage());
         } catch (const exceptions::JoynrRuntimeException& e) {
-            JOYNR_LOG_DEBUG(logger(),
+            JOYNR_LOG_ERROR(logger(),
                             "could not route queued message {} due to '{}'",
                             nextImmutableMessage->getTrackingInfo(),
                             e.getMessage());
@@ -747,7 +748,11 @@ void MessageRunnable::run()
         }
 
     } else {
-        JOYNR_LOG_ERROR(logger(), "Message {} expired: dropping!", _message->getTrackingInfo());
+        const auto now = TimePoint::now();
+        JOYNR_LOG_WARN(logger(),
+                       "Message expired (now={}). Dropping: {}",
+                       now.toMilliseconds(),
+                       _message->getTrackingInfo());
     }
 }
 

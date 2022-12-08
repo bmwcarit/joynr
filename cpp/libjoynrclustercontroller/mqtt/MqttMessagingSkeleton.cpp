@@ -99,6 +99,11 @@ void MqttMessagingSkeleton::transmit(
                     message->toLogMessage());
             onFailure(exceptions::JoynrMessageNotSentException(std::move(errorMessage)));
         }
+    } catch (const exceptions::JoynrMessageExpiredException& e) {
+        JOYNR_LOG_WARN(logger(),
+                       "Could not transmit incoming message from >{}<. Error {}",
+                       _ownGbid,
+                       e.getMessage());
     } catch (const exceptions::JoynrRuntimeException& e) {
         onFailure(e);
     }

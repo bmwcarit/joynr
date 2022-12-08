@@ -71,6 +71,9 @@ public:
         } else if (typeName == exceptions::JoynrMessageNotSentException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::JoynrMessageNotSentException&>(
                     const_cast<exceptions::JoynrException&>(error));
+        } else if (typeName == exceptions::JoynrMessageExpiredException::TYPE_NAME()) {
+            throw dynamic_cast<exceptions::JoynrMessageExpiredException&>(
+                    const_cast<exceptions::JoynrException&>(error));
         } else if (typeName == exceptions::JoynrDelayMessageException::TYPE_NAME()) {
             throw dynamic_cast<exceptions::JoynrDelayMessageException&>(
                     const_cast<exceptions::JoynrException&>(error));

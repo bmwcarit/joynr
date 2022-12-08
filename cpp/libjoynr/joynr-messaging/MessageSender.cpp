@@ -135,6 +135,11 @@ void MessageSender::sendReply(const std::string& senderParticipantId,
         _messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
+    } catch (const exceptions::JoynrMessageExpiredException& e) {
+        JOYNR_LOG_WARN(logger(),
+                       "Reply with RequestReplyId {} could not be sent. Error: {}",
+                       reply.getRequestReplyId(),
+                       e.getMessage());
     } catch (const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(logger(),
                         "Reply with RequestReplyId {} could not be sent to {}. Error: {}",
@@ -243,6 +248,11 @@ void MessageSender::sendSubscriptionReply(const std::string& senderParticipantId
         _messageRouter->route(message.getImmutableMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
+    } catch (const exceptions::JoynrMessageExpiredException& e) {
+        JOYNR_LOG_WARN(logger(),
+                       "SubscriptionReply with SubscriptionId {} could not be sent. Error: {}",
+                       subscriptionReply.getSubscriptionId(),
+                       e.getMessage());
     } catch (const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(
                 logger(),
@@ -285,6 +295,12 @@ void MessageSender::sendSubscriptionPublication(const std::string& senderPartici
                 senderParticipantId, receiverParticipantId, qos, subscriptionPublication);
         assert(_messageRouter);
         _messageRouter->route(message.getImmutableMessage());
+    } catch (const exceptions::JoynrMessageExpiredException& e) {
+        JOYNR_LOG_WARN(
+                logger(),
+                "SubscriptionPublication with SubscriptionId {} could not be sent. Error: {}",
+                subscriptionPublication.getSubscriptionId(),
+                e.getMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {
@@ -306,6 +322,11 @@ void MessageSender::sendMulticast(const std::string& fromParticipantId,
                 fromParticipantId, messagingQos, multicastPublication);
         assert(_messageRouter);
         _messageRouter->route(message.getImmutableMessage());
+    } catch (const exceptions::JoynrMessageExpiredException& e) {
+        JOYNR_LOG_WARN(logger(),
+                       "MulticastPublication with multicastId {} could not be sent. Error: {}",
+                       multicastPublication.getMulticastId(),
+                       e.getMessage());
     } catch (const std::invalid_argument& exception) {
         throw joynr::exceptions::MethodInvocationException(exception.what());
     } catch (const exceptions::JoynrRuntimeException& e) {

@@ -160,7 +160,7 @@ public:
 
         for (auto it = ttlIndex.begin(); it != onePastOutdatedMsgIt; ++it) {
             std::size_t msgSize = it->_message->getMessageSize();
-            JOYNR_LOG_INFO(logger(),
+            JOYNR_LOG_WARN(logger(),
                            "removeOutdatedMessages: Erasing expired message {}",
                            it->_message->getTrackingInfo());
             _queueSizeBytes -= msgSize;

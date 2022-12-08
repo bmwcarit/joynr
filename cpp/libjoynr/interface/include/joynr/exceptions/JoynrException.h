@@ -194,6 +194,30 @@ public:
 };
 
 /**
+ * @brief Joynr exception to report expired messages
+ */
+class JOYNR_EXPORT JoynrMessageExpiredException : public JoynrMessageNotSentException
+{
+public:
+    /**
+     * @brief Constructor for a JoynrMessageExpiredException without detail message.
+     */
+    JoynrMessageExpiredException() noexcept = default;
+    /**
+     * @brief Constructor for a JoynrMessageExpiredException with detail message.
+     *
+     * @param message reason why the message could not be sent
+     */
+    explicit JoynrMessageExpiredException(const std::string& message) noexcept;
+    const std::string& getTypeName() const override;
+    JoynrMessageExpiredException* clone() const override;
+    /**
+     * @brief The typeName used for serialization and logging.
+     */
+    static const std::string& TYPE_NAME();
+};
+
+/**
  * @brief Joynr exception to report send errors which might be solved after some delay.
  */
 class JOYNR_EXPORT JoynrDelayMessageException : public JoynrRuntimeException
@@ -488,6 +512,9 @@ MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::JoynrMessageNotSentException
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::JoynrDelayMessageException,
                                  joynr::exceptions::JoynrRuntimeException,
                                  "joynr.exceptions.JoynrDelayMessageException")
+MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::JoynrMessageExpiredException,
+                                 joynr::exceptions::JoynrMessageNotSentException,
+                                 "joynr.exceptions.JoynrMessageExpiredException")
 MUESLI_REGISTER_POLYMORPHIC_TYPE(joynr::exceptions::DiscoveryException,
                                  joynr::exceptions::JoynrRuntimeException,
                                  "joynr.exceptions.DiscoveryException")
