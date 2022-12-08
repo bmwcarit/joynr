@@ -20,6 +20,11 @@ package io.joynr.common;
 
 public class ExpiryDateUtils {
 
+    //No need to instantiate class with static methods
+    private ExpiryDateUtils() {
+
+    }
+
     //JavaScript max safe integer (2^53-1)
     public static final long MAX_JS_INT = 9007199254740991L;
 
