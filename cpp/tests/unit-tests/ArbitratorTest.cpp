@@ -78,6 +78,7 @@ static std::string getExceptionMsgUnableToLookup(const exceptions::JoynrExceptio
     return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + exception.getMessage();
 }
 static std::string getErrorMsgUnableToLookup(const types::DiscoveryError::Enum& error,
+                                             const std::string& errorMessage,
                                              const std::vector<std::string>& gbids,
                                              const std::string& participantId = "")
 {
@@ -89,8 +90,10 @@ static std::string getErrorMsgUnableToLookup(const types::DiscoveryError::Enum& 
     const std::string gbidString =
             gbids.empty() ? "" : ", GBIDs: " + boost::algorithm::join(gbids, ", ");
     const std::string errorString = types::DiscoveryError::getLiteral(error);
+    const std::string errorMessageString = ", ErrorMessage: " + errorMessage;
 
-    return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + errorString;
+    return exceptionMsgPart1 + params + gbidString + exceptionMsgPart2 + errorString +
+           errorMessageString;
 }
 
 class MockArbitrator : public Arbitrator
@@ -1128,6 +1131,7 @@ TEST_F(ArbitratorTest,
        discoveryException_discoveryErrorFromDiscoveryProxy_noEntryForParticipant_retries)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT;
+    const std::string errorMessage = "no entry found for participant";
     const std::int64_t discoveryTimeoutMs = 499;
     const std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
@@ -1138,10 +1142,10 @@ TEST_F(ArbitratorTest,
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
 
     const std::string expectedErrorMessage =
-            getErrorMsgUnableToLookup(error, _gbids, participantId);
+            getErrorMsgUnableToLookup(error, errorMessage, _gbids, participantId);
 
     auto exception = std::make_shared<exceptions::ApplicationException>(
-            "no entry found",
+            errorMessage,
             std::make_shared<types::DiscoveryError>(types::DiscoveryError::getLiteral(error)));
     auto mockFutureFixedPartId =
             std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
@@ -1194,6 +1198,7 @@ TEST_F(ArbitratorTest,
 {
     const types::DiscoveryError::Enum& error =
             types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS;
+    const std::string errorMessage = "no entry found for selected backends";
     const std::int64_t discoveryTimeoutMs = 499;
     const std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
@@ -1201,10 +1206,10 @@ TEST_F(ArbitratorTest,
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
 
-    const std::string expectedErrorMessage = getErrorMsgUnableToLookup(error, _gbids);
+    const std::string expectedErrorMessage = getErrorMsgUnableToLookup(error, errorMessage, _gbids);
 
     auto exception = std::make_shared<exceptions::ApplicationException>(
-            "no entry found",
+            errorMessage,
             std::make_shared<types::DiscoveryError>(types::DiscoveryError::getLiteral(error)));
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
@@ -1346,6 +1351,7 @@ TEST_F(ArbitratorTest,
        arbitrationStarted_localDiscoveryAggregatorLookupCalledWithCorrectDiscoveryTimeout_fixedParticipantId)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT;
+    const std::string errorMessage = "no entry found for participant";
     constexpr std::int64_t discoveryTimeoutMs = 499;
     constexpr std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
@@ -1356,10 +1362,10 @@ TEST_F(ArbitratorTest,
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
 
     const std::string expectedErrorMessage =
-            getErrorMsgUnableToLookup(error, _gbids, participantId);
+            getErrorMsgUnableToLookup(error, errorMessage, _gbids, participantId);
 
     auto exception = std::make_unique<exceptions::ApplicationException>(
-            "no entry found",
+            errorMessage,
             std::make_shared<types::DiscoveryError>(types::DiscoveryError::getLiteral(error)));
     auto mockFutureFixedPartId =
             std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
@@ -1415,6 +1421,7 @@ TEST_F(ArbitratorTest,
        arbitrationStarted_localDiscoveryAggregatorLookupCalledWithCorrectMessagingQos_fixedParticipantId)
 {
     const types::DiscoveryError::Enum& error = types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT;
+    const std::string errorMessage = "no entry found for participant";
     constexpr std::int64_t discoveryTimeoutMs = 499;
     constexpr std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
@@ -1425,10 +1432,10 @@ TEST_F(ArbitratorTest,
     discoveryQos.addCustomParameter("fixedParticipantId", participantId);
 
     const std::string expectedErrorMessage =
-            getErrorMsgUnableToLookup(error, _gbids, participantId);
+            getErrorMsgUnableToLookup(error, errorMessage, _gbids, participantId);
 
     auto exception = std::make_unique<exceptions::ApplicationException>(
-            "no entry found",
+            errorMessage,
             std::make_shared<types::DiscoveryError>(types::DiscoveryError::getLiteral(error)));
     auto mockFutureFixedPartId =
             std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
@@ -1488,15 +1495,16 @@ TEST_F(ArbitratorTest,
 {
     const types::DiscoveryError::Enum& error =
             types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS;
+    const std::string errorMessage = "no entry found for selected backends";
     constexpr std::int64_t discoveryTimeoutMs = 499;
     constexpr std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
 
-    const std::string expectedErrorMessage = getErrorMsgUnableToLookup(error, _gbids);
+    const std::string expectedErrorMessage = getErrorMsgUnableToLookup(error, errorMessage, _gbids);
     auto exception = std::make_unique<exceptions::ApplicationException>(
-            "no entry found",
+            errorMessage,
             std::make_shared<types::DiscoveryError>(types::DiscoveryError::getLiteral(error)));
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
@@ -1554,15 +1562,16 @@ TEST_F(ArbitratorTest,
 {
     const types::DiscoveryError::Enum& error =
             types::DiscoveryError::NO_ENTRY_FOR_SELECTED_BACKENDS;
+    std::string errorMessage = "no entry found for selected backends";
     constexpr std::int64_t discoveryTimeoutMs = 499;
     constexpr std::int64_t retryIntervalMs = 250;
     DiscoveryQos discoveryQos;
     discoveryQos.setDiscoveryTimeoutMs(discoveryTimeoutMs);
     discoveryQos.setRetryIntervalMs(retryIntervalMs);
 
-    const std::string expectedErrorMessage = getErrorMsgUnableToLookup(error, _gbids);
+    const std::string expectedErrorMessage = getErrorMsgUnableToLookup(error, errorMessage, _gbids);
     auto exception = std::make_unique<exceptions::ApplicationException>(
-            "no entry found",
+            errorMessage,
             std::make_shared<types::DiscoveryError>(types::DiscoveryError::getLiteral(error)));
     auto mockFuture = std::make_shared<
             joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
@@ -1710,7 +1719,8 @@ protected:
         arbitrator->stopArbitration();
     }
 
-    void testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(const types::DiscoveryError::Enum& error)
+    void testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(const types::DiscoveryError::Enum& error,
+                                                           const std::string& errorMessage)
     {
         const std::int64_t retryIntervalMs = 250;
         DiscoveryQos discoveryQos;
@@ -1719,13 +1729,14 @@ protected:
         discoveryQos.setRetryIntervalMs(retryIntervalMs);
 
         auto exception = std::make_shared<exceptions::ApplicationException>(
-                "no entry found",
+                errorMessage,
                 std::make_shared<types::DiscoveryError>(types::DiscoveryError::getLiteral(error)));
         std::string expectedErrorMessage;
         if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::FIXED_PARTICIPANT) {
             const std::string participantId = "unittests-participantId";
             discoveryQos.addCustomParameter("fixedParticipantId", participantId);
-            expectedErrorMessage = getErrorMsgUnableToLookup(error, _gbids, participantId);
+            expectedErrorMessage =
+                    getErrorMsgUnableToLookup(error, errorMessage, _gbids, participantId);
 
             auto mockFutureFixedPartId =
                     std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
@@ -1744,7 +1755,7 @@ protected:
             if (this->arbitrationStrategy == DiscoveryQos::ArbitrationStrategy::KEYWORD) {
                 discoveryQos.addCustomParameter("keyword", "keywordValue");
             }
-            expectedErrorMessage = getErrorMsgUnableToLookup(error, _gbids);
+            expectedErrorMessage = getErrorMsgUnableToLookup(error, errorMessage, _gbids);
             auto mockFuture = std::make_shared<
                     joynr::Future<std::vector<joynr::types::DiscoveryEntryWithMetaInfo>>>();
             mockFuture->onError(exception);
@@ -1772,6 +1783,7 @@ protected:
         };
         auto onError = [this, &expectedErrorMessage](
                                const exceptions::DiscoveryException& discoveryException) {
+
             EXPECT_THAT(discoveryException,
                         joynrException(joynr::exceptions::DiscoveryException::TYPE_NAME(),
                                        expectedErrorMessage));
@@ -1814,19 +1826,22 @@ TEST_P(ArbitratorTestWithParams, callsDiscoveryProxyCorrectly_withoutGbids)
 TEST_P(ArbitratorTestWithParams,
        discoveryException_discoveryErrorFromDiscoveryProxy_unknownGbid_doesNotretry)
 {
-    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(types::DiscoveryError::UNKNOWN_GBID);
+    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(
+            types::DiscoveryError::UNKNOWN_GBID, "Unknown GBID.");
 }
 
 TEST_P(ArbitratorTestWithParams,
        discoveryException_discoveryErrorFromDiscoveryProxy_invalidGbid_doesNotretry)
 {
-    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(types::DiscoveryError::INVALID_GBID);
+    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(
+            types::DiscoveryError::INVALID_GBID, "Invalid GBID.");
 }
 
 TEST_P(ArbitratorTestWithParams,
        discoveryException_discoveryErrorFromDiscoveryProxy_internalError_doesNotretry)
 {
-    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(types::DiscoveryError::INTERNAL_ERROR);
+    testDiscoveryErrorFromDiscoveryProxy_doesNotRetry(
+            types::DiscoveryError::INTERNAL_ERROR, "Internal error.");
 }
 
 TEST_P(ArbitratorTestWithParams, discoveryException_exceptionFromDiscoveryProxy)
@@ -1943,8 +1958,9 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
         mockFuture1->onSuccess(discoveryEntry1);
         auto mockFuture2 =
                 std::make_shared<joynr::Future<joynr::types::DiscoveryEntryWithMetaInfo>>();
+        const std::string errorMessage = "no entry found for participant";
         auto exception = std::make_shared<exceptions::ApplicationException>(
-                "no entry found",
+                errorMessage,
                 std::make_shared<types::DiscoveryError>(types::DiscoveryError::getLiteral(
                         types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT)));
         mockFuture2->onError(exception);
@@ -1953,12 +1969,13 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
                 .WillOnce(Return(mockFuture1)) // return matching entry with incompatible version
                 .WillRepeatedly(Return(mockFuture2)); // NO_ENTRY_FOR_PARTICIPANT
 
-        onError = [this,
-                   fixedParticipantId](const exceptions::DiscoveryException& discoveryException) {
+        onError = [this, fixedParticipantId, errorMessage](
+                          const exceptions::DiscoveryException& discoveryException) {
             EXPECT_THAT(discoveryException,
                         joynrException(exceptions::DiscoveryException::TYPE_NAME(),
                                        getErrorMsgUnableToLookup(
                                                types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT,
+                                               errorMessage,
                                                _emptyGbidsVector,
                                                fixedParticipantId)));
             _semaphore->notify();
