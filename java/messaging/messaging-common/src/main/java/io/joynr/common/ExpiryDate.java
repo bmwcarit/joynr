@@ -28,55 +28,38 @@ import java.text.SimpleDateFormat;
 
 public class ExpiryDate {
 
-    private long value;
-    private long relativeTtl;
-    private long creationTime;
+    private final long value;
+    private final long relativeTtl;
 
     /**
      * 
      * @param relativeTtl milliseconds until the ttl expires
      * @return an ExpiryDate with creationTime = current time and value = creationTime + relativeTtl
      */
-    public static ExpiryDate fromRelativeTtl(long relativeTtl) {
-        long creationTime = System.currentTimeMillis();
-        long expiryDate;
-        try {
-            expiryDate = Math.addExact(creationTime, relativeTtl);
-        } catch (ArithmeticException exception) {
-            expiryDate = Long.MAX_VALUE;
-        }
-        // do not exceed Javascript max safe integer (2^53-1)
-        if (expiryDate > 9007199254740991L) {
-            expiryDate = 9007199254740991L;
-        }
-        return new ExpiryDate(relativeTtl, expiryDate, creationTime);
+    public static ExpiryDate fromRelativeTtl(final long relativeTtl) {
+        final long creationTime = System.currentTimeMillis();
+        final long expiryDate = ExpiryDateUtils.addAndLimit(creationTime, relativeTtl);
+        return new ExpiryDate(relativeTtl, expiryDate);
     }
 
     /**
      * NOTE: relative Ttl can be negative if the ExpiryDate passed in was in the past
-     * @param expiryDate time measured in milliseconds, between the current time and midnight, January 1, 1970 UTC
+     * @param expiryDate time measured in milliseconds, between the current time and midnight, January 1, 1970, UTC
      * @return an ExpiryDate object with creationTime = current time, and relativeTtl = ExpiryDate - creationTime;
      */
-    public static ExpiryDate fromAbsolute(long expiryDate) {
-        long creationTime = System.currentTimeMillis();
-        long relativeTtl;
-        try {
-            relativeTtl = Math.subtractExact(expiryDate, creationTime);
-        } catch (ArithmeticException exception) {
-            relativeTtl = Long.MIN_VALUE;
-        }
-        return new ExpiryDate(relativeTtl, expiryDate, creationTime);
+    public static ExpiryDate fromAbsolute(final long expiryDate) {
+        final long creationTime = System.currentTimeMillis();
+        final long relativeTtl = ExpiryDateUtils.subtract(expiryDate, creationTime);
+        return new ExpiryDate(relativeTtl, expiryDate);
     }
 
     /**
      * 
      * @param relativeTtl the absolute time will be set based on this value relative to the point in time when the object is created
      */
-    private ExpiryDate(long relativeTtl, long expiryDate, long creationTime) {
+    private ExpiryDate(final long relativeTtl, final long expiryDate) {
         this.relativeTtl = relativeTtl;
-        value = expiryDate;
-        this.creationTime = creationTime;
-
+        this.value = expiryDate;
     }
 
     public long getValue() {
@@ -91,19 +74,10 @@ public class ExpiryDate {
         return relativeTtl;
     }
 
-    /**
-     * 
-     * @return time when the ExpiryDate was created, set as System.currentTimeMillis()
-     */
-    public long getCreationTime() {
-        return creationTime;
-    }
-
     @Override
     public String toString() {
-        DateFormat dateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
+        final DateFormat dateFormatter = new SimpleDateFormat("dd/MM HH:mm:ss:sss");
         return "ExpiryDate in ms: " + value + " ExpiryDate: " + dateFormatter.format(value) + " relativeTtl:"
-                + relativeTtl + " creationTime: " + dateFormatter.format(creationTime);
+                + relativeTtl;
     }
-
 }
