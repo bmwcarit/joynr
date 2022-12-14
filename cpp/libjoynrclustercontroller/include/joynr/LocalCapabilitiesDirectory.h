@@ -114,8 +114,8 @@ public:
      * original callback with the results, this indirection was needed because we
      * need to convert a CapabilitiesInformation object into a DiscoveryEntry object.
      */
-    void registerReceivedCapabilities(
-            const std::unordered_multimap<std::string, types::DiscoveryEntry>&& capabilityEntries);
+    std::vector<types::DiscoveryEntryWithMetaInfo> registerReceivedCapabilities(
+            const std::vector<types::GlobalDiscoveryEntry>&& capabilityEntries);
 
     // inherited method from joynr::system::DiscoveryProvider
     void add(const joynr::types::DiscoveryEntry& discoveryEntry,
@@ -231,8 +231,7 @@ private:
     void capabilitiesReceived(const std::vector<types::GlobalDiscoveryEntry>& results,
                               std::vector<types::DiscoveryEntry>&& localEntries,
                               std::shared_ptr<ILocalCapabilitiesCallback> callback,
-                              joynr::types::DiscoveryScope::Enum discoveryScope,
-                              const std::vector<std::string>& domains = {});
+                              joynr::types::DiscoveryScope::Enum discoveryScope);
     void removeStaleProvidersOfClusterController(const std::int64_t& clusterControllerStartDateMs,
                                                  const std::string gbid);
     /*

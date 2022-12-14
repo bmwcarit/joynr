@@ -451,3 +451,85 @@ TEST_F(LocalDiscoveryAggregatorTest,
 
     EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
 }
+
+TEST_F(LocalDiscoveryAggregatorTest, lookupAsyncDomainInterface_provisionedEntry_doesNotCallProxy)
+{
+    const std::string participantId("testProvisionedParticipantId");
+    const std::string domain("testDomain");
+    const std::string interfaceName("test/testInterface");
+
+    types::DiscoveryEntryWithMetaInfo provisionedDiscoveryEntry;
+    provisionedDiscoveryEntry.setParticipantId(participantId);
+    provisionedDiscoveryEntry.setDomain(domain);
+    provisionedDiscoveryEntry.setInterfaceName(interfaceName);
+
+    const types::DiscoveryEntryWithMetaInfo expectedDiscoveryEntry(provisionedDiscoveryEntry);
+    _provisionedDiscoveryEntries.insert(std::make_pair(participantId, provisionedDiscoveryEntry));
+    LocalDiscoveryAggregator testLocalDiscoveryAggregator(_provisionedDiscoveryEntries);
+
+    EXPECT_CALL(*_discoveryMock, lookupAsyncMock(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*_discoveryMock, lookupAsyncMock(_, _, _, _, _, _, _, _)).Times(0);
+
+    testLocalDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
+    auto onSuccess = [this, &expectedDiscoveryEntry](
+                             const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+        ASSERT_TRUE(result.size() == 1);
+        EXPECT_EQ(result[0], expectedDiscoveryEntry);
+
+        _semaphore->notify();
+    };
+    const types::DiscoveryQos discoveryQos(21, 22, types::DiscoveryScope::LOCAL_AND_GLOBAL, true);
+    std::vector<std::string> domains{domain};
+    auto future = testLocalDiscoveryAggregator.lookupAsync(
+            domains, interfaceName, discoveryQos, onSuccess, nullptr, boost::none);
+
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
+    future->get(100, result);
+
+    ASSERT_TRUE(result.size() == 1);
+    EXPECT_EQ(result[0], expectedDiscoveryEntry);
+
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
+}
+
+TEST_F(LocalDiscoveryAggregatorTest,
+       lookupAsyncDomainInterface_withGbids_provisionedEntry_doesNotCallProxy)
+{
+    const std::string participantId("testProvisionedParticipantId");
+    const std::string domain("testDomain");
+    const std::string interfaceName("test/testInterface");
+
+    types::DiscoveryEntryWithMetaInfo provisionedDiscoveryEntry;
+    provisionedDiscoveryEntry.setParticipantId(participantId);
+    provisionedDiscoveryEntry.setDomain(domain);
+    provisionedDiscoveryEntry.setInterfaceName(interfaceName);
+
+    const types::DiscoveryEntryWithMetaInfo expectedDiscoveryEntry(provisionedDiscoveryEntry);
+    _provisionedDiscoveryEntries.insert(std::make_pair(participantId, provisionedDiscoveryEntry));
+    LocalDiscoveryAggregator testLocalDiscoveryAggregator(_provisionedDiscoveryEntries);
+
+    EXPECT_CALL(*_discoveryMock, lookupAsyncMock(_, _, _, _, _, _)).Times(0);
+    EXPECT_CALL(*_discoveryMock, lookupAsyncMock(_, _, _, _, _, _, _, _)).Times(0);
+
+    testLocalDiscoveryAggregator.setDiscoveryProxy(_discoveryMock);
+    auto onSuccess = [this, &expectedDiscoveryEntry](
+                             const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+        ASSERT_TRUE(result.size() == 1);
+        EXPECT_EQ(result[0], expectedDiscoveryEntry);
+
+        _semaphore->notify();
+    };
+    const types::DiscoveryQos discoveryQos(21, 22, types::DiscoveryScope::LOCAL_AND_GLOBAL, true);
+    std::vector<std::string> domains{domain};
+    const std::vector<std::string> gbids = {"testGbid1", "testGbid2", "testGbid3"};
+    auto future = testLocalDiscoveryAggregator.lookupAsync(
+            domains, interfaceName, discoveryQos, gbids, onSuccess, nullptr, nullptr, boost::none);
+
+    std::vector<joynr::types::DiscoveryEntryWithMetaInfo> result;
+    future->get(100, result);
+
+    ASSERT_TRUE(result.size() == 1);
+    EXPECT_EQ(result[0], expectedDiscoveryEntry);
+
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(100)));
+}
