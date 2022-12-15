@@ -28,7 +28,6 @@
 #include "joynr/MulticastSubscriptionCallback.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionReply.h"
-#include "joynr/UnicastSubscriptionCallback.h"
 #include "joynr/exceptions/SubscriptionException.h"
 #include "tests/JoynrTest.h"
 #include "tests/mock/MockMessageRouter.h"
@@ -38,27 +37,21 @@
 using namespace joynr;
 using namespace testing;
 
-template <typename SubscriptionCallbackType>
-class SubscriptionCallbackTest : public testing::Test
+class MulticastSubscriptionCallbackTest : public testing::Test
 {
 public:
-    SubscriptionCallbackTest()
-            : subscriptionId("testSubscriptionId"),
-              singleThreadIOService(),
+    MulticastSubscriptionCallbackTest()
+            : singleThreadIOService(std::make_shared<SingleThreadedIOService>()),
               mockMessageRouter(
-                      std::make_shared<MockMessageRouter>(singleThreadIOService.getIOService())),
+                      std::make_shared<MockMessageRouter>(singleThreadIOService->getIOService())),
               mockSubscriptionManager(std::make_shared<MockSubscriptionManager>(
-                      singleThreadIOService.getIOService(),
-                      mockMessageRouter)),
-              subscriptionIdFuture(std::make_shared<Future<std::string>>()),
-              mockSubscriptionListener(
-                      std::make_shared<MockSubscriptionListenerOneType<std::string>>()),
-              subscriptionCallback()
+                      singleThreadIOService->getIOService(),
+                      mockMessageRouter))
 
     {
     }
 
-    void setOnCalls()
+    void setOnCalls() const
     {
         ON_CALL(*mockSubscriptionManager, getSubscriptionListener(subscriptionId))
                 .WillByDefault(Return(mockSubscriptionListener));
@@ -69,28 +62,23 @@ public:
     }
     void createSubscriptionCallback()
     {
-        subscriptionCallback = std::make_shared<SubscriptionCallbackType>(
+        subscriptionCallback = std::make_shared<MulticastSubscriptionCallback<std::string>>(
                 subscriptionId, subscriptionIdFuture, mockSubscriptionManager, nullptr);
     }
 
 protected:
-    const std::string subscriptionId;
-    SingleThreadedIOService singleThreadIOService;
+    const std::string subscriptionId{ "testSubscriptionId" };
+    std::shared_ptr<SingleThreadedIOService> singleThreadIOService;
     std::shared_ptr<MockMessageRouter> mockMessageRouter;
     std::shared_ptr<MockSubscriptionManager> mockSubscriptionManager;
-    std::shared_ptr<Future<std::string>> subscriptionIdFuture;
-    std::shared_ptr<MockSubscriptionListenerOneType<std::string>> mockSubscriptionListener;
+    std::shared_ptr<Future<std::string>> subscriptionIdFuture{ std::make_shared<Future<std::string>>() };
+    std::shared_ptr<MockSubscriptionListenerOneType<std::string>> mockSubscriptionListener
+        { std::make_shared<MockSubscriptionListenerOneType<std::string>>() };
 
-    std::shared_ptr<SubscriptionCallbackType> subscriptionCallback;
+    std::shared_ptr<MulticastSubscriptionCallback<std::string>> subscriptionCallback;
 };
 
-typedef ::testing::Types<MulticastSubscriptionCallback<std::string>,
-                         UnicastSubscriptionCallback<std::string>>
-        SubscriptionCallbackTypes;
-
-TYPED_TEST_SUITE(SubscriptionCallbackTest, SubscriptionCallbackTypes, );
-
-TYPED_TEST(SubscriptionCallbackTest, forwardSubscriptionReplyToFutureAndListener)
+TEST_F(MulticastSubscriptionCallbackTest, forwardSubscriptionReplyToFutureAndListener)
 {
     EXPECT_CALL(*(this->mockSubscriptionListener), onSubscribed(this->subscriptionId));
     this->setOnCalls();
@@ -106,7 +94,7 @@ TYPED_TEST(SubscriptionCallbackTest, forwardSubscriptionReplyToFutureAndListener
     EXPECT_EQ(subscriptionIdFromFuture, this->subscriptionId);
 }
 
-TYPED_TEST(SubscriptionCallbackTest, forwardSubscriptionExceptionToFutureAndListener)
+TEST_F(MulticastSubscriptionCallbackTest, forwardSubscriptionExceptionToFutureAndListener)
 {
     SubscriptionReply reply;
     reply.setSubscriptionId(this->subscriptionId);
@@ -131,7 +119,7 @@ TYPED_TEST(SubscriptionCallbackTest, forwardSubscriptionExceptionToFutureAndList
     }
 }
 
-TYPED_TEST(SubscriptionCallbackTest, forwardPublicationToListener)
+TEST_F(MulticastSubscriptionCallbackTest, forwardPublicationToListener)
 {
     const std::string response = "testResponse";
 
@@ -140,23 +128,13 @@ TYPED_TEST(SubscriptionCallbackTest, forwardPublicationToListener)
     this->setOnCalls();
 
     this->createSubscriptionCallback();
-    if (typeid(*this->subscriptionCallback.get()) ==
-        typeid(MulticastSubscriptionCallback<std::string>)) {
-        MulticastPublication publication;
-        publication.setMulticastId(this->subscriptionId);
-        publication.setResponse(response);
-        this->subscriptionCallback->execute(std::move(publication));
-    } else if (typeid(*this->subscriptionCallback.get()) ==
-               typeid(UnicastSubscriptionCallback<std::string>)) {
-        BasePublication publication;
-        publication.setResponse(response);
-        this->subscriptionCallback->execute(std::move(publication));
-    } else {
-        FAIL() << "Could not evaluate type";
-    }
+    MulticastPublication publication;
+    publication.setMulticastId(this->subscriptionId);
+    publication.setResponse(response);
+    this->subscriptionCallback->execute(std::move(publication));
 }
 
-TYPED_TEST(SubscriptionCallbackTest, forwardPublicationErrorToListener)
+TEST_F(MulticastSubscriptionCallbackTest, forwardPublicationErrorToListener)
 {
     auto error = std::make_shared<exceptions::ProviderRuntimeException>("testException");
 
@@ -165,18 +143,8 @@ TYPED_TEST(SubscriptionCallbackTest, forwardPublicationErrorToListener)
     this->setOnCalls();
 
     this->createSubscriptionCallback();
-    if (typeid(*this->subscriptionCallback.get()) ==
-        typeid(MulticastSubscriptionCallback<std::string>)) {
-        MulticastPublication publication;
-        publication.setMulticastId(this->subscriptionId);
-        publication.setError(error);
-        this->subscriptionCallback->execute(std::move(publication));
-    } else if (typeid(*this->subscriptionCallback.get()) ==
-               typeid(UnicastSubscriptionCallback<std::string>)) {
-        BasePublication publication;
-        publication.setError(error);
-        this->subscriptionCallback->execute(std::move(publication));
-    } else {
-        FAIL() << "Could not evaluate type";
-    }
+    MulticastPublication publication;
+    publication.setMulticastId(this->subscriptionId);
+    publication.setError(error);
+    this->subscriptionCallback->execute(std::move(publication));
 }
