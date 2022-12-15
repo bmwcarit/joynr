@@ -43,12 +43,8 @@ std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntime(
         std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
         std::shared_ptr<IKeychain> keyChain)
 {
-    const std::string discoveryEntriesFile("");
-    return std::make_shared<JoynrRuntime>(
-            JoynrClusterControllerRuntime::create(std::move(settings),
-                                                  std::move(onFatalRuntimeError),
-                                                  discoveryEntriesFile,
-                                                  std::move(keyChain)));
+    return std::make_shared<JoynrRuntime>(JoynrClusterControllerRuntime::create(
+            std::move(settings), std::move(onFatalRuntimeError), std::move(keyChain)));
 }
 
 std::shared_ptr<JoynrRuntime> JoynrRuntime::createRuntimeAsync(

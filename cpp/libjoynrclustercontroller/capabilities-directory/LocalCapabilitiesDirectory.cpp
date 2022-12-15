@@ -90,8 +90,6 @@ LocalCapabilitiesDirectory::LocalCapabilitiesDirectory(
           _lcdPendingLookupsHandler(),
           _accessController(),
           _checkExpiredDiscoveryEntriesTimer(ioService),
-          _isLocalCapabilitiesDirectoryPersistencyEnabled(
-                  clusterControllerSettings.isLocalCapabilitiesDirectoryPersistencyEnabled()),
           _freshnessUpdateTimer(ioService),
           _reAddAllGlobalEntriesTimer(ioService),
           _clusterControllerId(clusterControllerId),
@@ -321,7 +319,6 @@ void LocalCapabilitiesDirectory::addInternal(
         // register locally
         _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(discoveryEntry, gbids);
 
-        updatePersistedFile();
         {
             std::lock_guard<std::mutex> lock(_pendingLookupsLock);
             InterfaceAddress interfaceAddress(
@@ -406,7 +403,6 @@ void LocalCapabilitiesDirectory::addInternal(
                         onSuccess();
                     }
 
-                    thisSharedPtr->updatePersistedFile();
                     {
                         std::lock_guard<std::mutex> lock(thisSharedPtr->_pendingLookupsLock);
                         InterfaceAddress interfaceAddress(globalDiscoveryEntry.getDomain(),
@@ -1144,10 +1140,8 @@ void LocalCapabilitiesDirectory::remove(
                             ->size(),
                     _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
                     _localCapabilitiesDirectoryStore->getGlobalLookupCache(removeLock)->size());
-            updatePersistedFile();
         } else {
-            auto onGlobalRemoveSuccess = [this,
-                                          participantId,
+            auto onGlobalRemoveSuccess = [participantId,
                                           lCDStoreWeakPtr = joynr::util::as_weak_ptr(
                                                   _localCapabilitiesDirectoryStore)]() {
                 if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
@@ -1172,10 +1166,8 @@ void LocalCapabilitiesDirectory::remove(
                             lCDStoreSharedPtr->countGlobalCapabilities(),
                             lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->size());
                 }
-                updatePersistedFile();
             };
-            auto onApplicationError = [this,
-                                       participantId,
+            auto onApplicationError = [participantId,
                                        lCDStoreWeakPtr = joynr::util::as_weak_ptr(
                                                _localCapabilitiesDirectoryStore)](
                                               const types::DiscoveryError::Enum& error) {
@@ -1212,7 +1204,6 @@ void LocalCapabilitiesDirectory::remove(
                                 lCDStoreSharedPtr->countGlobalCapabilities(),
                                 lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->size());
                     }
-                    updatePersistedFile();
                     break;
                 case DiscoveryError::Enum::INVALID_GBID:
                 case DiscoveryError::Enum::UNKNOWN_GBID:
@@ -1267,109 +1258,6 @@ void LocalCapabilitiesDirectory::remove(
     }
 }
 
-void LocalCapabilitiesDirectory::updatePersistedFile()
-{
-    saveLocalCapabilitiesToFile(
-            _clusterControllerSettings.getLocalCapabilitiesDirectoryPersistenceFilename());
-}
-
-void LocalCapabilitiesDirectory::saveLocalCapabilitiesToFile(const std::string& fileName)
-{
-    if (!_isLocalCapabilitiesDirectoryPersistencyEnabled) {
-        return;
-    }
-
-    if (fileName.empty()) {
-        return;
-    }
-
-    try {
-        std::unique_lock<std::recursive_mutex> filePersistencyStorageLock(
-                _localCapabilitiesDirectoryStore->getCacheLock());
-        joynr::util::saveStringToFile(
-                fileName,
-                joynr::serializer::serializeToJson(
-                        _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                                filePersistencyStorageLock)));
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger(), ex.what());
-    }
-}
-
-void LocalCapabilitiesDirectory::loadPersistedFile()
-{
-    if (!_isLocalCapabilitiesDirectoryPersistencyEnabled) {
-        return;
-    }
-
-    const std::string persistencyFile =
-            _clusterControllerSettings.getLocalCapabilitiesDirectoryPersistenceFilename();
-
-    if (persistencyFile.empty()) { // Persistency disabled
-        return;
-    }
-
-    std::string jsonString;
-    try {
-        jsonString = joynr::util::loadStringFromFile(persistencyFile);
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_INFO(logger(), ex.what());
-    }
-
-    if (jsonString.empty()) {
-        return;
-    }
-
-    std::unique_lock<std::recursive_mutex> filePersistencyRetrievalLock(
-            _localCapabilitiesDirectoryStore->getCacheLock());
-
-    try {
-        std::shared_ptr<capabilities::Storage> locallyRegisteredCapabilities =
-                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(
-                        filePersistencyRetrievalLock);
-        joynr::serializer::deserializeFromJson(locallyRegisteredCapabilities, jsonString);
-    } catch (const std::invalid_argument& ex) {
-        JOYNR_LOG_ERROR(logger(), ex.what());
-    }
-}
-
-void LocalCapabilitiesDirectory::injectGlobalCapabilitiesFromFile(const std::string& fileName)
-{
-    if (fileName.empty()) {
-        JOYNR_LOG_WARN(
-                logger(), "Empty file name provided in input: cannot load global capabilities.");
-        return;
-    }
-
-    std::string jsonString;
-    try {
-        jsonString = joynr::util::loadStringFromFile(fileName);
-    } catch (const std::runtime_error& ex) {
-        JOYNR_LOG_ERROR(logger(), ex.what());
-    }
-
-    if (jsonString.empty()) {
-        return;
-    }
-
-    std::vector<joynr::types::GlobalDiscoveryEntry> injectedGlobalCapabilities;
-    try {
-        joynr::serializer::deserializeFromJson(injectedGlobalCapabilities, jsonString);
-    } catch (const std::invalid_argument& e) {
-        std::string errorMessage("could not deserialize injected global capabilities from " +
-                                 jsonString + " - error: " + e.what());
-        JOYNR_LOG_FATAL(logger(), errorMessage);
-        return;
-    }
-
-    if (injectedGlobalCapabilities.empty()) {
-        return;
-    }
-
-    // insert found capabilities in messageRouter
-    registerReceivedCapabilities(std::move(injectedGlobalCapabilities));
-}
-
 void LocalCapabilitiesDirectory::scheduleCleanupTimer()
 {
     boost::system::error_code timerError;
@@ -1408,7 +1296,6 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                         errorCode.message());
     }
 
-    bool fileUpdateRequired = false;
     {
         std::unique_lock<std::recursive_mutex> discoveryEntryExpiryCheckLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
@@ -1423,7 +1310,6 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                         ->removeExpired();
 
         if (!removedLocalCapabilities.empty() || !removedGlobalCapabilities.empty()) {
-            fileUpdateRequired = true;
             if (auto messageRouterSharedPtr = _messageRouter.lock()) {
                 JOYNR_LOG_INFO(
                         logger(),
@@ -1450,10 +1336,6 @@ void LocalCapabilitiesDirectory::checkExpiredDiscoveryEntries(
                                 "not available");
             }
         }
-    }
-
-    if (fileUpdateRequired) {
-        updatePersistedFile();
     }
 
     scheduleCleanupTimer();

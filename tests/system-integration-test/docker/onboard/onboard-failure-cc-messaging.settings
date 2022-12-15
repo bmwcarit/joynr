@@ -37,7 +37,6 @@ private-key-pem-filename=/data/ssl-data/private/server.key.pem
 cluster-controller-messaging-url=ws://localhost:4245
 
 [cluster-controller]
-local-capabilities-directory-persistence-file=LocalCapabilitiesDirectory-failure.persist
 local-domain-access-store-persistence-file=LocalDomainAccessStore-failure.persist
 ws-port=4245
 ws-tls-port=4246

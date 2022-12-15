@@ -181,26 +181,6 @@ public:
             override;
 
     /*
-     * Persist the content of the local capabilities directory to a file.
-     */
-    void updatePersistedFile();
-
-    /*
-     * Load persisted capabilities from the specified file.
-     */
-    void loadPersistedFile();
-
-    /*
-     * Save the content of the local capabilities directory to the specified file.
-     */
-    void saveLocalCapabilitiesToFile(const std::string& fileName);
-
-    /*
-     * Load capabilities from the specified file.
-     */
-    void injectGlobalCapabilitiesFromFile(const std::string& fileName);
-
-    /*
      * returns true if lookup calls with discovery scope LOCAL_THEN_GLOBAL are ongoing
      */
     bool hasPendingLookups();
@@ -266,7 +246,6 @@ private:
     std::weak_ptr<IAccessController> _accessController;
 
     boost::asio::steady_timer _checkExpiredDiscoveryEntriesTimer;
-    const bool _isLocalCapabilitiesDirectoryPersistencyEnabled;
 
     void scheduleCleanupTimer();
     void checkExpiredDiscoveryEntries(const boost::system::error_code& errorCode);

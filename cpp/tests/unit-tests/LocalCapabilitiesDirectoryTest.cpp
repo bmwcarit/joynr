@@ -160,9 +160,7 @@ class LocalCapabilitiesDirectoryTest : public ::testing::Test
 public:
     LocalCapabilitiesDirectoryTest()
             : _settings(),
-              _settingsForPersistencyTests(),
               _clusterControllerSettings(_settings),
-              _clusterControllerSettingsForPersistencyTests(_settingsForPersistencyTests),
               _purgeExpiredDiscoveryEntriesIntervalMs(3600000),
               _globalCapabilitiesDirectoryClient(
                       std::make_shared<MockGlobalCapabilitiesDirectoryClient>()),
@@ -209,13 +207,6 @@ public:
         _settings.set(
                 ClusterControllerSettings::SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS(),
                 3600000);
-        _settings.set(ClusterControllerSettings::
-                              SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),
-                      false);
-        _settingsForPersistencyTests.set(
-                ClusterControllerSettings::
-                        SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),
-                true);
 
         _discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
         _discoveryQos.setCacheMaxAge(10000);
@@ -859,9 +850,7 @@ protected:
     }
 
     Settings _settings;
-    Settings _settingsForPersistencyTests;
     ClusterControllerSettings _clusterControllerSettings;
-    ClusterControllerSettings _clusterControllerSettingsForPersistencyTests;
     int _purgeExpiredDiscoveryEntriesIntervalMs;
     std::shared_ptr<MockGlobalCapabilitiesDirectoryClient> _globalCapabilitiesDirectoryClient;
     std::shared_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
@@ -4721,181 +4710,6 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerReceivedCapabilites_registerMqttA
     const std::string& topic = "mqtt_TEST_channelId";
     system::RoutingTypes::MqttAddress mqttAddress("brokerUri", topic);
     registerReceivedCapabilities(addressType, serializer::serializeToJson(mqttAddress));
-}
-
-TEST_F(LocalCapabilitiesDirectoryTest, persistencyTest)
-{
-    // the mock is used by two different localCapabiltiesDirectories
-    // this is dangerous and should not be done
-    EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _))
-            .WillRepeatedly(InvokeArgument<4>(types::DiscoveryError::INTERNAL_ERROR));
-
-    initializeMockLocalCapabilitiesDirectoryStore();
-
-    _localCapabilitiesDirectory = std::make_shared<LocalCapabilitiesDirectory>(
-            _clusterControllerSettingsForPersistencyTests,
-            _globalCapabilitiesDirectoryClient,
-            _localCapabilitiesDirectoryStoreForPersistencyTests,
-            _LOCAL_ADDRESS,
-            _mockMessageRouter,
-            _singleThreadedIOService->getIOService(),
-            _clusterControllerId,
-            _KNOWN_GBIDS,
-            _defaultExpiryIntervalMs);
-    _localCapabilitiesDirectory->init();
-
-    // Attempt loading (action usually performed by cluster-controller runtime)
-    _localCapabilitiesDirectory->loadPersistedFile();
-
-    // add few entries
-    const std::string& DOMAIN_NAME = "LocalCapabilitiesDirectorySerializerTest_Domain";
-    const std::string& INTERFACE_NAME = "LocalCapabilitiesDirectorySerializerTest_InterfaceName";
-
-    std::vector<std::string> participantIds{
-            util::createUuid(), util::createUuid(), util::createUuid()};
-
-    types::ProviderQos localProviderQos;
-    localProviderQos.setScope(types::ProviderScope::LOCAL);
-    types::ProviderQos globalProviderQos;
-    globalProviderQos.setScope(types::ProviderScope::GLOBAL);
-
-    const types::DiscoveryEntry entry1(_defaultProviderVersion,
-                                       DOMAIN_NAME,
-                                       INTERFACE_NAME,
-                                       participantIds[0],
-                                       localProviderQos,
-                                       TimePoint::now().toMilliseconds(),
-                                       _lastSeenDateMs + _defaultExpiryIntervalMs,
-                                       _PUBLIC_KEY_ID);
-    const types::DiscoveryEntry entry2(_defaultProviderVersion,
-                                       DOMAIN_NAME,
-                                       INTERFACE_NAME,
-                                       participantIds[1],
-                                       globalProviderQos,
-                                       TimePoint::now().toMilliseconds(),
-                                       _lastSeenDateMs + _defaultExpiryIntervalMs,
-                                       _PUBLIC_KEY_ID);
-    const types::DiscoveryEntry entry3(_defaultProviderVersion,
-                                       DOMAIN_NAME,
-                                       INTERFACE_NAME,
-                                       participantIds[2],
-                                       globalProviderQos,
-                                       TimePoint::now().toMilliseconds(),
-                                       _lastSeenDateMs + _defaultExpiryIntervalMs,
-                                       _PUBLIC_KEY_ID);
-    _localCapabilitiesDirectory->add(entry1,
-                                     false,
-                                     {_KNOWN_GBIDS[0]},
-                                     _defaultOnSuccess,
-                                     _unexpectedOnDiscoveryErrorFunction);
-    _localCapabilitiesDirectory->add(entry2,
-                                     false,
-                                     {_KNOWN_GBIDS[0]},
-                                     _defaultOnSuccess,
-                                     _unexpectedOnDiscoveryErrorFunction);
-    _localCapabilitiesDirectory->add(entry3,
-                                     false,
-                                     {_KNOWN_GBIDS[1], _KNOWN_GBIDS[2]},
-                                     _defaultOnSuccess,
-                                     _unexpectedOnDiscoveryErrorFunction);
-
-    // create a new object
-    const std::int64_t defaultExpiryDateMs = 600000;
-    auto localCapabilitiesDirectory2 = std::make_shared<LocalCapabilitiesDirectory>(
-            _clusterControllerSettingsForPersistencyTests,
-            _globalCapabilitiesDirectoryClient,
-            _localCapabilitiesDirectoryStoreForPersistencyTests,
-            _LOCAL_ADDRESS,
-            _mockMessageRouter,
-            _singleThreadedIOService->getIOService(),
-            _clusterControllerId,
-            _KNOWN_GBIDS,
-            defaultExpiryDateMs);
-    localCapabilitiesDirectory2->init();
-
-    // load persistency
-    localCapabilitiesDirectory2->loadPersistedFile();
-
-    // check all entries are there
-    types::DiscoveryQos localDiscoveryQos;
-    localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
-    for (auto& participantID : participantIds) {
-        localCapabilitiesDirectory2->lookup(participantID,
-                                            localDiscoveryQos,
-                                            _KNOWN_GBIDS,
-                                            createLookupParticipantIdSuccessFunction(),
-                                            _unexpectedOnDiscoveryErrorFunction);
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    }
-
-    // global cached entries wont be persisted
-    auto cachedGlobalDiscoveryEntries =
-            localCapabilitiesDirectory2->getCachedGlobalDiscoveryEntries();
-    EXPECT_EQ(0, cachedGlobalDiscoveryEntries.size());
-
-    localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
-
-    // check entry2
-    localCapabilitiesDirectory2->lookup(participantIds[1],
-                                        localDiscoveryQos,
-                                        {_KNOWN_GBIDS[0]},
-                                        createLookupParticipantIdSuccessFunction(),
-                                        _unexpectedOnDiscoveryErrorFunction);
-    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-
-    localCapabilitiesDirectory2->lookup(participantIds[1],
-                                        localDiscoveryQos,
-                                        {_KNOWN_GBIDS[1], _KNOWN_GBIDS[2]},
-                                        createLookupParticipantIdSuccessFunction(),
-                                        _unexpectedOnDiscoveryErrorFunction);
-    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-
-    // check entry3
-    localCapabilitiesDirectory2->lookup(participantIds[2],
-                                        localDiscoveryQos,
-                                        {_KNOWN_GBIDS[0]},
-                                        createLookupParticipantIdSuccessFunction(),
-                                        _unexpectedOnDiscoveryErrorFunction);
-    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-
-    localCapabilitiesDirectory2->lookup(participantIds[2],
-                                        localDiscoveryQos,
-                                        {_KNOWN_GBIDS[1]},
-                                        createLookupParticipantIdSuccessFunction(),
-                                        _unexpectedOnDiscoveryErrorFunction);
-    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-
-    localCapabilitiesDirectory2->lookup(participantIds[2],
-                                        localDiscoveryQos,
-                                        {_KNOWN_GBIDS[2]},
-                                        createLookupParticipantIdSuccessFunction(),
-                                        _unexpectedOnDiscoveryErrorFunction);
-    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-}
-
-TEST_F(LocalCapabilitiesDirectoryTest, loadCapabilitiesFromFile)
-{
-    initializeMockLocalCapabilitiesDirectoryStore();
-    finalizeTestSetupAfterMockExpectationsAreDone();
-    const std::string& fileName = "test-resources/ListOfCapabilitiesToInject.json";
-    _localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(fileName);
-
-    // Verify that all entries present in the file have indeed been loaded
-    types::DiscoveryQos localDiscoveryQos;
-    localDiscoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_THEN_GLOBAL);
-    _localCapabilitiesDirectory->lookup("notReachableInterface_Schroedinger",
-                                        localDiscoveryQos,
-                                        _KNOWN_GBIDS,
-                                        createLookupParticipantIdSuccessFunction(),
-                                        _unexpectedOnDiscoveryErrorFunction);
-    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-
-    _localCapabilitiesDirectory->lookup("notReachableInterface_Heisenberg",
-                                        localDiscoveryQos,
-                                        _KNOWN_GBIDS,
-                                        createLookupParticipantIdSuccessFunction(),
-                                        _unexpectedOnDiscoveryErrorFunction);
-    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest, throwExceptionOnEmptyDomainsVector)

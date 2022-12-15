@@ -36,16 +36,6 @@ ClusterControllerSettings::ClusterControllerSettings(Settings& settings) : _sett
 
 void ClusterControllerSettings::checkSettings()
 {
-    if (!_settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME())) {
-        setLocalCapabilitiesDirectoryPersistenceFilename(
-                DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
-    }
-
-    if (!_settings.contains(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED())) {
-        setLocalCapabilitiesDirectoryPersistencyEnabled(
-                DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED());
-    }
-
     if (!_settings.contains(SETTING_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED())) {
         setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(
                 DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED());
@@ -162,29 +152,6 @@ void ClusterControllerSettings::checkSettings()
     if (!_settings.contains(SETTING_UDS_ENABLED())) {
         _settings.set(SETTING_UDS_ENABLED(), DEFAULT_UDS_ENABLED());
     }
-}
-
-const std::string& ClusterControllerSettings::
-        SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
-{
-    static const std::string value(
-            "cluster-controller/local-capabilities-directory-persistence-file");
-    return value;
-}
-
-const std::string& ClusterControllerSettings::
-        SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED()
-{
-    static const std::string value(
-            "cluster-controller/local-capabilities-directory-persistency-enabled");
-    return value;
-}
-
-const std::string& ClusterControllerSettings::
-        DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME()
-{
-    static const std::string value("LocalCapabilitiesDirectory.persist");
-    return value;
 }
 
 const std::string& ClusterControllerSettings::SETTING_WS_TLS_PORT()
@@ -626,11 +593,6 @@ const std::string& ClusterControllerSettings::
     return value;
 }
 
-bool ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED()
-{
-    return false;
-}
-
 bool ClusterControllerSettings::DEFAULT_GLOBAL_CAPABILITIES_DIRECTORY_COMPRESSED_MESSAGES_ENABLED()
 {
     return false;
@@ -783,32 +745,11 @@ void ClusterControllerSettings::setAclAudit(bool audit)
     _settings.set(SETTING_ACCESS_CONTROL_AUDIT(), audit);
 }
 
-std::string ClusterControllerSettings::getLocalCapabilitiesDirectoryPersistenceFilename() const
-{
-    return _settings.get<std::string>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME());
-}
-
-void ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistenceFilename(
-        const std::string& filename)
-{
-    _settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(), filename);
-}
-
 std::chrono::milliseconds ClusterControllerSettings::getCapabilitiesFreshnessUpdateIntervalMs()
         const
 {
     return std::chrono::milliseconds(
             _settings.get<std::uint64_t>(SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS()));
-}
-
-bool ClusterControllerSettings::isLocalCapabilitiesDirectoryPersistencyEnabled() const
-{
-    return _settings.get<bool>(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED());
-}
-
-void ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistencyEnabled(bool enabled)
-{
-    _settings.set(SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(), enabled);
 }
 
 void ClusterControllerSettings::setCapabilitiesFreshnessUpdateIntervalMs(
@@ -820,16 +761,6 @@ void ClusterControllerSettings::setCapabilitiesFreshnessUpdateIntervalMs(
 
 void ClusterControllerSettings::printSettings() const
 {
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED(),
-                   isLocalCapabilitiesDirectoryPersistencyEnabled());
-
-    JOYNR_LOG_INFO(logger(),
-                   "SETTING: {} = {}",
-                   SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME(),
-                   getLocalCapabilitiesDirectoryPersistenceFilename());
-
     JOYNR_LOG_INFO(
             logger(), "SETTING: {} = {}", SETTING_MESSAGE_QUEUE_LIMIT(), getMessageQueueLimit());
     JOYNR_LOG_INFO(logger(),

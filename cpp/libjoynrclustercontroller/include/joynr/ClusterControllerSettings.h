@@ -35,8 +35,6 @@ class JOYNR_EXPORT ClusterControllerSettings
 {
 public:
     static const std::string& SETTING_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
-    static const std::string& SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
-    static const std::string& SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED();
     static const std::string& SETTING_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& SETTING_MESSAGE_QUEUE_LIMIT();
     static const std::string& SETTING_PER_PARTICIPANTID_MESSAGE_QUEUE_LIMIT();
@@ -69,8 +67,6 @@ public:
 
     static std::chrono::milliseconds DEFAULT_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS();
     static const std::string& DEFAULT_CLUSTERCONTROLLER_SETTINGS_FILENAME();
-    static const std::string& DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
-    static bool DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED();
     static const std::string& DEFAULT_LOCAL_DOMAIN_ACCESS_STORE_PERSISTENCE_FILENAME();
     static const std::string& DEFAULT_MQTT_CLIENT_ID_PREFIX();
     static bool DEFAULT_MQTT_TLS_ENABLED();
@@ -165,11 +161,6 @@ public:
 
     bool aclAudit() const;
     void setAclAudit(bool enable);
-
-    std::string getLocalCapabilitiesDirectoryPersistenceFilename() const;
-    void setLocalCapabilitiesDirectoryPersistenceFilename(const std::string& filename);
-    bool isLocalCapabilitiesDirectoryPersistencyEnabled() const;
-    void setLocalCapabilitiesDirectoryPersistencyEnabled(bool enabled);
 
     bool isGlobalCapabilitiesDirectoryCompressedMessagesEnabled() const;
     void setGlobalCapabilitiesDirectoryCompressedMessagesEnabled(bool enable);

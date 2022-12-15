@@ -3,7 +3,6 @@ persistence-file=radio-app-provider.joynr.settings
 
 [lib-joynr]
 participant-ids-persistence-file=radio-app-provider.ParticipantIds.persist
-local-capabilities-directory-persistence-file=radio-app-provider.LocalCapabilitiesDirectory.persist
 
 [uds]
 socket-path=/tmp/joynr-radio-app.sock
