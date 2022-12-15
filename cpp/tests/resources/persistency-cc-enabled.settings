@@ -1,5 +1,0 @@
-[cluster-controller]
-local-capabilities-directory-persistency-enabled=true
-
-[websocket]
-tls-enabled=false

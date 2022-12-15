@@ -45,8 +45,6 @@ macro(CONFIGURE_TEST_FILES targetDirectory)
         "MessagingSettingsDiscardUnroutableRepliesAndPublications.settings"
         "libjoynrSystemIntegration1.settings"
         "libjoynrSystemIntegration2.settings"
-        "persistency-cc-disabled.settings"
-        "persistency-cc-enabled.settings"
         "ca.crt"
         "testclient.pem"
         "LDAS_checkPermissionToAdd.json"

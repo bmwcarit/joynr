@@ -114,7 +114,6 @@ public:
     static std::shared_ptr<JoynrClusterControllerRuntime> create(
             std::unique_ptr<Settings> settings,
             std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
-            const std::string& discoveryEntriesFile = "",
             std::shared_ptr<IKeychain> _keyChain = nullptr,
             MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory = nullptr);
 
@@ -132,11 +131,6 @@ public:
 
     void init();
 
-    /*
-     * Inject predefined capabilities stored in a JSON file.
-     */
-    void injectGlobalCapabilitiesFromFile(const std::string& fileName);
-
 protected:
     JoynrClusterControllerRuntime(
             std::unique_ptr<Settings> settings,
@@ -146,7 +140,6 @@ protected:
             std::int64_t removeStaleDelayMs = _defaultRemoveStaleDelayMs);
 
     void importMessageRouterFromFile();
-    void importPersistedLocalCapabilitiesDirectory();
 
     std::map<std::string, joynr::types::DiscoveryEntryWithMetaInfo> getProvisionedEntries()
             const final;

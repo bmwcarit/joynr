@@ -213,7 +213,6 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
     }
     return create(std::move(settings),
                   JoynrRuntime::defaultFatalRuntimeErrorHandler,
-                  discoveryEntriesFile,
                   std::move(keyChain),
                   std::move(mqttMessagingSkeletonFactory));
 }
@@ -560,8 +559,6 @@ void JoynrClusterControllerRuntime::init()
             _availableGbids,
             _messagingSettings.getDiscoveryEntryExpiryIntervalMs());
     _localCapabilitiesDirectory->init();
-    _localCapabilitiesDirectory->loadPersistedFile();
-    // importPersistedLocalCapabilitiesDirectory();
 
     std::string discoveryProviderParticipantId(
             _systemServicesSettings.getCcDiscoveryProviderParticipantId());
@@ -936,7 +933,6 @@ void JoynrClusterControllerRuntime::runForever()
 std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::create(
         std::unique_ptr<Settings> settings,
         std::function<void(const exceptions::JoynrRuntimeException&)> onFatalRuntimeError,
-        const std::string& discoveryEntriesFile,
         std::shared_ptr<IKeychain> keyChain,
         MqttMessagingSkeletonFactory mqttMessagingSkeletonFactory)
 {
@@ -948,8 +944,6 @@ std::shared_ptr<JoynrClusterControllerRuntime> JoynrClusterControllerRuntime::cr
     runtime->init();
 
     if (runtime->_localCapabilitiesDirectory) {
-        runtime->_localCapabilitiesDirectory->injectGlobalCapabilitiesFromFile(
-                discoveryEntriesFile);
         runtime->start();
     } else {
         static const exceptions::JoynrRuntimeException fatalError(
