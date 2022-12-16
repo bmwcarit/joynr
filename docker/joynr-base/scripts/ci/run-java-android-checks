@@ -27,6 +27,7 @@ mvn install -N
 mvn install checkstyle:checkstyle \
 -P spotbugs,no-license-and-notice,no-java-formatter,android \
 -DskipTests
+MAVEN_EXITCODE=$?
 
 set +e
 ./docker/joynr-base/scripts/ci/report_spotbugs.py
@@ -38,6 +39,11 @@ then
   exit 1
 fi
 set -e
+if [ $MAVEN_EXITCODE -ne 0 ]
+then
+  echo "ERROR: No checkstyle or spotbugs problems detected but Maven returned $MAVEN_EXITCODE"
+  exit 1
+fi
 
 (
   mvn javadoc:jar -P android
