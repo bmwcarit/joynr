@@ -57,6 +57,8 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private final int backpressureIncomingMqttRequestsLowerThreshold;
     private final int unsubscribeThreshold;
     private final int resubscribeThreshold;
+    private JoynrMqttClient replyClient;
+    boolean separateReplyMqttClient;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SharedSubscriptionsMqttMessagingSkeleton(String ownTopic,
@@ -74,7 +76,8 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     Set<JoynrMessageProcessor> messageProcessors,
                                                     JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                     String ownGbid,
-                                                    RoutingTable routingTable) {
+                                                    RoutingTable routingTable,
+                                                    boolean separateReplyMqttClient) {
         super(ownTopic,
               maxIncomingMqttRequests,
               messageRouter,
@@ -96,6 +99,18 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         validateBackpressureValues();
         this.unsubscribeThreshold = (maxIncomingMqttRequests * backpressureIncomingMqttRequestsUpperThreshold) / 100;
         this.resubscribeThreshold = (maxIncomingMqttRequests * backpressureIncomingMqttRequestsLowerThreshold) / 100;
+        this.separateReplyMqttClient = separateReplyMqttClient;
+        replyClient = mqttClientFactory.createReplyReceiver(ownGbid);
+    }
+
+    @Override
+    public void init() {
+        logger.debug("Initializing shared subscriptions MQTT skeleton (ownGbid={}) ...", ownGbid);
+        if (separateReplyMqttClient) {
+            replyClient.setMessageListener(this);
+            replyClient.start();
+        }
+        super.init();
     }
 
     private void validateBackpressureValues() {
@@ -153,12 +168,12 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     protected void subscribeToReplyTopic() {
         String topic = replyToTopic + "/#";
         logger.info("Subscribing to reply-to topic: {}", topic);
-        getClient().subscribe(topic);
+        replyClient.subscribe(topic);
     }
 
     protected void subscribeToSharedTopic() {
         logger.info("Subscribing to shared topic: {}", sharedSubscriptionsTopic);
-        getClient().subscribe(sharedSubscriptionsTopic);
+        client.subscribe(sharedSubscriptionsTopic);
         subscribedToSharedSubscriptionsTopic.set(true);
     }
 
@@ -170,7 +185,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
             // count of unprocessed requests bypasses upper threshold,
             // try to stop further incoming requests
             if (subscribedToSharedSubscriptionsTopic.compareAndSet(true, false)) {
-                getClient().unsubscribe(sharedSubscriptionsTopic);
+                client.unsubscribe(sharedSubscriptionsTopic);
                 logger.info("Unsubscribed from topic {} due to enabled backpressure mechanism "
                         + "and passed upper threshold of unprocessed MQTT requests", sharedSubscriptionsTopic);
             }
@@ -185,7 +200,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
             // count of unprocessed requests drops below lower threshold,
             // try to get further incoming requests
             if (subscribedToSharedSubscriptionsTopic.compareAndSet(false, true)) {
-                getClient().subscribe(sharedSubscriptionsTopic);
+                client.subscribe(sharedSubscriptionsTopic);
                 logger.info("Subscribed again to topic {} due to enabled backpressure mechanism "
                         + "and passed lower threshold of unprocessed MQTT requests", sharedSubscriptionsTopic);
             }
@@ -196,7 +211,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         StringBuilder sb = new StringBuilder("$share/");
         sb.append(sanitiseChannelIdForUseAsTopic());
         sb.append("/");
-        sb.append(getOwnTopic());
+        sb.append(ownTopic);
         sb.append("/#");
         return sb.toString();
     }

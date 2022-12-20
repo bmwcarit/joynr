@@ -81,6 +81,7 @@ public class HivemqMqttClientFactoryTest {
     private MqttClientConnectedContext mockMqttClientConnectedcontext;
 
     List<HivemqMqttClient> receivers = new ArrayList<>();
+    List<HivemqMqttClient> replyReceivers = new ArrayList<>();
     List<HivemqMqttClient> senders = new ArrayList<>();
 
     @Before
@@ -101,13 +102,14 @@ public class HivemqMqttClientFactoryTest {
         doReturn(defaultClientId).when(mockClientIdProvider).getClientId();
     }
 
-    private void createDefaultFactory(boolean separateConnections) {
+    private void createDefaultFactory(boolean separateConnections, boolean separateReplyReceiver) {
         factory = new HivemqMqttClientFactory(separateConnections,
                                               defaultMqttGbidToBrokerUriMap,
                                               defaultMqttGbidToKeepAliveTimerSecMap,
                                               defaultMqttGbidToConnectionTimeoutSecMap,
                                               defaultCleanSession,
                                               scheduledExecutorService,
+                                              separateReplyReceiver,
                                               mockClientIdProvider,
                                               mockStatusReceiver,
                                               mockShutdownNotifier,
@@ -117,6 +119,7 @@ public class HivemqMqttClientFactoryTest {
     private void createSendersAndReceivers() {
         for (int i = 0; i < gbids.length; i++) {
             receivers.add((HivemqMqttClient) factory.createReceiver(gbids[i]));
+            replyReceivers.add((HivemqMqttClient) factory.createReplyReceiver(gbids[i]));
             senders.add((HivemqMqttClient) (HivemqMqttClient) factory.createSender(gbids[i]));
             for (int j = 0; j < i; j++) {
                 assertNotEquals(receivers.get(i), receivers.get(j));
@@ -139,56 +142,107 @@ public class HivemqMqttClientFactoryTest {
         }
     }
 
+    private void assertReceiversAndReplyReceiversAreDifferent() {
+        for (int i = 0; i < receivers.size(); i++) {
+            for (int j = 0; j < receivers.size(); j++) {
+                assertNotEquals(receivers.get(i), replyReceivers.get(j));
+            }
+        }
+    }
+
+    private void testcreateClientAddsConnectionStatusMetrics(boolean separateConnections,
+                                                             boolean separateReplyReceiver,
+                                                             int timesMetricsAdded) {
+        createDefaultFactory(separateConnections, separateReplyReceiver);
+        factory.createReceiver(gbids[0]);
+        factory.createReplyReceiver(gbids[0]);
+        factory.createSender(gbids[0]);
+        verify(mockStatusReceiver,
+               times(timesMetricsAdded)).addConnectionStatusMetrics(any(ConnectionStatusMetrics.class));
+    }
+
     @Test
     public void createClientAddsConnectionStatusMetrics_noSeparateConnections() {
-        createDefaultFactory(false);
-        factory.createReceiver(gbids[0]);
-        factory.createSender(gbids[0]);
-        verify(mockStatusReceiver, times(1)).addConnectionStatusMetrics(any(ConnectionStatusMetrics.class));
+        testcreateClientAddsConnectionStatusMetrics(false, false, 1);
+    }
+
+    @Test
+    public void createClientAddsConnectionStatusMetrics_noSeparateConnections_separateReplyReceiver() {
+        testcreateClientAddsConnectionStatusMetrics(false, true, 2);
     }
 
     @Test
     public void createClientAddsConnectionStatusMetrics_separateConnections() {
-        createDefaultFactory(true);
-        factory.createReceiver(gbids[0]);
-        factory.createSender(gbids[0]);
-        verify(mockStatusReceiver, times(2)).addConnectionStatusMetrics(any(ConnectionStatusMetrics.class));
+        testcreateClientAddsConnectionStatusMetrics(true, false, 2);
+    }
+
+    @Test
+    public void createClientAddsConnectionStatusMetrics_separateConnections_separateReplyReceiver() {
+        testcreateClientAddsConnectionStatusMetrics(true, true, 3);
     }
 
     @Test
     public void testRegisterForShutdown() {
-        createDefaultFactory(false);
+        createDefaultFactory(false, true);
         verify(mockShutdownNotifier).registerForShutdown(factory);
     }
 
     @Test
-    public void testShutdown_singleConnection() {
-        createDefaultFactory(false);
+    public void testReceiversAndReplyReceiversAreTheSameWhenConfigured_withShutdown() {
+        //Shutdown is added in this test to cover the branch where reply receivers should not be shut down a second time
+        createDefaultFactory(false, false);
         createSendersAndReceivers();
 
-        assertSendersAndReceiversAreTheSame();
+        for (int i = 0; i < receivers.size(); i++) {
+            assertEquals(receivers.get(i), replyReceivers.get(i));
+        }
 
         for (int i = 0; i < receivers.size(); i++) {
             assertFalse(receivers.get(i).isShutdown());
+            assertFalse(replyReceivers.get(i).isShutdown());
         }
 
         factory.shutdown();
 
         for (int i = 0; i < receivers.size(); i++) {
             assertTrue(receivers.get(i).isShutdown());
+            assertTrue(replyReceivers.get(i).isShutdown());
+        }
+    }
+
+    @Test
+    public void testShutdown_singleConnection() {
+        createDefaultFactory(false, true);
+        createSendersAndReceivers();
+
+        assertSendersAndReceiversAreTheSame();
+        assertReceiversAndReplyReceiversAreDifferent();
+
+        for (int i = 0; i < receivers.size(); i++) {
+            assertFalse(receivers.get(i).isShutdown());
+            assertFalse(replyReceivers.get(i).isShutdown());
+        }
+
+        factory.shutdown();
+
+        for (int i = 0; i < receivers.size(); i++) {
+            assertTrue(receivers.get(i).isShutdown());
+            assertTrue(replyReceivers.get(i).isShutdown());
         }
     }
 
     @Test
     public void testShutdown_separateConnections() {
-        createDefaultFactory(true);
+        createDefaultFactory(true, true);
         createSendersAndReceivers();
 
         assertSendersAndReceiversAreDifferent();
+        assertReceiversAndReplyReceiversAreDifferent();
 
         for (int i = 0; i < receivers.size(); i++) {
             assertFalse(receivers.get(i).isShutdown());
             assertFalse(senders.get(i).isShutdown());
+            assertFalse(replyReceivers.get(i).isShutdown());
         }
 
         factory.shutdown();
@@ -196,6 +250,7 @@ public class HivemqMqttClientFactoryTest {
         for (int i = 0; i < receivers.size(); i++) {
             assertTrue(receivers.get(i).isShutdown());
             assertTrue(senders.get(i).isShutdown());
+            assertTrue(replyReceivers.get(i).isShutdown());
         }
     }
 

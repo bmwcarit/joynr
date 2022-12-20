@@ -23,6 +23,7 @@ import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
@@ -73,6 +74,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
     protected final String[] gbids;
     protected final RoutingTable routingTable;
+    protected final boolean separateMqttReplyReceiver;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -84,6 +86,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
                                          @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
+                                         @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                          MessageRouter messageRouter,
                                          MessageProcessedHandler messageProcessedHandler,
                                          MqttClientFactory mqttClientFactory,
@@ -110,6 +113,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.gbids = gbids.clone();
         this.routingTable = routingTable;
+        this.separateMqttReplyReceiver = separateMqttReplyReceiver;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}",
                      sharedSubscriptionsEnabled,
                      ownAddress,
@@ -140,7 +144,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                    rawMessagingPreprocessor,
                                                                    messageProcessors,
                                                                    joynrStatusMetricsReceiver,
-                                                                   routingTable);
+                                                                   routingTable,
+                                                                   separateMqttReplyReceiver);
     }
 
     protected IMessagingSkeletonFactory createFactory() {

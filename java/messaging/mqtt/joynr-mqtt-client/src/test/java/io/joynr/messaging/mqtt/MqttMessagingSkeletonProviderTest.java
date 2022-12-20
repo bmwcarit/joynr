@@ -52,6 +52,7 @@ public class MqttMessagingSkeletonProviderTest {
                                                     32,
                                                     23,
                                                     new MqttAddress(),
+                                                    false,
                                                     mockMessageRouter,
                                                     mockMessageProcessedHandler,
                                                     mockMqttClientFactory,

@@ -183,6 +183,9 @@ public class MqttMessagingSkeletonFactoryTest {
         when(mqttClientFactory.createSender(gbids[0])).thenReturn(mqttClient);
         when(mqttClientFactory.createSender(gbids[1])).thenReturn(mqttClient);
         when(mqttClientFactory.createSender(gbids[2])).thenReturn(mqttClient);
+        when(mqttClientFactory.createReplyReceiver(gbids[0])).thenReturn(mqttClient);
+        when(mqttClientFactory.createReplyReceiver(gbids[1])).thenReturn(mqttClient);
+        when(mqttClientFactory.createReplyReceiver(gbids[2])).thenReturn(mqttClient);
 
         final boolean backpressureEnabled = false;
         final int backpressureIncomingMqttRequestsUpperThreshold = 42;
@@ -204,7 +207,8 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                                                       rawMessagingPreprocessor,
                                                                                                                       messageProcessors,
                                                                                                                       mockJoynrStatusMetricsReceiver,
-                                                                                                                      routingTable);
+                                                                                                                      routingTable,
+                                                                                                                      false);
         testInitAllSkeletons(factory);
     }
 

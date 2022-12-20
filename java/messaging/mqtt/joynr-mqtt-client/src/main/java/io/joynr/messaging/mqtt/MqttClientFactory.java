@@ -23,4 +23,6 @@ public interface MqttClientFactory {
     JoynrMqttClient createSender(String gbid);
 
     JoynrMqttClient createReceiver(String gbid);
+
+    JoynrMqttClient createReplyReceiver(String gbid);
 }

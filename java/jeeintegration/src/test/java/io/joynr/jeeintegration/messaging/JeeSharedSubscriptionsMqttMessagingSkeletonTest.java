@@ -68,12 +68,14 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
                                                                   new HashSet<JoynrMessageProcessor>(),
                                                                   mockJoynrStatusMetrics,
                                                                   ownGbid,
-                                                                  routingTable);
+                                                                  routingTable,
+                                                                  separateReplyConnection);
         super.subject = subject;
     }
 
     @Test
     public void initSubscribesToReplyToTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.init();
@@ -81,7 +83,18 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
     }
 
     @Test
+    public void initSubscribesToReplyToTopic_separateReplyConnection() {
+        initMocks(true);
+        createSkeleton("channelId");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+        subject.init();
+        verify(mqttReplyClient).subscribe(replyToTopic + "/#");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+    }
+
+    @Test
     public void initDoesNotSubscribeToSharedTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.init();
@@ -90,6 +103,7 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
 
     @Test
     public void subscribeSubscribesToReplyToTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.subscribe();
@@ -97,7 +111,18 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
     }
 
     @Test
+    public void subscribeSubscribesToReplyToTopic_separateReplyConnection() {
+        initMocks(true);
+        createSkeleton("channelId");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+        subject.subscribe();
+        verify(mqttReplyClient).subscribe(replyToTopic + "/#");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+    }
+
+    @Test
     public void subscribeDoesNotSubscribeToSharedTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.subscribe();

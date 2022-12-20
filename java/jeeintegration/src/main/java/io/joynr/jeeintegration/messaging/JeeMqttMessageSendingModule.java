@@ -25,6 +25,7 @@ import static io.joynr.messaging.mqtt.MqttModule.MQTT_TO_KEEP_ALIVE_TIMER_SEC_MA
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.MQTT_CIPHERSUITE_LIST;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 
 import java.util.List;
 
@@ -48,6 +49,7 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
+import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.MqttMulticastAddressCalculator;
 import io.joynr.messaging.mqtt.MqttMultipleBackendPropertyProvider;
 import io.joynr.messaging.mqtt.MqttReplyToAddressFactory;
@@ -115,6 +117,12 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     @Named(MQTT_CIPHERSUITE_LIST)
     public List<String> provideMqttInternalCipherList(MqttCiphersuiteListFactory internalCipherListFactory) {
         return internalCipherListFactory.create();
+    }
+
+    @Provides
+    @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER)
+    public boolean provideSeparateReplyReceiverSetting(@Named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions) {
+        return enableSharedSubscriptions;
     }
 
     @Override
