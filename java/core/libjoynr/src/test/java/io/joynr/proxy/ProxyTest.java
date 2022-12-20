@@ -199,7 +199,7 @@ public class ProxyTest {
         Future<String> asyncMethod(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback,
                                    MessagingQos messagingQos);
 
-        Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) Callback<String> callback);
+        Future<String> asyncMethodWithApplicationError(@JoynrRpcCallback(deserializationType = String.class) CallbackWithModeledError<String, ApplicationErrors> callback);
     }
 
     @io.joynr.dispatcher.rpc.annotation.FireAndForget
@@ -607,37 +607,47 @@ public class ProxyTest {
 
     @SuppressWarnings({ "unchecked" })
     @Test
-    public void createProxyAndCallAsyncMethodFailWithApplicationError() throws Exception {
+    public void createProxyAndCallAsyncMethodFailWithApplicationError_noCallbacksProvided() throws Exception {
+        final String requestReplyId = "createProxyAndCallAsyncMethodFailWithApplicationError_noCallbacksProvided_requestReplyId";
         final ApplicationException expected = new ApplicationException(ApplicationErrors.ERROR_VALUE_3,
                                                                        "TEST: createProxyAndCallAsyncMethodFailWithApplicationError");
         TestInterface proxy = getTestInterfaceProxy();
 
-        // when joynrMessageSender1.sendRequest is called, get the replyCaller from the mock dispatcher and call
-        // messageCallback on it.
-        Mockito.doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws JsonParseException, JsonMappingException,
-                                                              IOException {
-                // capture the replyCaller passed into the dispatcher for calling later
-                ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-                verify(replyCallerDirectory).addReplyCaller(anyString(),
-                                                            replyCallerCaptor.capture(),
-                                                            any(ExpiryDate.class));
+        final Future<String> future = proxy.asyncMethodWithApplicationError(null);
 
-                String requestReplyId = "createProxyAndCallAsyncMethodSuccess_requestReplyId";
-                // pass the response to the replyCaller
-                replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
-                return null;
-            }
-        }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
-                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
-                                                 Mockito.<Request> any(),
-                                                 Mockito.<MessagingQos> any());
+        ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
+        verify(replyCallerDirectory).addReplyCaller(anyString(), replyCallerCaptor.capture(), any(ExpiryDate.class));
 
-        CallbackWithModeledError<String, Enum<?>> callbackWithApplicationException = Mockito.mock(CallbackWithModeledError.class);
+        // pass the response to the replyCaller
+        replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
+
+        try {
+            future.get(1000);
+            Assert.fail("Should throw ApplicationException");
+        } catch (ApplicationException e) {
+            Assert.assertEquals(expected, e);
+        }
+
+        Assert.assertEquals(RequestStatusCode.ERROR, future.getStatus().getCode());
+    }
+
+    @SuppressWarnings({ "unchecked" })
+    @Test
+    public void createProxyAndCallAsyncMethodFailWithApplicationError() throws Exception {
+        final String requestReplyId = "createProxyAndCallAsyncMethodFailWithApplicationError_requestReplyId";
+        final ApplicationException expected = new ApplicationException(ApplicationErrors.ERROR_VALUE_3,
+                                                                       "TEST: createProxyAndCallAsyncMethodFailWithApplicationError");
+        TestInterface proxy = getTestInterfaceProxy();
+
+        CallbackWithModeledError<String, ApplicationErrors> callbackWithApplicationException = Mockito.mock(CallbackWithModeledError.class);
         final Future<String> future = proxy.asyncMethodWithApplicationError(callbackWithApplicationException);
 
-        // the test usually takes only 200 ms, so if we wait 1 sec, something has gone wrong
+        ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
+        verify(replyCallerDirectory).addReplyCaller(anyString(), replyCallerCaptor.capture(), any(ExpiryDate.class));
+
+        // pass the response to the replyCaller
+        replyCallerCaptor.getValue().messageCallBack(new Reply(requestReplyId, expected));
+
         try {
             future.get(1000);
             Assert.fail("Should throw ApplicationException");
