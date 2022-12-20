@@ -28,8 +28,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -64,6 +66,9 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import com.hivemq.client.internal.checkpoint.Confirmable;
+import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.joynr.arbitration.ArbitrationStrategyFunction;
 import io.joynr.arbitration.DiscoveryQos;
@@ -435,7 +440,14 @@ public class AbstractRoutingTableCleanupTest {
                                                                                   UnsuppportedVersionException {
         IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(new MqttAddress(targetGbid,
                                                                                                                    ""));
-        skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(),
+        Confirmable confirmableMock = mock(Confirmable.class);
+        when(confirmableMock.confirm()).thenReturn(true, false);
+        Mqtt5Publish publish = Mqtt5Publish.builder()
+                                           .topic("testTopic")
+                                           .payload(msg.getImmutableMessage().getSerializedMessage())
+                                           .build();
+        MqttPublish publish1 = (MqttPublish) publish;
+        skeleton.transmit(publish1.withConfirmable(confirmableMock),
                           msg.getImmutableMessage().getPrefixedCustomHeaders(),
                           new FailureAction() {
                               @Override

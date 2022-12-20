@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
@@ -157,12 +159,13 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     }
 
     @Override
-    public void transmit(byte[] serializedMessage,
+    public void transmit(Mqtt5Publish mqtt5Publish,
                          Map<String, String> prefixedCustomHeaders,
                          FailureAction failureAction) {
-        try {
-            HashMap<String, Serializable> context = new HashMap<String, Serializable>();
-            byte[] processedMessage = rawMessagingPreprocessor.process(serializedMessage, Optional.of(context));
+            try {
+                HashMap<String, Serializable> context = new HashMap<String, Serializable>();
+                byte[] processedMessage = rawMessagingPreprocessor.process(mqtt5Publish.getPayloadAsBytes(),
+                                                                           Optional.of(context));
 
             ImmutableMessage message = new ImmutableMessage(processedMessage);
 

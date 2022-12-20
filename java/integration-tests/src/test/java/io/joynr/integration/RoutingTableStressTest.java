@@ -24,7 +24,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,6 +54,10 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hivemq.client.internal.checkpoint.Confirmable;
+import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.joynr.arbitration.ArbitrationStrategyFunction;
 import io.joynr.arbitration.DiscoveryQos;
@@ -443,7 +449,14 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
 
             IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(new MqttAddress(gbids[1],
                                                                                                                        ""));
-            skeleton.transmit(requestMsg.getImmutableMessage().getSerializedMessage(),
+            Confirmable confirmableMock = mock(Confirmable.class);
+            when(confirmableMock.confirm()).thenReturn(true, false);
+            Mqtt5Publish publish = Mqtt5Publish.builder()
+                                               .topic("testTopic")
+                                               .payload(requestMsg.getImmutableMessage().getSerializedMessage())
+                                               .build();
+            MqttPublish publish1 = (MqttPublish) publish;
+            skeleton.transmit(publish1.withConfirmable(confirmableMock),
                               requestMsg.getImmutableMessage().getPrefixedCustomHeaders(),
                               new FailureAction() {
                                   @Override

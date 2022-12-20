@@ -19,13 +19,18 @@
 package io.joynr.messaging.mqtt;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
+import com.hivemq.client.internal.checkpoint.Confirmable;
+import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
+
 import io.joynr.messaging.FailureAction;
-import io.joynr.common.ExpiryDate;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MutableMessage;
@@ -59,24 +64,30 @@ final class MqttMessagingSkeletonTestUtil {
         List<String> messageIds = new LinkedList<>();
 
         for (int i = 0; i < numMessages; i++) {
-            ImmutableMessage message = createTestMessage(messageType);
-            skeleton.transmit(message.getSerializedMessage(), message.getPrefixedCustomHeaders(), failIfCalledAction);
-            messageIds.add(message.getId());
+            Mqtt5Publish message = createTestMessage(messageType);
+            skeleton.transmit(message,
+                              getImmutableMessageFromPublish(message).getPrefixedCustomHeaders(),
+                              failIfCalledAction);
+            messageIds.add(getImmutableMessageFromPublish(message).getId());
         }
         return messageIds;
     }
 
-    static ImmutableMessage createTestRequestMessage() throws Exception {
-        return createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST, 100000, true);
+    static ImmutableMessage getImmutableMessageFromPublish(Mqtt5Publish message) throws Exception {
+        return new ImmutableMessage(message.getPayloadAsBytes());
     }
 
-    static ImmutableMessage createTestMessage(Message.MessageType messageType) throws Exception {
+    static Mqtt5Publish createTestRequestMessage() throws Exception {
+        return createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
+    }
+
+    static Mqtt5Publish createTestMessage(Message.MessageType messageType) throws Exception {
         return createTestMessage(messageType, 100000, true);
     }
 
-    static ImmutableMessage createTestMessage(Message.MessageType messageType,
-                                              long ttlMS,
-                                              boolean ttlAbsolute) throws Exception {
+    static Mqtt5Publish createTestMessage(Message.MessageType messageType,
+                                          long ttlMs,
+                                          boolean ttlAbsolute) throws Exception {
         MutableMessage message = new MutableMessage();
 
         MqttAddress address = new MqttAddress("testBrokerUri", "testTopic");
@@ -84,11 +95,19 @@ final class MqttMessagingSkeletonTestUtil {
         message.setSender("someSender");
         message.setRecipient("someRecipient");
         message.setTtlAbsolute(ttlAbsolute);
-        message.setTtlMs(ExpiryDate.fromRelativeTtl(ttlMS).getValue());
+        message.setTtlMs(System.currentTimeMillis() + ttlMs);
         message.setPayload(new byte[]{ 0, 1, 2 });
         message.setType(messageType);
         message.setReplyTo(RoutingTypesUtil.toAddressString(address));
 
-        return message.getImmutableMessage();
+        Confirmable confirmableMock = mock(Confirmable.class);
+        when(confirmableMock.confirm()).thenReturn(true, false);
+
+        Mqtt5Publish publish = Mqtt5Publish.builder()
+                                           .topic("testTopic")
+                                           .payload(message.getImmutableMessage().getSerializedMessage())
+                                           .build();
+        MqttPublish publish1 = (MqttPublish) publish;
+        return publish1.withConfirmable(confirmableMock);
     }
 }

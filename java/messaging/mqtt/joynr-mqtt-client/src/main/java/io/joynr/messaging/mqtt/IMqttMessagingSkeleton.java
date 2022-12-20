@@ -20,11 +20,13 @@ package io.joynr.messaging.mqtt;
 
 import java.util.Map;
 
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
+
 import io.joynr.messaging.FailureAction;
 
 public interface IMqttMessagingSkeleton {
 
-    public void transmit(byte[] serializedMessage,
+    public void transmit(Mqtt5Publish mqtt5Publish,
                          Map<String, String> prefixedCustomHeaders,
                          FailureAction failureAction);
 }

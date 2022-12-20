@@ -58,6 +58,10 @@
 			<artifactId>smrf-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.hivemq</groupId>
+			<artifactId>hivemq-mqtt-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 		</dependency>
