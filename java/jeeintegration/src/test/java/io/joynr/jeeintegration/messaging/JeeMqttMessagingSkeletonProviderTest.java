@@ -26,7 +26,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.messaging.IMessagingSkeletonFactory;
-import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;

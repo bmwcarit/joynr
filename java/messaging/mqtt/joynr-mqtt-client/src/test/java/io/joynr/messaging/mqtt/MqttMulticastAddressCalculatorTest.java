@@ -21,8 +21,6 @@ package io.joynr.messaging.mqtt;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;

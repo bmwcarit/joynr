@@ -54,7 +54,6 @@ import com.google.inject.Guice;
 import com.google.inject.name.Names;
 
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
