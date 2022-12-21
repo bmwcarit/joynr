@@ -104,6 +104,7 @@ public:
     virtual void add(const TaskWithExpiryDate& taskWithExpiryDate)
     {
         std::unique_lock<std::mutex> lock(_tasksMutex);
+        _taskAvailable = true;
         _tasks.push_back(taskWithExpiryDate);
         _tasksChanged.notify_all();
     }
@@ -129,6 +130,7 @@ public:
             std::unique_lock<std::mutex> lock(_tasksMutex);
             std::vector<TaskWithExpiryDate> releasePendingTasksMemory;
             _tasks.swap(releasePendingTasksMemory);
+            _taskAvailable = true;
             _tasksChanged.notify_all();
         }
         _worker.join();
@@ -148,6 +150,7 @@ private:
     std::vector<TaskWithExpiryDate> _tasks;
     std::thread _worker;
     const std::chrono::milliseconds _maxTimeToWait;
+    bool _taskAvailable = false;
 
     void run()
     {
@@ -171,6 +174,9 @@ private:
                         // cancel expired task
                         taskWithMinExpiryDate->_timeout();
                         _tasks.erase(taskWithMinExpiryDate);
+                        if (_tasks.empty()) {
+                            _taskAvailable = false;
+                        }
                         continue;
                     }
                 }
@@ -187,6 +193,9 @@ private:
                     if (it->_expiryDate.toMilliseconds() <= TimePoint::now().toMilliseconds()) {
                         it->_timeout();
                         it = _tasks.erase(it);
+                        if (_tasks.empty()) {
+                            _taskAvailable = false;
+                        }
                     } else {
                         ++it;
                     }
@@ -203,18 +212,24 @@ private:
                     if (_isRunning.load()) {
                         std::unique_lock<std::mutex> lock(_tasksMutex);
                         if (_tasks.empty()) {
-                            _tasksChanged.wait(lock);
+                            _tasksChanged.wait(lock, [this] { return _taskAvailable; });
                         }
                         if (!_tasks.empty()) {
                             TaskWithExpiryDate nextTask = std::move(_tasks.front());
                             if (nextTask._expiryDate.toMilliseconds() <=
                                 TimePoint::now().toMilliseconds()) {
                                 _tasks.erase(_tasks.begin());
+                                if (_tasks.empty()) {
+                                    _taskAvailable = false;
+                                }
                                 lock.unlock();
                                 nextTask._timeout();
                                 continue;
                             } else {
                                 _tasks.erase(_tasks.begin());
+                                if (_tasks.empty()) {
+                                    _taskAvailable = false;
+                                }
                                 if (!nextTask._task) {
                                     throw std::runtime_error("Dropping null-task.");
                                 }

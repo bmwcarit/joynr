@@ -100,12 +100,10 @@ public:
                         successCallbackCalled.notify();
                     } else {
                         FAIL() << "resolve delivered unexpected result";
-                        successCallbackCalled.notify();
                     }
                 },
-                [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
+                [](const joynr::exceptions::ProviderRuntimeException&) {
                     FAIL() << "resolveNextHop did not succeed.";
-                    successCallbackCalled.notify();
                 });
         EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
     }

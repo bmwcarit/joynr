@@ -521,7 +521,7 @@ std::shared_ptr<T> ProxyBuilder<T>::build(const ArbitrationResult& arbitrationRe
         proxyFuture->get(createdProxy);
     } catch (const exceptions::DiscoveryException& discoveryException) {
         JOYNR_LOG_ERROR(logger(), "Build of proxy failed: {}", discoveryException.getMessage());
-        throw discoveryException;
+        throw;
     }
 
     return createdProxy;

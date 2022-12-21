@@ -1715,7 +1715,7 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
 
-    const std::uint8_t& expectedReturnedGlobalEntries = 2;
+    const std::uint8_t expectedReturnedGlobalEntries = 2;
     _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
                                         _INTERFACE_1_NAME,
                                         _discoveryQos,

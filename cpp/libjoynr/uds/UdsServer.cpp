@@ -238,7 +238,7 @@ void UdsServer::Connection::send(const smrf::ByteArrayView& msg,
         ioContext->post([self = shared_from_this(), e]() mutable {
             self->doClose("Failed to construct message", e);
         });
-        throw e;
+        throw;
     }
 }
 
