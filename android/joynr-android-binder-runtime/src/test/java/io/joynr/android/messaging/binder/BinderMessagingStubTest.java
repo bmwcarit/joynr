@@ -86,14 +86,14 @@ public class BinderMessagingStubTest {
         when(address.getPackageName()).thenReturn(testPackageName);
         when(immutableMessage.isTtlAbsolute()).thenReturn(true);
         binderMessagingStub.transmit(immutableMessage, successAction, failureAction);
-        verify(binderMessagingStub).connectAndTransmitData(any(),eq(address),anyLong(),any(TimeUnit.class),eq(successAction),eq(failureAction));
+        verify(binderMessagingStub).connectAndTransmitData(any(), eq(address), anyLong(), any(TimeUnit.class), eq(successAction), eq(failureAction));
     }
 
     @Test(expected = JoynrRuntimeException.class)
     public void transmit_MessageTtlIsAbsolute_ThrowsJoynrRuntimeException() {
         when(immutableMessage.isTtlAbsolute()).thenReturn(false);
         binderMessagingStub.transmit(immutableMessage, successAction, failureAction);
-        verify(binderMessagingStub, never()).connectAndTransmitData(any(),eq(address),anyLong(),any(TimeUnit.class),eq(successAction),eq(failureAction));
+        verify(binderMessagingStub, never()).connectAndTransmitData(any(), eq(address), anyLong(), any(TimeUnit.class), eq(successAction), eq(failureAction));
     }
 
     @After

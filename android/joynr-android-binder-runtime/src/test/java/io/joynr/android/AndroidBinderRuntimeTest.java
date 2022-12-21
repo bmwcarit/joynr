@@ -82,9 +82,9 @@ public class AndroidBinderRuntimeTest {
 
         testProperties = new Properties();
 
-        testModule1 = binder -> {};
+        testModule1 = binder -> { };
 
-        testModule2 = binder -> {};
+        testModule2 = binder -> { };
 
         androidBinderRuntimeUtilsMockedStatic = Mockito.mockStatic(AndroidBinderRuntimeUtils.class);
 

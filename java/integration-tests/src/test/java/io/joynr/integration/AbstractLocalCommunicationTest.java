@@ -134,7 +134,7 @@ public abstract class AbstractLocalCommunicationTest {
             }
         }, period, period);
 
-        Thread.sleep(lengthInMS);// - (System.currentTimeMillis() - currentTime));
+        Thread.sleep(lengthInMS); // - (System.currentTimeMillis() - currentTime));
         verify(listener, times(0)).onError(null);
         // verify(listener, times(times)).receive(anyInt());
         // TODO verify publications shipped correct data
@@ -172,7 +172,7 @@ public abstract class AbstractLocalCommunicationTest {
         }, period, period);
         proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
 
-        Thread.sleep(lengthInMS + 100);// - (System.currentTimeMillis() - currentTime));
+        Thread.sleep(lengthInMS + 100); // - (System.currentTimeMillis() - currentTime));
         verify(listener, times(0)).onError(null);
         verify(listener, times(times)).onReceive(anyInt());
         // TODO verify publications shipped correct data
