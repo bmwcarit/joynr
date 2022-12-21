@@ -413,8 +413,8 @@
 			are referenced.
 		-->
 		<jersey.version>1.19.4</jersey.version>
-		<jackson.version>2.13.4</jackson.version>
-		<netty.version>4.1.80.Final</netty.version>
+		<jackson.version>2.14.1</jackson.version>
+		<netty.version>4.1.86.Final</netty.version>
 		<guice.version>5.1.0</guice.version>
 		<jetty.version>11.0.11</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
@@ -432,6 +432,7 @@
 		<sonarsource.version>3.9.1.2184</sonarsource.version>
 		<surefire.version>3.0.0-M3</surefire.version>
 		<ow2_asm.version>9.4</ow2_asm.version>
+		<guava.version>31.1-jre</guava.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
 	</properties>
 
@@ -1011,6 +1012,11 @@
 				<type>jar</type>
 				<version>1.12.14</version>
 			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -1145,7 +1151,7 @@
 						<dependency>
 							<groupId>com.google.guava</groupId>
 							<artifactId>guava</artifactId>
-							<version>31.1-jre</version>
+							<version>${guava.version}</version>
 						</dependency>
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
