@@ -214,6 +214,7 @@ public class ProxyTest {
         public static final String INTERFACE_NAME = "TestInterface";
     }
 
+    // CHECKSTYLE IGNORE MethodLength FOR NEXT 1 LINES
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setUp() throws Exception {

@@ -212,6 +212,7 @@ public class AbstractRoutingTableCleanupTest {
         private final Set<String> internalProxyParticipantIds;
 
         @Inject
+        // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
         public TestProxyBuilderFactory(DiscoveryAsync localDiscoveryAggregator,
                                        ProxyInvocationHandlerFactory proxyInvocationHandlerFactory,
                                        ShutdownNotifier shutdownNotifier,
