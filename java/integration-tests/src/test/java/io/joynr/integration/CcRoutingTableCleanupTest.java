@@ -53,6 +53,7 @@ import io.joynr.dispatching.subscription.MulticastIdUtil;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingQos;
@@ -342,12 +343,12 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
         // fake incoming expired request and check refCounts
         defaultMessagingQos.setTtl_ms(0);
         MutableMessage requestMsg = createRequestMsg(proxyParticipantId, FIXEDPARTICIPANTID1);
+        requestMsg.setTtlAbsolute(true);
         CountDownLatch cdl = new CountDownLatch(1);
         // make sure that the message is expired
         sleep(1);
         FailureAction onFailure = error -> {
-            assertTrue(JoynrMessageNotSentException.class.isInstance(error));
-            assertTrue(error.getMessage().contains("expired"));
+            assertTrue(JoynrMessageExpiredException.class.isInstance(error));
             cdl.countDown();
         };
         try {
@@ -370,15 +371,6 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
             skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(),
                               msg.getImmutableMessage().getPrefixedCustomHeaders(),
                               onFailure);
-        });
-    }
-
-    @Test
-    public void ws_rqRp_error_rqExpired() {
-        rqRp_error_rqExpired(wsClientAddress, webSocketClientMessagingStubMock, false, (msg, onFailure) -> {
-            IWebSocketMessagingSkeleton skeleton = (IWebSocketMessagingSkeleton) messagingSkeletonFactory.getSkeleton(new WebSocketClientAddress())
-                                                                                                         .get();
-            skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(), onFailure);
         });
     }
 
@@ -597,15 +589,6 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
             skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(),
                               msg.getImmutableMessage().getPrefixedCustomHeaders(),
                               onFailure);
-        });
-    }
-
-    @Test
-    public void ws_rqRp_error_rqWithRelativeTtl() {
-        rqRp_error_rqWithRelativeTtl(wsClientAddress, (msg, onFailure) -> {
-            IWebSocketMessagingSkeleton skeleton = (IWebSocketMessagingSkeleton) messagingSkeletonFactory.getSkeleton(new WebSocketClientAddress())
-                                                                                                         .get();
-            skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(), onFailure);
         });
     }
 

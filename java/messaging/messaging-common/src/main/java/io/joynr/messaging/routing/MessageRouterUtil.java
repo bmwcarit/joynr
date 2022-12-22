@@ -18,12 +18,16 @@
  */
 package io.joynr.messaging.routing;
 
+import java.text.MessageFormat;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
+import io.joynr.exceptions.JoynrMessageExpiredException;
+import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import joynr.ImmutableMessage;
 
@@ -53,5 +57,20 @@ public class MessageRouterUtil {
         }
         logger.trace("Created delay of {}ms in retry {}", millis, retries);
         return millis;
+    }
+
+    public static void checkExpiry(final ImmutableMessage message) throws JoynrMessageNotSentException,
+                                                                   JoynrMessageExpiredException {
+        if (!message.isTtlAbsolute()) {
+            throw new JoynrMessageNotSentException("Relative ttl not supported");
+        }
+        final long currentTimeMillis = System.currentTimeMillis();
+        if (message.getTtlMs() <= currentTimeMillis) {
+            String errorMessage = MessageFormat.format("Received expired message: (now ={0}). Dropping the message {1}",
+                                                       currentTimeMillis,
+                                                       message.getTrackingInfo());
+            logger.trace(errorMessage);
+            throw new JoynrMessageExpiredException(errorMessage);
+        }
     }
 }

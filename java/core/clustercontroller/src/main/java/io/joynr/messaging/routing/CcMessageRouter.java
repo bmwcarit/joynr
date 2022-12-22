@@ -19,7 +19,6 @@
 package io.joynr.messaging.routing;
 
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -258,13 +257,7 @@ public class CcMessageRouter
                 public void hasConsumerPermission(boolean hasPermission) {
                     if (hasPermission) {
                         try {
-                            checkExpiry(message);
                             routeInternal(message, 0, 0);
-                        } catch (JoynrMessageExpiredException e) {
-                            logger.warn("Problem processing message. Message {} is dropped: {}",
-                                        message.getId(),
-                                        e.getMessage());
-                            finalizeMessageProcessing(message, false);
                         } catch (Exception e) {
                             logger.error("Error processing message. Message {} is dropped: {}",
                                          message.getId(),
@@ -281,7 +274,6 @@ public class CcMessageRouter
                 }
             });
         } else {
-            checkExpiry(message);
             routeInternal(message, 0, 0);
         }
     }
@@ -425,25 +417,8 @@ public class CcMessageRouter
         messageQueue.put(delayableMessage);
     }
 
-    private void checkExpiry(final ImmutableMessage message) {
-        if (!message.isTtlAbsolute()) {
-            finalizeMessageProcessing(message, false);
-            throw new JoynrRuntimeException("Relative ttl not supported");
-        }
-
-        if (MessageRouterUtil.isExpired(message)) {
-            long currentTimeMillis = System.currentTimeMillis();
-            String errorMessage = MessageFormat.format("Received expired message: (now ={0}). Dropping the message {1}",
-                                                       currentTimeMillis,
-                                                       message.getTrackingInfo());
-            logger.trace(errorMessage);
-            finalizeMessageProcessing(message, false);
-            throw new JoynrMessageExpiredException(errorMessage);
-        }
-    }
-
     private FailureAction createFailureAction(final DelayableImmutableMessage delayableMessage) {
-        final FailureAction failureAction = new FailureAction() {
+        return new FailureAction() {
             private final AtomicBoolean failureActionExecutedOnce = new AtomicBoolean(false);
 
             @Override
@@ -459,6 +434,12 @@ public class CcMessageRouter
                     logger.warn("Caught JoynrShutdownException while handling message {}:",
                                 messageNotSent.getTrackingInfo(),
                                 error);
+                    return;
+                } else if (error instanceof JoynrMessageExpiredException) {
+                    logger.error("ERROR SENDING: Aborting send of message {}, Error:",
+                                 messageNotSent.getTrackingInfo(),
+                                 error);
+                    finalizeMessageProcessing(messageNotSent, false);
                     return;
                 } else if (error instanceof JoynrMessageNotSentException) {
                     logger.error("ERROR SENDING: Aborting send of message {}, Error:",
@@ -504,7 +485,6 @@ public class CcMessageRouter
                 }
             }
         };
-        return failureAction;
     }
 
     private SuccessAction createMessageProcessedAction(final ImmutableMessage message) {
@@ -578,7 +558,8 @@ public class CcMessageRouter
 
                     ImmutableMessage message = delayableMessage.getMessage();
                     logger.trace("Starting processing of message {}", message);
-                    checkExpiry(message);
+
+                    MessageRouterUtil.checkExpiry(message);
 
                     Optional<Address> optionalAddress = addressManager.getAddressForDelayableImmutableMessage(delayableMessage);
                     try {
