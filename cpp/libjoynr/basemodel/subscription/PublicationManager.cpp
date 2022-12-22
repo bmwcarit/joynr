@@ -32,7 +32,6 @@
 #include "joynr/IPublicationSender.h"
 #include "joynr/IRequestInterpreter.h"
 #include "joynr/InterfaceRegistrar.h"
-#include "joynr/LibjoynrSettings.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MulticastSubscriptionRequest.h"
 #include "joynr/Reply.h"
