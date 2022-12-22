@@ -31,7 +31,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import joynr.test.NonInstantiable;
 import joynr.tests.DefaulttestProvider;
-import joynr.tests.test;
 import joynr.tests.testProvider;
 import joynr.tests.testSubscriptionPublisherImpl;
 

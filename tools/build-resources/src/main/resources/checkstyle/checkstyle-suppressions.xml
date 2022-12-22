@@ -26,6 +26,7 @@
 	<suppress checks="ParameterNumber" files="[\\/]generated[\\/]"/> <!-- We can't influence how many parameters the IDL-Creator defines -->
 	<suppress checks="LineLength" files="[\\/]generated[\\/]"/>      <!-- Formatting generated code is not worth the work-->
 	<suppress checks=".*Name.*" files="[\\/]generated[\\/].*"/>        <!-- Can't controll names of generated methods and params -->
+	<suppress checks=".*Name.*" files="[\\/]test[\\/].*"/>
 	<suppress checks="RedundantImport" files="[\\/]generated[\\/].*"/>  		
 	<suppress checks="UnusedImports" files="[\\/]generated[\\/].*"/>     		
 	

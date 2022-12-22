@@ -50,7 +50,6 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.CCInProcessRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
-import io.joynr.runtime.ProviderRegistrar;
 import joynr.exceptions.ApplicationException;
 import joynr.test.JoynrTestLoggingRule;
 import joynr.tests.DefaulttestProvider;

@@ -18,8 +18,6 @@
  */
 package io.joynr.android.messaging.binder;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import java.util.Set;

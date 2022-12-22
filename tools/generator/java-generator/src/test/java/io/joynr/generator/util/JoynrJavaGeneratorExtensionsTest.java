@@ -41,7 +41,6 @@ import com.google.inject.name.Names;
 import io.joynr.generator.loading.ModelLoader;
 import io.joynr.generator.templates.util.JoynrGeneratorExtensions;
 import io.joynr.generator.templates.util.NamingUtil;
-import io.joynr.generator.util.JoynrJavaGeneratorExtensions;
 
 public class JoynrJavaGeneratorExtensionsTest {
 

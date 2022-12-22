@@ -93,7 +93,7 @@ public class BinderServiceStubTest {
     }
 
     @Test
-    public void createBinderService_userIsSystem_bindsService(){
+    public void createBinderService_userIsSystem_bindsService() {
         setupBinderServiceStub(BinderConstants.USER_ID_SYSTEM);
         spyBinderServiceStub = spy(binderServiceStub);
         when(spyBinderServiceStub.initBinderServiceServer()).thenReturn(binderServiceServer);
@@ -103,7 +103,7 @@ public class BinderServiceStubTest {
     }
 
     @Test
-    public void createBinderService_userIsNotSystem_bindsService(){
+    public void createBinderService_userIsNotSystem_bindsService() {
         setupBinderServiceStub(OTHER_USER_ID);
         spyBinderServiceStub = spy(binderServiceStub);
         when(spyBinderServiceStub.initBinderServiceClient()).thenReturn(binderServiceClient);

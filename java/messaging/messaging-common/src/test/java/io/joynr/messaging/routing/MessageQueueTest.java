@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging.routing;
 
-import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -29,11 +28,9 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,8 +40,6 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.util.ObjectMapper;
-import joynr.ImmutableMessage;
-import joynr.Message;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 

@@ -44,8 +44,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
-import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
-import io.joynr.jeeintegration.multicast.SubscriptionPublisherProducer;
 import io.joynr.provider.SubscriptionPublisherInjection;
 import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceSubscriptionPublisher;

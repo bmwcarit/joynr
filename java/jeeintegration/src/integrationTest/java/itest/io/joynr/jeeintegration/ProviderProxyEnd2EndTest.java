@@ -19,7 +19,6 @@
 package itest.io.joynr.jeeintegration;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 
@@ -36,15 +35,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.CallbackHandlerDiscovery;
 import io.joynr.jeeintegration.DefaultJoynrRuntimeFactory;
 import io.joynr.jeeintegration.JeeJoynrServiceLocator;

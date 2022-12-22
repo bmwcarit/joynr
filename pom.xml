@@ -1315,6 +1315,7 @@
 							to ${project.build.directory}/checkstyle-suppressions.xml
 						-->
 						<suppressionsLocation>checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+						<includeTestSourceDirectory>true</includeTestSourceDirectory>
 					</configuration>
 					<executions>
 						<execution>

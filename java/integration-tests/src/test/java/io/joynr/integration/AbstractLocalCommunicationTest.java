@@ -47,7 +47,6 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.proxy.ProxyBuilder;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.ProviderRegistrar;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.test.JoynrTestLoggingRule;
@@ -135,7 +134,7 @@ public abstract class AbstractLocalCommunicationTest {
             }
         }, period, period);
 
-        Thread.sleep(lengthInMS);// - (System.currentTimeMillis() - currentTime));
+        Thread.sleep(lengthInMS); // - (System.currentTimeMillis() - currentTime));
         verify(listener, times(0)).onError(null);
         // verify(listener, times(times)).receive(anyInt());
         // TODO verify publications shipped correct data
@@ -173,7 +172,7 @@ public abstract class AbstractLocalCommunicationTest {
         }, period, period);
         proxy.subscribeToATTRIBUTEWITHCAPITALLETTERS(listener, subscriptionQos);
 
-        Thread.sleep(lengthInMS + 100);// - (System.currentTimeMillis() - currentTime));
+        Thread.sleep(lengthInMS + 100); // - (System.currentTimeMillis() - currentTime));
         verify(listener, times(0)).onError(null);
         verify(listener, times(times)).onReceive(anyInt());
         // TODO verify publications shipped correct data

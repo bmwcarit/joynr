@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.google.inject.Guice;
-import com.google.inject.Injector;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.messaging.JsonMessageSerializerModule;
 import joynr.types.Localisation.GpsLocation;
