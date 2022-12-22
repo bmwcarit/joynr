@@ -66,6 +66,6 @@ public class SubscriptionExceptionDeserializer extends StdDeserializer<Subscript
         subscriptionId = JoynrExceptionDeserializationUtils.getObjectMapper().readValue(subscriptionIdNode.toString(),
                                                                                         String.class);
 
-        return new SubscriptionException(subscriptionId, message, this);
+        return new SubscriptionException(subscriptionId, message);
     }
 }
