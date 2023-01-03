@@ -42,14 +42,13 @@
 #include "joynr/types/DiscoveryScope.h"
 #include "joynr/types/Version.h"
 
-#include "tests/JoynrTest.h"
+#include "LocalCapabilitiesDirectoryAbstract.h"
 #include "tests/mock/MockGlobalCapabilitiesDirectoryClient.h"
 #include "tests/mock/MockMessageRouter.h"
 
-using namespace ::testing;
 using namespace joynr;
 
-class LocalCapabilitiesDirectoryEmptyGbidTest : public ::testing::Test
+class LocalCapabilitiesDirectoryEmptyGbidTest : public AbstractLocalCapabilitiesDirectoryTest
 {
 public:
     LocalCapabilitiesDirectoryEmptyGbidTest()
