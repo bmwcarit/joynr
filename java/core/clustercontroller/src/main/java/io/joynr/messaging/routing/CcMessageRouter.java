@@ -252,6 +252,7 @@ public class CcMessageRouter
 
     protected void route(final ImmutableMessage message) {
         if (enableAccessControl) {
+            logger.debug("CcMessageRouter hasConsumerPermission CONSUMER ACCESS: {}", message);
             accessController.hasConsumerPermission(message, new HasConsumerPermissionCallback() {
                 @Override
                 public void hasConsumerPermission(boolean hasPermission) {

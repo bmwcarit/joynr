@@ -88,7 +88,8 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
                                                                                 mockJoynrStatusMetricsReceiver,
-                                                                                routingTable);
+                                                                                routingTable,
+                                                                                "");
 
         MqttAddress testAddress = mock(MqttAddress.class);
         when(testAddress.getBrokerUri()).thenReturn(gbids[0]);
@@ -170,7 +171,8 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
                                                                                 mockJoynrStatusMetricsReceiver,
-                                                                                routingTable);
+                                                                                routingTable,
+                                                                                "");
         testInitAllSkeletons(factory);
     }
 
@@ -208,7 +210,8 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                                                       messageProcessors,
                                                                                                                       mockJoynrStatusMetricsReceiver,
                                                                                                                       routingTable,
-                                                                                                                      false);
+                                                                                                                      false,
+                                                                                                                      "");
         testInitAllSkeletons(factory);
     }
 

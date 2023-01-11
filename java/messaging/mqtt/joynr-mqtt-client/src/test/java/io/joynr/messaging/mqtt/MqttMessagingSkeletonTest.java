@@ -79,6 +79,7 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
 public class MqttMessagingSkeletonTest {
     private final int maxIncomingMqttRequests = 20;
     private final String ownTopic = "testOwnTopic";
+    private final String testBackendUid = "testBackendUid";
 
     private MqttMessagingSkeleton subject;
 
@@ -123,7 +124,8 @@ public class MqttMessagingSkeletonTest {
                                             new HashSet<JoynrMessageProcessor>(),
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
-                                            routingTable);
+                                            routingTable,
+                                            testBackendUid);
         verify(mqttClientFactory).createReceiver(ownGbid);
         subject.init();
     }
@@ -220,6 +222,23 @@ public class MqttMessagingSkeletonTest {
     }
 
     @Test
+    public void testSetCreatorUserIdIsCalled() throws Exception {
+        ImmutableMessage rqMessage = createTestRequestMessage();
+
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
+        subject.transmit(rqMessage.getSerializedMessage(), rqMessage.getPrefixedCustomHeaders(), failIfCalledAction);
+
+        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
+        final MqttAddress expectedAddress = new MqttAddress(ownGbid, "testTopic");
+        verify(routingTable).put(rqMessage.getSender(), expectedAddress, true, rqMessage.getTtlMs());
+        verify(messageRouter).routeIn(captor.capture());
+
+        assertEquals(testBackendUid, captor.getValue().getCreatorUserId());
+
+        assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
+    }
+
+    @Test
     public void testRawMessageProcessorIsCalled() throws Exception {
         RawMessagingPreprocessor rawMessagingPreprocessorMock = mock(RawMessagingPreprocessor.class);
         when(rawMessagingPreprocessorMock.process(any(byte[].class),
@@ -235,7 +254,8 @@ public class MqttMessagingSkeletonTest {
                                             new HashSet<JoynrMessageProcessor>(),
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
-                                            routingTable);
+                                            routingTable,
+                                            "");
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
@@ -264,7 +284,8 @@ public class MqttMessagingSkeletonTest {
                                             new HashSet<JoynrMessageProcessor>(Arrays.asList(processorMock)),
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
-                                            routingTable);
+                                            routingTable,
+                                            "");
 
         ImmutableMessage rqMessage = createTestRequestMessage();
 
@@ -408,7 +429,8 @@ public class MqttMessagingSkeletonTest {
                                             new HashSet<JoynrMessageProcessor>(),
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
-                                            routingTable);
+                                            routingTable,
+                                            "");
         subject.init();
 
         doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());

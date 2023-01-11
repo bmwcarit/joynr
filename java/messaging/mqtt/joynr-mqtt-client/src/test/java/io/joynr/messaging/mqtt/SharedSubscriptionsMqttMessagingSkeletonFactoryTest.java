@@ -60,7 +60,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactoryTest {
                                                                                                                       null,
                                                                                                                       null,
                                                                                                                       null,
-                                                                                                                      false);
+                                                                                                                      false,
+                                                                                                                      "");
         for (String gbid : GBIDS) {
             IMessagingSkeleton skeleton = factory.getSkeleton(new MqttAddress(gbid, ""));
             assertTrue(SharedSubscriptionsMqttMessagingSkeleton.class.isInstance(skeleton));

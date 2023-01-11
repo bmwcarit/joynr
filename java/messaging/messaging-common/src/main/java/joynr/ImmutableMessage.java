@@ -58,6 +58,7 @@ public class ImmutableMessage extends Message {
     private transient Map<String, Serializable> context = new HashMap<String, Serializable>();
     private ObjectMapper objectMapper = null;
     public final static String DUMMY_CREATOR_USER_ID = "creatorUserId";
+    private String creatorUserId = DUMMY_CREATOR_USER_ID;
 
     private Map<String, String> extraCustomHeaders = new HashMap<String, String>();
 
@@ -118,8 +119,12 @@ public class ImmutableMessage extends Message {
         return messageDeserializer.getHeader(Message.HEADER_EFFORT);
     }
 
+    public void setCreatorUserId(String userId) {
+        this.creatorUserId = userId;
+    }
+
     public String getCreatorUserId() {
-        return DUMMY_CREATOR_USER_ID;
+        return creatorUserId;
     }
 
     public byte[] getUnencryptedBody() throws EncodingException {

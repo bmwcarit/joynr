@@ -50,7 +50,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
                                                               Set<JoynrMessageProcessor> messageProcessors,
                                                               JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                               RoutingTable routingTable,
-                                                              boolean separateReplyMqttClient) {
+                                                              boolean separateReplyMqttClient,
+                                                              String backendUid) {
         super();
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
@@ -70,7 +71,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
                                                                                        joynrStatusMetricsReceiver,
                                                                                        gbid,
                                                                                        routingTable,
-                                                                                       separateReplyMqttClient));
+                                                                                       separateReplyMqttClient,
+                                                                                       backendUid));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }

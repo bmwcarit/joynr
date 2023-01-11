@@ -69,6 +69,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     private final Set<String> incomingMqttRequests;
     private final AtomicLong droppedMessagesCount;
     private final JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
+    private final String backendUid;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeleton(String ownTopic,
@@ -81,7 +82,8 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                                  Set<JoynrMessageProcessor> messageProcessors,
                                  JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                  String ownGbid,
-                                 RoutingTable routingTable) {
+                                 RoutingTable routingTable,
+                                 String backendUid) {
         super(routingTable);
         this.ownTopic = ownTopic;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
@@ -96,6 +98,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.ownGbid = ownGbid;
+        this.backendUid = backendUid;
         client = mqttClientFactory.createReceiver(ownGbid);
     }
 
@@ -166,7 +169,10 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
             if (logger.isTraceEnabled()) {
                 logger.trace("<<< INCOMING FROM {} <<< {}", ownGbid, message);
             } else {
-                logger.debug("<<< INCOMING FROM {} <<< {}", ownGbid, message.getTrackingInfo());
+                logger.debug("<<< INCOMING FROM {} <<< {} creatorUserId: {}",
+                             ownGbid,
+                             message.getTrackingInfo(),
+                             backendUid);
             }
 
             // If this fails, we quit the processing due to a thrown exception
@@ -174,6 +180,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
 
             message.setContext(context);
             message.setPrefixedExtraCustomHeaders(prefixedCustomHeaders);
+            message.setCreatorUserId(backendUid);
 
             if (messageProcessors != null) {
                 for (JoynrMessageProcessor processor : messageProcessors) {

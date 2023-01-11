@@ -45,6 +45,7 @@ import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.LibjoynrWebSocketRuntimeModule;
+import joynr.ImmutableMessage;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.tests.testProxy;
 
@@ -108,6 +109,11 @@ public class WebSocketProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2
         DummyJoynrApplication application = (DummyJoynrApplication) new JoynrInjectorFactory(joynrConfig,
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
         return application.getRuntime();
+    }
+
+    @Override
+    protected String getExpectedCallingPrincipal() {
+        return ImmutableMessage.DUMMY_CREATOR_USER_ID;
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)

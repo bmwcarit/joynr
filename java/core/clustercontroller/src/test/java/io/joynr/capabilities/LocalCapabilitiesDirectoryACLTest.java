@@ -35,6 +35,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import io.joynr.provider.AbstractJoynrProvider;
+import io.joynr.provider.CallContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -183,7 +185,7 @@ public class LocalCapabilitiesDirectoryACLTest extends AbstractLocalCapabilities
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void testAddWithProviderPermission() throws InterruptedException {
+    public void testAddWithoutBackendUIDProviderPermission() throws InterruptedException {
         doReturn(true).when(accessController)
                       .hasProviderPermission(anyString(), any(TrustLevel.class), anyString(), anyString(), anyString());
         doAnswer(answerCreateHelper.createAnswerWithSuccess()).when(globalCapabilitiesDirectoryClient)
@@ -206,6 +208,46 @@ public class LocalCapabilitiesDirectoryACLTest extends AbstractLocalCapabilities
         verify(localDiscoveryEntryStoreMock).add(argThat(matcher));
         verify(globalDiscoveryEntryCacheMock).lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
         verify(accessController).hasProviderPermission(eq("creatorUserId"),
+                                                       eq(TrustLevel.HIGH),
+                                                       eq(expectedDiscoveryEntry.getDomain()),
+                                                       eq(expectedDiscoveryEntry.getInterfaceName()),
+                                                       eq(expectedDiscoveryEntry.getParticipantId()));
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient,
+                                 localDiscoveryEntryStoreMock,
+                                 globalDiscoveryEntryCacheMock,
+                                 accessController);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void testAddWithBackendUIDProviderPermission() throws InterruptedException {
+        doReturn(true).when(accessController)
+                      .hasProviderPermission(anyString(), any(TrustLevel.class), anyString(), anyString(), anyString());
+        doAnswer(answerCreateHelper.createAnswerWithSuccess()).when(globalCapabilitiesDirectoryClient)
+                                                              .add(any(),
+                                                                   any(GlobalDiscoveryEntry.class),
+                                                                   anyLong(),
+                                                                   any());
+
+        String creatorUserId = "backend";
+        CallContext callContext = new CallContext();
+        callContext.setPrincipal("backend");
+        AbstractJoynrProvider.setCallContext(callContext);
+
+        String[] gbids = new String[]{ knownGbids[0] };
+        String[] expectedGbids = gbids.clone();
+        Promise<Add1Deferred> promise = localCapabilitiesDirectory.add(discoveryEntry, true, gbids);
+        promiseChecker.checkPromiseSuccess(promise, "add failed");
+        AbstractJoynrProvider.removeCallContext();
+
+        verify(globalCapabilitiesDirectoryClient).add(any(),
+                                                      argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                      anyLong(),
+                                                      eq(expectedGbids));
+        DiscoveryEntryWithUpdatedLastSeenDateMsMatcher matcher = new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry);
+        verify(localDiscoveryEntryStoreMock).hasDiscoveryEntry(argThat(matcher));
+        verify(localDiscoveryEntryStoreMock).add(argThat(matcher));
+        verify(globalDiscoveryEntryCacheMock).lookup(eq(expectedDiscoveryEntry.getParticipantId()), eq(Long.MAX_VALUE));
+        verify(accessController).hasProviderPermission(eq(creatorUserId),
                                                        eq(TrustLevel.HIGH),
                                                        eq(expectedDiscoveryEntry.getDomain()),
                                                        eq(expectedDiscoveryEntry.getInterfaceName()),

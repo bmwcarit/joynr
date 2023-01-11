@@ -25,6 +25,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.content.Intent;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,11 +71,16 @@ public class BinderMessagingSkeletonTest {
     @Mock
     private BinderMessagingSkeleton.MainTransportFlagBearer mainTransportFlagBearer;
 
+    @Mock
+    private Intent mockIntent;
+
     private MockedStatic<AndroidBinderRuntime> androidBinderRuntimeMockedStatic;
 
     private BinderMessagingSkeleton binderMessagingSkeleton;
 
     private BinderMessageProcessor binderMessageProcessor;
+
+    private final String creatorUserId = "creatorUserIdTest";
 
     @Before
     public void setUp() {
@@ -84,8 +91,9 @@ public class BinderMessagingSkeletonTest {
 
     private void createBinderService() {
         // create test subject
+        when(mockIntent.getStringExtra(any())).thenReturn(creatorUserId);
         binderMessageProcessor = spy(new BinderMessageProcessor(mainTransportFlagBearer.isMainTransport()));
-        binderMessagingSkeleton = spy(new BinderMessagingSkeleton());
+        binderMessagingSkeleton = spy(new BinderMessagingSkeleton(mockIntent));
         binderMessagingSkeleton.setBinderMessageProcessor(binderMessageProcessor);
     }
 
@@ -100,6 +108,22 @@ public class BinderMessagingSkeletonTest {
 
             verify(binderMessageProcessor).processMessage(any(), messageCaptor.capture());
             assertEquals(false, messageCaptor.getValue().isReceivedFromGlobal());
+            reset(messageRouter);
+            reset(binderMessageProcessor);
+        }
+    }
+
+    @Test
+    public void transmit_whenInjectorIsNotNull_SetCreatorUserId() throws Exception {
+        when(injector.getInstance(MessageRouter.class)).thenReturn(messageRouter);
+        androidBinderRuntimeMockedStatic.when(AndroidBinderRuntime::getInjector).thenReturn(injector);
+
+        for (MessageType type : MessageType.values()) {
+            binderMessagingSkeleton.transmit(createMessage(type));
+            ArgumentCaptor<ImmutableMessage> messageCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
+
+            verify(binderMessageProcessor).processMessage(any(), messageCaptor.capture());
+            assertEquals(creatorUserId, messageCaptor.getValue().getCreatorUserId());
             reset(messageRouter);
             reset(binderMessageProcessor);
         }

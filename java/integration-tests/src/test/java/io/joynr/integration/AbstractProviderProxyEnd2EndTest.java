@@ -72,7 +72,6 @@ import io.joynr.proxy.ProxyBuilder;
 import io.joynr.runtime.AbstractJoynrApplication;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.runtime.PropertyLoader;
-import joynr.ImmutableMessage;
 import joynr.MulticastSubscriptionQos;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
@@ -178,6 +177,8 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
 
     // Overridden by test environment implementations
     protected abstract JoynrRuntime getRuntime(Properties joynrConfig, Module... modules);
+
+    protected abstract String getExpectedCallingPrincipal();
 
     @BeforeClass
     public static void setupBaseConfig() {
@@ -1312,6 +1313,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
         ProxyBuilder<testProxy> proxyBuilder = consumerRuntime.getProxyBuilder(domain, testProxy.class);
         testProxy proxy = proxyBuilder.setMessagingQos(messagingQos).setDiscoveryQos(discoveryQos).build();
         String callingPrincipal = proxy.echoCallingPrincipal();
-        assertEquals(ImmutableMessage.DUMMY_CREATOR_USER_ID, callingPrincipal);
+        assertEquals(getExpectedCallingPrincipal(), callingPrincipal);
     }
 }

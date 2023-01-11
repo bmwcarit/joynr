@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import joynr.ImmutableMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -400,8 +401,14 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
     private boolean hasProviderPermission(DiscoveryEntry discoveryEntry) {
         if (enableAccessControl) {
-            logger.info("LocalCapabilitiesDirectoryImpl hasProviderPermission PROVIDER REGISTERING: " + discoveryEntry);
-            return accessController.hasProviderPermission("creatorUserId", // TODO: Change this to actual useful creatorUserId
+            String uid = getCallContext().getPrincipal();
+            if (uid == null) {
+                uid = ImmutableMessage.DUMMY_CREATOR_USER_ID;
+            }
+            logger.debug("LocalCapabilitiesDirectoryImpl hasProviderPermission PROVIDER REGISTERING: {} uid: {}",
+                         discoveryEntry,
+                         uid);
+            return accessController.hasProviderPermission(uid,
                                                           TrustLevel.HIGH,
                                                           discoveryEntry.getDomain(),
                                                           discoveryEntry.getInterfaceName(),

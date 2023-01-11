@@ -47,7 +47,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                            Set<JoynrMessageProcessor> messageProcessors,
                                                            JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                            RoutingTable routingTable,
-                                                           boolean separateMqttReplyReceiver) {
+                                                           boolean separateMqttReplyReceiver,
+                                                           String backendUid) {
         super();
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
@@ -67,7 +68,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                                                     joynrStatusMetricsReceiver,
                                                                                     gbid,
                                                                                     routingTable,
-                                                                                    separateMqttReplyReceiver));
+                                                                                    separateMqttReplyReceiver,
+                                                                                    backendUid));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }

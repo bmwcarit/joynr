@@ -69,7 +69,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
                                                                   mockJoynrStatusMetrics,
                                                                   ownGbid,
                                                                   routingTable,
-                                                                  separateReplyConnection);
+                                                                  separateReplyConnection,
+                                                                  "");
         super.subject = subject;
     }
 
