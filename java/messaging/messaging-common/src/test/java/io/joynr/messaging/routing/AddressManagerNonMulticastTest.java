@@ -29,7 +29,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -80,9 +79,7 @@ public class AddressManagerNonMulticastTest {
     @Before
     public void setup() {
         initMocks(this);
-        subject = new AddressManager(routingTable,
-                                     new HashSet<MulticastAddressCalculator>(),
-                                     multicastReceiverRegistry);
+        subject = new AddressManager(routingTable, Optional.empty(), multicastReceiverRegistry);
         when(joynrMessage.getType()).thenReturn(messageTypeParameter);
     }
 

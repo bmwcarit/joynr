@@ -26,6 +26,7 @@ import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.multibindings.OptionalBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
@@ -45,7 +46,7 @@ import joynr.system.RoutingTypes.MqttAddress;
  * If the {@link io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} property is set to
  * <code>true</code>, then the shared subscriptions version of the mqtt messaging skeleton is used instead of the
  * default mqtt messaging skeleton.
- *
+ * <p>
  * In the case of shared subscriptions we allow load balancing of incoming MQTT messages via the HiveMQ feature of
  * shared subscriptions.
  */
@@ -166,10 +167,9 @@ public class MqttModule extends AbstractModule {
                                                     Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
         replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
-        Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),
-                                                                                                       new TypeLiteral<MulticastAddressCalculator>() {
-                                                                                                       });
-        multicastAddressCalculators.addBinding().to(MqttMulticastAddressCalculator.class);
+        OptionalBinder.newOptionalBinder(binder(), MulticastAddressCalculator.class)
+                      .setBinding()
+                      .to(MqttMulticastAddressCalculator.class);
 
         bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
         bind(MqttTopicPrefixProvider.class).to(DefaultMqttTopicPrefixProvider.class);

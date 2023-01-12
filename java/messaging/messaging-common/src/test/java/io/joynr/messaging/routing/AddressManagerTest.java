@@ -39,7 +39,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -107,12 +106,6 @@ public class AddressManagerTest {
                                                                                    1000,
                                                                                    result.values().iterator().next());
         assertEquals(Optional.of(multicastAddress), subject.getAddressForDelayableImmutableMessage(delayablemessage));
-    }
-
-    @Test(expected = JoynrIllegalStateException.class)
-    public void testMultipleCalculators() {
-        MulticastAddressCalculator anotherMulticastAddressCalculator = mock(MulticastAddressCalculator.class);
-        createAddressManager(multicastAddressCalculator, anotherMulticastAddressCalculator);
     }
 
     @Test
@@ -340,9 +333,11 @@ public class AddressManagerTest {
         assertEquals(0, result.size());
     }
 
-    private void createAddressManager(MulticastAddressCalculator... multicastAddressCalculators) {
-        subject = new AddressManager(routingTable,
-                                     new HashSet<MulticastAddressCalculator>(Arrays.asList(multicastAddressCalculators)),
-                                     multicastReceiverRegistry);
+    private void createAddressManager(MulticastAddressCalculator multicastAddressCalculator) {
+        subject = new AddressManager(routingTable, Optional.of(multicastAddressCalculator), multicastReceiverRegistry);
+    }
+
+    private void createAddressManager() {
+        subject = new AddressManager(routingTable, Optional.empty(), multicastReceiverRegistry);
     }
 }
