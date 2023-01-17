@@ -35,7 +35,6 @@
 		<module>performance-test-jee</module>
 		<module>pt-java</module>
 		<module>inter-language-test</module>
-		<module>inter-language-test-jee</module>
 		<module>system-integration-test</module>
 		<module>standalone-pt</module>
 		<module>graceful-shutdown-test</module>
@@ -72,6 +71,7 @@
 								<failOnWarning>true</failOnWarning>
 								<ignoredUnusedDeclaredDependencies>
 									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-api</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-api</ignoredUnusedDeclaredDependency>

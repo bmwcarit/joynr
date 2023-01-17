@@ -58,7 +58,7 @@ then
 	exit 1
 fi
 
-ILT_DIR=$JOYNR_SOURCE_DIR/tests/inter-language-test
+ILT_DIR=$JOYNR_SOURCE_DIR/tests/inter-language-test/inter-language-test-base
 GCD_PATH=$JOYNR_SOURCE_DIR/java/backend-services/capabilities-directory/target/deploy
 
 if [ -z "$ILT_BUILD_DIR" ]
@@ -68,7 +68,7 @@ fi
 
 if [ -z "$ILT_RESULTS_DIR" ]
 then
-	ILT_RESULTS_DIR=$ILT_DIR/ilt-results-$(date "+%Y_%m_%d_%H_%M_%S")
+	ILT_RESULTS_DIR=$ILT_DIR/../ilt-results-$(date "+%Y_%m_%d_%H_%M_%S")
 fi
 
 # process ids for background stuff
