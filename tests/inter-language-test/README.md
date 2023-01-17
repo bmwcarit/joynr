@@ -1,7 +1,23 @@
+# Shortcomings found yet
+
+## Java
+
+Franca `UInt8` are stored as Java `Byte` - too low range (128..255 not covered), 
+negative range possible. \
+Franca `UInt16` are stored as Java `Short` - too low range (32768..65535 not covered), 
+negative range possible. \
+Franca `UInt32` are stored as Java `Integer` - too low range (2^31..2^32-1 not covered), 
+negative range possible. \
+Franca `UInt64` are stored as Java `Long` - too low range (2^63..2^64-1 not covered), 
+negative range possible.
+
+It is not possible to code tests with too low range representation.
+Those tests will however fail, when coded in C++.
+
 # joynr JEE inter-language-test
 
-The `io.joynr.tests.inter-language-test-jee` project provides an inter-language
-test environment using JEE applications.
+The `io.joynr.tests.inter-language-test` project provides an inter-language
+test environment using JEE applications in catalogs named `inter-language-test-jee-*`.
 
 As of now, the following features are supported:
 
@@ -14,13 +30,13 @@ If you're building from source, then you can build and install the artifacts to
 your local maven repo with:
 
 ```
-cd <repository>/tests/inter-language-test-jee
+cd <repository>/tests/inter-language-test
 mvn install
 ```
 
 ## Usage
 
-This section describes the general usage of the joynr inter-language-test-jee
+This section describes the general usage of the joynr inter-language-test for jee
 and provides simple examples of the usage where possible.
 
 ### Configuration
@@ -125,21 +141,22 @@ For example for Glassfish/Payara:
 
 ## Example
 
-Under `tests/inter-language-test-jee` you can find the test applications.
+Under `tests/inter-language-test` you can find the test applications.
 It uses an `InterLanguageTest.fidl` file based on the one used for the
 standard inter-language-test without JEE, but implements it as a JEE provider
 application and a separate JEE consumer application.
 
-The project is sub-divided into one multi-module parent project and three subprojects:
+The project is sub-divided into one multi-module parent project and four subprojects:
 
 ```
- - inter-language-test-jee
+ - inter-language-test
+   |- inter-language-test-base
    |- inter-language-test-jee-api
    |- inter-language-test-jee-provider
    |- inter-language-test-jee-consumer
 ```
 
-In order to build the project, change to the `inter-language-test-jee` directory and call `mvn install`.
+In order to build the project, change to the `inter-language-test` directory and call `mvn install`.
 
 Next, fire up the joynr infrastructure components with default configuration (single backend),
 see [joynr infrastructure](../../wiki/infrastructure.md).
@@ -154,8 +171,8 @@ managed executor service.
 Depending on whether only consumer, only provider or both should run as JEE applications,
 deploy the required WAR files:
 
-- `bin/asadmin deploy <joynr home>/tests/inter-language-test-jee/inter-language-test-jee-provider/target/inter-language-test-jee-provider.war`
-- `bin/asadmin deploy <joynr home>/tests/inter-language-test-jee/inter-language-test-jee-consumer/target/inter-language-test-jee-consumer.war`
+- `bin/asadmin deploy <joynr home>/tests/inter-language-test/inter-language-test-jee-provider/target/inter-language-test-jee-provider.war`
+- `bin/asadmin deploy <joynr home>/tests/inter-language-test/inter-language-test-jee-consumer/target/inter-language-test-jee-consumer.war`
 
 Make sure that any involved external embedded or standalone cluster controller is configured
 correctly.
