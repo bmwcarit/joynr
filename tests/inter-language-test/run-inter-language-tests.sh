@@ -6,7 +6,8 @@ JOYNR_SOURCE_DIR=""
 ILT_BUILD_DIR=""
 ILT_RESULTS_DIR=""
 CC_LANGUAGE=""
-while getopts "b:c:r:s:" OPTIONS;
+PAYARA_DIR=""
+while getopts "b:c:r:s:p:" OPTIONS;
 do
 	case $OPTIONS in
 		c)
@@ -28,6 +29,9 @@ do
 				echo "JOYNR_SOURCE_DIR=$OPTARG"
 			fi
 			;;
+		p)
+			PAYARA_DIR=`realpath $OPTARG`
+			;;
 		\?)
 			echo "Illegal option found."
 			echo "Synopsis: run-inter-language-tests.sh [-b <ilt-build-dir>] [-c <cluster-controller-language (CPP|JAVA)>] [-r <ilt-results-dir>] [-s <joynr-source-dir>]"
@@ -44,6 +48,13 @@ then
 	# assume this script is started inside a git repo subdirectory,
 	JOYNR_SOURCE_DIR=`git rev-parse --show-toplevel`
 fi
+
+if [ -z "$PAYARA_DIR" ]
+then
+	PAYARA_DIR="/opt/payara5"
+fi
+
+PAYARA_BIN_DIR="$PAYARA_DIR/glassfish/bin"
 
 # source global.sh
 source $JOYNR_SOURCE_DIR/docker/joynr-base/scripts/ci/global.sh
@@ -135,13 +146,13 @@ function prechecks {
 		log 'ilt-provider-cc for ILT not found in $ILT_BUILD_DIR/bin/ilt-provider-cc'
 		exit 1
 	fi
-	
+
 	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-provider-uds" ]
 	then
 		log 'ilt-provider-uds for ILT not found in $ILT_BUILD_DIR/bin/ilt-provider-uds'
 		exit 1
 	fi
-	
+
 	if [ ! -f "$ILT_BUILD_DIR/bin/ilt-consumer-uds" ]
 	then
 		log 'ilt-consumer-uds for ILT not found in $ILT_BUILD_DIR/bin/ilt-consumer-uds'
@@ -154,6 +165,23 @@ function prechecks {
 		exit 1
 	fi
 
+	if ! ls ./inter-language-test-jee-api/target/inter-language-test-jee-api-*.jar 1> /dev/null 2>&1
+	then
+		log 'inter-language-test-jee-api-*.jar not found in $ILT_DIR/../inter-language-test-jee-api/target/inter-language-test-jee-api-*.jar'
+		exit 1
+	fi
+
+	if [ ! -f "$ILT_DIR/../inter-language-test-jee-consumer/target/inter-language-test-jee-consumer.war" ]
+	then
+		log 'inter-language-test-jee-consumer.war not found in $ILT_DIR/../inter-language-test-jee-consumer/target/inter-language-test-jee-consumer.war'
+		exit 1
+	fi
+
+	if [ ! -f "$ILT_DIR/../inter-language-test-jee-provider/target/inter-language-test-jee-provider.war" ]
+	then
+		log 'inter-language-test-jee-consumer.war not found in $ILT_DIR/../inter-language-test-jee-provider/target/inter-language-test-jee-provider.war'
+		exit 1
+	fi
 }
 
 function wait_for_gcd {
@@ -206,6 +234,10 @@ function stop_services
 {
 	log '# stop services'
 
+	$PAYARA_BIN_DIR/asadmin stop-domain
+	mv "`ls -dArt $PAYARA_DIR/glassfish/domains/domain1/logs/*.log* | tail -n 1`" $ILT_RESULTS_DIR/server-$1.log
+	echo "Stopping Payara domain"
+
 	stopGcd $1
 
 	if [ -n "$MOSQUITTO_PID" ]
@@ -220,7 +252,6 @@ function stop_services
 	if [ -f /data/src/docker/joynr-base/scripts/ci/stop-db.sh ]; then
 		/data/src/docker/joynr-base/scripts/ci/stop-db.sh
 	fi
-
 }
 
 function start_services {
@@ -248,6 +279,9 @@ function start_services {
 		stop_services
 		exit $SUCCESS
 	fi
+
+	echo "Starting Payara domain"
+	$PAYARA_BIN_DIR/asadmin start-domain
 }
 
 function start_cluster_controller {
@@ -329,6 +363,10 @@ function stop_provider {
 	fi
 }
 
+function stop_jee_provider {
+	$PAYARA_BIN_DIR/asadmin undeploy inter-language-test-jee-provider >> $ILT_RESULTS_DIR/provider-jee.log 2>&1
+}
+
 function start_cpp_provider_ws {
 	log 'Starting C++ provider WS (with WS to standalone cluster-controller).'
 	PROVIDER_DIR=$ILT_BUILD_DIR/cpp-provider-ws-bin
@@ -400,6 +438,18 @@ function start_javascript_provider_bundle_uds {
 	nohup npm run startproviderbundle --inter-language-test:domain=$DOMAIN --inter-language-test:runtime=$RUNTIME --inter-language-test:uds:path=$SOCKET_PATH > $ILT_RESULTS_DIR/provider-javascript-bundle_uds.log 2>&1 &
 	PROVIDER_PID=$!
 	echo "Started Javascript provider bundle UDS with PID $PROVIDER_PID"
+	# Allow some time for startup
+	sleep 10
+}
+
+function start_jee_provider {
+	log 'Starting JEE provider'
+	cd $ILT_DIR
+
+	$PAYARA_BIN_DIR/asadmin deploy --force $ILT_DIR/../inter-language-test-jee-provider/target/inter-language-test-jee-provider.war > $ILT_RESULTS_DIR/provider-jee.log 2>&1 &
+	PROVIDER_PID=$!
+	echo "Deployed JEE provider with PID $PROVIDER_PID"
+
 	# Allow some time for startup
 	sleep 10
 }
@@ -512,7 +562,7 @@ function start_cpp_consumer_uds {
 	else
 	log 'C++ consumer UDS successfully completed.'
 	fi
-	
+
 	log 'Starting C++ consumer proxy-provider-mismatch-uds.'
 	./ilt-consumer-proxy-provider-interface-mismatch-uds $DOMAIN --gtest_color=yes --gtest_output="xml:$ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch-uds-$1.junit.xml" >> $ILT_RESULTS_DIR/consumer-cpp-proxy-provider-mismatch-uds-$1.log 2>&1
 	SUCCESS=$?
@@ -570,6 +620,48 @@ function start_javascript_consumer_uds {
 	fi
 }
 
+function start_jee_consumer {
+	log 'Starting JEE consumer'
+	cd $ILT_DIR
+	SUCCESS=0
+
+	$PAYARA_BIN_DIR/asadmin deploy --force $ILT_DIR/../inter-language-test-jee-consumer/target/inter-language-test-jee-consumer.war >> $ILT_RESULTS_DIR/consumer-jee-$1.log 2>&1
+	SUCCESS=$?
+	echo "Deployed JEE consumer"
+
+	if [ "$SUCCESS" != 0 ]
+	then
+		echo "STATUS = $SUCCESS"
+		#test_failed
+		let FAILED_TESTS+=1
+		#stopall
+	else
+		RESPONSE=$(curl -k -v https://localhost:8181/inter-language-test-jee-consumer/start-tests 2>&1)
+		echo "$RESPONSE" >> $ILT_RESULTS_DIR/consumer-jee-$1.log
+		$PAYARA_BIN_DIR/asadmin undeploy inter-language-test-jee-consumer >> $ILT_RESULTS_DIR/consumer-jee.log 2>&1
+
+		if [ -n "$(grep 'HTTP\/.* 200' <<< $RESPONSE)" ]
+		then
+			ERRORS=$(grep '(\b(errors)|\b(failures)).*\b[1-9][0-9]*' <<< $RESPONSE)
+			if [ -z "$ERRORS" ]
+			then
+				log 'JEE consumer successfully completed.'
+			else
+				#ERRORS=$(grep 'status' <<< $RESPONSE | grep -v 'ok')
+				echo "STATUS = 1"
+				#test_failed
+				let FAILED_TESTS+=1
+				#stopall
+			fi
+		else
+			echo "STATUS = 1"
+			#test_failed
+			let FAILED_TESTS+=1
+			#stopall
+		fi
+	fi
+}
+
 function start_consumers {
 	start_java_consumer_cc $1
 	start_java_consumer_ws $1
@@ -577,6 +669,7 @@ function start_consumers {
 	start_cpp_consumer_uds $1
 	start_javascript_consumer_ws $1
 	start_javascript_consumer_uds $1
+	start_jee_consumer $1
 }
 
 # TESTS
@@ -706,6 +799,22 @@ start_consumers $PROVIDER
 stop_provider
 stop_cluster_controller
 stop_services $PROVIDER
+
+# run checks with JEE provider
+clean_up
+log 'RUN CHECKS WITH JEE PROVIDER'
+PROVIDER="provider-jee"
+start_services $PROVIDER
+start_cluster_controller $PROVIDER
+start_jee_provider
+# start_consumers $PROVIDER is not called here because
+# jee does not support other consumers' calls
+start_jee_consumer $PROVIDER
+stop_provider
+stop_jee_provider
+stop_cluster_controller
+stop_services $PROVIDER
+log 'JEE CHECKS FINISHED WITH SUCCESS'
 
 # check for failed tests
 if [ "$FAILED_TESTS" -gt 0 ]

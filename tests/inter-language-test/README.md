@@ -161,10 +161,12 @@ In order to build the project, change to the `inter-language-test` directory and
 Next, fire up the joynr infrastructure components with default configuration (single backend),
 see [joynr infrastructure](../../wiki/infrastructure.md).
 
+### Running JEE tests separately
+
 The following describes running the example on [Payara 5](http://www.payara.fish). First,
 install the application server.
 
-Then start up the Payara server by changing to the Payara install directory and executing
+Start up the Payara server by changing to the Payara install directory and executing
 `bin/asadmin start-domain`. Follow the instructions above for configuring the required
 managed executor service.
 
