@@ -56,11 +56,12 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     private static final Logger logger = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
 
     protected final int maxIncomingMqttRequests;
+    protected final String ownTopic;
+    protected JoynrMqttClient client;
+    protected final String ownGbid;
     private final MessageRouter messageRouter;
     private final MessageProcessedHandler messageProcessedHandler;
-    private JoynrMqttClient mqttClient;
     private final MqttClientFactory mqttClientFactory;
-    private final String ownTopic;
     private final ConcurrentMap<String, AtomicInteger> multicastSubscriptionCount;
     private final MqttTopicPrefixProvider mqttTopicPrefixProvider;
     private final RawMessagingPreprocessor rawMessagingPreprocessor;
@@ -68,7 +69,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     private final Set<String> incomingMqttRequests;
     private final AtomicLong droppedMessagesCount;
     private final JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
-    private final String ownGbid;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeleton(String ownTopic,
@@ -96,7 +96,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.ownGbid = ownGbid;
-        mqttClient = mqttClientFactory.createReceiver(ownGbid);
+        client = mqttClientFactory.createReceiver(ownGbid);
     }
 
     @Override
@@ -105,8 +105,8 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
 
         messageProcessedHandler.registerMessageProcessedListener(this);
 
-        mqttClient.setMessageListener(this);
-        mqttClient.start();
+        client.setMessageListener(this);
+        client.start();
         mqttClientFactory.createSender(ownGbid).start();
         subscribe();
     }
@@ -117,7 +117,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
      * replies.
      */
     protected void subscribe() {
-        mqttClient.subscribe(ownTopic + "/#");
+        client.subscribe(ownTopic + "/#");
     }
 
     @Override
@@ -130,7 +130,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         multicastSubscriptionCount.putIfAbsent(multicastId, new AtomicInteger());
         int numberOfSubscriptions = multicastSubscriptionCount.get(multicastId).incrementAndGet();
         if (numberOfSubscriptions == 1) {
-            mqttClient.subscribe(getSubscriptionTopic(multicastId));
+            client.subscribe(getSubscriptionTopic(multicastId));
         }
     }
 
@@ -140,7 +140,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         if (subscribersCount != null) {
             int remainingCount = subscribersCount.decrementAndGet();
             if (remainingCount == 0) {
-                mqttClient.unsubscribe(getSubscriptionTopic(multicastId));
+                client.unsubscribe(getSubscriptionTopic(multicastId));
             }
         }
     }
@@ -238,11 +238,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     }
 
     protected JoynrMqttClient getClient() {
-        return mqttClient;
-    }
-
-    protected String getOwnTopic() {
-        return ownTopic;
+        return client;
     }
 
     private String getSubscriptionTopic(String multicastId) {

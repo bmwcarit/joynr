@@ -77,6 +77,7 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_PASSWORD = "joynr.messaging.mqtt.password";
     public static final String PROPERTY_KEY_MQTT_DISABLE_HOSTNAME_VERIFICATION = "joynr.messaging.mqtt.disablehostnameverification";
     public static final String PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM = "joynr.messaging.mqtt.receivemaximum";
+    public static final String PROPERTY_KEY_SEPARATE_REPLY_RECEIVER = "joynr.messaging.mqtt.separatereplyreceiver";
 
     /**
      * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared
@@ -129,6 +130,12 @@ public class MqttModule extends AbstractModule {
     @Named(MQTT_CIPHERSUITE_LIST)
     public List<String> provideMqttInternalCipherList(MqttCiphersuiteListFactory internalCipherListFactory) {
         return internalCipherListFactory.create();
+    }
+
+    @Provides
+    @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER)
+    public boolean provideSeparateReplyReceiverSetting(@Named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions) {
+        return enableSharedSubscriptions;
     }
 
     @Override

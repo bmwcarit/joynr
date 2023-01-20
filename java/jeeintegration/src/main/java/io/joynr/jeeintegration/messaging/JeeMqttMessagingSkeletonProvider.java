@@ -21,6 +21,7 @@ package io.joynr.jeeintegration.messaging;
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
@@ -67,6 +68,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
                                             @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
+                                            @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                             MessageRouter messageRouter,
                                             MessageProcessedHandler messageProcessedHandler,
                                             MqttClientFactory mqttClientFactory,
@@ -84,6 +86,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               backpressureIncomingMqttRequestsUpperThreshold,
               backpressureIncomingMqttRequestsLowerThreshold,
               replyToAddress,
+              separateMqttReplyReceiver,
               messageRouter,
               messageProcessedHandler,
               mqttClientFactory,
@@ -112,6 +115,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                                                       rawMessagingPreprocessor,
                                                                       messageProcessors,
                                                                       joynrStatusMetricsReceiver,
-                                                                      routingTable);
+                                                                      routingTable,
+                                                                      separateMqttReplyReceiver);
     }
 }

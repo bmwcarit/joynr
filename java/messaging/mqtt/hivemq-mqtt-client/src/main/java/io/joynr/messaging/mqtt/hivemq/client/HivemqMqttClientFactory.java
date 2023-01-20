@@ -86,7 +86,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientFactory.class);
 
-    private HashMap<String, JoynrMqttClient> receivingMqttClients; // gbid to client
+    private HashMap<String, JoynrMqttClient> receivingRequestClients; // gbid to client
+    private HashMap<String, JoynrMqttClient> receivingReplyClients; // gbid to client
     private HashMap<String, JoynrMqttClient> sendingMqttClients; // gbid to client
     private final boolean separateConnections;
     private final MqttClientIdProvider mqttClientIdProvider;
@@ -97,6 +98,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
     private final boolean cleanSession;
     private final JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
     private final IHivemqMqttClientTrustManagerFactory trustManagerFactory;
+    private boolean separateReplyReceiver;
 
     @Inject(optional = true)
     @Named(MqttModule.PROPERTY_KEY_MQTT_KEYSTORE_PATH)
@@ -154,6 +156,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                    @Named(MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP) HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap,
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
+                                   @Named(MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateReplyReceiver,
                                    MqttClientIdProvider mqttClientIdProvider,
                                    JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                    ShutdownNotifier shutdownNotifier,
@@ -165,10 +168,12 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
         this.scheduledExecutorService = scheduledExecutorService;
         this.mqttClientIdProvider = mqttClientIdProvider;
         sendingMqttClients = new HashMap<>(); // gbid to client
-        receivingMqttClients = new HashMap<>(); // gbid to client
+        receivingRequestClients = new HashMap<>(); // gbid to client
+        receivingReplyClients = new HashMap<>(); // gbid to client
         this.cleanSession = cleanSession;
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.trustManagerFactory = trustManagerFactory;
+        this.separateReplyReceiver = separateReplyReceiver;
         shutdownNotifier.registerForShutdown(this);
     }
 
@@ -189,23 +194,40 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
     @Override
     public synchronized JoynrMqttClient createReceiver(String gbid) {
-        if (!receivingMqttClients.containsKey(gbid)) {
+        if (!receivingRequestClients.containsKey(gbid)) {
             logger.info("Creating receiver MQTT client for gbid {}", gbid);
             if (separateConnections) {
-                receivingMqttClients.put(gbid,
-                                         createClient(gbid, mqttClientIdProvider.getClientId() + "Sub", true, false));
+                receivingRequestClients.put(gbid,
+                                            createClient(gbid,
+                                                         mqttClientIdProvider.getClientId() + "Sub",
+                                                         true,
+                                                         false));
             } else {
                 createCombinedClient(gbid);
             }
-            logger.debug("Receiver MQTT client for gbid {} now: {}", gbid, receivingMqttClients.get(gbid));
+            logger.debug("Receiver MQTT client for gbid {} now: {}", gbid, receivingRequestClients.get(gbid));
         }
-        return receivingMqttClients.get(gbid);
+        return receivingRequestClients.get(gbid);
+    }
+
+    @Override
+    public synchronized JoynrMqttClient createReplyReceiver(String gbid) {
+        if (!separateReplyReceiver) {
+            return createReceiver(gbid);
+        }
+        if (!receivingReplyClients.containsKey(gbid)) {
+            logger.info("Creating reply receiver MQTT client for gbid {}", gbid);
+            receivingReplyClients.put(gbid,
+                                      createClient(gbid, mqttClientIdProvider.getClientId() + "SubReply", true, false));
+            logger.debug("Reply Receiver MQTT client for gbid {} now: {}", gbid, receivingReplyClients.get(gbid));
+        }
+        return receivingReplyClients.get(gbid);
     }
 
     @Override
     public synchronized void prepareForShutdown() {
         if (separateConnections) {
-            for (JoynrMqttClient client : receivingMqttClients.values()) {
+            for (JoynrMqttClient client : receivingRequestClients.values()) {
                 client.shutdown();
             }
         }
@@ -215,10 +237,15 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
     public synchronized void shutdown() {
         logger.debug("shutdown invoked");
         if (separateConnections) {
-            for (JoynrMqttClient client : receivingMqttClients.values()) {
+            for (JoynrMqttClient client : receivingRequestClients.values()) {
                 if (!client.isShutdown()) {
                     client.shutdown();
                 }
+            }
+        }
+        if (separateReplyReceiver) {
+            for (JoynrMqttClient client : receivingReplyClients.values()) {
+                client.shutdown();
             }
         }
         for (JoynrMqttClient client : sendingMqttClients.values()) {
@@ -230,7 +257,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
     private void createCombinedClient(String gbid) {
         sendingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId(), true, true));
-        receivingMqttClients.put(gbid, sendingMqttClients.get(gbid));
+        receivingRequestClients.put(gbid, sendingMqttClients.get(gbid));
     }
 
     private JoynrMqttClient createClient(String gbid, String clientId, boolean isReceiver, boolean isSender) {

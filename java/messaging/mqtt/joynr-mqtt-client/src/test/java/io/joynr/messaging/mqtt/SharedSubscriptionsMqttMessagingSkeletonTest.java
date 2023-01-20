@@ -19,8 +19,8 @@
 package io.joynr.messaging.mqtt;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -63,25 +63,52 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
                                                                new HashSet<JoynrMessageProcessor>(),
                                                                mockJoynrStatusMetrics,
                                                                ownGbid,
-                                                               routingTable);
+                                                               routingTable,
+                                                               separateReplyConnection);
     }
 
     @Test
     public void initSubscribesToSharedAndReplyToTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.init();
-        verify(mqttClient).subscribe(eq(replyToTopic + "/#"));
-        verify(mqttClient).subscribe(eq("$share/channelId/" + ownTopic + "/#"));
+        verify(mqttReplyClient, never()).setMessageListener(any());
+        verify(mqttClient).setMessageListener(any());
+        verify(mqttClient).subscribe(replyToTopic + "/#");
+        verify(mqttClient).subscribe("$share/channelId/" + ownTopic + "/#");
+    }
+
+    @Test
+    public void initSubscribesToSharedAndReplyToTopic_separateReplyConnection() {
+        initMocks(true);
+        createSkeleton("channelId");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+        subject.init();
+        verify(mqttReplyClient).setMessageListener(any());
+        verify(mqttClient).setMessageListener(any());
+        verify(mqttReplyClient).subscribe(replyToTopic + "/#");
+        verify(mqttClient).subscribe("$share/channelId/" + ownTopic + "/#");
     }
 
     @Test
     public void subscribeSubscribesToSharedAndReplyToTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.subscribe();
-        verify(mqttClient).subscribe(eq(replyToTopic + "/#"));
-        verify(mqttClient).subscribe(eq("$share/channelId/" + ownTopic + "/#"));
+        verify(mqttClient).subscribe(replyToTopic + "/#");
+        verify(mqttClient).subscribe("$share/channelId/" + ownTopic + "/#");
+    }
+
+    @Test
+    public void subscribeSubscribesToSharedAndReplyToTopic_separateReplyConnection() {
+        initMocks(true);
+        createSkeleton("channelId");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+        subject.subscribe();
+        verify(mqttReplyClient).subscribe(replyToTopic + "/#");
+        verify(mqttClient).subscribe("$share/channelId/" + ownTopic + "/#");
     }
 
 }

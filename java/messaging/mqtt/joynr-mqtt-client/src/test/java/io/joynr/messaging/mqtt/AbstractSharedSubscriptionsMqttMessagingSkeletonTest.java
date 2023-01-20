@@ -59,6 +59,8 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
     protected MqttClientFactory mqttClientFactory;
     @Mock
     protected JoynrMqttClient mqttClient;
+    @Mock
+    protected JoynrMqttClient mqttReplyClient;
     protected final String ownTopic = "testOwnTopic";
     protected final String replyToTopic = "testReplyToTopic";
     @Mock
@@ -73,13 +75,24 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
     protected JoynrStatusMetricsReceiver mockJoynrStatusMetrics;
     protected SharedSubscriptionsMqttMessagingSkeleton subject;
 
+    protected boolean separateReplyConnection;
+
     @Before
     public void setup() throws Exception {
         Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);
         objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
+    }
+
+    protected void initMocks(boolean separateReplyConnection) {
+        this.separateReplyConnection = separateReplyConnection;
         when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClient);
         when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClient);
+        if (separateReplyConnection) {
+            when(mqttClientFactory.createReplyReceiver(ownGbid)).thenReturn(mqttReplyClient);
+        } else {
+            when(mqttClientFactory.createReplyReceiver(ownGbid)).thenReturn(mqttClient);
+        }
     }
 
     protected abstract void createSkeleton(String channelId);
@@ -94,6 +107,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
     private void triggerAndVerifySharedSubscriptionsTopicUnsubscribeAndSubscribeCycle(String expectedChannelId,
                                                                                       int expectedTotalUnsubscribeCallCount,
                                                                                       int expectedTotalSubscribeCallCount) throws Exception {
+        initMocks(false);
         final String expectedSharedSubscriptionsTopicPrefix = "$share/" + expectedChannelId + "/";
 
         final int mqttRequestsToHitUpperThreshold = (maxMqttMessagesInQueue
@@ -124,6 +138,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void testSubscribesToSharedSubscription() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         initAndSubscribe();
@@ -133,6 +148,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void subscribeToSharedTopicSubscribesToSharedTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.subscribeToSharedTopic();
@@ -141,6 +157,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void subscribeToSharedTopicDoesNotSubscribeToReplyToTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.subscribeToSharedTopic();
@@ -149,6 +166,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void subscribeToReplyToTopicSubscribesToReplyToTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.subscribeToReplyTopic();
@@ -156,7 +174,18 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
     }
 
     @Test
+    public void subscribeToReplyToTopicSubscribesToReplyToTopic_separateReplyClient() {
+        initMocks(true);
+        createSkeleton("channelId");
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+        subject.subscribeToReplyTopic();
+        verify(mqttClient, times(0)).subscribe(any(String.class));
+        verify(mqttReplyClient).subscribe(replyToTopic + "/#");
+    }
+
+    @Test
     public void subscribeToReplyToTopicDoesNotSubscribeToSharedTopic() {
+        initMocks(false);
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.subscribeToReplyTopic();
@@ -165,17 +194,20 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void testChannelIdStrippedOfNonAlphaChars() {
+        initMocks(false);
         createAndInitSkeleton("channel@123_bling$$");
         verify(mqttClient).subscribe(startsWith("$share/channelbling/"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testIllegalChannelId() {
+        initMocks(false);
         createAndInitSkeleton("@123_$$-!");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidBackpressureParametersNoMaxMqttMessagesInQueue() {
+        initMocks(false);
         backpressureEnabled = true;
         maxMqttMessagesInQueue = 0;
 
@@ -184,6 +216,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidBackpressureParametersInvalidUpperThreshold() {
+        initMocks(false);
         backpressureEnabled = true;
         backpressureIncomingMqttRequestsUpperThreshold = 101;
 
@@ -192,6 +225,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidBackpressureParametersInvalidLowerThreshold() {
+        initMocks(false);
         backpressureEnabled = true;
         backpressureIncomingMqttRequestsLowerThreshold = -1;
 
@@ -200,6 +234,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidBackpressureParametersLowerThresholdAboveUpper() {
+        initMocks(false);
         backpressureEnabled = true;
         backpressureIncomingMqttRequestsUpperThreshold = 70;
         backpressureIncomingMqttRequestsLowerThreshold = 75;
@@ -209,6 +244,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void testBackpressureTriggersUnsubscribeWhenUpperThresholdHit() throws Exception {
+        initMocks(false);
         backpressureEnabled = true;
         createAndInitSkeleton("channelIdBackpressure");
 
@@ -238,6 +274,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void testBackpressureTriggersResubscribeWhenDroppedBelowLowerThreshold() throws Exception {
+        initMocks(false);
         backpressureEnabled = true;
         final String channelId = "channelIdBackpressureOneCycle";
         createAndInitSkeleton(channelId);
@@ -252,6 +289,7 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
     @Test
     public void testBackpressureTriggersUnsubscribeAndSubscribeRepeatedly() throws Exception {
+        initMocks(false);
         backpressureEnabled = true;
         final String channelId = "channelIdBackpressureMultipleCycles";
         createAndInitSkeleton(channelId);

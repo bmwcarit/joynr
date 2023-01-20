@@ -55,7 +55,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
                                                        Set<JoynrMessageProcessor> messageProcessors,
                                                        JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                        String ownGbid,
-                                                       RoutingTable routingTable) {
+                                                       RoutingTable routingTable,
+                                                       boolean separateReplyMqttClient) {
         super(ownTopic,
               maxIncomingMqttRequests,
               backpressureEnabled,
@@ -71,7 +72,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
               messageProcessors,
               joynrStatusMetricsReceiver,
               ownGbid,
-              routingTable);
+              routingTable,
+              separateReplyMqttClient);
     }
 
     @Override
