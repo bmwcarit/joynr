@@ -29,6 +29,7 @@
 #include "joynr/Reply.h"
 #include "joynr/ReplyCaller.h"
 #include "joynr/Request.h"
+#include "joynr/Semaphore.h"
 #include "joynr/SingleThreadedIOService.h"
 #include "joynr/SubscriptionPublication.h"
 #include "joynr/SubscriptionReply.h"
@@ -578,6 +579,147 @@ public:
                     EXPECT_EQ(expectedErrorEnum, errorEnum);
                     callback->onApplicationError(errorEnum);
                 });
+    }
+
+    void testAsync_methodCallReturnsErrorEnum_noCallbacksProvided()
+    {
+        using tests::testTypes::ErrorEnumBase;
+
+        ErrorEnumBase::Enum expectedErrorEnum = ErrorEnumBase::BASE_ERROR_TYPECOLLECTION;
+        std::string literal = ErrorEnumBase::getLiteral(expectedErrorEnum);
+        std::string typeName = ErrorEnumBase::getTypeName();
+
+        exceptions::ApplicationException expected(
+                typeName + "::" + literal, std::make_shared<ErrorEnumBase>(literal));
+        setExpectedExceptionForSendRequestCall(expected);
+        asyncTestFixture = createItestFixture();
+        auto future = asyncTestFixture->methodWithErrorEnumAsync();
+        EXPECT_TRUE(future != nullptr);
+        try {
+            future->get();
+            ADD_FAILURE() << "testAsync_methodCallReturnsErrorEnum_noCallbacksProvided was not "
+                             "successful (expected ApplicationException)";
+        } catch (const exceptions::ApplicationException& e) {
+            checkApplicationException(expected, e, expectedErrorEnum);
+        }
+    }
+
+    void testAsync_methodCallReturnsErrorEnum_noApplicationErrorCallbackProvided()
+    {
+        using tests::testTypes::ErrorEnumBase;
+
+        ErrorEnumBase::Enum expectedErrorEnum = ErrorEnumBase::BASE_ERROR_TYPECOLLECTION;
+        std::string literal = ErrorEnumBase::getLiteral(expectedErrorEnum);
+        std::string typeName = ErrorEnumBase::getTypeName();
+
+        auto semaphore = std::make_shared<Semaphore>(0);
+        auto onSuccess = []() { FAIL() << "unexpected onSuccess"; };
+        auto onRuntimeError =
+                [semaphore,
+                 expectedErrorEnum](const joynr::exceptions::JoynrRuntimeException& exception) {
+                    semaphore->notify();
+                    std::string message =
+                            "An ApplicationException was received, but no onApplicationError "
+                            "callback function was provided. Error " +
+                            ErrorEnumBase::getLiteral(expectedErrorEnum) +
+                            ", message: " + ErrorEnumBase::getTypeName() +
+                            "::" + ErrorEnumBase::getLiteral(expectedErrorEnum);
+                    EXPECT_EQ(exception.getMessage(), message);
+                };
+
+        exceptions::ApplicationException expected(
+                typeName + "::" + literal, std::make_shared<ErrorEnumBase>(literal));
+        setExpectedExceptionForSendRequestCall(expected);
+        asyncTestFixture = createItestFixture();
+        auto future =
+                asyncTestFixture->methodWithErrorEnumAsync(onSuccess, nullptr, onRuntimeError);
+        EXPECT_TRUE(future != nullptr);
+        try {
+            future->get();
+            ADD_FAILURE() << "testAsync_methodCallReturnsErrorEnum_"
+                             "noApplicationErrorCallbackProvided was not "
+                             "successful (expected ApplicationException)";
+        } catch (const exceptions::ApplicationException& e) {
+            checkApplicationException(expected, e, expectedErrorEnum);
+        }
+        ASSERT_TRUE(semaphore->waitFor(std::chrono::milliseconds(5000)));
+    }
+
+    void testAsync_methodWithoutModelledErrorReturnsErrorEnum_noCallbacksProvided()
+    {
+        using tests::testTypes::ErrorEnumBase;
+
+        ErrorEnumBase::Enum expectedErrorEnum = ErrorEnumBase::BASE_ERROR_TYPECOLLECTION;
+        std::string literal = ErrorEnumBase::getLiteral(expectedErrorEnum);
+        std::string typeName = ErrorEnumBase::getTypeName();
+
+        exceptions::ApplicationException expected(
+                typeName + "::" + literal, std::make_shared<ErrorEnumBase>(literal));
+        setExpectedExceptionForSendRequestCall(expected);
+        asyncTestFixture = createItestFixture();
+        auto future = asyncTestFixture->voidOperationAsync();
+        EXPECT_TRUE(future != nullptr);
+        try {
+            future->get();
+            ADD_FAILURE()
+                    << "testAsync_methodWithoutModelledErrorReturnsErrorEnum_noCallbacksProvided"
+                       " was not "
+                       "successful (expected ApplicationException)";
+        } catch (const exceptions::JoynrRuntimeException& e) {
+            std::string message =
+                    "An ApplicationException was received, but none was expected. Is the provider "
+                    "version incompatible with the consumer? Error " +
+                    ErrorEnumBase::getLiteral(expectedErrorEnum) +
+                    ", message: " + ErrorEnumBase::getTypeName() +
+                    "::" + ErrorEnumBase::getLiteral(expectedErrorEnum);
+            EXPECT_EQ(e.getMessage(), message);
+        }
+    }
+
+    void testAsync_methodWithoutModelledErrorReturnsErrorEnum()
+    {
+        using tests::testTypes::ErrorEnumBase;
+
+        ErrorEnumBase::Enum expectedErrorEnum = ErrorEnumBase::BASE_ERROR_TYPECOLLECTION;
+        std::string literal = ErrorEnumBase::getLiteral(expectedErrorEnum);
+        std::string typeName = ErrorEnumBase::getTypeName();
+
+        auto semaphore = std::make_shared<Semaphore>(0);
+        auto onSuccess = []() { FAIL() << "unexpected onSuccess"; };
+        auto onRuntimeError =
+                [semaphore,
+                 expectedErrorEnum](const joynr::exceptions::JoynrRuntimeException& exception) {
+                    semaphore->notify();
+                    std::string message = "An ApplicationException was received, but none was "
+                                          "expected. Is the provider "
+                                          "version incompatible with the consumer? Error " +
+                                          ErrorEnumBase::getLiteral(expectedErrorEnum) +
+                                          ", message: " + ErrorEnumBase::getTypeName() +
+                                          "::" + ErrorEnumBase::getLiteral(expectedErrorEnum);
+                    EXPECT_EQ(exception.getMessage(), message);
+                };
+
+        exceptions::ApplicationException expected(
+                typeName + "::" + literal, std::make_shared<ErrorEnumBase>(literal));
+        setExpectedExceptionForSendRequestCall(expected);
+        asyncTestFixture = createItestFixture();
+        auto future = asyncTestFixture->voidOperationAsync(onSuccess, onRuntimeError);
+        EXPECT_TRUE(future != nullptr);
+        try {
+            future->get();
+            ADD_FAILURE() << "testAsync_methodWithoutModelledErrorReturnsErrorEnum"
+                             " was not "
+                             "successful (expected ApplicationException)";
+        } catch (const exceptions::JoynrRuntimeException& e) {
+            std::string message =
+                    "An ApplicationException was received, but none was expected. Is the provider "
+                    "version incompatible with the consumer? Error " +
+                    ErrorEnumBase::getLiteral(expectedErrorEnum) +
+                    ", message: " + ErrorEnumBase::getTypeName() +
+                    "::" + ErrorEnumBase::getLiteral(expectedErrorEnum);
+            EXPECT_EQ(e.getMessage(), message);
+        }
+        ASSERT_TRUE(semaphore->waitFor(std::chrono::milliseconds(5000)));
     }
 
     void testSync_methodCallReturnsErrorEnum()
