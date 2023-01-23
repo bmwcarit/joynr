@@ -68,7 +68,7 @@ public:
         // Create a proxy on proxyRuntime
         auto testProxyBuilder = proxyRuntime->createProxyBuilder<tests::testProxy>(domain);
         DiscoveryQos discoveryQos;
-        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::HIGHEST_PRIORITY);
+        discoveryQos.setArbitrationStrategy(DiscoveryQos::ArbitrationStrategy::LAST_SEEN);
         discoveryQos.setDiscoveryTimeoutMs(1000);
 
         testProxy = testProxyBuilder->setMessagingQos(MessagingQos(MESSAGINGQOS_TTL))
