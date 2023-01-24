@@ -31,6 +31,8 @@ const provisioning: InProcessProvisioning &
     WebSocketLibjoynrProvisioning &
     UdsLibJoynrProvisioning = require("./provisioning_common");
 import OnChangeSubscriptionQos = require("joynr/joynr/proxy/OnChangeSubscriptionQos");
+import MulticastSubscriptionQos = require("joynr/joynr/proxy/MulticastSubscriptionQos");
+import SubscriptionQos = require("joynr/joynr/proxy/SubscriptionQos")
 import RadioStation from "../generated/js/joynr/vehicle/RadioStation";
 import Country from "../generated/js/joynr/vehicle/Country";
 import showHelp from "./console_common";
@@ -42,6 +44,7 @@ import JoynrRuntimeException from "../../../../../javascript/libjoynr-js/src/mai
 const persistencyLocation = "./radioLocalStorageConsumer";
 const localStorage = new LocalStorage({ location: persistencyLocation, clearPersistency: false });
 let subscriptionQosOnChange: OnChangeSubscriptionQos;
+let multicastSubscriptionQos: MulticastSubscriptionQos;
 
 type Subscribable<T> = { [K in keyof T]: T[K] extends { subscribe: Function } ? K : never }[keyof T];
 
@@ -156,11 +159,12 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
         subscribeToName: Subscribable<RadioProxy>;
         partitions?: string[];
         subscriptionId: string;
+        subscriptionQos: SubscriptionQos;
     }): Promise<string> {
         const partitionsString = settings.partitions ? JSON.stringify(settings.partitions) : "";
 
         const parameters = {
-            subscriptionQos: subscriptionQosOnChange,
+            subscriptionQos: settings.subscriptionQos,
             onReceive: (value: any) => {
                 prettyLog(
                     `radioProxy.${settings.subscribeToName}${partitionsString}.subscribe.onReceive: ${JSON.stringify(
@@ -263,22 +267,24 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
             case MODES.SUBSCRIBE.value:
                 subscribeHelper({
                     subscribeToName: "currentStation",
-                    subscriptionId: currentStationSubscriptionId
+                    subscriptionId: currentStationSubscriptionId,
+                    subscriptionQos: subscriptionQosOnChange
                 })
-                    .then((suscriptionId: string) => {
-                        currentStationSubscriptionId = suscriptionId;
-                        localStorage.setItem("currentStationSubscriptionId", suscriptionId);
+                    .then((subscriptionId: string) => {
+                        currentStationSubscriptionId = subscriptionId;
+                        localStorage.setItem("currentStationSubscriptionId", subscriptionId);
                     })
                     .catch((error: any) => prettyLog(error));
                 break;
             case MODES.MULTICAST.value:
                 subscribeHelper({
                     subscribeToName: "weakSignal",
-                    subscriptionId: multicastSubscriptionId
+                    subscriptionId: multicastSubscriptionId,
+                    subscriptionQos: multicastSubscriptionQos
                 })
-                    .then((suscriptionId: string) => {
-                        multicastSubscriptionId = suscriptionId;
-                        localStorage.setItem("multicastSubscriptionId", suscriptionId);
+                    .then((subscriptionId: string) => {
+                        multicastSubscriptionId = subscriptionId;
+                        localStorage.setItem("multicastSubscriptionId", subscriptionId);
                     })
                     .catch((error: any) => prettyLog(error));
                 break;
@@ -286,11 +292,12 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
                 subscribeHelper({
                     subscribeToName: "weakSignal",
                     partitions: ["GERMANY"],
-                    subscriptionId: multicastPSubscriptionId
+                    subscriptionId: multicastPSubscriptionId,
+                    subscriptionQos: multicastSubscriptionQos
                 })
-                    .then((suscriptionId: string) => {
-                        multicastPSubscriptionId = suscriptionId;
-                        localStorage.setItem("multicastPSubscriptionId", suscriptionId);
+                    .then((subscriptionId: string) => {
+                        multicastPSubscriptionId = subscriptionId;
+                        localStorage.setItem("multicastPSubscriptionId", subscriptionId);
                     })
                     .catch((error: any) => prettyLog(error));
                 break;
@@ -420,6 +427,9 @@ function runInteractiveConsole(radioProxy: RadioProxy): Promise<void> {
 
     subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
         minIntervalMs: 50
+    });
+    multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
+        validityMs: 60000
     });
     const radioProxy = await joynr.proxyBuilder.build(RadioProxy, {
         domain,

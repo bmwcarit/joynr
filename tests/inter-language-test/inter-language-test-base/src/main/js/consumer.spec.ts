@@ -1070,8 +1070,7 @@ describe("Consumer test", () => {
         });
 
         async function callSubscribeBroadcastWithSinglePrimitiveParameter(partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1080,7 +1079,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithSinglePrimitiveParameter");
             const subscriptionId = await testInterfaceProxy.broadcastWithSinglePrimitiveParameter.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1120,8 +1119,7 @@ describe("Consumer test", () => {
         });
 
         async function callSubscribeBroadcastWithMultiplePrimitiveParameters(partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1130,7 +1128,7 @@ describe("Consumer test", () => {
 
             log("subscribeBroadcastWithMultiplePrimitiveParameters");
             const subscriptionId = await testInterfaceProxy.broadcastWithMultiplePrimitiveParameters.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1170,8 +1168,7 @@ describe("Consumer test", () => {
         });
 
         async function callSubscribeBroadcastWithSingleArrayParameter(partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1180,7 +1177,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithSingleArrayParameter");
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleArrayParameter.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1222,8 +1219,7 @@ describe("Consumer test", () => {
         });
 
         async function callSubscribeBroadcastWithMultipleArrayParameters(partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1232,7 +1228,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithMultipleArrayParameters");
             const subscriptionId = await testInterfaceProxy.broadcastWithMultipleArrayParameters.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1279,8 +1275,7 @@ describe("Consumer test", () => {
         const byteBufferArg = [-128, 0, 127];
 
         async function callSubscribeBroadcastWithSingleByteBufferParameter(byteBufferArg: any, partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1289,7 +1284,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithSingleByteBufferParameter");
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleByteBufferParameter.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1340,8 +1335,7 @@ describe("Consumer test", () => {
             byteBufferArg2: any,
             partitionsToUse: any
         ) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1350,7 +1344,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithMultipleByteBufferParameters");
             const subscriptionId = await testInterfaceProxy.broadcastWithMultipleByteBufferParameters.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1400,8 +1394,7 @@ describe("Consumer test", () => {
         });
 
         async function callSubscribeBroadcastWithSingleEnumerationParameter(partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1410,7 +1403,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithSingleEnumerationParameter");
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleEnumerationParameter.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1453,8 +1446,7 @@ describe("Consumer test", () => {
         });
 
         async function callSubscribeBroadcastWithMultipleEnumerationParameter(partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1463,7 +1455,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithMultipleEnumerationParameters");
             const subscriptionId = await testInterfaceProxy.broadcastWithMultipleEnumerationParameters.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1506,8 +1498,7 @@ describe("Consumer test", () => {
         });
 
         async function callSubscribeBroadcastWithSingleStructParameter(partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1516,7 +1507,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithSingleStructParameter");
             const subscriptionId = await testInterfaceProxy.broadcastWithSingleStructParameter.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     expect(retObj).toBeDefined();
@@ -1556,8 +1547,7 @@ describe("Consumer test", () => {
         });
 
         async function callSubscribeBroadcastWithMultipleStructParameter(partitionsToUse: any) {
-            const subscriptionQosOnChange = new joynr.proxy.OnChangeSubscriptionQos({
-                minIntervalMs: 50,
+            const multicastSubscriptionQos = new joynr.proxy.MulticastSubscriptionQos({
                 validityMs: 60000
             });
 
@@ -1566,7 +1556,7 @@ describe("Consumer test", () => {
 
             log("callSubscribeBroadcastWithMultipleStructParameters");
             const subscriptionId = await testInterfaceProxy.broadcastWithMultipleStructParameters.subscribe({
-                subscriptionQos: subscriptionQosOnChange,
+                subscriptionQos: multicastSubscriptionQos,
                 partitions: partitionsToUse,
                 onReceive: (retObj: any) => {
                     log(`XXX: publication retObj: ${JSON.stringify(retObj)}`);
