@@ -30,7 +30,7 @@ public class LibJoynrMessageSender extends AbstractMessageSender {
         super(messageRouter);
     }
 
-    public void setReplyToAddress(String replyToAddress, String globalAddress) {
+    public synchronized void setReplyToAddress(String replyToAddress, String globalAddress) {
         super.setReplyToAddress(replyToAddress, globalAddress);
     }
 }

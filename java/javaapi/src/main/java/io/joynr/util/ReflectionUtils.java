@@ -117,7 +117,7 @@ public class ReflectionUtils {
         }
 
         String[] currentMethodParamTypes = toDatatypeNames(method.getParameterTypes());
-        if (paramTypeNames.size() != currentMethodParamTypes.length) {
+        if (currentMethodParamTypes == null || (paramTypeNames.size() != currentMethodParamTypes.length)) {
             return false;
 
         }

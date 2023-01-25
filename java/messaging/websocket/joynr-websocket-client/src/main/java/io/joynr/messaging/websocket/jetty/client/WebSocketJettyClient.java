@@ -110,6 +110,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
             logger.error("Unrecoverable error starting WebSocket client: {}", e);
             return;
         } catch (InterruptedException e) {
+            logger.error("Thread interrupted while start.", e);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
             // TODO which exceptions are recoverable? Only catch those ones
@@ -183,6 +184,9 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
                 }
                 sessionFuture = null;
             }
+        } catch (InterruptedException ex) {
+            logger.error("Thread interrupted while closing session.", ex);
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             logger.error("Error while closing websocket connection: ", e);
         }

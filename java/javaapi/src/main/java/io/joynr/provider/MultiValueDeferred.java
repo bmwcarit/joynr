@@ -31,7 +31,7 @@ public class MultiValueDeferred extends AbstractDeferred {
      * @param values the result which resolves the Deferred.
      * @return <code>true</code> if the resolution was successful, <code>false</code> otherwise.
      */
-    public boolean resolve(Object... values) {
+    public synchronized boolean resolve(Object... values) {
         return super.resolve(values);
     }
 }

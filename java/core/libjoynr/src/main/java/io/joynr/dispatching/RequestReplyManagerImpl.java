@@ -185,6 +185,7 @@ public class RequestReplyManagerImpl
                 final String message = String.format("Request %s interrupted unexpectedly.",
                                                      request.getRequestReplyId());
                 logger.error(message, e);
+                Thread.currentThread().interrupt();
                 throw new JoynrRequestInterruptedException(message);
             } catch (final ExecutionException e) {
                 final String message = String.format("Request: %s failed: %s",

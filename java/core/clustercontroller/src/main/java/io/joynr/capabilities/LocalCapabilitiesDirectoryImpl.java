@@ -1562,7 +1562,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                         }
                     } catch (InterruptedException e) {
                         logger.error("workerSemaphore.acquire() interrupted", e);
-                        continue;
+                        throw e;
                     }
                     if (isStopped) {
                         break;
@@ -1574,8 +1574,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                             queueSemaphore.acquire();
                         } catch (InterruptedException e) {
                             logger.error("queueSemaphore.acquire() interrupted", e);
-                            workerSemaphore.release();
-                            continue;
+                            throw e;
                         }
                         if (isStopped) {
                             break;
@@ -1616,6 +1615,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 }
             } catch (Exception e) {
                 logger.error("FATAL error: unexpected exception, stopping GcdTaskSequencer.", e);
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -1637,7 +1637,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
             }
         }
 
-        private void performReAdd() {
+        private void performReAdd() throws InterruptedException {
             logger.info("Re-Add started.");
             Set<DiscoveryEntry> discoveryEntries;
             synchronized (globalDiscoveryEntryCache) {
@@ -1717,6 +1717,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                 }
             } catch (InterruptedException e) {
                 logger.error("Re-Add: interrupted while waiting for completion.", e);
+                throw e;
             }
             taskFinished();
         }

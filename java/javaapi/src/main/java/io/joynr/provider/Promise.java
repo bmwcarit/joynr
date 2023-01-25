@@ -20,8 +20,10 @@ package io.joynr.provider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import io.joynr.exceptions.JoynrCommunicationException;
+import io.joynr.exceptions.JoynrException;
 
 public class Promise<T extends AbstractDeferred> {
     private T deferred;
@@ -62,14 +64,16 @@ public class Promise<T extends AbstractDeferred> {
 
     private void notifyListener(PromiseListener listener) {
         if (isFulfilled()) {
-            if (deferred.getValues().isPresent()) {
-                listener.onFulfillment(deferred.getValues().get());
+            Optional<Object[]> values = deferred.getValues();
+            if (values.isPresent()) {
+                listener.onFulfillment(values.get());
             } else {
                 listener.onFulfillment(null);
             }
         } else if (isRejected()) {
-            if (deferred.getError().isPresent()) {
-                listener.onRejection(deferred.getError().get());
+            Optional<JoynrException> error = deferred.getError();
+            if (error.isPresent()) {
+                listener.onRejection(error.get());
             } else {
                 listener.onRejection(new JoynrCommunicationException("Promise rejected unexpectedly."));
             }

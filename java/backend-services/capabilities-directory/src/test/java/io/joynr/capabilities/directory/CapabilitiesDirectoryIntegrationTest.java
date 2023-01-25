@@ -83,7 +83,7 @@ public class CapabilitiesDirectoryIntegrationTest {
     String postFix = "" + System.currentTimeMillis();
 
     @BeforeClass
-    public static void start() throws IOException {
+    public static void start() throws IOException, InterruptedException {
         Properties systemProperties = System.getProperties();
         systemProperties.setProperty(CapabilitiesDirectoryImpl.GCD_GBID, gcdGbid);
         systemProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_GBIDS, gcdGbid);
@@ -147,7 +147,7 @@ public class CapabilitiesDirectoryIntegrationTest {
 
     }
 
-    private static CapabilitiesDirectoryImpl startCapabilitiesDirectory() throws IOException {
+    private static CapabilitiesDirectoryImpl startCapabilitiesDirectory() throws IOException, InterruptedException {
         Properties testProperties = new Properties();
         testProperties.setProperty(CapabilitiesDirectoryLauncher.GCD_DB_NAME, "gcd-test");
         Map<String, String> jpaProperties = new HashMap<String, String>();

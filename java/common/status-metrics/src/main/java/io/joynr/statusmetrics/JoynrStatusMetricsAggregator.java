@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
 
 import com.google.inject.Singleton;
 
@@ -42,7 +43,8 @@ public class JoynrStatusMetricsAggregator implements JoynrStatusMetricsReceiver 
     public Collection<ConnectionStatusMetrics> getConnectionStatusMetrics(String gbid) {
         List<ConnectionStatusMetrics> returnList = new ArrayList<ConnectionStatusMetrics>();
         for (ConnectionStatusMetrics metrics : connectionStatusMetricsList) {
-            if (metrics.getGbid().isPresent() && metrics.getGbid().get().equals(gbid)) {
+            Optional<String> metricsGbid = metrics.getGbid();
+            if (metricsGbid.isPresent() && metricsGbid.get().equals(gbid)) {
                 returnList.add(metrics);
             }
         }

@@ -218,7 +218,7 @@ public class Arbitrator {
                 } else {
                     reason = exception;
                 }
-            } else if (discoveredVersionsByDomainMap == null || discoveredVersionsByDomainMap.isEmpty()) {
+            } else if (discoveredVersionsByDomainMap.isEmpty()) {
                 reason = new DiscoveryException("Unable to find provider in time: interface: " + interfaceName
                         + " domains: " + domains + " " + interfaceVersion);
             } else {
@@ -264,8 +264,7 @@ public class Arbitrator {
         result = prime * result + (int) (arbitrationDeadline ^ (arbitrationDeadline >>> 32));
         result = prime * result + ((arbitrationResult == null) ? 0 : arbitrationResult.hashCode());
         result = prime * result + ((arbitrationStatus == null) ? 0 : arbitrationStatus.hashCode());
-        result = prime * result
-                + ((discoveredVersionsByDomainMap == null) ? 0 : discoveredVersionsByDomainMap.hashCode());
+        result = prime * result + discoveredVersionsByDomainMap.hashCode();
         result = prime * result + ((domains == null) ? 0 : domains.hashCode());
         result = prime * result + ((interfaceName == null) ? 0 : interfaceName.hashCode());
         result = prime * result + ((interfaceVersion == null) ? 0 : interfaceVersion.hashCode());
@@ -297,11 +296,7 @@ public class Arbitrator {
         if (arbitrationStatus != other.arbitrationStatus) {
             return false;
         }
-        if (discoveredVersionsByDomainMap == null) {
-            if (other.discoveredVersionsByDomainMap != null) {
-                return false;
-            }
-        } else if (!discoveredVersionsByDomainMap.equals(other.discoveredVersionsByDomainMap)) {
+        if (!discoveredVersionsByDomainMap.equals(other.discoveredVersionsByDomainMap)) {
             return false;
         }
         if (domains == null) {

@@ -80,7 +80,7 @@ public class ShutdownNotifier {
      * Will call {@link ShutdownListener#prepareForShutdown()} for each {@link #registerForShutdown(ShutdownListener) registered listener}
      * asynchronously, and waiting a total of five seconds for all to complete or will then timeout without waiting.
      */
-    public void prepareForShutdown() {
+    public void prepareForShutdown() throws InterruptedException {
         Collection<CompletableFuture<Void>> prepareShutdownFutures;
         synchronized (shutdownListenerList) {
             prepareShutdownFutures = shutdownListenerList.stream()
@@ -90,6 +90,9 @@ public class ShutdownNotifier {
         try {
             CompletableFuture.allOf(prepareShutdownFutures.toArray(new CompletableFuture[prepareShutdownFutures.size()]))
                              .get(prepareForShutdownTimeoutSec, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.error("Interrupted while waiting for joynr message queue to drain.");
+            throw e;
         } catch (Exception e) {
             logger.error("Exception occurred while preparing shutdown.", e);
         }

@@ -250,6 +250,7 @@ public class GuidedProxyBuilder {
         try {
             return discoverAsync().get();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new DiscoveryException(e.toString());
         } catch (ExecutionException e) {
             if (e.getCause() == null) {
