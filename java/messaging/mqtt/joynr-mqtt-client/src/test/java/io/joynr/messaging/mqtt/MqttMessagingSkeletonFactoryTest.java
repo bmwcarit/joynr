@@ -65,6 +65,8 @@ public class MqttMessagingSkeletonFactoryTest {
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     @Mock
     private JoynrStatusMetricsReceiver mockJoynrStatusMetricsReceiver;
+    @Mock
+    protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     @Test
     public void getSkeletonReturnsCorrectSkeleton() {
@@ -89,7 +91,8 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 messageProcessors,
                                                                                 mockJoynrStatusMetricsReceiver,
                                                                                 routingTable,
-                                                                                "");
+                                                                                "",
+                                                                                mqttMessageInProgressObserver);
 
         MqttAddress testAddress = mock(MqttAddress.class);
         when(testAddress.getBrokerUri()).thenReturn(gbids[0]);
@@ -172,7 +175,8 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 messageProcessors,
                                                                                 mockJoynrStatusMetricsReceiver,
                                                                                 routingTable,
-                                                                                "");
+                                                                                "",
+                                                                                mqttMessageInProgressObserver);
         testInitAllSkeletons(factory);
     }
 
@@ -211,7 +215,8 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                                                       mockJoynrStatusMetricsReceiver,
                                                                                                                       routingTable,
                                                                                                                       false,
-                                                                                                                      "");
+                                                                                                                      "",
+                                                                                                                      mqttMessageInProgressObserver);
         testInitAllSkeletons(factory);
     }
 

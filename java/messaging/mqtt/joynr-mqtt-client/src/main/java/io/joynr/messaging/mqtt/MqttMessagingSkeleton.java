@@ -19,9 +19,11 @@
 package io.joynr.messaging.mqtt;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -49,6 +51,7 @@ import io.joynr.smrf.UnsuppportedVersionException;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
+import joynr.Message.MessageType;
 
 /**
  * Connects to the MQTT broker
@@ -72,6 +75,8 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     private final AtomicLong droppedMessagesCount;
     private final JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
     private final String backendUid;
+    private final List<Mqtt5Publish> publishesToAcknowledge;
+    private final MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeleton(String ownTopic,
@@ -85,7 +90,8 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                                  JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                  String ownGbid,
                                  RoutingTable routingTable,
-                                 String backendUid) {
+                                 String backendUid,
+                                 MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(routingTable);
         this.ownTopic = ownTopic;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
@@ -101,6 +107,9 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.ownGbid = ownGbid;
         this.backendUid = backendUid;
+        this.publishesToAcknowledge = new ArrayList<>();
+        this.mqttMessageInProgressObserver = mqttMessageInProgressObserver;
+        mqttMessageInProgressObserver.registerMessagingSkeleton(this);
         client = mqttClientFactory.createReceiver(ownGbid);
     }
 
@@ -162,6 +171,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     public void transmit(Mqtt5Publish mqtt5Publish,
                          Map<String, String> prefixedCustomHeaders,
                          FailureAction failureAction) {
+        synchronized (this) {
             try {
                 HashMap<String, Serializable> context = new HashMap<String, Serializable>();
                 byte[] processedMessage = rawMessagingPreprocessor.process(mqtt5Publish.getPayloadAsBytes(),
@@ -189,7 +199,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                 for (JoynrMessageProcessor processor : messageProcessors) {
                     message = processor.processIncoming(message);
                 }
-            }
 
             if (dropMessage(message)) {
                 droppedMessagesCount.incrementAndGet();
@@ -212,28 +221,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                 messageProcessed(message.getId());
                 failureAction.execute(e);
             }
-        } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
-            logger.error("Message: \"{}\" could not be deserialized, exception: {}", serializedMessage, e.getMessage());
-            failureAction.execute(e);
-        } catch (Exception e) {
-            logger.error("Message \"{}\" could not be transmitted:", serializedMessage, e);
-            failureAction.execute(e);
         }
-    }
-
-    private boolean dropMessage(ImmutableMessage message) {
-        // check if a limit for requests is set and
-        // if there are already too many requests still not processed
-        if (maxIncomingMqttRequests > 0 && incomingMqttRequests.size() >= maxIncomingMqttRequests) {
-            if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
-                logger.warn("Incoming MQTT message {} will be dropped as limit of {} requests is reached",
-                            message.getTrackingInfo(),
-                            maxIncomingMqttRequests);
-                return true;
-            }
-        }
-
-        return false;
     }
 
     // only certain types of messages can be dropped in order not to break
@@ -266,6 +254,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     @Override
     public void messageProcessed(String messageId) {
         if (incomingMqttRequests.remove(messageId)) {
+            mqttMessageInProgressObserver.decrementMessagesInProgress(messageId);
             requestProcessed(messageId);
         }
     }
@@ -277,6 +266,15 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     protected void requestProcessed(String messageId) {
         logger.debug("Request with messageId {} was processed and is removed from the MQTT skeleton tracking list",
                      messageId);
+    }
+
+    public void acknowledgeOutstandingPublishes() {
+        synchronized (publishesToAcknowledge) {
+            for (Mqtt5Publish publish : publishesToAcknowledge) {
+                publish.acknowledge();
+            }
+            publishesToAcknowledge.clear();
+        }
     }
 
 }

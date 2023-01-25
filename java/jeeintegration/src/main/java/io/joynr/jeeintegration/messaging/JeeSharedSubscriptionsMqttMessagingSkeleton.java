@@ -23,6 +23,7 @@ import java.util.Set;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessageInProgressObserver;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageProcessedHandler;
@@ -57,7 +58,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
                                                        String ownGbid,
                                                        RoutingTable routingTable,
                                                        boolean separateReplyMqttClient,
-                                                       String backendUid) {
+                                                       String backendUid,
+                                                       MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(ownTopic,
               maxIncomingMqttRequests,
               backpressureEnabled,
@@ -75,7 +77,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
               ownGbid,
               routingTable,
               separateReplyMqttClient,
-              backendUid);
+              backendUid,
+              mqttMessageInProgressObserver);
     }
 
     @Override

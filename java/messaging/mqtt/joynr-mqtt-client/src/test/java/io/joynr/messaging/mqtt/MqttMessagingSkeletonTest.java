@@ -110,6 +110,9 @@ public class MqttMessagingSkeletonTest {
     @Mock
     private JoynrStatusMetricsReceiver mockJoynrStatusMetricsReceiver;
 
+    @Mock
+    protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
+
     @Before
     public void setup() throws Exception {
         Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
@@ -117,6 +120,7 @@ public class MqttMessagingSkeletonTest {
         objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
         when(mqttClientFactory.createReceiver(ownGbid)).thenReturn(mqttClientReceiver);
         when(mqttClientFactory.createSender(ownGbid)).thenReturn(mqttClientSender);
+        when(mqttMessageInProgressObserver.canMessageBeAcknowledged(anyString())).thenReturn(true);
         subject = new MqttMessagingSkeleton(ownTopic,
                                             maxIncomingMqttRequests,
                                             messageRouter,
@@ -128,7 +132,8 @@ public class MqttMessagingSkeletonTest {
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable,
-                                            testBackendUid);
+                                            testBackendUid,
+                                            mqttMessageInProgressObserver);
         verify(mqttClientFactory).createReceiver(ownGbid);
         subject.init();
     }
@@ -280,7 +285,8 @@ public class MqttMessagingSkeletonTest {
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable,
-                                            "");
+                                            "",
+                                            mqttMessageInProgressObserver);
 
         Mqtt5Publish publish = createTestRequestMessage();
         ImmutableMessage rqMessage = getImmutableMessageFromPublish(publish);
@@ -311,7 +317,8 @@ public class MqttMessagingSkeletonTest {
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable,
-                                            "");
+                                            "",
+                                            mqttMessageInProgressObserver);
 
         Mqtt5Publish publish = createTestRequestMessage();
         ImmutableMessage rqMessage = getImmutableMessageFromPublish(publish);
@@ -352,32 +359,22 @@ public class MqttMessagingSkeletonTest {
     }
 
     @Test
-    public void testFurtherRequestsAreDroppedWhenMaxForIncomingMqttRequestsIsReached() throws Exception {
+    public void testRequestsAreNotAcknowledgedWhenObserverForbidsIt() throws Exception {
         doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
-        feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
-        assertEquals(0, subject.getDroppedMessagesCount());
-        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
+        when(mqttMessageInProgressObserver.canMessageBeAcknowledged(anyString())).thenReturn(false);
 
-        // As the limit is reached, further requests should be dropped
-        subject.transmit(createTestRequestMessage().getSerializedMessage(),
-                         createTestRequestMessage().getPrefixedCustomHeaders(),
-                         failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY).getPrefixedCustomHeaders(),
-                         failIfCalledAction);
-        assertEquals(2, subject.getDroppedMessagesCount());
-        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
-    }
+        Mqtt5Publish publish = spy(createTestRequestMessage());
+        Mqtt5Publish publish2 = spy(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY));
 
-    @Test
-    public void testMqttStatusReceiverIsNotifiedWhenMessageIsDropped() throws Exception {
-        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
-        feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests);
-        subject.transmit(createTestRequestMessage().getSerializedMessage(),
-                         createTestRequestMessage().getPrefixedCustomHeaders(),
+        subject.transmit(publish,
+                         getImmutableMessageFromPublish(createTestRequestMessage()).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-
-        verify(mockJoynrStatusMetricsReceiver, times(1)).notifyMessageDropped();
+        subject.transmit(publish2,
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY)).getPrefixedCustomHeaders(),
+                         failIfCalledAction);
+        verify(messageRouter, times(2)).routeIn(any(ImmutableMessage.class));
+        verify(publish, never()).acknowledge();
+        verify(publish2, never()).acknowledge();
     }
 
     @Test
@@ -388,58 +385,58 @@ public class MqttMessagingSkeletonTest {
         verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
 
         // Further non-request messages should still be accepted
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY).getPrefixedCustomHeaders(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY),
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST).getPrefixedCustomHeaders(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST),
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST).getPrefixedCustomHeaders(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST),
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST).getPrefixedCustomHeaders(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST),
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION).getPrefixedCustomHeaders(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION),
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_PUBLICATION)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY).getPrefixedCustomHeaders(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY),
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST).getPrefixedCustomHeaders(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST),
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getSerializedMessage(),
-                         createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP).getPrefixedCustomHeaders(),
+        subject.transmit(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP),
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_STOP)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
         assertEquals(0, subject.getDroppedMessagesCount());
         verify(messageRouter, times(maxIncomingMqttRequests + 8)).routeIn(any(ImmutableMessage.class));
     }
 
     @Test
-    public void testRequestsAreAcceptedAgainWhenPreviousAreProcessedAfterMaxIncomingRequestsReached() throws Exception {
-        ImmutableMessage rqMessage1 = createTestRequestMessage();
-        final String messageId1 = rqMessage1.getId();
+    public void testOutstandingPublishesAreAcknowledgedOnTrigger() throws Exception {
         doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
-        subject.transmit(rqMessage1.getSerializedMessage(), rqMessage1.getPrefixedCustomHeaders(), failIfCalledAction);
+        when(mqttMessageInProgressObserver.canMessageBeAcknowledged(anyString())).thenReturn(false);
 
-        feedMqttSkeletonWithRequests(subject, maxIncomingMqttRequests - 1);
-        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
+        Mqtt5Publish publish = spy(createTestRequestMessage());
+        Mqtt5Publish publish2 = spy(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY));
 
-        // As the limit is reached, further requests should be dropped and not transmitted
-        // until an already accepted request is marked as processed
-        subject.transmit(createTestRequestMessage().getSerializedMessage(),
-                         createTestRequestMessage().getPrefixedCustomHeaders(),
+        subject.transmit(publish,
+                         getImmutableMessageFromPublish(createTestRequestMessage()).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        assertEquals(1, subject.getDroppedMessagesCount());
-        verify(messageRouter, times(maxIncomingMqttRequests)).routeIn(any(ImmutableMessage.class));
-
-        subject.messageProcessed(messageId1);
-
-        subject.transmit(createTestRequestMessage().getSerializedMessage(),
-                         createTestRequestMessage().getPrefixedCustomHeaders(),
+        subject.transmit(publish2,
+                         getImmutableMessageFromPublish(createTestMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY)).getPrefixedCustomHeaders(),
                          failIfCalledAction);
-        verify(messageRouter, times(maxIncomingMqttRequests + 1)).routeIn(any(ImmutableMessage.class));
+        verify(messageRouter, times(2)).routeIn(any(ImmutableMessage.class));
+        verify(publish, never()).acknowledge();
+        verify(publish2, never()).acknowledge();
+        subject.acknowledgeOutstandingPublishes();
+        verify(publish, times(1)).acknowledge();
+        verify(publish2, times(1)).acknowledge();
+        // Publishes must not be acknowledged twice
+        subject.acknowledgeOutstandingPublishes();
+        verify(publish, times(1)).acknowledge();
+        verify(publish2, times(1)).acknowledge();
     }
 
     @Test
@@ -457,7 +454,8 @@ public class MqttMessagingSkeletonTest {
                                             mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable,
-                                            "");
+                                            "",
+                                            mqttMessageInProgressObserver);
         subject.init();
 
         doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());

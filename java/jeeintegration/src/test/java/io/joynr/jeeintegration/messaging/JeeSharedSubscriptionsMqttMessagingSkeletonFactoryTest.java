@@ -29,6 +29,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessageInProgressObserver;
 import io.joynr.messaging.mqtt.MqttMessagingSkeleton;
 import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageProcessedHandler;
@@ -44,6 +45,9 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactoryTest {
 
     @Mock
     private MessageProcessedHandler mockMessageProcessedHandler;
+
+    @Mock
+    protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     @Test
     public void createsExpectedSkeletons() {
@@ -64,7 +68,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactoryTest {
                                                                                                                             null,
                                                                                                                             null,
                                                                                                                             false,
-                                                                                                                            "");
+                                                                                                                            "",
+                                                                                                                            mqttMessageInProgressObserver);
         for (String gbid : GBIDS) {
             IMessagingSkeleton skeleton = factory.getSkeleton(new MqttAddress(gbid, ""));
             assertTrue(JeeSharedSubscriptionsMqttMessagingSkeleton.class.isInstance(skeleton));

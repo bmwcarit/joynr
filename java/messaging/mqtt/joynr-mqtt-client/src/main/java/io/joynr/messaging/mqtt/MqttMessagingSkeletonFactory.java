@@ -42,7 +42,8 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                         Set<JoynrMessageProcessor> messageProcessors,
                                         JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                         RoutingTable routingTable,
-                                        String backendUid) {
+                                        String backendUid,
+                                        MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super();
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
@@ -57,7 +58,8 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                                                  joynrStatusMetricsReceiver,
                                                                  gbid,
                                                                  routingTable,
-                                                                 backendUid));
+                                                                 backendUid,
+                                                     mqttMessageInProgressObserver));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }

@@ -76,6 +76,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected final String[] gbids;
     protected final RoutingTable routingTable;
     protected final boolean separateMqttReplyReceiver;
+    protected final MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     protected final String backendUid;
 
@@ -99,7 +100,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          Set<JoynrMessageProcessor> messageProcessors,
                                          JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                          RoutingTable routingTable,
-                                         @Named(PROPERTY_BACKEND_UID) String backendUid) {
+                                         @Named(PROPERTY_BACKEND_UID) String backendUid,
+                                         MqttMessageInProgressObserver mqttMessageInProgressObserver) {
 
         sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
@@ -120,6 +122,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.routingTable = routingTable;
         this.separateMqttReplyReceiver = separateMqttReplyReceiver;
         this.backendUid = backendUid;
+        this.mqttMessageInProgressObserver = mqttMessageInProgressObserver;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {} backendUid: {}",
                      sharedSubscriptionsEnabled,
                      ownAddress,
@@ -153,7 +156,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                    joynrStatusMetricsReceiver,
                                                                    routingTable,
                                                                    separateMqttReplyReceiver,
-                                                                   backendUid);
+                                                                   backendUid,
+                                                                   mqttMessageInProgressObserver);
     }
 
     protected IMessagingSkeletonFactory createFactory() {
@@ -168,7 +172,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                 messageProcessors,
                                                 joynrStatusMetricsReceiver,
                                                 routingTable,
-                                                backendUid);
+                                                backendUid,
+                                                mqttMessageInProgressObserver);
     }
 
 }

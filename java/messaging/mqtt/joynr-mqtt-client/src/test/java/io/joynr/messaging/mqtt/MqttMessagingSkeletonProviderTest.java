@@ -43,6 +43,9 @@ public class MqttMessagingSkeletonProviderTest {
     @Mock
     private MqttTopicPrefixProvider mockMqttTopicPrefixProvider;
 
+    @Mock
+    protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
+
     private void createProvider(boolean enableSharedSubscriptions) {
         subject = new MqttMessagingSkeletonProvider(new String[0],
                                                     enableSharedSubscriptions,
@@ -62,7 +65,8 @@ public class MqttMessagingSkeletonProviderTest {
                                                     null,
                                                     null,
                                                     null,
-                                                    "");
+                                                    "",
+                                                    mqttMessageInProgressObserver);
     }
 
     @Test

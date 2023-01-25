@@ -42,6 +42,9 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactoryTest {
     @Mock
     private MessageProcessedHandler mockMessageProcessedHandler;
 
+    @Mock
+    protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
+
     @Test
     public void createsExpectedSkeletons() {
         SharedSubscriptionsMqttMessagingSkeletonFactory factory = new SharedSubscriptionsMqttMessagingSkeletonFactory(GBIDS,
@@ -61,7 +64,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactoryTest {
                                                                                                                       null,
                                                                                                                       null,
                                                                                                                       false,
-                                                                                                                      "");
+                                                                                                                      "",
+                                                   mqttMessageInProgressObserver);
         for (String gbid : GBIDS) {
             IMessagingSkeleton skeleton = factory.getSkeleton(new MqttAddress(gbid, ""));
             assertTrue(SharedSubscriptionsMqttMessagingSkeleton.class.isInstance(skeleton));

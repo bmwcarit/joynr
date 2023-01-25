@@ -39,6 +39,7 @@ import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessageInProgressObserver;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageProcessedHandler;
@@ -79,7 +80,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             Set<JoynrMessageProcessor> messageProcessors,
                                             JoynrStatusMetricsReceiver jeeJoynrStatusMetrics,
                                             RoutingTable routingTable,
-                                            @Named(PROPERTY_BACKEND_UID) String backendUid) {
+                                            @Named(PROPERTY_BACKEND_UID) String backendUid,
+                                            MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(gbids,
               enableSharedSubscriptions,
               ownAddress,
@@ -98,7 +100,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               messageProcessors,
               jeeJoynrStatusMetrics,
               routingTable,
-              backendUid);
+              backendUid,
+              mqttMessageInProgressObserver);
     }
 
     @Override
@@ -120,6 +123,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                                                       joynrStatusMetricsReceiver,
                                                                       routingTable,
                                                                       separateMqttReplyReceiver,
-                                                                      backendUid);
+                                                                      backendUid,
+                                                                      mqttMessageInProgressObserver);
     }
 }

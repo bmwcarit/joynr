@@ -24,6 +24,7 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.AbstractMqttMessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessageInProgressObserver;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
@@ -51,7 +52,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
                                                               JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                               RoutingTable routingTable,
                                                               boolean separateReplyMqttClient,
-                                                              String backendUid) {
+                                                              String backendUid,
+                                                              MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super();
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
@@ -72,7 +74,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
                                                                                        gbid,
                                                                                        routingTable,
                                                                                        separateReplyMqttClient,
-                                                                                       backendUid));
+                                                                                       backendUid,
+                                                                                       mqttMessageInProgressObserver));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }

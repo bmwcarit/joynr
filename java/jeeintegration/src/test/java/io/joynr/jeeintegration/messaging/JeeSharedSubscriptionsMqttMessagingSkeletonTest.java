@@ -70,7 +70,8 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
                                                                   ownGbid,
                                                                   routingTable,
                                                                   separateReplyConnection,
-                                                                  "");
+                                                                  "",
+                                                                  mqttMessageInProgressObserver);
         super.subject = subject;
     }
 

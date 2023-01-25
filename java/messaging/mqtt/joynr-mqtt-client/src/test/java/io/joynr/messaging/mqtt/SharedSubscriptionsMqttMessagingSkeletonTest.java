@@ -65,7 +65,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
                                                                ownGbid,
                                                                routingTable,
                                                                separateReplyConnection,
-                                                               "");
+                                                               "",
+                                                               mqttMessageInProgressObserver);
     }
 
     @Test
