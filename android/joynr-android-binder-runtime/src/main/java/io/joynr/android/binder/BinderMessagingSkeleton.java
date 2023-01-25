@@ -18,6 +18,11 @@
  */
 package io.joynr.android.binder;
 
+import static io.joynr.android.messaging.binder.BinderMessagingStub.FROM_PACKAGENAME;
+import static joynr.ImmutableMessage.DUMMY_CREATOR_USER_ID;
+
+import android.content.Intent;
+
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
@@ -40,7 +45,9 @@ public class BinderMessagingSkeleton extends JoynrBinder.Stub {
 
     private boolean mainTransport;
 
-    public BinderMessagingSkeleton() {
+    private String fromPackageName = DUMMY_CREATOR_USER_ID;
+
+    public BinderMessagingSkeleton(Intent intent) {
         /*
          * TODO: For now, all messages on CC or Libjoynr have MainTransportFlagBearer as TRUE
          *  we need to implement the Guice injection so that this is only true on the
@@ -48,6 +55,7 @@ public class BinderMessagingSkeleton extends JoynrBinder.Stub {
          */
         this.mainTransport = true;
         this.binderMessageProcessor = new BinderMessageProcessor(true);
+        this.fromPackageName = intent.getStringExtra(FROM_PACKAGENAME);
     }
 
     @Inject
@@ -66,6 +74,9 @@ public class BinderMessagingSkeleton extends JoynrBinder.Stub {
 
         try {
             ImmutableMessage message = new ImmutableMessage(serializedMessage);
+            if (fromPackageName != null && !fromPackageName.isEmpty()) {
+                message.setCreatorUserId(fromPackageName);
+            }
 
             logger.debug("BinderService <<< INCOMING <<<< {}", message);
             Injector injector = AndroidBinderRuntime.getInjector();

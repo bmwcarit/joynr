@@ -53,6 +53,8 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
     private static final Logger logger = LoggerFactory.getLogger(MqttProviderProxyEnd2EndTest.class);
     private static final String MQTT_BROKER_URL = "tcp://localhost:1883";
 
+    private final String expectedCallingPrincipal = "testCallingPrincipal";
+
     private Properties mqttConfig;
 
     @Override
@@ -62,6 +64,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_MULTICAST, "");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_REPLYTO, "replyto/");
         mqttConfig.put(MessagingPropertyKeys.MQTT_TOPIC_PREFIX_UNICAST, "");
+        mqttConfig.put(MessagingPropertyKeys.PROPERTY_BACKEND_UID, expectedCallingPrincipal);
         joynrConfig.putAll(mqttConfig);
         joynrConfig.putAll(baseTestConfig);
         Module runtimeModule = Modules.override(new CCInProcessRuntimeModule()).with(modules);
@@ -71,6 +74,11 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                                                                              modulesWithRuntime).createApplication(DummyJoynrApplication.class);
 
         return application.getRuntime();
+    }
+
+    @Override
+    protected String getExpectedCallingPrincipal() {
+        return expectedCallingPrincipal;
     }
 
     private testProxy buildTestProxy() throws InterruptedException {

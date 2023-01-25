@@ -20,6 +20,7 @@ package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
+import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_BACKEND_UID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
@@ -76,6 +77,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected final RoutingTable routingTable;
     protected final boolean separateMqttReplyReceiver;
 
+    protected final String backendUid;
+
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
@@ -95,7 +98,9 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
                                          Set<JoynrMessageProcessor> messageProcessors,
                                          JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
-                                         RoutingTable routingTable) {
+                                         RoutingTable routingTable,
+                                         @Named(PROPERTY_BACKEND_UID) String backendUid) {
+
         sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
@@ -114,10 +119,12 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.gbids = gbids.clone();
         this.routingTable = routingTable;
         this.separateMqttReplyReceiver = separateMqttReplyReceiver;
-        logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {}",
+        this.backendUid = backendUid;
+        logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {} backendUid: {}",
                      sharedSubscriptionsEnabled,
                      ownAddress,
-                     channelId);
+                     channelId,
+                     backendUid);
     }
 
     @Override
@@ -145,7 +152,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                    messageProcessors,
                                                                    joynrStatusMetricsReceiver,
                                                                    routingTable,
-                                                                   separateMqttReplyReceiver);
+                                                                   separateMqttReplyReceiver,
+                                                                   backendUid);
     }
 
     protected IMessagingSkeletonFactory createFactory() {
@@ -159,7 +167,8 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                 rawMessagingPreprocessor,
                                                 messageProcessors,
                                                 joynrStatusMetricsReceiver,
-                                                routingTable);
+                                                routingTable,
+                                                backendUid);
     }
 
 }

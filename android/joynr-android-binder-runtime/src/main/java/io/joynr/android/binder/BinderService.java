@@ -21,15 +21,12 @@ package io.joynr.android.binder;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import io.joynr.android.messaging.binder.JoynrBinder;
 
 /**
  * Android service used by {@link AndroidBinderRuntime} to communicate between instances using joynr
  * on Android.
  */
 public class BinderService extends Service {
-
-    private final JoynrBinder.Stub binder = new BinderMessagingSkeleton();
 
     @Override
     public void onCreate() {
@@ -38,6 +35,6 @@ public class BinderService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return binder;
+        return new BinderMessagingSkeleton(intent);
     }
 }

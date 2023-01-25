@@ -41,6 +41,7 @@ public class BinderMessagingStub implements IMessagingStub {
     private static final Logger logger = LoggerFactory.getLogger(BinderMessagingStub.class);
 
     private static final String BINDER_SERVICE_CLASSNAME = BinderService.class.getName();
+    public static final String FROM_PACKAGENAME = "from_packagename";
 
     private Address toAddress;
     private Context context;
@@ -77,6 +78,7 @@ public class BinderMessagingStub implements IMessagingStub {
                                         FailureAction failureAction) {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(toClientAddress.getPackageName(), BINDER_SERVICE_CLASSNAME));
+        intent.putExtra(FROM_PACKAGENAME, context.getPackageName());
         ServiceConnection connection = new BinderServiceConnection(context, data, successAction, failureAction);
 
         // bind to service appropriately

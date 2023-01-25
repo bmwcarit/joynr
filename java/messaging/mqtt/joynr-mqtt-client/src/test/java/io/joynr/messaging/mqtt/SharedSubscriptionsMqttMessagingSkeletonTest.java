@@ -64,7 +64,8 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
                                                                mockJoynrStatusMetrics,
                                                                ownGbid,
                                                                routingTable,
-                                                               separateReplyConnection);
+                                                               separateReplyConnection,
+                                                               "");
     }
 
     @Test

@@ -77,7 +77,8 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                     String ownGbid,
                                                     RoutingTable routingTable,
-                                                    boolean separateReplyMqttClient) {
+                                                    boolean separateReplyMqttClient,
+                                                    String backendUid) {
         super(ownTopic,
               maxIncomingMqttRequests,
               messageRouter,
@@ -88,7 +89,8 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
               messageProcessors,
               joynrStatusMetricsReceiver,
               ownGbid,
-              routingTable);
+              routingTable,
+              backendUid);
         this.replyToTopic = replyToTopic;
         this.channelId = channelId;
         this.sharedSubscriptionsTopic = createSharedSubscriptionsTopic();

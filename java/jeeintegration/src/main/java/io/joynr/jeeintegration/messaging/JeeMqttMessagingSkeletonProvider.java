@@ -20,6 +20,7 @@ package io.joynr.jeeintegration.messaging;
 
 import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
+import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_BACKEND_UID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
@@ -77,7 +78,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             RawMessagingPreprocessor rawMessagingPreprocessor,
                                             Set<JoynrMessageProcessor> messageProcessors,
                                             JoynrStatusMetricsReceiver jeeJoynrStatusMetrics,
-                                            RoutingTable routingTable) {
+                                            RoutingTable routingTable,
+                                            @Named(PROPERTY_BACKEND_UID) String backendUid) {
         super(gbids,
               enableSharedSubscriptions,
               ownAddress,
@@ -95,7 +97,8 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               rawMessagingPreprocessor,
               messageProcessors,
               jeeJoynrStatusMetrics,
-              routingTable);
+              routingTable,
+              backendUid);
     }
 
     @Override
@@ -116,6 +119,7 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                                                       messageProcessors,
                                                                       joynrStatusMetricsReceiver,
                                                                       routingTable,
-                                                                      separateMqttReplyReceiver);
+                                                                      separateMqttReplyReceiver,
+                                                                      backendUid);
     }
 }

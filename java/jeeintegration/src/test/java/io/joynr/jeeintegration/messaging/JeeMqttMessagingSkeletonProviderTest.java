@@ -67,7 +67,8 @@ public class JeeMqttMessagingSkeletonProviderTest {
                                                        null,
                                                        null,
                                                        null,
-                                                       null);
+                                                       null,
+                                                       "");
     }
 
     @Test
