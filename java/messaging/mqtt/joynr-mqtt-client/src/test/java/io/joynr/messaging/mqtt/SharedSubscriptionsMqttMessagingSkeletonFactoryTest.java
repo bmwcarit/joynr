@@ -59,7 +59,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactoryTest {
                                                                                                                       null,
                                                                                                                       null,
                                                                                                                       null,
-                                                                                                                      null,
                                                                                                                       false,
                                                                                                                       "",
                                                    mqttMessageInProgressObserver);

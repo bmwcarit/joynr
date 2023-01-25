@@ -48,7 +48,6 @@ import io.joynr.messaging.routing.MessageRouterUtil;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.Message.MessageType;
@@ -73,7 +72,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     private final Set<JoynrMessageProcessor> messageProcessors;
     private final Set<String> incomingMqttRequests;
     private final AtomicLong droppedMessagesCount;
-    private final JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
     private final String backendUid;
     private final List<Mqtt5Publish> publishesToAcknowledge;
     private final MqttMessageInProgressObserver mqttMessageInProgressObserver;
@@ -87,7 +85,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                                  MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                  RawMessagingPreprocessor rawMessagingPreprocessor,
                                  Set<JoynrMessageProcessor> messageProcessors,
-                                 JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                  String ownGbid,
                                  RoutingTable routingTable,
                                  String backendUid,
@@ -104,7 +101,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
         this.droppedMessagesCount = new AtomicLong();
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
-        this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.ownGbid = ownGbid;
         this.backendUid = backendUid;
         this.publishesToAcknowledge = new ArrayList<>();
@@ -177,7 +173,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                 byte[] processedMessage = rawMessagingPreprocessor.process(mqtt5Publish.getPayloadAsBytes(),
                                                                            Optional.of(context));
 
-            ImmutableMessage message = new ImmutableMessage(processedMessage);
+                ImmutableMessage message = new ImmutableMessage(processedMessage);
 
             if (logger.isTraceEnabled()) {
                 logger.trace("<<< INCOMING FROM {} <<< {}", ownGbid, message);
@@ -188,37 +184,56 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                              backendUid);
             }
 
-            // If this fails, we quit the processing due to a thrown exception
-            MessageRouterUtil.checkExpiry(message);
+                // If this fails, we quit the processing due to a thrown exception
+                MessageRouterUtil.checkExpiry(message);
 
-            message.setContext(context);
-            message.setPrefixedExtraCustomHeaders(prefixedCustomHeaders);
-            message.setCreatorUserId(backendUid);
+                message.setContext(context);
+                message.setPrefixedExtraCustomHeaders(prefixedCustomHeaders);
+                message.setCreatorUserId(backendUid);
 
-            if (messageProcessors != null) {
-                for (JoynrMessageProcessor processor : messageProcessors) {
-                    message = processor.processIncoming(message);
+                if (messageProcessors != null) {
+                    for (JoynrMessageProcessor processor : messageProcessors) {
+                        message = processor.processIncoming(message);
+                    }
                 }
 
-            if (dropMessage(message)) {
-                droppedMessagesCount.incrementAndGet();
-                joynrStatusMetricsReceiver.notifyMessageDropped();
-                return;
-            }
+                message.setReceivedFromGlobal(true);
 
-            message.setReceivedFromGlobal(true);
+                if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
+                    requestAccepted(message.getId());
+                }
 
-            if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
-                requestAccepted(message.getId());
-            }
-
-            boolean routingEntryRegistered = false;
-            try {
-                routingEntryRegistered = registerGlobalRoutingEntry(message, ownGbid);
-                messageRouter.routeIn(message);
+                boolean routingEntryRegistered = false;
+                try {
+                    routingEntryRegistered = registerGlobalRoutingEntry(message, ownGbid);
+                    messageRouter.routeIn(message);
+                    if (message.getType() == MessageType.VALUE_MESSAGE_TYPE_REQUEST
+                            || message.getType() == MessageType.VALUE_MESSAGE_TYPE_ONE_WAY) {
+                        if (mqttMessageInProgressObserver.canMessageBeAcknowledged(message.getId())) {
+                            mqtt5Publish.acknowledge();
+                        } else {
+                            synchronized (publishesToAcknowledge) {
+                                publishesToAcknowledge.add(mqtt5Publish);
+                            }
+                        }
+                    } else {
+                        mqtt5Publish.acknowledge();
+                    }
+                } catch (Exception e) {
+                    removeGlobalRoutingEntry(message, routingEntryRegistered);
+                    messageProcessed(message.getId());
+                    mqtt5Publish.acknowledge();
+                    failureAction.execute(e);
+                }
+            } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
+                logger.error("Message: \"{}\" could not be deserialized, exception: {}",
+                             mqtt5Publish.getPayloadAsBytes(),
+                             e.getMessage());
+                mqtt5Publish.acknowledge();
+                failureAction.execute(e);
             } catch (Exception e) {
-                removeGlobalRoutingEntry(message, routingEntryRegistered);
-                messageProcessed(message.getId());
+                logger.error("Message \"{}\" could not be transmitted:", mqtt5Publish.getPayloadAsBytes(), e);
+                mqtt5Publish.acknowledge();
                 failureAction.execute(e);
             }
         }

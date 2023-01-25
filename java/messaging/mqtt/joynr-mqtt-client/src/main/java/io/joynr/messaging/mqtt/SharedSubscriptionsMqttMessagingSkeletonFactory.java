@@ -25,7 +25,6 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonFactory {
@@ -42,7 +41,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                            MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                            RawMessagingPreprocessor rawMessagingPreprocessor,
                                                            Set<JoynrMessageProcessor> messageProcessors,
-                                                           JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                            RoutingTable routingTable,
                                                            boolean separateMqttReplyReceiver,
                                                            String backendUid,
@@ -60,7 +58,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                                                     mqttTopicPrefixProvider,
                                                                                     rawMessagingPreprocessor,
                                                                                     messageProcessors,
-                                                                                    joynrStatusMetricsReceiver,
                                                                                     gbid,
                                                                                     routingTable,
                                                                                     separateMqttReplyReceiver,

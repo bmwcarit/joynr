@@ -63,7 +63,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactoryTest {
                                                                                                                             null,
                                                                                                                             null,
                                                                                                                             null,
-                                                                                                                            null,
                                                                                                                             false,
                                                                                                                             "",
                                                                                                                             mqttMessageInProgressObserver);

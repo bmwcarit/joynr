@@ -42,7 +42,6 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -66,7 +65,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected MqttTopicPrefixProvider mqttTopicPrefixProvider;
     protected RawMessagingPreprocessor rawMessagingPreprocessor;
     protected Set<JoynrMessageProcessor> messageProcessors;
-    protected JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
     protected final String[] gbids;
     protected final RoutingTable routingTable;
     protected final boolean separateMqttReplyReceiver;
@@ -89,7 +87,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
                                          Set<JoynrMessageProcessor> messageProcessors,
-                                         JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                          RoutingTable routingTable,
                                          @Named(PROPERTY_BACKEND_UID) String backendUid,
                                          MqttMessageInProgressObserver mqttMessageInProgressObserver) {
@@ -105,7 +102,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.mqttClientFactory = mqttClientFactory;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
-        this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.gbids = gbids.clone();
         this.routingTable = routingTable;
         this.separateMqttReplyReceiver = separateMqttReplyReceiver;
@@ -138,7 +134,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                    mqttTopicPrefixProvider,
                                                                    rawMessagingPreprocessor,
                                                                    messageProcessors,
-                                                                   joynrStatusMetricsReceiver,
                                                                    routingTable,
                                                                    separateMqttReplyReceiver,
                                                                    backendUid,
@@ -155,7 +150,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                 mqttTopicPrefixProvider,
                                                 rawMessagingPreprocessor,
                                                 messageProcessors,
-                                                joynrStatusMetricsReceiver,
                                                 routingTable,
                                                 backendUid,
                                                 mqttMessageInProgressObserver);

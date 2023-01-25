@@ -58,7 +58,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
                                                                new HashSet<JoynrMessageProcessor>(),
-                                                               mockJoynrStatusMetrics,
                                                                ownGbid,
                                                                routingTable,
                                                                separateReplyConnection,

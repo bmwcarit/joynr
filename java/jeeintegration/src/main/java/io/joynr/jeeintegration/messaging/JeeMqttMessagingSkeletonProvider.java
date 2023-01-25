@@ -42,7 +42,6 @@ import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -72,7 +71,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                             RawMessagingPreprocessor rawMessagingPreprocessor,
                                             Set<JoynrMessageProcessor> messageProcessors,
-                                            JoynrStatusMetricsReceiver jeeJoynrStatusMetrics,
                                             RoutingTable routingTable,
                                             @Named(PROPERTY_BACKEND_UID) String backendUid,
                                             MqttMessageInProgressObserver mqttMessageInProgressObserver) {
@@ -89,7 +87,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors,
-              jeeJoynrStatusMetrics,
               routingTable,
               backendUid,
               mqttMessageInProgressObserver);
@@ -108,7 +105,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                                                       mqttTopicPrefixProvider,
                                                                       rawMessagingPreprocessor,
                                                                       messageProcessors,
-                                                                      joynrStatusMetricsReceiver,
                                                                       routingTable,
                                                                       separateMqttReplyReceiver,
                                                                       backendUid,

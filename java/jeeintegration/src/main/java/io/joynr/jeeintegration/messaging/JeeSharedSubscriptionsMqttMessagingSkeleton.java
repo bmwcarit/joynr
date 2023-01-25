@@ -29,7 +29,6 @@ import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 
 /**
  * Almost the same as {@link SharedSubscriptionsMqttMessagingSkeleton} but separates the subscription to the replyTo
@@ -51,7 +50,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
                                                        MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                        RawMessagingPreprocessor rawMessagingPreprocessor,
                                                        Set<JoynrMessageProcessor> messageProcessors,
-                                                       JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                        String ownGbid,
                                                        RoutingTable routingTable,
                                                        boolean separateReplyMqttClient,
@@ -67,7 +65,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors,
-              joynrStatusMetricsReceiver,
               ownGbid,
               routingTable,
               separateReplyMqttClient,

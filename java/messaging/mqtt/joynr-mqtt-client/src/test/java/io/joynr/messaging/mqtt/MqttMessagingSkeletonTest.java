@@ -20,11 +20,11 @@ package io.joynr.messaging.mqtt;
 
 import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.createTestMessage;
 import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.createTestRequestMessage;
-import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.getImmutableMessageFromPublish;
 import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.failIfCalledAction;
 import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.feedMqttSkeletonWithMessages;
 import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.feedMqttSkeletonWithRequests;
 import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.getExpectToBeCalledAction;
+import static io.joynr.messaging.mqtt.MqttMessagingSkeletonTestUtil.getImmutableMessageFromPublish;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -44,8 +44,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
-
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -63,6 +61,8 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
+
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
@@ -70,7 +70,6 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -108,9 +107,6 @@ public class MqttMessagingSkeletonTest {
     private MqttTopicPrefixProvider mqttTopicPrefixProvider;
 
     @Mock
-    private JoynrStatusMetricsReceiver mockJoynrStatusMetricsReceiver;
-
-    @Mock
     protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     @Before
@@ -129,7 +125,6 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable,
                                             testBackendUid,
@@ -282,7 +277,6 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             rawMessagingPreprocessorMock,
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable,
                                             "",
@@ -314,7 +308,6 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(Arrays.asList(processorMock)),
-                                            mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable,
                                             "",
@@ -331,18 +324,6 @@ public class MqttMessagingSkeletonTest {
         Assert.assertArrayEquals(rqMessage.getSerializedMessage(), argCaptor.getValue().getSerializedMessage());
     }
 
-    /*
-    @Test
-    public void testFailureActionCalledForInvalidMessage() throws Exception {
-        Semaphore semaphore = new Semaphore(0);
-        Map<String, String> prefixedCustomHeaders = new HashMap<String, String>();
-        subject.transmit("Invalid message which cannot be deserialized".getBytes(),
-                         prefixedCustomHeaders,
-                         getExpectToBeCalledAction(semaphore));
-
-        assertTrue(semaphore.tryAcquire());
-    }
-     */
     @Test
     public void testFailureActionCalledAfterExceptionFromMessageRouter() throws Exception {
         Mqtt5Publish publish = createTestRequestMessage();
@@ -451,7 +432,6 @@ public class MqttMessagingSkeletonTest {
                                             mqttTopicPrefixProvider,
                                             new NoOpRawMessagingPreprocessor(),
                                             new HashSet<JoynrMessageProcessor>(),
-                                            mockJoynrStatusMetricsReceiver,
                                             ownGbid,
                                             routingTable,
                                             "",

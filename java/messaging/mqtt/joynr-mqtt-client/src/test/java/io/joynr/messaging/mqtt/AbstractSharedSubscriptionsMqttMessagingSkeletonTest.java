@@ -34,7 +34,6 @@ import org.mockito.Mock;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.util.ObjectMapper;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -58,8 +57,6 @@ public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
     protected RoutingTable routingTable;
     @Mock
     protected MqttTopicPrefixProvider mqttTopicPrefixProvider;
-    @Mock
-    protected JoynrStatusMetricsReceiver mockJoynrStatusMetrics;
     @Mock
     protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
     protected SharedSubscriptionsMqttMessagingSkeleton subject;

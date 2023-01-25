@@ -31,7 +31,6 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 
 /**
  * Overrides the standard {@link MqttMessagingSkeleton} in order to customise the topic subscription strategy in the
@@ -63,7 +62,6 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                     RawMessagingPreprocessor rawMessagingPreprocessor,
                                                     Set<JoynrMessageProcessor> messageProcessors,
-                                                    JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                     String ownGbid,
                                                     RoutingTable routingTable,
                                                     boolean separateReplyMqttClient,
@@ -77,7 +75,6 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors,
-              joynrStatusMetricsReceiver,
               ownGbid,
               routingTable,
               backendUid,

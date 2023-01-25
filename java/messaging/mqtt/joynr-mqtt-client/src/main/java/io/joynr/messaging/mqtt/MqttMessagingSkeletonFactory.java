@@ -22,7 +22,6 @@ import java.util.Set;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
@@ -40,7 +39,6 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                         MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                         RawMessagingPreprocessor rawMessagingPreprocessor,
                                         Set<JoynrMessageProcessor> messageProcessors,
-                                        JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                         RoutingTable routingTable,
                                         String backendUid,
                                         MqttMessageInProgressObserver mqttMessageInProgressObserver) {
@@ -55,7 +53,6 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                                                  mqttTopicPrefixProvider,
                                                                  rawMessagingPreprocessor,
                                                                  messageProcessors,
-                                                                 joynrStatusMetricsReceiver,
                                                                  gbid,
                                                                  routingTable,
                                                                  backendUid,

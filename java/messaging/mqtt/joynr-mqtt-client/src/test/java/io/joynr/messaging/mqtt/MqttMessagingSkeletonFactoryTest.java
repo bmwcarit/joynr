@@ -36,7 +36,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
@@ -64,8 +63,6 @@ public class MqttMessagingSkeletonFactoryTest {
     @Mock
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     @Mock
-    private JoynrStatusMetricsReceiver mockJoynrStatusMetricsReceiver;
-    @Mock
     protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     @Test
@@ -89,7 +86,6 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
-                                                                                mockJoynrStatusMetricsReceiver,
                                                                                 routingTable,
                                                                                 "",
                                                                                 mqttMessageInProgressObserver);
@@ -173,7 +169,6 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
-                                                                                mockJoynrStatusMetricsReceiver,
                                                                                 routingTable,
                                                                                 "",
                                                                                 mqttMessageInProgressObserver);
@@ -206,7 +201,6 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                                                       mqttTopicPrefixProvider,
                                                                                                                       rawMessagingPreprocessor,
                                                                                                                       messageProcessors,
-                                                                                                                      mockJoynrStatusMetricsReceiver,
                                                                                                                       routingTable,
                                                                                                                       false,
                                                                                                                       "",

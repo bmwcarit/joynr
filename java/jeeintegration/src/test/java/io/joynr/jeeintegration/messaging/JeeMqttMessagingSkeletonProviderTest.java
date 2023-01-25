@@ -68,7 +68,6 @@ public class JeeMqttMessagingSkeletonProviderTest {
                                                        null,
                                                        null,
                                                        null,
-                                                       null,
                                                        "",
                                                        mockMqttMessageInProgressObserver);
     }

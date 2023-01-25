@@ -61,7 +61,6 @@ public class MqttMessagingSkeletonProviderTest {
                                                     null,
                                                     null,
                                                     null,
-                                                    null,
                                                     "",
                                                     mqttMessageInProgressObserver);
     }

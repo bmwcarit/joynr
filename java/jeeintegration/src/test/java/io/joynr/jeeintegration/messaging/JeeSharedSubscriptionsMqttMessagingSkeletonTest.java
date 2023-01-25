@@ -63,7 +63,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
                                                                   mqttTopicPrefixProvider,
                                                                   new NoOpRawMessagingPreprocessor(),
                                                                   new HashSet<JoynrMessageProcessor>(),
-                                                                  mockJoynrStatusMetrics,
                                                                   ownGbid,
                                                                   routingTable,
                                                                   separateReplyConnection,
