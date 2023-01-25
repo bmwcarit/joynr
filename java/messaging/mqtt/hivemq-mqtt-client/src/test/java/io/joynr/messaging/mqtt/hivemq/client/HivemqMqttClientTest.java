@@ -142,7 +142,7 @@ public class HivemqMqttClientTest {
         prefixedCustomHeaders.put(prefixedCustomHeaderKey2, customHeaderValue2);
 
         doReturn(mockClientConfig).when(mockRxClient).getConfig();
-        doReturn(mockPublishesFlowable).when(mockRxClient).publishes(eq(MqttGlobalPublishFilter.ALL));
+        doReturn(mockPublishesFlowable).when(mockRxClient).publishes(MqttGlobalPublishFilter.ALL, true);
 
         doReturn(mockAsyncClient).when(mockRxClient).toAsync();
         doReturn(publishFuture).when(mockAsyncClient).publish(any(Mqtt5Publish.class));
