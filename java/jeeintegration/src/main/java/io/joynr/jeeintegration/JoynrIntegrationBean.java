@@ -242,6 +242,7 @@ public class JoynrIntegrationBean {
                         Thread.sleep(retryIntervalMs);
                     }
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     throw new JoynrRuntimeException("Provider registration failed for bean " + bean, e);
                 }
             }

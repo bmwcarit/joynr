@@ -247,6 +247,7 @@ public class CcMessageRouter
             countDownLatch.await(1500, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             logger.error("Interrupted while waiting for message workers to stop.", e);
+            Thread.currentThread().interrupt();
         }
     }
 

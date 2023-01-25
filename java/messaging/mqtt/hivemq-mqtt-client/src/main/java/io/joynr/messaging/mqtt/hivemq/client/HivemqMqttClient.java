@@ -206,8 +206,10 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                          clientInformation,
                                          client.getConfig().getState());
                             wait(reconnectDelayMs);
-                        } catch (Exception exception) {
+                        } catch (InterruptedException exception) {
                             logger.error("{}: Exception while waiting to reconnect.", clientInformation, exception);
+                            Thread.currentThread().interrupt();
+                            return;
                         }
                         // do while state != CONNECTED and state != DISCONNECTED
                     } while (client.getConfig().getState() == MqttClientState.CONNECTING

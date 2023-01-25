@@ -187,7 +187,8 @@ public class ClusterController {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
-                        // ignore
+                        logger.error("Thread interrupted.", e);
+                        Thread.currentThread().interrupt();
                     }
                 }
             }

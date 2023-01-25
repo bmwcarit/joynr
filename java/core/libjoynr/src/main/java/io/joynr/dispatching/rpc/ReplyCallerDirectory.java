@@ -92,13 +92,12 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
     }
 
     @Override
-    public ReplyCaller remove(String id) {
+    public synchronized ReplyCaller remove(String id) {
         ReplyCaller replyCaller;
         ScheduledFuture<?> future;
-        synchronized (this) {
-            replyCaller = super.remove(id);
-            future = cleanupSchedulerFuturesMap.remove(id);
-        }
+        replyCaller = super.remove(id);
+        future = cleanupSchedulerFuturesMap.remove(id);
+
         if (future != null) {
             future.cancel(false);
         }

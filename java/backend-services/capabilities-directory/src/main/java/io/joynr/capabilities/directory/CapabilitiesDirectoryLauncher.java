@@ -86,7 +86,7 @@ public class CapabilitiesDirectoryLauncher {
         String property = PropertyLoader.getPropertiesWithPattern(userProperties, key).getProperty(key);
         if (property == null || property.isEmpty()) {
             value = defaultValue;
-            logger.warn("Using default {]: {}", key, value);
+            logger.warn("Using default {}: {}", key, value);
         } else {
             value = property;
             logger.info("Using {}: {}", key, value);
@@ -145,7 +145,7 @@ public class CapabilitiesDirectoryLauncher {
                                                                                 new JoynrPropertiesModule(joynrConfig));
     }
 
-    public static void start(Properties joynrConfig) throws UnknownHostException {
+    public static void start(Properties joynrConfig) throws UnknownHostException, InterruptedException {
         if (shutdown.get()) {
             logger.error("Already shut down");
             return;
@@ -173,7 +173,10 @@ public class CapabilitiesDirectoryLauncher {
             future.get(10000);
             ready.set(true);
             logger.info("GCD ready.");
-        } catch (JoynrRuntimeException | ApplicationException | InterruptedException e) {
+        } catch (InterruptedException ex) {
+            logger.error("Thread interrupted while starting. Provider registration failed.");
+            throw ex;
+        } catch (JoynrRuntimeException | ApplicationException e) {
             logger.error("Provider registration failed.", e);
             return;
         }
@@ -183,7 +186,7 @@ public class CapabilitiesDirectoryLauncher {
         return capabilitiesDirectory;
     }
 
-    private static void waitForDb() throws UnknownHostException {
+    private static void waitForDb() throws UnknownHostException, InterruptedException {
         Socket s;
         for (int i = 0; i < 60; i++) {
             try {
@@ -200,6 +203,7 @@ public class CapabilitiesDirectoryLauncher {
                 Thread.sleep(i * 500);
             } catch (InterruptedException e) {
                 logger.warn("Sleep interrupted.", e);
+                throw e;
             }
         }
         logger.error("Database not available in time.");
@@ -258,8 +262,12 @@ public class CapabilitiesDirectoryLauncher {
             return;
         }
         ready.set(false);
-        persistService.stop();
-        runtime.shutdown(true);
+        if (persistService != null) {
+            persistService.stop();
+        }
+        if (runtime != null) {
+            runtime.shutdown(true);
+        }
         if (readyServer != null) {
             stopReadyServer();
         }
@@ -275,7 +283,8 @@ public class CapabilitiesDirectoryLauncher {
         try {
             readyThread.join();
         } catch (InterruptedException e) {
-            // ignore
+            logger.error("Thread interrupted while stopping ready server. ");
+            Thread.currentThread().interrupt();
         }
         readyThread = null;
     }
@@ -284,9 +293,14 @@ public class CapabilitiesDirectoryLauncher {
     // until a connection on a shutdownPort gets established, to
     // allow to initiate shutdown from outside.
     public static void main(String[] args) throws IOException {
-        start(new Properties());
-        startReadyServer();
-        waitUntilShutdownRequested();
+        try {
+            start(new Properties());
+            startReadyServer();
+            waitUntilShutdownRequested();
+        } catch (InterruptedException e) {
+            logger.error("Thread interrupted. ", e);
+            Thread.currentThread().interrupt();
+        }
         shutdown();
     }
 }

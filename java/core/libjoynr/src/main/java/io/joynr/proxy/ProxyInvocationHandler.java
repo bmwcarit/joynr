@@ -170,7 +170,9 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             }
         } catch (ApplicationException | JoynrRuntimeException e) {
             throw e;
-
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new JoynrRuntimeException(e);
         } catch (Exception e) {
             throw new JoynrRuntimeException(e);
         }

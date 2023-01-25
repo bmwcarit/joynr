@@ -391,6 +391,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
             countDownLatch.await(1500, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             logger.error("Interrupted while waiting for message workers to stop.", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -413,7 +414,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
         void handleOutgoingMessage(DelayableImmutableMessage delayableMessage) {
             FailureAction failureAction = null;
-
             try {
                 ImmutableMessage message = delayableMessage.getMessage();
                 logger.trace("Starting processing of outgoing message {}", message);
@@ -426,11 +426,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                 IMessagingStub messagingStub = messagingStubFactory.create(parentRouterMessagingAddress);
                 messagingStub.transmit(message, messageProcessedAction, failureAction);
             } catch (Exception error) {
-                if (delayableMessage == null) {
-                    logger.error("Error in scheduled MessageWorker thread while processing outgoing message. delayableMessage == null, continuing. Error:",
-                                 error);
-                    return;
-                }
                 logger.error("Error in scheduled MessageWorker thread while processing outgoing message:", error);
                 if (failureAction == null) {
                     failureAction = createFailureAction(delayableMessage);
@@ -446,11 +441,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                 checkExpiry(message);
                 dispatcher.messageArrived(message);
             } catch (Exception error) {
-                if (delayableMessage == null) {
-                    logger.error("Error in scheduled MessageWorker thread while processing incoming message. delayableMessage == null, continuing. Error:",
-                                 error);
-                    return;
-                }
                 logger.error("Error in scheduled MessageWorker thread while processing incoming message:", error);
             }
         }
@@ -476,6 +466,8 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                         } else {
                             handleOutgoingMessage(delayableMessage);
                         }
+                    } else {
+                        logger.error("Error in scheduled MessageWorker thread while processing message. delayableMessage == null, continuing.");
                     }
                 } catch (InterruptedException e) {
                     logger.trace("MessageWorker interrupted. Stopping.");

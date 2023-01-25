@@ -308,9 +308,12 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                     // while this waits till a provider is unregistered in the local discovery it won't wait for global
                     Future<Void> unregisterFinished = unregisterProviderQueue.poll();
                     unregisterFinished.get(5000);
-                } catch (JoynrRuntimeException | InterruptedException | ApplicationException e) {
+                } catch (JoynrRuntimeException | ApplicationException e) {
                     logger.error("Unregister Provider failed", e);
                     break; // break if unregistering a provider takes more than 5s
+                } catch (InterruptedException e) {
+                    logger.error("Shutdown interrupted. ", e);
+                    Thread.currentThread().interrupt();
                 }
             }
             shutdownNotifier.shutdown();
@@ -320,7 +323,12 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
     @Override
     public void prepareForShutdown() {
         logger.info("Preparing for shutdown of runtime");
-        shutdownNotifier.prepareForShutdown();
+        try {
+            shutdownNotifier.prepareForShutdown();
+        } catch (InterruptedException ex) {
+            logger.error("Preparing for shutdown of runtime interrupted.", ex);
+            Thread.currentThread().interrupt();
+        }
     }
 
     protected synchronized void registerInterfaceClassTypes(final Class<?> interfaceClass, String errorPrefix) {

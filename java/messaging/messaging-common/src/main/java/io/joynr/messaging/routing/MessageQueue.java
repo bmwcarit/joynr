@@ -77,7 +77,8 @@ public class MessageQueue {
                     Thread.sleep(5);
                 } catch (InterruptedException e) {
                     logger.error("Interrupted while waiting for joynr message queue to drain.");
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    break;
                 }
             }
         }

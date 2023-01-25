@@ -174,7 +174,7 @@ public class PublicationTimer extends PubSubTimerBase {
             synchronized (PublicationTimer.this) {
                 if (pendingPublication) {
                     pendingPublication = false;
-                    PublicationTimer.this.notify();
+                    PublicationTimer.this.notifyAll();
                 }
             }
             logger.trace("Sent subscriptionreply @{}", state.getTimeOfLastPublication());
