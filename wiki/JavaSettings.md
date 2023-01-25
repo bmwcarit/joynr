@@ -335,24 +335,35 @@ directory (capability directory) a discovery entry is created in the local capab
 LimitAndBackpressureSettings contains the properties that are related to incoming MQTT
 requests and the possible ways of dealing with a heavy load situations, i.e. when requests
 are processed slower (by joynr or the invoked provider implementations) than their arrival
-rate. The following diagram describes the three different possible states/mechanisms that
-can be configured with the properties of this section:
-![Possible states using limit and backpressure properties](images/PossibleStatesLimitAndBackpressureProperties.png)
+rate. The following diagram describes how joynr determines whether backpressure should be
+applied:
 
-The following diagram shows in more detail the interaction between the properties for the case
-when the backpressure mechanism is enabled:
-![Limit and backpressure properties in action](images/LimitAndBackpressurePropertiesInAction.png)
+![Determining message acknowledgement](images/Backpressure.drawio.png)
+
+The upper threshold mentioned in this diagram is
+`PROPERTY_MAX_INCOMING_MQTT_REQUESTS` - (`PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` * number of connected MQTT brokers).
+When a message is processed, then the number of remaining unprocessed requests is checked again.
+If that number is lower or equal to `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`,
+backpressure mode is disabled and any unacknowledged Mqtt5Publishes are acknowledged.
+
+![Exiting backpressure mode](images/Backpressure_exiting.drawio.png)
+
+If multiple GBIDs are connected to, the threshold at which messages stop being acknowledged
+decreases proportionally to the amount of GBIDs. This is to enforce the limit set by
+`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, as each connection can have up to
+`PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` unacknowledged requests.
+
+![Backpressure configuration examples](images/Backpressure_Config_examples.drawio.png)
 
 ### `PROPERTY_MAX_INCOMING_MQTT_REQUESTS`
 Setting this limit protects a joynr instance against consuming too much memory.
 This may be the case if the processing of requests (meaning RPCs and fire-and-forget
 methods) coming over MQTT is slower than their incoming rate and there is a resulting need
-of queueing them. In case the set maximum is reached, further incoming MQTT requests
-are dropped and are lost. Pay attention that other types of incoming MQTT messages (e.g.
-replies) will not be dropped in order not to break the joynr communication. New
-requests coming over MQTT will be accepted again when processing of previous ones
-is completed. The default value of `0` means that no limit is enforced and no messages
-will be ever dropped.
+of queueing them. Before the set maximum is reached, further incoming MQTT requests
+will not be acknowledged anymore, so that only the configued maximum of requests can
+be received by the client. New requests coming over MQTT will be accepted again when the
+processing of previous ones is completed. When backpressure is enabled, then this value has to be set.
+Otherwise the joynr runtime will fail to start with an exception.
 
 * **OPTIONAL**
 * **Type**: int
@@ -360,46 +371,24 @@ will be ever dropped.
 * **Default value**: `0`
 
 ### `PROPERTY_BACKPRESSURE_ENABLED`
-Controls whether the backpressure mechanism is active. It applies only when using shared
-subscriptions, so `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` needs to be `true`.
+Controls whether the backpressure mechanism is active.
 When backpressure is enabled it is required to set reasonable values also for
-`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
+`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, `PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
 and `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`. In case that at
 startup an invalid value combination for these three properties is detected an
-IllegalArgumentException is thrown and backpresure is disabled.
+IllegalArgumentException is thrown.
 
 * **OPTIONAL**
 * **Type**: Boolean
 * **User property**: `joynr.messaging.backpressure.enabled`
 * **Default value**: `false`
 
-### `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
-Requires `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` > 0 and will have effect only if
-additionally `PROPERTY_BACKPRESSURE_ENABLED` is set to `true`. The value for this
-property has a maximum of 100 (incl.) and represents a percentage. When joynr reaches the
-set percentage of the maximum incoming MQTT requests (`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`),
-the instance will try to temporarily unsubscribe from the MQTT shared subscriptions
-topic where the requests come from. This should stop the inflow of further MQTT
-requests. The joynr instance will try to subscribe again for the mentioned topic
-when the number of queued requests drops below
-`PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD` percent of the maximum.
-The value for the upper threshold must be strictly higher than
-`PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.messaging.backpressure.incomingmqttrequests.upperthreshold`
-* **Default value**: `80`
-
 ### `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`
 Requires `PROPERTY_MAX_INCOMING_MQTT_REQUESTS` > 0 and will have effect only if
-additionally `PROPERTY_BACKPRESSURE_ENABLED` is set to `true`. The value for this
-property has a maximum of 100 (excl.) and represents a percentage. In case the joynr
-instance is temporarily unsubscribed from the MQTT shared subscriptions topic, i.e. the
-source of incoming requests, and the number of currently available unprocessed requests drops
-below the hereby set percentage of the maximum (`PROPERTY_MAX_INCOMING_MQTT_REQUESTS`), then
-the instance will try to subscribe again for the mentioned topic. The value for the
-lower threshold must be strictly below `PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`.
+additionally `PROPERTY_BACKPRESSURE_ENABLED` is set to `true`. After the joynr client
+has entered backpressure mode, backpressure mode can be exited again when the number of
+currently unprocessed requests falls back to this limit. It has to be strictly lower than
+`PROPERTY_MAX_INCOMING_MQTT_REQUESTS` - (`PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` * number of connected MQTT brokers).
 
 * **OPTIONAL**
 * **Type**: int
@@ -468,7 +457,10 @@ drain on `prepareForShutdown` before timing out.
 
 ### `PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
 Define how many simultaneous unacknowledged QoS 1 and QoS 2 publications we are ready to receive
-from the Mqtt Broker.
+from the Mqtt Broker. When backpressure is enabled, backpressure mode is entered when
+`PROPERTY_MAX_INCOMING_MQTT_REQUESTS` - (`PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` * connected MQTT brokers (GBIDs))
+unfinished requests are queued. The result of the above calculation must not be zero or less,
+else the joynr runtime will fail with an exception.
 
 * **OPTIONAL**
 * **Type**: int

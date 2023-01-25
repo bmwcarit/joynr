@@ -141,10 +141,10 @@ As a rule of thumb consider
 ```
 corepoolsize =
     (
-        joynr.messaging.maximumParallelSends +
-        (joynr.messaging.mqtt.separateconnections == true) ? 5 : 0 +
-        10 +
-        any number of additional threads the application needs internally
+        5 + joynr.messaging.maximumParallelSends
+        + ((joynr.messaging.mqtt.separateconnections == true) ? 5 : 0 +
+           10) * number of connected brokers/GBIDS
+        + any number of additional threads the application needs internally
     ) * numberOfJoynrRuntimes per container
 ```
 
