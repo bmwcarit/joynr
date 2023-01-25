@@ -22,12 +22,9 @@ import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_BACKEND_UID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
 import java.util.Set;
@@ -62,9 +59,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected boolean sharedSubscriptionsEnabled;
     protected MqttAddress ownAddress;
     protected int maxIncomingMqttRequests;
-    protected boolean backpressureEnabled;
-    protected int backpressureIncomingMqttRequestsUpperThreshold;
-    protected int backpressureIncomingMqttRequestsLowerThreshold;
     protected MqttAddress replyToAddress;
     protected MessageRouter messageRouter;
     protected MessageProcessedHandler messageProcessedHandler;
@@ -86,9 +80,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
                                          @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
-                                         @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
-                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
-                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                          MessageRouter messageRouter,
@@ -108,9 +99,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.messageProcessors = messageProcessors;
         this.ownAddress = ownAddress;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
-        this.backpressureEnabled = backpressureEnabled;
-        this.backpressureIncomingMqttRequestsUpperThreshold = backpressureIncomingMqttRequestsUpperThreshold;
-        this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.messageProcessedHandler = messageProcessedHandler;
@@ -142,9 +130,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         return new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
                                                                    ownAddress,
                                                                    maxIncomingMqttRequests,
-                                                                   backpressureEnabled,
-                                                                   backpressureIncomingMqttRequestsUpperThreshold,
-                                                                   backpressureIncomingMqttRequestsLowerThreshold,
                                                                    replyToAddress,
                                                                    messageRouter,
                                                                    messageProcessedHandler,

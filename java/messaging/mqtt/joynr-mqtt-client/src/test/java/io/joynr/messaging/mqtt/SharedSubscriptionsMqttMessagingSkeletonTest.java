@@ -50,9 +50,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
     protected void createSkeleton(String channelId) {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownTopic,
                                                                maxMqttMessagesInQueue,
-                                                               backpressureEnabled,
-                                                               backpressureIncomingMqttRequestsUpperThreshold,
-                                                               backpressureIncomingMqttRequestsLowerThreshold,
                                                                replyToTopic,
                                                                messageRouter,
                                                                messageProcessedHandler,

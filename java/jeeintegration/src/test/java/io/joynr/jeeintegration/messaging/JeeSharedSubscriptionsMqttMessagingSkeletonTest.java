@@ -55,9 +55,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
     protected void createSkeleton(String channelId) {
         subject = new JeeSharedSubscriptionsMqttMessagingSkeleton(ownTopic,
                                                                   maxMqttMessagesInQueue,
-                                                                  backpressureEnabled,
-                                                                  backpressureIncomingMqttRequestsUpperThreshold,
-                                                                  backpressureIncomingMqttRequestsLowerThreshold,
                                                                   replyToTopic,
                                                                   messageRouter,
                                                                   messageProcessedHandler,

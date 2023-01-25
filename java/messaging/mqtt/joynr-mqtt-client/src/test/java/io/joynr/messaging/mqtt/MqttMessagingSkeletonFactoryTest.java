@@ -193,17 +193,11 @@ public class MqttMessagingSkeletonFactoryTest {
         when(mqttClientFactory.createReplyReceiver(gbids[1])).thenReturn(mqttClient);
         when(mqttClientFactory.createReplyReceiver(gbids[2])).thenReturn(mqttClient);
 
-        final boolean backpressureEnabled = false;
-        final int backpressureIncomingMqttRequestsUpperThreshold = 42;
-        final int backpressureIncomingMqttRequestsLowerThreshold = 41;
         final MqttAddress replyToAddress = mock(MqttAddress.class);
         final String channelId = "testChannelId";
         SharedSubscriptionsMqttMessagingSkeletonFactory factory = new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
                                                                                                                       ownAddress,
                                                                                                                       maxIncomingMqttRequests,
-                                                                                                                      backpressureEnabled,
-                                                                                                                      backpressureIncomingMqttRequestsUpperThreshold,
-                                                                                                                      backpressureIncomingMqttRequestsLowerThreshold,
                                                                                                                       replyToAddress,
                                                                                                                       messageRouter,
                                                                                                                       mockMessageProcessedHandler,

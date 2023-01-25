@@ -43,9 +43,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JeeSharedSubscriptionsMqttMessagingSkeleton(String ownTopic,
                                                        int maxIncomingMqttRequests,
-                                                       boolean backpressureEnabled,
-                                                       int backpressureIncomingMqttRequestsUpperThreshold,
-                                                       int backpressureIncomingMqttRequestsLowerThreshold,
                                                        String replyToTopic,
                                                        MessageRouter messageRouter,
                                                        MessageProcessedHandler messageProcessedHandler,
@@ -62,9 +59,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
                                                        MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(ownTopic,
               maxIncomingMqttRequests,
-              backpressureEnabled,
-              backpressureIncomingMqttRequestsUpperThreshold,
-              backpressureIncomingMqttRequestsLowerThreshold,
               replyToTopic,
               messageRouter,
               messageProcessedHandler,

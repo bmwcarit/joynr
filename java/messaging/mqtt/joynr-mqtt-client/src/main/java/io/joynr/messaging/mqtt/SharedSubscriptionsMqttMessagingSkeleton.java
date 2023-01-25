@@ -18,9 +18,6 @@
  */
 package io.joynr.messaging.mqtt;
 
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 import static java.lang.String.format;
 
 import java.util.Set;
@@ -31,10 +28,10 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 
 /**
  * Overrides the standard {@link MqttMessagingSkeleton} in order to customise the topic subscription strategy in the
@@ -52,20 +49,12 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
     private final String sharedSubscriptionsTopic;
     private final AtomicBoolean subscribedToSharedSubscriptionsTopic;
     private final String replyToTopic;
-    private boolean backpressureEnabled;
-    private final int backpressureIncomingMqttRequestsUpperThreshold;
-    private final int backpressureIncomingMqttRequestsLowerThreshold;
-    private final int unsubscribeThreshold;
-    private final int resubscribeThreshold;
     private JoynrMqttClient replyClient;
     boolean separateReplyMqttClient;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SharedSubscriptionsMqttMessagingSkeleton(String ownTopic,
                                                     int maxIncomingMqttRequests,
-                                                    boolean backpressureEnabled,
-                                                    int backpressureIncomingMqttRequestsUpperThreshold,
-                                                    int backpressureIncomingMqttRequestsLowerThreshold,
                                                     String replyToTopic,
                                                     MessageRouter messageRouter,
                                                     MessageProcessedHandler messageProcessedHandler,
@@ -97,11 +86,6 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         this.channelId = channelId;
         this.sharedSubscriptionsTopic = createSharedSubscriptionsTopic();
         this.subscribedToSharedSubscriptionsTopic = new AtomicBoolean(false);
-        this.backpressureEnabled = backpressureEnabled;
-        this.backpressureIncomingMqttRequestsUpperThreshold = backpressureIncomingMqttRequestsUpperThreshold;
-        this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
-        this.unsubscribeThreshold = (maxIncomingMqttRequests * backpressureIncomingMqttRequestsUpperThreshold) / 100;
-        this.resubscribeThreshold = (maxIncomingMqttRequests * backpressureIncomingMqttRequestsLowerThreshold) / 100;
         this.separateReplyMqttClient = separateReplyMqttClient;
         replyClient = mqttClientFactory.createReplyReceiver(ownGbid);
     }
