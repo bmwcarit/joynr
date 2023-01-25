@@ -64,8 +64,6 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "100");
         joynrProperties.setProperty(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED,
                                     Boolean.TRUE.toString());
-        joynrProperties.setProperty(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD,
-                                    "70");
         joynrProperties.setProperty(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD,
                                     "20");
 

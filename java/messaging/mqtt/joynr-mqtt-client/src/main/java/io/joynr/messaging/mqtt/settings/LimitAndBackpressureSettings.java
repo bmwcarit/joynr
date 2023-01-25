@@ -25,6 +25,5 @@ public final class LimitAndBackpressureSettings {
 
     public static final String PROPERTY_BACKPRESSURE_ENABLED = "joynr.messaging.backpressure.enabled";
     public static final String PROPERTY_MAX_INCOMING_MQTT_REQUESTS = "joynr.messaging.maxincomingmqttrequests";
-    public static final String PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD = "joynr.messaging.backpressure.incomingmqttrequests.upperthreshold";
     public static final String PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD = "joynr.messaging.backpressure.incomingmqttrequests.lowerthreshold";
 }
