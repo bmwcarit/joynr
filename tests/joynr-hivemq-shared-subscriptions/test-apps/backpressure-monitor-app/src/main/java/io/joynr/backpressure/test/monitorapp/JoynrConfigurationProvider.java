@@ -42,7 +42,6 @@ public class JoynrConfigurationProvider {
 
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.backpressure.test.monitorapp");
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
 
         final String brokerUri = System.getenv("MQTT_BROKER_URL");
         if (brokerUri == null) {

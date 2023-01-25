@@ -46,11 +46,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.java.messaging.mqtt</groupId>
-			<artifactId>joynr-mqtt-client</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>jakarta.platform</groupId>
 			<artifactId>jakarta.jakartaee-api</artifactId>
 			<scope>provided</scope>
