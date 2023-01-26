@@ -84,12 +84,10 @@ public:
                         successCallbackCalled.notify();
                     } else {
                         FAIL() << "resolve delivered unexpected result";
-                        successCallbackCalled.notify();
                     }
                 },
-                [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
+                [](const joynr::exceptions::ProviderRuntimeException&) {
                     FAIL() << "resolveNextHop did not succeed.";
-                    successCallbackCalled.notify();
                 });
         EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
     }
@@ -1025,12 +1023,10 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned)
                     successCallbackCalled.notify();
                 } else {
                     FAIL() << "resolve should not succeed.";
-                    successCallbackCalled.notify();
                 }
             },
-            [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
+            [](const joynr::exceptions::ProviderRuntimeException&) {
                 FAIL() << "resolveNextHop did not succeed.";
-                successCallbackCalled.notify();
             });
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
 
@@ -1042,14 +1038,12 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned)
             [&successCallbackCalled](const bool& resolved) {
                 if (resolved) {
                     FAIL() << "resolve should not succeed.";
-                    successCallbackCalled.notify();
                 } else {
                     successCallbackCalled.notify();
                 }
             },
-            [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
+            [](const joynr::exceptions::ProviderRuntimeException&) {
                 FAIL() << "resolveNextHop did not succeed.";
-                successCallbackCalled.notify();
             });
     EXPECT_TRUE(successCallbackCalled.waitFor(std::chrono::milliseconds(3000)));
 }
@@ -1074,14 +1068,12 @@ void CcMessageRouterTest::routeMessageAndCheckQueue(const std::string& msgType,
             [&successCallbackCalled](const bool& resolved) {
                 if (resolved) {
                     FAIL() << "resolve should not succeed.";
-                    successCallbackCalled.notify();
                 } else {
                     successCallbackCalled.notify();
                 }
             },
-            [&successCallbackCalled](const joynr::exceptions::ProviderRuntimeException&) {
+            [](const joynr::exceptions::ProviderRuntimeException&) {
                 FAIL() << "resolveNextHop did not succeed.";
-                successCallbackCalled.notify();
             });
 
     this->_messageRouter->route(immutableMessage);

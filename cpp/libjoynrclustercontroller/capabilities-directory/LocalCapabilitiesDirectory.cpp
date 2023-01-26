@@ -868,7 +868,6 @@ void LocalCapabilitiesDirectory::add(
                 "Provider does not have permissions to register interface {} on domain {}.",
                 discoveryEntry.getInterfaceName(),
                 discoveryEntry.getDomain()));
-        return;
     }
     const auto gbidsForAdd = gbids.size() == 0 ? _knownGbids : gbids;
     addInternal(discoveryEntry,

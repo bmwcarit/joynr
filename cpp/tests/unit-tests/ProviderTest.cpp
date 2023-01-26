@@ -54,12 +54,6 @@ public:
     {
         AbstractJoynrProvider::onAttributeValueChanged(attributeName, value);
     }
-
-    template <typename... Ts>
-    void fireBroadcast(const std::string& broadcastName, const Ts&... values)
-    {
-        AbstractJoynrProvider::fireBroadcast(broadcastName, std::forward<Ts>(values)...);
-    }
 };
 
 TEST(ProviderTest, versionIsSetCorrectly)

@@ -114,7 +114,7 @@ DiscoveryResult GuidedProxyBuilder::discover()
         discoveryResultFuture->get(discoveryResult);
     } catch (const exceptions::DiscoveryException& discoveryException) {
         JOYNR_LOG_ERROR(logger(), "Discovery failed: {}", discoveryException.getMessage());
-        throw discoveryException;
+        throw;
     }
 
     return discoveryResult;

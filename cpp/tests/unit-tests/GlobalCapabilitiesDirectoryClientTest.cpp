@@ -85,6 +85,14 @@ public:
                                    capExpiryDateMs,
                                    capPublicKeyId,
                                    capSerializedMqttAddress),
+              discoveryEntry(providerVersion,
+                             capDomain,
+                             capInterface,
+                             capParticipantId,
+                             capProviderQos,
+                             capLastSeenMs,
+                             capExpiryDateMs,
+                             capPublicKeyId),
               mockFuture(std::make_shared<joynr::Future<void>>()),
               onSuccess([]() {}),
               onError([](const types::DiscoveryError::Enum& /*error*/) {}),
@@ -138,6 +146,7 @@ protected:
     types::ProviderQos capProviderQos;
     joynr::types::Version providerVersion;
     types::GlobalDiscoveryEntry globalDiscoveryEntry;
+    types::DiscoveryEntry discoveryEntry;
     std::shared_ptr<joynr::Future<void>> mockFuture;
     std::function<void()> onSuccess;
     std::function<void(const types::DiscoveryError::Enum& error)> onError;
@@ -265,15 +274,16 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     std::string participantId1 = "participantId1";
     std::string participantId2 = "participantId2";
 
+    types::DiscoveryEntry discoveryEntry1 = discoveryEntry;
+    discoveryEntry1.setParticipantId(participantId1);
     types::GlobalDiscoveryEntry globalDiscoveryEntry1 = globalDiscoveryEntry;
     globalDiscoveryEntry1.setParticipantId(participantId1);
 
+    types::DiscoveryEntry discoveryEntry2 = discoveryEntry;
+    discoveryEntry2.setParticipantId(participantId2);
     types::GlobalDiscoveryEntry globalDiscoveryEntry2 = globalDiscoveryEntry1;
     globalDiscoveryEntry2.setParticipantId(participantId2);
-
-    std::vector<types::DiscoveryEntry> allGlobalEntries{
-            globalDiscoveryEntry1, globalDiscoveryEntry2};
-
+    std::vector<types::DiscoveryEntry> allGlobalEntries{discoveryEntry1, discoveryEntry2};
     EXPECT_CALL(*mockLCDStore, getAllGlobalCapabilities()).WillOnce(Return(allGlobalEntries));
 
     EXPECT_CALL(*mockLCDStore,
@@ -356,17 +366,23 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     std::string participantId2 = "participantId2";
     std::string participantId3 = "participantId3";
 
+    types::DiscoveryEntry discoveryEntry1 = discoveryEntry;
+    discoveryEntry1.setParticipantId(participantId1);
     types::GlobalDiscoveryEntry globalDiscoveryEntry1 = globalDiscoveryEntry;
     globalDiscoveryEntry1.setParticipantId(participantId1);
 
+    types::DiscoveryEntry discoveryEntry2 = discoveryEntry;
+    discoveryEntry2.setParticipantId(participantId2);
     types::GlobalDiscoveryEntry globalDiscoveryEntry2 = globalDiscoveryEntry1;
     globalDiscoveryEntry2.setParticipantId(participantId2);
 
-    types::GlobalDiscoveryEntry globalDiscoveryEntry3 = globalDiscoveryEntry2;
+    types::DiscoveryEntry discoveryEntry3 = discoveryEntry;
+    discoveryEntry3.setParticipantId(participantId3);
+    types::GlobalDiscoveryEntry globalDiscoveryEntry3 = globalDiscoveryEntry1;
     globalDiscoveryEntry3.setParticipantId(participantId3);
 
     std::vector<types::DiscoveryEntry> allGlobalEntries{
-            globalDiscoveryEntry1, globalDiscoveryEntry2, globalDiscoveryEntry3};
+            discoveryEntry1, discoveryEntry2, discoveryEntry3};
 
     EXPECT_CALL(*mockLCDStore, getAllGlobalCapabilities()).WillOnce(Return(allGlobalEntries));
 
@@ -509,14 +525,17 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_re
     std::string participantId1 = "participantId1";
     std::string participantId2 = "participantId2";
 
+    types::DiscoveryEntry discoveryEntry1 = discoveryEntry;
+    discoveryEntry1.setParticipantId(participantId1);
     types::GlobalDiscoveryEntry globalDiscoveryEntry1 = globalDiscoveryEntry;
     globalDiscoveryEntry1.setParticipantId(participantId1);
 
+    types::DiscoveryEntry discoveryEntry2 = discoveryEntry;
+    discoveryEntry2.setParticipantId(participantId2);
     types::GlobalDiscoveryEntry globalDiscoveryEntry2 = globalDiscoveryEntry1;
     globalDiscoveryEntry2.setParticipantId(participantId2);
 
-    std::vector<types::DiscoveryEntry> allGlobalEntries{
-            globalDiscoveryEntry1, globalDiscoveryEntry2};
+    std::vector<types::DiscoveryEntry> allGlobalEntries{discoveryEntry1, discoveryEntry2};
 
     EXPECT_CALL(*mockLCDStore, getAllGlobalCapabilities()).WillOnce(Return(allGlobalEntries));
 

@@ -42,7 +42,7 @@ Settings::Settings(const std::string& filename, bool throwIfError)
         JOYNR_LOG_INFO(logger(), "Attempt reading {} succeeded.", filename);
     } catch (const ptree::ini_parser_error& e) {
         if (throwIfError) {
-            throw e;
+            throw;
         }
         JOYNR_LOG_INFO(logger(), "Could not read properties from {}.", filename);
     }
