@@ -93,9 +93,9 @@ import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MulticastPublication;
+import joynr.MulticastSubscriptionQos;
 import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
-import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
@@ -309,7 +309,7 @@ public class DispatcherImplTest {
         MulticastSubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest("multicastId",
                                                                                             "subscriptionId",
                                                                                             "multicastName",
-                                                                                            new OnChangeSubscriptionQos());
+                                                                                            new MulticastSubscriptionQos());
         MutableMessage joynrMessage = messageFactory.createSubscriptionRequest(from,
                                                                                to,
                                                                                subscriptionRequest,

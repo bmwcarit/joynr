@@ -72,6 +72,7 @@ import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
 import joynr.Message.MessageType;
+import joynr.MulticastSubscriptionQos;
 import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OnChangeSubscriptionQos;
@@ -1030,7 +1031,7 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
         // fake incoming subscription request and wait for subscription reply
         String subscriptionId = createUuidString();
         long validityMs = 5000;
-        OnChangeSubscriptionQos qos = new OnChangeSubscriptionQos().setMinIntervalMs(0).setValidityMs(validityMs);
+        MulticastSubscriptionQos qos = new MulticastSubscriptionQos().setValidityMs(validityMs);
         MulticastSubscriptionRequest request = new MulticastSubscriptionRequest(multicastId,
                                                                                 subscriptionId,
                                                                                 multicastName,
