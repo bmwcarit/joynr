@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import joynr.ImmutableMessage;
 import joynr.Message;
@@ -48,21 +47,16 @@ public class AddressManager {
 
     @Inject
     public AddressManager(RoutingTable routingTable,
-                          Set<MulticastAddressCalculator> multicastAddressCalculators,
+                          Optional<MulticastAddressCalculator> multicastAddressCalculator,
                           MulticastReceiverRegistry multicastReceiverRegistry) {
-        logger.trace("Initialised with routingTable: {}, multicastAddressCalculators: {}, multicastReceiverRegistry: {}",
+        logger.trace("Initialised with routingTable: {}, multicastAddressCalculator: {}, multicastReceiverRegistry: {}",
                      routingTable,
-                     multicastAddressCalculators,
+                     multicastAddressCalculator.orElse(null),
                      multicastReceiverRegistry);
         this.routingTable = routingTable;
         this.multicastReceiversRegistry = multicastReceiverRegistry;
-        if (multicastAddressCalculators.size() == 1) {
-            this.multicastAddressCalculator = multicastAddressCalculators.iterator().next();
-        } else if (multicastAddressCalculators.size() > 1) {
-            throw new JoynrIllegalStateException("Multiple multicast address calculators registered.");
-        } else {
-            this.multicastAddressCalculator = null;
-        }
+        this.multicastAddressCalculator = multicastAddressCalculator.orElse(null);
+
     }
 
     /**

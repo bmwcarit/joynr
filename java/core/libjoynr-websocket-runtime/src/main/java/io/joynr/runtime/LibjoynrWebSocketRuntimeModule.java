@@ -22,6 +22,7 @@ import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.OptionalBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
@@ -31,6 +32,7 @@ import io.joynr.messaging.routing.DummyRoutingTable;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.routing.MulticastAddressCalculator;
 import io.joynr.messaging.sender.LibJoynrMessageSender;
 import io.joynr.messaging.sender.MessageSender;
 import io.joynr.messaging.websocket.WebSocketMessagingSkeleton;
@@ -44,7 +46,7 @@ import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
 
 /**
- *  Use this module if you want to start a lib joynr instance which connects to a cluster controller by websockets
+ * Use this module if you want to start a lib joynr instance which connects to a cluster controller by websockets
  */
 public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
 
@@ -63,7 +65,9 @@ public class LibjoynrWebSocketRuntimeModule extends AbstractRuntimeModule {
 
         messagingSkeletonFactory.addBinding(WebSocketAddress.class).to(WebsocketMessagingSkeletonFactory.class);
         messagingStubFactory.addBinding(WebSocketAddress.class).to(WebSocketMessagingStubFactory.class);
-        multicastAddressCalculators.addBinding().to(WebSocketMulticastAddressCalculator.class);
+        OptionalBinder.newOptionalBinder(binder(), MulticastAddressCalculator.class)
+                      .setBinding()
+                      .to(WebSocketMulticastAddressCalculator.class);
     }
 
     @Provides

@@ -36,6 +36,7 @@ import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.multibindings.OptionalBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
@@ -149,10 +150,9 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
         bind(MqttTopicPrefixProvider.class).to(DefaultMqttTopicPrefixProvider.class);
         bind(MqttClientIdProvider.class).to(DefaultMqttClientIdProvider.class);
 
-        Multibinder<MulticastAddressCalculator> multicastAddressCalculators = Multibinder.newSetBinder(binder(),
-                                                                                                       new TypeLiteral<MulticastAddressCalculator>() {
-                                                                                                       });
-        multicastAddressCalculators.addBinding().to(MqttMulticastAddressCalculator.class);
+        OptionalBinder.newOptionalBinder(binder(), MulticastAddressCalculator.class)
+                      .setBinding()
+                      .to(MqttMulticastAddressCalculator.class);
     }
 
 }

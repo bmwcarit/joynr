@@ -31,6 +31,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.multibindings.OptionalBinder;
 import com.google.inject.name.Names;
 
 import io.joynr.arbitration.ArbitratorFactory;
@@ -95,7 +96,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
 
     MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
     MapBinder<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactory;
-    Multibinder<MulticastAddressCalculator> multicastAddressCalculators;
 
     @Override
     protected void configure() {
@@ -129,8 +129,7 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
         }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
 
-        multicastAddressCalculators = Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
-        });
+        OptionalBinder.newOptionalBinder(binder(), MulticastAddressCalculator.class);
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
         bind(RequestReplyManager.class).to(RequestReplyManagerImpl.class);

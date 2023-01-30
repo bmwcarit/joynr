@@ -60,6 +60,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.google.inject.multibindings.OptionalBinder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,7 +79,6 @@ import com.google.inject.Module;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
@@ -184,9 +184,7 @@ public class CcMessageRouterTest {
         routingTable = spy(new RoutingTableImpl(42, gbidsArray, addressValidatorMock));
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
                                             new MessageQueue.MaxTimeoutHolder()));
-        addressManager = spy(new AddressManager(routingTable,
-                                                new HashSet<MulticastAddressCalculator>(),
-                                                multicastReceiverRegistry));
+        addressManager = spy(new AddressManager(routingTable, Optional.empty(), multicastReceiverRegistry));
 
         when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
         when(messagingSkeletonFactoryMock.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
@@ -235,8 +233,7 @@ public class CcMessageRouterTest {
 
                 bind(MessagingSkeletonFactory.class).toInstance(messagingSkeletonFactoryMock);
 
-                Multibinder.newSetBinder(binder(), new TypeLiteral<MulticastAddressCalculator>() {
-                });
+                OptionalBinder.newOptionalBinder(binder(), MulticastAddressCalculator.class);
 
                 bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
                                                     .toInstance(scheduler);
