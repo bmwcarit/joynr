@@ -1,6 +1,53 @@
 # Release Notes
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
+# joynr 1.21.8
+
+## API relevant changes
+* **[Android]** Allow access control to be restricted on UID level
+* **[C++]** The following configuration related APIs have been removed in LCD persistency:
+```
+  * ClusterControllerSettings::SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
+  * ClusterControllerSettings::SETTING_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED();
+  * ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCE_FILENAME();
+  * ClusterControllerSettings::DEFAULT_LOCAL_CAPABILITIES_DIRECTORY_PERSISTENCY_ENABLED();
+  * ClusterControllerSettings::getLocalCapabilitiesDirectoryPersistenceFilename()
+  * ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistenceFilename(...)
+  * ClusterControllerSettings::isLocalCapabilitiesDirectoryPersistencyEnabled()
+  * ClusterControllerSettings::setLocalCapabilitiesDirectoryPersistencyEnabled(...)
+```
+## Other Changes
+* **[Java]** Updated dependencies:
+```
+  * com.google.guava:guava                        27.1-jre / 30.1-jre -> 31.1-jre
+  * com.fasterxml.jackson.core:jackson-*          2.13.4              -> 2.14.1
+  * netty-*                                       4.1.80.Final        -> 4.1.86.Final
+```
+* **[C++]** Improve logging for expired messages: expired messages are now logged with log level
+  warning instead of error.
+* **[C++]** Improved logging of ApplicationExceptions: error enum and detailMessage are now always
+  logged when an ApplicationException is received, misleading log and wrong log in case no callback
+  has been provided has been fixed.
+* **[Java]** Joynr now uses a separate MQTT connection for receiving replies if shared subscriptions
+  are enabled. This is required for future improvements of backpressure and graceful shutdown.
+
+## Configuration Property Changes
+* **[C++]** Removed the settings to enable and configure LCD persistency
+```
+  [cluster-controller]
+  local-capabilities-directory-persistence-file
+  local-capabilities-directory-persistency-enabled
+```
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed issues reported by SonarQube.
+* **[C++]** Fixed issues reported by SonarQube.
+* **[C++]** Prevent ApplicationException from being thrown from methods without modelled errors.
+* **[C++]** Prevent proxies from being built for discovered providers if no routing entry could be
+  added
 
 # joynr 1.21.7
 
