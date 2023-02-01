@@ -39,7 +39,6 @@ import joynr.system.RoutingTypes.RoutingTypesUtil;
 
 public abstract class AbstractSharedSubscriptionsMqttMessagingSkeletonTest {
 
-    protected int maxMqttMessagesInQueue = 20;
     protected String ownGbid = "testOwnGbid";
     @Mock
     protected MqttClientFactory mqttClientFactory;

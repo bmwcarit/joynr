@@ -25,7 +25,6 @@ import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
 import java.util.Set;
 
@@ -57,7 +56,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected MqttClientFactory mqttClientFactory;
     protected boolean sharedSubscriptionsEnabled;
     protected MqttAddress ownAddress;
-    protected int maxIncomingMqttRequests;
     protected MqttAddress replyToAddress;
     protected MessageRouter messageRouter;
     protected MessageProcessedHandler messageProcessedHandler;
@@ -77,7 +75,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     public MqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
                                          @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                         @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                          MessageRouter messageRouter,
@@ -95,7 +92,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         this.ownAddress = ownAddress;
-        this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.messageProcessedHandler = messageProcessedHandler;
@@ -125,7 +121,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected IMessagingSkeletonFactory createSharedSubscriptionsFactory() {
         return new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
                                                                    ownAddress,
-                                                                   maxIncomingMqttRequests,
                                                                    replyToAddress,
                                                                    messageRouter,
                                                                    messageProcessedHandler,
@@ -143,7 +138,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected IMessagingSkeletonFactory createFactory() {
         return new MqttMessagingSkeletonFactory(gbids,
                                                 ownAddress,
-                                                maxIncomingMqttRequests,
                                                 messageRouter,
                                                 messageProcessedHandler,
                                                 mqttClientFactory,

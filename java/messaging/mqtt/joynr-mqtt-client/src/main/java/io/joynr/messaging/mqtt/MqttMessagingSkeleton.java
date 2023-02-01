@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +49,6 @@ import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
 import joynr.Message;
-import joynr.Message.MessageType;
 
 /**
  * Connects to the MQTT broker
@@ -59,7 +57,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         implements IMqttMessagingSkeleton, MessageProcessedListener {
     private static final Logger logger = LoggerFactory.getLogger(MqttMessagingSkeleton.class);
 
-    protected final int maxIncomingMqttRequests;
     protected final String ownTopic;
     protected JoynrMqttClient client;
     protected final String ownGbid;
@@ -71,14 +68,12 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     private final RawMessagingPreprocessor rawMessagingPreprocessor;
     private final Set<JoynrMessageProcessor> messageProcessors;
     private final Set<String> incomingMqttRequests;
-    private final AtomicLong droppedMessagesCount;
     private final String backendUid;
     private final List<Mqtt5Publish> publishesToAcknowledge;
     private final MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeleton(String ownTopic,
-                                 int maxIncomingMqttRequests,
                                  MessageRouter messageRouter,
                                  MessageProcessedHandler messageProcessedHandler,
                                  MqttClientFactory mqttClientFactory,
@@ -91,7 +86,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                                  MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(routingTable);
         this.ownTopic = ownTopic;
-        this.maxIncomingMqttRequests = maxIncomingMqttRequests;
         this.messageRouter = messageRouter;
         this.messageProcessedHandler = messageProcessedHandler;
         this.mqttClientFactory = mqttClientFactory;
@@ -99,7 +93,6 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
-        this.droppedMessagesCount = new AtomicLong();
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
         this.ownGbid = ownGbid;
         this.backendUid = backendUid;
@@ -167,13 +160,12 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
     public void transmit(Mqtt5Publish mqtt5Publish,
                          Map<String, String> prefixedCustomHeaders,
                          FailureAction failureAction) {
-        synchronized (this) {
-            try {
-                HashMap<String, Serializable> context = new HashMap<String, Serializable>();
-                byte[] processedMessage = rawMessagingPreprocessor.process(mqtt5Publish.getPayloadAsBytes(),
-                                                                           Optional.of(context));
+        try {
+            HashMap<String, Serializable> context = new HashMap<String, Serializable>();
+            byte[] processedMessage = rawMessagingPreprocessor.process(mqtt5Publish.getPayloadAsBytes(),
+                                                                       Optional.of(context));
 
-                ImmutableMessage message = new ImmutableMessage(processedMessage);
+            ImmutableMessage message = new ImmutableMessage(processedMessage);
 
             if (logger.isTraceEnabled()) {
                 logger.trace("<<< INCOMING FROM {} <<< {}", ownGbid, message);
@@ -184,82 +176,64 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
                              backendUid);
             }
 
-                // If this fails, we quit the processing due to a thrown exception
-                MessageRouterUtil.checkExpiry(message);
+            // If this fails, we quit the processing due to a thrown exception
+            MessageRouterUtil.checkExpiry(message);
 
-                message.setContext(context);
-                message.setPrefixedExtraCustomHeaders(prefixedCustomHeaders);
-                message.setCreatorUserId(backendUid);
+            message.setContext(context);
+            message.setPrefixedExtraCustomHeaders(prefixedCustomHeaders);
+            message.setCreatorUserId(backendUid);
 
-                if (messageProcessors != null) {
-                    for (JoynrMessageProcessor processor : messageProcessors) {
-                        message = processor.processIncoming(message);
-                    }
+            if (messageProcessors != null) {
+                for (JoynrMessageProcessor processor : messageProcessors) {
+                    message = processor.processIncoming(message);
                 }
+            }
 
-                message.setReceivedFromGlobal(true);
+            message.setReceivedFromGlobal(true);
 
-                if (isRequestMessageTypeThatCanBeDropped(message.getType())) {
-                    requestAccepted(message.getId());
-                }
+            boolean ack = true;
+            if (isRequestMessageType(message.getType())) {
+                ack = mqttMessageInProgressObserver.canMessageBeAcknowledged(message.getId());
+                requestAccepted(message.getId());
+            }
 
-                boolean routingEntryRegistered = false;
-                try {
-                    routingEntryRegistered = registerGlobalRoutingEntry(message, ownGbid);
-                    messageRouter.routeIn(message);
-                    if (message.getType() == MessageType.VALUE_MESSAGE_TYPE_REQUEST
-                            || message.getType() == MessageType.VALUE_MESSAGE_TYPE_ONE_WAY) {
-                        if (mqttMessageInProgressObserver.canMessageBeAcknowledged(message.getId())) {
-                            mqtt5Publish.acknowledge();
-                        } else {
-                            synchronized (publishesToAcknowledge) {
-                                publishesToAcknowledge.add(mqtt5Publish);
-                            }
-                        }
-                    } else {
-                        mqtt5Publish.acknowledge();
-                    }
-                } catch (Exception e) {
-                    removeGlobalRoutingEntry(message, routingEntryRegistered);
-                    messageProcessed(message.getId());
+            boolean routingEntryRegistered = false;
+            try {
+                routingEntryRegistered = registerGlobalRoutingEntry(message, ownGbid);
+                messageRouter.routeIn(message);
+                if (ack) {
                     mqtt5Publish.acknowledge();
-                    failureAction.execute(e);
+                } else {
+                    synchronized (publishesToAcknowledge) {
+                        publishesToAcknowledge.add(mqtt5Publish);
+                    }
                 }
-            } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
-                logger.error("Message: \"{}\" could not be deserialized, exception: {}",
-                             mqtt5Publish.getPayloadAsBytes(),
-                             e.getMessage());
-                mqtt5Publish.acknowledge();
-                failureAction.execute(e);
             } catch (Exception e) {
-                logger.error("Message \"{}\" could not be transmitted:", mqtt5Publish.getPayloadAsBytes(), e);
+                removeGlobalRoutingEntry(message, routingEntryRegistered);
+                messageProcessed(message.getId());
                 mqtt5Publish.acknowledge();
                 failureAction.execute(e);
             }
+        } catch (UnsuppportedVersionException | EncodingException | NullPointerException e) {
+            logger.error("Message: \"{}\" could not be deserialized, exception: {}",
+                         mqtt5Publish.getPayloadAsBytes(),
+                         e.getMessage());
+            mqtt5Publish.acknowledge();
+            failureAction.execute(e);
+        } catch (Exception e) {
+            logger.error("Message \"{}\" could not be transmitted:", mqtt5Publish.getPayloadAsBytes(), e);
+            mqtt5Publish.acknowledge();
+            failureAction.execute(e);
         }
     }
 
-    // only certain types of messages can be dropped in order not to break
-    // the communication, e.g. a reply message must not be dropped
-    private boolean isRequestMessageTypeThatCanBeDropped(Message.MessageType messageType) {
-        if (messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)
-                || messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected JoynrMqttClient getClient() {
-        return client;
+    private boolean isRequestMessageType(Message.MessageType messageType) {
+        return (messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)
+                || messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY));
     }
 
     private String getSubscriptionTopic(String multicastId) {
         return mqttTopicPrefixProvider.getMulticastTopicPrefix() + translateWildcard(multicastId);
-    }
-
-    public long getDroppedMessagesCount() {
-        return droppedMessagesCount.get();
     }
 
     protected int getCurrentCountOfUnprocessedMqttRequests() {
@@ -274,11 +248,11 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         }
     }
 
-    protected void requestAccepted(String messageId) {
+    private void requestAccepted(String messageId) {
         incomingMqttRequests.add(messageId);
     }
 
-    protected void requestProcessed(String messageId) {
+    private void requestProcessed(String messageId) {
         logger.debug("Request with messageId {} was processed and is removed from the MQTT skeleton tracking list",
                      messageId);
     }

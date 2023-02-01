@@ -32,7 +32,6 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeletonFactory(String[] gbids,
                                         MqttAddress ownAddress,
-                                        int maxIncomingMqttRequests,
                                         MessageRouter messageRouter,
                                         MessageProcessedHandler messageProcessedHandler,
                                         MqttClientFactory mqttClientFactory,
@@ -46,7 +45,6 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
                                        new MqttMessagingSkeleton(ownAddress.getTopic(),
-                                                                 maxIncomingMqttRequests,
                                                                  messageRouter,
                                                                  messageProcessedHandler,
                                                                  mqttClientFactory,
@@ -56,7 +54,7 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
                                                                  gbid,
                                                                  routingTable,
                                                                  backendUid,
-                                                     mqttMessageInProgressObserver));
+                                                                 mqttMessageInProgressObserver));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }

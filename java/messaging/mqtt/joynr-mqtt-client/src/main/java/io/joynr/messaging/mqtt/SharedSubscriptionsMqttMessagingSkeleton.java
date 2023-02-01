@@ -53,7 +53,6 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SharedSubscriptionsMqttMessagingSkeleton(String ownTopic,
-                                                    int maxIncomingMqttRequests,
                                                     String replyToTopic,
                                                     MessageRouter messageRouter,
                                                     MessageProcessedHandler messageProcessedHandler,
@@ -68,7 +67,6 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
                                                     String backendUid,
                                                     MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(ownTopic,
-              maxIncomingMqttRequests,
               messageRouter,
               messageProcessedHandler,
               mqttClientFactory,

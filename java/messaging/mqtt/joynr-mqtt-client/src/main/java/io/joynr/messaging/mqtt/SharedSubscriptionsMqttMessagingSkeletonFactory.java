@@ -32,7 +32,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SharedSubscriptionsMqttMessagingSkeletonFactory(String[] gbids,
                                                            MqttAddress ownAddress,
-                                                           int maxIncomingMqttRequests,
                                                            MqttAddress replyToAddress,
                                                            MessageRouter messageRouter,
                                                            MessageProcessedHandler messageProcessedHandler,
@@ -49,7 +48,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
                                        new SharedSubscriptionsMqttMessagingSkeleton(ownAddress.getTopic(),
-                                                                                    maxIncomingMqttRequests,
                                                                                     replyToAddress.getTopic(),
                                                                                     messageRouter,
                                                                                     messageProcessedHandler,

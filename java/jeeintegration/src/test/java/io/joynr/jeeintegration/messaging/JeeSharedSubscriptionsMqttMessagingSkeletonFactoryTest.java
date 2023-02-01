@@ -53,7 +53,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactoryTest {
     public void createsExpectedSkeletons() {
         JeeSharedSubscriptionsMqttMessagingSkeletonFactory factory = new JeeSharedSubscriptionsMqttMessagingSkeletonFactory(GBIDS,
                                                                                                                             new MqttAddress(),
-                                                                                                                            42,
                                                                                                                             new MqttAddress(),
                                                                                                                             null,
                                                                                                                             mockMessageProcessedHandler,

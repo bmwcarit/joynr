@@ -57,7 +57,6 @@ public class JeeMqttMessagingSkeletonProviderTest {
         subject = new JeeMqttMessagingSkeletonProvider(new String[0],
                                                        enableSharedSubscriptions,
                                                        new MqttAddress(),
-                                                       42,
                                                        new MqttAddress(),
                                                        false,
                                                        mockMessageRouter,

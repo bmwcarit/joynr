@@ -49,7 +49,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
     @Override
     protected void createSkeleton(String channelId) {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownTopic,
-                                                               maxMqttMessagesInQueue,
                                                                replyToTopic,
                                                                messageRouter,
                                                                messageProcessedHandler,

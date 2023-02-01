@@ -25,7 +25,6 @@ import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
 import java.util.Set;
 
@@ -61,7 +60,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     public JeeMqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                            @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                             MessageRouter messageRouter,
@@ -77,7 +75,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
         super(gbids,
               enableSharedSubscriptions,
               ownAddress,
-              maxIncomingMqttRequests,
               replyToAddress,
               separateMqttReplyReceiver,
               messageRouter,
@@ -96,7 +93,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     protected IMessagingSkeletonFactory createSharedSubscriptionsFactory() {
         return new JeeSharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
                                                                       ownAddress,
-                                                                      maxIncomingMqttRequests,
                                                                       replyToAddress,
                                                                       messageRouter,
                                                                       messageProcessedHandler,

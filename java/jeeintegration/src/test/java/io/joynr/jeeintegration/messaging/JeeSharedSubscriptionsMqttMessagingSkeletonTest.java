@@ -54,7 +54,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
     @Override
     protected void createSkeleton(String channelId) {
         subject = new JeeSharedSubscriptionsMqttMessagingSkeleton(ownTopic,
-                                                                  maxMqttMessagesInQueue,
                                                                   replyToTopic,
                                                                   messageRouter,
                                                                   messageProcessedHandler,

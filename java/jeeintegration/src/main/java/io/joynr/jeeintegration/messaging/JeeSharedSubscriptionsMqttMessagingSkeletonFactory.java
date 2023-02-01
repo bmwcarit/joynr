@@ -36,7 +36,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JeeSharedSubscriptionsMqttMessagingSkeletonFactory(String[] gbids,
                                                               MqttAddress ownAddress,
-                                                              int maxIncomingMqttRequests,
                                                               MqttAddress replyToAddress,
                                                               MessageRouter messageRouter,
                                                               MessageProcessedHandler messageProcessedHandler,
@@ -53,7 +52,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
                                        new JeeSharedSubscriptionsMqttMessagingSkeleton(ownAddress.getTopic(),
-                                                                                       maxIncomingMqttRequests,
                                                                                        replyToAddress.getTopic(),
                                                                                        messageRouter,
                                                                                        messageProcessedHandler,

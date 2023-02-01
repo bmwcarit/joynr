@@ -44,7 +44,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonFactoryTest {
 
-    private final int maxIncomingMqttRequests = 1;
     private final String[] gbids = new String[]{ "testGbid1", "testGbid2", "testGbid3" };
     private final Set<JoynrMessageProcessor> messageProcessors = new HashSet<>();
 
@@ -79,7 +78,6 @@ public class MqttMessagingSkeletonFactoryTest {
 
         MqttMessagingSkeletonFactory factory = new MqttMessagingSkeletonFactory(gbids,
                                                                                 ownAddress,
-                                                                                maxIncomingMqttRequests,
                                                                                 messageRouter,
                                                                                 mockMessageProcessedHandler,
                                                                                 mqttClientFactory,
@@ -162,7 +160,6 @@ public class MqttMessagingSkeletonFactoryTest {
 
         MqttMessagingSkeletonFactory factory = new MqttMessagingSkeletonFactory(gbids,
                                                                                 ownAddress,
-                                                                                maxIncomingMqttRequests,
                                                                                 messageRouter,
                                                                                 mockMessageProcessedHandler,
                                                                                 mqttClientFactory,
@@ -192,7 +189,6 @@ public class MqttMessagingSkeletonFactoryTest {
         final String channelId = "testChannelId";
         SharedSubscriptionsMqttMessagingSkeletonFactory factory = new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
                                                                                                                       ownAddress,
-                                                                                                                      maxIncomingMqttRequests,
                                                                                                                       replyToAddress,
                                                                                                                       messageRouter,
                                                                                                                       mockMessageProcessedHandler,

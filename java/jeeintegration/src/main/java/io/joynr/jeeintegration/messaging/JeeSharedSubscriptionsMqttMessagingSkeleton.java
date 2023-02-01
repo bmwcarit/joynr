@@ -41,7 +41,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JeeSharedSubscriptionsMqttMessagingSkeleton(String ownTopic,
-                                                       int maxIncomingMqttRequests,
                                                        String replyToTopic,
                                                        MessageRouter messageRouter,
                                                        MessageProcessedHandler messageProcessedHandler,
@@ -56,7 +55,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
                                                        String backendUid,
                                                        MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(ownTopic,
-              maxIncomingMqttRequests,
               replyToTopic,
               messageRouter,
               messageProcessedHandler,
