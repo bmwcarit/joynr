@@ -18,7 +18,9 @@
  */
 package io.joynr.messaging.mqtt;
 
+import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
 import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
@@ -26,7 +28,6 @@ import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROP
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,31 +39,35 @@ import com.google.inject.name.Named;
 @Singleton
 public class MqttMessageInProgressObserver {
     private static final Logger logger = LoggerFactory.getLogger(MqttMessageInProgressObserver.class);
-    private final String disablingBackpressureMessage = "Disabling backpressure mechanism because of invalid property settings";
+    private static final String disablingBackpressureMessage = "Disabling backpressure mechanism because of invalid property settings";
 
-    private AtomicInteger currentMessagesInProgress;
+    private int currentMessagesInProgress;
 
     private List<MqttMessagingSkeleton> mqttMessagingSkeletons;
     private HashSet<String> messagesInProgress;
     private final int maxIncomingMqttRequests;
-    private final int reEnableMessageAcknowledgementTreshold;
-    private final int receiveMaximum;
-    private boolean backpressureMode = false;
-    private boolean backpressureEnabled;
+    private final int reEnableMessageAcknowledgementThreshold;
+    private final int backpressureEnablingThreshold;
+    private boolean backpressureActive = false;
+    private final boolean backpressureEnabled;
 
     @Inject
-    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessageInProgressObserver(@Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
                                          @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
-                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int reEnableMessageAcknowledgementTreshold,
-                                         @Named(PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM) int receiveMaximum) {
-        mqttMessagingSkeletons = new ArrayList<MqttMessagingSkeleton>();
+                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int reEnableMessageAcknowledgementThreshold,
+                                         @Named(PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM) int receiveMaximum,
+                                         @Named(GBID_ARRAY) String[] gbids,
+                                         @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateReplyReceiver) {
+        mqttMessagingSkeletons = new ArrayList<>();
         messagesInProgress = new HashSet<>();
-        currentMessagesInProgress = new AtomicInteger(0);
+        currentMessagesInProgress = 0;
         this.backpressureEnabled = backpressureEnabled;
         this.maxIncomingMqttRequests = maxIncomingMqttRequests;
-        this.reEnableMessageAcknowledgementTreshold = reEnableMessageAcknowledgementTreshold;
-        this.receiveMaximum = receiveMaximum;
+        this.reEnableMessageAcknowledgementThreshold = reEnableMessageAcknowledgementThreshold;
+        backpressureEnablingThreshold = maxIncomingMqttRequests - gbids.length * receiveMaximum;
+        if (backpressureEnabled && !separateReplyReceiver) {
+            logger.warn("Backpressure is enabled without a separate MQTT connection to receive reply messages. When backpressure is active on high load, reply messages might be held up as well.");
+        }
         validateBackpressureValues();
     }
 
@@ -75,24 +80,22 @@ public class MqttMessageInProgressObserver {
                 throw new IllegalArgumentException(disablingBackpressureMessage);
             }
 
-            if (receiveMaximum >= maxIncomingMqttRequests) {
-                backpressureEnabled = false;
-                logger.error("Receive maximum {} ({}) is greater than maximum of enqueable incoming requests {} ({}). Disabling backpressure. Also, this setting does not make sense. Please reevaluate your configuration.",
-                             receiveMaximum,
-                             PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM,
-                             maxIncomingMqttRequests,
-                             PROPERTY_MAX_INCOMING_MQTT_REQUESTS);
-                return;
-            }
-
-            if (reEnableMessageAcknowledgementTreshold < 0
-                    || reEnableMessageAcknowledgementTreshold >= (maxIncomingMqttRequests - receiveMaximum)) {
-                logger.error("Invalid value {} for {}, value has to be smaller than {} ({}) - {} ({})",
-                             reEnableMessageAcknowledgementTreshold,
-                             PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD,
+            if (backpressureEnablingThreshold <= 0) {
+                logger.error("{} ({}) is less than {} ({} * number of configured backends/brokers)",
                              maxIncomingMqttRequests,
                              PROPERTY_MAX_INCOMING_MQTT_REQUESTS,
-                             receiveMaximum,
+                             maxIncomingMqttRequests - backpressureEnablingThreshold,
+                             PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM);
+                throw new IllegalArgumentException(disablingBackpressureMessage);
+            }
+
+            if (reEnableMessageAcknowledgementThreshold < 0
+                    || reEnableMessageAcknowledgementThreshold >= backpressureEnablingThreshold) {
+                logger.error("Invalid value {} for {}, value has to be greater than 0 and less than {} ({} - ({} * number of configured backends/brokers)",
+                             reEnableMessageAcknowledgementThreshold,
+                             PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD,
+                             backpressureEnablingThreshold,
+                             PROPERTY_MAX_INCOMING_MQTT_REQUESTS,
                              PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM);
                 throw new IllegalArgumentException(disablingBackpressureMessage);
             }
@@ -108,14 +111,20 @@ public class MqttMessageInProgressObserver {
             return true;
         }
         synchronized (messagesInProgress) {
-            messagesInProgress.add(messageId);
-            if (currentMessagesInProgress.incrementAndGet() <= (maxIncomingMqttRequests - receiveMaximum)
-                    && !backpressureMode) {
+            if (!messagesInProgress.add(messageId)) {
+                logger.error("Could not add message with {} to messages in progress.", messageId);
                 return true;
-            } else {
-                backpressureMode = true;
+            }
+            currentMessagesInProgress++;
+            if (backpressureActive) {
                 return false;
             }
+            if (currentMessagesInProgress <= backpressureEnablingThreshold) {
+                return true;
+            }
+            logger.warn("Backpressure mode entered. Incoming MQTT requests will no longer be acknowledged.");
+            backpressureActive = true;
+            return false;
         }
     }
 
@@ -124,11 +133,11 @@ public class MqttMessageInProgressObserver {
             return;
         }
         synchronized (messagesInProgress) {
-            if (messagesInProgress.contains(messageId)) {
-                messagesInProgress.remove(messageId);
-                if (currentMessagesInProgress.decrementAndGet() <= reEnableMessageAcknowledgementTreshold
-                        && backpressureMode) {
-                    backpressureMode = false;
+            if (messagesInProgress.remove(messageId)) {
+                currentMessagesInProgress--;
+                if (backpressureActive && currentMessagesInProgress <= reEnableMessageAcknowledgementThreshold) {
+                    backpressureActive = false;
+                    logger.warn("Backpressure mode exited. Acknowledging all outstanding MQTT requests.");
                     for (MqttMessagingSkeleton skeleton : mqttMessagingSkeletons) {
                         skeleton.acknowledgeOutstandingPublishes();
                     }
