@@ -1,7 +1,8 @@
 # Release Notes
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
-# joynr 1.21.8
+
+# joynr 1.21.9
 
 ## API relevant changes
 * **[Android]** Allow access control to be restricted on UID level
@@ -48,6 +49,13 @@ None.
 * **[C++]** Prevent ApplicationException from being thrown from methods without modelled errors.
 * **[C++]** Prevent proxies from being built for discovered providers if no routing entry could be
   added
+
+# joynr 1.21.8 **[DO NOT USE]**
+
+**ATTENTION:**  
+THIS RELEASE WAS NOT PUBLISHED CORRECTLY.
+IT IS ONLY PARTIALLY AVAILABLE ON MAVEN CENTRAL.  
+USE version 1.21.9 instead.
 
 # joynr 1.21.7
 
