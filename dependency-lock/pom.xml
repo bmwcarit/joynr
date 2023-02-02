@@ -593,7 +593,7 @@
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-container-test-api</artifactId>
 				<type>jar</type>
-				<version>1.7.0.Alpha12</version>
+				<version>1.7.0.Alpha13</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
