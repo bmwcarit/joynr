@@ -284,10 +284,19 @@ public class JoynrIntegrationBeanTest {
     }
 
     private void mockInjector(boolean awaitGlobalRegistration, boolean enableSharedSubscriptions) {
-        mockInjector(awaitGlobalRegistration, enableSharedSubscriptions, new String[0]);
+        mockInjector(awaitGlobalRegistration, enableSharedSubscriptions, true);
     }
 
-    private void mockInjector(boolean awaitGlobalRegistration, boolean enableSharedSubscriptions, String[] gbids) {
+    private void mockInjector(boolean awaitGlobalRegistration,
+                              boolean enableSharedSubscriptions,
+                              boolean subscribeOnStartup) {
+        mockInjector(awaitGlobalRegistration, enableSharedSubscriptions, subscribeOnStartup, new String[0]);
+    }
+
+    private void mockInjector(boolean awaitGlobalRegistration,
+                              boolean enableSharedSubscriptions,
+                              boolean subscribeOnStartup,
+                              String[] gbids) {
         doReturn(Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
@@ -300,6 +309,8 @@ public class JoynrIntegrationBeanTest {
                                    .toInstance(awaitGlobalRegistration);
                 bind(Boolean.class).annotatedWith(Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))
                                    .toInstance(enableSharedSubscriptions);
+                bind(Boolean.class).annotatedWith(Names.named(JeeIntegrationPropertyKeys.PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP))
+                                   .toInstance(subscribeOnStartup);
                 if (gbids.length > 0) {
                     bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY)).toInstance(gbids);
                 }
@@ -319,10 +330,23 @@ public class JoynrIntegrationBeanTest {
     }
 
     @Test
+    public void testInitialise_withSharedSubscriptions_nosubscribeOnstartup() {
+        when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(new HashSet<>());
+        mockInjector(false, true, false, GBIDS);
+
+        subject.initialise();
+
+        verify(joynrRuntimeFactory).create(new HashSet<>());
+        verify(serviceProviderDiscovery).findServiceProviderBeans();
+        verify(messagingSkeletonFactory, times(0)).getSkeleton(any(Address.class));
+        verify(sharedSubscriptionsSkeleton, times(0)).subscribeToSharedTopic();
+    }
+
+    @Test
     public void testInitialise_withSharedSubscriptions() {
         // test that MQTT subscription to shared topic is triggered for all configured GBIDs
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
-        mockInjector(false, true, GBIDS);
+        mockInjector(false, true, true, GBIDS);
         doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
                                                           .getSkeleton(any(Address.class));
 
@@ -355,7 +379,7 @@ public class JoynrIntegrationBeanTest {
     public void testInitialise_withSharedSubscriptions_awaitGlobalRegistration() throws Exception {
         // test that MQTT subscription to shared topic is triggered for all configured GBIDs but not before all providers are registered
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
-        mockInjector(true, true, GBIDS);
+        mockInjector(true, true, true, GBIDS);
         doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
                                                           .getSkeleton(any(Address.class));
 
@@ -709,5 +733,55 @@ public class JoynrIntegrationBeanTest {
         verify(providerRegistrar, times(0)).awaitGlobalRegistration();
         verify(providerRegistrar, times(2)).register();
         verify(mockVoidFuture, times(0)).get(anyLong());
+    }
+
+    @Test
+    public void testManualSubscribe_withSharedSubscriptions_nosubscribeOnstartup() {
+        when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
+        mockInjector(false, true, false, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
+
+        subject.initialise();
+
+        verify(messagingSkeletonFactory, times(0)).getSkeleton(any(Address.class));
+        verify(sharedSubscriptionsSkeleton, times(0)).subscribeToSharedTopic();
+
+        subject.subscribeToSharedSubscriptionsTopic();
+
+        for (String gbid : GBIDS) {
+            verify(messagingSkeletonFactory).getSkeleton(argThat(new ArgumentMatcher<Address>() {
+                @Override
+                public boolean matches(Address argument) {
+                    if (!MqttAddress.class.isInstance(argument)) {
+                        return false;
+                    }
+                    if (MqttAddress.class.cast(argument).getBrokerUri() == gbid) {
+                        return true;
+                    }
+                    return false;
+                }
+            }));
+        }
+        verify(sharedSubscriptionsSkeleton, times(GBIDS.length)).subscribeToSharedTopic();
+        verify(providerRegistrar).register();
+    }
+
+    @Test
+    public void testManualSubscribe_noSharedSubscriptions_nosubscribeOnstartup() {
+        when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(new HashSet<>());
+        mockInjector(false, false, false, GBIDS);
+
+        subject.initialise();
+
+        verify(joynrRuntimeFactory).create(new HashSet<>());
+        verify(serviceProviderDiscovery).findServiceProviderBeans();
+        verify(messagingSkeletonFactory, times(0)).getSkeleton(any(Address.class));
+
+        subject.subscribeToSharedSubscriptionsTopic();
+
+        verify(joynrRuntimeFactory).create(new HashSet<>());
+        verify(serviceProviderDiscovery).findServiceProviderBeans();
+        verify(messagingSkeletonFactory, times(0)).getSkeleton(any(Address.class));
     }
 }
