@@ -41,7 +41,7 @@ function wait_for_gcd {
     return 0
 }
 
-# Give the JEE Discovery Directory a chance to start ...
+# Give the Discovery Directory a chance to start ...
 wait_for_gcd "joynr-gcd-1"
 wait_for_gcd "joynr-gcd-2"
 

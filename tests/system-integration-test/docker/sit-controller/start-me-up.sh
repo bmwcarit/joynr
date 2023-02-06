@@ -58,7 +58,7 @@ function call_consumer {
 asadmin --user admin --passwordFile=/opt/payara/passwordFile --interactive=false start-domain --debug --verbose &
 PID=$!
 
-# Give Payara doamin time to start
+# Give Payara time to start
 sleep 30
 
 wait_for_gcd "joynr-gcd-1"
