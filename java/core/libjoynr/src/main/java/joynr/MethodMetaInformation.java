@@ -24,6 +24,10 @@ import java.util.List;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.util.ReflectionUtils;
+import joynr.exceptions.ApplicationException;
+import java.util.Arrays;
+import io.joynr.proxy.ICallbackWithModeledError;
+import io.joynr.Sync;
 
 /**
  * Value class representing a java method, that will later be called using reflection. Offers methods to access the
@@ -33,6 +37,7 @@ public class MethodMetaInformation {
     private final Method method;
     private JoynrRpcCallback callbackAnnotation;
     private int callbackIndex = -1;
+    private boolean hasModelledErrors = false;
 
     public MethodMetaInformation(final Method method) {
         this.method = method;
@@ -48,6 +53,12 @@ public class MethodMetaInformation {
                 }
             }
         }
+        if (callbackIndex != -1) {
+            // async method
+            hasModelledErrors = ICallbackWithModeledError.class.isAssignableFrom(method.getParameterTypes()[callbackIndex]);
+        } else if (method.getDeclaringClass().getAnnotation(Sync.class) != null) {
+            hasModelledErrors = Arrays.asList(method.getExceptionTypes()).contains(ApplicationException.class);
+        }
     }
 
     private boolean findCallbackAnnotation(List<Annotation> parameterAnnotation) {
@@ -60,6 +71,10 @@ public class MethodMetaInformation {
             }
         }
         return false;
+    }
+
+    public boolean hasModelledErrors() {
+        return hasModelledErrors;
     }
 
     public Method getMethod() {

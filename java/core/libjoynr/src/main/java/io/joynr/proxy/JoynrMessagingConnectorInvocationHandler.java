@@ -264,28 +264,35 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             return response;
         } else if (reply.getError() instanceof ApplicationException) {
             if (logger.isTraceEnabled()) {
-                logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response:",
                              requestReplyId,
                              method.getName(),
-                             reply.getError());
+                             (ApplicationException) reply.getError());
             } else {
                 logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
                              requestReplyId,
                              method.getName(),
-                             ((ApplicationException) reply.getError()).toString());
+                             reply.getError().toString());
             }
-            throw (ApplicationException) reply.getError();
+            if (!methodMetaInformation.hasModelledErrors()) {
+                String message = "An ApplicationException was received, but none was expected."
+                        + " Is the provider version incompatible with the consumer? " + reply.getError();
+                logger.debug(message);
+                throw new JoynrRuntimeException(message);
+            } else {
+                throw (ApplicationException) reply.getError();
+            }
         } else {
             if (logger.isTraceEnabled()) {
                 logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response:",
                              requestReplyId,
                              method.getName(),
-                             reply.getError());
+                             (JoynrRuntimeException) reply.getError());
             } else {
                 logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
                              requestReplyId,
                              method.getName(),
-                             ((JoynrRuntimeException) reply.getError()).toString());
+                             reply.getError().toString());
             }
             throw (JoynrRuntimeException) reply.getError();
         }

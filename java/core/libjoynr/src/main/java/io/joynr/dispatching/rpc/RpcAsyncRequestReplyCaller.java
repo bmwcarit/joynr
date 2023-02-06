@@ -66,27 +66,30 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
         try {
             if (payload.getError() != null) {
                 if (logger.isTraceEnabled()) {
-                    logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
+                    logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response:",
                                  requestReplyId,
                                  method.getName(),
-                                 payload.getError());
-                } else if (payload.getError() instanceof ApplicationException) {
-                    logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
-                                 requestReplyId,
-                                 method.getName(),
-                                 ((ApplicationException) payload.getError()).toString());
+                                 (Exception) payload.getError());
                 } else {
                     logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
                                  requestReplyId,
                                  method.getName(),
-                                 ((JoynrRuntimeException) payload.getError()).toString());
+                                 payload.getError().toString());
                 }
                 // Callback must be called first before releasing the future
                 errorCallback(payload.getError());
-
                 if (future != null) {
-                    future.onFailure(payload.getError());
+                    if (payload.getError() instanceof ApplicationException
+                            && !methodMetaInformation.hasModelledErrors()) {
+                        String message = "An ApplicationException was received, but none was expected."
+                                + " Is the provider version incompatible with the consumer? " + payload.getError();
+                        logger.debug(message);
+                        future.onFailure(new JoynrRuntimeException(message));
+                    } else {
+                        future.onFailure(payload.getError());
+                    }
                 }
+
             } else {
                 response = RpcUtils.reconstructCallbackReplyObject(method, methodMetaInformation, payload);
                 if (logger.isTraceEnabled()) {
@@ -139,8 +142,8 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                 if (callback instanceof ICallbackWithModeledError) {
                     ((ICallbackWithModeledError) callback).onFailure(((ApplicationException) error).getError());
                 } else {
-                    callback.onFailure(new JoynrRuntimeException("an ApplicationException type was received"
-                            + "but none was expected. Is the provider version incompatible with the consumer?"));
+                    callback.onFailure(new JoynrRuntimeException("An ApplicationException was received, but none was expected."
+                            + " Is the provider version incompatible with the consumer? " + error));
                 }
             } else {
                 callback.onFailure(new JoynrRuntimeException("unexpected exception type received: ",

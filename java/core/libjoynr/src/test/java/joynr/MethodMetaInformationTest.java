@@ -19,9 +19,11 @@
 package joynr;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.annotation.ElementType;
@@ -36,7 +38,10 @@ import io.joynr.Async;
 import io.joynr.Sync;
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
 import io.joynr.proxy.Callback;
+import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.proxy.Future;
+import joynr.tests.testAsync;
+import joynr.tests.testSync;
 
 public class MethodMetaInformationTest {
 
@@ -94,7 +99,39 @@ public class MethodMetaInformationTest {
         assertCallbackIndexIsNotSet(methodMetaInformation);
     }
 
-    private Method getMethod(final Class interfaceClass, final String methodName, final Class<?>... parameterTypes) {
+    @Test
+    public void hasModelledErrros_syncMethodWithErrors() {
+        final Method method = getMethod(testSync.class, "methodWithErrorEnum");
+        final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
+
+        assertTrue(methodMetaInformation.hasModelledErrors());
+    }
+
+    @Test
+    public void hasModelledErrros_asyncMethodWithErrors() {
+        final Method method = getMethod(testAsync.class, "methodWithErrorEnum", CallbackWithModeledError.class);
+        final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
+
+        assertTrue(methodMetaInformation.hasModelledErrors());
+    }
+
+    @Test
+    public void hasModelledErrros_syncMethodWithoutErrors() {
+        final Method method = getMethod(testSync.class, "voidOperation");
+        final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
+
+        assertFalse(methodMetaInformation.hasModelledErrors());
+    }
+
+    @Test
+    public void hasModelledErrros_asyncMethodWithoutErrors() {
+        final Method method = getMethod(testAsync.class, "voidOperation", Callback.class);
+        final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
+
+        assertFalse(methodMetaInformation.hasModelledErrors());
+    }
+
+    private Method getMethod(final Class<?> interfaceClass, final String methodName, final Class<?>... parameterTypes) {
         try {
             return interfaceClass.getDeclaredMethod(methodName, parameterTypes);
         } catch (final NoSuchMethodException exception) {

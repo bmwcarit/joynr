@@ -100,6 +100,11 @@ public class ApplicationException extends Exception implements JoynrException {
     }
 
     @Override
+    public String toString() {
+        return this.getClass().getName() + " Message: " + this.getMessage() + " ErrorValue: " + this.error;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;

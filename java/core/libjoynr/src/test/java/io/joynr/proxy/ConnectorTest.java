@@ -57,6 +57,7 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
@@ -75,12 +76,17 @@ import joynr.OneWayRequest;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
 import joynr.Request;
+import joynr.exceptions.ApplicationException;
 import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
 public class ConnectorTest {
+
+    private enum ApplicationErrors {
+        ERROR_VALUE_1, ERROR_VALUE_2, ERROR_VALUE_3
+    }
 
     @Mock
     private ReplyCallerDirectory replyCallerDirectory;
@@ -170,6 +176,8 @@ public class ConnectorTest {
     @Sync
     interface TestSyncInterface {
         void methodWithoutParameters();
+
+        void methodWithoutParametersWithModelledErrors() throws ApplicationException;
     }
 
     @FireAndForget
@@ -290,6 +298,53 @@ public class ConnectorTest {
             assertEquals(expectedRequest, actualRequest);
         } catch (Exception e) {
             fail("Unexpected exception from async method call: " + e);
+        }
+    }
+
+    @Test
+    public void syncMethodCallWithModelledError_throwsApplicationException() throws NoSuchMethodException,
+                                                                             ApplicationException {
+        ConnectorInvocationHandler connector = createConnector();
+        assertNotNull(connector);
+
+        Method method = TestSyncInterface.class.getDeclaredMethod("methodWithoutParametersWithModelledErrors");
+        ApplicationErrors errorValue = ApplicationErrors.ERROR_VALUE_1;
+        ApplicationException expected = new ApplicationException(errorValue);
+
+        when(requestReplyManager.sendSyncRequest(any(String.class),
+                                                 any(DiscoveryEntryWithMetaInfo.class),
+                                                 any(Request.class),
+                                                 any(SynchronizedReplyCaller.class),
+                                                 any(MessagingQos.class))).thenReturn(new Reply("rrid", expected));
+        try {
+            connector.executeSyncMethod(method, new Object[]{});
+            fail("Unexpected success from sync method call.");
+        } catch (ApplicationException ex) {
+            assertEquals(ex, expected);
+        }
+    }
+
+    @Test
+    public void syncMethodCallWithoutModelledError_doesNotThrowApplicationException() throws NoSuchMethodException,
+                                                                                      ApplicationException {
+        ConnectorInvocationHandler connector = createConnector();
+        assertNotNull(connector);
+
+        Method method = TestSyncInterface.class.getDeclaredMethod("methodWithoutParameters");
+        ApplicationErrors errorValue = ApplicationErrors.ERROR_VALUE_1;
+        ApplicationException expected = new ApplicationException(errorValue);
+        when(requestReplyManager.sendSyncRequest(any(String.class),
+                                                 any(DiscoveryEntryWithMetaInfo.class),
+                                                 any(Request.class),
+                                                 any(SynchronizedReplyCaller.class),
+                                                 any(MessagingQos.class))).thenReturn(new Reply("rrid", expected));
+        try {
+            connector.executeSyncMethod(method, new Object[]{});
+            fail("Unexpected success from sync method call.");
+        } catch (JoynrRuntimeException ex) {
+            String message = "An ApplicationException was received, but none was expected. Is the provider version incompatible with the consumer? "
+                    + expected;
+            assertEquals(message, ex.getMessage());
         }
     }
 
@@ -419,7 +474,7 @@ public class ConnectorTest {
     }
 
     @Test
-    public void subscribeToMulticastCallCallsSubscriptionManagerWithCorrectArguments() { // TODO
+    public void subscribeToMulticastCallCallsSubscriptionManagerWithCorrectArguments() {
         TestBroadcastListener listener = new TestBroadcastInterface.TestBroadcastAdapter();
         OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         String[] partitions = new String[]{ "partition1", "partition2", "partition3" };
