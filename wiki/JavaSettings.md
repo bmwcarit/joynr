@@ -594,15 +594,6 @@ a string of int values separated by commas, e.g. 60,30,0...
 * **User property**: `joynr.messaging.mqtt.connectiontimeoutssec`
 * **Default value**: `60`
 
-### `PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS`
-Sets the maximum time for an action to complete (measured in milliseconds) before the control is returned
-to the application. A value of -1 means that no timeout is used for actions.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.messaging.mqtt.timetowaitms`
-* **Default value**: `-1`
-
 ### `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
 
 Use this key to activate shared subscription support by setting the property's value to true.
@@ -617,16 +608,6 @@ Make sure to use the same fixed participant IDs for the providers in all nodes o
 * **Type**: Boolean
 * **User property**: `joynr.messaging.mqtt.enable.sharedsubscriptions`
 * **Default value**: `false`
-
-### `PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT`
-Controls how many messages will be send in parallel before the mqtt module expects an acknowledgment
-from the broker. Increase this value for applications which generate a lot of traffic in order to
-improve the performance.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `joynr.messaging.mqtt.maxmsgsinflight`
-* **Default value**: `10`
 
 ### `PROPERTY_KEY_MQTT_CLEAN_SESSION`
 Configures whether the mqtt client shall establish a clean session to the broker.

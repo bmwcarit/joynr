@@ -26,7 +26,6 @@ import javax.enterprise.inject.Produces;
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;
 import io.joynr.messaging.MessagingPropertyKeys;
-import io.joynr.messaging.mqtt.MqttModule;
 
 @Singleton
 public class JoynrConfigurationProvider {
@@ -36,7 +35,6 @@ public class JoynrConfigurationProvider {
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.performancetest.jee");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "performance-test-jee-provider.properties");
-        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT, "100");
 
         return joynrProperties;
     }
