@@ -1,11 +1,11 @@
 {
-  "extends": "../../tsconfig",
+  "extends": "../../../tsconfig",
   "compilerOptions": {
     "typeRoots": [
-      "../../node_modules/@types",
+      "../../../node_modules/@types",
       "node_modules/@types",
       "typings",
-      "../../javascript/libjoynr-js/typings"
+      "../../../javascript/libjoynr-js/typings"
     ],
     "rootDir" : ".",
     "outDir": ".output",

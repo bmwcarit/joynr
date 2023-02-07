@@ -29,6 +29,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # this project includes all test subdirectories
 project(joynr-tests)
 add_subdirectory(dummyKeychain)
-add_subdirectory(inter-language-test)
+add_subdirectory(inter-language-test/inter-language-test-base)
 add_subdirectory(performance-test)
 add_subdirectory(system-integration-test/sit-cpp-app)

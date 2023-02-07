@@ -93,6 +93,11 @@ then
   log "building robustness-test-env"
   MAVEN_PROJECT=",io.joynr.tests:robustness-test-env"
   SRC_FOLDER="${SRC_FOLDER}/robustness-test-env"
+elif [[ "inter-language-test" == ${SELECTED_TEST} ]]
+then
+  log "building inter-language-test"
+  MAVEN_PROJECT=",io.joynr.tests:inter-language-test"
+  SRC_FOLDER="${SRC_FOLDER}/inter-language-test/inter-language-test-base"
 elif [[ " ${TESTS[@]} " =~ " ${SELECTED_TEST} " ]]
 then
   log "building ${SELECTED_TEST} test"

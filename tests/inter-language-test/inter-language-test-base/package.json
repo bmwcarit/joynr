@@ -6,9 +6,9 @@
   "main": "src/main/js/consumer.js",
   "private": true,
   "dependencies": {
-    "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
+    "joynr": "file:../../../javascript/libjoynr-js/.output/src/main/js",
     "lodash": "4.17.21",
-    "test-base": "file:../test-base"
+    "test-base": "file:../../test-base"
   },
   "devDependencies": {
     "@types/lodash": "4.14.178",
@@ -28,16 +28,16 @@
     }
   },
   "scripts": {
-    "clean": "rm -rf node_modules ../../javascript/libjoynr-js/.output",
+    "clean": "rm -rf node_modules ../../../javascript/libjoynr-js/.output",
     "install:browserify": "node bundle.js",
-    "startprovider": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime udspath=$npm_package_config_uds_path udsclientid=$npm_package_config_uds_providerid udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems ../../node_modules/.bin/ts-node src/main/js/provider.ts",
+    "startprovider": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime udspath=$npm_package_config_uds_path udsclientid=$npm_package_config_uds_providerid udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems ../../../node_modules/.bin/ts-node src/main/js/provider.ts",
     "startproviderbundle": "domain=$npm_package_config_domain runtime=$npm_package_config_runtime udspath=$npm_package_config_uds_path udsclientid=$npm_package_config_uds_providerbundleid udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems node src/main/js/provider.bundle.js",
-    "startjasmine": "export domain=$npm_package_config_domain && export runtime=$npm_package_config_runtime && export udspath=$npm_package_config_uds_path && export udsclientid=$npm_package_config_uds_consumerid && export udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems && ../../node_modules/.bin/jest -i",
-    "build:fast": "cd ../../javascript/libjoynr-js && npm run ts:package && cd - && npm i && npm run install:browserify && npm run lint",
+    "startjasmine": "export domain=$npm_package_config_domain && export runtime=$npm_package_config_runtime && export udspath=$npm_package_config_uds_path && export udsclientid=$npm_package_config_uds_consumerid && export udsconnectsleeptimems=$npm_package_config_uds_connectsleeptimems && ../../../node_modules/.bin/jest -i",
+    "build:fast": "cd ../../../javascript/libjoynr-js && npm run ts:package && cd - && npm i && npm run install:browserify && npm run lint",
     "build": "npm run clean && npm run build:fast",
     "format:install": "npm i prettier@1.17.1 --no-save && npm run format",
     "format": "prettier --write $npm_package_config_glob",
-    "lint": "../../node_modules/.bin/eslint $npm_package_config_glob",
-    "lint:fix": "../../node_modules/.bin/eslint $npm_package_config_glob --fix"
+    "lint": "../../../node_modules/.bin/eslint $npm_package_config_glob",
+    "lint:fix": "../../../node_modules/.bin/eslint $npm_package_config_glob --fix"
   }
 }

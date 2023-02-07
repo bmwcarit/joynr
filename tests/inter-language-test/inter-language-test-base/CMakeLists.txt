@@ -6,7 +6,7 @@ project(inter-language-test VERSION 1.22.0 LANGUAGES CXX)
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/CMake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/CMake")
 
 include(AddClangFormat)
 include(Sanitizers)
@@ -227,7 +227,7 @@ AddTest(
 target_include_directories(
     ilt-consumer-ws
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/tests
 )
 
 # Link the consumer application
@@ -251,7 +251,7 @@ target_include_directories(
     ilt-consumer-proxy-provider-interface-mismatch-ws
     PRIVATE ${GENERATED_INCLUDE_DIRS_PROXY_PROVIDER_INTERFACE_MISMATCH}
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/tests
 )
 
 # Link the consumer application
@@ -274,7 +274,7 @@ AddTest(
 target_include_directories(
     ilt-consumer-uds
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/tests
 )
 
 # Link the consumer application
@@ -298,7 +298,7 @@ target_include_directories(
     ilt-consumer-proxy-provider-interface-mismatch-uds
     PRIVATE ${GENERATED_INCLUDE_DIRS_PROXY_PROVIDER_INTERFACE_MISMATCH}
     PRIVATE ${GENERATED_INCLUDE_DIRS}
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../cpp/tests
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../cpp/tests
 )
 
 # Link the consumer application
