@@ -183,7 +183,11 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
             if (separateConnections) {
                 logger.info("Creating sender MQTT client for gbid {}", gbid);
                 sendingMqttClients.put(gbid,
-                                       createClient(gbid, mqttClientIdProvider.getClientId() + "Pub", false, true));
+                                       createClient(gbid,
+                                                    mqttClientIdProvider.getClientId() + "Pub",
+                                                    false,
+                                                    true,
+                                                    false));
                 logger.debug("Sender MQTT client for gbid {} now: {}", gbid, sendingMqttClients.get(gbid));
             } else {
                 createCombinedClient(gbid);
@@ -201,7 +205,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                             createClient(gbid,
                                                          mqttClientIdProvider.getClientId() + "Sub",
                                                          true,
-                                                         false));
+                                                         false,
+                                                         separateReplyReceiver ? false : true));
             } else {
                 createCombinedClient(gbid);
             }
@@ -218,7 +223,11 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
         if (!receivingReplyClients.containsKey(gbid)) {
             logger.info("Creating reply receiver MQTT client for gbid {}", gbid);
             receivingReplyClients.put(gbid,
-                                      createClient(gbid, mqttClientIdProvider.getClientId() + "SubReply", true, false));
+                                      createClient(gbid,
+                                                   mqttClientIdProvider.getClientId() + "SubReply",
+                                                   true,
+                                                   false,
+                                                   true));
             logger.debug("Reply Receiver MQTT client for gbid {} now: {}", gbid, receivingReplyClients.get(gbid));
         }
         return receivingReplyClients.get(gbid);
@@ -256,11 +265,20 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
     }
 
     private void createCombinedClient(String gbid) {
-        sendingMqttClients.put(gbid, createClient(gbid, mqttClientIdProvider.getClientId(), true, true));
+        sendingMqttClients.put(gbid,
+                               createClient(gbid,
+                                            mqttClientIdProvider.getClientId(),
+                                            true,
+                                            true,
+                                            separateReplyReceiver ? false : true));
         receivingRequestClients.put(gbid, sendingMqttClients.get(gbid));
     }
 
-    private JoynrMqttClient createClient(String gbid, String clientId, boolean isReceiver, boolean isSender) {
+    private JoynrMqttClient createClient(String gbid,
+                                         String clientId,
+                                         boolean isReceiver,
+                                         boolean isSender,
+                                         boolean isReplyReceiver) {
         URI serverUri;
         try {
             serverUri = new URI(mqttGbidToBrokerUriMap.get(gbid));
@@ -272,10 +290,12 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                                                           .nettyExecutor(scheduledExecutorService)
                                                                           .applicationScheduler(Schedulers.from(scheduledExecutorService))
                                                                           .build();
+        assert (!isReplyReceiver || isReceiver);
         ConnectionStatusMetricsImpl connectionStatusMetrics = new ConnectionStatusMetricsImpl();
         connectionStatusMetrics.setGbid(gbid);
         connectionStatusMetrics.setSender(isSender);
         connectionStatusMetrics.setReceiver(isReceiver);
+        connectionStatusMetrics.setReplyReceiver(isReplyReceiver);
         connectionStatusMetrics.setUrl(mqttGbidToBrokerUriMap.get(gbid));
         joynrStatusMetricsReceiver.addConnectionStatusMetrics(connectionStatusMetrics);
         ResubscribeHandler resubscribeHandler = new ResubscribeHandler(connectionStatusMetrics);

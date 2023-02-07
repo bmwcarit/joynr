@@ -1860,6 +1860,7 @@ amount of messages dropped by all connections.
 The ConnectionStatusMetrics class offers the following metrics:
 * boolean isSender() // Returns whether the represented connection is configured to be a sender.
 * boolean isReceiver() // Returns whether the represented connection is configured to be a receiver.
+* boolean isReplyReceiver() // Returns whether the represented connection is configured to be a reply receiver. If true, isReceiver() is also true.
 * boolean isConnected() // Returns whether the represented connection is currently connected.
 * Instant getLastStateChange() // Returns the point in time where the connection state of the
   represented connection last changed.

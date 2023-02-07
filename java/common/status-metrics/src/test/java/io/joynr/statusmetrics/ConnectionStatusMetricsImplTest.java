@@ -43,10 +43,12 @@ public class ConnectionStatusMetricsImplTest {
         subject.setUrl(testurl);
         subject.setSender(true);
         subject.setReceiver(true);
+        subject.setReplyReceiver(false);
         assertEquals(testgbid, subject.getGbid().get());
         assertEquals(testurl, subject.getUrl());
         assertTrue(subject.isSender());
         assertTrue(subject.isReceiver());
+        assertFalse(subject.isReplyReceiver());
     }
 
     @Test
@@ -105,4 +107,11 @@ public class ConnectionStatusMetricsImplTest {
         assertEquals(1, subject.getConnectionAttempts());
     }
 
+    @Test
+    public void testSetReplyReceiver() {
+        subject.setReplyReceiver(false);
+        assertFalse(subject.isReplyReceiver());
+        subject.setReplyReceiver(true);
+        assertTrue(subject.isReplyReceiver());
+    }
 }
