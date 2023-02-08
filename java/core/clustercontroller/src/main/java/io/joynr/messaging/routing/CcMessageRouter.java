@@ -529,7 +529,7 @@ public class CcMessageRouter
     class MessageWorker implements Runnable {
         private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
-        private volatile CountDownLatch countDownLatch;
+        private CountDownLatch countDownLatch;
         private volatile boolean stopped;
 
         public MessageWorker(int number) {

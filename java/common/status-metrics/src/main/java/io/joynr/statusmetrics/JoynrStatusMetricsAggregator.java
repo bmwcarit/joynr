@@ -31,7 +31,7 @@ import com.google.inject.Singleton;
 public class JoynrStatusMetricsAggregator implements JoynrStatusMetricsReceiver {
     private List<ConnectionStatusMetrics> connectionStatusMetricsList = new CopyOnWriteArrayList<ConnectionStatusMetrics>();
 
-    private volatile AtomicLong droppedMessages = new AtomicLong();
+    private AtomicLong droppedMessages = new AtomicLong();
 
     @Override
     public Collection<ConnectionStatusMetrics> getAllConnectionStatusMetrics() {
