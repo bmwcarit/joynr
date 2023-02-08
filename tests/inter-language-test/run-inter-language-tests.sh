@@ -446,9 +446,8 @@ function start_jee_provider {
 	log 'Starting JEE provider'
 	cd $ILT_DIR
 
-	$PAYARA_BIN_DIR/asadmin deploy --force $ILT_DIR/../inter-language-test-jee-provider/target/inter-language-test-jee-provider.war > $ILT_RESULTS_DIR/provider-jee.log 2>&1 &
-	PROVIDER_PID=$!
-	echo "Deployed JEE provider with PID $PROVIDER_PID"
+	$PAYARA_BIN_DIR/asadmin deploy $ILT_DIR/../inter-language-test-jee-provider/target/inter-language-test-jee-provider.war > $ILT_RESULTS_DIR/provider-jee.log 2>&1
+	echo "Deployed JEE provider"
 
 	# Allow some time for startup
 	sleep 10
@@ -625,7 +624,7 @@ function start_jee_consumer {
 	cd $ILT_DIR
 	SUCCESS=0
 
-	$PAYARA_BIN_DIR/asadmin deploy --force $ILT_DIR/../inter-language-test-jee-consumer/target/inter-language-test-jee-consumer.war >> $ILT_RESULTS_DIR/consumer-jee-$1.log 2>&1
+	$PAYARA_BIN_DIR/asadmin deploy $ILT_DIR/../inter-language-test-jee-consumer/target/inter-language-test-jee-consumer.war >> $ILT_RESULTS_DIR/consumer-jee-$1.log 2>&1
 	SUCCESS=$?
 	echo "Deployed JEE consumer"
 
@@ -810,7 +809,6 @@ start_jee_provider
 # start_consumers $PROVIDER is not called here because
 # jee does not support other consumers' calls
 start_jee_consumer $PROVIDER
-stop_provider
 stop_jee_provider
 stop_cluster_controller
 stop_services $PROVIDER
