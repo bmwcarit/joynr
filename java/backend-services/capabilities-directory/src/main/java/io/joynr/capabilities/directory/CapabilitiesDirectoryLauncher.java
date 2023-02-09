@@ -188,7 +188,7 @@ public class CapabilitiesDirectoryLauncher {
 
     private static void waitForDb() throws UnknownHostException, InterruptedException {
         Socket s;
-        for (int i = 0; i < 60; i++) {
+        for (long i = 0; i < 60; i++) {
             try {
                 s = new Socket(dbHost, Integer.parseInt(dbPort));
                 s.close();

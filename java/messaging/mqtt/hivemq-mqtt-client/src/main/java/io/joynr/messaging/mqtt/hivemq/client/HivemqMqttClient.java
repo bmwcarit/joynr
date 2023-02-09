@@ -277,7 +277,6 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                long messageExpiryIntervalSec,
                                SuccessAction successAction,
                                FailureAction failureAction) {
-        assert (prefixedCustomHeaders != null);
         assert (isSender);
 
         if (prefixedCustomHeaders == null) {

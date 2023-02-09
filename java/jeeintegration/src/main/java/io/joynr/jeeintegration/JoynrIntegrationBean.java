@@ -222,7 +222,7 @@ public class JoynrIntegrationBean {
                 try {
                     try {
                         // wait for internal ttl (60.000 ms + 10.000 ms) + 1.000 ms, see ttl for add in LocalDiscoveryAggregator
-                        registrationFuture.get(MessagingQos.DEFAULT_TTL + 11000);
+                        registrationFuture.get((long) MessagingQos.DEFAULT_TTL + 11000);
                         logger.info("Provider registration succeeded: attempt #{}, bean {}.", attempt, bean);
                         break;
                     } catch (JoynrRuntimeException | ApplicationException e) {
