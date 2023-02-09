@@ -19,7 +19,6 @@
 package io.joynr.exceptions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 public class SubscriptionException extends JoynrRuntimeException {
 
@@ -30,16 +29,6 @@ public class SubscriptionException extends JoynrRuntimeException {
 
     public String getSubscriptionId() {
         return this.subscriptionId;
-    }
-
-    /**
-    * DO NOT USE
-    * Constructor for deserializer
-    */
-    public SubscriptionException(String subscriptionId,
-                                 String errorMsg,
-                                 StdDeserializer<SubscriptionException> deserializer) {
-        this(subscriptionId, errorMsg);
     }
 
     public SubscriptionException(String subscriptionId) {

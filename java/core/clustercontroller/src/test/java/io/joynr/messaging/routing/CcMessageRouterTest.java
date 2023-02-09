@@ -63,6 +63,7 @@ import java.util.stream.Collectors;
 import com.google.inject.multibindings.OptionalBinder;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -71,6 +72,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -124,9 +127,13 @@ import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
+import joynr.test.JoynrTestLoggingRule;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest {
+    private static final Logger logger = LoggerFactory.getLogger(CcMessageRouterTest.class);
+    @Rule
+    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     private String mqttTopic = "MessageSchedulerTest_" + createUuidString();
     private final MqttAddress mqttAddress = new MqttAddress("mqtt://testUrl:42", mqttTopic);

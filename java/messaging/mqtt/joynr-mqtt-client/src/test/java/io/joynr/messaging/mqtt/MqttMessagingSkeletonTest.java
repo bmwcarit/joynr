@@ -239,6 +239,26 @@ public class MqttMessagingSkeletonTest {
     }
 
     @Test
+    public void testPrefixedExtraCustomHeaders() throws Exception {
+        ImmutableMessage rqMessage = createTestRequestMessage();
+        assertTrue(rqMessage.getPrefixedCustomHeaders().isEmpty());
+        Map<String, String> prefixedExtraCustomHeaders = Map.of("c-key1", "v1", "key2", "v2", "c-key3", "v3");
+        Map<String, String> expectedExtraCustomHeaders = Map.of("key1", "v1", "key3", "v3");
+
+        doReturn(true).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong());
+        subject.transmit(rqMessage.getSerializedMessage(), prefixedExtraCustomHeaders, failIfCalledAction);
+
+        ArgumentCaptor<ImmutableMessage> captor = ArgumentCaptor.forClass(ImmutableMessage.class);
+        final MqttAddress expectedAddress = new MqttAddress(ownGbid, "testTopic");
+        verify(routingTable).put(rqMessage.getSender(), expectedAddress, true, rqMessage.getTtlMs());
+        verify(messageRouter).routeIn(captor.capture());
+
+        assertEquals(expectedExtraCustomHeaders, captor.getValue().getExtraCustomHeaders());
+
+        assertArrayEquals(rqMessage.getSerializedMessage(), captor.getValue().getSerializedMessage());
+    }
+
+    @Test
     public void testRawMessageProcessorIsCalled() throws Exception {
         RawMessagingPreprocessor rawMessagingPreprocessorMock = mock(RawMessagingPreprocessor.class);
         when(rawMessagingPreprocessorMock.process(any(byte[].class),

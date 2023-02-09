@@ -178,27 +178,24 @@ public class RequestReplyManagerImpl
         // saving all pending futures so that they can be cancelled at shutdown
         Reply response = null;
         outstandingRequestFutures.add(responseFuture);
-        if (!shuttingDown) {
-            try {
+        try {
+            if (!shuttingDown) {
                 response = responseFuture.get();
-            } catch (final InterruptedException e) {
-                final String message = String.format("Request %s interrupted unexpectedly.",
-                                                     request.getRequestReplyId());
-                logger.error(message, e);
-                Thread.currentThread().interrupt();
-                throw new JoynrRequestInterruptedException(message);
-            } catch (final ExecutionException e) {
-                final String message = String.format("Request: %s failed: %s",
-                                                     request.getRequestReplyId(),
-                                                     e.getMessage());
-                throw new JoynrCommunicationException(message, e);
-            } catch (final CancellationException e) {
-                final String message = String.format("Request: %s interrupted by shutdown",
-                                                     request.getRequestReplyId());
-                throw new JoynrShutdownException(message);
             }
+        } catch (final InterruptedException e) {
+            final String message = String.format("Request %s interrupted unexpectedly.", request.getRequestReplyId());
+            logger.error(message, e);
+            Thread.currentThread().interrupt();
+            throw new JoynrRequestInterruptedException(message);
+        } catch (final ExecutionException e) {
+            final String message = String.format("Request: %s failed: %s", request.getRequestReplyId(), e.getMessage());
+            throw new JoynrCommunicationException(message, e);
+        } catch (final CancellationException e) {
+            final String message = String.format("Request: %s interrupted by shutdown", request.getRequestReplyId());
+            throw new JoynrShutdownException(message);
+        } finally {
+            outstandingRequestFutures.remove(responseFuture);
         }
-        outstandingRequestFutures.remove(responseFuture);
 
         return response;
     }
@@ -354,6 +351,7 @@ public class RequestReplyManagerImpl
         scheduleCleanup(providerParticipantId, cleanupRunnable, expiryDate);
     }
 
+    // requires requestQueueLock
     private void scheduleCleanup(final String providerParticipantId, Runnable cleanupRunnable, ExpiryDate expiryDate) {
         ScheduledFuture<?> cleanupSchedulerFuture = cleanupScheduler.schedule(cleanupRunnable,
                                                                               expiryDate.getRelativeTtl(),

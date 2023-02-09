@@ -106,7 +106,6 @@ TEST(ThreadPoolTest, callDtorOfRunnabeAfterWorkHasDone)
     EXPECT_CALL(*runnable1, run()).Times(1).WillOnce(ReleaseSemaphore(semaphore));
     EXPECT_CALL(*runnable1, shutdown()).Times(AtMost(1));
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore));
-    ;
 
     pool->execute(std::move(runnable1));
 
@@ -131,7 +130,6 @@ TEST(ThreadPoolTest, testEndlessRunningRunnableToQuitWithShutdownCall)
     EXPECT_CALL(*runnable1, shutdownCalled()).Times(1);
     EXPECT_CALL(*runnable1, runExit()).Times(1);
     EXPECT_CALL(*runnable1, dtorCalled()).Times(1).WillOnce(ReleaseSemaphore(dtorSemaphore));
-    ;
 
     pool->execute(std::move(runnable1));
 
