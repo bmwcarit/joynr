@@ -330,7 +330,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToEnumAttribute)
                         static_cast<std::int64_t>(subscribeToAttributeWait), subscriptionId));
             },
             [](std::shared_ptr<tests::testProxy>& testProxy, std::string& subscriptionId) {
-                testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+                testProxy->unsubscribeFromEnumAttribute(subscriptionId);
             },
             &tests::testProvider::setEnumAttribute,
             "enumAttribute");
@@ -353,7 +353,7 @@ TEST_P(End2EndSubscriptionTest, subscribeToByteBufferAttribute)
                         static_cast<std::int64_t>(subscribeToAttributeWait), subscriptionId));
             },
             [](std::shared_ptr<tests::testProxy>& testProxy, std::string& subscriptionId) {
-                testProxy->unsubscribeFromBroadcastWithFilteringBroadcast(subscriptionId);
+                testProxy->unsubscribeFromByteBufferAttribute(subscriptionId);
             },
             &tests::testProvider::setByteBufferAttribute,
             "byteBufferAttribute");

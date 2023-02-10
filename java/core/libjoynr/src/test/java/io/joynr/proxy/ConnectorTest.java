@@ -71,6 +71,7 @@ import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.BroadcastFilterParameters;
+import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
 import joynr.PeriodicSubscriptionQos;
@@ -166,7 +167,7 @@ public class ConnectorTest {
 
         @JoynrMulticast(name = "testMulticast")
         abstract Future<String> subscribeToTestMulticast(TestBroadcastListener subscriptionListener,
-                                                         OnChangeSubscriptionQos subscriptionQos,
+                                                         MulticastSubscriptionQos subscriptionQos,
                                                          String... partitions);
 
         abstract void unsubscribeFromTestBroadcast(String subscriptionId);
@@ -476,7 +477,7 @@ public class ConnectorTest {
     @Test
     public void subscribeToMulticastCallCallsSubscriptionManagerWithCorrectArguments() {
         TestBroadcastListener listener = new TestBroadcastInterface.TestBroadcastAdapter();
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
+        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos();
         String[] partitions = new String[]{ "partition1", "partition2", "partition3" };
         ConnectorInvocationHandler connector = createConnector();
         assertNotNull(connector);
@@ -484,7 +485,7 @@ public class ConnectorTest {
         try {
             Method method = TestBroadcastInterface.class.getDeclaredMethod("subscribeToTestMulticast",
                                                                            TestBroadcastListener.class,
-                                                                           OnChangeSubscriptionQos.class,
+                                                                           MulticastSubscriptionQos.class,
                                                                            String[].class);
             MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method,
                                                                                        new Object[]{ listener,

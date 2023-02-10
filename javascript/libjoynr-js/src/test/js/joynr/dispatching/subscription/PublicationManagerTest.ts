@@ -38,6 +38,7 @@ import SubscriptionException from "../../../../../main/js/joynr/exceptions/Subsc
 import LongTimer from "../../../../../main/js/joynr/util/LongTimer";
 import { nanoid } from "nanoid";
 import testUtil = require("../../../testUtil");
+import MulticastSubscriptionQos = require("joynr/joynr/proxy/MulticastSubscriptionQos");
 
 describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => {
     let callbackDispatcher: any;
@@ -125,7 +126,7 @@ describe("libjoynr-js.joynr.dispatching.subscription.PublicationManager", () => 
             subscriptionId: `subscriptionId${nanoid()}`,
             multicastId: SubscriptionUtil.createMulticastId(providerId, testNonSelectiveBroadcastName, []),
             subscribedToName: testNonSelectiveBroadcastName,
-            qos: new OnChangeSubscriptionQos()
+            qos: new MulticastSubscriptionQos()
         });
         publicationManager.handleMulticastSubscriptionRequest(proxyId, providerId, request, callbackDispatcher);
         return request;
