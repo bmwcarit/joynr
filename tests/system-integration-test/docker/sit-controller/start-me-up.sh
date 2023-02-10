@@ -24,7 +24,7 @@ function wait_for_endpoint {
 	until curl --noproxy localhost -f -s $2 || ((retry_count++ > max_retries))
 	do
 		echo "$1 ping not started yet ..."
-		sleep 2
+		sleep 5
 	done
 	if (( retry_count > max_retries )); then
 		echo "SIT RESULT error: $1 failed to start in time."
@@ -36,8 +36,6 @@ function wait_for_endpoint {
 }
 
 function call_consumer {
-	# We'll assume it takes AT LEAST 15 sec to start up Payara
-	sleep 15
 	wait_for_endpoint "SIT controller" "http://localhost:8080/sit-controller/ping" && \
 	printf "\n\n >>>  STARTING SIT CONTROLLER  <<<\n\n" && \
 	SIT_RESULT=$(curl --noproxy localhost -f -s http://localhost:8080/sit-controller/test)
@@ -59,7 +57,7 @@ asadmin --user admin --passwordFile=/opt/payara/passwordFile --interactive=false
 PID=$!
 
 # Give Payara time to start
-sleep 30
+sleep 60
 
 wait_for_gcd "joynr-gcd-1"
 wait_for_gcd "joynr-gcd-2"
