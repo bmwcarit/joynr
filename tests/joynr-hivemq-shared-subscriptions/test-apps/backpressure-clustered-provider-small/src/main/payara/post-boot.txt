@@ -1,1 +1,0 @@
-create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor

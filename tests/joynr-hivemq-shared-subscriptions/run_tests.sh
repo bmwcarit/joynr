@@ -33,3 +33,24 @@ docker-compose stop
 
 echo "remove all containers"
 docker-compose rm -f
+
+# Check SST test result
+if grep -F -q '[SST] Triggered 100 pings. 100 were successful' sst-full.log ; then
+    echo "[SharedSubsTest] SUCCESS" >> sst-full.log
+else
+    echo "[SharedSubsTest] FAILURE" >> sst-full.log
+fi
+
+# Check backpressure test result
+node1_bp_enter_count=$(grep -c 'backpressure-provider-1.*Backpressure mode entered' sst-full.log)
+node1_bp_exit_count=$(grep -c 'backpressure-provider-1.*Backpressure mode exited' sst-full.log)
+node2_bp_enter_count=$(grep -c 'backpressure-provider-2.*Backpressure mode entered' sst-full.log)
+node2_bp_exit_count=$(grep -c 'backpressure-provider-2.*Backpressure mode exited' sst-full.log)
+
+if grep -F -q '[BPT] Triggered 1000 pings. 1000 were successful' sst-full.log && \
+[ ${node1_bp_enter_count} -gt 0 ] && [ ${node1_bp_enter_count} -eq ${node1_bp_exit_count} ] && \
+[ ${node2_bp_enter_count} -gt 0 ] && [ ${node2_bp_enter_count} -eq ${node2_bp_exit_count} ]; then
+    echo "[BackpressureTest] SUCCESS" >> sst-full.log
+else
+    echo "[BackpressureTest] FAILURE" >> sst-full.log
+fi

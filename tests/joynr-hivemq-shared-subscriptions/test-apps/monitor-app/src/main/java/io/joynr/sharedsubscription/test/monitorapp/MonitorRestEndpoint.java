@@ -70,7 +70,7 @@ public class MonitorRestEndpoint {
                 logger.error("Unable to call ping service.", e);
             }
         }
-        return format("Triggered %d pings. %d were successful, %d failed.%n%s%n",
+        return format("[SST] Triggered %d pings. %d were successful, %d failed.%n%s%n",
                       numberOfPings,
                       successCount,
                       errorCount,

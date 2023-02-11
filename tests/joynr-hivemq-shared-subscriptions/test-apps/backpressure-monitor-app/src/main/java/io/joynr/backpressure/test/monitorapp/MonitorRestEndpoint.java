@@ -20,12 +20,12 @@ package io.joynr.backpressure.test.monitorapp;
 
 import static java.lang.String.format;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -33,17 +33,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.JoynrWaitExpiredException;
 import io.joynr.jeeintegration.api.ServiceLocator;
-import io.joynr.proxy.Callback;
-import io.joynr.proxy.Future;
-import joynr.exceptions.ApplicationException;
-import joynr.io.joynr.sharedsubscriptions.test.PingServiceAsync;
+import joynr.io.joynr.sharedsubscriptions.test.PingServiceSync;
 
 @Path("/test")
 @Produces(MediaType.APPLICATION_JSON)
@@ -53,7 +46,6 @@ public class MonitorRestEndpoint {
     private static final Logger logger = LoggerFactory.getLogger(MonitorRestEndpoint.class);
 
     private ServiceLocator serviceLocator;
-    private PingServiceAsync pingServiceClient;
 
     @Inject
     public MonitorRestEndpoint(ServiceLocator serviceLocator) {
@@ -61,161 +53,63 @@ public class MonitorRestEndpoint {
     }
 
     @GET
-    @Path("/{numberOfPings}")
-    public String triggerTest(@PathParam("numberOfPings") int numberOfPings) {
-        final int minRequiredPings = 200;
-        final int triggerUnsubscribeOfSmallProviderPings = 200;
-        final int onlyForLargeProviderPings = 100;
-
+    @Path("/{numberOfWorkers}/{pingsPerWorker}")
+    public String triggerTest(@PathParam("numberOfWorkers") int numberOfWorkers,
+                              @PathParam("pingsPerWorker") int pingsPerWorker) {
+        final int minRequiredPings = 400;
+        final int numberOfPings = numberOfWorkers * pingsPerWorker;
+        if (numberOfWorkers < 1) {
+            return format("Number of workers must be at least 1, current value: %d", numberOfWorkers);
+        }
         if (numberOfPings < minRequiredPings) {
             return format("Backpressure test needs more than %d pings", minRequiredPings);
         }
 
-        Map<String, AtomicInteger> initialPhaseCountByProvider = new ConcurrentHashMap<>();
-        Map<String, AtomicInteger> backpressurePhaseCountByProvider = new ConcurrentHashMap<>();
-        Map<String, AtomicInteger> finalPhaseCountByProvider = new ConcurrentHashMap<>();
+        Map<String, AtomicInteger> backpressureNodeResponseCounter = new ConcurrentHashMap<>();
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger errorCount = new AtomicInteger(0);
 
-        AtomicInteger totalSuccessCount = new AtomicInteger(0);
-        AtomicInteger totalErrorCount = new AtomicInteger(0);
-        List<Future<String>> allFutures = new LinkedList<>();
-
-        // both clustered providers should get pings until the small one is overloaded and unsubscribes
-        bulkSendAsyncRequests(minRequiredPings,
-                              initialPhaseCountByProvider,
-                              totalSuccessCount,
-                              totalErrorCount,
-                              allFutures);
-
-        // only the large provider should get pings
-        bulkSendAsyncRequests(onlyForLargeProviderPings,
-                              backpressurePhaseCountByProvider,
-                              totalSuccessCount,
-                              totalErrorCount,
-                              allFutures);
-
+        ExecutorService pool = Executors.newFixedThreadPool(numberOfWorkers);
+        for (int i = 0; i < numberOfWorkers; ++i) {
+            Runnable task = () -> {
+                bulkSendRequests(pingsPerWorker, successCount, errorCount, backpressureNodeResponseCounter);
+            };
+            pool.submit(task);
+        }
+        pool.shutdown();
         try {
-            Thread.sleep(10000);
+            boolean terminationResult = pool.awaitTermination(10 * 60, TimeUnit.SECONDS);
+            logger.info("Pool termination result: {}", terminationResult);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.warn("awaitTermination timeout.");
         }
 
-        // again both clustered providers should be available, i.e.
-        // the small provider should have registered again
-        final int remainingPings = numberOfPings - triggerUnsubscribeOfSmallProviderPings - onlyForLargeProviderPings;
-        bulkSendAsyncRequests(remainingPings,
-                              finalPhaseCountByProvider,
-                              totalSuccessCount,
-                              totalErrorCount,
-                              allFutures);
+        return format("[BPT] Triggered %d pings. %d were successful, %d failed.%n%s%n",
+                      numberOfPings,
+                      successCount.get(),
+                      errorCount.get(),
+                      dumpResponseCounterMap(backpressureNodeResponseCounter));
+    }
 
-        // wait for all requests to complete
-        for (Future<String> future : allFutures) {
-            try {
-                future.get();
-            } catch (JoynrWaitExpiredException e) {
-                e.printStackTrace();
-            } catch (JoynrRuntimeException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ApplicationException e) {
-                e.printStackTrace();
+    private void bulkSendRequests(final int numberOfRequests,
+                                  AtomicInteger successCount,
+                                  AtomicInteger errorCount,
+                                  Map<String, AtomicInteger> responseCounterMap) {
+        try {
+            PingServiceSync pingServiceSync = getService();
+            for (int i = 0; i < numberOfRequests; i++) {
+                try {
+                    String result = pingServiceSync.ping();
+                    successCount.incrementAndGet();
+                    increaseCount(responseCounterMap, result);
+                    logger.info("Successfully pinged: {}", result);
+                } catch (RuntimeException e) {
+                    errorCount.incrementAndGet();
+                    logger.error("Unable to call ping service.", e);
+                }
             }
-        }
-
-        return evaluateTest(numberOfPings,
-                            totalSuccessCount,
-                            totalErrorCount,
-                            initialPhaseCountByProvider,
-                            backpressurePhaseCountByProvider,
-                            finalPhaseCountByProvider);
-    }
-
-    private String evaluateTest(int numberOfPings,
-                                AtomicInteger totalSuccessCount,
-                                AtomicInteger totalErrorCount,
-                                Map<String, AtomicInteger> initialPhaseCountByProvider,
-                                Map<String, AtomicInteger> backpressurePhaseCountByProvider,
-                                Map<String, AtomicInteger> finalPhaseCountByProvider) {
-        boolean success = true;
-        String testEvalString = "";
-
-        //rule all pings successful
-        if (numberOfPings > totalSuccessCount.get()) {
-            success = false;
-        }
-
-        //rule no errors
-        if (totalErrorCount.get() > 0) {
-            success = false;
-        }
-
-        // rule small provider should respond in initial phase
-        int smallInstanceResponses = getSmallInstanceResponseCountFromMap(initialPhaseCountByProvider);
-        if (smallInstanceResponses == 0) {
-            success = false;
-        }
-
-        // rule no responses from small provider during backpressure phase
-        smallInstanceResponses = getSmallInstanceResponseCountFromMap(backpressurePhaseCountByProvider);
-        if (smallInstanceResponses > 0) {
-            success = false;
-        }
-
-        // rule small provider should respond again in final phase
-        smallInstanceResponses = getSmallInstanceResponseCountFromMap(finalPhaseCountByProvider);
-        if (smallInstanceResponses == 0) {
-            success = false;
-        }
-
-        // create final output
-        testEvalString = format("%s%nTriggered %d pings. %d were successful, %d failed.%n",
-                                success ? "SUCCESS" : "FAILURE",
-                                numberOfPings,
-                                totalSuccessCount.get(),
-                                totalErrorCount.get());
-
-        testEvalString += format("Initial phase:%n%s%n", dumpResponseCounterMap(initialPhaseCountByProvider));
-
-        testEvalString += format("Backpressure phase:%n%s%n", dumpResponseCounterMap(backpressurePhaseCountByProvider));
-
-        testEvalString += format("Final phase:%n%s", dumpResponseCounterMap(finalPhaseCountByProvider));
-
-        return testEvalString;
-    }
-
-    private Integer getSmallInstanceResponseCountFromMap(Map<String, AtomicInteger> finalPhaseCountByProvider) {
-        return finalPhaseCountByProvider.entrySet()
-                                        .stream()
-                                        .filter(e -> e.getKey().startsWith("small"))
-                                        .map(e -> e.getValue().get())
-                                        .findFirst()
-                                        .orElse(0);
-    }
-
-    private void bulkSendAsyncRequests(final int numberOfRequests,
-                                       Map<String, AtomicInteger> responseCounterMap,
-                                       AtomicInteger totalSuccessCount,
-                                       AtomicInteger totalErrorCount,
-                                       List<Future<String>> allFutures) {
-        for (int i = 0; i < numberOfRequests; i++) {
-            Future<String> result = getService().ping(new Callback<String>() {
-
-                @Override
-                public void onFailure(JoynrRuntimeException arg0) {
-                    totalErrorCount.incrementAndGet();
-                    logger.error("Unable to call ping service.", arg0);
-                }
-
-                @Override
-                public void onSuccess(String arg0) {
-                    logger.info("Successfully pinged {}", arg0);
-                    totalSuccessCount.incrementAndGet();
-                    increaseCount(responseCounterMap, arg0);
-                }
-
-            });
-            allFutures.add(result);
+        } catch (java.lang.Exception e) {
+            logger.error("Unable to build ping service proxy.", e);
         }
     }
 
@@ -238,14 +132,11 @@ public class MonitorRestEndpoint {
         }
     }
 
-    private PingServiceAsync getService() {
-        if (pingServiceClient == null) {
-            final int messagesTtlMs = 70000;
-            pingServiceClient = serviceLocator.get(PingServiceAsync.class,
-                                                   "io.joynr.backpressure.test.provider",
-                                                   messagesTtlMs);
-        }
-        return pingServiceClient;
+    private PingServiceSync getService() {
+        final int messagesTtlMs = 5 * 60000;
+        return serviceLocator.builder(PingServiceSync.class, "io.joynr.backpressure.test.provider")
+                             .withTtl(messagesTtlMs)
+                             .build();
     }
 
 }

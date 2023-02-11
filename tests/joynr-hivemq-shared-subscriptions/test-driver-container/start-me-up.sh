@@ -27,24 +27,14 @@ function start_tests {
 		printf "\n\n >>>  STARTING SHARED SUBSCRIPTION TEST  <<<\n\n" && \
 		RESULT_SST="$(curl http://monitor-app:8080/test/100)"
 	echo $RESULT_SST
-	if [ -n "$(echo $RESULT_SST | grep '100 were successful')" ]; then
-		echo "[SharedSubsTest] SUCCESS"
-	else
-		echo "[SharedSubsTest] FAILURE"
-	fi
-
+	# Issue 1000 calls. 10 workers, 100 calls each (test/10/100)
 	RESULT_BACKPRESSURE=""
-	wait_for_endpoint "http://backpressure-monitor-app:8080/test/0" && \
-		wait_for_endpoint "http://backpressure-provider-small:8080/callstats" && \
-		wait_for_endpoint "http://backpressure-provider-large:8080/callstats" && \
+	wait_for_endpoint "http://backpressure-monitor-app:8080/test/0/0" && \
+		wait_for_endpoint "http://backpressure-provider-1:8080/callstats" && \
+		wait_for_endpoint "http://backpressure-provider-2:8080/callstats" && \
 		printf "\n\n >>>  STARTING BACKPRESSURE TEST  <<<\n\n" && \
-		RESULT_BACKPRESSURE=="$(curl http://backpressure-monitor-app:8080/test/500)"
+		RESULT_BACKPRESSURE="$(curl http://backpressure-monitor-app:8080/test/10/100)"
 	echo $RESULT_BACKPRESSURE
-	if [ -n "$(echo $RESULT_BACKPRESSURE | grep 'SUCCESS')" ]; then
-		echo "[BackpressureTest] SUCCESS"
-	else
-		echo "[BackpressureTest] FAILURE"
-	fi
 }
 
 PID=$!

@@ -41,11 +41,11 @@ public class JoynrConfigurationProvider {
     @Produces
     @JoynrProperties
     public Properties joynrProperties() {
+        final String brokerUri = System.getenv("MQTT_BROKER_URL");
 
         Properties joynrProperties = new Properties();
         joynrProperties.setProperty(MessagingPropertyKeys.CHANNELID, "io.joynr.backpressure.test.clusteredprovider");
 
-        final String brokerUri = System.getenv("MQTT_BROKER_URL");
         if (brokerUri == null) {
             logger.error("Environment variable MQTT_BROKER_URL has not been set!");
         } else {
@@ -60,12 +60,13 @@ public class JoynrConfigurationProvider {
 
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, Boolean.TRUE.toString());
 
-        // small queue
-        joynrProperties.setProperty(LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "100");
+        // large queue
+        joynrProperties.setProperty(LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS, "10");
         joynrProperties.setProperty(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED,
                                     Boolean.TRUE.toString());
+        joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM, "2");
         joynrProperties.setProperty(LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD,
-                                    "20");
+                                    "1");
 
         // limit parallel processing of requests
         joynrProperties.setProperty(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS, "1");
