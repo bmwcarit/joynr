@@ -59,7 +59,7 @@ joynr-gcd-db                                latest         471aa4729317   47 hou
 
 ```
 
-## Starting the Infrastructure Components with default configuration (single backend)
+## Starting the Infrastructure Components with default configuration (single backend, HiveMQ broker, no TLS)
 
 To run apps/tests which interact with the joynr backend we need to run an MQTT
 broker along with a database. We have prepared a docker-compose file `joynr/docker/joynr-backend.yml`
@@ -88,6 +88,8 @@ outside the docker concerto.
 When the testing is finished, the orchestra should be cleaned up as follows:
 
 ```bash
+cd <joynr_repository>
+cd docker
 docker-compose -f joynr-backend.yml stop
 docker-compose -f joynr-backend.yml rm -f
 ```
@@ -99,7 +101,7 @@ You have to change the GBID settings of the GCD to match your test environment i
 the default GBID `joynrdefaultgbid`: just adapt the environment configuration for `joynr-gcd-1` in
 `docker/joynr-backend.yml`.
 
-## Adaptions for a multiple backend test environment
+## Adaptions for a multiple backend test environment (HiveMQ broker, no TLS)
 
 When using multiple backends, each backend requires its own MQTT broker and its own instance of the
 GCD with appropriate GBID configuration. Please check out [joynr multiple backends Guide](multiple-backends.md)
@@ -112,8 +114,41 @@ The MQTT brokers are listening to ports 1883 and 1884 outside the docker network
 made sure that those ports are not occupied.
 
 ```bash
+cd <joynr_repository>
+cd docker
 docker-compose -f joynr-multiple-backend.yml up -d
 # Tear down after testing
 docker-compose -f joynr-multiple-backend.yml stop
 docker-compose -f joynr-multiple-backend.yml rm -f
+```
+
+## Adaptions for a single backend test environment with TLS support (HiveMQ broker, TLS)
+
+We have also prepared a docker-compose file setting up single backend with TLS support in `docker/joynr-backend-with-tls-broker.yml`.
+
+In order to use TLS connections, the certificates used by HiveMQ server and clients running outside the concerto have to be
+prepared in advance. The default certificate directory path is `/data/ssl-data`.
+Optionally the path can be specified with -p option and/or creation of fresh certificates can be invoked via -c option.
+```bash
+cd <joynr_repository>
+cd docker
+joynr-mqttbroker/scripts/prepareBrokerConfigAndCerts.sh [-c] [-p <certificate directory path>]
+```
+The certificates are converted into key-/truststores suitable for Java which are stored at `<joynr_repository>/joynr-mqttbroker/var/certs`.
+The adjusted HiveMQ configuration is stored at `<joynr_repository>/joynr-mqttbroker/config.xml`.
+These locations are volume mounted by the HiveMQ image within the docker concerto.
+Additional hardcoded configuration using environment variables can be found inside  `joynr-backend-with-tls-broker.yml`.
+
+The docker-concerto can be run and torn down just as described below. It will start the GCD database, GCD as well as an MQTT
+broker which supports both unencrypted and TLS encrypted connections. The MQTT broker is listening to ports 1883 (Non-TLS) and
+8883 (TLS) outside the docker network, so it has to be made sure that those ports are not occupied. Note that the GCD continues
+to use unencrypted connection within the Docker. TLS is only used for connections coming from outside.
+
+```bash
+cd <joynr_repository>
+cd docker
+docker-compose -f joynr-backend-with-tls-broker.yml up -d
+# Tear down after testing
+docker-compose -f joynr-backend-with-tls-broker.yml stop
+docker-compose -f joynr-backend-with-tls-broker.yml rm -f
 ```
