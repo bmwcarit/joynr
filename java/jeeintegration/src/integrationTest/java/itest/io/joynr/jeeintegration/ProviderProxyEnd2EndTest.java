@@ -116,7 +116,7 @@ public class ProviderProxyEnd2EndTest {
             ApplicationException expected = new ApplicationException(CallMeWithExceptionErrorEnum.MY_ERROR,
                                                                      "ErrorMessage");
             assertEquals(expected, e);
-            String expectedMessage = "ErrorMessage ErrorValue: " + CallMeWithExceptionErrorEnum.MY_ERROR.toString();
+            String expectedMessage = "ErrorMessage, ErrorValue: " + CallMeWithExceptionErrorEnum.MY_ERROR.toString();
             assertEquals(e.getMessage(), expectedMessage);
         } catch (Exception e) {
             fail(e.toString());
@@ -129,7 +129,7 @@ public class ProviderProxyEnd2EndTest {
         MyServiceAsync proxy = serviceLocator.builder(MyServiceAsync.class, "io.joynr.jeeintegration").build();
         Future<Void> future = proxy.callMeWithException(callbackWithApplicationException);
         ApplicationException expected = new ApplicationException(CallMeWithExceptionErrorEnum.MY_ERROR, "ErrorMessage");
-        String expectedMessage = "ErrorMessage ErrorValue: " + CallMeWithExceptionErrorEnum.MY_ERROR.toString();
+        String expectedMessage = "ErrorMessage, ErrorValue: " + CallMeWithExceptionErrorEnum.MY_ERROR.toString();
 
         try {
             future.get();

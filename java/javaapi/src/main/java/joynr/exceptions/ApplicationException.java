@@ -76,7 +76,7 @@ public class ApplicationException extends Exception implements JoynrException {
      * @param message description of the reported error
      */
     public ApplicationException(Enum<?> error, String message) {
-        super(message + " ErrorValue: " + error);
+        super(message + ", ErrorValue: " + error);
         this.error = error;
     }
 
@@ -101,7 +101,7 @@ public class ApplicationException extends Exception implements JoynrException {
 
     @Override
     public String toString() {
-        return this.getClass().getName() + " Message: " + this.getMessage() + " ErrorValue: " + this.error;
+        return this.getClass().getName() + ", ErrorValue: " + this.error + ", Message: " + this.getMessage();
     }
 
     @Override
