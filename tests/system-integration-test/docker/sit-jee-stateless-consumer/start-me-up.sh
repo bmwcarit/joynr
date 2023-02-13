@@ -22,7 +22,7 @@ asadmin --user admin --passwordFile=/opt/payara/passwordFile --interactive=false
 PID=$!
 
 # Give Payara time to start
-sleep 30
+sleep 60
 
 wait_for_gcd "joynr-gcd-1"
 wait_for_gcd "joynr-gcd-2"

@@ -213,7 +213,7 @@ echo "SIT: Waiting for JEE Application to be started"
 					break
 				fi
 				echo "SIT: JEE application not started yet ... curl failed with exit code $exitcode"
-				sleep 2
+				sleep 5
 				retry_count=$(($retry_count+1))
 			done
 
