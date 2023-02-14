@@ -58,6 +58,7 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
+import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
@@ -265,5 +266,44 @@ public class DefaultJoynrRuntimeFactoryTest {
         expectedException.expect(JoynrIllegalStateException.class);
         expectedException.expectMessage("Multiple joynrProperties specified. Please provide only one configuration EJB containing a value for the joynrProperties via @JoynrProperties.");
         createFixture(joynrProperties, createLocalDomainMock());
+    }
+
+    @Test
+    public void testSharedSubscriptionsAreEnabledByDefault() throws Exception {
+        createFixture();
+
+        final boolean sharedSubscriptionValue = getSharedSubscriptionOption();
+        assertTrue(sharedSubscriptionValue);
+    }
+
+    @Test
+    public void testSharedSubscriptionsAreEnabledWhenInPropertiesThisOptionWasDisabled() throws Exception {
+        final Properties properties = new Properties();
+        properties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
+        createFixture(properties);
+
+        final boolean sharedSubscriptionValue = getSharedSubscriptionOption();
+        assertTrue(sharedSubscriptionValue);
+    }
+
+    @Test
+    public void testSharedSubscriptionsAreEnabledWhenInPropertiesThisOptionWasEnabled() throws Exception {
+        final Properties properties = new Properties();
+        properties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
+        createFixture(properties);
+
+        final boolean sharedSubscriptionValue = getSharedSubscriptionOption();
+        assertTrue(sharedSubscriptionValue);
+    }
+
+    private boolean getSharedSubscriptionOption() throws NoSuchFieldException, IllegalAccessException {
+        final Properties joynrProperties = extractProperties();
+        return Boolean.valueOf((String) joynrProperties.get(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS));
+    }
+
+    private Properties extractProperties() throws NoSuchFieldException, IllegalAccessException {
+        final Field field = DefaultJoynrRuntimeFactory.class.getDeclaredField("joynrProperties");
+        field.setAccessible(true);
+        return (Properties) field.get(fixture);
     }
 }

@@ -65,6 +65,7 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
+import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -287,6 +288,8 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         Properties defaultJoynrProperties = new Properties();
         defaultJoynrProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
         defaultJoynrProperties.putAll(configuredProperties);
+        logger.info("Enabled Shared Subscriptions Property is explicitly set to true.");
+        defaultJoynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
         return defaultJoynrProperties;
     }
 

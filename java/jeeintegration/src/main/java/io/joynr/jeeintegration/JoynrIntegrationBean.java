@@ -52,7 +52,6 @@ import io.joynr.messaging.IMessagingSkeleton;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.JoynrProvider;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.JoynrRuntime;
@@ -88,8 +87,6 @@ public class JoynrIntegrationBean {
 
     private boolean subscribeOnStartup;
 
-    private boolean sharedSubscriptionsEnabled;
-
     public JoynrIntegrationBean() {
     }
 
@@ -111,19 +108,15 @@ public class JoynrIntegrationBean {
         joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
         registerProviders(serviceProviderBeans, joynrRuntime);
         registerCallbackHandlers(joynrRuntime);
-        sharedSubscriptionsEnabled = (getJoynrInjector().getInstance(Key.get(Boolean.class,
-                                                                             Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))));
         subscribeOnStartup = (getJoynrInjector().getInstance(Key.get(Boolean.class,
                                                                      Names.named(JeeIntegrationPropertyKeys.PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP))));
-        if (sharedSubscriptionsEnabled && subscribeOnStartup) {
+        if (subscribeOnStartup) {
             subscribeToSharedSubscriptionsTopicInternal();
         }
     }
 
     public void subscribeToSharedSubscriptionsTopic() {
-        if (!sharedSubscriptionsEnabled) {
-            logger.error("Shared subscriptions are disabled. No subscription to the shared topic will be performed.");
-        } else if (!subscribeOnStartup) {
+        if (!subscribeOnStartup) {
             subscribeToSharedSubscriptionsTopicInternal();
         } else {
             logger.error("Subscription to shared topic has already been performed on startup. Manually triggered subscription will not be performed.");
@@ -300,17 +293,6 @@ public class JoynrIntegrationBean {
 
     @PreDestroy
     public void destroy() {
-        if (!(getJoynrInjector().getInstance(Key.get(Boolean.class,
-                                                     Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))))) {
-            logger.info("Unregistering provider ", joynrRuntimeFactory.getLocalDomain());
-            for (Object provider : registeredProviders) {
-                try {
-                    joynrRuntime.unregisterProvider(joynrRuntimeFactory.getLocalDomain(), provider);
-                } catch (Exception e) {
-                    logger.error("Error unregistering provider", e);
-                }
-            }
-        }
         joynrRuntime.shutdown(false);
     }
 
