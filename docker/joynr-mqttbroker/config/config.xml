@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<hivemq>
+    <listeners>
+        <tls-tcp-listener>
+            <port>${ENV:HIVEMQ_TLS_PORT}</port>
+            <bind-address>0.0.0.0</bind-address>
+            <tls>
+                <keystore>
+                    <path>${ENV:HIVEMQ_KEYSTORE_PATH}</path>
+                    <password>${ENV:HIVEMQ_KEYSTORE_PASSWORD}</password>
+                    <private-key-password>${ENV:HIVEMQ_PRIVATE_KEY_PASSWORD}</private-key-password>
+                </keystore>
+                <truststore>
+                    <path>${ENV:HIVEMQ_TRUSTSTORE_PATH}</path>
+                    <password>${ENV:HIVEMQ_TRUSTSTORE_PASSWORD}</password>
+                </truststore>
+                <client-authentication-mode>NONE</client-authentication-mode>
+            </tls>
+        </tls-tcp-listener>
+        <tcp-listener>
+            <port>1883</port>
+            <bind-address>0.0.0.0</bind-address>
+        </tcp-listener>
+        <websocket-listener>
+            <port>8000</port>
+            <bind-address>0.0.0.0</bind-address>
+            <path>/mqtt</path>
+            <name>my-websocket-listener</name>
+            <subprotocols>
+                <subprotocol>mqttv3.1</subprotocol>
+                <subprotocol>mqtt</subprotocol>
+            </subprotocols>
+            <allow-extensions>true</allow-extensions>
+        </websocket-listener>
+    </listeners>
+</hivemq>
