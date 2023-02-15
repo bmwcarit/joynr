@@ -81,6 +81,8 @@ applications to the same container instance, then you will need to set a differe
 for this property for each application. E.g.: `"my-app-joynr.properties"` for one and
 `"my-other-app-joynr.properties"` for another. Failing to do so can result in unexpected
 behaviour, as one app will be using the persisted properties and IDs of the other app.
+* `JeeIntegrationPropertyKeys.PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP` - allows disabling the automatic subscription to the MQTT topic when the runtime starts. If the automatic subscription has been disabled this way, it has to be triggered manually through the `JoynrConnectionService` (see [below](#disabling-automatic-subscriptions) for more details).
+  Defaults to `true`.
 
 You are principally free to provide any other valid joynr properties via these
 configuration methods. See the [official joynr documentation](./JavaSettings.md)
@@ -782,6 +784,29 @@ public class MyServiceBean {
 
 }
 ```
+
+### Disabling automatic subscriptions
+
+In case your provider application is not ready to process requests immediately after it started,
+you can use the property `JeeIntegrationPropertyKeys.PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP` to disable
+the automatic subscription to the MQTT topic when the joynr runtime starts.
+If you do this, the subscription can be triggered by injecting the `JoynrConnectionService` and calling
+`notifyReadyForRequestProcessing()`.
+Call this method when your providers are ready to handle requests.
+
+```Java
+@Singleton
+public class MyServiceBean {
+
+    @Inject
+    private JoynrConnectionService joynrConnectionService;
+
+    public void readyToAcceptRequests() {
+        joynrConnectionService.notifyReadyForRequestProcessing();
+    }
+}
+```
+
 
 ## Clustering
 

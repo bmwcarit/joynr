@@ -56,4 +56,11 @@ public class JeeIntegrationPropertyKeys {
      */
     public static final String PROPERTY_JEE_AWAIT_REGISTRATION = "joynr.jeeintegration.awaitregistration";
 
+    /**
+     * This key is used to enable or disable the automatic subscription to the shared topic when the runtime starts.
+     * If set to false, the subscription has to be manually triggered by injecting an instance of JoynrConnectionService
+     * and calling notifyReadyForRequestProcessing() when the subscriptions should be established.
+     */
+    public static final String PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP = "joynr.jeeintegration.subscribeonstartup";
+
 }

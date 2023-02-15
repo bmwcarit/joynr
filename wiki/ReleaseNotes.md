@@ -2,6 +2,21 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.22.0
+
+## API relevant changes
+
+## Other Changes
+
+## Configuration Property Changes
+* **[JEE]** Added Property `PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP`
+  'joynr.jeeintegration.subscribeonstartup' that allows to disable the automatic MQTT
+  subscription when the joynr runtime starts. For more details, see the [JEE](/wiki/jee.md) documentation.
+
+## Security Fixes
+
+## Bug Fixes
+
 # joynr 1.21.9
 
 ## API relevant changes

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,10 @@ public class JoynrIntegrationBean {
 
     private JoynrRuntime joynrRuntime;
 
+    private boolean subscribeOnStartup;
+
+    private boolean sharedSubscriptionsEnabled;
+
     public JoynrIntegrationBean() {
     }
 
@@ -107,14 +111,26 @@ public class JoynrIntegrationBean {
         joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
         registerProviders(serviceProviderBeans, joynrRuntime);
         registerCallbackHandlers(joynrRuntime);
-        boolean sharedSubscriptionsEnabled = (getJoynrInjector().getInstance(Key.get(Boolean.class,
-                                                                                     Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))));
-        if (sharedSubscriptionsEnabled) {
-            subscribeToSharedSubscriptionsTopic();
+        sharedSubscriptionsEnabled = (getJoynrInjector().getInstance(Key.get(Boolean.class,
+                                                                             Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))));
+        subscribeOnStartup = (getJoynrInjector().getInstance(Key.get(Boolean.class,
+                                                                     Names.named(JeeIntegrationPropertyKeys.PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP))));
+        if (sharedSubscriptionsEnabled && subscribeOnStartup) {
+            subscribeToSharedSubscriptionsTopicInternal();
         }
     }
 
-    private void subscribeToSharedSubscriptionsTopic() {
+    public void subscribeToSharedSubscriptionsTopic() {
+        if (!sharedSubscriptionsEnabled) {
+            logger.error("Shared subscriptions are disabled. No subscription to the shared topic will be performed.");
+        } else if (!subscribeOnStartup) {
+            subscribeToSharedSubscriptionsTopicInternal();
+        } else {
+            logger.error("Subscription to shared topic has already been performed on startup. Manually triggered subscription will not be performed.");
+        }
+    }
+
+    private void subscribeToSharedSubscriptionsTopicInternal() {
         String[] gbids = getJoynrInjector().getInstance(Key.get(String[].class,
                                                                 Names.named(MessagingPropertyKeys.GBID_ARRAY)));
         MessagingSkeletonFactory factory = getJoynrInjector().getInstance(MessagingSkeletonFactory.class);

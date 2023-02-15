@@ -792,6 +792,16 @@ for more information on the provider registration in joynr JEE.
 * **User property**: `joynr.jeeintegration.registration.retryintervalms`
 * **Default value**: `30000`
 
+### `PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP`
+Allows disabling the automatic subscription to the MQTT topic when the runtime starts.
+If the automatic subscription has been disabled this way, it has to be triggered manually
+through the `JoynrConnectionService` (see the [joynr JEE documentation](jee.md#disabling-automatic-subscriptions) for more details).
+
+* **OPTIONAL**
+* **Type**: boolean
+* **User property**: `joynr.jeeintegration.subscribeonstartup`
+* **Default value**: true
+
 ## Static Capabilties Provisioning
 
 ### `PROPERTY_PROVISIONED_CAPABILITIES_FILE`
