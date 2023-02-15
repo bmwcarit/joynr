@@ -30,6 +30,7 @@ public class ConnectionStatusMetricsImpl implements ConnectionStatusMetrics {
 
     private boolean isSender;
     private boolean isReceiver;
+    private boolean isReplyReceiver;
 
     private AtomicBoolean isConnected = new AtomicBoolean();
     private volatile Instant lastStateChange = Instant.now();
@@ -54,6 +55,10 @@ public class ConnectionStatusMetricsImpl implements ConnectionStatusMetrics {
 
     public void setReceiver(boolean isReceiver) {
         this.isReceiver = isReceiver;
+    }
+
+    public void setReplyReceiver(boolean isReplyReceiver) {
+        this.isReplyReceiver = isReplyReceiver;
     }
 
     public void setConnected(boolean isConnected) {
@@ -96,6 +101,11 @@ public class ConnectionStatusMetricsImpl implements ConnectionStatusMetrics {
     @Override
     public boolean isReceiver() {
         return isReceiver;
+    }
+
+    @Override
+    public boolean isReplyReceiver() {
+        return isReplyReceiver;
     }
 
     @Override

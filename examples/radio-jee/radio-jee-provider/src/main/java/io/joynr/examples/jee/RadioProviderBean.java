@@ -20,6 +20,7 @@ package io.joynr.examples.jee;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import javax.ejb.Stateless;
@@ -27,8 +28,6 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
@@ -123,6 +122,7 @@ public class RadioProviderBean implements RadioService {
             connectionMetricsString += "\tURL: " + m.getUrl() + "\n";
             connectionMetricsString += "\tisSender?: " + m.isSender() + "\n";
             connectionMetricsString += "\tisReceiver: " + m.isReceiver() + "\n";
+            connectionMetricsString += "\tisReplyReceiver: " + m.isReplyReceiver() + "\n";
             connectionMetricsString += "\tconnection attempts: " + m.getConnectionAttempts() + "\n";
             connectionMetricsString += "\tconnection drops: " + m.getConnectionDrops() + "\n";
             connectionMetricsString += "\tRECEIVED messages: " + m.getReceivedMessages() + "\n";

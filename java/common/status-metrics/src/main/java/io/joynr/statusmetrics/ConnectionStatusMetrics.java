@@ -48,6 +48,11 @@ public interface ConnectionStatusMetrics {
     boolean isReceiver();
 
     /**
+     * @return Returns true if the connection is configured for receiving replies (implies isReceiver())
+     */
+    boolean isReplyReceiver();
+
+    /**
      * @return Returns true if the connection is currently connected.
      */
     boolean isConnected();

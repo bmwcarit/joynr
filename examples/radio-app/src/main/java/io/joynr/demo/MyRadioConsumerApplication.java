@@ -613,6 +613,7 @@ public class MyRadioConsumerApplication extends AbstractJoynrApplication {
                         connectionMetricsString += "\tURL: " + m.getUrl() + "\n";
                         connectionMetricsString += "\tisSender?: " + m.isSender() + "\n";
                         connectionMetricsString += "\tisReceiver: " + m.isReceiver() + "\n";
+                        connectionMetricsString += "\tisReplyReceiver: " + m.isReplyReceiver() + "\n";
                         connectionMetricsString += "\tconnection attempts: " + m.getConnectionAttempts() + "\n";
                         connectionMetricsString += "\tconnection drops: " + m.getConnectionDrops() + "\n";
                         connectionMetricsString += "\tRECEIVED messages: " + m.getReceivedMessages() + "\n";
