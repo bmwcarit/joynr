@@ -134,8 +134,8 @@ cd <joynr_repository>
 cd docker
 joynr-mqttbroker/scripts/prepareBrokerConfigAndCerts.sh [-c] [-p <certificate directory path>]
 ```
-The certificates are converted into key-/truststores suitable for Java which are stored at `<joynr_repository>/joynr-mqttbroker/var/certs`.
-The adjusted HiveMQ configuration is stored at `<joynr_repository>/joynr-mqttbroker/config.xml`.
+The certificates are converted into key-/truststores suitable for Java which are stored at `<joynr_repository>/docker/joynr-mqttbroker/var/certs`.
+The adjusted HiveMQ configuration is stored at `<joynr_repository>/docker/joynr-mqttbroker/config.xml`.
 These locations are volume mounted by the HiveMQ image within the docker concerto.
 Additional hardcoded configuration using environment variables can be found inside  `joynr-backend-with-tls-broker.yml`.
 
