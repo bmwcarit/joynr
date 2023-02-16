@@ -22,13 +22,9 @@ import static io.joynr.messaging.MessagingPropertyKeys.CHANNELID;
 import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_BACKEND_UID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
 import java.util.Set;
 
@@ -45,7 +41,6 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -61,10 +56,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected MqttClientFactory mqttClientFactory;
     protected boolean sharedSubscriptionsEnabled;
     protected MqttAddress ownAddress;
-    protected int maxIncomingMqttRequests;
-    protected boolean backpressureEnabled;
-    protected int backpressureIncomingMqttRequestsUpperThreshold;
-    protected int backpressureIncomingMqttRequestsLowerThreshold;
     protected MqttAddress replyToAddress;
     protected MessageRouter messageRouter;
     protected MessageProcessedHandler messageProcessedHandler;
@@ -72,10 +63,10 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected MqttTopicPrefixProvider mqttTopicPrefixProvider;
     protected RawMessagingPreprocessor rawMessagingPreprocessor;
     protected Set<JoynrMessageProcessor> messageProcessors;
-    protected JoynrStatusMetricsReceiver joynrStatusMetricsReceiver;
     protected final String[] gbids;
     protected final RoutingTable routingTable;
     protected final boolean separateMqttReplyReceiver;
+    protected final MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     protected final String backendUid;
 
@@ -84,10 +75,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     public MqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
                                          @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                          @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                         @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
-                                         @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
-                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
-                                         @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                          @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                          MessageRouter messageRouter,
@@ -97,29 +84,25 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                          MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                          RawMessagingPreprocessor rawMessagingPreprocessor,
                                          Set<JoynrMessageProcessor> messageProcessors,
-                                         JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                          RoutingTable routingTable,
-                                         @Named(PROPERTY_BACKEND_UID) String backendUid) {
+                                         @Named(PROPERTY_BACKEND_UID) String backendUid,
+                                         MqttMessageInProgressObserver mqttMessageInProgressObserver) {
 
         sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
         this.ownAddress = ownAddress;
-        this.maxIncomingMqttRequests = maxIncomingMqttRequests;
-        this.backpressureEnabled = backpressureEnabled;
-        this.backpressureIncomingMqttRequestsUpperThreshold = backpressureIncomingMqttRequestsUpperThreshold;
-        this.backpressureIncomingMqttRequestsLowerThreshold = backpressureIncomingMqttRequestsLowerThreshold;
         this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.messageProcessedHandler = messageProcessedHandler;
         this.mqttClientFactory = mqttClientFactory;
         this.channelId = channelId;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
-        this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
         this.gbids = gbids.clone();
         this.routingTable = routingTable;
         this.separateMqttReplyReceiver = separateMqttReplyReceiver;
         this.backendUid = backendUid;
+        this.mqttMessageInProgressObserver = mqttMessageInProgressObserver;
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {} backendUid: {}",
                      sharedSubscriptionsEnabled,
                      ownAddress,
@@ -138,10 +121,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     protected IMessagingSkeletonFactory createSharedSubscriptionsFactory() {
         return new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
                                                                    ownAddress,
-                                                                   maxIncomingMqttRequests,
-                                                                   backpressureEnabled,
-                                                                   backpressureIncomingMqttRequestsUpperThreshold,
-                                                                   backpressureIncomingMqttRequestsLowerThreshold,
                                                                    replyToAddress,
                                                                    messageRouter,
                                                                    messageProcessedHandler,
@@ -150,25 +129,24 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
                                                                    mqttTopicPrefixProvider,
                                                                    rawMessagingPreprocessor,
                                                                    messageProcessors,
-                                                                   joynrStatusMetricsReceiver,
                                                                    routingTable,
                                                                    separateMqttReplyReceiver,
-                                                                   backendUid);
+                                                                   backendUid,
+                                                                   mqttMessageInProgressObserver);
     }
 
     protected IMessagingSkeletonFactory createFactory() {
         return new MqttMessagingSkeletonFactory(gbids,
                                                 ownAddress,
-                                                maxIncomingMqttRequests,
                                                 messageRouter,
                                                 messageProcessedHandler,
                                                 mqttClientFactory,
                                                 mqttTopicPrefixProvider,
                                                 rawMessagingPreprocessor,
                                                 messageProcessors,
-                                                joynrStatusMetricsReceiver,
                                                 routingTable,
-                                                backendUid);
+                                                backendUid,
+                                                mqttMessageInProgressObserver);
     }
 
 }

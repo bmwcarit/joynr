@@ -28,9 +28,11 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,10 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+
+import com.hivemq.client.internal.checkpoint.Confirmable;
+import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.joynr.JoynrVersion;
 import io.joynr.capabilities.CapabilityUtils;
@@ -273,7 +279,14 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
                                                                                                                ""));
         // the GBID of the replyTo address will be replaced in skeleton.transmit before adding the routing entry
         incomingMessage.setReplyTo(CapabilityUtils.serializeAddress(new MqttAddress("anyString", "")));
-        skeleton.transmit(incomingMessage.getImmutableMessage().getSerializedMessage(),
+        Confirmable confirmableMock = mock(Confirmable.class);
+        when(confirmableMock.confirm()).thenReturn(true, false);
+        Mqtt5Publish publish = Mqtt5Publish.builder()
+                                           .topic("testTopic")
+                                           .payload(incomingMessage.getImmutableMessage().getSerializedMessage())
+                                           .build();
+        MqttPublish publish1 = (MqttPublish) publish;
+        skeleton.transmit(publish1.withConfirmable(confirmableMock),
                           incomingMessage.getImmutableMessage().getPrefixedCustomHeaders(),
                           new FailureAction() {
                               @Override

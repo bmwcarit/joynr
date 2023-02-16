@@ -7,8 +7,32 @@ the versioning scheme [here](JoynrVersioning.md).
 ## API relevant changes
 
 ## Other Changes
+* **[Java]** The backpressure mechanism has been reworked. Backpressure is now configured by the
+  properties `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`,
+  `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
+  and `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED` as follows:
+  * `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS` still defines the maximum incoming request messages.
+  * `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` defines how many simultaneous unacknowledged messages the MQTT broker
+    is able to send to the joynr client.
+  * When `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS` - `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
+    requests are still unfinished (enqueued or still in progress) and backpressure is enabled via
+    `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED`, then backpressure mode is entered and
+    further incoming requests from the mqtt broker are not acknowledged on the MQTT level anymore. They are still
+    enqueued to be processed.
+  * The Mqtt broker will stop sending messages to the joynr client as soon as there are
+    `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` unacknowledged requests. Further messages will
+    either be queued in the broker or, in case of shared subscriptions, sent to other clients,
+    depending on the broker's implementation for distributing messages for a shared subscription.
+  * As soon as only `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`
+    unfinished requests remain, backpresure mode is exited and all previously unacknowledged MQTT messages are
+    acknowledged. This enables the MQTT broker to send messages to the joynr client again.
 
 ## Configuration Property Changes
+* **[Java]** The property `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
+  has been removed, as it is not used anymore.
+* **[Java]** The property `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`
+  is now used to define a flat (as opposed to percentual) threshold of request messages being enqueued/processed,
+  at which the backpressure mechanism will allow new requests to be accepted again.
 * **[JEE]** Added Property `PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP`
   'joynr.jeeintegration.subscribeonstartup' that allows to disable the automatic MQTT
   subscription when the joynr runtime starts. For more details, see the [JEE](/wiki/jee.md) documentation.

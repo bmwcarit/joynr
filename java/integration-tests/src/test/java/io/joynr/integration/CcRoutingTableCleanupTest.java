@@ -33,6 +33,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -48,6 +49,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.hivemq.client.internal.checkpoint.Confirmable;
+import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
+import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
 import io.joynr.dispatching.subscription.MulticastIdUtil;
 import io.joynr.exceptions.JoynrDelayMessageException;
@@ -369,10 +374,22 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
     public void mqtt_rqRp_error_rqExpired() {
         rqRp_error_rqExpired(replyToAddress, mqttMessagingStubMock, true, (msg, onFailure) -> {
             IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(replyToAddress);
-            skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(),
+            skeleton.transmit(createPublishWithConfirmable(msg),
                               msg.getImmutableMessage().getPrefixedCustomHeaders(),
                               onFailure);
         });
+    }
+
+    protected MqttPublish createPublishWithConfirmable(MutableMessage msg) throws EncodingException,
+                                                                           UnsuppportedVersionException {
+        Confirmable confirmableMock = mock(Confirmable.class);
+        when(confirmableMock.confirm()).thenReturn(true, false);
+        Mqtt5Publish publish = Mqtt5Publish.builder()
+                                           .topic("testTopic")
+                                           .payload(msg.getImmutableMessage().getSerializedMessage())
+                                           .build();
+        MqttPublish publish1 = (MqttPublish) publish;
+        return publish1.withConfirmable(confirmableMock);
     }
 
     private void rqRp_error_rpExpiredInMessageWorker(Address proxyAddress,
@@ -587,7 +604,7 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
     public void mqtt_rqRp_error_rqWithRelativeTtl() {
         rqRp_error_rqWithRelativeTtl(replyToAddress, (msg, onFailure) -> {
             IMqttMessagingSkeleton skeleton = (IMqttMessagingSkeleton) mqttSkeletonFactory.getSkeleton(replyToAddress);
-            skeleton.transmit(msg.getImmutableMessage().getSerializedMessage(),
+            skeleton.transmit(createPublishWithConfirmable(msg),
                               msg.getImmutableMessage().getPrefixedCustomHeaders(),
                               onFailure);
         });

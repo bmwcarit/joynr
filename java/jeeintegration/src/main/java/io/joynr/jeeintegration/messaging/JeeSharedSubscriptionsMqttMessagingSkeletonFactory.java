@@ -24,11 +24,11 @@ import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.AbstractMqttMessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessageInProgressObserver;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonFactory {
@@ -36,10 +36,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JeeSharedSubscriptionsMqttMessagingSkeletonFactory(String[] gbids,
                                                               MqttAddress ownAddress,
-                                                              int maxIncomingMqttRequests,
-                                                              boolean backpressureEnabled,
-                                                              int backpressureIncomingMqttRequestsUpperThreshold,
-                                                              int backpressureIncomingMqttRequestsLowerThreshold,
                                                               MqttAddress replyToAddress,
                                                               MessageRouter messageRouter,
                                                               MessageProcessedHandler messageProcessedHandler,
@@ -48,18 +44,14 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
                                                               MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                               RawMessagingPreprocessor rawMessagingPreprocessor,
                                                               Set<JoynrMessageProcessor> messageProcessors,
-                                                              JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                               RoutingTable routingTable,
                                                               boolean separateReplyMqttClient,
-                                                              String backendUid) {
+                                                              String backendUid,
+                                                              MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super();
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
                                        new JeeSharedSubscriptionsMqttMessagingSkeleton(ownAddress.getTopic(),
-                                                                                       maxIncomingMqttRequests,
-                                                                                       backpressureEnabled,
-                                                                                       backpressureIncomingMqttRequestsUpperThreshold,
-                                                                                       backpressureIncomingMqttRequestsLowerThreshold,
                                                                                        replyToAddress.getTopic(),
                                                                                        messageRouter,
                                                                                        messageProcessedHandler,
@@ -68,11 +60,11 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonFactory extends Abstract
                                                                                        mqttTopicPrefixProvider,
                                                                                        rawMessagingPreprocessor,
                                                                                        messageProcessors,
-                                                                                       joynrStatusMetricsReceiver,
                                                                                        gbid,
                                                                                        routingTable,
                                                                                        separateReplyMqttClient,
-                                                                                       backendUid));
+                                                                                       backendUid,
+                                                                                       mqttMessageInProgressObserver));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }

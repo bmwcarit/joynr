@@ -121,26 +121,26 @@ public class HivemqMqttClient implements JoynrMqttClient {
         if (!isReceiver || publishesDisposable != null) {
             return;
         }
-        publishesDisposable = client.publishes(MqttGlobalPublishFilter.ALL).subscribe(this::handleIncomingMessage,
-                                                                                      throwable -> {
-                                                                                          if (!cleanSession
-                                                                                                  && throwable instanceof MqttSessionExpiredException) {
-                                                                                              logger.warn("{}: MqttSessionExpiredException encountered in publish callback, trying to resubscribe.",
-                                                                                                          clientInformation,
-                                                                                                          throwable);
-                                                                                          } else {
-                                                                                              logger.error("{}: Error encountered in publish callback, trying to resubscribe.",
-                                                                                                           clientInformation,
-                                                                                                           throwable);
-                                                                                          }
-                                                                                          synchronized (this) {
-                                                                                              if (publishesDisposable != null) {
-                                                                                                  publishesDisposable.dispose();
-                                                                                                  publishesDisposable = null;
-                                                                                              }
-                                                                                              registerPublishCallback();
-                                                                                          }
-                                                                                      });
+        publishesDisposable = client.publishes(MqttGlobalPublishFilter.ALL, true).subscribe(this::handleIncomingMessage,
+                                                                                            throwable -> {
+                                                                                                if (!cleanSession
+                                                                                                        && throwable instanceof MqttSessionExpiredException) {
+                                                                                                    logger.warn("{}: MqttSessionExpiredException encountered in publish callback, trying to resubscribe.",
+                                                                                                                clientInformation,
+                                                                                                                throwable);
+                                                                                                } else {
+                                                                                                    logger.error("{}: Error encountered in publish callback, trying to resubscribe.",
+                                                                                                                 clientInformation,
+                                                                                                                 throwable);
+                                                                                                }
+                                                                                                synchronized (this) {
+                                                                                                    if (publishesDisposable != null) {
+                                                                                                        publishesDisposable.dispose();
+                                                                                                        publishesDisposable = null;
+                                                                                                    }
+                                                                                                    registerPublishCallback();
+                                                                                                }
+                                                                                            });
     }
 
     String getClientInformationString() {
@@ -485,7 +485,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                 prefixedCustomHeaders.put(entry.getName().toString(), entry.getValue().toString());
             }
         }
-        messagingSkeleton.transmit(mqtt5Publish.getPayloadAsBytes(), prefixedCustomHeaders, (throwable) -> {
+        messagingSkeleton.transmit(mqtt5Publish, prefixedCustomHeaders, throwable -> {
             if (throwable instanceof JoynrMessageExpiredException) {
                 logger.warn("{}: Unable to handle incoming {}", clientInformation, mqtt5Publish, throwable);
             } else {

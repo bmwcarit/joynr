@@ -27,6 +27,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessageInProgressObserver;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageProcessedHandler;
@@ -49,14 +50,13 @@ public class JeeMqttMessagingSkeletonProviderTest {
     @Mock
     private MqttTopicPrefixProvider mockMqttTopicPrefixProvider;
 
+    @Mock
+    MqttMessageInProgressObserver mockMqttMessageInProgressObserver;
+
     private void createProvider(boolean enableSharedSubscriptions) {
         subject = new JeeMqttMessagingSkeletonProvider(new String[0],
                                                        enableSharedSubscriptions,
                                                        new MqttAddress(),
-                                                       42,
-                                                       false,
-                                                       32,
-                                                       23,
                                                        new MqttAddress(),
                                                        false,
                                                        mockMessageRouter,
@@ -67,8 +67,8 @@ public class JeeMqttMessagingSkeletonProviderTest {
                                                        null,
                                                        null,
                                                        null,
-                                                       null,
-                                                       "");
+                                                       "",
+                                                       mockMqttMessageInProgressObserver);
     }
 
     @Test

@@ -49,10 +49,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
     @Override
     protected void createSkeleton(String channelId) {
         subject = new SharedSubscriptionsMqttMessagingSkeleton(ownTopic,
-                                                               maxMqttMessagesInQueue,
-                                                               backpressureEnabled,
-                                                               backpressureIncomingMqttRequestsUpperThreshold,
-                                                               backpressureIncomingMqttRequestsLowerThreshold,
                                                                replyToTopic,
                                                                messageRouter,
                                                                messageProcessedHandler,
@@ -61,11 +57,11 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
                                                                mqttTopicPrefixProvider,
                                                                new NoOpRawMessagingPreprocessor(),
                                                                new HashSet<JoynrMessageProcessor>(),
-                                                               mockJoynrStatusMetrics,
                                                                ownGbid,
                                                                routingTable,
                                                                separateReplyConnection,
-                                                               "");
+                                                               "",
+                                                               mqttMessageInProgressObserver);
     }
 
     @Test

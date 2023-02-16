@@ -23,12 +23,12 @@ import java.util.Set;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessageInProgressObserver;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.SharedSubscriptionsMqttMessagingSkeleton;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 
 /**
  * Almost the same as {@link SharedSubscriptionsMqttMessagingSkeleton} but separates the subscription to the replyTo
@@ -41,10 +41,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
 
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JeeSharedSubscriptionsMqttMessagingSkeleton(String ownTopic,
-                                                       int maxIncomingMqttRequests,
-                                                       boolean backpressureEnabled,
-                                                       int backpressureIncomingMqttRequestsUpperThreshold,
-                                                       int backpressureIncomingMqttRequestsLowerThreshold,
                                                        String replyToTopic,
                                                        MessageRouter messageRouter,
                                                        MessageProcessedHandler messageProcessedHandler,
@@ -53,16 +49,12 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
                                                        MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                        RawMessagingPreprocessor rawMessagingPreprocessor,
                                                        Set<JoynrMessageProcessor> messageProcessors,
-                                                       JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                        String ownGbid,
                                                        RoutingTable routingTable,
                                                        boolean separateReplyMqttClient,
-                                                       String backendUid) {
+                                                       String backendUid,
+                                                       MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(ownTopic,
-              maxIncomingMqttRequests,
-              backpressureEnabled,
-              backpressureIncomingMqttRequestsUpperThreshold,
-              backpressureIncomingMqttRequestsLowerThreshold,
               replyToTopic,
               messageRouter,
               messageProcessedHandler,
@@ -71,11 +63,11 @@ public class JeeSharedSubscriptionsMqttMessagingSkeleton extends SharedSubscript
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors,
-              joynrStatusMetricsReceiver,
               ownGbid,
               routingTable,
               separateReplyMqttClient,
-              backendUid);
+              backendUid,
+              mqttMessageInProgressObserver);
     }
 
     @Override

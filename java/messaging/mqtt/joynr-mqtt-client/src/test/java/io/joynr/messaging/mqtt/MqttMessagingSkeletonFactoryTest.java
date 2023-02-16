@@ -36,7 +36,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
@@ -45,7 +44,6 @@ import joynr.system.RoutingTypes.MqttAddress;
 @RunWith(MockitoJUnitRunner.class)
 public class MqttMessagingSkeletonFactoryTest {
 
-    private final int maxIncomingMqttRequests = 1;
     private final String[] gbids = new String[]{ "testGbid1", "testGbid2", "testGbid3" };
     private final Set<JoynrMessageProcessor> messageProcessors = new HashSet<>();
 
@@ -64,7 +62,7 @@ public class MqttMessagingSkeletonFactoryTest {
     @Mock
     private RawMessagingPreprocessor rawMessagingPreprocessor;
     @Mock
-    private JoynrStatusMetricsReceiver mockJoynrStatusMetricsReceiver;
+    protected MqttMessageInProgressObserver mqttMessageInProgressObserver;
 
     @Test
     public void getSkeletonReturnsCorrectSkeleton() {
@@ -80,16 +78,15 @@ public class MqttMessagingSkeletonFactoryTest {
 
         MqttMessagingSkeletonFactory factory = new MqttMessagingSkeletonFactory(gbids,
                                                                                 ownAddress,
-                                                                                maxIncomingMqttRequests,
                                                                                 messageRouter,
                                                                                 mockMessageProcessedHandler,
                                                                                 mqttClientFactory,
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
-                                                                                mockJoynrStatusMetricsReceiver,
                                                                                 routingTable,
-                                                                                "");
+                                                                                "",
+                                                                                mqttMessageInProgressObserver);
 
         MqttAddress testAddress = mock(MqttAddress.class);
         when(testAddress.getBrokerUri()).thenReturn(gbids[0]);
@@ -163,16 +160,15 @@ public class MqttMessagingSkeletonFactoryTest {
 
         MqttMessagingSkeletonFactory factory = new MqttMessagingSkeletonFactory(gbids,
                                                                                 ownAddress,
-                                                                                maxIncomingMqttRequests,
                                                                                 messageRouter,
                                                                                 mockMessageProcessedHandler,
                                                                                 mqttClientFactory,
                                                                                 mqttTopicPrefixProvider,
                                                                                 rawMessagingPreprocessor,
                                                                                 messageProcessors,
-                                                                                mockJoynrStatusMetricsReceiver,
                                                                                 routingTable,
-                                                                                "");
+                                                                                "",
+                                                                                mqttMessageInProgressObserver);
         testInitAllSkeletons(factory);
     }
 
@@ -189,17 +185,10 @@ public class MqttMessagingSkeletonFactoryTest {
         when(mqttClientFactory.createReplyReceiver(gbids[1])).thenReturn(mqttClient);
         when(mqttClientFactory.createReplyReceiver(gbids[2])).thenReturn(mqttClient);
 
-        final boolean backpressureEnabled = false;
-        final int backpressureIncomingMqttRequestsUpperThreshold = 42;
-        final int backpressureIncomingMqttRequestsLowerThreshold = 41;
         final MqttAddress replyToAddress = mock(MqttAddress.class);
         final String channelId = "testChannelId";
         SharedSubscriptionsMqttMessagingSkeletonFactory factory = new SharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
                                                                                                                       ownAddress,
-                                                                                                                      maxIncomingMqttRequests,
-                                                                                                                      backpressureEnabled,
-                                                                                                                      backpressureIncomingMqttRequestsUpperThreshold,
-                                                                                                                      backpressureIncomingMqttRequestsLowerThreshold,
                                                                                                                       replyToAddress,
                                                                                                                       messageRouter,
                                                                                                                       mockMessageProcessedHandler,
@@ -208,10 +197,10 @@ public class MqttMessagingSkeletonFactoryTest {
                                                                                                                       mqttTopicPrefixProvider,
                                                                                                                       rawMessagingPreprocessor,
                                                                                                                       messageProcessors,
-                                                                                                                      mockJoynrStatusMetricsReceiver,
                                                                                                                       routingTable,
                                                                                                                       false,
-                                                                                                                      "");
+                                                                                                                      "",
+                                                                                                                      mqttMessageInProgressObserver);
         testInitAllSkeletons(factory);
     }
 

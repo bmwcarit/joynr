@@ -54,10 +54,6 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
     @Override
     protected void createSkeleton(String channelId) {
         subject = new JeeSharedSubscriptionsMqttMessagingSkeleton(ownTopic,
-                                                                  maxMqttMessagesInQueue,
-                                                                  backpressureEnabled,
-                                                                  backpressureIncomingMqttRequestsUpperThreshold,
-                                                                  backpressureIncomingMqttRequestsLowerThreshold,
                                                                   replyToTopic,
                                                                   messageRouter,
                                                                   messageProcessedHandler,
@@ -66,11 +62,11 @@ public class JeeSharedSubscriptionsMqttMessagingSkeletonTest
                                                                   mqttTopicPrefixProvider,
                                                                   new NoOpRawMessagingPreprocessor(),
                                                                   new HashSet<JoynrMessageProcessor>(),
-                                                                  mockJoynrStatusMetrics,
                                                                   ownGbid,
                                                                   routingTable,
                                                                   separateReplyConnection,
-                                                                  "");
+                                                                  "",
+                                                                  mqttMessageInProgressObserver);
         super.subject = subject;
     }
 

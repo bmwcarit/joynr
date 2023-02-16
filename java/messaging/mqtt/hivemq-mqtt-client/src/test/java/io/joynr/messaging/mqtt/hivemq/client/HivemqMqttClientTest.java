@@ -142,7 +142,7 @@ public class HivemqMqttClientTest {
         prefixedCustomHeaders.put(prefixedCustomHeaderKey2, customHeaderValue2);
 
         doReturn(mockClientConfig).when(mockRxClient).getConfig();
-        doReturn(mockPublishesFlowable).when(mockRxClient).publishes(eq(MqttGlobalPublishFilter.ALL));
+        doReturn(mockPublishesFlowable).when(mockRxClient).publishes(MqttGlobalPublishFilter.ALL, true);
 
         doReturn(mockAsyncClient).when(mockRxClient).toAsync();
         doReturn(publishFuture).when(mockAsyncClient).publish(any(Mqtt5Publish.class));
@@ -428,7 +428,7 @@ public class HivemqMqttClientTest {
         handleIncomingMessage.invoke(client, mockPublish);
 
         verify(mockConnectionStatusMetrics, times(1)).increaseReceivedMessages();
-        verify(mockSkeleton).transmit(eq(new byte[0]), any(Map.class), any(FailureAction.class));
+        verify(mockSkeleton).transmit(eq(mockPublish), any(Map.class), any(FailureAction.class));
     }
 
     @Test
@@ -458,7 +458,7 @@ public class HivemqMqttClientTest {
         verify(mockConnectionStatusMetrics, times(1)).increaseReceivedMessages();
 
         Map<String, String> expectedPrefixedCustomHeaders = prefixedCustomHeaders;
-        verify(mockSkeleton).transmit(eq(new byte[0]), eq(expectedPrefixedCustomHeaders), any(FailureAction.class));
+        verify(mockSkeleton).transmit(eq(mockPublish), eq(expectedPrefixedCustomHeaders), any(FailureAction.class));
     }
 
     @Test

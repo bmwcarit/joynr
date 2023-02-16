@@ -22,7 +22,6 @@ import java.util.Set;
 
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
@@ -33,31 +32,29 @@ public class MqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonF
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeletonFactory(String[] gbids,
                                         MqttAddress ownAddress,
-                                        int maxIncomingMqttRequests,
                                         MessageRouter messageRouter,
                                         MessageProcessedHandler messageProcessedHandler,
                                         MqttClientFactory mqttClientFactory,
                                         MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                         RawMessagingPreprocessor rawMessagingPreprocessor,
                                         Set<JoynrMessageProcessor> messageProcessors,
-                                        JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                         RoutingTable routingTable,
-                                        String backendUid) {
+                                        String backendUid,
+                                        MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super();
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
                                        new MqttMessagingSkeleton(ownAddress.getTopic(),
-                                                                 maxIncomingMqttRequests,
                                                                  messageRouter,
                                                                  messageProcessedHandler,
                                                                  mqttClientFactory,
                                                                  mqttTopicPrefixProvider,
                                                                  rawMessagingPreprocessor,
                                                                  messageProcessors,
-                                                                 joynrStatusMetricsReceiver,
                                                                  gbid,
                                                                  routingTable,
-                                                                 backendUid));
+                                                                 backendUid,
+                                                                 mqttMessageInProgressObserver));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }

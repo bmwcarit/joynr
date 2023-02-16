@@ -54,6 +54,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.hivemq</groupId>
+			<artifactId>hivemq-mqtt-client</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>

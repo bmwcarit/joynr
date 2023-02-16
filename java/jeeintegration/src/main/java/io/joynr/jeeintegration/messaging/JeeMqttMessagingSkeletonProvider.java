@@ -25,10 +25,6 @@ import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD;
-import static io.joynr.messaging.mqtt.settings.LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS;
 
 import java.util.Set;
 
@@ -39,12 +35,12 @@ import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientFactory;
+import io.joynr.messaging.mqtt.MqttMessageInProgressObserver;
 import io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -64,10 +60,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     public JeeMqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
                                             @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                            @Named(PROPERTY_MAX_INCOMING_MQTT_REQUESTS) int maxIncomingMqttRequests,
-                                            @Named(PROPERTY_BACKPRESSURE_ENABLED) boolean backpressureEnabled,
-                                            @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD) int backpressureIncomingMqttRequestsUpperThreshold,
-                                            @Named(PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD) int backpressureIncomingMqttRequestsLowerThreshold,
                                             @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                             MessageRouter messageRouter,
@@ -77,16 +69,12 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                             RawMessagingPreprocessor rawMessagingPreprocessor,
                                             Set<JoynrMessageProcessor> messageProcessors,
-                                            JoynrStatusMetricsReceiver jeeJoynrStatusMetrics,
                                             RoutingTable routingTable,
-                                            @Named(PROPERTY_BACKEND_UID) String backendUid) {
+                                            @Named(PROPERTY_BACKEND_UID) String backendUid,
+                                            MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(gbids,
               enableSharedSubscriptions,
               ownAddress,
-              maxIncomingMqttRequests,
-              backpressureEnabled,
-              backpressureIncomingMqttRequestsUpperThreshold,
-              backpressureIncomingMqttRequestsLowerThreshold,
               replyToAddress,
               separateMqttReplyReceiver,
               messageRouter,
@@ -96,19 +84,15 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
               mqttTopicPrefixProvider,
               rawMessagingPreprocessor,
               messageProcessors,
-              jeeJoynrStatusMetrics,
               routingTable,
-              backendUid);
+              backendUid,
+              mqttMessageInProgressObserver);
     }
 
     @Override
     protected IMessagingSkeletonFactory createSharedSubscriptionsFactory() {
         return new JeeSharedSubscriptionsMqttMessagingSkeletonFactory(gbids,
                                                                       ownAddress,
-                                                                      maxIncomingMqttRequests,
-                                                                      backpressureEnabled,
-                                                                      backpressureIncomingMqttRequestsUpperThreshold,
-                                                                      backpressureIncomingMqttRequestsLowerThreshold,
                                                                       replyToAddress,
                                                                       messageRouter,
                                                                       messageProcessedHandler,
@@ -117,9 +101,9 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                                                       mqttTopicPrefixProvider,
                                                                       rawMessagingPreprocessor,
                                                                       messageProcessors,
-                                                                      joynrStatusMetricsReceiver,
                                                                       routingTable,
                                                                       separateMqttReplyReceiver,
-                                                                      backendUid);
+                                                                      backendUid,
+                                                                      mqttMessageInProgressObserver);
     }
 }

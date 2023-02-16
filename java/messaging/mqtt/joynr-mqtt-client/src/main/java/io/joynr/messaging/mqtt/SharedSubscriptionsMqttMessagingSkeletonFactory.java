@@ -25,7 +25,6 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.system.RoutingTypes.MqttAddress;
 
 public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqttMessagingSkeletonFactory {
@@ -33,10 +32,6 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public SharedSubscriptionsMqttMessagingSkeletonFactory(String[] gbids,
                                                            MqttAddress ownAddress,
-                                                           int maxIncomingMqttRequests,
-                                                           boolean backpressureEnabled,
-                                                           int backpressureIncomingMqttRequestsUpperThreshold,
-                                                           int backpressureIncomingMqttRequestsLowerThreshold,
                                                            MqttAddress replyToAddress,
                                                            MessageRouter messageRouter,
                                                            MessageProcessedHandler messageProcessedHandler,
@@ -45,18 +40,14 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                            MqttTopicPrefixProvider mqttTopicPrefixProvider,
                                                            RawMessagingPreprocessor rawMessagingPreprocessor,
                                                            Set<JoynrMessageProcessor> messageProcessors,
-                                                           JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                                            RoutingTable routingTable,
                                                            boolean separateMqttReplyReceiver,
-                                                           String backendUid) {
+                                                           String backendUid,
+                                                           MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super();
         for (String gbid : gbids) {
             mqttMessagingSkeletons.put(gbid,
                                        new SharedSubscriptionsMqttMessagingSkeleton(ownAddress.getTopic(),
-                                                                                    maxIncomingMqttRequests,
-                                                                                    backpressureEnabled,
-                                                                                    backpressureIncomingMqttRequestsUpperThreshold,
-                                                                                    backpressureIncomingMqttRequestsLowerThreshold,
                                                                                     replyToAddress.getTopic(),
                                                                                     messageRouter,
                                                                                     messageProcessedHandler,
@@ -65,11 +56,11 @@ public class SharedSubscriptionsMqttMessagingSkeletonFactory extends AbstractMqt
                                                                                     mqttTopicPrefixProvider,
                                                                                     rawMessagingPreprocessor,
                                                                                     messageProcessors,
-                                                                                    joynrStatusMetricsReceiver,
                                                                                     gbid,
                                                                                     routingTable,
                                                                                     separateMqttReplyReceiver,
-                                                                                    backendUid));
+                                                                                    backendUid,
+                                                                                    mqttMessageInProgressObserver));
         }
         messagingSkeletonList.addAll(mqttMessagingSkeletons.values());
     }
