@@ -130,7 +130,7 @@ dependencies {
     if (devEnv.toBoolean()) {
 
         // JOYNR JAVA JAVAAPI
-        implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
         implementation 'com.github.spotbugs:spotbugs-annotations:3.1.8'
 
         //JAVA COMMON INFRASTRUCTURE
@@ -142,7 +142,7 @@ dependencies {
         compileOnly 'javax:javaee-api:7.0'
 
         api 'org.slf4j:slf4j-api:1.7.28'
-        api 'com.fasterxml.jackson.core:jackson-databind:2.14.1'
+        api 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
 
     } else {
 
