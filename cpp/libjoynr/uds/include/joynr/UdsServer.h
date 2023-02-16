@@ -82,8 +82,7 @@ public:
     void setConnectCallback(const Connected& callback);
 
     /**
-     * @brief Sets callback for disconnection of the client (not called if server is stopped before
-     * client disconnection)
+     * @brief Sets callback for disconnection of the client
      * @param callback Callback
      */
     void setDisconnectCallback(const Disconnected& callback);
@@ -117,7 +116,8 @@ private:
 
     public:
         Connection(std::shared_ptr<boost::asio::io_service>& ioContext,
-                   const ConnectionConfig& config) noexcept;
+                   const ConnectionConfig& config,
+                   std::uint64_t connectionIndex) noexcept;
 
         /** Notifies sender if the connection got lost (error occured) */
         ~Connection() = default;
@@ -146,7 +146,7 @@ private:
         void doClose(const std::string& errorMessage) noexcept;
         void doClose() noexcept;
 
-        std::weak_ptr<boost::asio::io_service> _ioContext;
+        std::shared_ptr<boost::asio::io_service> _ioContext;
         uds::socket _socket;
         Connected _connectedCallback;
         Disconnected _disconnectedCallback;
@@ -161,6 +161,8 @@ private:
         // PIMPL to keep includes clean
         std::unique_ptr<UdsSendQueue<UdsFrameBufferV1>> _sendQueue;
         std::unique_ptr<UdsFrameBufferV1> _readBuffer;
+
+        std::uint64_t _connectionIndex;
 
         ADD_LOGGER(Connection)
     };
@@ -191,10 +193,12 @@ private:
     std::chrono::milliseconds _openSleepTime;
     uds::endpoint _endpoint;
     uds::acceptor _acceptor;
-    std::shared_ptr<Connection> _newConnection;
     std::future<void> _worker;
     std::atomic_bool _started;
     std::mutex _acceptorMutex;
+    std::unordered_map<std::uint64_t, std::weak_ptr<Connection>> _connectionMap;
+    std::atomic<uint64_t> _connectionIndex;
+    std::shared_ptr<boost::asio::io_service::work> _workGuard;
     ADD_LOGGER(UdsServer)
 };
 
