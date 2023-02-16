@@ -588,6 +588,7 @@ a string of int values separated by commas, e.g. 60,30,0...
 
 ### `PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS`
 
+{{% note %}} Attention: this option is always enabled in JEE since Joynr version 1.22.0.
 Use this key to activate shared subscription support by setting the property's value to true.
 Shared subscriptions are a feature of HiveMQ which allow queue semantics to be used for
 subscribers to MQTT topics. That is, only one subscriber receives a message, rather than all

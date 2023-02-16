@@ -319,14 +319,17 @@ public class JoynrIntegrationBeanTest {
     }
 
     @Test
-    public void testInitialise_noSharedSubscriptions() {
+    public void testInitialise_noSharedSubscriptionsOptionIsOverwritten() {
+        mockInjector(true, false, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(new HashSet<>());
 
         subject.initialise();
 
         verify(joynrRuntimeFactory).create(new HashSet<>());
         verify(serviceProviderDiscovery).findServiceProviderBeans();
-        verify(messagingSkeletonFactory, times(0)).getSkeleton(any(Address.class));
+        verify(messagingSkeletonFactory, times(3)).getSkeleton(any(Address.class));
     }
 
     @Test
@@ -423,6 +426,10 @@ public class JoynrIntegrationBeanTest {
 
     @Test
     public void testRegisterProviderWithLocalDomain() throws Exception {
+        mockInjector(true, true, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
+
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
         subject.initialise();
@@ -434,6 +441,9 @@ public class JoynrIntegrationBeanTest {
 
     @Test
     public void testRegisterProviderWithDifferentDomain() {
+        mockInjector(true, true, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
         serviceProviderBeans = new HashSet<>();
         @SuppressWarnings("rawtypes")
         Bean bean = mock(Bean.class);
@@ -453,6 +463,11 @@ public class JoynrIntegrationBeanTest {
 
     @Test
     public void testRegisterProviderUsingSettingsFromFactoryWithDefaultProvidesForFunction() {
+        final String[] expectedGbids = new String[]{ "gbid1", "gbid2" };
+        mockInjector(true, true, true, expectedGbids);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
+
         // given we have a bean implementing a joynr provider...
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
@@ -480,7 +495,6 @@ public class JoynrIntegrationBeanTest {
         // then the runtime is called with the correct parameters from the factory
         ProviderQos expectedProviderQos = new ProviderQos();
         expectedProviderQos.setPriority(100L);
-        String[] expectedGbids = new String[]{ "gbid1", "gbid2" };
         String expectedDomain = SETTINGS_DOMAIN;
         verify(joynrRuntime).getProviderRegistrar(eq(expectedDomain), any());
         verify(providerRegistrar).withProviderQos(expectedProviderQos);
@@ -491,6 +505,11 @@ public class JoynrIntegrationBeanTest {
 
     @Test
     public void testRegisterProviderUsingSettingsWithCorrectProvidesForBeanClassFunction() {
+        final String[] expectedGbids = new String[]{ "gbid1", "gbid2" };
+        mockInjector(true, true, true, expectedGbids);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
+
         // given we have a bean implementing a joynr provider...
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
@@ -518,7 +537,6 @@ public class JoynrIntegrationBeanTest {
         // then the runtime is called with the correct parameters from the factory
         ProviderQos expectedProviderQos = new ProviderQos();
         expectedProviderQos.setPriority(100L);
-        String[] expectedGbids = new String[]{ "gbid1", "gbid2" };
         String expectedDomain = SETTINGS_DOMAIN;
         verify(joynrRuntime).getProviderRegistrar(eq(expectedDomain), any());
         verify(providerRegistrar).withProviderQos(expectedProviderQos);
@@ -529,6 +547,10 @@ public class JoynrIntegrationBeanTest {
 
     @Test
     public void testRegisterProviderUsingSettingsWithIncorrectProvidesForBeanClassFunction() {
+        mockInjector(true, true, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
+
         // given we have a bean implementing a joynr provider...
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
@@ -674,6 +696,10 @@ public class JoynrIntegrationBeanTest {
 
     @Test
     public void testRegisterGcd_noAwaitGlobalRegistration() throws Exception {
+        mockInjector(true, true, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
+
         serviceProviderBeans = new HashSet<>();
         @SuppressWarnings("rawtypes")
         Bean bean = mock(Bean.class);
@@ -696,7 +722,9 @@ public class JoynrIntegrationBeanTest {
 
     @Test
     public void testRegisterWithAwaitGlobalRegistrationDisabled_singleProvider() throws Exception {
-        mockInjector(false, false);
+        mockInjector(false, true, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
 
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(serviceProviderBeans);
 
@@ -719,7 +747,9 @@ public class JoynrIntegrationBeanTest {
         when(bean.getBeanClass()).thenReturn(CustomDomainMyServiceBean.class);
         serviceProviderBeans.add(bean);
 
-        mockInjector(false, false);
+        mockInjector(false, true, true, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
         doReturn(serviceProviderBeans).when(serviceProviderDiscovery).findServiceProviderBeans();
 
         subject.initialise();
@@ -771,6 +801,8 @@ public class JoynrIntegrationBeanTest {
     public void testManualSubscribe_noSharedSubscriptions_nosubscribeOnstartup() {
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(new HashSet<>());
         mockInjector(false, false, false, GBIDS);
+        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
+                                                          .getSkeleton(any(Address.class));
 
         subject.initialise();
 
@@ -782,6 +814,6 @@ public class JoynrIntegrationBeanTest {
 
         verify(joynrRuntimeFactory).create(new HashSet<>());
         verify(serviceProviderDiscovery).findServiceProviderBeans();
-        verify(messagingSkeletonFactory, times(0)).getSkeleton(any(Address.class));
+        verify(messagingSkeletonFactory, times(3)).getSkeleton(any(Address.class));
     }
 }
