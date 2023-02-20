@@ -35,7 +35,7 @@ _sed 's/set(JOYNR_PATCH_VERSION .*)/set(JOYNR_PATCH_VERSION '${version[2]}')/g' 
 _sed 's/^find_package(Joynr '${oldVersionWithoutSuffix}'/find_package(Joynr '${newVersionWithoutSuffix}'/' \
 examples/radio-app/CMakeLists.txt \
 tests/dummyKeychain/CMakeLists.txt \
-tests/inter-language-test/CMakeLists.txt \
+tests/inter-language-test/inter-language-test-base/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
 tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt
@@ -44,7 +44,7 @@ _sed 's/project(\(.*\)VERSION '${oldVersionWithoutSuffix}'\(.*\))/project(\1VERS
 cpp/CMakeLists.txt \
 examples/radio-app/CMakeLists.txt \
 tests/dummyKeychain/CMakeLists.txt \
-tests/inter-language-test/CMakeLists.txt \
+tests/inter-language-test/inter-language-test-base/CMakeLists.txt \
 tests/performance-test/CMakeLists.txt \
 tests/standalone-pt/pt-cpp-apps/CMakeLists.txt \
 tests/system-integration-test/sit-cpp-app/CMakeLists.txt
@@ -60,7 +60,7 @@ mvn versions:commit -P android,javascript
 
 _sed 's/'$oldVersion'/'$newVersion'/g' \
 package.json \
-tests/inter-language-test/package.json \
+tests/inter-language-test/inter-language-test-base/package.json \
 tests/performance-test/package.json \
 tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/package.json \

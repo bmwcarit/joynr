@@ -5,41 +5,98 @@ the versioning scheme [here](JoynrVersioning.md).
 # joynr 1.22.0
 
 ## API relevant changes
-
+* **[Java]** Added method `isReplyReceiver()` to class `ConnectionStatusMetrics`.
+  See [Java Developer Guide](java.md#status_monitoring) for more information.
+* **[Java]** Added interface `JoynrConnectionService` with its method
+  `notifyReadyForRequestProcessing()` which needs to get called by the app to establish the
+  shared subscription in case automatic subscription to the shared subscription topic has been
+  disabled (see below for configuration setting). See also
+  [joynr JEE documentation](jee.md#disabling-automatic-subscriptions).
+* **[Java]** Added `toString()` method for ApplicationException.
 ## Other Changes
-* **[Java]** The backpressure mechanism has been reworked. Backpressure is now configured by the
+* * **[Java]** The backpressure mechanism has been reworked. It does not drop messages anymore, it
+  just stops receiving further incoming MQTT requests. Replies are not affected as long as MQTT
+  shared subscriptions are enabled, i.e. proxy calls from the application with active backpressure
+  mode will not time out because of backpressure. Backpressure is now configured by the
   properties `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`,
-  `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS`, `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
-  and `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED` as follows:
-  * `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS` still defines the maximum incoming request messages.
-  * `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` defines how many simultaneous unacknowledged messages the MQTT broker
-    is able to send to the joynr client.
-  * When `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS` - `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
+  `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS`,
+  `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
+  and `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED` as follows
+  (see [section "LimitAndBackpressureSettings" in the Java Configuration Reference](JavaSettings.md#limitandbackpressuresettings)):
+  * `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS` still defines the maximum
+    incoming request messages.
+  * `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` defines how many simultaneous unacknowledged
+    messages the MQTT broker is able to send to the joynr client.
+  * When `LimitAndBackpressureSettings.PROPERTY_MAX_INCOMING_MQTT_REQUESTS` -
+    `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
     requests are still unfinished (enqueued or still in progress) and backpressure is enabled via
-    `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED`, then backpressure mode is entered and
-    further incoming requests from the mqtt broker are not acknowledged on the MQTT level anymore. They are still
-    enqueued to be processed.
+    `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_ENABLED`, then backpressure mode is entered
+    and further incoming requests from the mqtt broker are not acknowledged on the MQTT level
+    anymore. They are still enqueued to be processed.
   * The Mqtt broker will stop sending messages to the joynr client as soon as there are
     `MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM` unacknowledged requests. Further messages will
     either be queued in the broker or, in case of shared subscriptions, sent to other clients,
     depending on the broker's implementation for distributing messages for a shared subscription.
-  * As soon as only `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`
-    unfinished requests remain, backpresure mode is exited and all previously unacknowledged MQTT messages are
-    acknowledged. This enables the MQTT broker to send messages to the joynr client again.
-
+  * As soon as only
+    `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`
+    unfinished requests remain, backpressure mode is exited and all previously unacknowledged MQTT
+    messages are acknowledged. This enables the MQTT broker to send messages to the joynr client
+    again.
+* **[All]** Consistently use `MulticastSubscriptionQos` for non selective broadcasts (multicasts) in
+  tests and examples.
+* **[Java]** Improved logging of ApplicationExceptions: error enum and detailMessage are now always
+  logged when an `ApplicationException` is received, misleading log and wrong log in case no callback
+  has been provided has been fixed.
+* **[JEE]** The interlanguage-test-jee has been incorporated into the already existing
+  interlanguage-test.
+* **[JEE]** JEE applications now have the shared susbcription mode automatically enabled.
+  This mode cannot be turned off anymore, values provided for the formerly required property
+  `MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS` are ignored. The property is still
+  used by Non-JEE pure Java applications.
+* **[Java]** Adapted Joynr status metrics to support additional MQTT connection for replies: added
+  method `isReplyReceiver()` to class `ConnectionStatusMetrics`.
+  See [Java Developer Guide](java.md#status_monitoring) for more information
+  (the additional MQTT connection has been added in joynr 1.21.9).
+* **[Docker]** An additional ready-to-use docker concerto with MQTT broker also serving TLS
+  connections, database and JDS demo implementation is provided for single backend use case.
+  See [Infrastructure](infrastructure.md) for more details.
+* **[Java]** Updated dependencies:
+```
+  * io.netty:                                     4.1.86.Final -> 4.1.87.Final
+  * org.apache.maven.plugins:maven-plugin-plugin: 3.6.4        -> 3.7.1
+  * org.javassist:javassist:                      3.19.0-GA    -> 3.29.2-GA
+  * org.postgresql:postgresql:                    42.5.0       -> 42.5.3
+  * org.xerial:sqlite-jdbc                        3.39.3.0     -> 3.40.1.0
+  * com.fasterxml.jackson.*:                      2.14.1       -> 2.14.2
+```
 ## Configuration Property Changes
-* **[Java]** The property `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD`
-  has been removed, as it is not used anymore.
-* **[Java]** The property `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD`
-  is now used to define a flat (as opposed to percentual) threshold of request messages being enqueued/processed,
-  at which the backpressure mechanism will allow new requests to be accepted again.
-* **[JEE]** Added Property `PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP`
-  'joynr.jeeintegration.subscribeonstartup' that allows to disable the automatic MQTT
-  subscription when the joynr runtime starts. For more details, see the [JEE](/wiki/jee.md) documentation.
+* **[Java]** The property
+  `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_LOWER_THRESHOLD` /
+  `joynr.messaging.backpressure.incomingmqttrequests.lowerthreshold` is now
+  used to define a flat (as opposed to percentual) threshold of request messages being
+  enqueued/processed, at which the backpressure mechanism will allow new requests to be accepted
+  again.
+* **[JEE]** Added Property `PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP` \
+  `joynr.jeeintegration.subscribeonstartup` that allows to disable the automatic MQTT
+  subscription when the joynr runtime starts. For more details, see the
+  [JEE documentation](/wiki/jee.md#disabling-automatic-subscriptions) and the
+  [Java Configuration Reference](JavaSettings.md#property_key_jee_subscribe_on_startup).
+* **[Java]** The following unused configuration properties have been removed:
+  * `MqttModule.PROPERTY_KEY_MQTT_TIME_TO_WAIT_MS` / `joynr.messaging.mqtt.timetowaitms`
+  * `MqttModule.PROPERTY_KEY_MQTT_MAX_MSGS_INFLIGHT` / `joynr.messaging.mqtt.maxmsgsinflight`
+  * `LimitAndBackpressureSettings.PROPERTY_BACKPRESSURE_INCOMING_MQTT_REQUESTS_UPPER_THRESHOLD` /
+  `joynr.messaging.backpressure.incomingmqttrequests.upperthreshold`
 
 ## Security Fixes
+None.
 
 ## Bug Fixes
+* **[Java]** Fixed misleading error logs if no callback is provided by the application
+(callbacks are optional, error can still be forwarded with the future, a
+missing callback does not mean that proxy and provider are incompatible).
+* **[Java]** Prevent ApplicationException from being thrown from methods without modelled errors.
+* **[Java]** Fixed bugs reported by SonarQube.
+* **[C++]** Fixed TSAN issues in `UdsServer`.
 
 # joynr 1.21.9
 
