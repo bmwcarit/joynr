@@ -388,7 +388,9 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
             worker.stopWorker(countDownLatch);
         }
         try {
-            countDownLatch.await(1500, TimeUnit.MILLISECONDS);
+            if (!countDownLatch.await(1500, TimeUnit.MILLISECONDS)) {
+                logger.error("FAILURE: waiting for message workers to stop timed out");
+            }
         } catch (InterruptedException e) {
             logger.error("Interrupted while waiting for message workers to stop.", e);
             Thread.currentThread().interrupt();

@@ -19,6 +19,7 @@
 package io.joynr.proxy;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,7 +34,7 @@ import joynr.exceptions.ApplicationException;
 public class Future<T> {
 
     private T value;
-    private volatile JoynrException exception = null;
+    private AtomicReference<JoynrException> exception = new AtomicReference<>(null);
     RequestStatus status = new RequestStatus(RequestStatusCode.IN_PROGRESS);
     private Lock statusLock = new ReentrantLock();
     private Condition statusLockChangedCondition = statusLock.newCondition();
@@ -60,11 +61,12 @@ public class Future<T> {
                 return value;
             }
 
-            if (exception != null) {
-                if (exception instanceof ApplicationException) {
-                    throw (ApplicationException) exception;
+            JoynrException e = exception.get();
+            if (e != null) {
+                if (e instanceof ApplicationException) {
+                    throw (ApplicationException) e;
                 }
-                throw (JoynrRuntimeException) exception;
+                throw (JoynrRuntimeException) e;
             }
 
             while (RequestStatusCode.IN_PROGRESS.equals(status.getCode())) {
@@ -76,11 +78,12 @@ public class Future<T> {
             }
 
             // check if an exception has arrived while waiting
-            if (exception != null) {
-                if (exception instanceof ApplicationException) {
-                    throw (ApplicationException) exception;
+            e = exception.get();
+            if (e != null) {
+                if (e instanceof ApplicationException) {
+                    throw (ApplicationException) e;
                 }
-                throw (JoynrRuntimeException) exception;
+                throw (JoynrRuntimeException) e;
             }
 
             return value;
@@ -123,7 +126,7 @@ public class Future<T> {
             statusLockChangedCondition.signalAll();
         } catch (Exception e) {
             status = new RequestStatus(RequestStatusCode.ERROR);
-            exception = new JoynrRuntimeException(e);
+            exception.set(new JoynrRuntimeException(e));
         } finally {
             statusLock.unlock();
         }
@@ -136,10 +139,10 @@ public class Future<T> {
      *            that caused the failure
      */
     public void onFailure(JoynrException newException) {
-        exception = newException;
         status = new RequestStatus(RequestStatusCode.ERROR);
         try {
             statusLock.lock();
+            exception.set(newException);
             statusLockChangedCondition.signalAll();
         } finally {
             statusLock.unlock();
