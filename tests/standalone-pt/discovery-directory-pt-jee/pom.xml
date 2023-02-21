@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>standalone-pt</artifactId>
-		<version>1.22.0</version>
+		<version>1.23.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
