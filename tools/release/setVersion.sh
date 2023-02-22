@@ -112,7 +112,7 @@ if [[ $newVersion != *"SNAPSHOT"* ]]; then
 fi
 
 echo "prepare git patch"
-countFoundOldVersions=$(git grep -F ${oldVersion} * | grep -F -v ${newVersion} | grep -v ReleaseNotes | wc -l)
+countFoundOldVersions=$(git grep -F ${oldVersion} * | grep -F -v ${newVersion} | egrep -v 'ReleaseNotes.md|JavaSettings.md' | wc -l)
 if (($countFoundOldVersions > 0)); then
     echo "WARNING: a grep over your workspace emphasised that the oldVersion is still present in some of your resources. Please check manually!"
     git grep -F ${oldVersion} * | grep -F -v ${newVersion} | grep -v ReleaseNotes
