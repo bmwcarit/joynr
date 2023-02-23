@@ -318,6 +318,14 @@ TEST_F(UdsClientTest, fatalErrorCallbackException)
 
 TEST_F(UdsClientTest, fatalErrorSocketDirDoesNotExist)
 {
+    // Stop server to prevent race condition where server
+    // has temporarily set umask to exclude execute
+    // permissions while fs::create_directories(...)
+    // runs in parallel attempting to create directory
+    // tree causing Permission denied error leading to
+    // test failure.
+    // The server is not required for initial test.
+    stopServer();
     auto socketDir = _tmpDirectory / "does/not/exist";
     auto socketPath = socketDir / "someSocket";
     _udsSettings.setSocketPath(socketPath.string());
