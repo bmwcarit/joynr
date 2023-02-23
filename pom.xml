@@ -1017,6 +1017,12 @@
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.google.dagger</groupId>
+				<artifactId>dagger</artifactId>
+				<type>jar</type>
+				<version>2.45</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
