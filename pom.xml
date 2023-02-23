@@ -731,7 +731,7 @@
 				<groupId>org.jboss.arquillian</groupId>
 				<!-- Manage arquillian and shrinkwrap dependencies -->
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.7.0.Alpha12</version>
+				<version>1.7.0.Alpha14</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
