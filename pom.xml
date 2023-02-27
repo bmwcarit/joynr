@@ -414,7 +414,7 @@
 		-->
 		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.14.2</jackson.version>
-		<netty.version>4.1.87.Final</netty.version>
+		<netty.version>4.1.89.Final</netty.version>
 		<guice.version>5.1.0</guice.version>
 		<jetty.version>11.0.11</jetty.version>
 		<tycho.version>0.24.0</tycho.version>
@@ -731,7 +731,7 @@
 				<groupId>org.jboss.arquillian</groupId>
 				<!-- Manage arquillian and shrinkwrap dependencies -->
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.7.0.Alpha12</version>
+				<version>1.7.0.Alpha14</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -820,7 +820,7 @@
 			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
-				<version>42.5.3</version>
+				<version>42.5.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
@@ -968,7 +968,7 @@
 				<groupId>org.xerial</groupId>
 				<artifactId>sqlite-jdbc</artifactId>
 				<type>jar</type>
-				<version>3.40.1.0</version>
+				<version>3.41.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.javassist</groupId>
@@ -1016,6 +1016,12 @@
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.dagger</groupId>
+				<artifactId>dagger</artifactId>
+				<type>jar</type>
+				<version>2.45</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -1069,7 +1075,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.4.1</version>
+					<version>3.5.0</version>
 					<configuration>
 						<source>${generic.maven.compiler.source}</source>
 						<sourcepath>src/main</sourcepath>
