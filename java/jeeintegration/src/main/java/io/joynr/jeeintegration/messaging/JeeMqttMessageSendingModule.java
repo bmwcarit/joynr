@@ -22,8 +22,6 @@ import static io.joynr.messaging.mqtt.MqttModule.MQTT_BROKER_URI_ARRAY;
 import static io.joynr.messaging.mqtt.MqttModule.MQTT_GBID_TO_BROKERURI_MAP;
 import static io.joynr.messaging.mqtt.MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP;
 import static io.joynr.messaging.mqtt.MqttModule.MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 import static io.joynr.messaging.mqtt.MqttModule.MQTT_CIPHERSUITE_LIST;
 import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 
@@ -33,37 +31,30 @@ import java.util.HashMap;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.OptionalBinder;
 import com.google.inject.name.Named;
-import com.google.inject.name.Names;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.DefaultMqttClientIdProvider;
 import io.joynr.messaging.mqtt.DefaultMqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.MqttCiphersuiteListFactory;
 import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.messaging.mqtt.MqttGlobalAddressFactory;
 import io.joynr.messaging.mqtt.MqttMessagingStubFactory;
 import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.MqttMulticastAddressCalculator;
 import io.joynr.messaging.mqtt.MqttMultipleBackendPropertyProvider;
-import io.joynr.messaging.mqtt.MqttReplyToAddressFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientTrustManagerFactory;
 import io.joynr.messaging.mqtt.hivemq.client.IHivemqMqttClientTrustManagerFactory;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientCreator;
 import io.joynr.messaging.mqtt.JoynrMqttClientCreator;
-import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -81,15 +72,28 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     }
 
     @Provides
-    @Named(PROPERTY_MQTT_GLOBAL_ADDRESS)
-    public MqttAddress provideMqttOwnAddress(MqttGlobalAddressFactory globalAddressFactory) {
-        return globalAddressFactory.create();
+    @Named(MessagingPropertyKeys.GLOBAL_ADDRESS)
+    public Address provideMqttOwnAddress(@Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids,
+                                         @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
+                                         MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+        return new MqttAddress(gbids[0], mqttTopicPrefixProvider.getUnicastTopicPrefix() + localChannelId);
     }
 
     @Provides
-    @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS)
-    public MqttAddress provideMqttOwnAddress(MqttReplyToAddressFactory replyToAddressFactory) {
-        return replyToAddressFactory.create();
+    @Named(MessagingPropertyKeys.REPLY_TO_ADDRESS)
+    public Address provideMqttOwnReplyToAddress(@Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids,
+                                                @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
+                                                @Named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
+                                                @Named(MessagingPropertyKeys.RECEIVERID) String receiverId,
+                                                MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+        String replyToTopic;
+        if (Boolean.valueOf(enableSharedSubscriptions)) {
+            replyToTopic = mqttTopicPrefixProvider.getSharedSubscriptionsReplyToTopicPrefix() + localChannelId + "/"
+                    + receiverId;
+        } else {
+            replyToTopic = mqttTopicPrefixProvider.getUnicastTopicPrefix() + localChannelId;
+        }
+        return new MqttAddress(gbids[0], replyToTopic);
     }
 
     @Provides
@@ -132,20 +136,6 @@ public class JeeMqttMessageSendingModule extends AbstractModule {
     protected void configure() {
         messagingStubFactory.addBinding(MqttAddress.class).to(MqttMessagingStubFactory.class);
         messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(JeeMqttMessagingSkeletonProvider.class);
-
-        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
-        globalAddresses = Multibinder.newSetBinder(binder(),
-                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                   },
-                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
-        globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
-
-        Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
-        replyToAddresses = Multibinder.newSetBinder(binder(),
-                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                    },
-                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
-        replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
         bind(MqttClientFactory.class).to(HivemqMqttClientFactory.class);
         bind(IHivemqMqttClientTrustManagerFactory.class).to(HivemqMqttClientTrustManagerFactory.class);

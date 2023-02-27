@@ -39,6 +39,8 @@ public final class MessagingPropertyKeys {
     public static final String PROPERTY_KEY_SEPARATE_REPLY_RECEIVER = "joynr.messaging.separatereplyreceiver";
 
     public static final String PROPERTY_BACKEND_UID = "joynr.backend.uid";
+    public static final String GLOBAL_ADDRESS = "property_mqtt_global_address";
+    public static final String REPLY_TO_ADDRESS = "property_mqtt_reply_to_address";
 
     private MessagingPropertyKeys() {
         throw new AssertionError();

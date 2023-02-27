@@ -18,21 +18,17 @@
  */
 package io.joynr.messaging.routing;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingAbstractProvider;
 import joynr.system.RoutingTypes.Address;
@@ -53,50 +49,30 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     private MulticastReceiverRegistrar multicastReceiverRegistrar;
     private String globalAddressString;
     private String replyToAddressString;
-    private List<Deferred<String>> unresolvedGlobalAddressDeferreds = new ArrayList<Deferred<String>>();
-    private List<Deferred<String>> unresolvedReplyToAddressDeferreds = new ArrayList<Deferred<String>>();
     private static final Logger logger = LoggerFactory.getLogger(RoutingProviderImpl.class);
+
+    @Inject(optional = true)
+    @Named(MessagingPropertyKeys.GLOBAL_ADDRESS)
+    private Address globalAddress = new Address();
+    @Inject(optional = true)
+    @Named(MessagingPropertyKeys.REPLY_TO_ADDRESS)
+    private Address replyToAddress = new Address();
 
     /**
      * @param messageRouter handles the logic for the RoutingProvider
      * @param multicastReceiverRegistrar registry for multicast subscriber participantIds
-     * @param globalAddressProvider provider for the global address of a single cluster controller or a clustered application if shared subscriptions are enabled
-     * @param replyToAddressProvider provider for the cluster controller's replyTo address
      */
     @Inject
     public RoutingProviderImpl(final MessageRouter messageRouter,
-                               final MulticastReceiverRegistrar multicastReceiverRegistrar,
-                               GlobalAddressProvider globalAddressProvider,
-                               ReplyToAddressProvider replyToAddressProvider) {
+                               final MulticastReceiverRegistrar multicastReceiverRegistrar) {
         this.messageRouter = messageRouter;
         this.multicastReceiverRegistrar = multicastReceiverRegistrar;
+    }
 
-        globalAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
-            @Override
-            public void transportReady(Optional<Address> address) {
-                synchronized (unresolvedGlobalAddressDeferreds) {
-                    globalAddressString = RoutingTypesUtil.toAddressString(address.isPresent() ? address.get() : null);
-                    for (Deferred<String> globalAddressDeferred : unresolvedGlobalAddressDeferreds) {
-                        globalAddressDeferred.resolve(globalAddressString);
-                    }
-                    unresolvedGlobalAddressDeferreds.clear();
-                    globalAddressChanged(globalAddressString);
-                }
-            }
-        });
-        replyToAddressProvider.registerGlobalAddressesReadyListener(new TransportReadyListener() {
-            @Override
-            public void transportReady(Optional<Address> address) {
-                synchronized (unresolvedReplyToAddressDeferreds) {
-                    replyToAddressString = RoutingTypesUtil.toAddressString(address.isPresent() ? address.get() : null);
-                    for (Deferred<String> replyToAddressDeferred : unresolvedReplyToAddressDeferreds) {
-                        replyToAddressDeferred.resolve(replyToAddressString);
-                    }
-                    unresolvedReplyToAddressDeferreds.clear();
-                    replyToAddressChanged(replyToAddressString);
-                }
-            }
-        });
+    @Inject
+    public void init() {
+        globalAddressString = RoutingTypesUtil.toAddressString(globalAddress);
+        replyToAddressString = RoutingTypesUtil.toAddressString(replyToAddress);
     }
 
     private Promise<DeferredVoid> resolvedDeferred() {
@@ -204,26 +180,14 @@ public class RoutingProviderImpl extends RoutingAbstractProvider {
     @Override
     public Promise<Deferred<String>> getGlobalAddress() {
         Deferred<String> globalAddressDeferred = new Deferred<String>();
-        synchronized (unresolvedGlobalAddressDeferreds) {
-            if (globalAddressString != null) {
-                globalAddressDeferred.resolve(globalAddressString);
-            } else {
-                unresolvedGlobalAddressDeferreds.add(globalAddressDeferred);
-            }
-        }
+        globalAddressDeferred.resolve(globalAddressString);
         return new Promise<Deferred<String>>(globalAddressDeferred);
     }
 
     @Override
     public Promise<Deferred<String>> getReplyToAddress() {
         Deferred<String> replyToAddressDeferred = new Deferred<String>();
-        synchronized (unresolvedReplyToAddressDeferreds) {
-            if (replyToAddressString != null) {
-                replyToAddressDeferred.resolve(replyToAddressString);
-            } else {
-                unresolvedReplyToAddressDeferreds.add(replyToAddressDeferred);
-            }
-        }
+        replyToAddressDeferred.resolve(replyToAddressString);
         return new Promise<Deferred<String>>(replyToAddressDeferred);
     }
 

@@ -23,8 +23,6 @@ import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_BACKEND_UID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 
 import java.util.Set;
 
@@ -35,12 +33,15 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
+import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.JoynrMessageProcessor;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
 /**
@@ -55,6 +56,12 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
 
     protected MqttClientFactory mqttClientFactory;
     protected boolean sharedSubscriptionsEnabled;
+    @Inject(optional = true)
+    @Named(MessagingPropertyKeys.GLOBAL_ADDRESS)
+    private Address ownAddressInjected = new Address();
+    @Inject(optional = true)
+    @Named(MessagingPropertyKeys.REPLY_TO_ADDRESS)
+    private Address replyToAddressInjected = new Address();
     protected MqttAddress ownAddress;
     protected MqttAddress replyToAddress;
     protected MessageRouter messageRouter;
@@ -74,8 +81,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public MqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
                                          @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
-                                         @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                         @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                          @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                          MessageRouter messageRouter,
                                          MessageProcessedHandler messageProcessedHandler,
@@ -91,8 +96,6 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
         this.messageProcessors = messageProcessors;
-        this.ownAddress = ownAddress;
-        this.replyToAddress = replyToAddress;
         this.messageRouter = messageRouter;
         this.messageProcessedHandler = messageProcessedHandler;
         this.mqttClientFactory = mqttClientFactory;
@@ -103,6 +106,20 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
         this.separateMqttReplyReceiver = separateMqttReplyReceiver;
         this.backendUid = backendUid;
         this.mqttMessageInProgressObserver = mqttMessageInProgressObserver;
+    }
+
+    @Inject
+    public void init() {
+        if (ownAddressInjected instanceof MqttAddress) {
+            this.ownAddress = (MqttAddress) ownAddressInjected;
+        } else {
+            throw new JoynrIllegalStateException("Global address is not a MqttAddress!");
+        }
+        if (replyToAddressInjected instanceof MqttAddress) {
+            this.replyToAddress = (MqttAddress) replyToAddressInjected;
+        } else {
+            throw new JoynrIllegalStateException("Reply-to address is not a MqttAddress!");
+        }
         logger.debug("Created with sharedSubscriptionsEnabled: {} ownAddress: {} channelId: {} backendUid: {}",
                      sharedSubscriptionsEnabled,
                      ownAddress,
