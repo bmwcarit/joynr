@@ -74,10 +74,11 @@ import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import io.reactivex.schedulers.Schedulers;
+import io.joynr.messaging.MessagingPropertyKeys;
 
 /**
  * This factory class is responsible for producing joynr MQTT clients using the HiveMQ MQTT Client library.
- *
+ * <p>
  * TODO
  * - When persistent session configuration exists, then enable configuration thereof
  */
@@ -156,7 +157,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                    @Named(MqttModule.MQTT_GBID_TO_CONNECTION_TIMEOUT_SEC_MAP) HashMap<String, Integer> mqttGbidToConnectionTimeoutSecMap,
                                    @Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
                                    @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduledExecutorService,
-                                   @Named(MqttModule.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateReplyReceiver,
+                                   @Named(MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateReplyReceiver,
                                    MqttClientIdProvider mqttClientIdProvider,
                                    JoynrStatusMetricsReceiver joynrStatusMetricsReceiver,
                                    ShutdownNotifier shutdownNotifier,

@@ -42,6 +42,8 @@ import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
+import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
+
 /**
  * If the {@link io.joynr.messaging.mqtt.MqttModule#PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS} property is set to
  * <code>true</code>, then the shared subscriptions version of the mqtt messaging skeleton is used instead of the
@@ -77,7 +79,6 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_PASSWORD = "joynr.messaging.mqtt.password";
     public static final String PROPERTY_KEY_MQTT_DISABLE_HOSTNAME_VERIFICATION = "joynr.messaging.mqtt.disablehostnameverification";
     public static final String PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM = "joynr.messaging.mqtt.receivemaximum";
-    public static final String PROPERTY_KEY_SEPARATE_REPLY_RECEIVER = "joynr.messaging.mqtt.separatereplyreceiver";
 
     /**
      * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared
