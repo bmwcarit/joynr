@@ -120,31 +120,37 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
     private MessageRouter messageRouter;
     private GarbageCollectionHandler gcHandler;
     private StatelessAsyncIdCalculator statelessAsyncIdCalculator;
+    private boolean separateReplyReceiver;
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public ProxyInvocationHandlerFactoryImpl(ConnectorFactory connectorFactory,
                                              @Named("connectorFactoryMock") JoynrMessagingConnectorFactory connectorFactoryMock,
                                              MessageRouter messageRouter,
                                              GarbageCollectionHandler gcHandler,
                                              @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
                                              ShutdownNotifier shutdownNotifier,
-                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
+                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator,
+                                             @Named(MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateReplyReceiver) {
         super();
         this.messageRouter = messageRouter;
         this.gcHandler = gcHandler;
         this.connectorFactory = connectorFactory;
         this.connectorFactoryMock = new ConnectorFactory(connectorFactoryMock, messageRouter, dispatcherAddress);
         this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
+        this.separateReplyReceiver = separateReplyReceiver;
     }
 
     @Override
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public ProxyInvocationHandler create(Set<String> domains,
                                          String interfaceName,
                                          String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
                                          MessagingQos messagingQos,
                                          ShutdownNotifier shutdownNotifier,
-                                         Optional<StatelessAsyncCallback> statelessAsyncCallback) {
+                                         Optional<StatelessAsyncCallback> statelessAsyncCallback,
+                                         boolean separateReplyReceiver) {
         if (domains.contains("io.joynr.system")) {
             return new ProxyInvocationHandlerImpl(domains,
                                                   interfaceName,
@@ -152,6 +158,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                                   discoveryQos,
                                                   messagingQos,
                                                   statelessAsyncCallback,
+                                                  separateReplyReceiver,
                                                   connectorFactory,
                                                   messageRouter,
                                                   gcHandler,
@@ -164,6 +171,7 @@ class ProxyInvocationHandlerFactoryImpl implements ProxyInvocationHandlerFactory
                                               discoveryQos,
                                               messagingQos,
                                               statelessAsyncCallback,
+                                              separateReplyReceiver,
                                               connectorFactoryMock,
                                               messageRouter,
                                               gcHandler,

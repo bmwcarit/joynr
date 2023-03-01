@@ -161,6 +161,7 @@ public class AbstractRoutingTableCleanupTest {
 
     private final long ROUTINGTABLE_CLEANUP_INTERVAL_MS = 100l;
     private final long ROUTING_MAX_RETRY_COUNT = 2;
+    private static final boolean USE_SEPARATE_REPLY_RECEIVER = false;
 
     private Properties properties;
     protected Injector injector;
@@ -236,7 +237,8 @@ public class AbstractRoutingTableCleanupTest {
                   maxMessagingTtl,
                   defaultDiscoveryTimeoutMs,
                   defaultDiscoveryRetryIntervalMs,
-                  minimumArbitrationRetryDelay);
+                  minimumArbitrationRetryDelay,
+                  USE_SEPARATE_REPLY_RECEIVER);
             internalProxyParticipantIds = new HashSet<String>(Arrays.asList(discoveryProviderParticipantId,
                                                                             routingProviderParticipantId,
                                                                             capabilitiesDirectoryEntry.getParticipantId()));

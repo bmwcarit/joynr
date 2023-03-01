@@ -68,6 +68,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     protected Throwable throwable;
     protected final MessagingQos qosSettings;
     private ConnectorStatus connectorStatus;
+    private boolean separateReplyReceiver;
     private Lock connectorStatusLock = new ReentrantLock();
     private Condition connectorFinished = connectorStatusLock.newCondition();
     private DiscoveryQos discoveryQos;
@@ -90,6 +91,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                                   @Assisted DiscoveryQos discoveryQos,
                                   @Assisted MessagingQos messagingQos,
                                   @Assisted Optional<StatelessAsyncCallback> statelessAsyncCallback,
+                                  @Assisted boolean separateReplyReceiver,
                                   ShutdownNotifier shutdownNotifier,
                                   StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         // CHECKSTYLE:ON
@@ -98,7 +100,9 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         this.interfaceName = interfaceName;
         this.discoveryQos = discoveryQos;
         this.qosSettings = messagingQos;
+        this.separateReplyReceiver = separateReplyReceiver;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
+
         shutdownListener = new ShutdownListener() {
             @Override
             public void prepareForShutdown() {
@@ -128,13 +132,10 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
      * successful or the timeout elapsed.
      *
      * @throws ApplicationException
-     *
      * @see java.lang.reflect.InvocationHandler#invoke(java.lang.Object, java.lang.reflect.Method, java.lang.Object[])
      */
     private Optional<Object> executeSyncMethod(Method method, Object[] args) throws ApplicationException {
-        if (preparingForShutdown.get()) {
-            throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
-        }
+        checkIfExecutionIsAllowed();
         return Optional.ofNullable(executeMethodWithCaller(method, args, new ConnectorCaller() {
             @Override
             public Object call(Method method, Object[] args) throws ApplicationException {
@@ -206,7 +207,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
      * arbitrationTimeout or until the ProxyInvocationHandler is notified about a successful connection.
      *
      * @return True if the connector was finished successfully in time, False if the connector failed or could not be
-     *         finished in time.
+     * finished in time.
      * @throws InterruptedException in case thread is interrupted
      */
     public boolean waitForConnectorFinished() throws InterruptedException {
@@ -337,11 +338,10 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     }
 
     private Optional<Object> executeSubscriptionMethod(Object proxy, Method method, Object[] args) {
-        if (preparingForShutdown.get()) {
-            throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
-        }
         Future<String> future = new Future<String>();
         if (method.getName().startsWith("subscribeTo")) {
+            checkIfExecutionIsAllowed();
+
             if (JoynrSubscriptionInterface.class.isAssignableFrom(method.getDeclaringClass())) {
                 executeAttributeSubscriptionMethod(proxy, method, args, future);
             } else if (method.getAnnotation(JoynrRpcBroadcast.class) != null) {
@@ -359,6 +359,13 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                                                                              future)).getSubscriptionId());
         } else {
             throw new JoynrIllegalStateException("Called unknown method in one of the subscription interfaces.");
+        }
+    }
+
+    private void checkIfExecutionIsAllowed() {
+        if (preparingForShutdown.get() && !separateReplyReceiver) {
+            throw new JoynrIllegalStateException("Preparing for shutdown. "
+                    + "Only stateless/unregister methods can be called.");
         }
     }
 
@@ -440,9 +447,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
 
     private <T> Object executeAsyncMethod(Object proxy, Method method, Object[] args) throws IllegalAccessException,
                                                                                       Exception {
-        if (preparingForShutdown.get()) {
-            throw new JoynrIllegalStateException("Preparing for shutdown. Only stateless methods can be called.");
-        }
+        checkIfExecutionIsAllowed();
         @SuppressWarnings("unchecked")
         Future<T> future = (Future<T>) method.getReturnType().getConstructor().newInstance();
 
@@ -577,8 +582,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
      * This method can be called to specify a throwable which will be thrown each time
      * {@link #invoke(Object, Method, Object[])} is called.
      *
-     * @param throwable
-     *            the throwable to be thrown when invoke is called.
+     * @param throwable the throwable to be thrown when invoke is called.
      */
     void setThrowableForInvoke(Throwable throwable) {
         this.throwable = throwable;

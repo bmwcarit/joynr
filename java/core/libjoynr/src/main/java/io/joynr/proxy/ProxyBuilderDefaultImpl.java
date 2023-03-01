@@ -47,6 +47,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private final long defaultDiscoveryTimeoutMs;
     private final long defaultDiscoveryRetryIntervalMs;
     private final long minimumArbitrationRetryDelay;
+    private final boolean separateReplyReceiver;
     MessagingQos messagingQos;
     Class<T> myClass;
     private DiscoveryQos discoveryQos;
@@ -74,7 +75,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                             long maxMessagingTtl,
                             long defaultDiscoveryTimeoutMs,
                             long defaultDiscoveryRetryIntervalMs,
-                            long minimumArbitrationRetryDelay) {
+                            long minimumArbitrationRetryDelay,
+                            boolean separateReplyReceiver) {
         // CHECKSTYLE:ON
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
@@ -82,6 +84,7 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
         this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
         this.minimumArbitrationRetryDelay = minimumArbitrationRetryDelay;
+        this.separateReplyReceiver = separateReplyReceiver;
         this.shutdownNotifier = shutdownNotifier;
 
         try {
@@ -274,7 +277,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                                                                                                    discoveryQos,
                                                                                                    messagingQos,
                                                                                                    shutdownNotifier,
-                                                                                                   Optional.ofNullable(statelessAsyncCallback));
+                                                                                                   Optional.ofNullable(statelessAsyncCallback),
+                                                                                                   separateReplyReceiver);
         proxy = ProxyFactory.createProxy(myClass, messagingQos, proxyInvocationHandler);
         proxyInvocationHandler.registerProxy(proxy);
         // It is called by GuidedProxyBuilder.buildProxy. If there will be an exception because of a failing addNextHop
@@ -312,7 +316,8 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                                                                                                    discoveryQos,
                                                                                                    messagingQos,
                                                                                                    shutdownNotifier,
-                                                                                                   Optional.ofNullable(statelessAsyncCallback));
+                                                                                                   Optional.ofNullable(statelessAsyncCallback),
+                                                                                                   separateReplyReceiver);
 
         // This order is necessary because the Arbitrator might return early
         // But if the listener is set after the ProxyInvocationHandler the

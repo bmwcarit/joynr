@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -79,6 +80,7 @@ public class ProxyBuilderDefaultImplTest {
     private static final long DEFAULT_DISCOVERY_TIMEOUT_MS = 30000L;
     private static final long DEFAULT_RETRY_INTERVAL_MS = 5000L;
     private static final long MINIMUM_RETRY_DELAY_MS = 2000;
+    private static final boolean USE_SEPARATE_REPLY_RECEIVER = false;
 
     @JoynrVersion(major = 1, minor = 1)
     private static interface TestInterface {
@@ -129,7 +131,8 @@ public class ProxyBuilderDefaultImplTest {
                                                              MAX_MESSAGE_TTL,
                                                              DEFAULT_DISCOVERY_TIMEOUT_MS,
                                                              DEFAULT_RETRY_INTERVAL_MS,
-                                                             MINIMUM_RETRY_DELAY_MS);
+                                                             MINIMUM_RETRY_DELAY_MS,
+                                                             USE_SEPARATE_REPLY_RECEIVER);
         Field arbitratorField = ProxyBuilderDefaultImpl.class.getDeclaredField("arbitrator");
         arbitratorField.setAccessible(true);
         arbitratorField.set(subject, arbitrator);
@@ -140,7 +143,8 @@ public class ProxyBuilderDefaultImplTest {
                                                       Mockito.<DiscoveryQos> any(),
                                                       Mockito.<MessagingQos> any(),
                                                       Mockito.<ShutdownNotifier> any(),
-                                                      Mockito.<Optional<StatelessAsyncCallback>> any())).thenReturn(proxyInvocationHandler);
+                                                      Mockito.<Optional<StatelessAsyncCallback>> any(),
+                                                      Mockito.<Boolean> anyBoolean())).thenReturn(proxyInvocationHandler);
         } else {
             when(proxyInvocationHandlerFactory.create(Mockito.<Set<String>> any(),
                                                       eq(TestInterface.INTERFACE_NAME),
@@ -148,7 +152,8 @@ public class ProxyBuilderDefaultImplTest {
                                                       Mockito.<DiscoveryQos> any(),
                                                       Mockito.<MessagingQos> any(),
                                                       Mockito.<ShutdownNotifier> any(),
-                                                      Mockito.<Optional<StatelessAsyncCallback>> any())).thenThrow(new JoynrRuntimeException("test: unable to addNextHop, as RoutingTable.put failed"));
+                                                      Mockito.<Optional<StatelessAsyncCallback>> any(),
+                                                      Mockito.<Boolean> anyBoolean())).thenThrow(new JoynrRuntimeException("test: unable to addNextHop, as RoutingTable.put failed"));
         }
     }
 
@@ -395,7 +400,8 @@ public class ProxyBuilderDefaultImplTest {
                                                      discoveryQosCaptor.capture(),
                                                      any(),
                                                      any(),
-                                                     any());
+                                                     any(),
+                                                     anyBoolean());
         verify(proxyInvocationHandler).registerProxy(any());
         verify(proxyInvocationHandler).createConnector(any());
 

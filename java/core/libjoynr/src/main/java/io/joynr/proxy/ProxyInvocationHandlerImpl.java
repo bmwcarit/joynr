@@ -46,6 +46,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
                                       @Assisted DiscoveryQos discoveryQos,
                                       @Assisted MessagingQos messagingQos,
                                       @Assisted Optional<StatelessAsyncCallback> statelessAsyncCallback,
+                                      @Assisted boolean separateReplyReceiver,
                                       ConnectorFactory connectorFactory,
                                       MessageRouter messageRouter,
                                       GarbageCollectionHandler gcHandler,
@@ -57,6 +58,7 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
               discoveryQos,
               messagingQos,
               statelessAsyncCallback,
+              separateReplyReceiver,
               shutdownNotifier,
               statelessAsyncIdCalculator);
         // CHECKSTYLE:ON
