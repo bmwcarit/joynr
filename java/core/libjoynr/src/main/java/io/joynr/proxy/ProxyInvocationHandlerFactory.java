@@ -28,12 +28,14 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.runtime.ShutdownNotifier;
 
 public interface ProxyInvocationHandlerFactory {
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public ProxyInvocationHandler create(@Assisted("domains") Set<String> domains,
                                          @Assisted("interfaceName") String interfaceName,
                                          @Assisted("proxyParticipantId") String proxyParticipantId,
                                          DiscoveryQos discoveryQos,
                                          MessagingQos messagingQos,
                                          ShutdownNotifier shutdownNotifier,
-                                         Optional<StatelessAsyncCallback> statelessAsyncCallback);
+                                         Optional<StatelessAsyncCallback> statelessAsyncCallback,
+                                         boolean separateReplyReceiver);
 
 }

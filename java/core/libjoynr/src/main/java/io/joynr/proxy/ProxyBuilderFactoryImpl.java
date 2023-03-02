@@ -29,6 +29,7 @@ import com.google.inject.name.Named;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.system.DiscoveryAsync;
+import io.joynr.messaging.MessagingPropertyKeys;
 
 public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
 
@@ -40,6 +41,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
     private final long defaultDiscoveryTimeoutMs;
     private final long defaultDiscoveryRetryIntervalMs;
     private final long minimumArbitrationRetryDelay;
+    private final boolean separateReplyReceiver;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
@@ -50,7 +52,9 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
                                    @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_TTL_MS) long maxMessagingTtl,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS) long defaultDiscoveryTimeoutMs,
                                    @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS) long defaultDiscoveryRetryIntervalMs,
-                                   @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS) long minimumArbitrationRetryDelay) {
+                                   @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_MINIMUM_RETRY_INTERVAL_MS) long minimumArbitrationRetryDelay,
+                                   @Named(MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateReplyReceiver) {
+
         // CHECKSTYLE:ON
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.proxyInvocationHandlerFactory = proxyInvocationHandlerFactory;
@@ -60,6 +64,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
         this.defaultDiscoveryRetryIntervalMs = defaultDiscoveryRetryIntervalMs;
         this.minimumArbitrationRetryDelay = minimumArbitrationRetryDelay;
+        this.separateReplyReceiver = separateReplyReceiver;
     }
 
     @Override
@@ -78,6 +83,7 @@ public class ProxyBuilderFactoryImpl implements ProxyBuilderFactory {
                                              maxMessagingTtl,
                                              defaultDiscoveryTimeoutMs,
                                              defaultDiscoveryRetryIntervalMs,
-                                             minimumArbitrationRetryDelay);
+                                             minimumArbitrationRetryDelay,
+                                             separateReplyReceiver);
     }
 }

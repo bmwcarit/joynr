@@ -21,6 +21,8 @@ package io.joynr.proxy;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,17 +39,22 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.mockito.stubbing.Answer;
 
 import io.joynr.Async;
@@ -61,8 +68,6 @@ import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.GarbageCollectionHandler;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.provider.DeferredVoid;
-import io.joynr.provider.Promise;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
@@ -71,7 +76,7 @@ import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(Parameterized.class)
 public class ProxyInvocationHandlerTest {
     private MessagingQos messagingQos = new MessagingQos();
     private DiscoveryQos discoveryQos = new DiscoveryQos();
@@ -79,6 +84,16 @@ public class ProxyInvocationHandlerTest {
     private String interfaceName = "interfaceName";
     private String domain = "domain";
     private Object proxy;
+
+    @Parameters
+    public static Object[] data() {
+        return new Object[]{ Boolean.FALSE, Boolean.TRUE };
+    }
+
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
+    @Parameter
+    public boolean separateReplyReceiver;
 
     @Mock
     private ConnectorFactory mockConnectorFactory;
@@ -115,7 +130,7 @@ public class ProxyInvocationHandlerTest {
 
     @Async
     private interface TestServiceAsync extends TestServiceFireAndForget {
-        Promise<DeferredVoid> testAsyncMethod(String inputData);
+        Future<Void> testAsyncMethod(String inputData);
     }
 
     @Before
@@ -135,6 +150,7 @@ public class ProxyInvocationHandlerTest {
                                                                 discoveryQos,
                                                                 messagingQos,
                                                                 Optional.of(mockStatelessAsyncCallback),
+                                                                separateReplyReceiver,
                                                                 mockConnectorFactory,
                                                                 mockMessageRouter,
                                                                 mockGcHandler,
@@ -145,7 +161,7 @@ public class ProxyInvocationHandlerTest {
     @Test(timeout = 3000)
     public void callProxyInvocationHandlerSyncFromMultipleThreadsTest() throws Throwable {
 
-        Future<?> call1 = threadPool.submit(new Callable<Object>() {
+        java.util.concurrent.Future<?> call1 = threadPool.submit(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 Object result = null;
@@ -161,7 +177,7 @@ public class ProxyInvocationHandlerTest {
             }
         });
 
-        Future<?> call2 = threadPool.submit(new Callable<Object>() {
+        java.util.concurrent.Future<?> call2 = threadPool.submit(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 Object result = null;
@@ -239,6 +255,9 @@ public class ProxyInvocationHandlerTest {
         void subscribeToMyMulticast(MyBroadcastSubscriptionListener broadcastSubscriptionListener,
                                     SubscriptionQos subscriptionQos,
                                     String... partitions);
+
+        void unsubscribeFromMyMulticast(String participantId);
+
     }
 
     @Test
@@ -273,20 +292,26 @@ public class ProxyInvocationHandlerTest {
     }
 
     @Test(expected = JoynrIllegalStateException.class)
-    public void testExecuteSyncFailsAfterPrepareForShutdown() throws Exception {
+    public void testExecuteSyncFailsAfterPrepareForShutdown_NoSeparateReplyReceiver() throws Exception {
+        assumeFalse(separateReplyReceiver);
         Method method = TestServiceSync.class.getMethod("testSyncMethod", String.class);
         testExecutionFailsAfterPrepareForShutdown(method);
     }
 
     @Test(expected = JoynrIllegalStateException.class)
-    public void testExecuteAsyncFailsAfterPrepareForShutdown() throws Exception {
+    public void testExecuteAsyncFailsAfterPrepareForShutdown_NoSeparateReplyReceiver() throws Exception {
+        assumeFalse(separateReplyReceiver);
         Method method = TestServiceAsync.class.getMethod("testAsyncMethod", String.class);
         testExecutionFailsAfterPrepareForShutdown(method);
     }
 
     @Test(expected = JoynrIllegalStateException.class)
-    public void testExecuteSubscriptionMethodFailsAfterPrepareForShutdown() throws Exception {
-        Method method = MyBroadcastSubscriptionListener.class.getMethod("onSubscribed", String.class);
+    public void testExecuteSubscriptionMethodFailsAfterPrepareForShutdown_NoSeparateReplyReceiver() throws Exception {
+        assumeFalse(separateReplyReceiver);
+        Method method = MyBroadcastInterface.class.getMethod("subscribeToMyMulticast",
+                                                             MyBroadcastSubscriptionListener.class,
+                                                             SubscriptionQos.class,
+                                                             String[].class);
         testExecutionFailsAfterPrepareForShutdown(method);
     }
 
@@ -297,7 +322,57 @@ public class ProxyInvocationHandlerTest {
     }
 
     @Test
+    public void testExecuteSyncAfterPrepareForShutdownAllowed_SeparateReplyReceiver() throws Exception {
+        assumeTrue(separateReplyReceiver);
+        Method method = TestServiceSync.class.getMethod("testSyncMethod", String.class);
+        ConnectorInvocationHandler connectorInvocationHandler = prepareObjectsAndInvoke(method,
+                                                                                        new Object[]{ "inputData" });
+        verify(connectorInvocationHandler).executeSyncMethod(eq(method), any());
+    }
+
+    @Test
+    public void testExecuteAsyncAfterPrepareForShutdownAllowed_SeparateReplyReceiver() throws Exception {
+        assumeTrue(separateReplyReceiver);
+        Method method = TestServiceAsync.class.getMethod("testAsyncMethod", String.class);
+        ConnectorInvocationHandler connectorInvocationHandler = prepareObjectsAndInvoke(method,
+                                                                                        new Object[]{ "inputData" });
+        verify(connectorInvocationHandler).executeAsyncMethod(eq(proxy), eq(method), any(), any());
+    }
+
+    @Test
+    public void testExecuteSubscriptionMethodAfterPrepareForShutdownAllowed_SeparateReplyReceiver() throws Exception {
+        assumeTrue(separateReplyReceiver);
+        Method method = MyBroadcastInterface.class.getMethod("subscribeToMyMulticast",
+                                                             MyBroadcastSubscriptionListener.class,
+                                                             SubscriptionQos.class,
+                                                             String[].class);
+        MyBroadcastSubscriptionListener broadcastSubscriptionListener = mock(MyBroadcastSubscriptionListener.class);
+        SubscriptionQos subscriptionQos = mock(SubscriptionQos.class);
+        Object[] args = new Object[]{ broadcastSubscriptionListener, subscriptionQos,
+                new String[]{ "one", "two", "three" } };
+
+        ConnectorInvocationHandler connectorInvocationHandler = prepareObjectsAndInvoke(method, args);
+        verify(connectorInvocationHandler).executeSubscriptionMethod(Mockito.<MulticastSubscribeInvocation> any());
+    }
+
+    @Test
+    public void testExecuteUnsubscribeMethodAfterPrepareForShutdownAllowed() throws Exception {
+        Method method = MyBroadcastInterface.class.getMethod("unsubscribeFromMyMulticast", String.class);
+        ConnectorInvocationHandler connectorInvocationHandler = prepareObjectsAndInvoke(method,
+                                                                                        new Object[]{ "inputData" });
+        verify(connectorInvocationHandler).executeSubscriptionMethod(Mockito.<UnsubscribeInvocation> any());
+    }
+
+    @Test
     public void testExecuteFireAndForgetAfterPrepareForShutdownAllowed() throws Exception {
+        Method method = TestServiceSync.class.getMethod("callMe", String.class);
+        ConnectorInvocationHandler connectorInvocationHandler = prepareObjectsAndInvoke(method,
+                                                                                        new Object[]{ "inputData" });
+        verify(connectorInvocationHandler).executeOneWayMethod(eq(method), any());
+    }
+
+    private ConnectorInvocationHandler prepareObjectsAndInvoke(Method method,
+                                                               Object[] args) throws ApplicationException {
         ConnectorInvocationHandler connectorInvocationHandler = mock(ConnectorInvocationHandler.class);
         when(mockConnectorFactory.create(anyString(),
                                          any(),
@@ -305,9 +380,8 @@ public class ProxyInvocationHandlerTest {
                                          any())).thenReturn(Optional.of(connectorInvocationHandler));
         shutdownListener.prepareForShutdown();
         proxyInvocationHandler.createConnector(mock(ArbitrationResult.class));
-        Method method = TestServiceSync.class.getMethod("callMe", String.class);
-        proxyInvocationHandler.invokeInternal(proxy, method, new Object[]{ "inputData" });
-        verify(connectorInvocationHandler).executeOneWayMethod(eq(method), any());
+        proxyInvocationHandler.invokeInternal(proxy, method, args);
+        return connectorInvocationHandler;
     }
 
     @Test

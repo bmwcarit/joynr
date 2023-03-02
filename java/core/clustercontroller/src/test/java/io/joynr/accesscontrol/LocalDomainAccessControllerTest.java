@@ -64,6 +64,7 @@ public class LocalDomainAccessControllerTest {
     private static final long DEFAULT_DISCOVERY_TIMEOUT_MS = 30000L;
     private static final long DEFAULT_RETRY_INTERVAL_MS = 2000L;
     private static final long ARBITRATION_MINIMUMRETRYDELAY = 2000L;
+    private static final boolean USE_SEPARATE_REPLY_RECEIVER = false;
 
     private DomainAccessControlStore domainAccessControlStore;
     private LocalDomainAccessController localDomainAccessController;
@@ -97,7 +98,8 @@ public class LocalDomainAccessControllerTest {
                                                                 any(DiscoveryQos.class),
                                                                 any(MessagingQos.class),
                                                                 any(ShutdownNotifier.class),
-                                                                any()))
+                                                                any(),
+                                                                any(Boolean.class)))
                  .thenReturn(proxyInvocationHandlerMock);
         GlobalDiscoveryEntry accessControlDomain = mock(GlobalDiscoveryEntry.class);
         when(accessControlDomain.getDomain()).thenReturn("accessControlDomain");
@@ -110,7 +112,8 @@ public class LocalDomainAccessControllerTest {
                                                                                                       MAX_TTL,
                                                                                                       DEFAULT_DISCOVERY_TIMEOUT_MS,
                                                                                                       DEFAULT_RETRY_INTERVAL_MS,
-                                                                                                      ARBITRATION_MINIMUMRETRYDELAY),
+                                                                                                      ARBITRATION_MINIMUMRETRYDELAY,
+                                                                                                      USE_SEPARATE_REPLY_RECEIVER),
                                                                           "systemServiceDomain");
 
         // instantiate some template objects

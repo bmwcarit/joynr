@@ -36,6 +36,7 @@ public final class MessagingPropertyKeys {
     public static final String MQTT_TOPIC_PREFIX_UNICAST = "joynr.messaging.mqtt.topicprefix.unicast";
     public static final String MQTT_TOPIC_PREFIX_MULTICAST = "joynr.messaging.mqtt.topicprefix.multicast";
     public static final String GBID_ARRAY = "joynr.internal.messaging.gbidArray";
+    public static final String PROPERTY_KEY_SEPARATE_REPLY_RECEIVER = "joynr.messaging.separatereplyreceiver";
 
     public static final String PROPERTY_BACKEND_UID = "joynr.backend.uid";
 

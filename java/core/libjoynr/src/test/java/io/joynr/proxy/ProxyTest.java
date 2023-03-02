@@ -294,7 +294,8 @@ public class ProxyTest {
                                                           MAX_TTL_MS,
                                                           DEFAULT_DISCOVERY_TIMEOUT_MS,
                                                           DEFAULT_RETRY_INTERVAL_MS,
-                                                          ARBITRATION_MINIMUMRETRYDELAY);
+                                                          ARBITRATION_MINIMUMRETRYDELAY,
+                                                          false);
 
         Mockito.doAnswer(new Answer<Object>() {
             @Override
