@@ -310,10 +310,10 @@ public class CcMessageRouterTest {
         final long delayMs = passedDelaybleMessage.getAllValues().get(0).getDelay(TimeUnit.MILLISECONDS);
         assertTrue("Delay was: " + delayMs, delayMs <= 0);
 
-        verify(mqttMessagingStubFactoryMock, timeout(2000)).create(mqttAddress);
-        verify(messagingStubMock, timeout(100)).transmit(eq(immutableMessage),
-                                                         any(SuccessAction.class),
-                                                         any(FailureAction.class));
+        verify(messagingStubMock, timeout(2000)).transmit(eq(immutableMessage),
+                                                          any(SuccessAction.class),
+                                                          any(FailureAction.class));
+        verify(mqttMessagingStubFactoryMock).create(mqttAddress);
     }
 
     @Test
