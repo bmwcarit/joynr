@@ -200,7 +200,7 @@ public class CcMessageRouterTest {
 
             @Override
             protected void configure() {
-                requestStaticInjection(RoutingTypesUtil.class);
+                requestStaticInjection(RoutingTypesUtil.class, MessageRouterUtil.class);
                 bind(CcMessageRouter.class).in(Singleton.class);
                 bind(MessageRouter.class).to(CcMessageRouter.class);
                 bind(MulticastReceiverRegistrar.class).to(CcMessageRouter.class);
