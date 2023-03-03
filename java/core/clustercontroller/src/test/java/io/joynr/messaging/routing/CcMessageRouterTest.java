@@ -247,9 +247,6 @@ public class CcMessageRouterTest {
         testModule = Modules.override(new JsonMessageSerializerModule()).with(mockModule,
                                                                               new TestGlobalAddressModule());
 
-        injector = Guice.createInjector(testModule);
-        ccMessageRouter = (CcMessageRouter) injector.getInstance(MessageRouter.class);
-
         ObjectMapper objectMapper = new ObjectMapper();
         messageFactory = new MutableMessageFactory(objectMapper, new HashSet<JoynrMessageProcessor>());
 
@@ -262,6 +259,11 @@ public class CcMessageRouterTest {
 
         joynrMessage = messageFactory.createRequest(fromParticipantId, toParticipantId, request, new MessagingQos());
         joynrMessage.setLocalMessage(true);
+    }
+
+    private void createDefaultMessageRouter() {
+        injector = Guice.createInjector(testModule);
+        ccMessageRouter = (CcMessageRouter) injector.getInstance(MessageRouter.class);
     }
 
     @After
@@ -283,6 +285,7 @@ public class CcMessageRouterTest {
     @Test
     public void cleanupJobRemovesPurgesExpiredRoutingEntries() throws IllegalAccessException, IllegalArgumentException,
                                                                InvocationTargetException {
+        createDefaultMessageRouter();
         // Capture Runnable when cleanup job is invoked
         ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(scheduler, times(1)).scheduleWithFixedDelay(runnableCaptor.capture(),
@@ -315,6 +318,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testScheduleExpiredMessage() throws Exception {
+        createDefaultMessageRouter();
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(1).getValue());
         joynrMessage.setTtlAbsolute(true);
 
@@ -334,11 +338,13 @@ public class CcMessageRouterTest {
     // would just clutter the class without any benefits.
     @Test
     public void routeIn_scheduleMessageOk() throws Exception {
+        createDefaultMessageRouter();
         testScheduleMessageOk(m -> ccMessageRouter.routeIn(m));
     }
 
     @Test
     public void routeOut_scheduleMessageOk() throws Exception {
+        createDefaultMessageRouter();
         testScheduleMessageOk(m -> ccMessageRouter.routeOut(m));
     }
 
@@ -363,6 +369,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testNoMessageDuplicationForMulticastReceiversWithSameAddress() throws Exception {
+        createDefaultMessageRouter();
         MqttAddress receiverAddress1 = new MqttAddress("what", "ever1");
         prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress1);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
@@ -379,6 +386,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testNoMessageDuplicationForMulticastForMultipleAddressesWithErrorFromStubForAllAddresses() throws Exception {
+        createDefaultMessageRouter();
         MqttAddress receiverAddress1 = new MqttAddress("what", "ever1");
         MqttAddress receiverAddress2 = new MqttAddress("what", "ever2");
         prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress2);
@@ -413,6 +421,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testMulticastIsOnlyResentForFailingAddress() throws Exception {
+        createDefaultMessageRouter();
         MqttAddress receiverAddress1 = new MqttAddress("http://testUrl", "channelId1");
         MqttAddress receiverAddress2 = new MqttAddress("http://testUrl", "channelId2");
         prepareMulticastForMultipleAddresses(receiverAddress1, receiverAddress2);
@@ -466,7 +475,7 @@ public class CcMessageRouterTest {
         verify(mqttMessagingStubFactoryMock, times(3)).create(receiverAddress2);
     }
 
-    private ImmutableMessage retryRoutingWith1msDelay(CcMessageRouter ccMessageRouter, int ttlMs) throws Exception {
+    private ImmutableMessage retryRoutingWith1msDelay(int ttlMs) throws Exception {
         doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock).transmit(any(ImmutableMessage.class),
                                                                                             any(SuccessAction.class),
                                                                                             any(FailureAction.class));
@@ -481,7 +490,7 @@ public class CcMessageRouterTest {
         return immutableMessage;
     }
 
-    private CcMessageRouter getCcMessageRouterWithMaxRetryCount(final long routingMaxRetryCount) {
+    private void createCcMessageRouterWithMaxRetryCount(final long routingMaxRetryCount) {
         Module testMaxRetryCountModule = Modules.override(testModule).with(new AbstractModule() {
             @Override
             protected void configure() {
@@ -489,16 +498,16 @@ public class CcMessageRouterTest {
                                 .toInstance(routingMaxRetryCount);
             }
         });
-        Injector injector2 = Guice.createInjector(testMaxRetryCountModule);
-        return (CcMessageRouter) injector2.getInstance(MessageRouter.class);
+        injector = Guice.createInjector(testMaxRetryCountModule);
+        ccMessageRouter = (CcMessageRouter) injector.getInstance(MessageRouter.class);
     }
 
     @Test
     public void testRetryWithMaxRetryCount() throws Exception {
         final long routingMaxRetryCount = 3;
-        CcMessageRouter ccMessageRouterWithMaxRetryCount = getCcMessageRouterWithMaxRetryCount(routingMaxRetryCount);
+        createCcMessageRouterWithMaxRetryCount(routingMaxRetryCount);
 
-        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(ccMessageRouterWithMaxRetryCount, 100000000);
+        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(100000000);
 
         verify(messagingStubMock, times((int) routingMaxRetryCount + 1)).transmit(eq(immutableMessage),
                                                                                   any(SuccessAction.class),
@@ -507,7 +516,8 @@ public class CcMessageRouterTest {
 
     @Test
     public void testRetryWithoutMaxRetryCount() throws Exception {
-        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(ccMessageRouter, 10000);
+        createDefaultMessageRouter();
+        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(10000);
 
         verify(messagingStubMock, atLeast(20)).transmit(eq(immutableMessage),
                                                         any(SuccessAction.class),
@@ -531,8 +541,8 @@ public class CcMessageRouterTest {
 
             }
         });
-        Injector injector3 = Guice.createInjector(testMaxRetryCountModule);
-        CcMessageRouter ccMessageRouterWithMaxExponentialBackoff = (CcMessageRouter) injector3.getInstance(MessageRouter.class);
+        injector = Guice.createInjector(testMaxRetryCountModule);
+        ccMessageRouter = (CcMessageRouter) injector.getInstance(MessageRouter.class);
 
         doAnswer(new Answer<Object>() {
             private long previousInvocationTimeMs = -1;
@@ -559,7 +569,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        ccMessageRouterWithMaxExponentialBackoff.routeOut(immutableMessage);
+        ccMessageRouter.routeOut(immutableMessage);
         Thread.sleep(routingDuration);
 
         // test that the mock is called multiple times which means that
@@ -587,8 +597,8 @@ public class CcMessageRouterTest {
                                 .toInstance(sendMsgRetryIntervalMs);
             }
         });
-        Injector injector4 = Guice.createInjector(testMaxRetryCountModule);
-        CcMessageRouter ccMessageRouterWithHighRetryInterval = (CcMessageRouter) injector4.getInstance(MessageRouter.class);
+        injector = Guice.createInjector(testMaxRetryCountModule);
+        ccMessageRouter = (CcMessageRouter) injector.getInstance(MessageRouter.class);
 
         doAnswer(new Answer<Object>() {
             @Override
@@ -603,7 +613,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        ccMessageRouterWithHighRetryInterval.routeOut(immutableMessage);
+        ccMessageRouter.routeOut(immutableMessage);
         Thread.sleep(routingDuration);
 
         // make sure that the stub is called at least few times
@@ -619,6 +629,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testMessageProcessedListenerCalledOnSuccessForRequest() throws Exception {
+        createDefaultMessageRouter();
         final Semaphore semaphore = new Semaphore(0);
 
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
@@ -648,6 +659,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testMessageProcessedListenerCalledOnSuccessForReply_inProcessRecipient() throws Exception {
+        createDefaultMessageRouter();
         final Semaphore semaphore = new Semaphore(0);
 
         String toInProcess = "toInProcess";
@@ -684,6 +696,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testMessageProcessedListenerCalledOnSuccessForReply_mqttRecipient() throws Exception {
+        createDefaultMessageRouter();
         final Semaphore semaphore = new Semaphore(0);
 
         final Reply reply = new Reply("requestReplyId");
@@ -715,6 +728,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testReferenceCountDecreasedOnSubscriptionReplyOfInProcessProvider() throws Exception {
+        createDefaultMessageRouter();
         final Semaphore semaphore = new Semaphore(0);
 
         InProcessAddress providerAddress = new InProcessAddress();
@@ -753,6 +767,7 @@ public class CcMessageRouterTest {
     }
 
     private void testReferenceCountNotDecreasedOnSubscriptionReplyOfNotInProcessProvider(Address address) throws Exception {
+        createDefaultMessageRouter();
         final Semaphore semaphore = new Semaphore(0);
 
         routingTable.put(fromParticipantId, address, true, Long.MAX_VALUE, true);
@@ -809,8 +824,7 @@ public class CcMessageRouterTest {
         testReferenceCountNotDecreasedOnSubscriptionReplyOfNotInProcessProvider(new WebSocketClientAddress());
     }
 
-    private void testMessageProcessedListenerCalledOnError(CcMessageRouter ccMessageRouter,
-                                                           int messageProcessedInvocations) throws Exception {
+    private void testMessageProcessedListenerCalledOnError(int messageProcessedInvocations) throws Exception {
         CountDownLatch countDownLatch = new CountDownLatch(messageProcessedInvocations);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
@@ -843,32 +857,36 @@ public class CcMessageRouterTest {
 
     @Test
     public void testMessageProcessedListenerCalledForExpiredRequestMessage() throws Exception {
+        createDefaultMessageRouter();
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
         joynrMessage.setTtlAbsolute(true);
 
-        testMessageProcessedListenerCalledOnError(ccMessageRouter, 1);
+        testMessageProcessedListenerCalledOnError(1);
     }
 
     @Test
     public void testMessageProcessedListenerCalledForExpiredReplyMessage() throws Exception {
+        createDefaultMessageRouter();
         final Reply reply = new Reply("requestReplyId", new JoynrRuntimeException("TestException"));
         joynrMessage = messageFactory.createReply(fromParticipantId, toParticipantId, reply, new MessagingQos());
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(0).getValue());
         joynrMessage.setTtlAbsolute(true);
 
-        testMessageProcessedListenerCalledOnError(ccMessageRouter, 1);
+        testMessageProcessedListenerCalledOnError(1);
     }
 
     @Test
     public void testMessageProcessedListenerCalledForMessageWithRelativeTtl() throws Exception {
+        createDefaultMessageRouter();
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(false);
 
-        testMessageProcessedListenerCalledOnError(ccMessageRouter, 1);
+        testMessageProcessedListenerCalledOnError(1);
     }
 
     @Test
     public void testMessageProcessedListenerCalledForAbortedMessage() throws Exception {
+        createDefaultMessageRouter();
         doThrow(new JoynrMessageNotSentException("test")).when(messagingStubMock).transmit(any(ImmutableMessage.class),
                                                                                            any(SuccessAction.class),
                                                                                            any(FailureAction.class));
@@ -878,13 +896,13 @@ public class CcMessageRouterTest {
 
         // If an aborted message is not expired, a reply will be sent to the sender.
         // The decrease of the reference count happens after that
-        testMessageProcessedListenerCalledOnError(ccMessageRouter, 2);
+        testMessageProcessedListenerCalledOnError(2);
     }
 
     @Test
     public void testMessageProcessedListenerCalledAfterMaxRetry() throws Exception {
         final long routingMaxRetryCount = 0;
-        CcMessageRouter ccMessageRouterWithMaxRetryCount = getCcMessageRouterWithMaxRetryCount(routingMaxRetryCount);
+        createCcMessageRouterWithMaxRetryCount(routingMaxRetryCount);
 
         doThrow(new JoynrDelayMessageException(1, "test")).when(messagingStubMock).transmit(any(ImmutableMessage.class),
                                                                                             any(SuccessAction.class),
@@ -893,11 +911,12 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000000).getValue());
         joynrMessage.setTtlAbsolute(true);
 
-        testMessageProcessedListenerCalledOnError(ccMessageRouterWithMaxRetryCount, 1);
+        testMessageProcessedListenerCalledOnError(1);
     }
 
     @Test
     public void testMessageProcessedListenerOnlyCalledOnceForMulticast() throws Exception {
+        createDefaultMessageRouter();
         final Semaphore semaphore = new Semaphore(-1);
 
         MqttAddress receiverAddress1 = new MqttAddress("what", "ever1");
@@ -929,6 +948,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testWebSocketClientParticipantIdsRetrievedOnlyOnce() throws Exception {
+        createDefaultMessageRouter();
         joynrMessage.setTtlMs(ExpiryDate.fromRelativeTtl(100000).getValue());
         joynrMessage.setTtlAbsolute(true);
         final ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
@@ -963,6 +983,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testRepeatedAddressResolutionForMulticast() throws Exception {
+        createDefaultMessageRouter();
         final String multicastId = "multicast/id/test";
         joynrMessage = messageFactory.createMulticast(fromParticipantId,
                                                       new MulticastPublication(new ArrayList<>(), multicastId),
@@ -1034,6 +1055,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testOnlyOneParticipantIdResolution() throws Exception {
+        createDefaultMessageRouter();
         testOnlyOneParticipantIdResolution(mqttAddress);
 
         when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
@@ -1078,6 +1100,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testNotRoutableReplyDropped() throws Exception {
+        createDefaultMessageRouter();
         final String unknownParticipantId = "unknown_participant_id";
         final String requestReplyId = "some_request_reply_id";
 
@@ -1093,6 +1116,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testNotRoutableMulticastDropped() throws Exception {
+        createDefaultMessageRouter();
         final MulticastPublication multicastPublication = new MulticastPublication(new JoynrRuntimeException("Test Exception"),
                                                                                    "multicastId");
         final MutableMessage mutableMessage = messageFactory.createMulticast(fromParticipantId,
@@ -1104,6 +1128,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testMulticastMessageIsDroppedIfNoRecipientIsFound() throws Exception {
+        createDefaultMessageRouter();
         final MulticastPublication multicastPublication = new MulticastPublication(new JoynrRuntimeException("Test Exception"),
                                                                                    "multicastId");
         final MutableMessage mutableMessage = messageFactory.createMulticast(fromParticipantId,
@@ -1133,6 +1158,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testPublicationMessageIsDroppedIfNoAddressIsFound() throws Exception {
+        createDefaultMessageRouter();
         final String unknownParticipantId = "unknown_participant_id";
         final SubscriptionPublication subscriptionPublication = new SubscriptionPublication(new JoynrRuntimeException("Test Exception"),
                                                                                             "subscriptionId");
@@ -1146,6 +1172,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void testSubscriptionReplyMessageIsDroppedIfNoAddressIsFound() throws Exception {
+        createDefaultMessageRouter();
         final String unknownParticipantId = "unknown_participant_id";
         final SubscriptionReply subscriptionReply = new SubscriptionReply("subscriptionId");
         final MutableMessage mutableMessage = messageFactory.createSubscriptionReply(fromParticipantId,
@@ -1158,11 +1185,13 @@ public class CcMessageRouterTest {
 
     @Test
     public void testShutdown() throws InterruptedException {
+        createDefaultMessageRouter();
         verify(shutdownNotifier).registerForShutdown(ccMessageRouter);
     }
 
     @Test(timeout = 3000)
     public void testFailedTransmitDoesNotLeadToThreadStarvation() throws Exception {
+        createDefaultMessageRouter();
         final int MESSAGE_LOAD = 10;
 
         final String recipient = "to";
@@ -1223,6 +1252,7 @@ public class CcMessageRouterTest {
     @SuppressWarnings("unchecked")
     @Test
     public void messageWorkerUsesSameFailureActionForStubAndThrownException() throws Exception {
+        createDefaultMessageRouter();
         // route multicast message to two recipients
         // call failureAction in first stub call
         // throw exception in second stub call
@@ -1283,7 +1313,7 @@ public class CcMessageRouterTest {
         verify(mqttMessagingStubFactoryMock, times(2)).create(receiverAddress2);
     }
 
-    private CcMessageRouter getCcMessageRouterWithEnabledAccessControl() {
+    private void createCcMessageRouterWithEnabledAccessControl() {
         // Reconfigure testModule to enable access control
         // return messageRouter with an enabled access control
         Module testTryCatchModule = Modules.override(testModule).with(new AbstractModule() {
@@ -1293,18 +1323,18 @@ public class CcMessageRouterTest {
                               .to(true);
             }
         });
-        Injector injector5 = Guice.createInjector(testTryCatchModule);
-        return (CcMessageRouter) injector5.getInstance(MessageRouter.class);
+        injector = Guice.createInjector(testTryCatchModule);
+        ccMessageRouter = (CcMessageRouter) injector.getInstance(MessageRouter.class);
     }
 
     @Test
     public void testExpiredMessageScheduledWhenHasConsumerPermissionTrue() throws Exception {
         // pre-conditions: access control is enabled and permission is granted
         // Expected behaviour: The message is enqueued in the MessageQueue
-        CcMessageRouter ccMessageRouterWithAccessControl = getCcMessageRouterWithEnabledAccessControl();
+        createCcMessageRouterWithEnabledAccessControl();
 
         final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
-        ccMessageRouterWithAccessControl.registerMessageProcessedListener(mockMessageProcessedListener);
+        ccMessageRouter.registerMessageProcessedListener(mockMessageProcessedListener);
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -1320,7 +1350,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(true);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        ccMessageRouterWithAccessControl.routeIn(immutableMessage);
+        ccMessageRouter.routeIn(immutableMessage);
 
         verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
                                                                      any(HasConsumerPermissionCallback.class));
@@ -1333,10 +1363,10 @@ public class CcMessageRouterTest {
     public void testMessageScheduledWhenHasConsumerPermissionTrueWithRelativeTtl() throws Exception {
         // pre-conditions: access control is enabled and permission is granted
         // Expected behaviour: The message is enqueued in the MessageQueue
-        CcMessageRouter ccMessageRouterWithAccessControl = getCcMessageRouterWithEnabledAccessControl();
+        createCcMessageRouterWithEnabledAccessControl();
 
         final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
-        ccMessageRouterWithAccessControl.registerMessageProcessedListener(mockMessageProcessedListener);
+        ccMessageRouter.registerMessageProcessedListener(mockMessageProcessedListener);
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -1351,7 +1381,7 @@ public class CcMessageRouterTest {
         joynrMessage.setTtlAbsolute(false);
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        ccMessageRouterWithAccessControl.routeOut(immutableMessage);
+        ccMessageRouter.routeOut(immutableMessage);
 
         verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
                                                                      any(HasConsumerPermissionCallback.class));
@@ -1366,10 +1396,10 @@ public class CcMessageRouterTest {
         // pre-conditions: access control is enabled and permission is denied
         // Expected behaviour: The method messageProcessed is called only once when hasPermission = false
         // and the message will be dropped.
-        CcMessageRouter ccMessageRouterWithAccessControl = getCcMessageRouterWithEnabledAccessControl();
+        createCcMessageRouterWithEnabledAccessControl();
 
         final MessageProcessedListener mockMessageProcessedListener = mock(MessageProcessedListener.class);
-        ccMessageRouterWithAccessControl.registerMessageProcessedListener(mockMessageProcessedListener);
+        ccMessageRouter.registerMessageProcessedListener(mockMessageProcessedListener);
 
         doAnswer(new Answer<Void>() {
             @Override
@@ -1383,7 +1413,7 @@ public class CcMessageRouterTest {
 
         ImmutableMessage immutableMessage = joynrMessage.getImmutableMessage();
 
-        ccMessageRouterWithAccessControl.routeOut(immutableMessage);
+        ccMessageRouter.routeOut(immutableMessage);
 
         verify(accessControllerMock, times(1)).hasConsumerPermission(eq(immutableMessage),
                                                                      any(HasConsumerPermissionCallback.class));
@@ -1393,6 +1423,7 @@ public class CcMessageRouterTest {
 
     @Test(expected = JoynrRuntimeException.class)
     public void addNextHopThrows() {
+        createDefaultMessageRouter();
         final boolean isGloballyVisible = true;
         doReturn(false).when(routingTable).put(anyString(), any(Address.class), anyBoolean(), anyLong(), anyBoolean());
         ccMessageRouter.addNextHop(fromParticipantId, mqttAddress, isGloballyVisible);
@@ -1400,6 +1431,7 @@ public class CcMessageRouterTest {
 
     @Test(expected = JoynrIllegalStateException.class)
     public void removeMulticastReceiver_throwsWhenAddressIsUnknown() {
+        createDefaultMessageRouter();
         final String multicastId = "multicastIdTest";
         final String subscriberParticipantId = "subscriberParticipantIdTest";
         final String providerParticipantId = "providerParticipantIdTest";
@@ -1409,6 +1441,7 @@ public class CcMessageRouterTest {
 
     @Test(expected = JoynrIllegalStateException.class)
     public void addMulticastReceiver_throwsWhenAddressIsUnknown() {
+        createDefaultMessageRouter();
         final String multicastId = "multicastIdTest";
         final String subscriberParticipantId = "subscriberParticipantIdTest";
         final String providerParticipantId = "providerParticipantIdTest";
@@ -1419,6 +1452,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void removeMulticastReceiver() {
+        createDefaultMessageRouter();
         WebSocketClientAddress mockWebSocketAddress = mock(WebSocketClientAddress.class);
         final String multicastId = "multicastIdTest";
         final String subscriberParticipantId = "subscriberParticipantIdTest";
@@ -1432,6 +1466,7 @@ public class CcMessageRouterTest {
 
     @Test
     public void addMulticastReceiver() {
+        createDefaultMessageRouter();
         WebSocketClientAddress mockWebSocketAddress = mock(WebSocketClientAddress.class);
         final String multicastId = "multicastIdTest";
         final String subscriberParticipantId = "subscriberParticipantIdTest";
