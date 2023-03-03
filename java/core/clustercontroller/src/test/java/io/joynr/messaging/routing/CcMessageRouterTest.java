@@ -181,8 +181,6 @@ public class CcMessageRouterTest {
     private Injector injector;
     private MutableMessageFactory messageFactory;
 
-    private long globalMaxRetryCount = 10;
-
     @Before
     public void setUp() throws Exception {
         scheduler = Mockito.spy(provideMessageSchedulerThreadPoolExecutor(numberOfThreads));
@@ -218,8 +216,6 @@ public class CcMessageRouterTest {
                                 .toInstance(routingTableGracePeriodMs);
                 bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
                                 .toInstance(routingTableCleanupIntervalMs);
-                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT))
-                                .toInstance(globalMaxRetryCount);
 
                 bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
                               .to(false);
@@ -511,9 +507,9 @@ public class CcMessageRouterTest {
 
     @Test
     public void testRetryWithoutMaxRetryCount() throws Exception {
-        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(ccMessageRouter, 200);
+        ImmutableMessage immutableMessage = retryRoutingWith1msDelay(ccMessageRouter, 10000);
 
-        verify(messagingStubMock, atLeast(10)).transmit(eq(immutableMessage),
+        verify(messagingStubMock, atLeast(20)).transmit(eq(immutableMessage),
                                                         any(SuccessAction.class),
                                                         any(FailureAction.class));
     }
