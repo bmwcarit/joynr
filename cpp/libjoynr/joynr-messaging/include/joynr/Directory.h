@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,13 @@
 #include <boost/asio/error.hpp>
 
 #include "joynr/BoostIoserviceForwardDecl.h"
+#include "joynr/BootClock.h"
 #include "joynr/IReplyCaller.h"
 #include "joynr/ITimeoutListener.h"
 #include "joynr/Logger.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/SteadyTimer.h"
+#include "joynr/TimePoint.h"
 #include "joynr/serializer/Serializer.h"
 
 namespace joynr
@@ -65,6 +67,7 @@ public:
               SaveFilterFunction fun)
             : _mutex(),
               callbackMap(),
+              _expiryDateMap(),
               _timeoutTimerMap(),
               _ioService(ioService),
               _saveFilterFunction(std::move(fun)),
@@ -76,6 +79,7 @@ public:
     Directory(const std::string& directoryName, boost::asio::io_service& ioService)
             : _mutex(),
               callbackMap(),
+              _expiryDateMap(),
               _timeoutTimerMap(),
               _ioService(ioService),
               _saveFilterFunction(),
@@ -116,6 +120,7 @@ public:
         if (found != callbackMap.cend()) {
             value = found->second;
             callbackMap.erase(keyId);
+            _expiryDateMap.erase(keyId);
             _timeoutTimerMap.erase(keyId);
         }
         return value;
@@ -142,10 +147,23 @@ public:
     /*
      * Adds an element and removes it automatically after ttl_ms milliseconds have past.
      */
-    void add(const Key& keyId, std::shared_ptr<T> value, std::int64_t ttl_ms)
+    void add(const Key& keyId,
+             std::shared_ptr<T> value,
+             std::int64_t ttl_ms,
+             std::int64_t timer_ttl_ms = -1)
     {
         // Insert the value
         {
+            TimePoint now = BootClock::now();
+            TimePoint expiryDate = now + ttl_ms;
+
+            // For testing, allow to set different timer_ttl_ms to test that the purge
+            // functionality works and removes entry after expiryDate has been passed.
+            // If value is not present (i.e. set to -1) continue with regular ttl_ms.
+            if (timer_ttl_ms == -1) {
+                timer_ttl_ms = ttl_ms;
+            }
+
             std::lock_guard<std::mutex> lock(_mutex);
 
             if (_isShutdown) {
@@ -168,7 +186,7 @@ public:
             assert(insertionResult.second); // Success indication
             auto timerIt = insertionResult.first;
 
-            timerIt->second.expiresFromNow(std::chrono::milliseconds(ttl_ms));
+            timerIt->second.expiresFromNow(std::chrono::milliseconds(timer_ttl_ms));
             timerIt->second.asyncWait([keyId, this](const boost::system::error_code& errorCode) {
                 if (!errorCode) {
                     this->removeAfterTimeout<T>(keyId);
@@ -180,6 +198,7 @@ public:
             });
 
             callbackMap[keyId] = std::move(value);
+            _expiryDateMap[keyId] = expiryDate;
         }
     }
 
@@ -190,7 +209,38 @@ public:
     {
         std::lock_guard<std::mutex> lock(_mutex);
         callbackMap.erase(keyId);
+        _expiryDateMap.erase(keyId);
         _timeoutTimerMap.erase(keyId);
+    }
+
+    /*
+     * Purge entries based on the expiryDate stored on creation.
+     *
+     * This covers the case where the system got suspended for some
+     * time. During the suspend period the steady clock based timer
+     * is halted so that the entry would be deleted much later
+     * than originally expected. As a safety measure this method
+     * can be occasionally invoked (e.g. on resume event, or on
+     * periodic schedule) to check whether the originally intended
+     * absolute expiryDate has meanwhile been passed. If yes, the
+     * entry is removed and the timeout notification is done.
+     */
+    void purgeExpired()
+    {
+        std::unique_lock<std::mutex> lock(_mutex);
+        TimePoint now = BootClock::now();
+        std::vector<Key> expiredKeys;
+
+        for (auto const& it : _expiryDateMap) {
+            if (now > it.second) {
+                expiredKeys.push_back(it.first);
+            }
+        }
+        lock.unlock();
+
+        for (auto keyId : expiredKeys) {
+            removeAfterTimeout<T>(keyId);
+        }
     }
 
     void shutdown()
@@ -198,6 +248,7 @@ public:
         std::lock_guard<std::mutex> lock(_mutex);
         _isShutdown = true;
         _timeoutTimerMap.clear();
+        _expiryDateMap.clear();
     }
 
     template <typename Archive>
@@ -254,6 +305,7 @@ private:
 protected:
     std::mutex _mutex;
     std::unordered_map<Key, std::shared_ptr<T>> callbackMap;
+    std::unordered_map<Key, TimePoint> _expiryDateMap;
     std::unordered_map<Key, SteadyTimer> _timeoutTimerMap;
     ADD_LOGGER(Directory)
 
