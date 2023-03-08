@@ -637,6 +637,32 @@ previous Joynr versions up to Joynr 1.16.x did not include it.
 * **User property**: `joynr.messaging.mqtt.disablehostnameverification`
 * **Default value**: `false`
 
+### `PROPERTY_KEY_MQTT_CONNECT_ON_START`
+Configures whether the MQTT connections to the broker should be started when the runtime is 
+started.
+If this is true, it will do the whole process of configuring the clients and try to connect.
+If this is false, it will only configure the clients, but not try to connect.
+
+An example where this could be necessary is if the application is listening to external 
+signals on what the connection status of the MQTT Clients should be.
+When receiving these signals, the application should obtain the 
+MqttClientSignalService object using Guice and call the start or stop methods depending
+on whether it should connect or disconnect from the broker.
+
+MqttClientSignalService will be expecting these external signals that will tell it to start 
+or stop the clients.
+
+The default value is true because that is the most common use case where the runtime will
+want to connect to the broker right away on startup.
+
+Note: If you're using JEE, this is not available and you should not change the default value 
+of true.
+
+* **REQUIRED**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.mqtt.connectonstart`
+* **Default value**: `true`
+
 ## SystemServicesSettings
 
 ### `PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID`

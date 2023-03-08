@@ -20,8 +20,8 @@ package io.joynr.messaging.mqtt;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.startsWith;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.util.HashSet;
@@ -70,10 +70,16 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.init();
+
         verify(mqttReplyClient, never()).setMessageListener(any());
+        verify(mqttReplyClient, never()).start();
+        verify(mqttReplyClient, never()).subscribe(any(String.class));
+        verify(mqttClientFactory, never()).connect(mqttReplyClient);
+
         verify(mqttClient).setMessageListener(any());
         verify(mqttClient).subscribe(replyToTopic + "/#");
         verify(mqttClient).subscribe("$share/channelId/" + ownTopic + "/#");
+
     }
 
     @Test
@@ -82,10 +88,15 @@ public class SharedSubscriptionsMqttMessagingSkeletonTest extends AbstractShared
         createSkeleton("channelId");
         verify(mqttClient, times(0)).subscribe(any(String.class));
         subject.init();
+
         verify(mqttReplyClient).setMessageListener(any());
-        verify(mqttClient).setMessageListener(any());
+        verify(mqttReplyClient).start();
+        verify(mqttClientFactory).connect(mqttReplyClient);
         verify(mqttReplyClient).subscribe(replyToTopic + "/#");
+
+        verify(mqttClient).setMessageListener(any());
         verify(mqttClient).subscribe("$share/channelId/" + ownTopic + "/#");
+
     }
 
     @Test

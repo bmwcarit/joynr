@@ -79,6 +79,7 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_KEY_MQTT_PASSWORD = "joynr.messaging.mqtt.password";
     public static final String PROPERTY_KEY_MQTT_DISABLE_HOSTNAME_VERIFICATION = "joynr.messaging.mqtt.disablehostnameverification";
     public static final String PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM = "joynr.messaging.mqtt.receivemaximum";
+    public static final String PROPERTY_KEY_MQTT_CONNECT_ON_START = "joynr.messaging.mqtt.connectonstart";
 
     /**
      * Use this key to activate shared subscription support by setting the property's value to <code>true</code>. Shared

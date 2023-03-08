@@ -91,6 +91,7 @@ public class SharedSubscriptionsMqttMessagingSkeleton extends MqttMessagingSkele
         if (separateReplyMqttClient) {
             replyClient.setMessageListener(this);
             replyClient.start();
+            mqttClientFactory.connect(replyClient);
         }
         super.init();
     }
