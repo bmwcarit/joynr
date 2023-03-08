@@ -27,9 +27,8 @@ cluster
 * joynr backend services (discovery directory etc.) connected with the broker
 
 ## Backpressure Test
-The backpressure test checks that nodes in a shared subscriptions cluster can unsubscribe in case of
-heavy load situations and subscribe again when they successfully process queued requests. For more details
-on the backpressure mechanism please see:
+The backpressure test checks that nodes in a shared subscriptions cluster can temporarily stop receiving incoming 
+messages in case of heavy load situations. For more details on the backpressure mechanism please see:
 https://github.com/bmwcarit/joynr/blob/master/wiki/JavaSettings.md#limitandbackpressuresettings.
 
 This test setup creates a set of Docker containers using
@@ -66,8 +65,7 @@ script in this directory.
 Alternatively, build the required docker images by changing into the following
 directories and executing the './build_docker_image.sh' scripts inside:
 
-`test-apps/backpressure-clustered-provider-large/`
-`test-apps/backpressure-clustered-provider-small/`
+`test-apps/backpressure-clustered-provider/`
 `test-apps/backpressure-monitor-app/`
 `test-apps/clustered-app/`
 `test-apps/monitor-app/`
@@ -84,8 +82,7 @@ You should now see the appropriate Docker Images:
     shared-subs-test-monitor-app                 latest   0ded26ec8cc7   6 days ago     1.27GB
     shared-subs-test-clustered-app               latest   6528b5fd9ad6   6 days ago     1.27GB
     backpressure-test-monitor-app                latest   9863d9cf8cf6   6 days ago     1.27GB
-    backpressure-test-clustered-provider-small   latest   cd240788b955   6 days ago     1.27GB
-    backpressure-test-clustered-provider-large   latest   99dabb10e9d6   6 days ago     1.27GB
+    backpressure-test-clustered-provider         latest   cd240788b955   6 days ago     1.27GB
     joynr-gcd                                    latest   7948363be5d6   15 hours ago   261MB
     joynr-gcd-db                                 latest   8a2e8fa2c8cc   15 hours ago   192MB
     hivemq/hivemq-ce                             latest   a03634593620   2 months ago   392MB
@@ -96,39 +93,43 @@ The HiveMQ 4 Docker image will be downloaded automatically when running the test
 
 To run the tests, change to this directory
 (`${project_root}/docker/joynr-hivemq-shared-subscriptions`) and
-execute:
-
-`docker-compose up -d`
-
-To follow along with the progress:
-
-`docker-compose logs -f`
-
-You can also start the test using the `run_tests.sh` script. In this case the
-output is stored into a (large) log file at the end of the test run.
+execute `run_tests.sh` script. The output is stored into a (large) log file at the end of the test run.
 
 When all containers have started up, the test-driver will automatically
 trigger a test of the shared subscriptions using a REST-API call. If everything is successful
-you should see the following log output (which you could grep for, e.g.
-`docker-compose logs -f | grep -C1 'Triggered 100 pings.'`)
-from the test-driver:
+you should be able to find the following logs in the `sst-full.log`
+(for example using `cat sst-full.log | grep -F '[SST] Triggered 100 pings'` ):
 
-        Triggered 100 pings. 100 were successful, 0 failed. 00a0eaef1e02: 50 c7cb1f96d6c2: 50
-        [SharedSubsTest] SUCCESS
+    [SST] Triggered 100 pings. 100 were successful, 0 failed. 00a0eaef1e02: 50 c7cb1f96d6c2: 50
 
-Note that the IDs at the end of the first line will change for each run
-as these are the randomly generated unique IDs of the two docker containers
-running the clustered application.
+and
+
+    [SharedSubsTest] SUCCESS
+
+Note that:
+- the workload distribution does not have to be even (like 50 : 50)
+- the IDs at the end of the first line will change for each run
+      as these are the randomly generated unique IDs of the two docker containers
+      running the clustered application.
 
 In the case of a failure, you will find `[SharedSubsTest] FAILURE` in the log.
 
 After the shared subscriptions tests the test-driver will trigger the backpressure test. The output
-of the test result is following the same format as above, i.e. `[BackpressureTest] SUCCESS/FAILURE` as
-well as more details on the issues ping requests.
+of the test result is following the same format as above, i.e.
+
+    [BBT] Triggered 1000 pings. 1000 were successful, 0 failed. 23c1be469f49: 500 d357aefd295f: 500
+
+and
+
+    [BackpressureTest] SUCCESS/FAILURE
 
 ### Manual tests
 
-If you want to trigger any further tests manually, then connect to one of
+If you want to trigger tests manually, execute:
+
+`docker-compose up -d`
+
+This will start the docker orchestra. Next connect to one of
 the both monitoring containers. See what its ID is by executing `docker ps`, and
 copy the unique ID. Then execute:
 
@@ -140,8 +141,8 @@ From within the container, you can now e.g. trigger a small SST:
 
 This will make 10 calls to the clustered application and then report
 how many calls were made, how many successfully, how many in error and
-which node handled how many of the successful ones (you should see an
-even 50:50 split if everything is working).
+which node handled how many of the successful ones (you should see that both nodes handled the requests
+if everything is working).
 
 Next, you can check that the replies from a node in the cluster to a
 joynr provider outside of the cluster are arriving back at the correct

@@ -46,15 +46,15 @@ public class PingServiceBean implements PingServiceSync {
     public String ping() {
         // make computation slow
         try {
-            Thread.sleep(100);
+            Thread.sleep(50);
         } catch (InterruptedException e1) {
             e1.printStackTrace();
         }
         callStatistics.ping();
         try {
-            return "large" + InetAddress.getLocalHost().getHostName();
+            return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            return "large" + System.getProperty("java.io.tmpdir");
+            return System.getProperty("java.io.tmpdir");
         }
     }
 

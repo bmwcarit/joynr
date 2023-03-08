@@ -38,8 +38,7 @@
 		<module>clustered-app-base</module>
 		<module>clustered-app</module>
 		<module>monitor-app</module>
-		<module>backpressure-clustered-provider-large</module>
-		<module>backpressure-clustered-provider-small</module>
+		<module>backpressure-clustered-provider</module>
 		<module>backpressure-monitor-app</module>
 	</modules>
 

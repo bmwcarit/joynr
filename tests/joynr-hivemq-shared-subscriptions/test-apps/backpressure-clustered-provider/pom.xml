@@ -22,7 +22,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
-	<artifactId>backpressure-test-clustered-provider-small</artifactId>
+	<artifactId>backpressure-test-clustered-provider</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>war</packaging>
 
