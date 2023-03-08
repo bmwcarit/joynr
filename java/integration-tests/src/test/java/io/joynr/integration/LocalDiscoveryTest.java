@@ -96,7 +96,6 @@ import io.joynr.proxy.ProxyInvocationHandlerImpl;
 import io.joynr.proxy.StatelessAsyncCallback;
 import io.joynr.proxy.StatelessAsyncIdCalculator;
 import io.joynr.runtime.CCInProcessRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.JoynrBaseModule;
 import io.joynr.runtime.JoynrInjectorFactory;
 import io.joynr.runtime.JoynrRuntime;
@@ -202,8 +201,6 @@ public class LocalDiscoveryTest {
     @Mock
     private GlobalCapabilitiesDirectoryClient globalCapabilitiesDirectoryClientMock;
     @Mock
-    private GlobalAddressProvider globalAddressProviderMock;
-    @Mock
     private CapabilitiesProvisioning capabilitiesProvisioningMock;
     @Mock
     private RoutingTable routingTableMock;
@@ -234,8 +231,8 @@ public class LocalDiscoveryTest {
         // use default freshnessUpdateIntervalMs: 3600000ms (1h)
         final long defaultExpiryTime = 3628800000l;
         doReturn(true).when(routingTableMock).put(anyString(), any(Address.class), anyBoolean(), anyLong());
+        globalAddress = new MqttAddress(defaultGbids[0], "testOwnTopic");
         final LocalCapabilitiesDirectoryImpl localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioningMock,
-                                                                                                             globalAddressProviderMock,
                                                                                                              localDiscoveryEntryStoreMock,
                                                                                                              globalDiscoveryEntryCacheMock,
                                                                                                              routingTableMock,

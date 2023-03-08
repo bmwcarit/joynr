@@ -18,6 +18,7 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,18 +36,26 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import io.joynr.provider.AbstractJoynrProvider;
-import io.joynr.provider.CallContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Module;
+import com.google.inject.name.Names;
+import com.google.inject.util.Modules;
 
 import io.joynr.capabilities.helpers.AnswerCreateHelper;
 import io.joynr.capabilities.helpers.DiscoveryEntryWithUpdatedLastSeenDateMsMatcher;
 import io.joynr.capabilities.helpers.GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher;
 import io.joynr.capabilities.helpers.PromiseChecker;
+import io.joynr.provider.AbstractJoynrProvider;
+import io.joynr.provider.CallContext;
 import io.joynr.provider.Promise;
 import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ProviderRuntimeException;
@@ -58,8 +67,6 @@ import joynr.types.CustomParameter;
 import joynr.types.DiscoveryEntry;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryACLTest extends AbstractLocalCapabilitiesDirectoryTest {
@@ -109,20 +116,15 @@ public class LocalCapabilitiesDirectoryACLTest extends AbstractLocalCapabilities
         final Collection<GlobalDiscoveryEntry> provisionedEntries = Set.of(globalCapabilitiesDirectoryDiscoveryEntry,
                                                                            provisionedGlobalDiscoveryEntry);
         when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(provisionedEntries);
-        localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
-                                                                        globalAddressProvider,
-                                                                        localDiscoveryEntryStoreMock,
-                                                                        globalDiscoveryEntryCacheMock,
-                                                                        routingTable,
-                                                                        globalCapabilitiesDirectoryClient,
-                                                                        expiredDiscoveryEntryCacheCleaner,
-                                                                        freshnessUpdateIntervalMs,
-                                                                        capabilitiesFreshnessUpdateExecutor,
-                                                                        shutdownNotifier,
-                                                                        knownGbids,
-                                                                        DEFAULT_EXPIRY_TIME_MS,
-                                                                        accessController,
-                                                                        enableAccessControl);
+        Module injectionModule = Modules.override(createBaseInjectionModule()).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(long.class).annotatedWith(Names.named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS))
+                                .toInstance(freshnessUpdateIntervalMs);
+            }
+        });
+        localCapabilitiesDirectory = Guice.createInjector(injectionModule)
+                                          .getInstance(LocalCapabilitiesDirectory.class);
         verify(globalDiscoveryEntryCacheMock).add(eq(provisionedEntries));
 
         verify(capabilitiesFreshnessUpdateExecutor).schedule(addRemoveQueueRunnableCaptor.capture(),
@@ -150,7 +152,6 @@ public class LocalCapabilitiesDirectoryACLTest extends AbstractLocalCapabilities
         expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
         globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, globalAddress1);
 
-        when(globalAddressProvider.get()).thenReturn(globalAddress1);
         when(globalDiscoveryEntryCacheMock.lookup(anyString(), anyLong())).thenReturn(Optional.empty());
     }
 

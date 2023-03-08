@@ -47,6 +47,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
@@ -57,13 +59,10 @@ import io.joynr.provider.Promise;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.Future;
 import joynr.system.DiscoveryProvider.Add1Deferred;
-import joynr.system.RoutingTypes.MqttAddress;
 import joynr.types.DiscoveryError;
 import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilitiesDirectoryTest {
@@ -72,7 +71,6 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
 
     @Test(timeout = TEST_TIMEOUT)
     public void remove_globallyRegistered_GcdCalled() throws InterruptedException {
-        when(globalAddressProvider.get()).thenReturn(new MqttAddress("testgbid", "TEST_TOPIC"));
         final boolean awaitGlobalRegistration = true;
         final Promise<DeferredVoid> addPromise = localCapabilitiesDirectory.add(discoveryEntry,
                                                                                 awaitGlobalRegistration);

@@ -18,30 +18,30 @@
  */
 package io.joynr.messaging.sender;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
-import java.util.Optional;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
-import io.joynr.messaging.routing.TransportReadyListener;
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.name.Names;
+
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.MessagingPropertyKeys;
+import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.MutableMessage;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 
@@ -77,32 +77,21 @@ public class CcMessageSenderTest extends MessageSenderTestBase {
     }
 
     private void testCorrectReplyToSetOnMessage(MutableMessage message, String expectedAddress) throws Exception {
-        ReplyToAddressProvider replyToAddressProviderMock = mock(ReplyToAddressProvider.class);
-        doAnswer(createTransportReadyCallback(replyToAddress)).when(replyToAddressProviderMock)
-                                                              .registerGlobalAddressesReadyListener(any(TransportReadyListener.class));
-
-        GlobalAddressProvider globalAddressProviderMock = mock(GlobalAddressProvider.class);
-        doAnswer(createTransportReadyCallback(globalAddress)).when(globalAddressProviderMock)
-                                                             .registerGlobalAddressesReadyListener(any(TransportReadyListener.class));
-
-        CcMessageSender subject = new CcMessageSender(messageRouterMock,
-                                                      replyToAddressProviderMock,
-                                                      globalAddressProviderMock);
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(MessageRouter.class).toInstance(messageRouterMock);
+                bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.GLOBAL_ADDRESS))
+                                   .toInstance(globalAddress);
+                bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.REPLY_TO_ADDRESS))
+                                   .toInstance(replyToAddress);
+            }
+        }, new JoynrPropertiesModule(new Properties()));
+        CcMessageSender subject = injector.getInstance(CcMessageSender.class);
         subject.sendMessage(message);
 
         ArgumentCaptor<ImmutableMessage> argCaptor = ArgumentCaptor.forClass(ImmutableMessage.class);
         verify(messageRouterMock).routeOut(argCaptor.capture());
         assertEquals(expectedAddress, argCaptor.getValue().getReplyTo());
-    }
-
-    private Answer<Object> createTransportReadyCallback(MqttAddress address) {
-        return (invocation) -> {
-            assertEquals(1, invocation.getArguments().length);
-            assertThat(invocation.getArguments()[0], instanceOf(TransportReadyListener.class));
-
-            TransportReadyListener listener = (TransportReadyListener) invocation.getArguments()[0];
-            listener.transportReady(Optional.of(address));
-            return null;
-        };
     }
 }

@@ -46,10 +46,10 @@ import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.mqtt.JoynrMqttClient;
-import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientFactory;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.provider.AbstractJoynrProvider;
@@ -62,6 +62,7 @@ import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MutableMessage;
 import joynr.Request;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.tests.DefaulttestProvider;
 import joynr.types.ProviderQos;
@@ -186,8 +187,8 @@ public class MqttClientProviderIntegrationTest {
         expectedHeaders.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID,
                             immutableMessage.getCustomHeaders().get(Message.CUSTOM_HEADER_REQUEST_REPLY_ID));
 
-        MqttAddress address = injector.getInstance(Key.get(MqttAddress.class,
-                                                           Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS)));
+        MqttAddress address = (MqttAddress) injector.getInstance(Key.get(Address.class,
+                                                                         Names.named(MessagingPropertyKeys.GLOBAL_ADDRESS)));
 
         sender.publishMessage(address.getTopic(),
                               immutableMessage.getSerializedMessage(),
@@ -254,8 +255,8 @@ public class MqttClientProviderIntegrationTest {
         // add non prefixed extra custom header which will be dropped by the receiver
         extraCustomHeaders.put(customHeaderKey1, customHeaderValue1_2);
 
-        MqttAddress address = injector.getInstance(Key.get(MqttAddress.class,
-                                                           Names.named(MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS)));
+        MqttAddress address = (MqttAddress) injector.getInstance(Key.get(Address.class,
+                                                                         Names.named(MessagingPropertyKeys.GLOBAL_ADDRESS)));
 
         sender.publishMessage(address.getTopic(),
                               immutableMessage.getSerializedMessage(),

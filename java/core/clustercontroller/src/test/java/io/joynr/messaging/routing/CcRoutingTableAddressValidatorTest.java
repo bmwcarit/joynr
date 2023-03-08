@@ -21,27 +21,29 @@ package io.joynr.messaging.routing;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
-import java.util.Optional;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.name.Names;
+
+import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.BinderAddress;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
-import joynr.system.RoutingTypes.BinderAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcRoutingTableAddressValidatorTest {
@@ -54,45 +56,41 @@ public class CcRoutingTableAddressValidatorTest {
     private final MqttAddress globalAddress = new MqttAddress(brokerUri, globalTopic);
     private final MqttAddress replyToAddress = new MqttAddress(brokerUri, replyToTopic);
 
-    @Mock
-    private GlobalAddressProvider globalAddressProviderMock;
-    @Mock
-    private ReplyToAddressProvider replyToAddressProviderMock;
-
-    ArgumentCaptor<TransportReadyListener> globalAddressReadyListener;
-    ArgumentCaptor<TransportReadyListener> replyToAddressReadyListener;
-
     @Before
     public void setup() {
-        globalAddressReadyListener = ArgumentCaptor.forClass(TransportReadyListener.class);
-        replyToAddressReadyListener = ArgumentCaptor.forClass(TransportReadyListener.class);
-        validator = new CcRoutingTableAddressValidator(globalAddressProviderMock, replyToAddressProviderMock);
-        verify(globalAddressProviderMock).registerGlobalAddressesReadyListener(globalAddressReadyListener.capture());
-        verify(replyToAddressProviderMock).registerGlobalAddressesReadyListener(replyToAddressReadyListener.capture());
+        // This method is required to avoid nullptrexceptions
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.GLOBAL_ADDRESS))
+                                   .toInstance(globalAddress);
+                bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.REPLY_TO_ADDRESS))
+                                   .toInstance(replyToAddress);
+            }
+        }, new JoynrPropertiesModule(new Properties()));
+        validator = injector.getInstance(CcRoutingTableAddressValidator.class);
     }
 
-    @Test
-    public void globalAddressIsNotValidAsSoonAsGlobalAddressIsReady() {
-        final MqttAddress testOwnAddress = new MqttAddress(brokerUri, globalTopic);
-        assertTrue(validator.isValidForRoutingTable(testOwnAddress));
-
-        globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
-        assertFalse(validator.isValidForRoutingTable(testOwnAddress));
-    }
-
-    @Test
-    public void replyToAddressIsNotValidAsSoonAsReplyToIsReady() {
-        final MqttAddress testOwnAddress = new MqttAddress(brokerUri, replyToTopic);
-        assertTrue(validator.isValidForRoutingTable(testOwnAddress));
-
-        replyToAddressReadyListener.getValue().transportReady(Optional.of(replyToAddress));
-        assertFalse(validator.isValidForRoutingTable(testOwnAddress));
+    private void initValidator(boolean setGlobalAddress, boolean setReplyToAddress) {
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                if (setGlobalAddress) {
+                    bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.GLOBAL_ADDRESS))
+                                       .toInstance(globalAddress);
+                }
+                if (setReplyToAddress) {
+                    bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.REPLY_TO_ADDRESS))
+                                       .toInstance(replyToAddress);
+                }
+            }
+        }, new JoynrPropertiesModule(new Properties()));
+        validator = injector.getInstance(CcRoutingTableAddressValidator.class);
     }
 
     @Test
     public void multipleOwnAddresses() {
-        globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
-        replyToAddressReadyListener.getValue().transportReady(Optional.of(replyToAddress));
+        initValidator(true, true);
 
         final MqttAddress testGlobalAddress = new MqttAddress(brokerUri, globalTopic);
         final MqttAddress testReplyToAddress = new MqttAddress(brokerUri, replyToTopic);
@@ -114,7 +112,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void otherAddressesOfGlobalAddressTypeAreValid() {
-        globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
+        initValidator(true, false);
         assertFalse(validator.isValidForRoutingTable(globalAddress));
 
         otherAddressesOfOwnAddressTypeAreValid();
@@ -122,7 +120,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void otherAddressesOfReplyToAddressTypeAreValid() {
-        replyToAddressReadyListener.getValue().transportReady(Optional.of(replyToAddress));
+        initValidator(false, true);
         assertFalse(validator.isValidForRoutingTable(replyToAddress));
 
         otherAddressesOfOwnAddressTypeAreValid();
@@ -135,7 +133,7 @@ public class CcRoutingTableAddressValidatorTest {
 
     @Test
     public void otherAddressTypesAreValid() {
-        globalAddressReadyListener.getValue().transportReady(Optional.of(globalAddress));
+        initValidator(true, false);
         assertFalse(validator.isValidForRoutingTable(globalAddress));
 
         Address otherAddress = new WebSocketClientAddress();
