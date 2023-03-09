@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -306,7 +307,7 @@ public class StaticCapabilitiesProvisioningTest {
 
     private Injector createInjectorForJsonValue(final String jsonValue,
                                                 final LegacyCapabilitiesProvisioning.LegacyProvisioningPropertiesHolder provisioningProperties) throws IOException {
-        final File tmpFile = File.createTempFile("capprovtest", "json");
+        final File tmpFile = Files.createTempFile("capprovtest", "json").toFile();
         logger.trace("Writing serialized JSON {} to file {}", jsonValue, tmpFile);
         tmpFile.deleteOnExit();
         try (FileWriter writer = new FileWriter(tmpFile)) {
