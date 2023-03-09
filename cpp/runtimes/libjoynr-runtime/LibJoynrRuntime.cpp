@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,6 +178,7 @@ void LibJoynrRuntime::init(
             _libJoynrMessageRouter, _keyChain, _messagingSettings.getTtlUpliftMs());
     _joynrDispatcher =
             std::make_shared<Dispatcher>(_messageSender, _singleThreadedIOService->getIOService());
+    _joynrDispatcher->init();
     _messageSender->registerDispatcher(_joynrDispatcher);
 
     _libJoynrMessageRouter->setMessageSender(_messageSender);

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,9 @@ MATCHER_P(MessageUsesEffort, expectedEffort, "")
     return *effort == MessagingQosEffort::getLiteral(*expectedEffort);
 }
 
+namespace joynr
+{
+
 class DispatcherTest : public ::testing::Test
 {
 public:
@@ -119,6 +122,7 @@ public:
         InterfaceRegistrar::instance().registerRequestInterpreter<tests::testRequestInterpreter>(
                 tests::ItestBase::INTERFACE_NAME());
         singleThreadIOService->start();
+        dispatcher->init();
     }
 
     ~DispatcherTest()
@@ -145,6 +149,22 @@ public:
         callContext = joynr::CallContextStorage::get();
         onSuccess(types::Localisation::GpsLocation());
         getLocationCalledSemaphore->notify();
+    }
+
+    const std::chrono::milliseconds getReplyCallerDirectoryPurgeTimerPeriodMs()
+    {
+        return dispatcher->_replyCallerDirectoryPurgeTimerPeriodMs;
+    }
+
+    void addReplyCallerWithTimerTtlMs(
+            const std::string& requestReplyId,
+            std::shared_ptr<IReplyCaller> replyCaller,
+            const MessagingQos& qosSettings,
+            std::int64_t timer_ttl_ms)
+    {
+        dispatcher->_replyCallerDirectory.add(requestReplyId,
+                std::move(replyCaller),
+                static_cast<std::int64_t>(qosSettings.getTtl()), timer_ttl_ms);
     }
 
 protected:
@@ -176,6 +196,8 @@ protected:
     std::shared_ptr<joynr::Semaphore> getLocationCalledSemaphore;
     const bool isLocalMessage;
 };
+
+} // namespace joynr
 
 // from JoynrDispatcher.receive(Request) to IRequestCaller.operation(params)
 // this test goes a step further and makes sure that the response is visible in Messaging
@@ -461,4 +483,27 @@ TEST_F(DispatcherTest, receiveMulticastPublication_callSubscriptionCallback)
 
     EXPECT_TRUE(getLocationCalledSemaphore->waitFor(std::chrono::milliseconds(5000)));
     dispatcher->registerSubscriptionManager(nullptr);
+}
+
+TEST_F(DispatcherTest, receive_timeout_after_passing_expiryDate)
+{
+    auto semaphore = std::make_shared<Semaphore>(0);
+
+    // the purge job of Dispatcher should call ReplyCallerDirectory::purgeExpired()
+    // at a fixed interval. This should invoke the timeOut() method of the ReplyCaller
+    // when the ReplyCaller entry gets purged in case expiryDate has passed or the
+    // steady clock timer has fired.
+    EXPECT_CALL(*mockReplyCaller, timeOut())
+            .WillOnce(ReleaseSemaphore(semaphore));
+
+    // test code: set the timer_ttl_ms significantly higher than the interval period of the
+    // purge job so that entry should be purged based on expiryDate which is set
+    // to value that has been exceeded when the purge job is executed.
+    std::int64_t timer_ttl_ms = getReplyCallerDirectoryPurgeTimerPeriodMs().count() * 2;
+    addReplyCallerWithTimerTtlMs(requestReplyId, mockReplyCaller, qos, timer_ttl_ms);
+
+    // wait until purge job got executed or interval period of the purge job + 5 sec grace period
+    // has passed
+    std::int64_t waitTImeForPurgeJobMs = getReplyCallerDirectoryPurgeTimerPeriodMs().count() + 5000;
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(waitTImeForPurgeJobMs)));
 }
