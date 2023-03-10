@@ -5,6 +5,7 @@ set(JoynrLib_EXPORT_HEADER
 )
 
 set(SOURCES
+    BootClock.cpp
     Future.cpp
     ObjectWithDecayTime.cpp
     Settings.cpp
@@ -19,6 +20,7 @@ set(PUBLIC_HEADERS
     "${CMAKE_CURRENT_BINARY_DIR}/include/joynr/JoynrVersion.h"
     "${JoynrLib_EXPORT_HEADER}"
 
+    include/joynr/BootClock.h
     include/joynr/BoostIoserviceForwardDecl.h
     include/joynr/Cache.h
     include/joynr/CachedValue.h
