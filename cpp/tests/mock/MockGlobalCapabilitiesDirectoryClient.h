@@ -47,11 +47,12 @@ public:
     MOCK_METHOD5(
             remove,
             void(const std::string& participantId,
-                 std::shared_ptr<joynr::LocalCapabilitiesDirectoryStore>
-                         localCapabilitiesDirectoryStore,
-                 std::function<void()> onSuccess,
-                 std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
-                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error)>
+                 std::vector<std::string>&& gbidsToRemove,
+                 std::function<void(const std::vector<std::string>& participantGbids)> onSuccess,
+                 std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum,
+                                    const std::vector<std::string>& participantGbids)> onError,
+                 std::function<void(const joynr::exceptions::JoynrRuntimeException& error,
+                                    const std::vector<std::string>& participantGbids)>
                          onRuntimeError));
 
     MOCK_METHOD7(

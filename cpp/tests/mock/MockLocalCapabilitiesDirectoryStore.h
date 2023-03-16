@@ -41,7 +41,13 @@ public:
     MOCK_METHOD1(getLocalCapabilities,
                  std::vector<types::DiscoveryEntry>(
                          const std::vector<InterfaceAddress>& interfaceAddresses));
-    MOCK_METHOD2(insertInLocalCapabilitiesStorage, void(const types::DiscoveryEntry& entry, const std::vector<std::string>& gbids));
+    MOCK_METHOD2(getAwaitGlobalRegistration,
+                 bool(const std::string& participantId,
+                      const std::unique_lock<std::recursive_mutex>& cacheLock));
+    MOCK_METHOD3(insertInLocalCapabilitiesStorage,
+                 void(const types::DiscoveryEntry& entry,
+                      bool awaitGlobalRegistration,
+                      const std::vector<std::string>& gbids));
     MOCK_METHOD2(insertInGlobalLookupCache,
                  void(const types::DiscoveryEntry& entry, const std::vector<std::string>& gbids));
     MOCK_METHOD4(getLocalAndCachedCapabilities,
@@ -59,6 +65,9 @@ public:
                                           const std::unique_lock<std::recursive_mutex>& cacheLock));
     MOCK_CONST_METHOD0(getAllGlobalCapabilities, std::vector<types::DiscoveryEntry>());
     MOCK_METHOD2(eraseParticipantIdToGbidMapping,
+                 void(const std::string& participantId,
+                      const std::unique_lock<std::recursive_mutex>& cacheLock));
+    MOCK_METHOD2(eraseParticipantIdToAwaitGlobalRegistrationMapping,
                  void(const std::string& participantId,
                       const std::unique_lock<std::recursive_mutex>& cacheLock));
     std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache(

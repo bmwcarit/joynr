@@ -103,7 +103,7 @@ protected:
 
         std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
-        _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+        _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
         _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
         ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
@@ -136,7 +136,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, insertInLocalCapabilitiesStorage)
 
     _qos.setScope(types::ProviderScope::GLOBAL);
     _localEntry.setQos(_qos);
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
 
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getGlobalLookupCache(cacheLock)->size());
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocalCapabilities(_participantId).size());
@@ -210,9 +210,11 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getAllGlobalCapabilities)
     globalDiscoveryEntry2.setParticipantId(participantId2);
 
     std::vector<std::string> gbids{"gbid1", "gbid2"};
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(globalDiscoveryEntry1, gbids);
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(globalDiscoveryEntry2, gbids);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(
+            globalDiscoveryEntry1, true, gbids);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(
+            globalDiscoveryEntry2, true, gbids);
 
     std::vector<types::DiscoveryEntry> globalDiscoveryEntries =
             _localCapabilitiesDirectoryStore.getAllGlobalCapabilities();
@@ -239,7 +241,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, clear)
             _localCapabilitiesDirectoryStore.getCacheLock());
     ASSERT_EQ(0,
               _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
     ASSERT_EQ(1,
               _localCapabilitiesDirectoryStore.getLocallyRegisteredCapabilities(cacheLock)->size());
     _localCapabilitiesDirectoryStore.clear();
@@ -251,8 +253,8 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, countGlobalCapabilities)
 {
     std::vector<std::string> gbids{"gbid1", "gbid2"};
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.countGlobalCapabilities());
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_globalEntry, gbids);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_globalEntry, true, gbids);
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.countGlobalCapabilities());
 }
 
@@ -266,7 +268,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, searchLocalAndGetLocalCapabilities)
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.searchLocal(interfaceAddresses).size());
     ASSERT_EQ(0, _localCapabilitiesDirectoryStore.getLocalCapabilities(interfaceAddresses).size());
 
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
 
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.searchLocal(interfaceAddresses).size());
     ASSERT_EQ(1, _localCapabilitiesDirectoryStore.getLocalCapabilities(interfaceAddresses).size());
@@ -444,7 +446,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
 
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
@@ -458,7 +460,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
 {
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
             [](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&) {
-                FAIL() << "Unexpected onSuccess call" ;
+                FAIL() << "Unexpected onSuccess call";
             };
     std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)>
             onSuccessGlobal =
@@ -490,7 +492,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
 
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     ASSERT_FALSE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
@@ -534,7 +536,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest,
 
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
@@ -569,7 +571,7 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
 
     std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
-    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry);
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
     _localCapabilitiesDirectoryStore.insertInGlobalLookupCache(_globalEntry, gbids);
 
     ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
@@ -578,4 +580,48 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
             _localEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
 
     EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryStoreTest,
+       getAwaitGlobalRegistration_returnsFalseForNonExistingParticipant)
+{
+    const std::string participantId = "non-existing-participant";
+
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
+    ASSERT_FALSE(
+            _localCapabilitiesDirectoryStore.getAwaitGlobalRegistration(participantId, cacheLock));
+}
+
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getAwaitGlobalRegistration_returnLastStoredValue)
+{
+    const std::string participantId = _globalEntry.getParticipantId();
+    std::vector<std::string> gbids = {"gbid1"};
+
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_globalEntry, true, gbids);
+    ASSERT_TRUE(
+            _localCapabilitiesDirectoryStore.getAwaitGlobalRegistration(participantId, cacheLock));
+
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_globalEntry, false, gbids);
+    ASSERT_FALSE(
+            _localCapabilitiesDirectoryStore.getAwaitGlobalRegistration(participantId, cacheLock));
+}
+
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getAwaitGlobalRegistration_eraseLastStoredValue)
+{
+    const std::string participantId = _globalEntry.getParticipantId();
+    std::vector<std::string> gbids = {"gbid1"};
+
+    std::unique_lock<std::recursive_mutex> cacheLock(
+            _localCapabilitiesDirectoryStore.getCacheLock());
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_globalEntry, true, gbids);
+    ASSERT_TRUE(
+            _localCapabilitiesDirectoryStore.getAwaitGlobalRegistration(participantId, cacheLock));
+    _localCapabilitiesDirectoryStore.eraseParticipantIdToAwaitGlobalRegistrationMapping(
+            participantId, cacheLock);
+    // returns default value: false
+    ASSERT_FALSE(
+            _localCapabilitiesDirectoryStore.getAwaitGlobalRegistration(participantId, cacheLock));
 }

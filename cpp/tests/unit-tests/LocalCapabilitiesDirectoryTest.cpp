@@ -420,12 +420,11 @@ public:
         Sequence s;
         checkAddToGcdClient(expectedGbids, s);
 
-        std::shared_ptr<LocalCapabilitiesDirectoryStore> capturedLCDStore =
-                std::make_shared<LocalCapabilitiesDirectoryStore>();
+        std::vector<std::string> capturedGbids;
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                     remove(Eq(_dummyParticipantIdsVector[0]), _, _, _, _))
                 .InSequence(s)
-                .WillOnce(DoAll(SaveArg<1>(&capturedLCDStore), ReleaseSemaphore(_semaphore)));
+                .WillOnce(DoAll(SaveArg<1>(&capturedGbids), ReleaseSemaphore(_semaphore)));
 
         initializeMockLocalCapabilitiesDirectoryStore();
         finalizeTestSetupAfterMockExpectationsAreDone();
@@ -440,11 +439,7 @@ public:
         _localCapabilitiesDirectory->remove(_dummyParticipantIdsVector[0], _defaultOnSuccess,
                                             _defaultProviderRuntimeExceptionError);
         EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-
-        std::unique_lock<std::recursive_mutex> cacheLock(capturedLCDStore->getCacheLock());
-        std::vector<std::string> capturedGbids = capturedLCDStore->getGbidsForParticipantId(
-                _dummyParticipantIdsVector[0], cacheLock);
-        cacheLock.unlock();
+        EXPECT_TRUE(expectedGbids.size() > 0 && capturedGbids.size() > 0);
         EXPECT_EQ(expectedGbids, capturedGbids);
 
         _localCapabilitiesDirectoryStore->clear();
@@ -1054,14 +1049,64 @@ TEST_F(LocalCapabilitiesDirectoryTest, addGlobalEntry_callsMockStorage)
     _entry.setQos(providerQos);
     const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
     initializeMockLocalCapabilitiesDirectoryStore();
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry), expectedGbids))
+    EXPECT_CALL(
+            *_mockLocalCapabilitiesDirectoryStore,
+            insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry), false, expectedGbids))
             .Times(1);
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(_, _)).Times(0);
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->add(
             _entry, createVoidOnSuccessFunction(), _unexpectedProviderRuntimeExceptionFunction);
+
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest,
+       addGlobalEntry_callsMockStorageWithAwaitGlobalRegistrationTrue)
+{
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+    _entry.setQos(providerQos);
+    Sequence s;
+    const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
+    initializeMockLocalCapabilitiesDirectoryStore();
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                add(Matcher<const types::GlobalDiscoveryEntry&>(DiscoveryEntryMatcher(_entry)), _,
+                    _, _, _, _))
+            .InSequence(s)
+            .WillOnce(InvokeArgument<3>());
+    EXPECT_CALL(
+            *_mockLocalCapabilitiesDirectoryStore,
+            insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry), true, expectedGbids))
+            .Times(1)
+            .InSequence(s);
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(_, _)).Times(0);
+    finalizeTestSetupAfterMockExpectationsAreDone();
+
+    _localCapabilitiesDirectoryWithMockCapStorage->add(_entry, true, createVoidOnSuccessFunction(),
+                                                       _unexpectedProviderRuntimeExceptionFunction);
+
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest,
+       addGlobalEntry_callsMockStorageWithAwaitGlobalRegistrationFalse)
+{
+    types::ProviderQos providerQos;
+    providerQos.setScope(types::ProviderScope::GLOBAL);
+    _entry.setQos(providerQos);
+    const std::vector<std::string>& expectedGbids = _KNOWN_GBIDS;
+    initializeMockLocalCapabilitiesDirectoryStore();
+    EXPECT_CALL(
+            *_mockLocalCapabilitiesDirectoryStore,
+            insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry), false, expectedGbids))
+            .Times(1);
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(_, _)).Times(0);
+    finalizeTestSetupAfterMockExpectationsAreDone();
+
+    _localCapabilitiesDirectoryWithMockCapStorage->add(_entry, false, createVoidOnSuccessFunction(),
+                                                       _unexpectedProviderRuntimeExceptionFunction);
 
     EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
 }
@@ -1092,8 +1137,9 @@ TEST_F(LocalCapabilitiesDirectoryTest, addLocalEntry_callsMockStorage)
     providerQos.setScope(types::ProviderScope::LOCAL);
     _entry.setQos(providerQos);
     initializeMockLocalCapabilitiesDirectoryStore();
-    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
-                insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry), _KNOWN_GBIDS))
+    EXPECT_CALL(
+            *_mockLocalCapabilitiesDirectoryStore,
+            insertInLocalCapabilitiesStorage(DiscoveryEntryMatcher(_entry), false, _KNOWN_GBIDS))
             .Times(1);
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore, insertInGlobalLookupCache(_, _)).Times(0);
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -2228,8 +2274,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, removeCapabilities_invokesGcdClient)
             .Times(1)
             .InSequence(s);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                remove(Eq(_dummyParticipantIdsVector[0]), Eq(_localCapabilitiesDirectoryStore), _,
-                       _, _))
+                remove(Eq(_dummyParticipantIdsVector[0]), _, _, _, _))
             .Times(1)
             .InSequence(s);
 
@@ -2311,6 +2356,104 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveUsesSameGbidOrderAsAdd_4)
 }
 
 TEST_F(LocalCapabilitiesDirectoryTest,
+       testRemoveGlobal_deleteEntryBeforeSchedulingTaskIfAwaitGlobalRegistrationWasFalse)
+{
+    _localCapabilitiesDirectoryStore->clear();
+    const bool awaitGlobalRegistration = false;
+    auto semaphore = std::make_shared<Semaphore>(0);
+    Sequence seq;
+
+    initializeMockLocalCapabilitiesDirectoryStore();
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getGbidsForParticipantId(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .WillOnce(Return(_KNOWN_GBIDS));
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getAwaitGlobalRegistration(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .WillOnce(Return(awaitGlobalRegistration));
+    // entry remove
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .InSequence(seq);
+    EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(Eq(_dummyParticipantIdsVector[0])))
+            .Times(1)
+            .InSequence(seq);
+    EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
+                removeByParticipantId(_dummyParticipantIdsVector[0]))
+            .Times(1)
+            .InSequence(seq);
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                        Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .InSequence(seq);
+    // then add job
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                remove(_dummyParticipantIdsVector[0], Eq(_KNOWN_GBIDS), _, _, _))
+            .InSequence(seq)
+            .WillOnce(ReleaseSemaphore(semaphore));
+
+    finalizeTestSetupAfterMockExpectationsAreDone();
+
+    _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
+                                                          _defaultOnSuccess,
+                                                          _defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest,
+       testRemoveGlobal_deleteEntryAfterSchedulingTaskIfAwaitGlobalRegistrationWasTrue)
+{
+    _localCapabilitiesDirectoryStore->clear();
+    const bool awaitGlobalRegistration = true;
+    auto semaphore = std::make_shared<Semaphore>(0);
+    Sequence seq;
+
+    initializeMockLocalCapabilitiesDirectoryStore();
+
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getGbidsForParticipantId(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .WillOnce(Return(_KNOWN_GBIDS));
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getAwaitGlobalRegistration(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .WillOnce(Return(awaitGlobalRegistration));
+    // remove task
+    EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
+                remove(_dummyParticipantIdsVector[0], Eq(_KNOWN_GBIDS), _, _, _))
+            .InSequence(seq)
+            .WillOnce(DoAll(InvokeArgument<2>(_KNOWN_GBIDS), ReleaseSemaphore(semaphore)));
+    // entry remove
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .InSequence(seq);
+    EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(Eq(_dummyParticipantIdsVector[0])))
+            .Times(1)
+            .InSequence(seq);
+    EXPECT_CALL(*_mockLocallyRegisteredCapabilities,
+                removeByParticipantId(_dummyParticipantIdsVector[0]))
+            .Times(1)
+            .InSequence(seq);
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                        Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .InSequence(seq);
+
+    finalizeTestSetupAfterMockExpectationsAreDone();
+
+    _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
+                                                          _defaultOnSuccess,
+                                                          _defaultProviderRuntimeExceptionError);
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
+}
+
+TEST_F(LocalCapabilitiesDirectoryTest,
        testRemoveGlobal_onApplicationErrorCalled_NoEntryForSelectedBackends)
 {
     auto semaphore = std::make_shared<Semaphore>(0);
@@ -2320,7 +2463,8 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
             .WillOnce(DoAll(
-                    InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_SELECTED_BACKENDS),
+                    InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_SELECTED_BACKENDS,
+                                      std::vector<std::string>{}),
                     ReleaseSemaphore(semaphore)));
 
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
@@ -2333,7 +2477,10 @@ TEST_F(LocalCapabilitiesDirectoryTest,
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
             .Times(1);
-
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                        Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1);
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2351,9 +2498,9 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
-            .WillOnce(
-                    DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT),
-                          ReleaseSemaphore(semaphore)));
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT,
+                                              std::vector<std::string>{}),
+                            ReleaseSemaphore(semaphore)));
 
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
             .Times(1);
@@ -2363,9 +2510,16 @@ TEST_F(LocalCapabilitiesDirectoryTest,
 
     initializeMockLocalCapabilitiesDirectoryStore();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getAwaitGlobalRegistration(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .WillOnce(Return(true));
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
             .Times(1);
-
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                        Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1);
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2382,7 +2536,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
 
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
-            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INVALID_GBID),
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INVALID_GBID,
+                                              std::vector<std::string>{}),
                             ReleaseSemaphore(semaphore)));
 
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
@@ -2393,9 +2548,16 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
 
     initializeMockLocalCapabilitiesDirectoryStore();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getAwaitGlobalRegistration(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .WillOnce(Return(true));
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
             .Times(0);
-
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                        Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(0);
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2412,7 +2574,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
 
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
-            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::UNKNOWN_GBID),
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::UNKNOWN_GBID,
+                                              std::vector<std::string>{}),
                             ReleaseSemaphore(semaphore)));
 
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
@@ -2423,9 +2586,16 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
 
     initializeMockLocalCapabilitiesDirectoryStore();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getAwaitGlobalRegistration(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .WillOnce(Return(true));
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
             .Times(0);
-
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                        Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(0);
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -2442,7 +2612,8 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
 
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
-            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INTERNAL_ERROR),
+            .WillOnce(DoAll(InvokeArgument<3>(types::DiscoveryError::Enum::INTERNAL_ERROR,
+                                              std::vector<std::string>{}),
                             ReleaseSemaphore(semaphore)));
 
     EXPECT_CALL(*_mockGlobalLookupCache, removeByParticipantId(_dummyParticipantIdsVector[0]))
@@ -2453,9 +2624,16 @@ TEST_F(LocalCapabilitiesDirectoryTest, testRemoveGlobal_onApplicationErrorCalled
 
     initializeMockLocalCapabilitiesDirectoryStore();
     EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                getAwaitGlobalRegistration(Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(1)
+            .WillOnce(Return(true));
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
                 eraseParticipantIdToGbidMapping(Eq(_dummyParticipantIdsVector[0]), _))
             .Times(0);
-
+    EXPECT_CALL(*_mockLocalCapabilitiesDirectoryStore,
+                eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                        Eq(_dummyParticipantIdsVector[0]), _))
+            .Times(0);
     finalizeTestSetupAfterMockExpectationsAreDone();
 
     _localCapabilitiesDirectoryWithMockCapStorage->remove(_dummyParticipantIdsVector[0],
@@ -4591,7 +4769,7 @@ TEST_F(LocalCapabilitiesDirectoryTest, registerGlobalCapability_lookupLocalThenG
             .Times(1);
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
-            .WillOnce(InvokeArgument<2>());
+            .WillOnce(InvokeArgument<2>(std::vector<std::string>{}));
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillOnce(InvokeWithoutArgs(this, &LocalCapabilitiesDirectoryTest::simulateTimeout));
