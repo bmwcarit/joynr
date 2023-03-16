@@ -317,7 +317,8 @@ void LocalCapabilitiesDirectory::addInternal(
         std::lock_guard<std::recursive_mutex> lock1(
                 _localCapabilitiesDirectoryStore->getCacheLock());
         // register locally
-        _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(discoveryEntry, gbids);
+        _localCapabilitiesDirectoryStore->insertInLocalCapabilitiesStorage(
+                discoveryEntry, awaitGlobalRegistration, gbids);
 
         {
             std::lock_guard<std::mutex> lock(_pendingLookupsLock);
@@ -391,7 +392,8 @@ void LocalCapabilitiesDirectory::addInternal(
                         thisSharedPtr->_localCapabilitiesDirectoryStore->getCacheLock());
                 if (awaitGlobalRegistration) {
                     thisSharedPtr->_localCapabilitiesDirectoryStore
-                            ->insertInLocalCapabilitiesStorage(globalDiscoveryEntry, gbids);
+                            ->insertInLocalCapabilitiesStorage(
+                                    globalDiscoveryEntry, awaitGlobalRegistration, gbids);
                     JOYNR_LOG_INFO(logger(),
                                    "Global capability '{}' added successfully for GBIDs >{}<, "
                                    "#registeredGlobalCapabilities {}",
@@ -1123,6 +1125,9 @@ void LocalCapabilitiesDirectory::remove(
         std::unique_lock<std::recursive_mutex> removeLock(
                 _localCapabilitiesDirectoryStore->getCacheLock());
 
+        bool awaitGlobalRegistration = _localCapabilitiesDirectoryStore->getAwaitGlobalRegistration(
+                participantId, removeLock);
+
         boost::optional<types::DiscoveryEntry> optionalEntry =
                 _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(removeLock)
                         ->lookupByParticipantId(participantId);
@@ -1130,6 +1135,8 @@ void LocalCapabilitiesDirectory::remove(
         if (optionalEntry && !LCDUtil::isGlobal(optionalEntry.get())) {
             _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(removeLock)
                     ->removeByParticipantId(participantId);
+            _localCapabilitiesDirectoryStore->eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                    participantId, removeLock);
             JOYNR_LOG_INFO(
                     logger(),
                     "Removed locally registered participantId {}: #localCapabilities {}, "
@@ -1141,19 +1148,22 @@ void LocalCapabilitiesDirectory::remove(
                     _localCapabilitiesDirectoryStore->getGlobalLookupCache(removeLock)->size());
         } else {
             auto onGlobalRemoveSuccess = [participantId,
+                                          awaitGlobalRegistration,
                                           lCDStoreWeakPtr = joynr::util::as_weak_ptr(
-                                                  _localCapabilitiesDirectoryStore)]() {
-                if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                                                  _localCapabilitiesDirectoryStore)](
+                                                 const std::vector<std::string>& participantGbids) {
+                const std::string gbidString = boost::algorithm::join(participantGbids, ", ");
+                auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock();
+                if (lCDStoreSharedPtr && awaitGlobalRegistration) {
                     std::unique_lock<std::recursive_mutex> cacheLock(
                             lCDStoreSharedPtr->getCacheLock());
-                    const std::string gbidString = boost::algorithm::join(
-                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId, cacheLock),
-                            ", ");
                     lCDStoreSharedPtr->eraseParticipantIdToGbidMapping(participantId, cacheLock);
                     lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->removeByParticipantId(
                             participantId);
                     lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)
                             ->removeByParticipantId(participantId);
+                    lCDStoreSharedPtr->eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                            participantId, cacheLock);
                     JOYNR_LOG_INFO(
                             logger(),
                             "Removed globally registered participantId: {} from GBIDs: >{}< "
@@ -1164,23 +1174,28 @@ void LocalCapabilitiesDirectory::remove(
                             lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)->size(),
                             lCDStoreSharedPtr->countGlobalCapabilities(),
                             lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->size());
+                    return;
                 }
+                JOYNR_LOG_INFO(logger(),
+                               "Removed globally registered participantId: {} from GBIDs: >{}< ",
+                               participantId,
+                               gbidString);
             };
             auto onApplicationError = [participantId,
+                                       awaitGlobalRegistration,
                                        lCDStoreWeakPtr = joynr::util::as_weak_ptr(
                                                _localCapabilitiesDirectoryStore)](
-                                              const types::DiscoveryError::Enum& error) {
+                                              const types::DiscoveryError::Enum& error,
+                                              const std::vector<std::string>& participantGbids) {
                 using namespace types;
+                const std::string gbidString = boost::algorithm::join(participantGbids, ", ");
                 switch (error) {
                 case DiscoveryError::Enum::NO_ENTRY_FOR_PARTICIPANT:
-                case DiscoveryError::Enum::NO_ENTRY_FOR_SELECTED_BACKENDS:
-                    if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
+                case DiscoveryError::Enum::NO_ENTRY_FOR_SELECTED_BACKENDS: {
+                    auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock();
+                    if (lCDStoreSharedPtr && awaitGlobalRegistration) {
                         std::unique_lock<std::recursive_mutex> cacheLock(
                                 lCDStoreSharedPtr->getCacheLock());
-                        const std::string gbidString =
-                                boost::algorithm::join(lCDStoreSharedPtr->getGbidsForParticipantId(
-                                                               participantId, cacheLock),
-                                                       ", ");
                         JOYNR_LOG_WARN(logger(),
                                        "Error removing participantId {} globally for GBIDs >{}<: "
                                        "{}. Removing local entry.",
@@ -1193,6 +1208,8 @@ void LocalCapabilitiesDirectory::remove(
                                 participantId);
                         lCDStoreSharedPtr->getLocallyRegisteredCapabilities(cacheLock)
                                 ->removeByParticipantId(participantId);
+                        lCDStoreSharedPtr->eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                                participantId, cacheLock);
                         JOYNR_LOG_INFO(
                                 logger(),
                                 "After removal of participantId {}: #localCapabilities {}, "
@@ -1202,51 +1219,71 @@ void LocalCapabilitiesDirectory::remove(
                                         ->size(),
                                 lCDStoreSharedPtr->countGlobalCapabilities(),
                                 lCDStoreSharedPtr->getGlobalLookupCache(cacheLock)->size());
+                        return;
                     }
+                    JOYNR_LOG_WARN(logger(),
+                                   "Error removing participantId {} globally for GBIDs >{}<: "
+                                   "{}",
+                                   participantId,
+                                   gbidString,
+                                   types::DiscoveryError::getLiteral(error));
                     break;
+                }
                 case DiscoveryError::Enum::INVALID_GBID:
                 case DiscoveryError::Enum::UNKNOWN_GBID:
                 case DiscoveryError::Enum::INTERNAL_ERROR:
                 default:
-                    if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
-                        std::unique_lock<std::recursive_mutex> cacheLock(
-                                lCDStoreSharedPtr->getCacheLock());
-                        const std::string gbidString =
-                                boost::algorithm::join(lCDStoreSharedPtr->getGbidsForParticipantId(
-                                                               participantId, cacheLock),
-                                                       ", ");
-                        JOYNR_LOG_WARN(
-                                logger(),
-                                "Error removing participantId {} globally for GBIDs >{}<: {}",
-                                participantId,
-                                gbidString,
-                                types::DiscoveryError::getLiteral(error));
-                    }
+                    JOYNR_LOG_WARN(logger(),
+                                   "Error removing participantId {} globally for GBIDs >{}<: {}",
+                                   participantId,
+                                   gbidString,
+                                   types::DiscoveryError::getLiteral(error));
                     break;
                 }
             };
-            auto onRuntimeError = [participantId,
-                                   lCDStoreWeakPtr = joynr::util::as_weak_ptr(
-                                           _localCapabilitiesDirectoryStore)](
-                                          const exceptions::JoynrRuntimeException& exception) {
-                if (auto lCDStoreSharedPtr = lCDStoreWeakPtr.lock()) {
-                    std::unique_lock<std::recursive_mutex> cacheLock(
-                            lCDStoreSharedPtr->getCacheLock());
-                    const std::string gbidString = boost::algorithm::join(
-                            lCDStoreSharedPtr->getGbidsForParticipantId(participantId, cacheLock),
-                            ", ");
-                    JOYNR_LOG_WARN(logger(),
-                                   "Failed to remove participantId {} globally for GBIDs >{}<: "
-                                   "{} ({})",
-                                   participantId,
-                                   gbidString,
-                                   exception.getMessage(),
-                                   exception.getTypeName());
-                }
+            auto onRuntimeError = [participantId](
+                                          const exceptions::JoynrRuntimeException& exception,
+                                          const std::vector<std::string>& participantGbids) {
+                const std::string gbidString = boost::algorithm::join(participantGbids, ", ");
+                JOYNR_LOG_WARN(logger(),
+                               "Failed to remove participantId {} globally for GBIDs >{}<: "
+                               "{} ({})",
+                               participantId,
+                               gbidString,
+                               exception.getMessage(),
+                               exception.getTypeName());
             };
 
+            auto gbidsToRemove = _localCapabilitiesDirectoryStore->getGbidsForParticipantId(
+                    participantId, removeLock);
+            // If last 'add' for that participant was invoked with awaitGlobalRegistration==false
+            // delete the entry, then schedule removal at JDS
+            if (!awaitGlobalRegistration) {
+                const std::string gbidString = boost::algorithm::join(gbidsToRemove, ", ");
+                _localCapabilitiesDirectoryStore->eraseParticipantIdToGbidMapping(
+                        participantId, removeLock);
+                _localCapabilitiesDirectoryStore->getGlobalLookupCache(removeLock)
+                        ->removeByParticipantId(participantId);
+                _localCapabilitiesDirectoryStore->getLocallyRegisteredCapabilities(removeLock)
+                        ->removeByParticipantId(participantId);
+                _localCapabilitiesDirectoryStore
+                        ->eraseParticipantIdToAwaitGlobalRegistrationMapping(
+                                participantId, removeLock);
+                JOYNR_LOG_INFO(
+                        logger(),
+                        "Removed local entries for participantId: {}. GBIDs: >{}< "
+                        "#localCapabilities {}, "
+                        "#registeredGlobalCapabilities: {}, #globalLookupCache: {}",
+                        participantId,
+                        gbidString,
+                        _localCapabilitiesDirectoryStore
+                                ->getLocallyRegisteredCapabilities(removeLock)
+                                ->size(),
+                        _localCapabilitiesDirectoryStore->countGlobalCapabilities(),
+                        _localCapabilitiesDirectoryStore->getGlobalLookupCache(removeLock)->size());
+            }
             _globalCapabilitiesDirectoryClient->remove(participantId,
-                                                       _localCapabilitiesDirectoryStore,
+                                                       std::move(gbidsToRemove),
                                                        std::move(onGlobalRemoveSuccess),
                                                        std::move(onApplicationError),
                                                        std::move(onRuntimeError));

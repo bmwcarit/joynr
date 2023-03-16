@@ -88,6 +88,7 @@ public:
 
     virtual void insertInLocalCapabilitiesStorage(
             const types::DiscoveryEntry& entry,
+            bool awaitGlobalRegistration,
             const std::vector<std::string>& gbids = std::vector<std::string>());
     virtual void insertInGlobalLookupCache(const types::DiscoveryEntry& entry,
                                            const std::vector<std::string>& gbids);
@@ -103,9 +104,16 @@ public:
     virtual void eraseParticipantIdToGbidMapping(
             const std::string& participantId,
             const std::unique_lock<std::recursive_mutex>& cacheLock);
+    virtual void eraseParticipantIdToAwaitGlobalRegistrationMapping(
+            const std::string& participantId,
+            const std::unique_lock<std::recursive_mutex>& cacheLock);
     virtual std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache(
             const std::unique_lock<std::recursive_mutex>& cacheLock);
     virtual std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities(
+            const std::unique_lock<std::recursive_mutex>& cacheLock);
+
+    virtual bool getAwaitGlobalRegistration(
+            const std::string& participantId,
             const std::unique_lock<std::recursive_mutex>& cacheLock);
 
 private:
@@ -139,6 +147,7 @@ private:
     std::shared_ptr<capabilities::Storage> _locallyRegisteredCapabilities;
     std::shared_ptr<capabilities::CachingStorage> _globalLookupCache;
     std::unordered_map<std::string, std::vector<std::string>> _globalParticipantIdsToGbidsMap;
+    std::unordered_map<std::string, bool> _participantIdToAwaitGlobalRegistrationMap;
     mutable std::recursive_mutex _cacheLock;
     ADD_LOGGER(LocalCapabilitiesDirectoryStore)
 };

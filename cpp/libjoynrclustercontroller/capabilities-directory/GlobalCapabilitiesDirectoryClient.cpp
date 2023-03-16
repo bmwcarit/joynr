@@ -205,16 +205,18 @@ void GlobalCapabilitiesDirectoryClient::reAdd(
 
 void GlobalCapabilitiesDirectoryClient::remove(
         const std::string& participantId,
-        std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
-        std::function<void()> onSuccess,
-        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
-        std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
+        std::vector<std::string>&& gbidsToRemove,
+        std::function<void(const std::vector<std::string>& participantGbids)> onSuccess,
+        std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum,
+                           const std::vector<std::string>& participantGbids)> onError,
+        std::function<void(const exceptions::JoynrRuntimeException& error,
+                           const std::vector<std::string>& participantGbids)> onRuntimeError)
 {
     MessagingQos removeMessagingQos = _messagingQos;
     auto retryRemoveOperation =
             std::make_shared<RetryRemoveOperation>(_capabilitiesProxy,
                                                    participantId,
-                                                   localCapabilitiesDirectoryStore,
+                                                   std::move(gbidsToRemove),
                                                    std::move(onSuccess),
                                                    std::move(onError),
                                                    std::move(onRuntimeError),
@@ -321,15 +323,17 @@ void GlobalCapabilitiesDirectoryClient::removeStale(
 GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::RetryRemoveOperation(
         const std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>& capabilitiesProxy,
         const std::string& participantId,
-        std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
-        std::function<void()>&& onSuccessFunc,
-        std::function<void(const types::DiscoveryError::Enum&)>&& onApplicationErrorFunc,
-        std::function<void(const exceptions::JoynrRuntimeException&)>&& onRuntimeErrorFunc,
+        std::vector<std::string>&& gbidsToRemove,
+        std::function<void(const std::vector<std::string>&)>&& onSuccessFunc,
+        std::function<void(const types::DiscoveryError::Enum&, const std::vector<std::string>&)>&&
+                onApplicationErrorFunc,
+        std::function<void(const exceptions::JoynrRuntimeException&,
+                           const std::vector<std::string>&)>&& onRuntimeErrorFunc,
         MessagingQos qos)
         : Future<void>(),
           _capabilitiesProxy{capabilitiesProxy},
           _participantId{participantId},
-          _localCapabilitiesDirectoryStore{localCapabilitiesDirectoryStore},
+          _gbidsToRemove{std::move(gbidsToRemove)},
           _onSuccess{onSuccessFunc},
           _onApplicationError{onApplicationErrorFunc},
           _onRuntimeError{onRuntimeErrorFunc},
@@ -340,54 +344,38 @@ GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::RetryRemoveOperation(
 void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::execute()
 {
     if (StatusCodeEnum::IN_PROGRESS == getStatus()) {
-        std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore =
-                _localCapabilitiesDirectoryStore.lock();
-        if (localCapabilitiesDirectoryStore) {
-            std::unique_lock<std::recursive_mutex> cacheLock(
-                    localCapabilitiesDirectoryStore->getCacheLock());
-            auto foundGbids = localCapabilitiesDirectoryStore->getGbidsForParticipantId(
-                    _participantId, cacheLock);
-            cacheLock.unlock();
-            if (!foundGbids.empty()) {
-                _qos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), foundGbids[0]);
-                std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>
-                        capabilitiesProxy = _capabilitiesProxy.lock();
-                if (capabilitiesProxy) {
-                    using std::placeholders::_1;
-                    JOYNR_LOG_INFO(logger(),
-                                   "Removing globally registered participantId {} for GBIDs {}",
-                                   _participantId,
-                                   boost::algorithm::join(foundGbids, ","));
-                    capabilitiesProxy->removeAsync(
-                            _participantId,
-                            foundGbids,
-                            std::bind(&RetryRemoveOperation::forwardSuccess, shared_from_this()),
-                            std::bind(&RetryRemoveOperation::forwardApplicationError,
-                                      shared_from_this(),
-                                      _1),
-                            std::bind(&RetryRemoveOperation::retryOrForwardRuntimeError,
-                                      shared_from_this(),
-                                      _1),
-                            _qos);
-                } else {
-                    const exceptions::JoynrRuntimeException proxyNotAvailable(
-                            "Remove operation retry aborted since proxy not available.");
-                    if (_onRuntimeError) {
-                        _onRuntimeError(proxyNotAvailable);
-                    }
-                    onError(std::make_shared<exceptions::JoynrRuntimeException>(proxyNotAvailable));
-                }
+        if (!_gbidsToRemove.empty()) {
+            _qos.putCustomMessageHeader(Message::CUSTOM_HEADER_GBID_KEY(), _gbidsToRemove[0]);
+            std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> capabilitiesProxy =
+                    _capabilitiesProxy.lock();
+            if (capabilitiesProxy) {
+                using std::placeholders::_1;
+                JOYNR_LOG_INFO(logger(),
+                               "Removing globally registered participantId {} for GBIDs {}",
+                               _participantId,
+                               boost::algorithm::join(_gbidsToRemove, ","));
+                capabilitiesProxy->removeAsync(
+                        _participantId,
+                        _gbidsToRemove,
+                        std::bind(&RetryRemoveOperation::forwardSuccess, shared_from_this()),
+                        std::bind(&RetryRemoveOperation::forwardApplicationError,
+                                  shared_from_this(),
+                                  _1),
+                        std::bind(&RetryRemoveOperation::retryOrForwardRuntimeError,
+                                  shared_from_this(),
+                                  _1),
+                        _qos);
             } else {
-                std::string errorMessage = "Global remove failed because participantId to GBIDs "
-                                           "mapping is missing for participantId " +
-                                           _participantId;
-                JOYNR_LOG_WARN(logger(), errorMessage);
-                exceptions::ProviderRuntimeException exception(errorMessage);
-                onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+                const exceptions::JoynrRuntimeException proxyNotAvailable(
+                        "Remove operation retry aborted since proxy not available.");
+                if (_onRuntimeError) {
+                    _onRuntimeError(proxyNotAvailable, _gbidsToRemove);
+                }
+                onError(std::make_shared<exceptions::JoynrRuntimeException>(proxyNotAvailable));
             }
         } else {
-            std::string errorMessage = "Global remove failed of entry with participantId {} since "
-                                       "localCapabilitiesDirectoryStore is not available.  " +
+            std::string errorMessage = "Global remove failed because participantId to GBIDs "
+                                       "mapping is missing for participantId " +
                                        _participantId;
             JOYNR_LOG_WARN(logger(), errorMessage);
             exceptions::ProviderRuntimeException exception(errorMessage);
@@ -395,7 +383,8 @@ void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::execute()
         }
     } else {
         if (_onRuntimeError) {
-            _onRuntimeError(exceptions::JoynrRuntimeException("Remove operation retry canceled."));
+            _onRuntimeError(exceptions::JoynrRuntimeException("Remove operation retry canceled."),
+                            _gbidsToRemove);
         }
     }
 }
@@ -403,7 +392,7 @@ void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::execute()
 void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::forwardSuccess()
 {
     if (_onSuccess) {
-        _onSuccess();
+        _onSuccess(_gbidsToRemove);
     }
     onSuccess();
 }
@@ -412,7 +401,7 @@ void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::forwardApplication
         const types::DiscoveryError::Enum& e)
 {
     if (_onApplicationError) {
-        _onApplicationError(e);
+        _onApplicationError(e, _gbidsToRemove);
     }
     onError(std::make_shared<exceptions::JoynrRuntimeException>(
             "Stop remove operation due to ApplicationException."));
@@ -425,7 +414,7 @@ void GlobalCapabilitiesDirectoryClient::RetryRemoveOperation::retryOrForwardRunt
         execute();
     } else {
         if (_onRuntimeError) {
-            _onRuntimeError(e);
+            _onRuntimeError(e, _gbidsToRemove);
         }
         onError(std::make_shared<exceptions::JoynrRuntimeException>(e));
     }
