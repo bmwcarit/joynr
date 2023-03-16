@@ -128,6 +128,20 @@ bool LocalCapabilitiesDirectoryStore::getLocalAndCachedCapabilities(
             scope, localCapabilities, globallyCachedEntries, std::move(callback));
 }
 
+bool LocalCapabilitiesDirectoryStore::getAwaitGlobalRegistration(
+        const std::string& participantId,
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
+{
+    assert(cacheLock.owns_lock());
+    std::ignore = cacheLock;
+    auto it = _participantIdToAwaitGlobalRegistrationMap.find(participantId);
+    if (it != _participantIdToAwaitGlobalRegistrationMap.end()) {
+        return it->second;
+    }
+    // if no entry was found for given participantId, continue as it was registered with false
+    return false;
+}
+
 bool LocalCapabilitiesDirectoryStore::callReceiverIfPossible(
         joynr::types::DiscoveryScope::Enum& scope,
         const std::vector<types::DiscoveryEntry>& localCapabilities,
@@ -230,10 +244,12 @@ void LocalCapabilitiesDirectoryStore::clear()
     _locallyRegisteredCapabilities->clear();
     _globalLookupCache->clear();
     _globalParticipantIdsToGbidsMap.clear();
+    _participantIdToAwaitGlobalRegistrationMap.clear();
 }
 
 void LocalCapabilitiesDirectoryStore::insertInLocalCapabilitiesStorage(
         const types::DiscoveryEntry& entry,
+        bool awaitGlobalRegistration,
         const std::vector<std::string>& gbids)
 {
     std::unique_lock<std::recursive_mutex> localInsertionLock(_cacheLock);
@@ -249,6 +265,7 @@ void LocalCapabilitiesDirectoryStore::insertInLocalCapabilitiesStorage(
     }
 
     std::vector<std::string> allGbids(gbids);
+    _participantIdToAwaitGlobalRegistrationMap[entry.getParticipantId()] = awaitGlobalRegistration;
     if (LCDUtil::isGlobal(entry)) {
         _locallyRegisteredCapabilities->insert(entry, allGbids);
         mapGbidsToGlobalProviderParticipantId(entry.getParticipantId(), allGbids);
@@ -382,6 +399,15 @@ void LocalCapabilitiesDirectoryStore::eraseParticipantIdToGbidMapping(
     assert(cacheLock.owns_lock());
     std::ignore = cacheLock;
     _globalParticipantIdsToGbidsMap.erase(participantId);
+}
+
+void LocalCapabilitiesDirectoryStore::eraseParticipantIdToAwaitGlobalRegistrationMapping(
+        const std::string& participantId,
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
+{
+    assert(cacheLock.owns_lock());
+    std::ignore = cacheLock;
+    _participantIdToAwaitGlobalRegistrationMap.erase(participantId);
 }
 
 std::vector<std::string> LocalCapabilitiesDirectoryStore::getGbidsForParticipantId(

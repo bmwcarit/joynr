@@ -96,11 +96,13 @@ public:
       Remove previously created capability directroy entry
      */
     void remove(const std::string& participantId,
-                std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
-                std::function<void()> onSuccess,
-                std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
-                std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
-            override;
+                std::vector<std::string>&& gbidsToRemove,
+                std::function<void(const std::vector<std::string>& participantGbids)> onSuccess,
+                std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum,
+                                   const std::vector<std::string>& participantGbids)> onError,
+                std::function<void(const exceptions::JoynrRuntimeException& error,
+                                   const std::vector<std::string>& participantGbids)>
+                        onRuntimeError) override;
 
     /*
       Asynchronous lookup of capabilities for domain and interface.
@@ -154,10 +156,12 @@ private:
                 const std::shared_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy>&
                         capabilitiesProxy,
                 const std::string& participantId,
-                std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
-                std::function<void()>&& onSuccessFunc,
-                std::function<void(const types::DiscoveryError::Enum&)>&& onApplicationErrorFunc,
-                std::function<void(const exceptions::JoynrRuntimeException&)>&& onRuntimeErrorFunc,
+                std::vector<std::string>&& gbidsToRemove,
+                std::function<void(const std::vector<std::string>&)>&& onSuccessFunc,
+                std::function<void(const types::DiscoveryError::Enum&,
+                                   const std::vector<std::string>&)>&& onApplicationErrorFunc,
+                std::function<void(const exceptions::JoynrRuntimeException&,
+                                   const std::vector<std::string>&)>&& onRuntimeErrorFunc,
                 MessagingQos qos);
         ~RetryRemoveOperation() override = default;
         void execute();
@@ -168,10 +172,13 @@ private:
         void retryOrForwardRuntimeError(const exceptions::JoynrRuntimeException& e);
         std::weak_ptr<infrastructure::GlobalCapabilitiesDirectoryProxy> _capabilitiesProxy;
         std::string _participantId;
-        std::weak_ptr<LocalCapabilitiesDirectoryStore> _localCapabilitiesDirectoryStore;
-        std::function<void()> _onSuccess;
-        std::function<void(const types::DiscoveryError::Enum&)> _onApplicationError;
-        std::function<void(const exceptions::JoynrRuntimeException&)> _onRuntimeError;
+        std::vector<std::string> _gbidsToRemove;
+        std::function<void(const std::vector<std::string>&)> _onSuccess;
+        std::function<void(const types::DiscoveryError::Enum&, const std::vector<std::string>&)>
+                _onApplicationError;
+        std::function<void(const exceptions::JoynrRuntimeException&,
+                           const std::vector<std::string>&)>
+                _onRuntimeError;
         MessagingQos _qos;
     };
 

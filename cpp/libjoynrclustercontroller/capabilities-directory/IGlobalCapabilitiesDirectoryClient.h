@@ -52,10 +52,13 @@ public:
 
     virtual void remove(
             const std::string& participantId,
-            std::shared_ptr<LocalCapabilitiesDirectoryStore> localCapabilitiesDirectoryStore,
-            std::function<void()> onSuccess,
-            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum)> onError,
-            std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError) = 0;
+            std::vector<std::string>&& gbidsToRemove,
+            std::function<void(const std::vector<std::string>& participantGbids)> onSuccess,
+            std::function<void(const joynr::types::DiscoveryError::Enum& errorEnum,
+                               const std::vector<std::string>& participantGbids)> onError,
+            std::function<void(const exceptions::JoynrRuntimeException& error,
+                               const std::vector<std::string>& participantGbids)>
+                    onRuntimeError) = 0;
 
     virtual void lookup(
             const std::vector<std::string>& domains,
