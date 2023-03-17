@@ -62,6 +62,7 @@ import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessageQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.RoutingTable;
+import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
 import io.joynr.util.ObjectMapper;
@@ -110,6 +111,8 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private Dispatcher dispatcherMock;
     private MessageQueue messageQueue;
+    @Mock
+    private MessageTrackerForGracefulShutdown messageTrackerMock;
     private LibJoynrMessageRouter messageRouter;
     private LibJoynrMessageRouter messageRouterForUdsAddresses;
     private String unknownParticipantId = "unknownParticipantId";
@@ -137,14 +140,16 @@ public class LibJoynrMessageRouterTest {
                                                   messagingStubFactory,
                                                   messageQueue,
                                                   shutdownNotifier,
-                                                  dispatcherMock);
+                                                  dispatcherMock,
+                                                  messageTrackerMock);
         messageRouterForUdsAddresses = new LibJoynrMessageRouter(incomingUdsClientAddress,
                                                                  provideMessageSchedulerThreadPoolExecutor(),
                                                                  maxParallelSends,
                                                                  messagingStubFactory,
                                                                  messageQueue,
                                                                  shutdownNotifier,
-                                                                 dispatcherMock);
+                                                                 dispatcherMock,
+                                                                 messageTrackerMock);
         messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
         ObjectMapper objectMapper = new ObjectMapper();
         messageFactory = new MutableMessageFactory(objectMapper, new HashSet<JoynrMessageProcessor>());
@@ -171,7 +176,8 @@ public class LibJoynrMessageRouterTest {
                                                                              messagingStubFactory,
                                                                              messageQueue,
                                                                              shutdownNotifier,
-                                                                             dispatcherMock);
+                                                                             dispatcherMock,
+                                                                             messageTrackerMock);
         Field messageWorkerField = LibJoynrMessageRouter.class.getDeclaredField("messageWorkers");
         messageWorkerField.setAccessible(true);
         assertTrue(((List) messageWorkerField.get(localMessageRouter)).size() >= 2);
@@ -269,7 +275,8 @@ public class LibJoynrMessageRouterTest {
                                                                                 messagingStubFactory,
                                                                                 messageQueue,
                                                                                 shutdownNotifier,
-                                                                                dispatcherMock);
+                                                                                dispatcherMock,
+                                                                                messageTrackerMock);
         String routingProxyParticipantId = "proxyParticipantId";
         String[] participantIdsAdd = new String[]{ "participant0", "participant1", "participant2", "participant3" };
         String[] participantIdsRemove = new String[]{ "particpantIdRemoveOnly", "participant1", "participant3",
@@ -311,7 +318,8 @@ public class LibJoynrMessageRouterTest {
                                                                                 messagingStubFactory,
                                                                                 messageQueue,
                                                                                 shutdownNotifier,
-                                                                                dispatcherMock);
+                                                                                dispatcherMock,
+                                                                                messageTrackerMock);
         String[] multicastIds = new String[]{ "multicastId1", "multicastId2", "multicastId3" };
         String[] subscriberParticipantIds = new String[]{ "subscriberParticipantId1", "subscriberParticipantId2",
                 "subscriberParticipantId3" };

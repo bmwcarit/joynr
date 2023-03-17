@@ -49,6 +49,7 @@ import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
+import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
@@ -92,15 +93,18 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     private List<QueuedParentRoutingUpdate> queuedParentRoutingUpdates = new ArrayList<>();
     private Map<String, QueuedMulticastRegistration> queuedMulticastRegistrations = new HashMap<>();
     private boolean ready = false;
+    private MessageTrackerForGracefulShutdown messageTracker;
 
     @Inject
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LibJoynrMessageRouter(@Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
                                  @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                  @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
                                  MessagingStubFactory messagingStubFactory,
                                  MessageQueue messageQueue,
                                  ShutdownNotifier shutdownNotifier,
-                                 Dispatcher dispatcher) {
+                                 Dispatcher dispatcher,
+                                 MessageTrackerForGracefulShutdown messageTracker) {
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.scheduler = scheduler;
         this.dispatcher = dispatcher;
@@ -112,6 +116,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         }
         startMessageWorkerThreads(maxParallelSends);
         this.incomingAddress = incomingAddress;
+        this.messageTracker = messageTracker;
     }
 
     @Override
@@ -269,6 +274,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     @Override
     public void routeIn(ImmutableMessage message) {
+        messageTracker.register(message);
         DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, Set.of("incoming"), 0);
         messageQueue.put(delayableMessage);
     }
@@ -276,6 +282,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     @Override
     public void routeOut(ImmutableMessage message) {
         logger.trace("Scheduling outgoing message {} with delay {} and retries {}", message, 0, 0);
+        messageTracker.register(message);
         DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, Set.of("outgoing"), 0);
         scheduleOutgoingMessage(delayableMessage);
     }
@@ -310,17 +317,20 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                 if (!failureActionExecutedOnce.compareAndSet(false, true)) {
                     logger.trace("Failure action for message {} already executed once. Ignoring further call.",
                                  messageNotSent.getTrackingInfo());
+                    messageTracker.unregister(messageNotSent);
                     return;
                 }
                 if (error instanceof JoynrShutdownException) {
                     logger.warn("Caught JoynrShutdownException while handling message {}:",
                                 messageNotSent.getTrackingInfo(),
                                 error);
+                    messageTracker.unregister(messageNotSent);
                     return;
                 } else if (error instanceof JoynrMessageNotSentException) {
                     logger.error("ERROR SENDING: Aborting send of message {}, Error:",
                                  messageNotSent.getTrackingInfo(),
                                  error);
+                    messageTracker.unregister(messageNotSent);
                     return;
                 }
                 logger.warn("PROBLEM SENDING, will retry. message: {}, Error:",
@@ -355,6 +365,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
             @Override
             public void execute() {
+                messageTracker.unregister(message);
             }
         };
         return successAction;
@@ -427,6 +438,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
                 IMessagingStub messagingStub = messagingStubFactory.create(parentRouterMessagingAddress);
                 messagingStub.transmit(message, messageProcessedAction, failureAction);
+                messageTracker.unregister(message);
             } catch (Exception error) {
                 logger.error("Error in scheduled MessageWorker thread while processing outgoing message:", error);
                 if (failureAction == null) {
@@ -442,6 +454,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                 logger.trace("Starting processing of incoming message {}", message);
                 checkExpiry(message);
                 dispatcher.messageArrived(message);
+                messageTracker.unregister(message);
             } catch (Exception error) {
                 logger.error("Error in scheduled MessageWorker thread while processing incoming message:", error);
             }
