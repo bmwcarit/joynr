@@ -1,0 +1,29 @@
+*** java.security.orig	2023-03-29 22:09:28.972092680 +0200
+--- java.security	2023-03-29 22:10:43.023980966 +0200
+***************
+*** 616,622 ****
+  #
+  jdk.certpath.disabledAlgorithms=MD2, MD5, SHA1 jdkCA & usage TLSServer, \
+      RSA keySize < 1024, DSA keySize < 1024, EC keySize < 224, \
+-     SHA1 usage SignedJAR & denyAfter 2019-01-01, \
+      include jdk.disabled.namedCurves
+  
+  #
+--- 616,621 ----
+***************
+*** 681,687 ****
+  # See "jdk.certpath.disabledAlgorithms" for syntax descriptions.
+  #
+  jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024, \
+!       DSA keySize < 1024, SHA1 denyAfter 2019-01-01, \
+        include jdk.disabled.namedCurves
+  
+  #
+--- 680,686 ----
+  # See "jdk.certpath.disabledAlgorithms" for syntax descriptions.
+  #
+  jdk.jar.disabledAlgorithms=MD2, MD5, RSA keySize < 1024, \
+!       DSA keySize < 1024, \
+        include jdk.disabled.namedCurves
+  
+  #

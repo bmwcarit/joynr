@@ -171,9 +171,9 @@ RUN . /etc/profile \
 ###################################################
 ENV PATH ${PATH}:/opt/payara5/glassfish/bin
 
-RUN wget --quiet -O /opt/payara-5.2021.7.zip https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.7/payara-5.2021.7.zip && \
-    unzip -qq /opt/payara-5.2021.7.zip -d /opt && \
-    rm /opt/payara-5.2021.7.zip
+RUN wget --quiet -O /opt/payara-5.2022.5.zip https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2022.5/payara-5.2022.5.zip && \
+    unzip -qq /opt/payara-5.2022.5.zip -d /opt && \
+    rm /opt/payara-5.2022.5.zip
 
 RUN asadmin --user admin start-domain && \
     asadmin --user admin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor && \
