@@ -71,6 +71,35 @@ echo "### PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH"
 
 set -e
 
+function createTrustStore
+{
+    # create JKS truststore
+    echo "### Create JKS truststore"
+    keytool -keystore catruststore.jks -importcert -file $CERT_PATH/ca.cert.pem -storepass $KEYSTORE_PASSWORD -trustcacerts -noprompt -storetype jks
+    # list the JKS truststore contents
+    echo "### List JKS truststore contents"
+    keytool -list -keystore catruststore.jks -storepass $KEYSTORE_PASSWORD -storetype jks
+}
+
+function createCert
+{
+    CERT_NAME=$1
+    # create new cert
+    echo "### Create new ${CERT_NAME} certs"
+    openssl req -nodes -keyout ${CERT_NAME}.key.pem -new -days 7300 -subj '/C=DE/ST=Bavaria/L=Munich/CN=localhost' -out ${CERT_NAME}.csr.pem -passout pass:password
+    # sign cert
+    echo "### Sign new ${CERT_NAME} certs"
+    openssl x509 -req -days 7300 -CA ${CERT_PATH}/ca.cert.pem -CAkey ${PRIVATE_KEY_PATH}/ca.key.pem -set_serial 01 -in ${CERT_NAME}.csr.pem -out ${CERT_NAME}.cert.pem
+    # import cert into P12 keystore
+    echo "### Import ${CERT_NAME} certs into ${CERT_NAME}keystore.jks"
+    openssl pkcs12 -export -in ${CERT_NAME}.cert.pem -inkey ${CERT_NAME}.key.pem -out ${CERT_NAME}keystore.jks -password pass:password
+    # convert P12 keystore into JKS keystore
+    keytool -importkeystore -deststorepass password -destkeypass password -destkeystore ${CERT_NAME}keystore.jks -srckeystore ${CERT_NAME}keystore.jks -srcstoretype PKCS12 -srcstorepass password -alias 1 -storepass password -storetype jks
+    # list JKS keystore contents
+    echo "### List keystore ${CERT_NAME}keystore.jks"
+    keytool -list -keystore ${CERT_NAME}keystore.jks -storepass password -storetype jks
+}
+
 cd $REPO_DIR/docker/joynr-mqttbroker
 rm -fr var
 mkdir var
@@ -78,25 +107,11 @@ cd var
 cp ../config/config.xml .
 mkdir certs
 cd certs
-# create JKS truststore
-echo "### Create JKS truststore"
-keytool -keystore catruststore.jks -importcert -file $CERT_PATH/ca.cert.pem -storepass $KEYSTORE_PASSWORD -trustcacerts -noprompt -storetype jks
-# list the JKS truststore contents
-echo "### List JKS truststore contents"
-keytool -list -keystore catruststore.jks -storepass $KEYSTORE_PASSWORD -storetype jks
-# create new server certs
-echo "### Create new server certs"
-openssl req -nodes -keyout server.key.pem -new -days 7300 -subj '/C=DE/ST=Bavaria/L=Munich/CN=localhost' -out server.csr.pem -passout pass:password
-# sign them
-echo "### Sign new server certs"
-openssl x509 -req -days 7300 -CA $CERT_PATH/ca.cert.pem -CAkey $PRIVATE_KEY_PATH/ca.key.pem -set_serial 01 -in server.csr.pem -out server.cert.pem
-# import them into P12 keystore
-echo "### Import them into serverkeystore.jks"
-openssl pkcs12 -export -in server.cert.pem -inkey server.key.pem -out serverkeystore.jks -password pass:password
-# convert P12 keystore into JKS keystore
-keytool -importkeystore -deststorepass password -destkeypass password -destkeystore serverkeystore.jks -srckeystore serverkeystore.jks -srcstoretype PKCS12 -srcstorepass password -alias 1 -storepass password -storetype jks
-# list JKS keystore contents
-echo "### List keystore serverkeystore.jks"
-keytool -list -keystore serverkeystore.jks -storepass password -storetype jks
+
+createTrustStore
+createCert "server"
+createCert "client"
+
+rm -f *.old *.pem
 chmod a+r *
 exit 0
