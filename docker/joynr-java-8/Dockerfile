@@ -23,3 +23,16 @@ RUN alternatives --set java /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/jre/b
     && alternatives --set javac /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/bin/javac \
     && alternatives --set jre_openjdk /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64/jre \
     && alternatives --set java_sdk_openjdk /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.*.x86_64
+
+###################################################
+# Patch Java security configuration so that SHA1
+# signed classes are still accepted. This is
+# required for old plugins / dependencies required
+# by joynr generator which need to stay compatible
+# with Java 8 and thus cannot be updated.
+###################################################
+RUN mkdir -p /tmp/patches/java
+COPY patches/java /tmp/patches/java
+RUN REALFILE=$(readlink /usr/lib/jvm/java-1.8.0/jre/lib/security/java.security) \
+    && patch $REALFILE /tmp/patches/java/java-8.security.patch \
+    && rm -fr /tmp/patches/java
