@@ -25,6 +25,8 @@ import static io.joynr.systemintegrationtest.jeestatelessasync.SitStatelessAsync
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.ejb.ConcurrencyManagement;
@@ -106,20 +108,30 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
                                                                       .withGbids(gbids)
                                                                       .build();
 
-            final int iterations = 100;
-            CountDownLatch countDownLatch = new CountDownLatch(iterations);
-            for (int i = 0; i < iterations; i++) {
-                final int requestNumber = i + 1;
-                proxy.add(requestNumber, 1, messageId -> {
-                    result.append("\nSIT REQUEST: ")
-                          .append(domain)
-                          .append(": request #")
-                          .append(requestNumber)
-                          .append(": ")
-                          .append(messageId);
-                    countDownLatch.countDown();
-                });
+            final int numberOfWorkers = 2;
+            final int numberOfRequests = 200;
+            final int numberOfRequestsPerWorker = numberOfRequests / numberOfWorkers;
+            CountDownLatch countDownLatch = new CountDownLatch(numberOfRequests);
+            ExecutorService pool = Executors.newFixedThreadPool(numberOfWorkers);
+            for (int i = 0; i < numberOfWorkers; i++) {
+                final int offset = i * numberOfRequestsPerWorker;
+                Runnable task = () -> {
+                    for (int j = 0; j < numberOfRequestsPerWorker; j++) {
+                        final int requestNumber = offset + j + 1;
+                        proxy.add(requestNumber, 1, messageId -> {
+                            result.append("\nSIT REQUEST: ")
+                                  .append(domain)
+                                  .append(": request #")
+                                  .append(requestNumber)
+                                  .append(": ")
+                                  .append(messageId);
+                            countDownLatch.countDown();
+                        });
+                    }
+                };
+                pool.submit(task);
             }
+            pool.shutdown();
             if (!countDownLatch.await(60, TimeUnit.SECONDS)) {
                 String errorMsg = "SIT RESULT error: stateless async JEE consumer failed to send request";
                 logger.error(errorMsg);
@@ -137,5 +149,4 @@ public class SitStatelessAsyncConsumerControllerBean implements SitControllerSyn
         }
         result.append("\n");
     }
-
 }
