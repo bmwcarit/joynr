@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -285,4 +285,40 @@ TEST_F(DirectoryTest, removeDeletesTimer)
     // only one timer is left in the directory
     ASSERT_FALSE(_testDirectory.containsTimer(_firstKey));
     ASSERT_TRUE(_testDirectory.containsTimer(_secondKey));
+}
+
+TEST_F(DirectoryTest, ObjectsAreDeletedByDirectoryAfterExpiryDate)
+{
+    // In normal case the expiryDate is set to now + ttl
+    // and a steady clock timer gets created which fires
+    // after ttl has passed, so exactly at expiryDate.
+    // However when the system gets suspended and then
+    // resumes again later, the steady clock gets frozen
+    // during the suspend period. When it finally fires the
+    // expiryDate has already passed long time ago.
+    //
+    // This tests simulates this by using a higher ttl
+    // so that the steady clock timer does not yet fire.
+    // Instead the purgeExpired() is expected to remove
+    // the entry since the expiryDate has meanwhile been
+    // passed.
+    Directory<std::string, TrackableObject> directory(
+            "Directory", _singleThreadedIOService->getIOService());
+    {
+        auto tp = std::make_shared<TrackableObject>();
+        ASSERT_EQ(TrackableObject::getInstances(), 1);
+        directory.add("key", tp, 1000, 100000);
+    }
+    ASSERT_TRUE(directory.contains("key"));
+    ASSERT_EQ(TrackableObject::getInstances(), 1) << "Expected object is not stored in directory";
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1100));
+
+    ASSERT_TRUE(directory.contains("key"));
+    ASSERT_EQ(TrackableObject::getInstances(), 1) << "Expected object got removed from directory already after sleeping for 1100 ms";
+
+    directory.purgeExpired();
+
+    ASSERT_FALSE(directory.contains("key"));
+    ASSERT_EQ(TrackableObject::getInstances(), 0) << "Directory did not delete object via purgeExpired() call";
 }

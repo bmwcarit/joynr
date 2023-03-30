@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,11 @@ public:
 
     void registerPublicationManager(std::weak_ptr<PublicationManager> publicationManager) override;
 
+    void init() override;
+
     void shutdown() override;
+
+    void activateReplyCallerDirectoryPurgeTimer();
 
 private:
     void handleRequestReceived(std::shared_ptr<ImmutableMessage> message);
@@ -89,12 +93,16 @@ private:
     std::weak_ptr<PublicationManager> _publicationManager;
     std::shared_ptr<ISubscriptionManager> _subscriptionManager;
     std::shared_ptr<ThreadPool> _handleReceivedMessageThreadPool;
-    ADD_LOGGER(Dispatcher)
     std::mutex _subscriptionHandlingMutex;
     bool _isShuttingDown;
     ReadWriteLock _isShuttingDownLock;
+    SteadyTimer _replyCallerDirectoryPurgeTimer;
+    const std::chrono::milliseconds _replyCallerDirectoryPurgeTimerPeriodMs;
+
+    ADD_LOGGER(Dispatcher)
 
     friend class ReceivedMessageRunnable;
+    friend class DispatcherTest;
 };
 
 } // namespace joynr

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,9 @@ Dispatcher::Dispatcher(std::shared_ptr<IMessageSender> messageSender,
           _handleReceivedMessageThreadPool(std::make_shared<ThreadPool>("Dispatcher", 1)),
           _subscriptionHandlingMutex(),
           _isShuttingDown(false),
-          _isShuttingDownLock()
+          _isShuttingDownLock(),
+          _replyCallerDirectoryPurgeTimer(ioService),
+          _replyCallerDirectoryPurgeTimerPeriodMs(std::chrono::milliseconds(60000))
 {
     _handleReceivedMessageThreadPool->init();
 }
@@ -77,6 +79,31 @@ Dispatcher::~Dispatcher()
     JOYNR_LOG_TRACE(logger(), "Destructing Dispatcher");
     assert(_isShuttingDown);
     JOYNR_LOG_TRACE(logger(), "Destructing finished");
+}
+
+void Dispatcher::init()
+{
+    activateReplyCallerDirectoryPurgeTimer();
+}
+
+void Dispatcher::activateReplyCallerDirectoryPurgeTimer()
+{
+    _replyCallerDirectoryPurgeTimer.expiresFromNow(_replyCallerDirectoryPurgeTimerPeriodMs);
+    _replyCallerDirectoryPurgeTimer.asyncWait([thisWeakPtr = joynr::util::as_weak_ptr(
+                                                       shared_from_this())](
+                                                      const boost::system::error_code& errorCode) {
+        if (!errorCode) {
+            if (auto thisSharedPtr = thisWeakPtr.lock()) {
+                JOYNR_LOG_TRACE(logger(), "Purging expired entries from ReplyCallerDirectory");
+                thisSharedPtr->_replyCallerDirectory.purgeExpired();
+                thisSharedPtr->activateReplyCallerDirectoryPurgeTimer();
+            }
+        } else if (errorCode != boost::system::errc::operation_canceled) {
+            JOYNR_LOG_ERROR(logger(),
+                            "Failed to schedule timer to purge ReplyCallerDirectory: {}",
+                            errorCode.message());
+        }
+    });
 }
 
 void Dispatcher::addRequestCaller(const std::string& participantId,
@@ -688,6 +715,7 @@ void Dispatcher::shutdown()
         assert(!_isShuttingDown);
         _isShuttingDown = true;
     }
+    _replyCallerDirectoryPurgeTimer.cancel();
     _handleReceivedMessageThreadPool->shutdown();
     _replyCallerDirectory.shutdown();
     _requestCallerDirectory.shutdown();
