@@ -52,6 +52,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.capabilities.helpers.DiscoveryEntryMatchHelper;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import joynr.system.DiscoveryProvider.Add1Deferred;
@@ -68,6 +69,12 @@ import joynr.types.ProviderQos;
 import joynr.types.ProviderScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.util.Modules;
+import com.google.inject.Module;
+import com.google.inject.name.Names;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalCapabilitiesDirectoryLookupByDomainInterfaceTest extends AbstractLocalCapabilitiesDirectoryTest {
@@ -294,20 +301,14 @@ public class LocalCapabilitiesDirectoryLookupByDomainInterfaceTest extends Abstr
     public void lookupByDomainInterface_emptyGbid_replacesReturnedGbidsWithEmpty() throws InterruptedException {
         final String[] gbids = new String[]{ "" };
 
-        final LocalCapabilitiesDirectory localCapabilitiesDirectoryWithEmptyGbids = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
-                                                                                                                       globalAddressProvider,
-                                                                                                                       localDiscoveryEntryStoreMock,
-                                                                                                                       globalDiscoveryEntryCacheMock,
-                                                                                                                       routingTable,
-                                                                                                                       globalCapabilitiesDirectoryClient,
-                                                                                                                       expiredDiscoveryEntryCacheCleaner,
-                                                                                                                       FRESHNESS_UPDATE_INTERVAL_MS,
-                                                                                                                       capabilitiesFreshnessUpdateExecutor,
-                                                                                                                       shutdownNotifier,
-                                                                                                                       gbids,
-                                                                                                                       DEFAULT_EXPIRY_TIME_MS,
-                                                                                                                       accessController,
-                                                                                                                       enableAccessControl);
+        Module injectionModule = Modules.override(createBaseInjectionModule()).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY)).toInstance(gbids);
+            }
+        });
+        final LocalCapabilitiesDirectory localCapabilitiesDirectoryWithEmptyGbids = Guice.createInjector(injectionModule)
+                                                                                         .getInstance(LocalCapabilitiesDirectory.class);
 
         final List<GlobalDiscoveryEntry> globalEntries = new ArrayList<>();
         discoveryQos = new DiscoveryQos(30000L, 500L, DiscoveryScope.LOCAL_AND_GLOBAL, false);

@@ -25,7 +25,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.multibindings.OptionalBinder;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
@@ -33,12 +32,10 @@ import com.google.inject.name.Names;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.MessagingStubFactory;
 import io.joynr.messaging.routing.MulticastAddressCalculator;
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 
@@ -60,8 +57,6 @@ public class MqttModule extends AbstractModule {
     public static final String MQTT_BROKER_URI_ARRAY = "joynr.internal.messaging.mqtt.brokeruriarray";
     public static final String MQTT_GBID_TO_BROKERURI_MAP = "joynr.internal.messaging.mqtt.gbidtobrokerurimap";
     public static final String PROPERTY_KEY_MQTT_CLIENT_ID_PREFIX = "joynr.messaging.mqtt.clientidprefix";
-    public static final String PROPERTY_MQTT_GLOBAL_ADDRESS = "property_mqtt_global_address";
-    public static final String PROPERTY_MQTT_REPLY_TO_ADDRESS = "property_mqtt_reply_to_address";
     public static final String PROPERTY_KEY_MQTT_KEEP_ALIVE_TIMERS_SEC = "joynr.messaging.mqtt.keepalivetimerssec";
     public static final String MQTT_TO_KEEP_ALIVE_TIMER_SEC_MAP = "joynr.internal.messaging.mqtt.gbidtokeepalivetimersecmap";
     public static final String PROPERTY_KEY_MQTT_CONNECTION_TIMEOUTS_SEC = "joynr.messaging.mqtt.connectiontimeoutssec";
@@ -92,15 +87,28 @@ public class MqttModule extends AbstractModule {
     public static final String PROPERTY_MQTT_CLEAN_SESSION = "joynr.messaging.mqtt.cleansession";
 
     @Provides
-    @Named(PROPERTY_MQTT_GLOBAL_ADDRESS)
-    public MqttAddress provideMqttOwnAddress(MqttGlobalAddressFactory globalAddressFactory) {
-        return globalAddressFactory.create();
+    @Named(MessagingPropertyKeys.GLOBAL_ADDRESS)
+    public Address provideMqttOwnAddress(@Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids,
+                                         @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
+                                         MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+        return new MqttAddress(gbids[0], mqttTopicPrefixProvider.getUnicastTopicPrefix() + localChannelId);
     }
 
     @Provides
-    @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS)
-    public MqttAddress provideMqttOwnAddress(MqttReplyToAddressFactory replyToAddressFactory) {
-        return replyToAddressFactory.create();
+    @Named(MessagingPropertyKeys.REPLY_TO_ADDRESS)
+    public Address provideMqttOwnReplyToAddress(@Named(MessagingPropertyKeys.GBID_ARRAY) String[] gbids,
+                                                @Named(MessagingPropertyKeys.CHANNELID) String localChannelId,
+                                                @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) String enableSharedSubscriptions,
+                                                @Named(MessagingPropertyKeys.RECEIVERID) String receiverId,
+                                                MqttTopicPrefixProvider mqttTopicPrefixProvider) {
+        String replyToTopic;
+        if (Boolean.valueOf(enableSharedSubscriptions)) {
+            replyToTopic = mqttTopicPrefixProvider.getSharedSubscriptionsReplyToTopicPrefix() + localChannelId + "/"
+                    + receiverId;
+        } else {
+            replyToTopic = mqttTopicPrefixProvider.getUnicastTopicPrefix() + localChannelId;
+        }
+        return new MqttAddress(gbids[0], replyToTopic);
     }
 
     @Provides
@@ -152,20 +160,6 @@ public class MqttModule extends AbstractModule {
         }, new TypeLiteral<IMessagingSkeletonFactory>() {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETON_FACTORIES));
         messagingSkeletonFactory.addBinding(MqttAddress.class).toProvider(MqttMessagingSkeletonProvider.class);
-
-        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
-        globalAddresses = Multibinder.newSetBinder(binder(),
-                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                   },
-                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
-        globalAddresses.addBinding().to(MqttGlobalAddressFactory.class);
-
-        Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
-        replyToAddresses = Multibinder.newSetBinder(binder(),
-                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                    },
-                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
-        replyToAddresses.addBinding().to(MqttReplyToAddressFactory.class);
 
         OptionalBinder.newOptionalBinder(binder(), MulticastAddressCalculator.class)
                       .setBinding()

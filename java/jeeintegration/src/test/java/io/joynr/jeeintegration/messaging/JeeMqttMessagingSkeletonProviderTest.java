@@ -32,7 +32,6 @@ import io.joynr.messaging.mqtt.MqttMessagingSkeletonFactory;
 import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
-import joynr.system.RoutingTypes.MqttAddress;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JeeMqttMessagingSkeletonProviderTest {
@@ -56,8 +55,6 @@ public class JeeMqttMessagingSkeletonProviderTest {
     private void createProvider(boolean enableSharedSubscriptions) {
         subject = new JeeMqttMessagingSkeletonProvider(new String[0],
                                                        enableSharedSubscriptions,
-                                                       new MqttAddress(),
-                                                       new MqttAddress(),
                                                        false,
                                                        mockMessageRouter,
                                                        mockMessageProcessedHandler,

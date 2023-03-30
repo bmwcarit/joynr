@@ -39,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import joynr.ImmutableMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,15 +56,14 @@ import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.RoutingTable;
-import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
 import io.joynr.proxy.Callback;
 import io.joynr.proxy.CallbackWithModeledError;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
-import io.joynr.runtime.GlobalAddressProvider;
 import io.joynr.runtime.ShutdownNotifier;
+import joynr.ImmutableMessage;
 import joynr.exceptions.ApplicationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
@@ -82,8 +80,7 @@ import joynr.types.GlobalDiscoveryEntry;
 import joynr.types.ProviderScope;
 
 @Singleton
-public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
-        implements TransportReadyListener, LocalCapabilitiesDirectory {
+public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider implements LocalCapabilitiesDirectory {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryImpl.class);
 
@@ -118,12 +115,9 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
 
     private RoutingTable routingTable;
 
-    private GlobalAddressProvider globalAddressProvider;
-
-    private Address globalAddress;
-    private Object globalAddressLock = new Object();
-
-    private List<QueuedDiscoveryEntry> queuedDiscoveryEntries = new ArrayList<QueuedDiscoveryEntry>();
+    @Inject(optional = true)
+    @Named(MessagingPropertyKeys.GLOBAL_ADDRESS)
+    private Address globalAddress = new Address();
 
     private final String[] knownGbids;
 
@@ -171,7 +165,6 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public LocalCapabilitiesDirectoryImpl(CapabilitiesProvisioning capabilitiesProvisioning,
-                                          GlobalAddressProvider globalAddressProvider,
                                           DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStore,
                                           DiscoveryEntryStore<GlobalDiscoveryEntry> globalDiscoveryEntryCache,
                                           RoutingTable routingTable,
@@ -188,7 +181,6 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
         this.ccStartUpDateInMs = System.currentTimeMillis();
         globalProviderParticipantIdToGbidListMap = new HashMap<>();
         gcdTaskSequencer = new GcdTaskSequencer();
-        this.globalAddressProvider = globalAddressProvider;
         // CHECKSTYLE:ON
         this.routingTable = routingTable;
         this.localDiscoveryEntryStore = localDiscoveryEntryStore;
@@ -531,23 +523,6 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
                                 final String[] gbids,
                                 final Add1Deferred deferred,
                                 final boolean awaitGlobalRegistration) {
-        synchronized (globalAddressLock) {
-            try {
-                globalAddress = globalAddressProvider.get();
-            } catch (Exception e) {
-                logger.debug("Error getting global address", e);
-                globalAddress = null;
-            }
-
-            if (globalAddress == null) {
-                queuedDiscoveryEntries.add(new QueuedDiscoveryEntry(discoveryEntry,
-                                                                    gbids,
-                                                                    deferred,
-                                                                    awaitGlobalRegistration));
-                globalAddressProvider.registerGlobalAddressesReadyListener(this);
-                return;
-            }
-        }
 
         final GlobalDiscoveryEntry globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry,
                                                                                                               globalAddress);
@@ -1424,19 +1399,6 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider
     @Override
     public Set<DiscoveryEntry> listLocalCapabilities() {
         return localDiscoveryEntryStore.getAllDiscoveryEntries();
-    }
-
-    @Override
-    public void transportReady(Optional<Address> address) {
-        synchronized (globalAddressLock) {
-            globalAddress = address.isPresent() ? address.get() : null;
-        }
-        for (QueuedDiscoveryEntry queuedDiscoveryEntry : queuedDiscoveryEntries) {
-            registerGlobal(queuedDiscoveryEntry.getDiscoveryEntry(),
-                           queuedDiscoveryEntry.getGbids(),
-                           queuedDiscoveryEntry.getDeferred(),
-                           queuedDiscoveryEntry.getAwaitGlobalRegistration());
-        }
     }
 
     @Override

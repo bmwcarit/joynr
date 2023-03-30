@@ -19,29 +19,25 @@
 package io.joynr.messaging.routing;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Names;
+import com.google.inject.Provides;
+import com.google.inject.name.Named;
 
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
+import io.joynr.messaging.MessagingPropertyKeys;
 import joynr.system.RoutingTypes.Address;
+import joynr.system.RoutingTypes.MqttAddress;
 
 public class TestGlobalAddressModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        Multibinder<GlobalAddressFactory<? extends Address>> globalAddresses;
-        globalAddresses = Multibinder.newSetBinder(binder(),
-                                                   new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                   },
-                                                   Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
-        globalAddresses.addBinding().to(MockMqttAddressFactory.class);
 
-        Multibinder<GlobalAddressFactory<? extends Address>> replyToAddresses;
-        replyToAddresses = Multibinder.newSetBinder(binder(),
-                                                    new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-                                                    },
-                                                    Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
-        replyToAddresses.addBinding().to(MockMqttAddressFactory.class);
+    @Provides
+    @Named(MessagingPropertyKeys.GLOBAL_ADDRESS)
+    public Address provideMqttOwnAddress() {
+        return new MqttAddress("brokerUri", "topic");
     }
+
+    @Provides
+    @Named(MessagingPropertyKeys.REPLY_TO_ADDRESS)
+    public Address provideMqttOwnReplyToAddress() {
+        return new MqttAddress("brokerUri", "topic");
+    }
+
 }

@@ -20,37 +20,35 @@ package io.joynr.messaging.routing;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
-import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.name.Names;
+
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrException;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MulticastReceiverRegistrar;
-import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
 import io.joynr.provider.PromiseListener;
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
 import io.joynr.util.ObjectMapper;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.system.RoutingSubscriptionPublisher;
+import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.UdsAddress;
@@ -64,10 +62,6 @@ public class RoutingProviderImplTest {
     @Mock
     private MulticastReceiverRegistrar mockMulticastReceiverRegistrar;
     @Mock
-    private GlobalAddressProvider mockGlobalAddressProvider;
-    @Mock
-    private ReplyToAddressProvider mockReplyToAddressProvider;
-    @Mock
     private PromiseListener mockGlobalAddressPromiseListener;
     @Mock
     private PromiseListener mockReplyToAddressPromiseListener;
@@ -75,15 +69,8 @@ public class RoutingProviderImplTest {
     private RoutingSubscriptionPublisher mockRoutingSubscriptionPublisher;
 
     private MqttAddress expectedMqttAddress;
-    private String expectedMqttAddressString;
+    private MqttAddress expectedReplyToAddress;
     private RoutingProviderImpl routingProvider;
-    @Captor
-    private ArgumentCaptor<TransportReadyListener> transportReadyListener;
-
-    private Semaphore getGlobalAddressOnFulfillmentSemaphore;
-    private Semaphore getReplyToAddressOnFulfillmentSemaphore;
-    private Semaphore globalAddressChangedSemaphore;
-    private Semaphore replyToAddressChangedSemaphore;
 
     @Before
     public void setUp() throws Exception {
@@ -92,115 +79,21 @@ public class RoutingProviderImplTest {
         objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
 
         expectedMqttAddress = new MqttAddress("mqtt://test-broker-uri", "test-topic");
-        expectedMqttAddressString = RoutingTypesUtil.toAddressString(expectedMqttAddress);
+        expectedReplyToAddress = new MqttAddress("mqtt://test-broker-uri", "replyto-topic");
 
-        routingProvider = new RoutingProviderImpl(mockMessageRouter,
-                                                  mockMulticastReceiverRegistrar,
-                                                  mockGlobalAddressProvider,
-                                                  mockReplyToAddressProvider);
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(MessageRouter.class).toInstance(mockMessageRouter);
+                bind(MulticastReceiverRegistrar.class).toInstance(mockMulticastReceiverRegistrar);
+                bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.GLOBAL_ADDRESS))
+                                   .toInstance(expectedMqttAddress);
+                bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.REPLY_TO_ADDRESS))
+                                   .toInstance(expectedReplyToAddress);
+            }
+        }, new JoynrPropertiesModule(new Properties()));
+        routingProvider = injector.getInstance(RoutingProviderImpl.class);
         routingProvider.setSubscriptionPublisher(mockRoutingSubscriptionPublisher);
-
-        getGlobalAddressOnFulfillmentSemaphore = new Semaphore(0);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                getGlobalAddressOnFulfillmentSemaphore.release();
-                return null;
-            }
-        }).when(mockGlobalAddressPromiseListener).onFulfillment(anyString());
-
-        globalAddressChangedSemaphore = new Semaphore(0);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                globalAddressChangedSemaphore.release();
-                return null;
-            }
-        }).when(mockRoutingSubscriptionPublisher).globalAddressChanged(anyString());
-
-        getReplyToAddressOnFulfillmentSemaphore = new Semaphore(0);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                getReplyToAddressOnFulfillmentSemaphore.release();
-                return null;
-            }
-        }).when(mockReplyToAddressPromiseListener).onFulfillment(anyString());
-
-        replyToAddressChangedSemaphore = new Semaphore(0);
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                replyToAddressChangedSemaphore.release();
-                return null;
-            }
-        }).when(mockRoutingSubscriptionPublisher).replyToAddressChanged(anyString());
-    }
-
-    @Test(timeout = 500)
-    public void testGlobalAddressGetAfterTransportIsReady() throws InterruptedException {
-        verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
-
-        Promise<Deferred<String>> globalAddressPromise = routingProvider.getGlobalAddress();
-        globalAddressPromise.then(mockGlobalAddressPromiseListener);
-        verify(mockGlobalAddressPromiseListener).onFulfillment(expectedMqttAddressString);
-        getGlobalAddressOnFulfillmentSemaphore.acquire();
-    }
-
-    @Test(timeout = 500)
-    public void testReplyToAddressGetAfterTransportIsReady() throws InterruptedException {
-        verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
-
-        Promise<Deferred<String>> replyToAddressPromise = routingProvider.getReplyToAddress();
-        replyToAddressPromise.then(mockReplyToAddressPromiseListener);
-        verify(mockReplyToAddressPromiseListener).onFulfillment(expectedMqttAddressString);
-        getReplyToAddressOnFulfillmentSemaphore.acquire();
-    }
-
-    @Test(timeout = 500)
-    public void testGlobalAddressGetBeforeTransportIsReady() throws InterruptedException {
-        Promise<Deferred<String>> globalAddressPromise = routingProvider.getGlobalAddress();
-
-        verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
-
-        globalAddressPromise.then(mockGlobalAddressPromiseListener);
-        verify(mockGlobalAddressPromiseListener).onFulfillment(expectedMqttAddressString);
-        getGlobalAddressOnFulfillmentSemaphore.acquire();
-    }
-
-    @Test(timeout = 500)
-    public void testReplyToAddressGetBeforeTransportIsReady() throws InterruptedException {
-        Promise<Deferred<String>> replyToAddressPromise = routingProvider.getReplyToAddress();
-
-        verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
-
-        replyToAddressPromise.then(mockReplyToAddressPromiseListener);
-        verify(mockReplyToAddressPromiseListener).onFulfillment(expectedMqttAddressString);
-        getReplyToAddressOnFulfillmentSemaphore.acquire();
-    }
-
-    @Test(timeout = 500)
-    public void testGlobalAddressOnChangeNotifications() throws InterruptedException {
-        verify(mockGlobalAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
-
-        verify(mockRoutingSubscriptionPublisher).globalAddressChanged(expectedMqttAddressString);
-
-        globalAddressChangedSemaphore.acquire(1);
-    }
-
-    @Test(timeout = 500)
-    public void testReplyToAddressOnChangeNotifications() throws InterruptedException {
-        verify(mockReplyToAddressProvider).registerGlobalAddressesReadyListener(transportReadyListener.capture());
-        transportReadyListener.getValue().transportReady(Optional.of(expectedMqttAddress));
-
-        verify(mockRoutingSubscriptionPublisher).replyToAddressChanged(expectedMqttAddressString);
-
-        replyToAddressChangedSemaphore.acquire(1);
     }
 
     @Test
@@ -249,5 +142,17 @@ public class RoutingProviderImplTest {
             }
         });
         assertTrue(cdl.await(1, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void testGetGlobalAddress() {
+        routingProvider.getGlobalAddress().then(mockGlobalAddressPromiseListener);
+        verify(mockGlobalAddressPromiseListener).onFulfillment(RoutingTypesUtil.toAddressString(expectedMqttAddress));
+    }
+
+    @Test
+    public void testGetReplyToAddress() {
+        routingProvider.getReplyToAddress().then(mockGlobalAddressPromiseListener);
+        verify(mockGlobalAddressPromiseListener).onFulfillment(RoutingTypesUtil.toAddressString(expectedReplyToAddress));
     }
 }

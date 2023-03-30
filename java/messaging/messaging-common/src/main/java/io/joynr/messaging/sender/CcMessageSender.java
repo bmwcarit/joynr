@@ -22,44 +22,29 @@ import static joynr.system.RoutingTypes.RoutingTypesUtil.toAddressString;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.runtime.GlobalAddressProvider;
-import io.joynr.runtime.ReplyToAddressProvider;
+import joynr.system.RoutingTypes.Address;
 
 @Singleton
 public class CcMessageSender extends AbstractMessageSender {
-    private String replyToAddress;
-    private String globalAddress;
+
+    @Inject(optional = true)
+    @Named(MessagingPropertyKeys.GLOBAL_ADDRESS)
+    private Address globalAddress = new Address();
+    @Inject(optional = true)
+    @Named(MessagingPropertyKeys.REPLY_TO_ADDRESS)
+    private Address replyToAddress = new Address();
 
     @Inject
-    public CcMessageSender(MessageRouter messageRouter,
-                           ReplyToAddressProvider replyToAddressProvider,
-                           GlobalAddressProvider globalAddressProvider) {
+    public CcMessageSender(MessageRouter messageRouter) {
         super(messageRouter);
-        replyToAddressProvider.registerGlobalAddressesReadyListener((address) -> addReplyToAddress(toAddressString(address.get())));
-        globalAddressProvider.registerGlobalAddressesReadyListener((address) -> addGlobalAddress(toAddressString(address.get())));
     }
 
-    private void addReplyToAddress(String replyToAddress) {
-        synchronized (this) {
-            this.replyToAddress = replyToAddress;
-        }
-        triggerSetReplyToAddressIfReady();
-    }
-
-    private void addGlobalAddress(String globalAddress) {
-        synchronized (this) {
-            this.globalAddress = globalAddress;
-        }
-        triggerSetReplyToAddressIfReady();
-    }
-
-    private void triggerSetReplyToAddressIfReady() {
-        synchronized (this) {
-            if (replyToAddress != null && globalAddress != null) {
-                setReplyToAddress(replyToAddress, globalAddress);
-            }
-        }
+    @Inject
+    public void init() {
+        setReplyToAddress(toAddressString(replyToAddress), toAddressString(globalAddress));
     }
 }

@@ -64,7 +64,6 @@ import io.joynr.capabilities.helpers.GlobalDiscoveryEntryWithUpdatedLastSeenDate
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.routing.TransportReadyListener;
 import io.joynr.provider.AbstractDeferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -381,18 +380,6 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
     @Test(timeout = TEST_TIMEOUT)
     public void add_removesCachedEntryWithSameParticipantId_ProviderScope_GLOBAL() throws InterruptedException {
         checkAddRemovesCachedEntryWithSameParticipantId(ProviderScope.GLOBAL);
-    }
-
-    @Test(timeout = TEST_TIMEOUT)
-    public void testAddWithGlobalAddressProviderThrowingException() {
-        when(globalAddressProvider.get()).thenThrow(new JoynrRuntimeException());
-
-        final boolean awaitGlobalRegistration = true;
-        localCapabilitiesDirectory.add(globalDiscoveryEntry, awaitGlobalRegistration, knownGbids);
-
-        verify(globalAddressProvider).registerGlobalAddressesReadyListener((TransportReadyListener) localCapabilitiesDirectory);
-        verify(globalDiscoveryEntryCacheMock, times(0)).add(any(GlobalDiscoveryEntry.class));
-        verify(globalCapabilitiesDirectoryClient, times(0)).add(any(), any(), anyLong(), any());
     }
 
     @Test(timeout = TEST_TIMEOUT)

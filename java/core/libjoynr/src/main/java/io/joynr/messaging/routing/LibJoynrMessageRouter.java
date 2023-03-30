@@ -468,8 +468,6 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                         } else {
                             handleOutgoingMessage(delayableMessage);
                         }
-                    } else {
-                        logger.error("Error in scheduled MessageWorker thread while processing message. delayableMessage == null, continuing.");
                     }
                 } catch (InterruptedException e) {
                     logger.trace("MessageWorker interrupted. Stopping.");

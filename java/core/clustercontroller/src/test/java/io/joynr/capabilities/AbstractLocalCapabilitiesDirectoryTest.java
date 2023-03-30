@@ -18,6 +18,7 @@
  */
 package io.joynr.capabilities;
 
+import static io.joynr.runtime.SystemServicesSettings.PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -38,6 +39,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -49,16 +51,26 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.util.Modules;
+import com.google.inject.Module;
+import com.google.inject.name.Names;
+import com.google.inject.TypeLiteral;
+
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl.GcdTaskSequencer;
 import io.joynr.capabilities.helpers.AnswerCreateHelper;
 import io.joynr.capabilities.helpers.PromiseChecker;
+import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.exceptions.JoynrRuntimeException;
+import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.provider.Promise;
 import io.joynr.proxy.CallbackWithModeledError;
-import io.joynr.runtime.GlobalAddressProvider;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
 import joynr.infrastructure.GlobalCapabilitiesDirectory;
@@ -125,8 +137,6 @@ public abstract class AbstractLocalCapabilitiesDirectoryTest {
     protected RoutingTable routingTable;
     @Mock
     protected CapabilitiesProvisioning capabilitiesProvisioning;
-    @Mock
-    protected GlobalAddressProvider globalAddressProvider;
     @Mock
     protected DiscoveryEntryStore<DiscoveryEntry> localDiscoveryEntryStoreMock;
     @Mock
@@ -200,20 +210,15 @@ public abstract class AbstractLocalCapabilitiesDirectoryTest {
 
         when(capabilitiesProvisioning.getDiscoveryEntries()).thenReturn(new HashSet<>(Arrays.asList(globalCapabilitiesDirectoryDiscoveryEntry,
                                                                                                     provisionedGlobalDiscoveryEntry)));
-        localCapabilitiesDirectory = new LocalCapabilitiesDirectoryImpl(capabilitiesProvisioning,
-                                                                        globalAddressProvider,
-                                                                        localDiscoveryEntryStoreMock,
-                                                                        globalDiscoveryEntryCacheMock,
-                                                                        routingTable,
-                                                                        globalCapabilitiesDirectoryClient,
-                                                                        expiredDiscoveryEntryCacheCleaner,
-                                                                        FRESHNESS_UPDATE_INTERVAL_MS,
-                                                                        capabilitiesFreshnessUpdateExecutor,
-                                                                        shutdownNotifier,
-                                                                        knownGbids,
-                                                                        DEFAULT_EXPIRY_TIME_MS,
-                                                                        accessController,
-                                                                        enableAccessControl);
+        Module injectionModule = Modules.override(createBaseInjectionModule()).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(long.class).annotatedWith(Names.named(PROPERTY_CAPABILITIES_FRESHNESS_UPDATE_INTERVAL_MS))
+                                .toInstance(FRESHNESS_UPDATE_INTERVAL_MS);
+            }
+        });
+        localCapabilitiesDirectory = Guice.createInjector(injectionModule)
+                                          .getInstance(LocalCapabilitiesDirectory.class);
 
         verify(capabilitiesFreshnessUpdateExecutor).schedule(addRemoveQueueRunnableCaptor.capture(),
                                                              anyLong(),
@@ -242,9 +247,37 @@ public abstract class AbstractLocalCapabilitiesDirectoryTest {
         globalDiscoveryEntry = CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, globalAddress1);
         expectedGlobalDiscoveryEntry = new GlobalDiscoveryEntry(globalDiscoveryEntry);
 
-        lenient().when(globalAddressProvider.get()).thenReturn(globalAddress1);
         lenient().when(localDiscoveryEntryStoreMock.lookup(anyString(), anyLong())).thenReturn(Optional.empty());
         lenient().when(globalDiscoveryEntryCacheMock.lookup(anyString(), anyLong())).thenReturn(Optional.empty());
+    }
+
+    protected Module createBaseInjectionModule() {
+        return Modules.override(new JoynrPropertiesModule(new Properties())).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(LocalCapabilitiesDirectory.class).to(LocalCapabilitiesDirectoryImpl.class);
+                bind(CapabilitiesProvisioning.class).toInstance(capabilitiesProvisioning);
+                bind(Address.class).annotatedWith(Names.named(MessagingPropertyKeys.GLOBAL_ADDRESS))
+                                   .toInstance(globalAddress1);
+                bind(new TypeLiteral<DiscoveryEntryStore<DiscoveryEntry>>() {
+                }).toInstance(localDiscoveryEntryStoreMock);
+                bind(new TypeLiteral<DiscoveryEntryStore<GlobalDiscoveryEntry>>() {
+                }).toInstance(globalDiscoveryEntryCacheMock);
+                bind(RoutingTable.class).toInstance(routingTable);
+                bind(GlobalCapabilitiesDirectoryClient.class).toInstance(globalCapabilitiesDirectoryClient);
+                bind(ExpiredDiscoveryEntryCacheCleaner.class).toInstance(expiredDiscoveryEntryCacheCleaner);
+                bind(ScheduledExecutorService.class).annotatedWith(Names.named(LocalCapabilitiesDirectory.JOYNR_SCHEDULER_CAPABILITIES_FRESHNESS))
+                                                    .toInstance(capabilitiesFreshnessUpdateExecutor);
+                bind(ShutdownNotifier.class).toInstance(shutdownNotifier);
+                bind(String[].class).annotatedWith(Names.named(MessagingPropertyKeys.GBID_ARRAY))
+                                    .toInstance(knownGbids);
+                bind(long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS))
+                                .toInstance(DEFAULT_EXPIRY_TIME_MS);
+                bind(AccessController.class).toInstance(accessController);
+                bind(boolean.class).annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
+                                   .toInstance(enableAccessControl);
+            }
+        });
     }
 
     @After

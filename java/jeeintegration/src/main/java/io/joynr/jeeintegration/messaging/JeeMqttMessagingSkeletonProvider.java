@@ -23,8 +23,6 @@ import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_BACKEND_UID;
 import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS;
-import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS;
 
 import java.util.Set;
 
@@ -41,7 +39,6 @@ import io.joynr.messaging.mqtt.MqttTopicPrefixProvider;
 import io.joynr.messaging.routing.MessageProcessedHandler;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.RoutingTable;
-import joynr.system.RoutingTypes.MqttAddress;
 
 /**
  * Like {@link MqttMessagingSkeletonProvider}.
@@ -59,8 +56,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public JeeMqttMessagingSkeletonProvider(@Named(GBID_ARRAY) String[] gbids,
                                             @Named(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean enableSharedSubscriptions,
-                                            @Named(PROPERTY_MQTT_GLOBAL_ADDRESS) MqttAddress ownAddress,
-                                            @Named(PROPERTY_MQTT_REPLY_TO_ADDRESS) MqttAddress replyToAddress,
                                             @Named(PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateMqttReplyReceiver,
                                             MessageRouter messageRouter,
                                             MessageProcessedHandler messageProcessedHandler,
@@ -74,8 +69,6 @@ public class JeeMqttMessagingSkeletonProvider extends MqttMessagingSkeletonProvi
                                             MqttMessageInProgressObserver mqttMessageInProgressObserver) {
         super(gbids,
               enableSharedSubscriptions,
-              ownAddress,
-              replyToAddress,
               separateMqttReplyReceiver,
               messageRouter,
               messageProcessedHandler,

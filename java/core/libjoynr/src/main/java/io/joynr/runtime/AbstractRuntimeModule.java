@@ -68,7 +68,6 @@ import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeletonFactory;
 import io.joynr.messaging.inprocess.InProcessMessagingStubFactory;
-import io.joynr.messaging.routing.GlobalAddressFactory;
 import io.joynr.messaging.routing.InMemoryMulticastReceiverRegistry;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.messaging.routing.MessageRouterUtil;
@@ -122,13 +121,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         }, Names.named(MessagingSkeletonFactory.MIDDLEWARE_MESSAGING_SKELETON_FACTORIES));
         messagingSkeletonFactory.addBinding(InProcessAddress.class).to(InProcessLibjoynrMessagingSkeletonFactory.class);
 
-        // other address types must be added to the Multibinder to support global addressing. Created here to make
-        // sure the Set exists, even if empty.
-        Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-        }, Names.named(GlobalAddressProvider.GLOBAL_ADDRESS_FACTORIES));
-        Multibinder.newSetBinder(binder(), new TypeLiteral<GlobalAddressFactory<? extends Address>>() {
-        }, Names.named(ReplyToAddressProvider.REPLY_TO_ADDRESS_FACTORIES));
-
         OptionalBinder.newOptionalBinder(binder(), MulticastAddressCalculator.class);
 
         bind(ProxyBuilderFactory.class).to(ProxyBuilderFactoryImpl.class);
@@ -166,5 +158,4 @@ abstract class AbstractRuntimeModule extends AbstractModule {
     Address getDispatcherAddress() {
         return new InProcessAddress();
     }
-
 }
