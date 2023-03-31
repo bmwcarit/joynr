@@ -1042,6 +1042,10 @@ The following optional parameters are supported:
 
 Note that the optional parameters are ordered, e.g. if providing 3. then 1. and 2. have to be provided as well.
 
+__IMPORTANT__: We strongly recommend to use `awaitGlobalRegistration` set to `true`. In case of `GLOBAL` providers,
+this ensures the caller, that the provider was registered successfully at the JDS and allows better error handling.
+
+
 ### Shutting down
 On exit of the application it should unregister any providers the application had registered earlier and free resources.
 
@@ -1086,11 +1090,17 @@ of the cluster controller and returns without waiting for the result. It is poss
 about the operation's result via `onSuccess` or `onError` callbacks if necessary.
 
 __IMPORTANT__: The `unregisterProvider` or `unregisterProviderAsync` functions do not guarantee a
-successful execution of provider's removal from the global capabilities directory. They do not wait
+successful execution of provider's removal from the global capabilities directory (GCD). They do not wait
 for a response from global capabilities directory and do not get informed about errors or success.
 The cluster controller will internally repeat the global remove operation until it succeeds or
-the cluster controller is shut down. The provider will be removed from the local capabilities
-directory after the global removal.
+the cluster controller is shut down. Depending on value of `awaitGlobalRegistration` used during
+provider registration:
+* if it was set to `false`, the provider will be removed from the local capabilities directory (LCD) before 
+the attempt will be made to remove the provider from the global capabilities directory (GCD).
+
+* if it was set to `true`,  the provider will be removed from the local capabilities directory (LCD) after
+it is removed from the global capabilities directory (GCD).
+
 
 ## The My&lt;Interface>Provider class
 
