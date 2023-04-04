@@ -60,6 +60,7 @@ import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessAddress;
+import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
@@ -105,6 +106,7 @@ public class CcMessageRouter
     private AccessController accessController;
     private boolean enableAccessControl;
     private ObjectMapper objectMapper;
+    private MessageTrackerForGracefulShutdown messageTracker;
 
     @Inject
     @Singleton
@@ -121,7 +123,8 @@ public class CcMessageRouter
                            @Named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE) boolean enableAccessControl,
                            MessageQueue messageQueue,
                            ShutdownNotifier shutdownNotifier,
-                           ObjectMapper objectMapper) {
+                           ObjectMapper objectMapper,
+                           MessageTrackerForGracefulShutdown messageTracker) {
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.routingTable = routingTable;
         this.scheduler = scheduler;
@@ -139,6 +142,7 @@ public class CcMessageRouter
         this.accessController = accessController;
         this.enableAccessControl = enableAccessControl;
         this.objectMapper = objectMapper;
+        this.messageTracker = messageTracker;
     }
 
     @Override
@@ -254,6 +258,7 @@ public class CcMessageRouter
     }
 
     protected void route(final ImmutableMessage message) {
+        messageTracker.register(message);
         if (enableAccessControl) {
             logger.debug("CcMessageRouter hasConsumerPermission CONSUMER ACCESS: {}", message);
             accessController.hasConsumerPermission(message, new HasConsumerPermissionCallback() {
@@ -317,6 +322,7 @@ public class CcMessageRouter
     }
 
     protected void finalizeMessageProcessing(final ImmutableMessage message, boolean isMessageRoutingsuccessful) {
+        messageTracker.unregister(message);
         if (message.isMessageProcessed()) {
             return;
         }
