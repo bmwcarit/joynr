@@ -49,7 +49,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
     private static final Set<Message.MessageType> MESSAGE_TYPE_REQUESTS = new HashSet<>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
                                                                                                       Message.MessageType.VALUE_MESSAGE_TYPE_REPLY));
 
-    private static final Set<Message.MessageType> MESSAGE_TYPE_SUPPORTED = new HashSet<>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY));
+    private static final Set<Message.MessageType> MESSAGE_TYPE_UNSUPPORTED = new HashSet<>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY));
 
     private static final String PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT = "joynr.runtime.prepareforshutdowntimeout";
 
@@ -74,7 +74,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
     public void register(final ImmutableMessage immutableMessage) {
         if (immutableMessage != null) {
             Message.MessageType type = immutableMessage.getType();
-            if (!isMessageTypeSupported(type)) {
+            if (isMessageTypeUnsupported(type)) {
                 return;
             }
 
@@ -99,7 +99,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
     public void unregister(final ImmutableMessage immutableMessage) {
         if (immutableMessage != null) {
             Message.MessageType type = immutableMessage.getType();
-            if (!isMessageTypeSupported(type)) {
+            if (isMessageTypeUnsupported(type)) {
                 return;
             }
 
@@ -108,12 +108,31 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
             logger.info("Trying to unregister message with the following ID: {}", messageId);
             boolean unregistrationResult = registeredMessages.remove(messageId);
             if (unregistrationResult) {
-                logger.info("The message with the following ID: {} has been successfully un-registered", messageId);
+                logger.info("The message with the following ID: {} has been successfully unregistered", messageId);
             } else {
                 logger.error("The message with the following ID has not been registered: {}", messageId);
             }
         } else {
             throw new JoynrIllegalStateException("The ImmutableMessage object passed for registering is null.");
+        }
+    }
+
+    /**
+     * Method for unregistering request with requestReplyId after expiry ReplyCaller
+     * @param requestReplyId
+     */
+    public void unregisterAfterReplyCallerExpired(final String requestReplyId) {
+        if (requestReplyId == null || requestReplyId.isEmpty()) {
+            throw new JoynrIllegalStateException("The requestReplyId passed for unregistering is null or empty.");
+        }
+
+        logger.info("Trying to unregister request with requestReplyId: {} after expiry ReplyCaller", requestReplyId);
+        boolean unregistrationResult = registeredMessages.remove(requestReplyId);
+        if (unregistrationResult) {
+            logger.info("The request with the following requestReplyId: {} has been successfully unregistered",
+                        requestReplyId);
+        } else {
+            logger.error("The request with the following requestReplyId has not been registered: {}", requestReplyId);
         }
     }
 
@@ -184,8 +203,8 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
         return requestReplyId;
     }
 
-    private boolean isMessageTypeSupported(Message.MessageType type) {
-        return MESSAGE_TYPE_SUPPORTED.contains(type);
+    private boolean isMessageTypeUnsupported(Message.MessageType type) {
+        return MESSAGE_TYPE_UNSUPPORTED.contains(type);
     }
 
     @Override

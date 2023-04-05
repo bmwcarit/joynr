@@ -22,6 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,6 +67,11 @@ public class MessageTrackerForGracefulShutdownTest {
     @Test(expected = JoynrIllegalStateException.class)
     public void testUnregisterMessageWithNull() {
         messageTracker.unregister(null);
+    }
+
+    @Test(expected = JoynrIllegalStateException.class)
+    public void testUnregisterAfterExpiredReplyCallerWithNull() {
+        messageTracker.unregisterAfterReplyCallerExpired(null);
     }
 
     @Test
@@ -111,6 +119,22 @@ public class MessageTrackerForGracefulShutdownTest {
         messageTracker.unregister(immutableMessage);
         int registerNumber = messageTracker.getNumberOfRegisteredMessages();
         assertEquals(0, registerNumber);
+    }
+
+    @Test
+    public void testUnregisterAfterExpiredReplyCaller() {
+        String requestReplyId = "requestReplyId";
+        Map<String, String> customHeader = new HashMap<>();
+        customHeader.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID, requestReplyId);
+
+        when(immutableMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
+        when(immutableMessage.getCustomHeaders()).thenReturn(customHeader);
+        messageTracker.register(immutableMessage);
+        int registerNumber = messageTracker.getNumberOfRegisteredMessages();
+        messageTracker.unregisterAfterReplyCallerExpired(requestReplyId);
+        int afterUnregisterNumber = messageTracker.getNumberOfRegisteredMessages();
+        assertEquals(1, registerNumber);
+        assertEquals(0, afterUnregisterNumber);
     }
 
     @Test

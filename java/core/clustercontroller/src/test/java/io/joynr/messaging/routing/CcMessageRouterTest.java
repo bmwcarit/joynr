@@ -48,6 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -60,7 +61,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.google.inject.multibindings.OptionalBinder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -82,6 +82,7 @@ import com.google.inject.Module;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.MapBinder;
+import com.google.inject.multibindings.OptionalBinder;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
@@ -1195,11 +1196,17 @@ public class CcMessageRouterTest {
         final int MESSAGE_LOAD = 10;
 
         final String recipient = "to";
+        final String requestReplyId1 = "requestReplyId";
+        Map<String, String> customHeader1 = new HashMap<>();
+        customHeader1.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID, requestReplyId1);
+
         ImmutableMessage failingMessage = mock(ImmutableMessage.class);
         when(failingMessage.isTtlAbsolute()).thenReturn(true);
         when(failingMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
         when(failingMessage.getRecipient()).thenReturn(recipient);
         when(failingMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
+        when(failingMessage.getId()).thenReturn(requestReplyId1);
+        when(failingMessage.getCustomHeaders()).thenReturn(customHeader1);
 
         final HashMap<Address, Set<String>> participantIdSet = new HashMap<>();
         participantIdSet.put(new Address(), Set.of(recipient));
@@ -1226,11 +1233,17 @@ public class CcMessageRouterTest {
                                                                       any(SuccessAction.class),
                                                                       any(FailureAction.class));
 
+        final String requestReplyId2 = "requestReplyId";
+        Map<String, String> customHeader2 = new HashMap<>();
+        customHeader1.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID, requestReplyId2);
+
         ImmutableMessage anotherMessage = mock(ImmutableMessage.class);
         when(anotherMessage.isTtlAbsolute()).thenReturn(true);
         when(anotherMessage.getTtlMs()).thenReturn(ExpiryDate.fromRelativeTtl(1000L).getValue());
         when(anotherMessage.getRecipient()).thenReturn("to");
         when(anotherMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
+        when(anotherMessage.getId()).thenReturn(requestReplyId2);
+        when(anotherMessage.getCustomHeaders()).thenReturn(customHeader2);
         doReturn(participantIdSet).when(addressManager).getParticipantIdMap(anotherMessage);
 
         final Semaphore semaphore = new Semaphore(0);
