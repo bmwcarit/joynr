@@ -39,6 +39,7 @@ import io.joynr.dispatching.Directory;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
+import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 
@@ -56,12 +57,16 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
 
     private ConcurrentMap<String, ScheduledFuture<?>> cleanupSchedulerFuturesMap = null;
 
+    private MessageTrackerForGracefulShutdown messageTracker;
+
     @Inject
     public ReplyCallerDirectory(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
-                                ShutdownNotifier shutdownNotifier) {
+                                ShutdownNotifier shutdownNotifier,
+                                MessageTrackerForGracefulShutdown messageTracker) {
         this.cleanupScheduler = cleanupScheduler;
         this.cleanupSchedulerFuturesMap = new ConcurrentHashMap<>();
         shutdownNotifier.registerForShutdown(this);
+        this.messageTracker = messageTracker;
     }
 
     public void addReplyCaller(final String requestReplyId,
@@ -105,6 +110,7 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
     }
 
     private void removeExpiredReplyCaller(String requestReplyId) {
+        messageTracker.unregisterAfterReplyCallerExpired(requestReplyId);
         ReplyCaller outstandingReplyCaller = remove(requestReplyId);
         if (outstandingReplyCaller == null) {
             // this happens, when a reply was already received and the replyCaller has been removed.
