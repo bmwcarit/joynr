@@ -94,7 +94,7 @@ endif()
 set(JOYNR_SPDLOG_REQUIRED_VERSION 1.4.2)
 find_package(spdlog ${JOYNR_SPDLOG_REQUIRED_VERSION} REQUIRED)
 
-set(JOYNR_WEBSOCKETPP_REQUIRED_VERSION 0.8.0)
+set(JOYNR_WEBSOCKETPP_REQUIRED_VERSION 0.8.1)
 # websocketpp-config.cmake iw not guarding target addition; workaround: check it here.
 if(NOT TARGET websocketpp::websocketpp)
     find_package(websocketpp ${JOYNR_WEBSOCKETPP_REQUIRED_VERSION} REQUIRED)
