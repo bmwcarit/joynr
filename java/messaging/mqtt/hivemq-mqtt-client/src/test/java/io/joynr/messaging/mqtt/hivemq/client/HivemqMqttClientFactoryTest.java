@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,211 +24,22 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import io.joynr.messaging.mqtt.JoynrMqttClient;
-import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.messaging.mqtt.MqttMessagingSkeleton;
-import io.joynr.runtime.ShutdownNotifier;
 
-import com.hivemq.client.mqtt.mqtt5.Mqtt5RxClient;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5ClientConfig;
-
-import io.joynr.statusmetrics.ConnectionStatusMetricsImpl;
-
-public class HivemqMqttClientFactoryTest {
-
-    private HivemqMqttClientFactory factory;
-    private final String[] gbids = new String[]{ "testGbid1", "testGbid2", "testGbid3" };
-    private final String defaultClientId = "HivemqMqttClientFactoryTest-" + System.currentTimeMillis();
-    @Mock
-    private MqttClientIdProvider mockClientIdProvider;
-    @Mock
-    private ShutdownNotifier mockShutdownNotifier;
-    @Mock
-    private Mqtt5RxClient mqtt5RxClient;
-    @Mock
-    private Mqtt5ClientConfig mockClientConfig;
-    @Mock
-    private ConnectionStatusMetricsImpl connectionStatusMetricsImpl;
-    @Mock
-    private HivemqMqttClientCreator mockHivemqMqttClientCreator;
-    @Mock
-    private MqttMessagingSkeleton mockMqttMessagingSkeleton1;
-    @Mock
-    private MqttMessagingSkeleton mockMqttMessagingSkeleton2;
-    @Mock
-    private MqttMessagingSkeleton mockMqttMessagingSkeleton3;
-
-    List<HivemqMqttClient> receivers = new ArrayList<>();
-    List<HivemqMqttClient> replyReceivers = new ArrayList<>();
-    List<HivemqMqttClient> senders = new ArrayList<>();
-
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        doReturn(defaultClientId).when(mockClientIdProvider).getClientId();
-        doReturn(mockClientConfig).when(mqtt5RxClient).getConfig();
-    }
-
-    private void createDefaultFactory(boolean separateConnections, boolean separateReplyReceiver) {
-        factory = new HivemqMqttClientFactory(separateConnections,
-                                              mockClientIdProvider,
-                                              mockShutdownNotifier,
-                                              mockHivemqMqttClientCreator,
-                                              true,
-                                              separateReplyReceiver);
-    }
-
-    private void createSendersAndReceivers() {
-        for (int i = 0; i < gbids.length; i++) {
-
-            manageMockHivemqMqttClientCreator(i);
-
-            HivemqMqttClient client1 = (HivemqMqttClient) factory.createReceiver(gbids[i]);
-            client1.setMessageListener(mockMqttMessagingSkeleton1);
-            HivemqMqttClient client2 = (HivemqMqttClient) factory.createSender(gbids[i]);
-            client2.setMessageListener(mockMqttMessagingSkeleton2);
-            HivemqMqttClient client3 = (HivemqMqttClient) factory.createReplyReceiver(gbids[i]);
-            client3.setMessageListener(mockMqttMessagingSkeleton3);
-
-            doNothing().when(client1).registerPublishCallback();
-            doNothing().when(client2).registerPublishCallback();
-            doNothing().when(client3).registerPublishCallback();
-
-            receivers.add(client1);
-            senders.add(client2);
-            replyReceivers.add(client3);
-
-            for (int j = 0; j < i; j++) {
-                assertNotEquals(receivers.get(i), receivers.get(j));
-                assertNotEquals(senders.get(i), senders.get(j));
-                assertNotEquals(replyReceivers.get(i), replyReceivers.get(j));
-            }
-        }
-    }
-
-    private void manageMockHivemqMqttClientCreator(int index) {
-
-        HivemqMqttClient client = new HivemqMqttClient(mqtt5RxClient,
-                                                       0,
-                                                       false,
-                                                       0,
-                                                       0,
-                                                       0,
-                                                       true,
-                                                       true,
-                                                       gbids[index],
-                                                       connectionStatusMetricsImpl);
-
-        doReturn(spy(client)).when(mockHivemqMqttClientCreator)
-                             .createClient(gbids[index], defaultClientId, true, true, true);
-
-        HivemqMqttClient senderAndRequestReceiver = new HivemqMqttClient(mqtt5RxClient,
-                                                                         0,
-                                                                         false,
-                                                                         0,
-                                                                         0,
-                                                                         0,
-                                                                         true,
-                                                                         true,
-                                                                         gbids[index],
-                                                                         connectionStatusMetricsImpl);
-
-        doReturn(spy(senderAndRequestReceiver)).when(mockHivemqMqttClientCreator)
-                                               .createClient(gbids[index], defaultClientId, true, true, false);
-
-        HivemqMqttClient clientReceiver = new HivemqMqttClient(mqtt5RxClient,
-                                                               0,
-                                                               false,
-                                                               0,
-                                                               0,
-                                                               0,
-                                                               true,
-                                                               false,
-                                                               gbids[index],
-                                                               connectionStatusMetricsImpl);
-
-        doReturn(spy(clientReceiver)).when(mockHivemqMqttClientCreator)
-                                     .createClient(gbids[index], defaultClientId + "Sub", true, false, false);
-
-        HivemqMqttClient clientSender = new HivemqMqttClient(mqtt5RxClient,
-                                                             0,
-                                                             false,
-                                                             0,
-                                                             0,
-                                                             0,
-                                                             false,
-                                                             true,
-                                                             gbids[index],
-                                                             connectionStatusMetricsImpl);
-
-        doReturn(spy(clientSender)).when(mockHivemqMqttClientCreator)
-                                   .createClient(gbids[index], defaultClientId + "Pub", false, true, false);
-
-        HivemqMqttClient clientReplyReceiver = new HivemqMqttClient(mqtt5RxClient,
-                                                                    0,
-                                                                    false,
-                                                                    0,
-                                                                    0,
-                                                                    0,
-                                                                    true,
-                                                                    false,
-                                                                    gbids[index],
-                                                                    connectionStatusMetricsImpl);
-
-        doReturn(spy(clientReplyReceiver)).when(mockHivemqMqttClientCreator)
-                                          .createClient(eq(gbids[index]),
-                                                        or(eq(defaultClientId + "Sub"),
-                                                           eq(defaultClientId + "SubReply")),
-                                                        eq(true),
-                                                        eq(false),
-                                                        eq(true));
-
-    }
-
-    private void assertSendersAndReceiversAreDifferent() {
-        for (int i = 0; i < gbids.length; i++) {
-            for (int j = 0; j < receivers.size(); j++) {
-                assertNotEquals(receivers.get(i), senders.get(j));
-            }
-        }
-    }
-
-    private void assertSendersAndReceiversAreTheSame() {
-        for (int i = 0; i < gbids.length; i++) {
-            assertEquals(receivers.get(i), senders.get(i));
-        }
-    }
-
-    private void assertReceiversAndReplyReceiversAreDifferent() {
-        for (int i = 0; i < receivers.size(); i++) {
-            for (int j = 0; j < receivers.size(); j++) {
-                assertNotEquals(receivers.get(i), replyReceivers.get(j));
-            }
-        }
-    }
-
-    private void assertReceiversAndReplyReceiversAreTheSame() {
-        for (int i = 0; i < receivers.size(); i++) {
-            assertEquals(receivers.get(i), replyReceivers.get(i));
-        }
-    }
+public class HivemqMqttClientFactoryTest extends AbstractHiveMqttClientFactoryTest {
 
     @Test
     public void createReceiverAndSender_noSeparateConnections_callsCreateClientTwice() {
@@ -337,15 +148,15 @@ public class HivemqMqttClientFactoryTest {
             assertEquals(receivers.get(i), replyReceivers.get(i));
         }
 
-        for (int i = 0; i < receivers.size(); i++) {
-            receivers.get(i).start();
-            assertFalse(receivers.get(i).isShutdown());
+        for (final JoynrMqttClient receiver : receivers) {
+            receiver.start();
+            assertFalse(receiver.isShutdown());
         }
 
         factory.shutdown();
 
-        for (int i = 0; i < receivers.size(); i++) {
-            assertTrue(receivers.get(i).isShutdown());
+        for (final JoynrMqttClient receiver : receivers) {
+            assertTrue(receiver.isShutdown());
         }
     }
 
@@ -908,7 +719,8 @@ public class HivemqMqttClientFactoryTest {
                                                                             mockShutdownNotifier,
                                                                             mockHivemqMqttClientCreator,
                                                                             false,
-                                                                            true);
+                                                                            true,
+                                                                            false);
 
         manageMockHivemqMqttClientCreator(0);
 
@@ -935,7 +747,8 @@ public class HivemqMqttClientFactoryTest {
                                                                             mockShutdownNotifier,
                                                                             mockHivemqMqttClientCreator,
                                                                             true,
-                                                                            true);
+                                                                            true,
+                                                                            false);
 
         manageMockHivemqMqttClientCreator(0);
 
@@ -966,7 +779,8 @@ public class HivemqMqttClientFactoryTest {
                                                                             mockShutdownNotifier,
                                                                             mockHivemqMqttClientCreator,
                                                                             true,
-                                                                            true);
+                                                                            true,
+                                                                            false);
 
         manageMockHivemqMqttClientCreator(0);
 
@@ -998,7 +812,8 @@ public class HivemqMqttClientFactoryTest {
                                                                             mockShutdownNotifier,
                                                                             mockHivemqMqttClientCreator,
                                                                             false,
-                                                                            true);
+                                                                            true,
+                                                                            false);
 
         manageMockHivemqMqttClientCreator(0);
 
@@ -1030,7 +845,8 @@ public class HivemqMqttClientFactoryTest {
                                                                             mockShutdownNotifier,
                                                                             mockHivemqMqttClientCreator,
                                                                             true,
-                                                                            true);
+                                                                            true,
+                                                                            false);
 
         manageMockHivemqMqttClientCreator(0);
 
@@ -1062,7 +878,8 @@ public class HivemqMqttClientFactoryTest {
                                                                             mockShutdownNotifier,
                                                                             mockHivemqMqttClientCreator,
                                                                             false,
-                                                                            true);
+                                                                            true,
+                                                                            false);
 
         manageMockHivemqMqttClientCreator(0);
 
@@ -1085,5 +902,90 @@ public class HivemqMqttClientFactoryTest {
         verify(sender, times(1)).shutdown();
         verify(receiver, times(1)).shutdown();
         verify(replyReceiver, times(1)).shutdown();
+    }
+
+    @Test
+    public void testStartConnectsClientsThatAreNotShutdown() {
+        createDefaultFactory(true, true);
+        createSendersAndReceivers();
+
+        assertSendersAndReceiversAreDifferent();
+        assertReceiversAndReplyReceiversAreDifferent();
+
+        final Set<JoynrMqttClient> activeClients = new HashSet<>();
+        final Set<JoynrMqttClient> shutdownClients = new HashSet<>();
+        final int shutdownIndex = 1;
+        for (int i = 0; i < gbids.length; i++) {
+            final JoynrMqttClient sender = senders.get(i);
+            final JoynrMqttClient receiver = receivers.get(i);
+            final JoynrMqttClient replyReceiver = replyReceivers.get(i);
+            if (i == shutdownIndex) {
+                shutdownClients(sender, receiver, replyReceiver);
+                shutdownClients.add(sender);
+                shutdownClients.add(receiver);
+                shutdownClients.add(replyReceiver);
+            } else {
+                startClients(sender, receiver, replyReceiver);
+                activeClients.add(sender);
+                activeClients.add(receiver);
+                activeClients.add(replyReceiver);
+            }
+        }
+
+        factory.start();
+
+        activeClients.forEach(client -> verify(client, times(1)).connect());
+        shutdownClients.forEach(client -> verify(client, never()).connect());
+    }
+
+    @Test
+    public void testPrepareForShutdownDoesNotShutdownClientsIfSeparateConnectionsTurnedOff() {
+        createDefaultFactory(false, false);
+        createSendersAndReceivers();
+
+        assertSendersAndReceiversAreTheSame();
+        assertReceiversAndReplyReceiversAreTheSame();
+
+        factory.prepareForShutdown();
+
+        Stream.of(senders.stream(), receivers.stream(), replyReceivers.stream())
+              .flatMap(i -> i)
+              .forEach(client -> verify(client, never()).shutdown());
+    }
+
+    @Test
+    public void testPrepareForShutdownShutdownsReceivingClientsIfSeparateConnectionsTurnedOnAndSeparateReplyReceiverDisabled() {
+        createDefaultFactory(true, false);
+        createSendersAndReceivers();
+
+        assertSendersAndReceiversAreDifferent();
+        assertReceiversAndReplyReceiversAreTheSame();
+
+        factory.prepareForShutdown();
+
+        Stream.of(receivers.stream(), replyReceivers.stream())
+              .flatMap(i -> i)
+              .forEach(client -> verify(client, times(1)).shutdown());
+        senders.forEach(client -> verify(client, never()).shutdown());
+    }
+
+    @Test
+    public void testPrepareForShutdownShutdownsReceivingClientsIfSeparateConnectionsTurnedOnAndSeparateReplyReceiverEnabled() {
+        createDefaultFactory(true, true);
+        createSendersAndReceivers();
+
+        assertSendersAndReceiversAreDifferent();
+        assertReceiversAndReplyReceiversAreDifferent();
+
+        factory.prepareForShutdown();
+
+        receivers.forEach(client -> verify(client, times(1)).shutdown());
+        Stream.of(senders.stream(), replyReceivers.stream())
+              .flatMap(i -> i)
+              .forEach(client -> verify(client, never()).shutdown());
+    }
+
+    private void createDefaultFactory(final boolean separateConnections, final boolean separateReplyReceiver) {
+        createDefaultFactory(separateConnections, separateReplyReceiver, false, true);
     }
 }
