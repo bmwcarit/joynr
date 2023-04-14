@@ -2,6 +2,38 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.18.5
+
+## API-relevant Changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed a bug in `LocalCapabilitiesDirectoryStore` that could lead to crash of the joynr
+  cluster controller. An internal map was not properly protected from concurrent access.
+
+* **[C++]** Fixed a bug in `TaskSequencer` that could lead to high CPU usage when `TaskSequencer`
+  was constructed with the default `maxTimeToWait` parameter (no problem in the existing code
+  because the parameter is explicitly set to 60s).
+
+* **[C++]** Fixed a deadlock that could occur in the cluster controller if a new remove task was
+  added while the TaskSequencer was processing another remove task. This could be caused by multiple
+  `unregisterProvider` calls from clients.
+
+* **[C++]** Fixed a deadlock that could occur in the cluster controller when a message had to be
+  dropped from a message queue while either another thread was trying to add a routing entry or the
+  message router cleanup thread tried to remove expired messages.
+
+* **[C++]** Fix race condition w.r.t awaitGlobalRegistration
+
 # joynr 1.18.4
 
 ## API-relevant Changes
