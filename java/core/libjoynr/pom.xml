@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>core</artifactId>
-		<version>1.18.4</version>
+		<version>1.18.5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
