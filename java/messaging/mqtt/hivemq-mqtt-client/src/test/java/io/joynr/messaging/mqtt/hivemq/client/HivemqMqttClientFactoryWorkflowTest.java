@@ -196,7 +196,8 @@ public class HivemqMqttClientFactoryWorkflowTest extends AbstractHiveMqttClientF
         }
     }
 
-    private void stopFactoryAndVerifyDisconnectInvocationCount(final boolean separateConnections, final boolean separateReplyReceiver) throws Exception {
+    private void stopFactoryAndVerifyDisconnectInvocationCount(final boolean separateConnections,
+                                                               final boolean separateReplyReceiver) throws Exception {
         factory.stop();
         assertFalse(getFactoryCanConnectValue());
         verifyDisconnectInvokedOnce(senders, shutDownSenders);
@@ -208,7 +209,8 @@ public class HivemqMqttClientFactoryWorkflowTest extends AbstractHiveMqttClientF
         }
     }
 
-    private void startFactoryAndVerifyConnectInvocationCount(final boolean canConnect, final int factoryStartInvocationCount) throws Exception {
+    private void startFactoryAndVerifyConnectInvocationCount(final boolean canConnect,
+                                                             final int factoryStartInvocationCount) throws Exception {
         factory.start();
         assertTrue(getFactoryCanConnectValue());
 
@@ -271,16 +273,6 @@ public class HivemqMqttClientFactoryWorkflowTest extends AbstractHiveMqttClientF
 
     private void verifyConnectNotInvoked(final JoynrMqttClient client) {
         verify(client, never()).connect();
-    }
-
-    @SafeVarargs
-    private void verifyConnectInvokedOnce(final List<JoynrMqttClient>... clientLists) {
-        verifyConnectInvocationCount(1, clientLists);
-    }
-
-    @SafeVarargs
-    private void verifyConnectInvokedTwice(final List<JoynrMqttClient>... clientLists) {
-        verifyConnectInvocationCount(2, clientLists);
     }
 
     @SafeVarargs
