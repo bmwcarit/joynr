@@ -19,6 +19,9 @@
 package io.joynr.messaging.mqtt.hivemq.client;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,16 +52,20 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientFactory.class);
 
-    private HashMap<String, JoynrMqttClient> receivingRequestClients; // gbid to client
-    private HashMap<String, JoynrMqttClient> receivingReplyClients; // gbid to client
-    private HashMap<String, JoynrMqttClient> sendingMqttClients; // gbid to client
+    public static final String SENDER_PREFIX = "Pub";
+    public static final String RECEIVER_PREFIX = "Sub";
+    public static final String REPLY_RECEIVER_PREFIX = "SubReply";
+    private final HashMap<String, JoynrMqttClient> receivingRequestClients; // gbid to client
+    private final HashMap<String, JoynrMqttClient> receivingReplyClients; // gbid to client
+    private final HashMap<String, JoynrMqttClient> sendingMqttClients; // gbid to client
     private final boolean separateConnections;
     private final MqttClientIdProvider mqttClientIdProvider;
-    private boolean separateReplyReceiver;
+    private final boolean separateReplyReceiver;
     private final JoynrMqttClientCreator clientCreator;
 
     // Boolean signifying whether the clients SHOULD connect to the broker or not
     private boolean canConnect;
+    private final boolean sharedSubscriptions;
 
     @Inject
     public HivemqMqttClientFactory(@Named(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS) boolean separateConnections,
@@ -66,7 +73,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                    ShutdownNotifier shutdownNotifier,
                                    JoynrMqttClientCreator clientCreator,
                                    @Named(MqttModule.PROPERTY_KEY_MQTT_CONNECT_ON_START) boolean canConnect,
-                                   @Named(MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateReplyReceiver) {
+                                   @Named(MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER) boolean separateReplyReceiver,
+                                   @Named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS) boolean sharedSubscriptions) {
         this.separateConnections = separateConnections;
         this.mqttClientIdProvider = mqttClientIdProvider;
         sendingMqttClients = new HashMap<>(); // gbid to client
@@ -75,6 +83,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
         this.clientCreator = clientCreator;
         this.separateReplyReceiver = separateReplyReceiver;
         this.canConnect = canConnect;
+        this.sharedSubscriptions = sharedSubscriptions;
         shutdownNotifier.registerForShutdown(this);
     }
 
@@ -84,12 +93,7 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
         if (client == null) {
             logger.info("Creating sender MQTT client for gbid {}", gbid);
             if (separateConnections) {
-                sendingMqttClients.put(gbid,
-                                       clientCreator.createClient(gbid,
-                                                                  mqttClientIdProvider.getClientId() + "Pub",
-                                                                  false,
-                                                                  true,
-                                                                  false));
+                sendingMqttClients.put(gbid, clientCreator.createClient(gbid, getSenderClientId(), false, true, false));
             } else {
                 createCombinedClient(gbid);
             }
@@ -106,10 +110,22 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
             if (separateConnections) {
                 receivingRequestClients.put(gbid,
                                             clientCreator.createClient(gbid,
-                                                                       mqttClientIdProvider.getClientId() + "Sub",
+                                                                       getReceiverClientId(),
                                                                        true,
                                                                        false,
-                                                                       separateReplyReceiver ? false : true));
+                                                                       !separateReplyReceiver));
+            } else if (separateReplyReceiver && sharedSubscriptions) {
+                logger.info("Receiver MQTT client for gbid {} will not handle incoming messages.", gbid);
+                receivingRequestClients.put(gbid,
+                                            clientCreator.createClient(gbid,
+                                                                       getReceiverClientId(),
+                                                                       true,
+                                                                       false,
+                                                                       false));
+                logger.info("A separate client for receiving replies and sending messages will be created for gbid {}.",
+                            gbid);
+                final JoynrMqttClient replyReceiver = createReplyReceiver(gbid);
+                sendingMqttClients.put(gbid, replyReceiver);
             } else {
                 createCombinedClient(gbid);
             }
@@ -128,9 +144,9 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
             logger.info("Creating reply receiver MQTT client for gbid {}", gbid);
             receivingReplyClients.put(gbid,
                                       clientCreator.createClient(gbid,
-                                                                 mqttClientIdProvider.getClientId() + "SubReply",
+                                                                 getReplyReceiverClientId(),
                                                                  true,
-                                                                 false,
+                                                                 !separateConnections && sharedSubscriptions,
                                                                  true));
             logger.debug("Reply Receiver MQTT client for gbid {} now: {}", gbid, receivingReplyClients.get(gbid));
         }
@@ -139,24 +155,25 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
 
     @Override
     public synchronized void prepareForShutdown() {
-        if (separateConnections) {
-            for (JoynrMqttClient client : receivingRequestClients.values()) {
-                client.shutdown();
-            }
+        if (shouldShutdownReceivingRequestsClients()) {
+            receivingRequestClients.values().forEach(JoynrMqttClient::shutdown);
         }
+    }
+
+    private boolean shouldShutdownReceivingRequestsClients() {
+        return separateConnections || (sharedSubscriptions && separateReplyReceiver);
     }
 
     @Override
     public synchronized void shutdown() {
         logger.debug("shutdown invoked");
         stop();
-        if (separateConnections) {
-            shutdownClients(receivingRequestClients);
-        }
-        if (separateReplyReceiver) {
-            shutdownClients(receivingReplyClients);
-        }
-        shutdownClients(sendingMqttClients);
+        Stream.of(sendingMqttClients.values().stream(),
+                  receivingRequestClients.values().stream(),
+                  receivingReplyClients.values().stream())
+              .flatMap(i -> i)
+              .distinct()
+              .forEach(JoynrMqttClient::shutdown);
         Schedulers.shutdown();
         logger.debug("shutdown finished");
     }
@@ -164,20 +181,17 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
     @Override
     public synchronized void start() {
         canConnect = true;
-        if (separateConnections) {
-            connectClients(receivingRequestClients);
-        }
-        if (separateReplyReceiver) {
-            connectClients(receivingReplyClients);
-        }
-        connectClients(sendingMqttClients);
+        Stream.of(sendingMqttClients.values().stream(),
+                  receivingRequestClients.values().stream(),
+                  receivingReplyClients.values().stream())
+              .flatMap(i -> i)
+              .distinct()
+              .forEach(this::connectIfNotShuttingDown);
     }
 
-    private void connectClients(HashMap<String, JoynrMqttClient> clients) {
-        for (JoynrMqttClient client : clients.values()) {
-            if (!client.isShutdown()) {
-                connect(client);
-            }
+    private void connectIfNotShuttingDown(final JoynrMqttClient client) {
+        if (!client.isShutdown()) {
+            connect(client);
         }
     }
 
@@ -194,25 +208,14 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
             return;
         }
         canConnect = false;
+        final Set<JoynrMqttClient> clientsToDisconnect = new HashSet<>(sendingMqttClients.values());
         if (separateConnections) {
-            disconnectClients(receivingRequestClients);
+            clientsToDisconnect.addAll(receivingRequestClients.values());
         }
         if (separateReplyReceiver) {
-            disconnectClients(receivingReplyClients);
+            clientsToDisconnect.addAll(receivingReplyClients.values());
         }
-        disconnectClients(sendingMqttClients);
-    }
-
-    private void disconnectClients(HashMap<String, JoynrMqttClient> clients) {
-        for (JoynrMqttClient client : clients.values()) {
-            client.disconnect();
-        }
-    }
-
-    private void shutdownClients(HashMap<String, JoynrMqttClient> clients) {
-        for (JoynrMqttClient client : clients.values()) {
-            client.shutdown();
-        }
+        clientsToDisconnect.forEach(JoynrMqttClient::disconnect);
     }
 
     private void createCombinedClient(String gbid) {
@@ -221,8 +224,23 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
                                                           mqttClientIdProvider.getClientId(),
                                                           true,
                                                           true,
-                                                          separateReplyReceiver ? false : true));
+                                                          !separateReplyReceiver));
         receivingRequestClients.put(gbid, sendingMqttClients.get(gbid));
     }
 
+    private String getClientId(final String suffix) {
+        return mqttClientIdProvider.getClientId() + suffix;
+    }
+
+    private String getSenderClientId() {
+        return getClientId(SENDER_PREFIX);
+    }
+
+    private String getReceiverClientId() {
+        return getClientId(RECEIVER_PREFIX);
+    }
+
+    private String getReplyReceiverClientId() {
+        return getClientId(REPLY_RECEIVER_PREFIX);
+    }
 }
