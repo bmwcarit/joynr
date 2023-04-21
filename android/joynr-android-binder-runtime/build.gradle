@@ -22,7 +22,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'maven'
 
 group = 'io.joynr.android'
-version = '1.23.0'
+version = '1.23.1-SNAPSHOT'
 
 buildscript {
     repositories {
