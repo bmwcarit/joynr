@@ -2,6 +2,47 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.23.0
+
+## API relevant changes
+* **[C++]** `joynr::Directory::add(...)` now supports an additional optional parameter
+  `timer_ttl_ms` to support testing.
+
+## Other Changes
+* **[Java]** Updated dependencies:
+```
+  * io.netty:                                     4.1.87.Final  -> 4.1.89.Final
+  * org.postgresql:postgresql:                    42.5.3        -> 42.5.4
+  * org.xerial:sqlite-jdbc                        3.40.1.0      -> 3.41.0.0
+  * com.google:dagger                             2.27.0        -> 2.45
+  * org.jboss.arquillian.*                        1.7.0.Alpha12 -> 1.7.0.Alpha14
+  * org.apache.maven.plugins:maven-javadoc-plugin 3.4.1         -> 3.5.0
+```
+* **[Java]** Allowed proxy calls in prepareForShutdown phase if possible.
+    Always allow stateless async, fireAndForget and unsubscribe calls.
+    Allow sync, async and subscribe calls only if separate reply receiver is enabled.
+* **[Java]** Improved system of creation temporary files. Name are random, non-conflicting, and can 
+    only be accessed by the current userid of the application.
+* **[Docker]** Fixed Java configuration in `joynr-java-8` Docker image.
+
+## Configuration Property Changes
+* **[Java]** Removed: 
+```
+  * `MqttModule.PROPERTY_MQTT_GLOBAL_ADDRESS`
+  * `MqttModule.PROPERTY_MQTT_REPLY_TO_ADDRESS`
+```
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Fixed critical error in `UdsClientTest.fatalErrorSocketDirDoesNotExist`.
+* **[Java]** Fixed bugs reported by SonarQube.
+* **[C++]** Fixed race condition in awaitGlobalRegistration.
+* **[C++]** Drop expired tasks in suspend/resume mode in `ReplyCallers` relying on `BootClock`'s 
+    absolute timestamp and not on relative TTL, so tasks that are already expired are dropped 
+    immediately and do not wait until relative TTL expires.
+
 # joynr 1.22.0
 
 ## API relevant changes
