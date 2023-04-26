@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2022 BMW Car IT GmbH
+ * Copyright (C) 2022-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -336,8 +336,10 @@ public class LocalCapabilitiesDirectorySequencerTest extends AbstractLocalCapabi
             }
         };
         class TestGcdRemoveTask extends GcdTask {
-            public TestGcdRemoveTask(final CallbackCreator callbackCreator, final String participantId) {
-                super(MODE.REMOVE, callbackCreator, participantId, null, null, 0L, true);
+            public TestGcdRemoveTask(final CallbackCreator callbackCreator,
+                                     final String participantId,
+                                     String[] gbids) {
+                super(MODE.REMOVE, callbackCreator, participantId, null, gbids, 0L, true);
             }
 
             @Override
@@ -352,7 +354,10 @@ public class LocalCapabilitiesDirectorySequencerTest extends AbstractLocalCapabi
                 return super.getParticipantId();
             }
         }
-        final TestGcdRemoveTask task = new TestGcdRemoveTask(callbackCreator, globalDiscoveryEntry.getParticipantId());
+
+        final TestGcdRemoveTask task = new TestGcdRemoveTask(callbackCreator,
+                                                             globalDiscoveryEntry.getParticipantId(),
+                                                             expectedGbids);
         gcdTaskSequencer.addTask(task);
 
         assertTrue(cdl1.await(DEFAULT_WAIT_TIME_MS * 100, TimeUnit.MILLISECONDS));
@@ -531,7 +536,6 @@ public class LocalCapabilitiesDirectorySequencerTest extends AbstractLocalCapabi
                                                                                argThat(new GlobalDiscoveryEntryWithParticipantIdMatcher(globalDiscoveryEntry1)),
                                                                                anyLong(),
                                                                                any(String[].class));
-
         CountDownLatch cdlRemove = new CountDownLatch(1);
         doAnswer(answerCreateHelper.createAnswerWithSuccess(cdlRemove)).when(globalCapabilitiesDirectoryClient)
                                                                        .remove(any(),
@@ -544,7 +548,7 @@ public class LocalCapabilitiesDirectorySequencerTest extends AbstractLocalCapabi
                                                                                  awaitGlobalRegistration);
         final Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry2,
                                                                                  awaitGlobalRegistration);
-        localCapabilitiesDirectory.remove(discoveryEntry1.getParticipantId());
+
         assertTrue(cdlAddDelayStarted.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         final JoynrRuntimeException expectedException = new JoynrRuntimeException("Failed to process global registration in time, please try again");
@@ -557,6 +561,7 @@ public class LocalCapabilitiesDirectorySequencerTest extends AbstractLocalCapabi
         promiseChecker.checkPromiseSuccess(promiseAdd1, "add failed");
         assertTrue(cdlAddDone.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
+        localCapabilitiesDirectory.remove(discoveryEntry1.getParticipantId());
         assertTrue(cdlRemove.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         final InOrder inOrder = inOrder(globalCapabilitiesDirectoryClient);

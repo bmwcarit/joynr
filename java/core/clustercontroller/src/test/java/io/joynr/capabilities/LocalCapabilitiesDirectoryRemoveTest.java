@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2022 BMW Car IT GmbH
+ * Copyright (C) 2022-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,8 +70,16 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
     private static final Logger logger = LoggerFactory.getLogger(LocalCapabilitiesDirectoryRemoveTest.class);
 
     @Test(timeout = TEST_TIMEOUT)
-    public void remove_globallyRegistered_GcdCalled() throws InterruptedException {
-        final boolean awaitGlobalRegistration = true;
+    public void remove_globallyRegistered_GcdCalled_awaitGlobalRegistration_true() throws InterruptedException {
+        remove_globallyRegistered_GcdCalled(true);
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void remove_globallyRegistered_GcdCalled_awaitGlobalRegistration_false() throws InterruptedException {
+        remove_globallyRegistered_GcdCalled(false);
+    }
+
+    private void remove_globallyRegistered_GcdCalled(boolean awaitGlobalRegistration) throws InterruptedException {
         final Promise<DeferredVoid> addPromise = localCapabilitiesDirectory.add(discoveryEntry,
                                                                                 awaitGlobalRegistration);
         promiseChecker.checkPromiseSuccess(addPromise, "add failed");
@@ -90,7 +98,7 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
         verify(globalCapabilitiesDirectoryClient).remove(any(),
                                                          eq(discoveryEntry.getParticipantId()),
                                                          any(String[].class));
-        verify(localDiscoveryEntryStoreMock, times(0)).remove(any(String.class));
+        verify(localDiscoveryEntryStoreMock, times(awaitGlobalRegistration ? 0 : 1)).remove(any(String.class));
         verify(globalDiscoveryEntryCacheMock, times(0)).remove(any(String.class));
         assertTrue(cdlDone.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(localDiscoveryEntryStoreMock, times(1)).remove(discoveryEntry.getParticipantId());
@@ -119,6 +127,7 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
 
     @Test(timeout = TEST_TIMEOUT)
     public void remove_participantNotRegisteredNoGbids_GcdNotCalled() throws InterruptedException {
+        // awaitGlobalRegistration = false
         final String participantId = "unknownparticipantId";
         final CountDownLatch cdl = new CountDownLatch(1);
 
@@ -136,6 +145,7 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
     @Test(timeout = TEST_TIMEOUT)
     public void remove_participantNotRegisteredGbidsMapped_GcdCalled() throws InterruptedException {
         // this test assumes that the participant gets registered by a queued add task after enqueuing the remove task
+        // while awaitGlobalRegistration = false
         final CountDownLatch cdl = new CountDownLatch(1);
         mockGcdRemove(cdl, provisionedGlobalDiscoveryEntry.getParticipantId());
 
@@ -161,10 +171,10 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
 
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verifyNoMoreInteractions(routingTable);
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(anyString());
         verify(globalCapabilitiesDirectoryClient,
                atLeast(2)).remove(any(), eq(provisionedGlobalDiscoveryEntry.getParticipantId()), any(String[].class));
         verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
-        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
     }
 
     @Test(timeout = TEST_TIMEOUT)
@@ -179,15 +189,16 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         verifyNoMoreInteractions(routingTable);
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(anyString());
         verify(globalCapabilitiesDirectoryClient,
                times(1)).remove(any(), eq(provisionedGlobalDiscoveryEntry.getParticipantId()), any(String[].class));
         verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
-        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
     }
 
     @Test(timeout = TEST_TIMEOUT)
     public void remove_FailureStates_DiscoveryError_NoEntry() throws InterruptedException {
         // covers NO_ENTRY_FOR_PARTICIPANT as well as NO_ENTRY_FOR_SELECTED_BACKENDS
+        // while awaitGlobalRegistration = false
         final CountDownLatch cdl = new CountDownLatch(1);
 
         mockGcdRemoveError(cdl,
@@ -207,6 +218,7 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
 
     @Test(timeout = TEST_TIMEOUT)
     public void remove_FailureStates_DiscoveryError_InvalidGbid() throws InterruptedException {
+        // This test uses awaitGlobalRegistration = false
         // Also covers UNKNOWN_GBID and INTERNAL_ERROR
         final CountDownLatch cdl = new CountDownLatch(1);
 
@@ -217,10 +229,10 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
         assertTrue(cdl.await(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         verifyNoMoreInteractions(routingTable);
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(anyString());
         verify(globalCapabilitiesDirectoryClient,
                times(1)).remove(any(), eq(provisionedGlobalDiscoveryEntry.getParticipantId()), any(String[].class));
         verify(globalDiscoveryEntryCacheMock, times(0)).remove(anyString());
-        verify(localDiscoveryEntryStoreMock, times(0)).remove(anyString());
     }
 
     @Test(timeout = TEST_TIMEOUT)
