@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,4 +68,10 @@ public interface LocalCapabilitiesDirectory extends DiscoveryProvider, ShutdownL
      */
     void removeStaleProvidersOfClusterController();
 
+    /**
+     * Returns value of awaitGlobalRegistration for given participantId.
+     * @param participantId DiscoveryEntry's participantId
+     * @return awaitGlobalRegistration
+     */
+    boolean getAwaitGlobalRegistration(String participantId);
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,10 +107,9 @@ public class GcdTask {
         return new GcdTask(MODE.RE_ADD, null, participantId, globalDiscoveryEntry, gbids, expiryDateMs, false);
     }
 
-    public static GcdTask createRemoveTask(CallbackCreator callbackCreator, String participantId) {
+    public static GcdTask createRemoveTask(CallbackCreator callbackCreator, String participantId, String[] gbids) {
         GlobalDiscoveryEntry globalDiscoveryEntry = null;
         long expiryDateMs = 0L;
-        String[] gbids = null;
         return new GcdTask(MODE.REMOVE,
                            callbackCreator,
                            participantId,
