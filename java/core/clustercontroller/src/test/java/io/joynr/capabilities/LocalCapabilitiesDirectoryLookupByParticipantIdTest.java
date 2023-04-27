@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2022 BMW Car IT GmbH
+ * Copyright (C) 2022-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -473,7 +473,7 @@ public class LocalCapabilitiesDirectoryLookupByParticipantIdTest extends Abstrac
     }
 
     private void lookupByParticipantIdDiscoveryScopeTest(final DiscoveryScope discoveryScope,
-                                                         final boolean localEntryAvalaible,
+                                                         final boolean localEntryAvailable,
                                                          final boolean invokesGcd,
                                                          final boolean returnsLocalEntry) throws Exception {
         final String participantId = discoveryEntry.getParticipantId();
@@ -481,7 +481,7 @@ public class LocalCapabilitiesDirectoryLookupByParticipantIdTest extends Abstrac
         final long discoveryTimeout = 5000L;
 
         discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, discoveryScope, false);
-        if (localEntryAvalaible) {
+        if (localEntryAvailable) {
             // register in all gbids
             final Promise<Add1Deferred> promiseAdd = addEntry(discoveryEntry, true, knownGbids);
             promiseChecker.checkPromiseSuccess(promiseAdd, MSG_ON_ADD_REJECT);

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2022 BMW Car IT GmbH
+ * Copyright (C) 2022-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package io.joynr.capabilities;
 
 import static io.joynr.capabilities.CapabilityUtils.discoveryEntry2GlobalDiscoveryEntry;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,6 +29,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
@@ -421,13 +423,9 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
         mockGcdRemove(removeSemaphore1, removeSemaphore2, participantId);
 
         // 3 actions. 1 global add 1 lcd.remove and 1 global add
+        // add1
         final Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry,
                                                                                  awaitGlobalRegistration);
-        final Promise<DeferredVoid> promiseRemove = localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
-        final Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry,
-                                                                                 awaitGlobalRegistration);
-
-        // add1
         assertTrue(addSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(globalCapabilitiesDirectoryClient).add(any(),
                                                       argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
@@ -440,6 +438,7 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
                times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
 
         // remove
+        final Promise<DeferredVoid> promiseRemove = localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
         assertTrue(removeSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(globalCapabilitiesDirectoryClient).remove(any(), eq(participantId), any(String[].class));
         verify(localDiscoveryEntryStoreMock, times(0)).remove(participantId);
@@ -448,6 +447,8 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
         verify(localDiscoveryEntryStoreMock, timeout(DEFAULT_WAIT_TIME_MS).times(1)).remove(participantId);
 
         // add2
+        final Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry,
+                                                                                 awaitGlobalRegistration);
         assertTrue(addSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         verify(globalCapabilitiesDirectoryClient,
                times(2)).add(any(),
@@ -484,10 +485,10 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
     }
 
     @Test(timeout = TEST_TIMEOUT)
-    public void addAndRemoveAndAddCalledInRowSameDiscoveryEntry_awaitGlobalRegistration_false() throws InterruptedException {
-        // A sequence of add-remove-add for the same provider could lead to a non-registered provider in earlier versions
-        // This is still the case for awaitGlobalRegistration = false if the second add is executed before the remove has
-        // returned from GCD
+    public void addRemoveAddInSequence_awaitGlobalRegistration_false() throws InterruptedException {
+        // In previous versions a sequence of add-remove-add for the same provider could lead to a non-registered provider
+        // This is no longer a case because when awaitGlobalRegistration = false, the entry will be removed before scheduling
+        // second add call
         final boolean awaitGlobalRegistration = false;
         final String participantId = discoveryEntry.getParticipantId();
         discoveryEntry.getQos().setScope(ProviderScope.GLOBAL);
@@ -530,10 +531,11 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
 
         // remove
         assertTrue(removeSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(participantId);
         verify(globalCapabilitiesDirectoryClient).remove(any(), eq(participantId), any(String[].class));
-        verify(localDiscoveryEntryStoreMock, times(0)).remove(participantId);
         removeSemaphore2.release();
-        verify(localDiscoveryEntryStoreMock, timeout(DEFAULT_WAIT_TIME_MS).times(1)).remove(participantId);
+        // already called before removeSemaphore2.release();
+        verify(localDiscoveryEntryStoreMock, atMostOnce()).remove(participantId);
 
         // add2
         assertTrue(addSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
@@ -560,9 +562,9 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
         final InOrder inOrderLocal = inOrder(localDiscoveryEntryStoreMock);
         inOrderLocal.verify(localDiscoveryEntryStoreMock, times(1))
                     .add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        inOrderLocal.verify(localDiscoveryEntryStoreMock, times(1)).remove(participantId);
         inOrderLocal.verify(localDiscoveryEntryStoreMock, times(1))
                     .add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
-        inOrderLocal.verify(localDiscoveryEntryStoreMock, times(1)).remove(participantId);
 
         verifyNoMoreInteractions(globalCapabilitiesDirectoryClient);
     }
@@ -974,6 +976,86 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
                              any());
         verify(localDiscoveryEntryStoreMock, times(0)).remove(globalDiscoveryEntry.getParticipantId());
         promiseChecker.checkPromiseSuccess(promise, "add failed");
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void getAwaitGlobalRegistration_returnFalseForNonExistingParticipant() {
+        final String nonExistingParticipantId = "non-existing-participant";
+
+        assertFalse(localCapabilitiesDirectory.getAwaitGlobalRegistration(nonExistingParticipantId));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void getAwaitGlobalRegistration_returnLastStoredValue() throws InterruptedException {
+        Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry, false);
+        promiseChecker.checkPromiseSuccess(promiseAdd1, MSG_ON_ADD_REJECT);
+        assertFalse(localCapabilitiesDirectory.getAwaitGlobalRegistration(discoveryEntry.getParticipantId()));
+
+        Promise<DeferredVoid> promiseAdd2 = localCapabilitiesDirectory.add(discoveryEntry, true);
+        promiseChecker.checkPromiseSuccess(promiseAdd2, MSG_ON_ADD_REJECT);
+        assertTrue(localCapabilitiesDirectory.getAwaitGlobalRegistration(discoveryEntry.getParticipantId()));
+    }
+
+    @Test(timeout = TEST_TIMEOUT)
+    public void getAwaitGlobalRegistration_removeLastStoredValue() throws InterruptedException {
+        final boolean awaitGlobalRegistration = false;
+        final String participantId = discoveryEntry.getParticipantId();
+        discoveryEntry.getQos().setScope(ProviderScope.GLOBAL);
+        expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
+        globalDiscoveryEntry = discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, globalAddress1);
+
+        // checked in remove
+        doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock).lookup(eq(participantId), anyLong());
+
+        final Semaphore addSemaphore1 = new Semaphore(0);
+        final Semaphore addSemaphore2 = new Semaphore(0);
+        mockGcdAdd(addSemaphore1, addSemaphore2, globalDiscoveryEntry);
+        final Semaphore removeSemaphore1 = new Semaphore(0);
+        final Semaphore removeSemaphore2 = new Semaphore(0);
+        mockGcdRemove(removeSemaphore1, removeSemaphore2, participantId);
+
+        // 2 actions. 1 global add 1 lcd.remove
+        final Promise<DeferredVoid> promiseAdd1 = localCapabilitiesDirectory.add(discoveryEntry,
+                                                                                 awaitGlobalRegistration);
+        promiseChecker.checkPromiseSuccess(promiseAdd1, MSG_ON_ADD_REJECT);
+        verify(localDiscoveryEntryStoreMock,
+               times(1)).add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+
+        final Promise<DeferredVoid> promiseRemove = localCapabilitiesDirectory.remove(discoveryEntry.getParticipantId());
+        promiseChecker.checkPromiseSuccess(promiseRemove, MSG_ON_REMOVE_REJECT);
+
+        // add1
+        assertTrue(addSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(globalCapabilitiesDirectoryClient).add(any(),
+                                                      argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                                                      anyLong(),
+                                                      any(String[].class));
+        addSemaphore2.release();
+
+        // remove
+        assertTrue(removeSemaphore1.tryAcquire(DEFAULT_WAIT_TIME_MS, TimeUnit.MILLISECONDS));
+        verify(localDiscoveryEntryStoreMock, times(1)).remove(participantId);
+        verify(globalCapabilitiesDirectoryClient).remove(any(), eq(participantId), any(String[].class));
+        removeSemaphore2.release();
+        // already called before removeSemaphore2.release();
+        verify(localDiscoveryEntryStoreMock, atMostOnce()).remove(participantId);
+
+        final InOrder inOrderGlobal = inOrder(globalCapabilitiesDirectoryClient);
+        inOrderGlobal.verify(globalCapabilitiesDirectoryClient)
+                     .add(any(),
+                          argThat(new GlobalDiscoveryEntryWithUpdatedLastSeenDateMsMatcher(globalDiscoveryEntry)),
+                          anyLong(),
+                          any(String[].class));
+        inOrderGlobal.verify(globalCapabilitiesDirectoryClient).remove(any(), eq(participantId), any(String[].class));
+
+        final InOrder inOrderLocal = inOrder(localDiscoveryEntryStoreMock);
+        inOrderLocal.verify(localDiscoveryEntryStoreMock, times(1))
+                    .add(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
+        inOrderLocal.verify(localDiscoveryEntryStoreMock, times(1)).remove(participantId);
+
+        verifyNoMoreInteractions(globalCapabilitiesDirectoryClient);
+
+        assertFalse(localCapabilitiesDirectory.getAwaitGlobalRegistration(participantId));
     }
 
     @Test(timeout = TEST_TIMEOUT)
