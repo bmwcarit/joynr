@@ -425,28 +425,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryAddMethodTest);
 };
 
-const std::vector<std::string> AbstractLocalCapabilitiesDirectoryTest::_KNOWN_GBIDS{
-        "testGbid1", "testGbid2", "testGbid3"};
-const std::string AbstractLocalCapabilitiesDirectoryTest::_INTERFACE_1_NAME("myInterfaceA");
-const std::string AbstractLocalCapabilitiesDirectoryTest::_INTERFACE_2_NAME("myInterfaceB");
-const std::string AbstractLocalCapabilitiesDirectoryTest::_INTERFACE_3_NAME("myInterfaceC");
-const std::string AbstractLocalCapabilitiesDirectoryTest::_DOMAIN_1_NAME("domainA");
-const std::string AbstractLocalCapabilitiesDirectoryTest::_DOMAIN_2_NAME("domainB");
-const std::string AbstractLocalCapabilitiesDirectoryTest::_DOMAIN_3_NAME("domainB");
-const std::string AbstractLocalCapabilitiesDirectoryTest::_LOCAL_ADDRESS(serializer::serializeToJson(
-        system::RoutingTypes::MqttAddress(_KNOWN_GBIDS[0], "localTopic")));
-const std::vector<std::string> AbstractLocalCapabilitiesDirectoryTest::_EXTERNAL_ADDRESSES_VECTOR{
-        serializer::serializeToJson(
-                system::RoutingTypes::MqttAddress(_KNOWN_GBIDS[0], "externalTopic")),
-        serializer::serializeToJson(
-                system::RoutingTypes::MqttAddress(_KNOWN_GBIDS[1], "externalTopic")),
-        serializer::serializeToJson(
-                system::RoutingTypes::MqttAddress(_KNOWN_GBIDS[2], "externalTopic"))};
-const std::int64_t AbstractLocalCapabilitiesDirectoryTest::_LASTSEEN_MS(1000);
-const std::int64_t AbstractLocalCapabilitiesDirectoryTest::_EXPIRYDATE_MS(10000);
-const std::string AbstractLocalCapabilitiesDirectoryTest::_PUBLIC_KEY_ID("publicKeyId");
-const int AbstractLocalCapabilitiesDirectoryTest::_TIMEOUT(2000);
-
 TEST_F(LocalCapabilitiesDirectoryAddMethodTest, add_global_invokesGcd)
 {
     Sequence s;

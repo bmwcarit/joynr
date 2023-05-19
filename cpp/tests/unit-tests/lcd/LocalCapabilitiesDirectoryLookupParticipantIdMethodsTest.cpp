@@ -715,45 +715,9 @@ protected:
     std::shared_ptr<Semaphore> _semaphore;
     bool _finalized;
 
-    static const std::vector<std::string> _KNOWN_GBIDS;
-    static const std::string _INTERFACE_1_NAME;
-    static const std::string _DOMAIN_1_NAME;
-    static const std::string _INTERFACE_2_NAME;
-    static const std::string _DOMAIN_2_NAME;
-    static const std::string _INTERFACE_3_NAME;
-    static const std::string _DOMAIN_3_NAME;
-    static const std::string _LOCAL_ADDRESS;
-    static const std::vector<std::string> _EXTERNAL_ADDRESSES_VECTOR;
-    static const std::int64_t _LASTSEEN_MS;
-    static const std::int64_t _EXPIRYDATE_MS;
-    static const std::string _PUBLIC_KEY_ID;
-    static const int _TIMEOUT;
-
 private:
     DISALLOW_COPY_AND_ASSIGN(LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest);
 };
-
-const std::vector<std::string> LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_KNOWN_GBIDS{
-        "testGbid1", "testGbid2", "testGbid3"};
-const std::string LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_INTERFACE_1_NAME("myInterfaceA");
-const std::string LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_INTERFACE_2_NAME("myInterfaceB");
-const std::string LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_INTERFACE_3_NAME("myInterfaceC");
-const std::string LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_DOMAIN_1_NAME("domainA");
-const std::string LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_DOMAIN_2_NAME("domainB");
-const std::string LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_DOMAIN_3_NAME("domainB");
-const std::string LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_LOCAL_ADDRESS(serializer::serializeToJson(
-        system::RoutingTypes::MqttAddress(_KNOWN_GBIDS[0], "localTopic")));
-const std::vector<std::string> LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_EXTERNAL_ADDRESSES_VECTOR{
-        serializer::serializeToJson(
-                system::RoutingTypes::MqttAddress(_KNOWN_GBIDS[0], "externalTopic")),
-        serializer::serializeToJson(
-                system::RoutingTypes::MqttAddress(_KNOWN_GBIDS[1], "externalTopic")),
-        serializer::serializeToJson(
-                system::RoutingTypes::MqttAddress(_KNOWN_GBIDS[2], "externalTopic"))};
-const std::int64_t LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_LASTSEEN_MS(1000);
-const std::int64_t LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_EXPIRYDATE_MS(10000);
-const std::string LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_PUBLIC_KEY_ID("publicKeyId");
-const int LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::_TIMEOUT(2000);
 
 TEST_F(LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest, lookupLocalEntryByParticipantId_callsMockStorage)
 {
