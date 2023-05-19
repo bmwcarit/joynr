@@ -178,17 +178,6 @@ public:
         test::util::removeFileInCurrentDirectory(".*\\.settings");
         test::util::removeFileInCurrentDirectory(".*\\.persist");
     }
-
-    std::function<void(const exceptions::ProviderRuntimeException&)>
-    createExpectedProviderRuntimeExceptionFunction(
-            const joynr::exceptions::ProviderRuntimeException& expectedRuntimeException)
-    {
-        return [this,
-                expectedRuntimeException](const exceptions::ProviderRuntimeException& exception) {
-            EXPECT_EQ(expectedRuntimeException, exception);
-            _semaphore->notify();
-        };
-    }
     
     std::function<void(const types::DiscoveryEntryWithMetaInfo&)>
     createUnexpectedLookupParticipantIdSuccessFunction()
@@ -196,65 +185,6 @@ public:
         return [](const types::DiscoveryEntryWithMetaInfo& result) {
             FAIL() << "Got result: " + result.toString();
         };
-    }
-
-    void fakeLookupNoEntryForParticipant(
-            const std::string& participantId,
-            const std::vector<std::string>& gbids,
-            std::int64_t messagingTtl,
-            std::function<void(const std::vector<types::GlobalDiscoveryEntry>& capabilities)>
-                    onSuccess,
-            std::function<void(const types::DiscoveryError::Enum& errorEnum)> onError,
-            std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
-    {
-        std::ignore = participantId;
-        std::ignore = gbids;
-        std::ignore = messagingTtl;
-        std::ignore = onSuccess;
-        std::ignore = onRuntimeError;
-        std::vector<types::GlobalDiscoveryEntry> result;
-        onError(types::DiscoveryError::NO_ENTRY_FOR_PARTICIPANT);
-    }
-
-    std::function<void()> createUnexpectedAddOnSuccessFunction()
-    {
-        return []() { FAIL(); };
-    }
-
-    void fakeCapabilitiesClientLookupWithDiscoveryException(
-            const std::vector<std::string>& domains,
-            const std::string& interfaceName,
-            const std::vector<std::string>& gbids,
-            const std::int64_t messagingTtl,
-            std::function<void(const std::vector<types::GlobalDiscoveryEntry>& capabilities)>
-                    onSuccess,
-            std::function<void(const types::DiscoveryError::Enum& errorEnum)> onError,
-            std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
-    {
-        std::ignore = domains;
-        std::ignore = interfaceName;
-        std::ignore = gbids;
-        std::ignore = messagingTtl;
-        std::ignore = onSuccess;
-        std::ignore = onError;
-        exceptions::DiscoveryException fakeDiscoveryException("fakeDiscoveryException");
-        onRuntimeError(fakeDiscoveryException);
-    }
-
-    void fakeCapabilitiesClientAddSuccess(
-            const types::GlobalDiscoveryEntry& entry,
-            const bool awaitGlobalRegistration,
-            const std::vector<std::string>& gbids,
-            std::function<void()> onSuccess,
-            std::function<void(const types::DiscoveryError::Enum& errorEnum)> onError,
-            std::function<void(const exceptions::JoynrRuntimeException& error)> onRuntimeError)
-    {
-        std::ignore = entry;
-        std::ignore = awaitGlobalRegistration;
-        std::ignore = gbids;
-        std::ignore = onError;
-        std::ignore = onRuntimeError;
-        onSuccess();
     }
 
     void fakeCapabilitiesClientRemoveStaleWithException(
@@ -322,32 +252,7 @@ public:
         _localCapabilitiesDirectoryStore->clear();
     }
 
-    std::vector<types::GlobalDiscoveryEntry> getGlobalDiscoveryEntries(
-            const std::uint8_t numEntries)
-    {
-        if (numEntries > _dummyParticipantIdsVector.size()) {
-            for (std::uint8_t i = _dummyParticipantIdsVector.size(); i <= numEntries; i++) {
-                _dummyParticipantIdsVector.push_back(util::createUuid());
-            }
-        }
-
-        std::vector<types::GlobalDiscoveryEntry> globalDiscoveryEntryList;
-        for (std::uint8_t i = 0; i < numEntries; i++) {
-            globalDiscoveryEntryList.push_back(
-                    types::GlobalDiscoveryEntry(_defaultProviderVersion,
-                                                _DOMAIN_1_NAME,
-                                                _INTERFACE_1_NAME,
-                                                _dummyParticipantIdsVector[i],
-                                                types::ProviderQos(),
-                                                _LASTSEEN_MS,
-                                                _EXPIRYDATE_MS,
-                                                _PUBLIC_KEY_ID,
-                                                _EXTERNAL_ADDRESSES_VECTOR[i > 2 ? 0 : i]));
-        }
-        return globalDiscoveryEntryList;
-    }
-
-        void checkAddToGcdClient(const std::vector<std::string>& expectedGbids, Sequence& s)
+    void checkAddToGcdClient(const std::vector<std::string>& expectedGbids, Sequence& s)
     {
         EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
                     add(GlobalDiscoveryEntryMatcher(_expectedGlobalCapEntry), _, Eq(expectedGbids),
@@ -355,60 +260,6 @@ public:
                 .Times(1)
                 .InSequence(s)
                 .WillOnce(InvokeArgument<3>());
-    }
-
-    void testLookupByParticipantIdWithGbids_globalOnly_notCached_invokesGCDClient(
-            const std::vector<std::string>& gbidsForLookup,
-            const std::vector<std::string>& expectedGbids)
-    {
-        _discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    lookup(Eq(_dummyParticipantIdsVector[1]), Eq(expectedGbids),
-                           Eq(_discoveryQos.getDiscoveryTimeout()), _, _, _))
-                .Times(1);
-
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-        _localCapabilitiesDirectory->lookup(
-                _dummyParticipantIdsVector[1], _discoveryQos, gbidsForLookup, nullptr, nullptr);
-    }
-
-    void testLookupByParticipantIdWithGbids_globalOnly_cached_doesNotInvokeGcdClient(
-            const std::vector<std::string>& gbids)
-    {
-        _discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
-        // caching dummy entry
-        types::ProviderQos providerQos;
-        providerQos.setScope(types::ProviderScope::GLOBAL);
-        _entry.setQos(providerQos);
-        const types::DiscoveryEntryWithMetaInfo expectedEntry = LCDUtil::convert(false, _entry);
-
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, add(_, _, _, _, _, _))
-                .Times(1)
-                .WillOnce(InvokeArgument<3>());
-        // Entry is already cached GCD should not be involved
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
-
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        _localCapabilitiesDirectory->add(_entry, true, _KNOWN_GBIDS, createVoidOnSuccessFunction(),
-                                         _unexpectedOnDiscoveryErrorFunction);
-
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-
-        auto onSuccess = [this, expectedEntry](const types::DiscoveryEntryWithMetaInfo& result) {
-            EXPECT_TRUE(compareDiscoveryEntries(expectedEntry, result));
-            _semaphore->notify();
-        };
-
-        _localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[0],
-                                            _discoveryQos,
-                                            gbids,
-                                            onSuccess,
-                                            _unexpectedOnDiscoveryErrorFunction);
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
     }
 
     void fakeLookupByParticipantIdWithResult(
@@ -477,167 +328,6 @@ public:
             std::ignore = result;
             _semaphore->notify();
         };
-    }
-
-    std::function<void(const std::vector<types::DiscoveryEntryWithMetaInfo>&)>
-    createUnexpectedLookupSuccessFunction()
-    {
-        return [](const std::vector<types::DiscoveryEntryWithMetaInfo>& result) {
-            FAIL() << "Got result: " + (result.empty() ? "EMPTY" : result.at(0).toString());
-        };
-    }
-
-    std::function<void(const types::DiscoveryError::Enum&)> createExpectedDiscoveryErrorFunction(
-            const types::DiscoveryError::Enum& expectedError)
-    {
-        return [this, expectedError](const types::DiscoveryError::Enum& error) {
-            EXPECT_EQ(expectedError, error);
-            _semaphore->notify();
-        };
-    }
-
-    void testAddToAllIsProperlyRejected(const types::DiscoveryError::Enum& expectedError)
-    {
-        const bool awaitGlobalRegistration = true;
-
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    add(Matcher<const types::GlobalDiscoveryEntry&>(DiscoveryEntryMatcher(_entry)),
-                        _, _, _, _, _))
-                .Times(1)
-                .WillOnce(InvokeArgument<4>(expectedError));
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        _localCapabilitiesDirectory->addToAll(_entry,
-                                              awaitGlobalRegistration,
-                                              createUnexpectedAddOnSuccessFunction(),
-                                              createExpectedDiscoveryErrorFunction(expectedError));
-
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    }
-
-    void lookupByDomainInterfaceWithGbidsIsProperlyRejected(types::DiscoveryError::Enum errorEnum)
-    {
-        _discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, _, _, _, _, _))
-                .Times(1)
-                .WillOnce(InvokeArgument<5>(errorEnum));
-
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
-                                            _INTERFACE_1_NAME,
-                                            _discoveryQos,
-                                            {},
-                                            createUnexpectedLookupSuccessFunction(),
-                                            createExpectedDiscoveryErrorFunction(errorEnum));
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    }
-
-    void lookupByParticipantIdWithGbidsIsProperlyRejected(types::DiscoveryError::Enum errorEnum)
-    {
-        _discoveryQos.setDiscoveryScope(types::DiscoveryScope::GLOBAL_ONLY);
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    lookup(Eq(_dummyParticipantIdsVector[1]), _, _, _, _, _))
-                .Times(1)
-                .WillOnce(InvokeArgument<4>(errorEnum));
-
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        _localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[1],
-                                            _discoveryQos,
-                                            _KNOWN_GBIDS,
-                                            createUnexpectedLookupParticipantIdSuccessFunction(),
-                                            createExpectedDiscoveryErrorFunction(errorEnum));
-
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    }
-
-    void testLookupByDomainInterfaceWithGbids_gbidValidationFails(
-            const std::vector<std::string>& gbids,
-            types::DiscoveryError::Enum errorEnum)
-    {
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
-
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
-                                            _INTERFACE_1_NAME,
-                                            _discoveryQos,
-                                            gbids,
-                                            createUnexpectedLookupSuccessFunction(),
-                                            createExpectedDiscoveryErrorFunction(errorEnum));
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    }
-
-    void testLookupByParticipantIdWithGbids_gbidValidationFails(
-            const std::vector<std::string>& gbids,
-            types::DiscoveryError::Enum errorEnum)
-    {
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
-
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        _localCapabilitiesDirectory->lookup(_dummyParticipantIdsVector[1],
-                                            _discoveryQos,
-                                            gbids,
-                                            createUnexpectedLookupParticipantIdSuccessFunction(),
-                                            createExpectedDiscoveryErrorFunction(errorEnum));
-
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    }
-
-    void testAddWithGbidsIsProperlyRejected(
-            const types::DiscoveryError::Enum& expectedDiscoveryError)
-    {
-        const bool awaitGlobalRegistration = true;
-        const std::vector<std::string>& gbids = {_KNOWN_GBIDS[0]};
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
-                .Times(1)
-                .WillOnce(InvokeArgument<4>(expectedDiscoveryError));
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        _localCapabilitiesDirectory->add(
-                _entry,
-                awaitGlobalRegistration,
-                gbids,
-                createUnexpectedAddOnSuccessFunction(),
-                createExpectedDiscoveryErrorFunction(expectedDiscoveryError));
-
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    }
-
-    void testAddIsProperlyRejected(const types::DiscoveryError::Enum& expectedDiscoveryError)
-    {
-        const bool awaitGlobalRegistration = true;
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
-                .Times(1)
-                .WillOnce(InvokeArgument<4>(expectedDiscoveryError));
-
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        joynr::exceptions::ProviderRuntimeException expectedException(
-                fmt::format("Error registering provider {} in default backend: {}",
-                            _entry.getParticipantId(),
-                            types::DiscoveryError::getLiteral(expectedDiscoveryError)));
-        _localCapabilitiesDirectory->add(
-                _entry,
-                awaitGlobalRegistration,
-                createUnexpectedAddOnSuccessFunction(),
-                createExpectedProviderRuntimeExceptionFunction(expectedException));
-
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
     }
 
 protected:

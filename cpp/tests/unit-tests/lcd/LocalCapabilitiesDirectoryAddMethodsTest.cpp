@@ -283,28 +283,6 @@ public:
         EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
     }
 
-    void testAddWithGbidsIsProperlyRejected(
-            const types::DiscoveryError::Enum& expectedDiscoveryError)
-    {
-        const bool awaitGlobalRegistration = true;
-        const std::vector<std::string>& gbids = {_KNOWN_GBIDS[0]};
-        EXPECT_CALL(*_globalCapabilitiesDirectoryClient,
-                    add(An<const types::GlobalDiscoveryEntry&>(), _, _, _, _, _))
-                .Times(1)
-                .WillOnce(InvokeArgument<4>(expectedDiscoveryError));
-        initializeMockLocalCapabilitiesDirectoryStore();
-        finalizeTestSetupAfterMockExpectationsAreDone();
-
-        _localCapabilitiesDirectory->add(
-                _entry,
-                awaitGlobalRegistration,
-                gbids,
-                createUnexpectedAddOnSuccessFunction(),
-                createExpectedDiscoveryErrorFunction(expectedDiscoveryError));
-
-        EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(_TIMEOUT)));
-    }
-
     void testAddIsProperlyRejected(const types::DiscoveryError::Enum& expectedDiscoveryError)
     {
         const bool awaitGlobalRegistration = true;
