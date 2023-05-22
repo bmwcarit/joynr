@@ -18,11 +18,25 @@ function wait_for_gcd {
     return 0
 }
 
+function wait_for_payara() {
+  for i in {1..60}
+  do
+    if curl -s --head --request GET http://localhost:4848 | grep "200 OK" > /dev/null; then
+      echo "attempt #$i: Payara Server is up"
+      break
+    else
+      echo "attempt #$i: Payara Server is down"
+    fi
+    sleep 5
+  done
+	return 0
+}
+
 asadmin --user admin --passwordFile=/opt/payara/passwordFile --interactive=false start-domain --debug --verbose &
 PID=$!
 
 # Give Payara time to start
-sleep 60
+wait_for_payara
 
 wait_for_gcd "joynr-gcd-1"
 wait_for_gcd "joynr-gcd-2"
