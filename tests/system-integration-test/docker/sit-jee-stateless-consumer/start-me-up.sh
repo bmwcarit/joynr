@@ -23,13 +23,14 @@ function wait_for_payara() {
   do
     if curl -s --head --request GET http://localhost:4848 | grep "200 OK" > /dev/null; then
       echo "attempt #$i: Payara Server is up"
-      break
+      return 0
     else
       echo "attempt #$i: Payara Server is down"
     fi
     sleep 5
   done
-	return 0
+	echo "Payara Server failed to start in time (5 minutes)."
+  exit 1
 }
 
 asadmin --user admin --passwordFile=/opt/payara/passwordFile --interactive=false start-domain --debug --verbose &
