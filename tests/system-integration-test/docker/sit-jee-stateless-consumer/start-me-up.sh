@@ -21,7 +21,7 @@ function wait_for_gcd {
 function wait_for_payara() {
   for i in {1..60}
   do
-    if curl -s --head --request GET http://localhost:4848 | grep "200 OK" > /dev/null; then
+    if asadmin --user admin get-healthcheck-configuration | grep "executed successfully." > /dev/null; then
       echo "attempt #$i: Payara Server is up"
       return 0
     else

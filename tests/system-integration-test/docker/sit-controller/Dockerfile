@@ -18,6 +18,7 @@ RUN asadmin --user admin --passwordFile=/opt/payara/passwordFile start-domain &&
     asadmin --user admin --passwordFile=/opt/payara/passwordFile create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor && \
     asadmin --user admin --passwordFile=/opt/payara/passwordFile set-log-levels io.joynr=FINER && \
     asadmin --user admin --passwordFile=/opt/payara/passwordFile set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.multiLineMode=false && \
+    asadmin --user admin --passwordFile=/opt/payara/passwordFile set-healthcheck-configuration --enabled=true --dynamic=true \
     asadmin --user admin --passwordFile=/opt/payara/passwordFile stop-domain || \
     true
 

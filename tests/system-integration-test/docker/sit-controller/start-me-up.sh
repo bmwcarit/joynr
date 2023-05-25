@@ -56,7 +56,7 @@ function call_consumer {
 function wait_for_payara() {
   for i in {1..60}
   do
-    if curl -s --head --request GET http://localhost:4848 | grep "200 OK" > /dev/null; then
+    if asadmin --user admin get-healthcheck-configuration | grep "executed successfully." > /dev/null; then
       echo "attempt #$i: Payara Server is up"
       return 0
     else
@@ -64,7 +64,7 @@ function wait_for_payara() {
     fi
     sleep 5
   done
-	echo "Payara Server failed to start in time (5 minutes)."
+  echo "Payara Server failed to start in time (5 minutes)."
   exit 1
 }
 
