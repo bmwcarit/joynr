@@ -56,7 +56,7 @@ function call_consumer {
 function wait_for_payara() {
   for i in {1..60}
   do
-    if asadmin --user admin get-healthcheck-configuration | grep "executed successfully." > /dev/null; then
+    if asadmin --user admin --passwordFile=/opt/payara/passwordFile get-healthcheck-configuration | grep "executed successfully." > /dev/null; then
       echo "attempt #$i: Payara Server is up"
       return 0
     else
