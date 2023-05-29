@@ -18,11 +18,26 @@ function wait_for_gcd {
     return 0
 }
 
+function wait_for_payara() {
+  for i in {1..60}
+  do
+    if asadmin --user admin --passwordFile=/opt/payara/passwordFile get-healthcheck-configuration | grep "executed successfully." > /dev/null; then
+      echo "attempt #$i: Payara Server is up"
+      return 0
+    else
+      echo "attempt #$i: Payara Server is down"
+    fi
+    sleep 5
+  done
+	echo "Payara Server failed to start in time (5 minutes)."
+  exit 1
+}
+
 asadmin --user admin --passwordFile=/opt/payara/passwordFile --interactive=false start-domain --debug --verbose &
 PID=$!
 
 # Give Payara time to start
-sleep 60
+wait_for_payara
 
 wait_for_gcd "joynr-gcd-1"
 wait_for_gcd "joynr-gcd-2"
