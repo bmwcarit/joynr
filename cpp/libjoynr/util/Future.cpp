@@ -85,7 +85,7 @@ void FutureBase::onError(std::shared_ptr<exceptions::JoynrException> error)
                         "While calling onError: future_error caught: {}"
                         " [_status = {}]",
                         e.what(),
-                        _status);
+                        static_cast<std::underlying_type_t<decltype(_status)>>(_status));
     }
 }
 

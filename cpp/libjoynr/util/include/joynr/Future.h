@@ -167,7 +167,7 @@ public:
             JOYNR_LOG_ERROR(logger(),
                             "While calling onError: future_error caught: {} [_status = {}]",
                             e.what(),
-                            _status);
+                            static_cast<std::underlying_type_t<decltype(_status)>>(_status));
         }
     }
 
@@ -246,7 +246,7 @@ public:
             JOYNR_LOG_ERROR(logger(),
                             "While calling onError: future_error caught: {} [_status = {}]",
                             e.what(),
-                            _status);
+                            static_cast<std::underlying_type_t<decltype(_status)>>(_status));
         }
     }
 
