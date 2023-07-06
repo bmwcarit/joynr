@@ -158,6 +158,9 @@ target_link_libraries(radio-app-consumer-cc
     Joynr::JoynrClusterControllerRuntime
 )
 
+# Use the prefix to point a path to the resources while building in SDK
+set(Joynr_RESOURCES_DIR ${JOYNR_RESOURCES_DIR_PREFIX}${Joynr_RESOURCES_DIR})
+
 # copy joynr resources and settings
 file(
     COPY ${Joynr_RESOURCES_DIR}
