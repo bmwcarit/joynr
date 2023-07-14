@@ -18,7 +18,6 @@
  */
 package io.joynr.messaging.routing;
 
-import static io.joynr.util.JoynrUtil.createUuidString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
@@ -37,255 +36,72 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
-import com.google.inject.multibindings.MapBinder;
-import com.google.inject.multibindings.OptionalBinder;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
-import io.joynr.accesscontrol.AccessController;
 import io.joynr.accesscontrol.HasConsumerPermissionCallback;
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
-import io.joynr.messaging.JoynrMessageProcessor;
-import io.joynr.messaging.JsonMessageSerializerModule;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.MessagingSkeletonFactory;
-import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
-import io.joynr.messaging.util.MulticastWildcardRegexFactory;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
-import io.joynr.runtime.ShutdownNotifier;
-import io.joynr.util.JoynrThreadFactory;
-import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.Message.MessageType;
 import joynr.MulticastPublication;
 import joynr.MutableMessage;
 import joynr.Reply;
-import joynr.Request;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.BinderAddress;
 import joynr.system.RoutingTypes.MqttAddress;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
 import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
-import joynr.test.JoynrTestLoggingRule;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CcMessageRouterTest {
-    private static final Logger logger = LoggerFactory.getLogger(CcMessageRouterTest.class);
-    @Rule
-    public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
-
-    private String mqttTopic = "MessageSchedulerTest_" + createUuidString();
-    private final MqttAddress mqttAddress = new MqttAddress("mqtt://testUrl:42", mqttTopic);
-    private final int maximumParallelSends = 1;
-    // message runnables + cleanup thread
-    private int numberOfThreads = maximumParallelSends + 1;
-    private final long routingTableGracePeriodMs = 30000;
-    private long routingTableCleanupIntervalMs = 60000;
-
-    @Mock
-    private RoutingTableAddressValidator addressValidatorMock;
-    private RoutingTable routingTable;
-    InMemoryMulticastReceiverRegistry multicastReceiverRegistry = spy(new InMemoryMulticastReceiverRegistry(new MulticastWildcardRegexFactory()));
-    private AddressManager addressManager;
-
-    @Mock
-    private IMessagingStub messagingStubMock;
-    @Mock
-    private AbstractMiddlewareMessagingStubFactory<IMessagingStub, MqttAddress> mqttMessagingStubFactoryMock;
-    @Mock
-    private AbstractMiddlewareMessagingStubFactory<IMessagingStub, WebSocketClientAddress> websocketClientMessagingStubFactoryMock;
-    @Mock
-    private AbstractMiddlewareMessagingStubFactory<IMessagingStub, WebSocketAddress> webSocketMessagingStubFactoryMock;
-    @Mock
-    private AbstractMiddlewareMessagingStubFactory<IMessagingStub, InProcessAddress> inProcessMessagingStubFactoryMock;
-    @Mock
-    private ShutdownNotifier shutdownNotifier;
-
-    @Mock
-    private MessagingSkeletonFactory messagingSkeletonFactoryMock;
-
-    @Mock
-    private AccessController accessControllerMock;
-
-    private MessageQueue messageQueue;
-
-    private ScheduledExecutorService scheduler;
-
-    private CcMessageRouter ccMessageRouter;
-    private MutableMessage joynrMessage;
-    protected String toParticipantId = "toParticipantId";
-    protected String fromParticipantId = "fromParticipantId";
-
-    private Module testModule;
-    private Injector injector;
-    private MutableMessageFactory messageFactory;
-
-    @Before
-    public void setUp() throws Exception {
-        scheduler = Mockito.spy(provideMessageSchedulerThreadPoolExecutor(numberOfThreads));
-        doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
-        final String[] gbidsArray = { "joynrtestgbid1", "joynrtestgbid2" };
-        routingTable = spy(new RoutingTableImpl(42, gbidsArray, addressValidatorMock));
-        messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
-                                            new MessageQueue.MaxTimeoutHolder()));
-        addressManager = spy(new AddressManager(routingTable, Optional.empty(), multicastReceiverRegistry));
-
-        when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
-        when(messagingSkeletonFactoryMock.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
-
-        AbstractModule mockModule = new AbstractModule() {
-
-            private Long msgRetryIntervalMs = 10L;
-
-            @Override
-            protected void configure() {
-                requestStaticInjection(RoutingTypesUtil.class, MessageRouterUtil.class);
-                bind(CcMessageRouter.class).in(Singleton.class);
-                bind(MessageRouter.class).to(CcMessageRouter.class);
-                bind(MulticastReceiverRegistrar.class).to(CcMessageRouter.class);
-                bind(RoutingTable.class).toInstance(routingTable);
-                bind(AddressManager.class).toInstance(addressManager);
-                bind(MulticastReceiverRegistry.class).toInstance(multicastReceiverRegistry);
-                bind(ShutdownNotifier.class).toInstance(shutdownNotifier);
-                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_SEND_MSG_RETRY_INTERVAL_MS))
-                                .toInstance(msgRetryIntervalMs);
-                bind(Integer.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS))
-                                   .toInstance(maximumParallelSends);
-                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_GRACE_PERIOD_MS))
-                                .toInstance(routingTableGracePeriodMs);
-                bind(Long.class).annotatedWith(Names.named(ConfigurableMessagingSettings.PROPERTY_ROUTING_TABLE_CLEANUP_INTERVAL_MS))
-                                .toInstance(routingTableCleanupIntervalMs);
-
-                bindConstant().annotatedWith(Names.named(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE))
-                              .to(false);
-
-                bind(AccessController.class).toInstance(accessControllerMock);
-
-                MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
-                messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<Class<? extends Address>>() {
-                },
-                                                              new TypeLiteral<AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>>() {
-                                                              },
-                                                              Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
-                messagingStubFactory.addBinding(WebSocketClientAddress.class)
-                                    .toInstance(websocketClientMessagingStubFactoryMock);
-                messagingStubFactory.addBinding(WebSocketAddress.class).toInstance(webSocketMessagingStubFactoryMock);
-                messagingStubFactory.addBinding(MqttAddress.class).toInstance(mqttMessagingStubFactoryMock);
-                messagingStubFactory.addBinding(InProcessAddress.class).toInstance(inProcessMessagingStubFactoryMock);
-
-                bind(MessagingSkeletonFactory.class).toInstance(messagingSkeletonFactoryMock);
-
-                OptionalBinder.newOptionalBinder(binder(), MulticastAddressCalculator.class);
-
-                bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
-                                                    .toInstance(scheduler);
-                bind(MessageQueue.class).toInstance(messageQueue);
-            }
-        };
-
-        testModule = Modules.override(new JsonMessageSerializerModule()).with(mockModule,
-                                                                              new TestGlobalAddressModule());
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        messageFactory = new MutableMessageFactory(objectMapper, new HashSet<JoynrMessageProcessor>());
-
-        final boolean isGloballyVisible = true; // toParticipantId is globally visible
-        final long expiryDateMs = Long.MAX_VALUE;
-        final boolean isSticky = true;
-        routingTable.put(toParticipantId, mqttAddress, isGloballyVisible, expiryDateMs, isSticky);
-
-        Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
-
-        joynrMessage = messageFactory.createRequest(fromParticipantId, toParticipantId, request, new MessagingQos());
-        joynrMessage.setLocalMessage(true);
-    }
-
-    private void createDefaultMessageRouter() {
-        injector = Guice.createInjector(testModule);
-        ccMessageRouter = (CcMessageRouter) injector.getInstance(MessageRouter.class);
-    }
-
-    @After
-    public void tearDown() {
-        ccMessageRouter.prepareForShutdown();
-        ccMessageRouter.shutdown();
-        scheduler.shutdown();
-    }
-
-    private ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(int numberOfThreads) {
-        ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("joynr.MessageScheduler-scheduler");
-        ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(numberOfThreads,
-                                                                                schedulerNamedThreadFactory);
-        scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
-        scheduler.allowCoreThreadTimeOut(true);
-        return scheduler;
-    }
+public class CcMessageRouterTest extends AbstractCcMessageRouterTest {
 
     @Test
-    public void cleanupJobRemovesPurgesExpiredRoutingEntries() throws IllegalAccessException, IllegalArgumentException,
-                                                               InvocationTargetException {
+    public void cleanupJobRemovesPurgesExpiredRoutingEntries() throws IllegalArgumentException {
         createDefaultMessageRouter();
         // Capture Runnable when cleanup job is invoked
         ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
