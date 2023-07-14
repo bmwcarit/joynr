@@ -21,15 +21,7 @@
     <groupId>io.joynr.examples</groupId>
     <artifactId>radio-spring-boot</artifactId>
     <version>1.23.2-SNAPSHOT</version>
-    <!--<name>${project.groupId}:${project.artifactId}</name>-->
     <packaging>pom</packaging>
-
-<!--    <parent>
-        <groupId>io.joynr</groupId>
-        <artifactId>examples</artifactId>
-        <version>1.23.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>-->
 
     <modules>
         <module>radio-spring-boot-api</module>
