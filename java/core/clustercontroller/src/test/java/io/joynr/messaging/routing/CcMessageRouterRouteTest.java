@@ -86,10 +86,10 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     private static final String SUBSCRIPTION_ID = "subscriptionId";
     private static final String ERROR_MESSAGE = "Error message";
     private static final String MULTICAST_ID = "multicast/id/test";
-    private static final String STATELESS_ASYNC_REQUEST_REPLY_ID = REQUEST_REPLY_ID + REQUEST_REPLY_ID_SEPARATOR + "someMethodId";
+    private static final String STATELESS_ASYNC_REQUEST_REPLY_ID = REQUEST_REPLY_ID + REQUEST_REPLY_ID_SEPARATOR
+            + "someMethodId";
     private static final Consumer<InvocationOnMock> MSG_SUCCESS = i -> ((SuccessAction) i.getArgument(1)).execute();
-    private static final Consumer<InvocationOnMock> MSG_ERROR = i -> ((FailureAction) i.getArgument(2)).execute(new JoynrMessageNotSentException(
-            "Message was not sent."));
+    private static final Consumer<InvocationOnMock> MSG_ERROR = i -> ((FailureAction) i.getArgument(2)).execute(new JoynrMessageNotSentException("Message was not sent."));
 
     private final Supplier<ImmutableMessage> replySupplier = this::createReply;
     private final Supplier<ImmutableMessage> requestSupplier = this::createRequest;
@@ -269,8 +269,8 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     }
 
     private boolean isRequestOrReply(final Message.MessageType type) {
-        return Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST.equals(type) || Message.MessageType.VALUE_MESSAGE_TYPE_REPLY.equals(
-                type);
+        return Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST.equals(type)
+                || Message.MessageType.VALUE_MESSAGE_TYPE_REPLY.equals(type);
     }
 
     private void mockAddress(final String toParticipantId) {
@@ -338,8 +338,8 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     }
 
     private ImmutableMessage createSubscriptionPublication() {
-        final SubscriptionPublication subscriptionPublication = new SubscriptionPublication(new JoynrRuntimeException(
-                CcMessageRouterRouteTest.ERROR_MESSAGE), CcMessageRouterRouteTest.SUBSCRIPTION_ID);
+        final SubscriptionPublication subscriptionPublication = new SubscriptionPublication(new JoynrRuntimeException(CcMessageRouterRouteTest.ERROR_MESSAGE),
+                                                                                            CcMessageRouterRouteTest.SUBSCRIPTION_ID);
         final MutableMessage mutableMessage = messageFactory.createPublication(fromParticipantId,
                                                                                toParticipantId,
                                                                                subscriptionPublication,
@@ -395,11 +395,10 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     }
 
     private ImmutableMessage createMulticastSubscriptionRequest() {
-        final MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(
-                CcMessageRouterRouteTest.MULTICAST_ID,
-                CcMessageRouterRouteTest.SUBSCRIPTION_ID,
-                "multicastName",
-                new OnChangeSubscriptionQos());
+        final MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(CcMessageRouterRouteTest.MULTICAST_ID,
+                                                                                                           CcMessageRouterRouteTest.SUBSCRIPTION_ID,
+                                                                                                           "multicastName",
+                                                                                                           new OnChangeSubscriptionQos());
         final MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                        toParticipantId,
                                                                                        multicastSubscriptionRequest,
@@ -408,11 +407,10 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     }
 
     private ImmutableMessage createBroadcastSubscriptionRequest() {
-        final BroadcastSubscriptionRequest multicastSubscriptionRequest = new BroadcastSubscriptionRequest(
-                CcMessageRouterRouteTest.SUBSCRIPTION_ID,
-                "subscribedToName",
-                new BroadcastFilterParameters(),
-                new OnChangeSubscriptionQos());
+        final BroadcastSubscriptionRequest multicastSubscriptionRequest = new BroadcastSubscriptionRequest(CcMessageRouterRouteTest.SUBSCRIPTION_ID,
+                                                                                                           "subscribedToName",
+                                                                                                           new BroadcastFilterParameters(),
+                                                                                                           new OnChangeSubscriptionQos());
         final MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(fromParticipantId,
                                                                                        toParticipantId,
                                                                                        multicastSubscriptionRequest,
@@ -428,8 +426,7 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
         try {
             final Field trackerField = CcMessageRouter.class.getDeclaredField("messageTracker");
             trackerField.setAccessible(true);
-            final MessageTrackerForGracefulShutdown tracker = (MessageTrackerForGracefulShutdown) trackerField.get(
-                    ccMessageRouter);
+            final MessageTrackerForGracefulShutdown tracker = (MessageTrackerForGracefulShutdown) trackerField.get(ccMessageRouter);
             final Field messageSetField = MessageTrackerForGracefulShutdown.class.getDeclaredField("registeredMessages");
             messageSetField.setAccessible(true);
             trackerRegisteredMessages = (Set<String>) messageSetField.get(tracker);

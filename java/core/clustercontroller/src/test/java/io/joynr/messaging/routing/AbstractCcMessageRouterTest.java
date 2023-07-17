@@ -125,8 +125,7 @@ public abstract class AbstractCcMessageRouterTest {
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
         final String[] gbidsArray = { "joynrtestgbid1", "joynrtestgbid2" };
         routingTable = spy(new RoutingTableImpl(42, gbidsArray, addressValidatorMock));
-        messageQueue = spy(new MessageQueue(new DelayQueue<>(),
-                                            new MessageQueue.MaxTimeoutHolder()));
+        messageQueue = spy(new MessageQueue(new DelayQueue<>(), new MessageQueue.MaxTimeoutHolder()));
         addressManager = spy(new AddressManager(routingTable, Optional.empty(), multicastReceiverRegistry));
 
         lenient().when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
@@ -159,12 +158,9 @@ public abstract class AbstractCcMessageRouterTest {
                 bind(AccessController.class).toInstance(accessControllerMock);
 
                 MapBinder<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> messagingStubFactory;
-                messagingStubFactory = MapBinder.newMapBinder(binder(),
-                                                              new TypeLiteral<>() {
-                                                              },
-                                                              new TypeLiteral<>() {
-                                                              },
-                                                              Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
+                messagingStubFactory = MapBinder.newMapBinder(binder(), new TypeLiteral<>() {
+                }, new TypeLiteral<>() {
+                }, Names.named(MessagingStubFactory.MIDDLEWARE_MESSAGING_STUB_FACTORIES));
                 messagingStubFactory.addBinding(WebSocketClientAddress.class)
                                     .toInstance(websocketClientMessagingStubFactoryMock);
                 messagingStubFactory.addBinding(WebSocketAddress.class).toInstance(webSocketMessagingStubFactoryMock);
@@ -213,7 +209,7 @@ public abstract class AbstractCcMessageRouterTest {
     private ScheduledExecutorService provideMessageSchedulerThreadPoolExecutor(final int numberOfThreads) {
         final ThreadFactory schedulerNamedThreadFactory = new JoynrThreadFactory("joynr.MessageScheduler-scheduler");
         final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(numberOfThreads,
-                                                                                schedulerNamedThreadFactory);
+                                                                                      schedulerNamedThreadFactory);
         scheduler.setKeepAliveTime(100, TimeUnit.SECONDS);
         scheduler.allowCoreThreadTimeOut(true);
         return scheduler;
