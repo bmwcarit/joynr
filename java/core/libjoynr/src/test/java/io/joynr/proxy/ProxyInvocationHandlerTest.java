@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.exceptions.ApplicationException;
@@ -106,6 +107,7 @@ public class ProxyInvocationHandlerTest {
     @Mock
     private ShutdownNotifier mockShutdownNotifier;
     private ShutdownListener shutdownListener;
+    private PrepareForShutdownListener prepareForShutdownListener;
 
     @Mock
     private StatelessAsyncIdCalculator mockStatelessAsyncIdCalculator;
@@ -140,10 +142,10 @@ public class ProxyInvocationHandlerTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
-                shutdownListener = (ShutdownListener) invocation.getArguments()[0];
+                prepareForShutdownListener = (PrepareForShutdownListener) invocation.getArguments()[0];
                 return null;
             }
-        }).when(mockShutdownNotifier).registerForShutdown(any());
+        }).when(mockShutdownNotifier).registerProxyInvocationHandlerPrepareForShutdownListener(any());
         proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet<String>(Arrays.asList(domain)),
                                                                 interfaceName,
                                                                 proxyParticipantId,
@@ -316,7 +318,7 @@ public class ProxyInvocationHandlerTest {
     }
 
     private void testExecutionFailsAfterPrepareForShutdown(Method method) throws Exception {
-        shutdownListener.prepareForShutdown();
+        prepareForShutdownListener.prepareForShutdown();
         proxyInvocationHandler.invokeInternal(proxy, method, new Object[]{ "inputData" });
         fail("Should not get this far.");
     }
@@ -378,7 +380,7 @@ public class ProxyInvocationHandlerTest {
                                          any(),
                                          any(),
                                          any())).thenReturn(Optional.of(connectorInvocationHandler));
-        shutdownListener.prepareForShutdown();
+        prepareForShutdownListener.prepareForShutdown();
         proxyInvocationHandler.createConnector(mock(ArbitrationResult.class));
         proxyInvocationHandler.invokeInternal(proxy, method, args);
         return connectorInvocationHandler;
@@ -425,6 +427,34 @@ public class ProxyInvocationHandlerTest {
     public void testRegisterProxy() {
         Object proxy = new Object();
         proxyInvocationHandler.registerProxy(proxy);
-        verify(mockGcHandler).registerProxy(proxy, proxyParticipantId, shutdownListener);
+        verify(mockGcHandler).registerProxy(proxy, proxyParticipantId, prepareForShutdownListener);
+    }
+
+    @Test
+    public void testRegisterShutdownListener() {
+        verify(mockShutdownNotifier).registerProxyInvocationHandlerShutdownListener(proxyInvocationHandler.shutdownListener);
+    }
+
+    @Test
+    public void testRegisterPrepareForShutdownListener() {
+        verify(mockShutdownNotifier).registerProxyInvocationHandlerPrepareForShutdownListener(proxyInvocationHandler.prepareForShutdownListener);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterForShutdown_throws() {
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerForShutdown(proxyInvocationHandler.shutdownListener);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterToBeShutdownAsLast_throws() {
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerToBeShutdownAsLast(proxyInvocationHandler.shutdownListener);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterPrepareForShutdownListener_throws() {
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerPrepareForShutdownListener(proxyInvocationHandler.prepareForShutdownListener);
     }
 }

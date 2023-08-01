@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2021 BMW Car IT GmbH
+ * Copyright (C) 2021-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ import io.joynr.proxy.ProxyInvocationHandlerFactory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.runtime.CCWebSocketRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.ShutdownListener;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
 import io.joynr.smrf.EncodingException;
@@ -510,7 +510,7 @@ public class AbstractRoutingTableCleanupTest {
             invocation.callRealMethod();
             gcSemaphore.release();
             return null;
-        }).when(shutdownNotifier).unregister(any(ShutdownListener.class));
+        }).when(shutdownNotifier).unregister(any(PrepareForShutdownListener.class));
         // wait until unregister of shutdownNotifier
         for (int i = 0; i < 120; i++) { // try for 1 minute
             System.gc();

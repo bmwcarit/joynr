@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2021 BMW Car IT GmbH
+ * Copyright (C) 2021-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import com.google.inject.Singleton;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.ConfigurableMessagingSettings;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 
@@ -48,12 +49,12 @@ public class GarbageCollectionHandler implements ShutdownListener {
 
     static class ProxyInformation {
         public String participantId;
-        public ShutdownListener shutdownListener;
+        public PrepareForShutdownListener prepareForShutdownListener;
         public final Set<String> providerParticipantIds;
 
-        public ProxyInformation(String participantId, ShutdownListener shutdownListener) {
+        public ProxyInformation(String participantId, PrepareForShutdownListener prepareForShutdownListener) {
             this.participantId = participantId;
-            this.shutdownListener = shutdownListener;
+            this.prepareForShutdownListener = prepareForShutdownListener;
             this.providerParticipantIds = new HashSet<String>();
         }
     }
@@ -97,7 +98,7 @@ public class GarbageCollectionHandler implements ShutdownListener {
                     for (String providerParticipantId : proxyInformation.providerParticipantIds) {
                         messageRouter.removeNextHop(providerParticipantId);
                     }
-                    shutdownNotifier.unregister(proxyInformation.shutdownListener);
+                    shutdownNotifier.unregister(proxyInformation.prepareForShutdownListener);
                     proxyMap.remove(r);
                     proxyParticipantIdToProxyInformationMap.remove(proxyInformation.participantId);
                     synchronized (garbageCollectedProxiesQueue) {
@@ -115,9 +116,11 @@ public class GarbageCollectionHandler implements ShutdownListener {
         }
     }
 
-    public void registerProxy(Object proxy, String proxyParticipantId, ShutdownListener shutdownListener) {
+    public void registerProxy(Object proxy,
+                              String proxyParticipantId,
+                              PrepareForShutdownListener prepareForShutdownListener) {
         synchronized (garbageCollectedProxiesQueue) {
-            ProxyInformation proxyInformation = new ProxyInformation(proxyParticipantId, shutdownListener);
+            ProxyInformation proxyInformation = new ProxyInformation(proxyParticipantId, prepareForShutdownListener);
             if (proxyParticipantIdToProxyInformationMap.putIfAbsent(proxyParticipantId, proxyInformation) == null) {
                 logger.debug("registerProxy called for {}", proxyParticipantId);
                 proxyMap.put(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue), proxyInformation);

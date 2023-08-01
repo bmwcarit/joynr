@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
@@ -74,8 +75,8 @@ import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.LocalAddress;
 
-public class CcMessageRouter
-        implements MessageRouter, MessageProcessedHandler, MulticastReceiverRegistrar, ShutdownListener {
+public class CcMessageRouter implements MessageRouter, MessageProcessedHandler, MulticastReceiverRegistrar,
+        ShutdownListener, PrepareForShutdownListener {
 
     final static Set<Message.MessageType> MESSAGE_TYPE_REQUESTS = new HashSet<MessageType>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
                                                                                                          Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST,
@@ -135,6 +136,7 @@ public class CcMessageRouter
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         shutdownNotifier.registerForShutdown(this);
+        shutdownNotifier.registerPrepareForShutdownListener(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
         startRoutingTableCleanupThread();

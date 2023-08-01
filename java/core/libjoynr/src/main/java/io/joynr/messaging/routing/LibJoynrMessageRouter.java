@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.runtime.SystemServicesSettings;
@@ -65,7 +66,8 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
  * MessageRouter implementation which adds hops to its parent and tries to resolve unknown addresses at its parent
  */
 @Singleton
-public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRegistrar, ShutdownListener {
+public class LibJoynrMessageRouter
+        implements MessageRouter, MulticastReceiverRegistrar, ShutdownListener, PrepareForShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(LibJoynrMessageRouter.class);
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss z");
     private ScheduledExecutorService scheduler;
@@ -111,6 +113,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         this.messagingStubFactory = messagingStubFactory;
         this.messageQueue = messageQueue;
         shutdownNotifier.registerForShutdown(this);
+        shutdownNotifier.registerPrepareForShutdownListener(this);
         if (maxParallelSends < 2) {
             maxParallelSends = 2;
         }

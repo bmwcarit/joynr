@@ -34,6 +34,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
@@ -42,7 +43,7 @@ import joynr.Message;
 import joynr.Request;
 
 @Singleton
-public class MessageTrackerForGracefulShutdown implements ShutdownListener {
+public class MessageTrackerForGracefulShutdown implements ShutdownListener, PrepareForShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageTrackerForGracefulShutdown.class);
 
@@ -63,7 +64,8 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
 
     @Inject
     public MessageTrackerForGracefulShutdown(ShutdownNotifier shutdownNotifier, ObjectMapper objectMapper) {
-        shutdownNotifier.registerForShutdown(this);
+        shutdownNotifier.registerMessageTrackerShutdownListener(this);
+        shutdownNotifier.registerMessageTrackerPrepareForShutdownListener(this);
         this.objectMapper = objectMapper;
     }
 
