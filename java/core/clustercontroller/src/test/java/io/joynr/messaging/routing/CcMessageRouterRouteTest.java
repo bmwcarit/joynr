@@ -27,8 +27,6 @@ import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingSkeleton;
 import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
-import io.joynr.smrf.EncodingException;
-import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.ImmutableMessage;
@@ -292,7 +290,7 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     private ImmutableMessage getImmutableMessage(final MutableMessage joynrMessage) {
         try {
             return joynrMessage.getImmutableMessage();
-        } catch (final EncodingException | UnsuppportedVersionException e) {
+        } catch (final Exception e) {
             fail("Unexpected failure while getting immutable message: " + e.getMessage());
             throw new RuntimeException(e);
         }
