@@ -18,6 +18,7 @@
  */
 package io.joynr.guice;
 
+import java.util.Locale;
 import java.util.Properties;
 
 public class LowerCaseProperties extends Properties {
@@ -33,7 +34,7 @@ public class LowerCaseProperties extends Properties {
     @Override
     public synchronized Object put(Object key, Object value) {
         if (key instanceof String) {
-            return super.put(((String) key).toLowerCase(), value);
+            return super.put(((String) key).toLowerCase(Locale.ROOT), value);
         }
         return super.put(key, value);
     }
