@@ -54,7 +54,7 @@ public class MessageTrackerForGracefulShutdownTest {
 
     private final Message.MessageType oneWayRequestType = Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY;
 
-    private final long shutdownMaxTimeout = 50;
+    private final long PREPARE_FOR_SHUTDOWN_TIMEOUT_MS = 5000;
 
     @Mock
     private ImmutableMessage immutableMessage;
@@ -220,6 +220,50 @@ public class MessageTrackerForGracefulShutdownTest {
     public void testRegisterPrepareForShutdownListener_throws() {
         ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
         shutdownNotifier.registerPrepareForShutdownListener(getMessageTracker());
+    }
+
+    @Test
+    public void testPrepareForShutdownImmediatelyWithEmptyQueue() {
+        long beforeStop = System.currentTimeMillis();
+        messageTracker.prepareForShutdown();
+        long timeTaken = System.currentTimeMillis() - beforeStop;
+
+        assertTrue(timeTaken < 5);
+    }
+
+    @Test
+    public void testPrepareForShutdownBlocksMaxTimeIfQueueNotEmptied() {
+        messageTracker.register(immutableMessage);
+
+        // Message is registered but there is no call to unregister
+        long beforeStop = System.currentTimeMillis();
+        messageTracker.prepareForShutdown();
+        long timeTaken = System.currentTimeMillis() - beforeStop;
+
+        assertTrue("prepareForShutdown should take up to " + PREPARE_FOR_SHUTDOWN_TIMEOUT_MS + "ms. Actual: "
+                + timeTaken,
+                   timeTaken >= PREPARE_FOR_SHUTDOWN_TIMEOUT_MS && timeTaken < PREPARE_FOR_SHUTDOWN_TIMEOUT_MS + 20);
+    }
+
+    @Test
+    public void testPrepareForShutdownBlocksUntilQueueEmpty() {
+        messageTracker.register(immutableMessage);
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(10);
+                messageTracker.unregister(immutableMessage);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        }).start();
+        long beforeStop = System.currentTimeMillis();
+        messageTracker.prepareForShutdown();
+        long timeTaken = System.currentTimeMillis() - beforeStop;
+
+        // Then the shutdown blocked for roughly 10 milli-seconds or more, but not the max 5 sec timeout
+        assertTrue("Expected call to take at least 10 ms second. Actual: " + timeTaken, timeTaken >= 10);
+        assertTrue("Expected call to not take more than 50 ms. Actual: " + timeTaken, timeTaken < 50);
     }
 
     private MessageTrackerForGracefulShutdown getMessageTracker() {
