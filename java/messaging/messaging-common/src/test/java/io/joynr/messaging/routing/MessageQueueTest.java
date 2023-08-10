@@ -18,12 +18,15 @@
  */
 package io.joynr.messaging.routing;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import io.joynr.util.ObjectMapper;
+import joynr.system.RoutingTypes.MqttAddress;
+import joynr.system.RoutingTypes.RoutingTypesUtil;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -32,16 +35,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import io.joynr.util.ObjectMapper;
-import joynr.system.RoutingTypes.MqttAddress;
-import joynr.system.RoutingTypes.RoutingTypesUtil;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MessageQueueTest {
@@ -49,15 +47,11 @@ public class MessageQueueTest {
     @Mock
     private DelayableImmutableMessage mockMessage;
 
-    @Mock
-    private MessageQueue.MaxTimeoutHolder maxTimeoutHolderMock;
-
     @Spy
     private DelayQueue<DelayableImmutableMessage> delayQueue = new DelayQueue<>();
 
     private MessageQueue subject;
 
-    private final long shutdownMaxTimeout = 50;
     private final String sender = "fromParticipantId";
     private final String brokerUri = "testBrokerUri";
     private final String topic = "testTopic";
@@ -66,15 +60,11 @@ public class MessageQueueTest {
     @Before
     public void setup() throws Exception {
         // configure mocks
-        when(maxTimeoutHolderMock.getTimeout()).thenReturn(shutdownMaxTimeout);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
         Field objectMapperField = RoutingTypesUtil.class.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);
         objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
         // create test subject
-        subject = new MessageQueue(delayQueue, maxTimeoutHolderMock);
+        subject = new MessageQueue(delayQueue);
     }
 
     @Test
@@ -114,57 +104,6 @@ public class MessageQueueTest {
         // Then I was returned the message I put
         assertEquals(1, resultContainer.size());
         assertEquals(mockMessage, resultContainer.iterator().next());
-    }
-
-    @Test
-    public void testShutdownImmediatelyWithEmptyQueue() {
-        // Given an empty queue
-
-        // When I shutdown the message queue
-        long beforeStop = System.currentTimeMillis();
-        subject.waitForQueueToDrain();
-        long timeTaken = System.currentTimeMillis() - beforeStop;
-
-        // Then the call returned almost immediately
-        assertTrue(timeTaken < 5);
-    }
-
-    @Test
-    public void testShutdownBlocksUntilQueueEmpty() {
-        // Given an item in the queue
-        subject.put(mockMessage);
-
-        // When I stop the message queue, and poll ten millis later
-        new Thread(() -> {
-            try {
-                Thread.sleep(10);
-                subject.poll(1, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // Ignore
-            }
-        }).start();
-        long beforeStop = System.currentTimeMillis();
-        subject.waitForQueueToDrain();
-        long timeTaken = System.currentTimeMillis() - beforeStop;
-
-        // Then the shutdown blocked for roughly 10 milli-seconds or more, but not the max 5 sec timeout
-        assertTrue("Expected call to take at least a second. Actual: " + timeTaken, timeTaken >= 10);
-        assertTrue("Expected call to not take more then fifty millis. Actual: " + timeTaken, timeTaken < 50);
-    }
-
-    @Test
-    public void testShutdownBlocksMaxTimeIfQueueNotEmptied() {
-        // Given an item in the queue, and a max shutdown of 50ms (see setup)
-        subject.put(mockMessage);
-
-        // When I stop the queue, but do NOT remove the item
-        long beforeStop = System.currentTimeMillis();
-        subject.waitForQueueToDrain();
-        long timeTaken = System.currentTimeMillis() - beforeStop;
-
-        // Then the operation blocked for max just over shutdownMaxTimeout millis
-        assertTrue("Expected stop to block for maximum of around " + shutdownMaxTimeout + "ms. Actual: " + timeTaken,
-                   timeTaken >= shutdownMaxTimeout && timeTaken < shutdownMaxTimeout + 20);
     }
 
     @Test

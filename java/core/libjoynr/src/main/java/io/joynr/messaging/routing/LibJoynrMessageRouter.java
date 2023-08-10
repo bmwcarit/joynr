@@ -390,11 +390,6 @@ public class LibJoynrMessageRouter
     }
 
     @Override
-    public void prepareForShutdown() {
-        messageQueue.waitForQueueToDrain();
-    }
-
-    @Override
     public void shutdown() {
         // tell all message workers to stop
         CountDownLatch countDownLatch = new CountDownLatch(messageWorkers.size());

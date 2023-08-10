@@ -127,8 +127,7 @@ public class LibJoynrMessageRouterTest {
 
     @Before
     public void setUp() {
-        messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
-                                            new MessageQueue.MaxTimeoutHolder()));
+        messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>()));
         lenient().when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
         lenient().when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");

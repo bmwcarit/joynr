@@ -239,11 +239,6 @@ public class CcMessageRouter implements MessageRouter, MessageProcessedHandler, 
     }
 
     @Override
-    public void prepareForShutdown() {
-        messageQueue.waitForQueueToDrain();
-    }
-
-    @Override
     public void shutdown() {
         CountDownLatch countDownLatch = new CountDownLatch(messageWorkers.size());
         for (MessageWorker worker : messageWorkers) {

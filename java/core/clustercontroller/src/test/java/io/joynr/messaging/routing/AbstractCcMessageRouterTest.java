@@ -125,7 +125,7 @@ public abstract class AbstractCcMessageRouterTest {
         doReturn(true).when(addressValidatorMock).isValidForRoutingTable(any(Address.class));
         final String[] gbidsArray = { "joynrtestgbid1", "joynrtestgbid2" };
         routingTable = spy(new RoutingTableImpl(42, gbidsArray, addressValidatorMock));
-        messageQueue = spy(new MessageQueue(new DelayQueue<>(), new MessageQueue.MaxTimeoutHolder()));
+        messageQueue = spy(new MessageQueue(new DelayQueue<>()));
         addressManager = spy(new AddressManager(routingTable, Optional.empty(), multicastReceiverRegistry));
 
         lenient().when(mqttMessagingStubFactoryMock.create(any(MqttAddress.class))).thenReturn(messagingStubMock);
