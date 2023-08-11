@@ -46,7 +46,7 @@ public class ShutdownNotifierTest {
         shutdownNotifier.registerMessageTrackerPrepareForShutdownListener(new PrepareForShutdownListener() {
             @Override
             public void prepareForShutdown() {
-                PrepareForShutdownListener.super.prepareForShutdown();
+                // no-op
             }
         });
     }
@@ -62,7 +62,7 @@ public class ShutdownNotifierTest {
         shutdownNotifier.registerProxyInvocationHandlerPrepareForShutdownListener(new PrepareForShutdownListener() {
             @Override
             public void prepareForShutdown() {
-                PrepareForShutdownListener.super.prepareForShutdown();
+                // no-op
             }
         });
     }
@@ -78,7 +78,7 @@ public class ShutdownNotifierTest {
         shutdownNotifier.registerHivemqMqttPrepareForShutdownListener(new PrepareForShutdownListener() {
             @Override
             public void prepareForShutdown() {
-                PrepareForShutdownListener.super.prepareForShutdown();
+                // no-op
             }
         });
     }

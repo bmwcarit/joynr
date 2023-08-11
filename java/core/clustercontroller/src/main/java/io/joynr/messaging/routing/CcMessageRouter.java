@@ -62,7 +62,6 @@ import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
 import io.joynr.runtime.ClusterControllerRuntimeModule;
-import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
@@ -75,8 +74,8 @@ import joynr.Request;
 import joynr.system.RoutingTypes.Address;
 import joynr.system.RoutingTypes.LocalAddress;
 
-public class CcMessageRouter implements MessageRouter, MessageProcessedHandler, MulticastReceiverRegistrar,
-        ShutdownListener, PrepareForShutdownListener {
+public class CcMessageRouter
+        implements MessageRouter, MessageProcessedHandler, MulticastReceiverRegistrar, ShutdownListener {
 
     final static Set<Message.MessageType> MESSAGE_TYPE_REQUESTS = new HashSet<MessageType>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
                                                                                                          Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST,
@@ -136,7 +135,6 @@ public class CcMessageRouter implements MessageRouter, MessageProcessedHandler, 
         this.multicastReceiverRegistry = multicastReceiverRegistry;
         this.messageQueue = messageQueue;
         shutdownNotifier.registerForShutdown(this);
-        shutdownNotifier.registerPrepareForShutdownListener(this);
         messageProcessedListeners = new ArrayList<MessageProcessedListener>();
         startMessageWorkerThreads(maxParallelSends);
         startRoutingTableCleanupThread();

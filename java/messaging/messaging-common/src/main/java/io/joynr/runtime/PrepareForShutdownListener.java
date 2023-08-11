@@ -24,7 +24,5 @@ public interface PrepareForShutdownListener {
      * essential operations before the actual {@link io.joynr.runtime.ShutdownListener#shutdown()} is performed. Implementations should block until
      * they're finished, but should also make sure to timeout after a few seconds if they can't finish quickly.
      */
-    default void prepareForShutdown() {
-        // No-op
-    }
+    void prepareForShutdown();
 }

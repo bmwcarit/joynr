@@ -201,7 +201,6 @@ public abstract class AbstractCcMessageRouterTest {
 
     @After
     public void tearDown() {
-        ccMessageRouter.prepareForShutdown();
         ccMessageRouter.shutdown();
         scheduler.shutdown();
     }
