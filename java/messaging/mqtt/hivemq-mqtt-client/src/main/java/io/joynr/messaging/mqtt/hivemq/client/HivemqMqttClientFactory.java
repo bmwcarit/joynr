@@ -1,7 +1,7 @@
 /*-
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2019-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import io.joynr.messaging.mqtt.MqttClientFactory;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttClientSignalService;
 import io.joynr.messaging.mqtt.MqttModule;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.reactivex.schedulers.Schedulers;
@@ -48,7 +49,8 @@ import io.joynr.messaging.MessagingPropertyKeys;
  * - When persistent session configuration exists, then enable configuration thereof
  */
 @Singleton
-public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListener, MqttClientSignalService {
+public class HivemqMqttClientFactory
+        implements MqttClientFactory, ShutdownListener, PrepareForShutdownListener, MqttClientSignalService {
 
     private static final Logger logger = LoggerFactory.getLogger(HivemqMqttClientFactory.class);
 
@@ -84,7 +86,8 @@ public class HivemqMqttClientFactory implements MqttClientFactory, ShutdownListe
         this.separateReplyReceiver = separateReplyReceiver;
         this.canConnect = canConnect;
         this.sharedSubscriptions = sharedSubscriptions;
-        shutdownNotifier.registerForShutdown(this);
+        shutdownNotifier.registerHivemqMqttShutdownListener(this);
+        shutdownNotifier.registerHivemqMqttPrepareForShutdownListener(this);
     }
 
     @Override

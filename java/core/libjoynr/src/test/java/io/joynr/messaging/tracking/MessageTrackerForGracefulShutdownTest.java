@@ -19,11 +19,17 @@
 package io.joynr.messaging.tracking;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -41,12 +47,14 @@ import joynr.Message;
 public class MessageTrackerForGracefulShutdownTest {
 
     private MessageTrackerForGracefulShutdown messageTracker;
+    @Mock
+    private ShutdownNotifier shutdownNotifier;
 
     private final String messageId = "messageId123";
 
     private final Message.MessageType oneWayRequestType = Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY;
 
-    private final long shutdownMaxTimeout = 50;
+    private final long PREPARE_FOR_SHUTDOWN_TIMEOUT_MS = 5000;
 
     @Mock
     private ImmutableMessage immutableMessage;
@@ -160,6 +168,102 @@ public class MessageTrackerForGracefulShutdownTest {
             messageTracker.register(immutableMessage);
         }
         assertEquals(numberOfMessages, messageTracker.getNumberOfRegisteredMessages());
+    }
+
+    @Test
+    public void testRegisterShutdownListener() throws InterruptedException {
+        MessageTrackerForGracefulShutdown messageTracker = new MessageTrackerForGracefulShutdown(shutdownNotifier,
+                                                                                                 new ObjectMapper());
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            shutdownNotifier.shutdown();
+            cdl.countDown();
+            return null;
+        }).when(shutdownNotifier).registerMessageTrackerShutdownListener(messageTracker);
+
+        shutdownNotifier.registerMessageTrackerShutdownListener(messageTracker);
+        assertTrue(cdl.await(1000, TimeUnit.MILLISECONDS));
+        verify(shutdownNotifier, times(1)).shutdown();
+    }
+
+    @Test
+    public void testRegisterPrepareForShutdownListener() throws InterruptedException {
+        MessageTrackerForGracefulShutdown messageTracker = new MessageTrackerForGracefulShutdown(shutdownNotifier,
+                                                                                                 new ObjectMapper());
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        doAnswer(invocation -> {
+            shutdownNotifier.prepareForShutdown();
+            cdl.countDown();
+            return null;
+        }).when(shutdownNotifier).registerMessageTrackerPrepareForShutdownListener(messageTracker);
+
+        shutdownNotifier.registerMessageTrackerPrepareForShutdownListener(messageTracker);
+        assertTrue(cdl.await(1000, TimeUnit.MILLISECONDS));
+        verify(shutdownNotifier, times(1)).prepareForShutdown();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterForShutdown_throws() {
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerForShutdown(getMessageTracker());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterToBeShutdownAsLast_throws() {
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerToBeShutdownAsLast(getMessageTracker());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterPrepareForShutdownListener_throws() {
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerPrepareForShutdownListener(getMessageTracker());
+    }
+
+    @Test
+    public void testPrepareForShutdownImmediatelyWithEmptyQueue() {
+        long beforeStop = System.currentTimeMillis();
+        messageTracker.prepareForShutdown();
+        long timeTaken = System.currentTimeMillis() - beforeStop;
+
+        assertTrue(timeTaken < 5);
+    }
+
+    @Test
+    public void testPrepareForShutdownBlocksMaxTimeIfQueueNotEmptied() {
+        messageTracker.register(immutableMessage);
+
+        // Message is registered but there is no call to unregister
+        long beforeStop = System.currentTimeMillis();
+        messageTracker.prepareForShutdown();
+        long timeTaken = System.currentTimeMillis() - beforeStop;
+
+        assertTrue("prepareForShutdown should take up to " + PREPARE_FOR_SHUTDOWN_TIMEOUT_MS + "ms. Actual: "
+                + timeTaken,
+                   timeTaken >= PREPARE_FOR_SHUTDOWN_TIMEOUT_MS && timeTaken < PREPARE_FOR_SHUTDOWN_TIMEOUT_MS + 20);
+    }
+
+    @Test
+    public void testPrepareForShutdownBlocksUntilQueueEmpty() {
+        messageTracker.register(immutableMessage);
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(10);
+                messageTracker.unregister(immutableMessage);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        }).start();
+        long beforeStop = System.currentTimeMillis();
+        messageTracker.prepareForShutdown();
+        long timeTaken = System.currentTimeMillis() - beforeStop;
+
+        // Then the shutdown blocked for roughly 10 milli-seconds or more, but not the max 5 sec timeout
+        assertTrue("Expected call to take at least 10 ms second. Actual: " + timeTaken, timeTaken >= 10);
+        assertTrue("Expected call to not take more than 50 ms. Actual: " + timeTaken, timeTaken < 50);
     }
 
     private MessageTrackerForGracefulShutdown getMessageTracker() {

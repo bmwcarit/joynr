@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,8 +127,7 @@ public class LibJoynrMessageRouterTest {
 
     @Before
     public void setUp() {
-        messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>(),
-                                            new MessageQueue.MaxTimeoutHolder()));
+        messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>()));
         lenient().when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
         lenient().when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");

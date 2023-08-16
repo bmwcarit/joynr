@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import io.joynr.runtime.ShutdownNotifier;
 import org.junit.Test;
 
 import io.joynr.messaging.mqtt.JoynrMqttClient;
@@ -135,7 +136,34 @@ public class HivemqMqttClientFactoryTest extends AbstractHiveMqttClientFactoryTe
     @Test
     public void testRegisterForShutdown() {
         createDefaultFactory(false, true);
-        verify(mockShutdownNotifier).registerForShutdown(factory);
+        verify(mockShutdownNotifier).registerHivemqMqttShutdownListener(factory);
+    }
+
+    @Test
+    public void testRegisterPrepareForShutdownListener() {
+        createDefaultFactory(false, true);
+        verify(mockShutdownNotifier).registerHivemqMqttPrepareForShutdownListener(factory);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterForShutdown_throws() {
+        createDefaultFactory(false, true);
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerForShutdown(factory);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterToBeShutdownAsLast_throws() {
+        createDefaultFactory(false, true);
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerToBeShutdownAsLast(factory);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterPrepareForShutdownListener_throws() {
+        createDefaultFactory(false, true);
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        shutdownNotifier.registerPrepareForShutdownListener(factory);
     }
 
     @Test

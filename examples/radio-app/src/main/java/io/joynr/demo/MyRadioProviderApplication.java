@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -389,6 +389,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                 logger.error("unable to unregister capabilities {}", e.getMessage());
             }
         }
+        runtime.prepareForShutdown();
         runtime.shutdown(true);
         // TODO currently there is a bug preventing all threads being stopped
         // WORKAROUND

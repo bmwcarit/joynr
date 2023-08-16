@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2021 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
 import io.joynr.proxy.invocation.StatelessAsyncMethodInvocation;
 import io.joynr.proxy.invocation.SubscriptionInvocation;
 import io.joynr.proxy.invocation.UnsubscribeInvocation;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.MethodMetaInformation;
@@ -83,6 +84,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     private final AtomicBoolean preparingForShutdown = new AtomicBoolean();
     protected String statelessAsyncParticipantId;
     protected ShutdownListener shutdownListener;
+    protected PrepareForShutdownListener prepareForShutdownListener;
 
     // CHECKSTYLE:OFF
     public ProxyInvocationHandler(@Assisted("domains") Set<String> domains,
@@ -105,16 +107,20 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
 
         shutdownListener = new ShutdownListener() {
             @Override
-            public void prepareForShutdown() {
-                preparingForShutdown.set(true);
-            }
-
-            @Override
             public void shutdown() {
                 // No-op
             }
         };
-        shutdownNotifier.registerForShutdown(shutdownListener);
+        shutdownNotifier.registerProxyInvocationHandlerShutdownListener(shutdownListener);
+
+        prepareForShutdownListener = new PrepareForShutdownListener() {
+            @Override
+            public void prepareForShutdown() {
+                preparingForShutdown.set(true);
+            }
+        };
+        shutdownNotifier.registerProxyInvocationHandlerPrepareForShutdownListener(prepareForShutdownListener);
+
         if (statelessAsyncCallback.isPresent()) {
             statelessAsyncParticipantId = statelessAsyncIdCalculator.calculateParticipantId(interfaceName,
                                                                                             statelessAsyncCallback.get());

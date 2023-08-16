@@ -18,76 +18,25 @@
  */
 package io.joynr.messaging.routing;
 
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.TimeUnit;
-
+import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
- * This class holds the queued messages which are to be processed in the {@link MessageRouter} and offers
- * the ability to {@link #waitForQueueToDrain() attempt to wait for the queue to drain}.
+ * This class holds the queued messages which are to be processed in the {@link MessageRouter}.
  */
 public class MessageQueue {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageQueue.class);
 
-    public static final String PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT = "io.joynr.messaging.queue.shutdown.timeout";
-
     private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
-    private final long shutdownTimeoutMs;
-
-    /**
-     * Helper class to enable constructor injection of an optionally configured timeout value.
-     */
-    public static class MaxTimeoutHolder {
-        @Inject(optional = true)
-        @Named(PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT)
-        private Long timeout = 5000L;
-
-        public long getTimeout() {
-            return timeout;
-        }
-    }
 
     @Inject
-    public MessageQueue(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages,
-                        MaxTimeoutHolder maxTimeoutHolder) {
+    public MessageQueue(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages) {
         this.delayableImmutableMessages = delayableImmutableMessages;
-        this.shutdownTimeoutMs = maxTimeoutHolder.getTimeout();
-    }
-
-    /**
-     * Call this method to wait for the queue to drain if it still contains any messages. The timeout is set by
-     * the {@link #PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT} property, which defaults to five seconds.
-     */
-    void waitForQueueToDrain() {
-        int remainingMessages = delayableImmutableMessages.size();
-        logger.info("Joynr message queue stopping. Contains {} remaining messages.", remainingMessages);
-        if (remainingMessages > 0) {
-            long shutdownStart = System.currentTimeMillis();
-            while (System.currentTimeMillis() - shutdownStart < shutdownTimeoutMs) {
-                if (delayableImmutableMessages.size() == 0) {
-                    break;
-                }
-                try {
-                    Thread.sleep(5);
-                } catch (InterruptedException e) {
-                    logger.error("Interrupted while waiting for joynr message queue to drain.");
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-        }
-        remainingMessages = delayableImmutableMessages.size();
-        if (remainingMessages == 0) {
-            logger.info("Joynr message queue successfully emptied.");
-        } else {
-            logger.info("Joynr message queue still contained {} messages at shutdown.", remainingMessages);
-        }
     }
 
     /**

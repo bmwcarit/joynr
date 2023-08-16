@@ -34,6 +34,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.exceptions.JoynrIllegalStateException;
+import io.joynr.runtime.PrepareForShutdownListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.ObjectMapper;
@@ -42,7 +43,7 @@ import joynr.Message;
 import joynr.Request;
 
 @Singleton
-public class MessageTrackerForGracefulShutdown implements ShutdownListener {
+public class MessageTrackerForGracefulShutdown implements ShutdownListener, PrepareForShutdownListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageTrackerForGracefulShutdown.class);
 
@@ -63,7 +64,8 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
 
     @Inject
     public MessageTrackerForGracefulShutdown(ShutdownNotifier shutdownNotifier, ObjectMapper objectMapper) {
-        shutdownNotifier.registerForShutdown(this);
+        shutdownNotifier.registerMessageTrackerShutdownListener(this);
+        shutdownNotifier.registerMessageTrackerPrepareForShutdownListener(this);
         this.objectMapper = objectMapper;
     }
 
@@ -72,23 +74,23 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
      * @param immutableMessage message to be registered
      */
     public void register(final ImmutableMessage immutableMessage) {
-        if (immutableMessage != null) {
-            Message.MessageType type = immutableMessage.getType();
-            if (isMessageTypeUnsupported(type)) {
-                return;
-            }
+        if (immutableMessage == null) {
+            throw new JoynrIllegalStateException("ImmutableMessage cannot be null");
+        }
 
-            String messageId = getId(immutableMessage);
+        Message.MessageType type = immutableMessage.getType();
+        if (isMessageTypeUnsupported(type)) {
+            return;
+        }
 
-            logger.info("Trying to register message with the following ID: {}", messageId);
-            boolean registrationResult = registeredMessages.add(messageId);
-            if (registrationResult) {
-                logger.info("The message with the following ID: {} has been successfully registered", messageId);
-            } else {
-                logger.error("The message with the following ID is already registered: {}", messageId);
-            }
+        String messageId = getId(immutableMessage);
+
+        logger.info("Trying to register message with following ID: {}", messageId);
+        boolean isRegistered = registeredMessages.add(messageId);
+        if (isRegistered) {
+            logger.info("Message with following ID: {} has been successfully registered", messageId);
         } else {
-            throw new JoynrIllegalStateException("The ImmutableMessage object passed for registering is null.");
+            logger.error("Message with following ID is already registered: {}", messageId);
         }
     }
 
@@ -97,23 +99,23 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
      * @param immutableMessage message to be unregistered
      */
     public void unregister(final ImmutableMessage immutableMessage) {
-        if (immutableMessage != null) {
-            Message.MessageType type = immutableMessage.getType();
-            if (isMessageTypeUnsupported(type)) {
-                return;
-            }
+        if (immutableMessage == null) {
+            throw new JoynrIllegalStateException("ImmutableMessage cannot be null");
+        }
 
-            String messageId = getId(immutableMessage);
+        Message.MessageType type = immutableMessage.getType();
+        if (isMessageTypeUnsupported(type)) {
+            return;
+        }
 
-            logger.info("Trying to unregister message with the following ID: {}", messageId);
-            boolean unregistrationResult = registeredMessages.remove(messageId);
-            if (unregistrationResult) {
-                logger.info("The message with the following ID: {} has been successfully unregistered", messageId);
-            } else {
-                logger.error("The message with the following ID has not been registered: {}", messageId);
-            }
+        String messageId = getId(immutableMessage);
+
+        logger.info("Trying to unregister message with following ID: {}", messageId);
+        boolean isUnregistered = registeredMessages.remove(messageId);
+        if (isUnregistered) {
+            logger.info("Message with following ID: {} has been successfully unregistered", messageId);
         } else {
-            throw new JoynrIllegalStateException("The ImmutableMessage object passed for registering is null.");
+            logger.error("Message with following ID has not been registered: {}", messageId);
         }
     }
 
@@ -127,8 +129,8 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
         }
 
         logger.info("Trying to unregister request with requestReplyId: {} after expiry ReplyCaller", requestReplyId);
-        boolean unregistrationResult = registeredMessages.remove(requestReplyId);
-        if (unregistrationResult) {
+        boolean isUnregistered = registeredMessages.remove(requestReplyId);
+        if (isUnregistered) {
             logger.info("The request with the following requestReplyId: {} has been successfully unregistered",
                         requestReplyId);
         } else {
@@ -212,18 +214,21 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener {
         int remainingMessages = getNumberOfRegisteredMessages();
         logger.info("PrepareForShutdown called. Number of messages: {}", remainingMessages);
 
-        if (remainingMessages > 0) {
-            long shutdownStart = System.currentTimeMillis();
-            while (System.currentTimeMillis() - shutdownStart < prepareForShutdownTimeoutSec) {
-                if (getNumberOfRegisteredMessages() == 0) {
-                    break;
-                }
-                try {
-                    Thread.sleep(5);
-                } catch (InterruptedException e) {
-                    logger.error("Interrupted while waiting for joynr message tracker to drain.");
-                    Thread.currentThread().interrupt();
-                }
+        if (remainingMessages == 0) {
+            return;
+        }
+
+        long shutdownStart = System.currentTimeMillis();
+        final int prepareForShutdownTimeoutMillis = prepareForShutdownTimeoutSec * 1000;
+        while (System.currentTimeMillis() - shutdownStart < prepareForShutdownTimeoutMillis) {
+            if (getNumberOfRegisteredMessages() == 0) {
+                break;
+            }
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                logger.error("Interrupted while waiting for joynr message tracker to drain.");
+                Thread.currentThread().interrupt();
             }
         }
 
