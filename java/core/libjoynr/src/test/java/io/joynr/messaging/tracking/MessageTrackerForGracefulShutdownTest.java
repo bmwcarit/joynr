@@ -20,12 +20,14 @@ package io.joynr.messaging.tracking;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -54,14 +56,12 @@ public class MessageTrackerForGracefulShutdownTest {
 
     private final Message.MessageType oneWayRequestType = Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY;
 
-    private final long PREPARE_FOR_SHUTDOWN_TIMEOUT_MS = 5000;
-
     @Mock
     private ImmutableMessage immutableMessage;
 
     @Before
     public void setUp() {
-        initMocks(this);
+        openMocks(this);
         messageTracker = getMessageTracker();
         when(immutableMessage.getType()).thenReturn(oneWayRequestType);
         when(immutableMessage.getId()).thenReturn(messageId);
@@ -86,20 +86,17 @@ public class MessageTrackerForGracefulShutdownTest {
     public void testUnsupportedMessageTypeForRegister() {
         when(immutableMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
         messageTracker.register(immutableMessage);
-        int registerNumber = messageTracker.getNumberOfRegisteredMessages();
-        assertEquals(0, registerNumber);
+        assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
     }
 
     @Test
     public void testUnsupportedMessageTypeForUnregister() {
         messageTracker.register(immutableMessage);
-        int registerNumber = messageTracker.getNumberOfRegisteredMessages();
-        assertEquals(1, registerNumber);
+        assertEquals(1, messageTracker.getNumberOfRegisteredMessages());
 
         when(immutableMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
         messageTracker.unregister(immutableMessage);
-        registerNumber = messageTracker.getNumberOfRegisteredMessages();
-        assertEquals(1, registerNumber);
+        assertEquals(1, messageTracker.getNumberOfRegisteredMessages());
     }
 
     @Test(expected = JoynrIllegalStateException.class)
@@ -117,7 +114,7 @@ public class MessageTrackerForGracefulShutdownTest {
     @Test
     public void testRegisterMessage() {
         messageTracker.register(immutableMessage);
-        int registerNumber = messageTracker.getNumberOfRegisteredMessages();
+        final int registerNumber = messageTracker.getNumberOfRegisteredMessages();
         assertEquals(1, registerNumber);
     }
 
@@ -125,22 +122,22 @@ public class MessageTrackerForGracefulShutdownTest {
     public void testUnregisterMessage() {
         messageTracker.register(immutableMessage);
         messageTracker.unregister(immutableMessage);
-        int registerNumber = messageTracker.getNumberOfRegisteredMessages();
+        final int registerNumber = messageTracker.getNumberOfRegisteredMessages();
         assertEquals(0, registerNumber);
     }
 
     @Test
     public void testUnregisterAfterExpiredReplyCaller() {
-        String requestReplyId = "requestReplyId";
-        Map<String, String> customHeader = new HashMap<>();
+        final String requestReplyId = "requestReplyId";
+        final Map<String, String> customHeader = new HashMap<>();
         customHeader.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID, requestReplyId);
 
         when(immutableMessage.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
         when(immutableMessage.getCustomHeaders()).thenReturn(customHeader);
         messageTracker.register(immutableMessage);
-        int registerNumber = messageTracker.getNumberOfRegisteredMessages();
+        final int registerNumber = messageTracker.getNumberOfRegisteredMessages();
         messageTracker.unregisterAfterReplyCallerExpired(requestReplyId);
-        int afterUnregisterNumber = messageTracker.getNumberOfRegisteredMessages();
+        final int afterUnregisterNumber = messageTracker.getNumberOfRegisteredMessages();
         assertEquals(1, registerNumber);
         assertEquals(0, afterUnregisterNumber);
     }
@@ -149,20 +146,20 @@ public class MessageTrackerForGracefulShutdownTest {
     public void testRegisterMessageIfExists() {
         messageTracker.register(immutableMessage);
         messageTracker.register(immutableMessage);
-        int registerNumber = messageTracker.getNumberOfRegisteredMessages();
+        final int registerNumber = messageTracker.getNumberOfRegisteredMessages();
         assertEquals(1, registerNumber);
     }
 
     @Test
     public void testUnregisterMessageIfNotExists() {
         messageTracker.unregister(immutableMessage);
-        int registerNumber = messageTracker.getNumberOfRegisteredMessages();
+        final int registerNumber = messageTracker.getNumberOfRegisteredMessages();
         assertEquals(0, registerNumber);
     }
 
     @Test
     public void testGetNumberOfRegisteredMessages() {
-        int numberOfMessages = 3;
+        final int numberOfMessages = 3;
         for (int i = 1; i <= numberOfMessages; i++) {
             when(immutableMessage.getId()).thenReturn(messageId + "-" + i);
             messageTracker.register(immutableMessage);
@@ -172,15 +169,10 @@ public class MessageTrackerForGracefulShutdownTest {
 
     @Test
     public void testRegisterShutdownListener() throws InterruptedException {
-        MessageTrackerForGracefulShutdown messageTracker = new MessageTrackerForGracefulShutdown(shutdownNotifier,
-                                                                                                 new ObjectMapper());
+        messageTracker = getMessageTracker(shutdownNotifier);
 
-        CountDownLatch cdl = new CountDownLatch(1);
-        doAnswer(invocation -> {
-            shutdownNotifier.shutdown();
-            cdl.countDown();
-            return null;
-        }).when(shutdownNotifier).registerMessageTrackerShutdownListener(messageTracker);
+        final CountDownLatch cdl = new CountDownLatch(1);
+        mockShutdownListenerRegistration(cdl);
 
         shutdownNotifier.registerMessageTrackerShutdownListener(messageTracker);
         assertTrue(cdl.await(1000, TimeUnit.MILLISECONDS));
@@ -189,15 +181,10 @@ public class MessageTrackerForGracefulShutdownTest {
 
     @Test
     public void testRegisterPrepareForShutdownListener() throws InterruptedException {
-        MessageTrackerForGracefulShutdown messageTracker = new MessageTrackerForGracefulShutdown(shutdownNotifier,
-                                                                                                 new ObjectMapper());
+        messageTracker = getMessageTracker(shutdownNotifier);
 
-        CountDownLatch cdl = new CountDownLatch(1);
-        doAnswer(invocation -> {
-            shutdownNotifier.prepareForShutdown();
-            cdl.countDown();
-            return null;
-        }).when(shutdownNotifier).registerMessageTrackerPrepareForShutdownListener(messageTracker);
+        final CountDownLatch cdl = new CountDownLatch(1);
+        mockPrepareForShutdownListenerRegistration(cdl);
 
         shutdownNotifier.registerMessageTrackerPrepareForShutdownListener(messageTracker);
         assertTrue(cdl.await(1000, TimeUnit.MILLISECONDS));
@@ -206,27 +193,25 @@ public class MessageTrackerForGracefulShutdownTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testRegisterForShutdown_throws() {
-        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        final ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
         shutdownNotifier.registerForShutdown(getMessageTracker());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testRegisterToBeShutdownAsLast_throws() {
-        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        final ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
         shutdownNotifier.registerToBeShutdownAsLast(getMessageTracker());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testRegisterPrepareForShutdownListener_throws() {
-        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+        final ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
         shutdownNotifier.registerPrepareForShutdownListener(getMessageTracker());
     }
 
     @Test
     public void testPrepareForShutdownImmediatelyWithEmptyQueue() {
-        long beforeStop = System.currentTimeMillis();
-        messageTracker.prepareForShutdown();
-        long timeTaken = System.currentTimeMillis() - beforeStop;
+        final long timeTaken = invokePrepareForShutdown();
 
         assertTrue(timeTaken < 5);
     }
@@ -236,38 +221,118 @@ public class MessageTrackerForGracefulShutdownTest {
         messageTracker.register(immutableMessage);
 
         // Message is registered but there is no call to unregister
-        long beforeStop = System.currentTimeMillis();
-        messageTracker.prepareForShutdown();
-        long timeTaken = System.currentTimeMillis() - beforeStop;
+        final long timeTaken = invokePrepareForShutdown();
 
-        assertTrue("prepareForShutdown should take up to " + PREPARE_FOR_SHUTDOWN_TIMEOUT_MS + "ms. Actual: "
-                + timeTaken,
-                   timeTaken >= PREPARE_FOR_SHUTDOWN_TIMEOUT_MS && timeTaken < PREPARE_FOR_SHUTDOWN_TIMEOUT_MS + 20);
+        final long prepareForShutdownTimeoutMs = 5000;
+        assertTrue("prepareForShutdown should take up to " + prepareForShutdownTimeoutMs + "ms. Actual: " + timeTaken,
+                   timeTaken >= prepareForShutdownTimeoutMs && timeTaken < prepareForShutdownTimeoutMs + 20);
     }
 
     @Test
     public void testPrepareForShutdownBlocksUntilQueueEmpty() {
         messageTracker.register(immutableMessage);
 
-        new Thread(() -> {
-            try {
-                Thread.sleep(10);
-                messageTracker.unregister(immutableMessage);
-            } catch (InterruptedException e) {
-                // Ignore
-            }
-        }).start();
-        long beforeStop = System.currentTimeMillis();
-        messageTracker.prepareForShutdown();
-        long timeTaken = System.currentTimeMillis() - beforeStop;
+        waitAndUnregister(10L);
 
-        // Then the shutdown blocked for roughly 10 milli-seconds or more, but not the max 5 sec timeout
+        final long timeTaken = invokePrepareForShutdown();
+
+        // Then the shutdown blocked for roughly 10 milliseconds or more, but not the max 5 sec timeout
         assertTrue("Expected call to take at least 10 ms second. Actual: " + timeTaken, timeTaken >= 10);
         assertTrue("Expected call to not take more than 50 ms. Actual: " + timeTaken, timeTaken < 50);
     }
 
-    private MessageTrackerForGracefulShutdown getMessageTracker() {
-        return new MessageTrackerForGracefulShutdown(new ShutdownNotifier(), new ObjectMapper());
+    @Test
+    public void testPrepareForShutdownThatTimesOut() {
+        setMessageTrackerPrepareForShutdownTimeout(1);
+
+        assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
+        messageTracker.register(immutableMessage);
+        assertEquals(1, messageTracker.getNumberOfRegisteredMessages());
+
+        final long timeElapsed = invokePrepareForShutdown();
+
+        assertEquals(1, messageTracker.getNumberOfRegisteredMessages());
+        assertTrue(timeElapsed >= 1000);
     }
 
+    @Test
+    public void testPrepareForShutdownThatDoesNotTimeOut() {
+        setMessageTrackerPrepareForShutdownTimeout(2);
+
+        assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
+
+        final long timeElapsed = invokePrepareForShutdown();
+
+        assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
+        assertTrue(timeElapsed < 1000);
+    }
+
+    @Test
+    public void testMessageQueueIsEmptiedWhilePreparingForShutdown() {
+        setMessageTrackerPrepareForShutdownTimeout(2);
+
+        assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
+        messageTracker.register(immutableMessage);
+        assertEquals(1, messageTracker.getNumberOfRegisteredMessages());
+
+        waitAndUnregister(1000L);
+
+        final long timeElapsed = invokePrepareForShutdown();
+
+        assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
+        assertTrue(timeElapsed < 2000);
+    }
+
+    private void waitAndUnregister(final long waitInMs) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(waitInMs);
+                messageTracker.unregister(immutableMessage);
+            } catch (final InterruptedException e) {
+                fail("Unexpected exception: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    private long invokePrepareForShutdown() {
+        final long before = System.currentTimeMillis();
+        messageTracker.prepareForShutdown();
+        final long after = System.currentTimeMillis();
+
+        return after - before;
+    }
+
+    private void setMessageTrackerPrepareForShutdownTimeout(final int seconds) {
+        try {
+            final Field field = MessageTrackerForGracefulShutdown.class.getDeclaredField("prepareForShutdownTimeoutSec");
+            field.setAccessible(true);
+            field.set(messageTracker, seconds);
+        } catch (final NoSuchFieldException | IllegalAccessException e) {
+            fail("Unexpected exception: " + e.getMessage());
+        }
+    }
+
+    private MessageTrackerForGracefulShutdown getMessageTracker() {
+        return getMessageTracker(new ShutdownNotifier());
+    }
+
+    private MessageTrackerForGracefulShutdown getMessageTracker(final ShutdownNotifier shutdownNotifier) {
+        return new MessageTrackerForGracefulShutdown(shutdownNotifier, new ObjectMapper());
+    }
+
+    private void mockPrepareForShutdownListenerRegistration(final CountDownLatch latch) {
+        doAnswer(invocation -> {
+            shutdownNotifier.prepareForShutdown();
+            latch.countDown();
+            return null;
+        }).when(shutdownNotifier).registerMessageTrackerPrepareForShutdownListener(messageTracker);
+    }
+
+    private void mockShutdownListenerRegistration(final CountDownLatch latch) {
+        doAnswer(invocation -> {
+            shutdownNotifier.shutdown();
+            latch.countDown();
+            return null;
+        }).when(shutdownNotifier).registerMessageTrackerShutdownListener(messageTracker);
+    }
 }
