@@ -1522,6 +1522,7 @@ public void shutdown() {
             // handle error
         }
     }
+    runtime.prepareForShutdown();
     runtime.shutdown(true);
     try {
         Thread.sleep(3000);
@@ -1546,6 +1547,27 @@ will still repeat the global remove operation until it succeeds or the cluster c
 If the cluster controller is embedded within the same runtime (cluster controller runtime) and the provider is
 registered globally, consider waiting some grace period after calling `unregisterProvider` before calling `shutdown`
 to give the joynr framework a chance to perform the provider removal.
+
+**Graceful shutdown**: joynr runtime implements `prepareForShutdown` method which allows to perform
+a graceful shutdown. Calling `prepareForShutdown` gives the joynr runtime a chance to stop receiving
+incoming requests and work off any messages still in its queue.
+Thus your application logic may still be called from joynr after your call to `prepareForShutdown`. Be
+aware that if your logic requires to make calls via joynr in response to those received messages,
+you will only be able to call non-stateful methods such as fire-and-forget. Calls to stateful
+methods, such as those in the Sync interface, will result in a `JoynrIllegalStateException`
+being thrown.
+
+The `prepareForShutdown` method will block until either the joynr runtime has finished processing
+all messages in the queue or a timeout occurs. The timeout can be configured via the
+`PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT` property. See the
+[Java Configuration Guide](./JavaSettings.md) for details.
+
+More detailed view on how does `prepareForShutdown` work:
+ShutdownNotifier will call `prepareForShutdown` methods implementations in a certain order:
+1. HivemqMqttClientFactory - it will shut down all of its receiver and will not receive new messages
+2. ProxyInvocationHandler - it will set `preparingForShutdown` to true
+3. MessageTrackerForGracefulShutdown - it will wait for a specified amount of time to let messages unregister
+4. All remaining `prepareForShutdownListener` implementations
 
 ### Access control
 
