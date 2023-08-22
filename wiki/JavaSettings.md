@@ -441,18 +441,6 @@ Set the mqtt prefix to be prepended to multicast topics.
 * **User property**: `joynr.messaging.mqtt.topicprefix.multicast`
 * **Default value**: ``
 
-## MessageQueue
-
-### `PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT`
-
-The maximum number of milliseconds to wait for the message queue to
-drain on `prepareForShutdown` before timing out.
-
-* **OPTIONAL**
-* **Type**: int
-* **User property**: `io.joynr.messaging.queue.shutdown.timeout`
-* **Default value**: `5000`
-
 ## MqttModule
 
 ### `PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM`
