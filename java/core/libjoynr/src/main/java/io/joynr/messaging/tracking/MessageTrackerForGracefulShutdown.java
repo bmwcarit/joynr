@@ -21,10 +21,9 @@ package io.joynr.messaging.tracking;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,23 +46,25 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
 
     private static final Logger logger = LoggerFactory.getLogger(MessageTrackerForGracefulShutdown.class);
 
-    private static final Set<Message.MessageType> MESSAGE_TYPE_REQUESTS = new HashSet<>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
-                                                                                                      Message.MessageType.VALUE_MESSAGE_TYPE_REPLY));
+    private static final int PREPARE_FOR_SHUTDOWN_INNER_WAIT = 500;
 
-    private static final Set<Message.MessageType> MESSAGE_TYPE_UNSUPPORTED = new HashSet<>(Arrays.asList(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY));
+    private static final Set<Message.MessageType> MESSAGE_TYPE_REQUESTS = Set.of(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
+                                                                                 Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
+
+    private static final Set<Message.MessageType> MESSAGE_TYPE_UNSUPPORTED = Set.of(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
 
     private static final String PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT = "joynr.runtime.prepareforshutdowntimeout";
 
-    private Set<String> registeredMessages = ConcurrentHashMap.newKeySet();
+    private final Set<String> registeredMessages = ConcurrentHashMap.newKeySet();
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @Inject(optional = true)
     @Named(PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT)
     private int prepareForShutdownTimeoutSec = 5;
 
     @Inject
-    public MessageTrackerForGracefulShutdown(ShutdownNotifier shutdownNotifier, ObjectMapper objectMapper) {
+    public MessageTrackerForGracefulShutdown(final ShutdownNotifier shutdownNotifier, final ObjectMapper objectMapper) {
         shutdownNotifier.registerMessageTrackerShutdownListener(this);
         shutdownNotifier.registerMessageTrackerPrepareForShutdownListener(this);
         this.objectMapper = objectMapper;
@@ -103,16 +104,21 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
             throw new JoynrIllegalStateException("ImmutableMessage cannot be null");
         }
 
-        Message.MessageType type = immutableMessage.getType();
+        final Message.MessageType type = immutableMessage.getType();
         if (isMessageTypeUnsupported(type)) {
             return;
         }
 
-        String messageId = getId(immutableMessage);
+        final String messageId = getId(immutableMessage);
 
         logger.info("Trying to unregister message with following ID: {}", messageId);
         boolean isUnregistered = registeredMessages.remove(messageId);
         if (isUnregistered) {
+            synchronized (registeredMessages) {
+                if (registeredMessages.isEmpty()) {
+                    registeredMessages.notify();
+                }
+            }
             logger.info("Message with following ID: {} has been successfully unregistered", messageId);
         } else {
             logger.error("Message with following ID has not been registered: {}", messageId);
@@ -121,7 +127,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
 
     /**
      * Method for unregistering request with requestReplyId after expiry ReplyCaller
-     * @param requestReplyId
+     * @param requestReplyId request reply id
      */
     public void unregisterAfterReplyCallerExpired(final String requestReplyId) {
         if (requestReplyId == null || requestReplyId.isEmpty()) {
@@ -129,8 +135,13 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
         }
 
         logger.info("Trying to unregister request with requestReplyId: {} after expiry ReplyCaller", requestReplyId);
-        boolean isUnregistered = registeredMessages.remove(requestReplyId);
+        final boolean isUnregistered = registeredMessages.remove(requestReplyId);
         if (isUnregistered) {
+            synchronized (registeredMessages) {
+                if (registeredMessages.isEmpty()) {
+                    registeredMessages.notify();
+                }
+            }
             logger.info("The request with the following requestReplyId: {} has been successfully unregistered",
                         requestReplyId);
         } else {
@@ -157,7 +168,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
 
     /**
      * Method for obtaining message identifier messageId or requestReplyId
-     * @param immutableMessage
+     * @param immutableMessage immutable message
      * @return message identifier
      */
     private String getId(final ImmutableMessage immutableMessage) {
@@ -177,7 +188,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
 
     /**
      * Method for obtaining requestReplyId
-     * @param immutableMessage
+     * @param immutableMessage immutable message
      * @return requestReplyId as String value
      */
     private String getRequestReplyId(final ImmutableMessage immutableMessage) {
@@ -211,28 +222,20 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
 
     @Override
     public void prepareForShutdown() {
-        int remainingMessages = getNumberOfRegisteredMessages();
-        logger.info("PrepareForShutdown called. Number of messages: {}", remainingMessages);
+        logger.info("PrepareForShutdown called. Number of messages: {}", getNumberOfRegisteredMessages());
 
-        if (remainingMessages == 0) {
-            return;
-        }
-
-        long shutdownStart = System.currentTimeMillis();
-        final int prepareForShutdownTimeoutMillis = prepareForShutdownTimeoutSec * 1000;
-        while (System.currentTimeMillis() - shutdownStart < prepareForShutdownTimeoutMillis) {
-            if (getNumberOfRegisteredMessages() == 0) {
-                break;
-            }
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting for joynr message tracker to drain.");
-                Thread.currentThread().interrupt();
+        synchronized (registeredMessages) {
+            final long timeout = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(prepareForShutdownTimeoutSec);
+            while (!registeredMessages.isEmpty() && System.currentTimeMillis() < timeout) {
+                try {
+                    registeredMessages.wait(PREPARE_FOR_SHUTDOWN_INNER_WAIT);
+                } catch (final InterruptedException exception) {
+                    logger.error("Interrupted exception inside wait thread: ", exception);
+                }
             }
         }
 
-        remainingMessages = getNumberOfRegisteredMessages();
+        final int remainingMessages = getNumberOfRegisteredMessages();
         if (remainingMessages == 0) {
             logger.info("Joynr message tracker ready for shutdown. There are no more messages for further processing.");
         } else {
