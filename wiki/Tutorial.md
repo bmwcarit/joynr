@@ -223,6 +223,7 @@ public void shutdown() {
     if (provider != null) {
         runtime.unregisterProvider(localDomain, provider);
     }
+    runtime.prepareForShutdown();
     runtime.shutdown(true);
 }
 ...
