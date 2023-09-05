@@ -36,6 +36,10 @@ public:
     static const std::int32_t MINOR_VERSION;
     MOCK_CONST_METHOD0(getProviderQos, joynr::types::ProviderQos());
     MOCK_CONST_METHOD0(getParticipantId, std::string());
+    MOCK_METHOD1(registerBroadcastListener,
+                 void(std::shared_ptr<joynr::MulticastBroadcastListener>));
+    MOCK_METHOD1(unregisterBroadcastListener,
+                 void(std::shared_ptr<joynr::MulticastBroadcastListener>));
     ~MockProvider() override = default;
     const std::string& getInterfaceName() const override;
     static const std::string& INTERFACE_NAME();

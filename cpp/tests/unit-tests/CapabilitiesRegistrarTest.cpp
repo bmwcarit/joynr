@@ -42,6 +42,7 @@
 #include "tests/mock/MockProvider.h"
 
 using ::testing::_;
+using ::testing::A;
 using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::InSequence;
@@ -151,6 +152,8 @@ TEST_F(CapabilitiesRegistrarTest, add)
                             InvokeArgument<3>(),
                             Return(mockFuture)));
 
+    EXPECT_CALL(*_mockProvider, registerBroadcastListener(_)).Times(1);
+
     Future<void> future;
     auto onSuccess = [&future]() { future.onSuccess(); };
     auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
@@ -163,6 +166,116 @@ TEST_F(CapabilitiesRegistrarTest, add)
 
     EXPECT_EQ(_expectedParticipantId, participantId);
     EXPECT_EQ(capturedGbids.size(), 0);
+}
+
+TEST_F(CapabilitiesRegistrarTest, removeBroadcastListenerIfDiscoveryAddFails)
+{
+
+    types::ProviderQos testQos;
+    testQos.setPriority(100);
+    EXPECT_CALL(*_mockParticipantIdStorage,
+                getProviderParticipantId(
+                        _domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
+            .Times(1)
+            .WillOnce(Return(_expectedParticipantId));
+    std::shared_ptr<MulticastBroadcastListener> multicastBroadcastListener[2];
+    EXPECT_CALL(*_mockProvider, registerBroadcastListener(_))
+            .Times(1)
+            .WillOnce(::testing::SaveArg<0>(&multicastBroadcastListener[0]));
+
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+
+    EXPECT_CALL(*_mockDiscovery,
+                addAsyncMock(AllOf(Property(&joynr::types::DiscoveryEntry::getDomain, Eq(_domain)),
+                                   Property(&joynr::types::DiscoveryEntry::getInterfaceName,
+                                            Eq(MockProvider::INTERFACE_NAME())),
+                                   Property(&joynr::types::DiscoveryEntry::getParticipantId,
+                                            Eq(_expectedParticipantId)),
+                                   Property(&joynr::types::DiscoveryEntry::getQos, Eq(testQos)),
+                                   Property(&joynr::types::DiscoveryEntry::getProviderVersion,
+                                            Eq(_expectedProviderVersion))),
+                             _,
+                             _,
+                             _,
+                             _,
+                             _,
+                             _))
+            .WillOnce(
+                    DoAll(InvokeArgument<5>(joynr::exceptions::JoynrRuntimeException("TestError")),
+                          Return(mockFuture)));
+
+    EXPECT_CALL(*_mockProvider,
+                unregisterBroadcastListener(A<std::shared_ptr<MulticastBroadcastListener>>()))
+            .Times(1)
+            .WillOnce(::testing::SaveArg<0>(&multicastBroadcastListener[1]));
+
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    _capabilitiesRegistrar->addAsync(_domain, _mockProvider, testQos, onSuccess, onError);
+    EXPECT_THROW(
+            {
+                try {
+                    future.get();
+                } catch (exceptions::JoynrRuntimeException& e) {
+                    EXPECT_STREQ("TestError", e.what());
+                    EXPECT_NE(nullptr, multicastBroadcastListener[1].get());
+                    EXPECT_EQ(multicastBroadcastListener[1], multicastBroadcastListener[0]);
+                    throw;
+                }
+            },
+            exceptions::JoynrRuntimeException);
+}
+
+TEST_F(CapabilitiesRegistrarTest, removeBroadcastListenerIfAddNextHopAddFails)
+{
+
+    types::ProviderQos testQos;
+    testQos.setPriority(100);
+    EXPECT_CALL(*_mockParticipantIdStorage,
+                getProviderParticipantId(
+                        _domain, MockProvider::INTERFACE_NAME(), MockProvider::MAJOR_VERSION))
+            .Times(1)
+            .WillOnce(Return(_expectedParticipantId));
+    std::shared_ptr<MulticastBroadcastListener> multicastBroadcastListener[2];
+    EXPECT_CALL(*_mockProvider, registerBroadcastListener(_))
+            .Times(1)
+            .WillOnce(::testing::SaveArg<0>(&multicastBroadcastListener[0]));
+
+    auto mockFuture = std::make_shared<joynr::Future<void>>();
+    mockFuture->onSuccess();
+
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .WillOnce(InvokeArgument<6>(joynr::exceptions::ProviderRuntimeException("TestError")));
+
+    EXPECT_CALL(*_mockProvider,
+                unregisterBroadcastListener(A<std::shared_ptr<MulticastBroadcastListener>>()))
+            .Times(1)
+            .WillOnce(::testing::SaveArg<0>(&multicastBroadcastListener[1]));
+
+    Future<void> future;
+    auto onSuccess = [&future]() { future.onSuccess(); };
+    auto onError = [&future](const exceptions::JoynrRuntimeException& exception) {
+        future.onError(std::make_shared<exceptions::JoynrRuntimeException>(exception));
+    };
+
+    _capabilitiesRegistrar->addAsync(_domain, _mockProvider, testQos, onSuccess, onError);
+    EXPECT_THROW(
+            {
+                try {
+                    future.get();
+                } catch (exceptions::JoynrRuntimeException& e) {
+                    EXPECT_STREQ("TestError", e.what());
+                    EXPECT_NE(nullptr, multicastBroadcastListener[1].get());
+                    EXPECT_EQ(multicastBroadcastListener[1], multicastBroadcastListener[0]);
+                    throw;
+                }
+            },
+            exceptions::JoynrRuntimeException);
 }
 
 TEST_F(CapabilitiesRegistrarTest, checkVisibilityOfGlobalAndLocalProviders)

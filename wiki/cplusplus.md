@@ -1101,6 +1101,7 @@ the attempt will be made to remove the provider from the global capabilities dir
 * if it was set to `true`,  the provider will be removed from the local capabilities directory (LCD) after
 it is removed from the global capabilities directory (GCD).
 
+__IMPORTANT__: We strongly discourage the reuse of an instance of an unregistered provider.
 
 ## The My&lt;Interface>Provider class
 

@@ -97,6 +97,17 @@ void AbstractJoynrProvider::unregisterBroadcastListener(
     }
 }
 
+void AbstractJoynrProvider::unregisterBroadcastListener(
+        std::shared_ptr<MulticastBroadcastListener> broadcastListener)
+{
+    WriteLocker locker(_lockBroadcastListeners);
+    auto listenerIt =
+            std::find(_broadcastListeners.cbegin(), _broadcastListeners.cend(), broadcastListener);
+    if (listenerIt != _broadcastListeners.cend()) {
+        _broadcastListeners.erase(listenerIt);
+    }
+}
+
 const CallContext& AbstractJoynrProvider::getCallContext() const
 {
     return CallContextStorage::get();
