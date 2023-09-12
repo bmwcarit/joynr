@@ -91,7 +91,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
         if (isRegistered) {
             logger.info("Message with following ID: {} has been successfully registered", messageId);
         } else {
-            logger.error("Message with following ID is already registered: {}", messageId);
+            logger.warn("Message with following ID is already registered: {}", messageId);
         }
     }
 
@@ -121,7 +121,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
             }
             logger.info("Message with following ID: {} has been successfully unregistered", messageId);
         } else {
-            logger.error("Message with following ID has not been registered: {}", messageId);
+            logger.warn("Message with following ID has not been registered: {}", messageId);
         }
     }
 
@@ -145,7 +145,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
             logger.info("The request with the following requestReplyId: {} has been successfully unregistered",
                         requestReplyId);
         } else {
-            logger.error("The request with the following requestReplyId has not been registered: {}", requestReplyId);
+            logger.warn("The request with the following requestReplyId has not been registered: {}", requestReplyId);
         }
     }
 
