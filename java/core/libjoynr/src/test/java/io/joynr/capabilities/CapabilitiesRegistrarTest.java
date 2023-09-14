@@ -18,37 +18,12 @@
  */
 package io.joynr.capabilities;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
-import io.joynr.dispatching.rpc.RequestInterpreter;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.InOrder;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
 import io.joynr.JoynrVersion;
 import io.joynr.discovery.LocalDiscoveryAggregator;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.dispatching.RequestCaller;
+import io.joynr.dispatching.rpc.RequestInterpreter;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessLibjoynrMessagingSkeleton;
@@ -66,13 +41,37 @@ import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryError;
 import joynr.types.ProviderQos;
 import joynr.types.Version;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CapabilitiesRegistrarTest {
 
-    private static final long ONE_DAY_IN_MS = 1 * 24 * 60 * 60 * 1000;
+    private static final long ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
     private final long expiryDateMs = System.currentTimeMillis() + ONE_DAY_IN_MS;
-    CapabilitiesRegistrar registrar;
+    private CapabilitiesRegistrar registrar;
     @Mock
     private LocalDiscoveryAggregator localDiscoveryAggregator;
     @Mock
@@ -91,9 +90,6 @@ public class CapabilitiesRegistrarTest {
     private TestProvider testProvider;
 
     @Mock
-    private RequestCaller requestCaller;
-
-    @Mock
     private AbstractSubscriptionPublisher subscriptionPublisher;
 
     @Mock
@@ -104,21 +100,19 @@ public class CapabilitiesRegistrarTest {
     @Mock
     private RequestInterpreter requestInterpreter;
 
-    private String domain = "domain";
-    private String participantId = "participantId";
-    private String publicKeyId = "";
-    private ProviderQos providerQos = new ProviderQos();
-    private JoynrVersion currentJoynrVersion;
+    private final String domain = "domain";
+    private final String participantId = "participantId";
+    private final ProviderQos providerQos = new ProviderQos();
     private Version testVersion;
-    private RequestCaller requestCallerMock;
     private ArgumentCaptor<DiscoveryEntry> discoveryEntryCaptor;
 
     @JoynrInterface(provider = TestProvider.class, provides = TestProvider.class, name = TestProvider.INTERFACE_NAME)
     @JoynrVersion(major = 1337, minor = 42)
     interface TestProvider extends JoynrProvider {
-        public static String INTERFACE_NAME = "interfaceName";
+        String INTERFACE_NAME = "interfaceName";
     }
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
         dispatcherAddress = new InProcessAddress(new InProcessLibjoynrMessagingSkeleton(dispatcher));
@@ -130,11 +124,11 @@ public class CapabilitiesRegistrarTest {
                                                   ONE_DAY_IN_MS,
                                                   dispatcherAddress,
                                                   requestInterpreter);
-        currentJoynrVersion = (JoynrVersion) TestProvider.class.getAnnotation(JoynrVersion.class);
+        final JoynrVersion currentJoynrVersion = TestProvider.class.getAnnotation(JoynrVersion.class);
         testVersion = new Version(currentJoynrVersion.major(), currentJoynrVersion.minor());
 
         when(providerContainer.getInterfaceName()).thenReturn(TestProvider.INTERFACE_NAME);
-        requestCallerMock = mock(RequestCaller.class);
+        final RequestCaller requestCallerMock = mock(RequestCaller.class);
         lenient().when(providerContainer.getRequestCaller()).thenReturn(requestCallerMock);
         lenient().when(providerContainer.getSubscriptionPublisher()).thenReturn(subscriptionPublisher);
         when(participantIdStorage.getProviderParticipantId(eq(domain),
@@ -145,61 +139,59 @@ public class CapabilitiesRegistrarTest {
         discoveryEntryCaptor = ArgumentCaptor.forClass(DiscoveryEntry.class);
 
         // Trigger onSuccess by default to make sure that the onSuccess callback is invoked (for coverage)
-        doAnswer(new Answer<Future<Void>>() {
-            public Future<Void> answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                @SuppressWarnings("unchecked")
-                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
-                callback.onSuccess(null);
-                return null;
-            }
+        doAnswer((Answer<Future<Void>>) invocation -> {
+            final Object[] args = invocation.getArguments();
+            @SuppressWarnings("unchecked")
+            final CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+            callback.onSuccess(null);
+            return null;
         }).when(localDiscoveryAggregator)
           .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
     }
 
     @SuppressWarnings("unchecked")
-    private void verifyRegisterProviderResults(boolean awaitGlobalRegistration, String[] gbids) {
+    private void verifyRegisterProviderResults(final boolean awaitGlobalRegistration, final String[] gbids) {
         verify(localDiscoveryAggregator).add(any(CallbackWithModeledError.class),
                                              discoveryEntryCaptor.capture(),
                                              eq(awaitGlobalRegistration),
                                              eq(gbids));
-        DiscoveryEntry actual = discoveryEntryCaptor.getValue();
+        final DiscoveryEntry actual = discoveryEntryCaptor.getValue();
         verifyDiscoveryEntry(actual);
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
     @SuppressWarnings("unchecked")
     @Deprecated
-    private void verifyRegisterInallKnownBackendsResults(boolean awaitGlobalRegistration) {
+    private void verifyRegisterInallKnownBackendsResults(final boolean awaitGlobalRegistration) {
         verify(localDiscoveryAggregator).addToAll(any(CallbackWithModeledError.class),
                                                   discoveryEntryCaptor.capture(),
                                                   eq(awaitGlobalRegistration));
-        DiscoveryEntry actual = discoveryEntryCaptor.getValue();
+        final DiscoveryEntry actual = discoveryEntryCaptor.getValue();
         verifyDiscoveryEntry(actual);
         verify(providerDirectory).add(eq(participantId), eq(providerContainer));
     }
 
-    private void verifyDiscoveryEntry(DiscoveryEntry discoveryEntry) {
-        Assert.assertEquals(discoveryEntry.getProviderVersion(), testVersion);
-        Assert.assertEquals(discoveryEntry.getDomain(), domain);
-        Assert.assertEquals(discoveryEntry.getInterfaceName(), TestProvider.INTERFACE_NAME);
-        Assert.assertEquals(discoveryEntry.getParticipantId(), participantId);
-        Assert.assertEquals(discoveryEntry.getQos(), providerQos);
-        Assert.assertTrue((System.currentTimeMillis() - discoveryEntry.getLastSeenDateMs()) < 5000);
-        Assert.assertTrue((discoveryEntry.getExpiryDateMs() - expiryDateMs) < 5000);
-        Assert.assertEquals(discoveryEntry.getPublicKeyId(), publicKeyId);
+    private void verifyDiscoveryEntry(final DiscoveryEntry discoveryEntry) {
+        assertEquals(discoveryEntry.getProviderVersion(), testVersion);
+        assertEquals(discoveryEntry.getDomain(), domain);
+        assertEquals(discoveryEntry.getInterfaceName(), TestProvider.INTERFACE_NAME);
+        assertEquals(discoveryEntry.getParticipantId(), participantId);
+        assertEquals(discoveryEntry.getQos(), providerQos);
+        assertTrue((System.currentTimeMillis() - discoveryEntry.getLastSeenDateMs()) < 5000);
+        assertTrue((discoveryEntry.getExpiryDateMs() - expiryDateMs) < 5000);
+        assertEquals("", discoveryEntry.getPublicKeyId());
     }
 
     @Test
     public void registerWithCapRegistrarWithoutAwaitGlobalRegistration() {
-        boolean awaitGlobalRegistration = false;
+        final boolean awaitGlobalRegistration = false;
         registrar.registerProvider(domain, testProvider, providerQos, new String[]{}, awaitGlobalRegistration);
         verifyRegisterProviderResults(awaitGlobalRegistration, new String[]{});
     }
 
     @Test
     public void registerWithCapRegistrarWithAwaitGlobalRegistration() {
-        boolean awaitGlobalRegistration = true;
+        final boolean awaitGlobalRegistration = true;
         registrar.registerProvider(domain, testProvider, providerQos, new String[]{}, awaitGlobalRegistration);
         verifyRegisterProviderResults(awaitGlobalRegistration, new String[]{});
     }
@@ -207,7 +199,7 @@ public class CapabilitiesRegistrarTest {
     @SuppressWarnings("unchecked")
     private void testRegistrationWithErrorFromAdd() {
         registrar.registerProvider(domain, testProvider, providerQos, new String[]{}, true);
-        InOrder inOrder = inOrder(messageRouter, localDiscoveryAggregator);
+        final InOrder inOrder = inOrder(messageRouter, localDiscoveryAggregator);
         inOrder.verify(messageRouter).addNextHop(eq(participantId), eq(dispatcherAddress), eq(true));
         inOrder.verify(localDiscoveryAggregator).add(any(CallbackWithModeledError.class),
                                                      any(DiscoveryEntry.class),
@@ -220,13 +212,11 @@ public class CapabilitiesRegistrarTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerWithCapRegistrarWithRuntimeException() {
-        doAnswer(new Answer<Future<Void>>() {
-            public Future<Void> answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
-                callback.onFailure(new JoynrRuntimeException("testException"));
-                return null;
-            }
+        doAnswer((Answer<Future<Void>>) invocation -> {
+            final Object[] args = invocation.getArguments();
+            final CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+            callback.onFailure(new JoynrRuntimeException("testException"));
+            return null;
         }).when(localDiscoveryAggregator)
           .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
         testRegistrationWithErrorFromAdd();
@@ -236,13 +226,11 @@ public class CapabilitiesRegistrarTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerWithCapRegistrarWithRuntimeException_removeNextHopGoesWrong() {
-        doAnswer(new Answer<Future<Void>>() {
-            public Future<Void> answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
-                callback.onFailure(new JoynrRuntimeException("testException"));
-                return null;
-            }
+        doAnswer((Answer<Future<Void>>) invocation -> {
+            final Object[] args = invocation.getArguments();
+            final CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+            callback.onFailure(new JoynrRuntimeException("testException"));
+            return null;
         }).when(localDiscoveryAggregator)
           .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
         //We don't care about the exception type here
@@ -253,13 +241,11 @@ public class CapabilitiesRegistrarTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerWithCapRegistrarWithDiscoveryError() {
-        doAnswer(new Answer<Future<Void>>() {
-            public Future<Void> answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
-                callback.onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-                return null;
-            }
+        doAnswer((Answer<Future<Void>>) invocation -> {
+            final Object[] args = invocation.getArguments();
+            final CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+            callback.onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+            return null;
         }).when(localDiscoveryAggregator)
           .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
         testRegistrationWithErrorFromAdd();
@@ -269,13 +255,11 @@ public class CapabilitiesRegistrarTest {
     @SuppressWarnings("unchecked")
     @Test
     public void registerWithCapRegistrarWithDiscoveryError_removeNextHopGoesWrong() {
-        doAnswer(new Answer<Future<Void>>() {
-            public Future<Void> answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
-                callback.onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
-                return null;
-            }
+        doAnswer((Answer<Future<Void>>) invocation -> {
+            final Object[] args = invocation.getArguments();
+            final CallbackWithModeledError<Void, DiscoveryError> callback = (CallbackWithModeledError<Void, DiscoveryError>) args[0];
+            callback.onFailure(DiscoveryError.NO_ENTRY_FOR_PARTICIPANT);
+            return null;
         }).when(localDiscoveryAggregator)
           .add(any(CallbackWithModeledError.class), any(DiscoveryEntry.class), any(Boolean.class), any(String[].class));
         //We don't care about the exception type here
@@ -285,8 +269,8 @@ public class CapabilitiesRegistrarTest {
 
     @Test
     public void registerWithCapRegistrarWithAwaitGlobalRegistrationAndGbids() {
-        boolean awaitGlobalRegistration = true;
-        String[] gbids = new String[]{ "testgbid1" };
+        final boolean awaitGlobalRegistration = true;
+        final String[] gbids = new String[]{ "testgbid1" };
         registrar.registerProvider(domain, testProvider, providerQos, gbids, awaitGlobalRegistration);
         verifyRegisterProviderResults(awaitGlobalRegistration, gbids);
     }
@@ -294,7 +278,7 @@ public class CapabilitiesRegistrarTest {
     @Test
     @Deprecated
     public void testRegisterInAllKnownBackendsWithoutAwaitGlobalRegistration() {
-        boolean awaitGlobalRegistration = false;
+        final boolean awaitGlobalRegistration = false;
         registrar.registerInAllKnownBackends(domain, testProvider, providerQos, awaitGlobalRegistration);
         verifyRegisterInallKnownBackendsResults(awaitGlobalRegistration);
     }
@@ -302,71 +286,63 @@ public class CapabilitiesRegistrarTest {
     @Test
     @Deprecated
     public void testRegisterInAllKnownBackendsWithAwaitGlobalRegistration() {
-        boolean awaitGlobalRegistration = true;
+        final boolean awaitGlobalRegistration = true;
         registrar.registerInAllKnownBackends(domain, testProvider, providerQos, awaitGlobalRegistration);
         verifyRegisterInallKnownBackendsResults(awaitGlobalRegistration);
     }
 
     private static Answer<Future<Void>> createRemoveAnswerWithSuccess() {
-        return new Answer<Future<Void>>() {
-            @Override
-            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
-                Future<Void> result = new Future<Void>();
-                @SuppressWarnings("unchecked")
-                Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
-                callback.onSuccess(null);
-                result.onSuccess(null);
-                return result;
-            }
+        return invocation -> {
+            final Future<Void> result = new Future<>();
+            @SuppressWarnings("unchecked")
+            final Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+            callback.onSuccess(null);
+            result.onSuccess(null);
+            return result;
         };
     }
 
     private static Answer<Future<Void>> createRemoveAnswerWithException(JoynrRuntimeException exception) {
-        return new Answer<Future<Void>>() {
-            @Override
-            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
-                Future<Void> result = new Future<Void>();
-                @SuppressWarnings("unchecked")
-                Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
-                callback.onFailure(exception);
-                result.onSuccess(null);
-                return result;
-            }
+        return invocation -> {
+            final Future<Void> result = new Future<>();
+            @SuppressWarnings("unchecked")
+            final Callback<Void> callback = (Callback<Void>) invocation.getArguments()[0];
+            callback.onFailure(exception);
+            result.onSuccess(null);
+            return result;
         };
     }
 
     @Test
     public void unregisterProvider_succeeded() {
-        doAnswer(createRemoveAnswerWithSuccess()).when(localDiscoveryAggregator)
-                                                 .remove(ArgumentMatchers.<Callback<Void>> any(), eq(participantId));
+        doAnswer(createRemoveAnswerWithSuccess()).when(localDiscoveryAggregator).remove(any(), eq(participantId));
         try {
-            Future<Void> future = registrar.unregisterProvider(domain, testProvider);
-            verify(localDiscoveryAggregator).remove(ArgumentMatchers.<Callback<Void>> any(), eq(participantId));
+            final Future<Void> future = registrar.unregisterProvider(domain, testProvider);
+            verify(localDiscoveryAggregator).remove(any(), eq(participantId));
             future.get(5000);
             verify(providerDirectory).remove(eq(participantId));
             verify(messageRouter).removeNextHop(eq(participantId));
             verify(requestInterpreter).removeAllMethodInformation(testProvider.getClass());
-        } catch (Exception e) {
-            Assert.fail("Unexpected exception from unregisterProvider: " + e);
+        } catch (final Exception e) {
+            fail("Unexpected exception from unregisterProvider: " + e);
         }
     }
 
     @Test
     public void unregisterProvider_failsWithException() {
-        JoynrRuntimeException expectedException = new JoynrRuntimeException("remove failed");
+        final JoynrRuntimeException expectedException = new JoynrRuntimeException("remove failed");
         doAnswer(createRemoveAnswerWithException(expectedException)).when(localDiscoveryAggregator)
-                                                                    .remove(ArgumentMatchers.<Callback<Void>> any(),
-                                                                            eq(participantId));
+                                                                    .remove(any(), eq(participantId));
 
         try {
-            Future<Void> future = registrar.unregisterProvider(domain, testProvider);
-            verify(localDiscoveryAggregator).remove(ArgumentMatchers.<Callback<Void>> any(), eq(participantId));
+            final Future<Void> future = registrar.unregisterProvider(domain, testProvider);
+            verify(localDiscoveryAggregator).remove(any(), eq(participantId));
             future.get(5000);
-            Assert.fail("unregisterProvider expected to fail with exception");
+            fail("unregisterProvider expected to fail with exception");
         } catch (Exception exception) {
             verify(providerDirectory, times(0)).remove(eq(participantId));
             verify(messageRouter, times(0)).removeNextHop(eq(participantId));
-            Assert.assertEquals(expectedException, exception);
+            assertEquals(expectedException, exception);
         }
     }
 }

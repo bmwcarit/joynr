@@ -52,25 +52,26 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
 
     private static final Logger logger = LoggerFactory.getLogger(CapabilitiesRegistrarImpl.class);
 
-    private DiscoveryAsync localDiscoveryAggregator;
+    private final DiscoveryAsync localDiscoveryAggregator;
     private final MessageRouter messageRouter;
-    private ParticipantIdStorage participantIdStorage;
-    private Address libjoynrMessagingAddress;
-    private ProviderDirectory providerDirectory;
-    private ProviderContainerFactory providerContainerFactory;
+    private final ParticipantIdStorage participantIdStorage;
+    private final Address libjoynrMessagingAddress;
+    private final ProviderDirectory providerDirectory;
+    private final ProviderContainerFactory providerContainerFactory;
 
-    private RequestInterpreter requestInterpreter;
+    private final RequestInterpreter requestInterpreter;
 
-    private long defaultExpiryTimeMs;
+    private final long defaultExpiryTimeMs;
 
     @Inject
-    public CapabilitiesRegistrarImpl(DiscoveryAsync localDiscoveryAggregator,
-                                     ProviderContainerFactory providerContainerFactory,
-                                     MessageRouter messageRouter,
-                                     ProviderDirectory providerDirectory,
-                                     ParticipantIdStorage participantIdStorage,
-                                     @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs,
-                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    public CapabilitiesRegistrarImpl(final DiscoveryAsync localDiscoveryAggregator,
+                                     final ProviderContainerFactory providerContainerFactory,
+                                     final MessageRouter messageRouter,
+                                     final ProviderDirectory providerDirectory,
+                                     final ParticipantIdStorage participantIdStorage,
+                                     @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) final long defaultExpiryTimeMs,
+                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) final Address dispatcherAddress,
                                      final RequestInterpreter requestInterpreter) {
         super();
         this.localDiscoveryAggregator = localDiscoveryAggregator;
@@ -91,69 +92,69 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
      */
     @Override
     public Future<Void> registerProvider(final String domain,
-                                         Object provider,
-                                         ProviderQos providerQos,
-                                         String[] gbids,
-                                         boolean awaitGlobalRegistration) {
-        DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddProviderContainer(domain, provider, providerQos);
+                                         final Object provider,
+                                         final ProviderQos providerQos,
+                                         final String[] gbids,
+                                         final boolean awaitGlobalRegistration) {
+        final DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddProviderContainer(domain, provider, providerQos);
         try {
             addRoutingEntry(discoveryEntry, provider);
-        } catch (JoynrRuntimeException error) {
+        } catch (final JoynrRuntimeException error) {
             final Future<Void> newFuture = new Future<>();
             newFuture.onFailure(error);
             return newFuture;
         }
-        CallbackWithModeledError<Void, DiscoveryError> callback = buildAddCallback(discoveryEntry);
+        final CallbackWithModeledError<Void, DiscoveryError> callback = buildAddCallback(discoveryEntry);
         return localDiscoveryAggregator.add(callback, discoveryEntry, awaitGlobalRegistration, gbids);
     }
 
     @Override
     @Deprecated
     public Future<Void> registerInAllKnownBackends(final String domain,
-                                                   Object provider,
-                                                   ProviderQos providerQos,
-                                                   boolean awaitGlobalRegistration) {
-        DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddProviderContainer(domain, provider, providerQos);
+                                                   final Object provider,
+                                                   final ProviderQos providerQos,
+                                                   final boolean awaitGlobalRegistration) {
+        final DiscoveryEntry discoveryEntry = buildDiscoveryEntryAndAddProviderContainer(domain, provider, providerQos);
         try {
             addRoutingEntry(discoveryEntry, provider);
-        } catch (JoynrRuntimeException error) {
+        } catch (final JoynrRuntimeException error) {
             final Future<Void> newFuture = new Future<>();
             newFuture.onFailure(error);
             return newFuture;
         }
-        CallbackWithModeledError<Void, DiscoveryError> callback = buildAddCallback(discoveryEntry);
+        final CallbackWithModeledError<Void, DiscoveryError> callback = buildAddCallback(discoveryEntry);
         return localDiscoveryAggregator.addToAll(callback, discoveryEntry, awaitGlobalRegistration);
     }
 
     private DiscoveryEntry buildDiscoveryEntryAndAddProviderContainer(final String domain,
-                                                                      Object provider,
-                                                                      ProviderQos providerQos) {
+                                                                      final Object provider,
+                                                                      final ProviderQos providerQos) {
         if (providerQos == null) {
             throw new JoynrRuntimeException("providerQos == null. It must not be null");
         }
-        ProviderContainer providerContainer = providerContainerFactory.create(provider);
-        String participantId = participantIdStorage.getProviderParticipantId(domain,
-                                                                             providerContainer.getInterfaceName(),
-                                                                             providerContainer.getMajorVersion());
-        String defaultPublicKeyId = "";
-        DiscoveryEntry discoveryEntry = new DiscoveryEntry(getVersionFromAnnotation(provider.getClass()),
-                                                           domain,
-                                                           providerContainer.getInterfaceName(),
-                                                           participantId,
-                                                           providerQos,
-                                                           System.currentTimeMillis(),
-                                                           System.currentTimeMillis() + defaultExpiryTimeMs,
-                                                           defaultPublicKeyId);
+        final ProviderContainer providerContainer = providerContainerFactory.create(provider);
+        final String participantId = participantIdStorage.getProviderParticipantId(domain,
+                                                                                   providerContainer.getInterfaceName(),
+                                                                                   providerContainer.getMajorVersion());
+        final String defaultPublicKeyId = "";
+        final DiscoveryEntry discoveryEntry = new DiscoveryEntry(getVersionFromAnnotation(provider.getClass()),
+                                                                 domain,
+                                                                 providerContainer.getInterfaceName(),
+                                                                 participantId,
+                                                                 providerQos,
+                                                                 System.currentTimeMillis(),
+                                                                 System.currentTimeMillis() + defaultExpiryTimeMs,
+                                                                 defaultPublicKeyId);
         providerDirectory.add(participantId, providerContainer);
         return discoveryEntry;
     }
 
-    private void addRoutingEntry(DiscoveryEntry discoveryEntry, Object provider) {
+    private void addRoutingEntry(final DiscoveryEntry discoveryEntry, final Object provider) {
         final boolean isGloballyVisible = (discoveryEntry.getQos().getScope() == ProviderScope.GLOBAL);
-        String participantId = discoveryEntry.getParticipantId();
+        final String participantId = discoveryEntry.getParticipantId();
         try {
             messageRouter.addNextHop(participantId, libjoynrMessagingAddress, isGloballyVisible);
-        } catch (Exception error) {
+        } catch (final Exception error) {
             // addNextHop throws when RoutingTable.put fails
             providerDirectory.remove(participantId);
             providerContainerFactory.removeProviderContainer(provider);
@@ -162,9 +163,9 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     private CallbackWithModeledError<Void, DiscoveryError> buildAddCallback(final DiscoveryEntry discoveryEntry) {
-        return new CallbackWithModeledError<Void, DiscoveryError>() {
+        return new CallbackWithModeledError<>() {
             @Override
-            public void onSuccess(Void result) {
+            public void onSuccess(final Void result) {
                 logger.info("Successfully registered provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}",
                             discoveryEntry.getParticipantId(),
                             discoveryEntry.getDomain(),
@@ -174,7 +175,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             }
 
             @Override
-            public void onFailure(JoynrRuntimeException runtimeException) {
+            public void onFailure(final JoynrRuntimeException runtimeException) {
                 logger.error("Error while registering provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}:",
                              discoveryEntry.getParticipantId(),
                              discoveryEntry.getDomain(),
@@ -186,7 +187,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             }
 
             @Override
-            public void onFailure(DiscoveryError errorEnum) {
+            public void onFailure(final DiscoveryError errorEnum) {
                 logger.error("DiscoveryError while registering provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}: {}",
                              discoveryEntry.getParticipantId(),
                              discoveryEntry.getDomain(),
@@ -200,7 +201,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             private void handleFailedAdd(final DiscoveryEntry discoveryEntry) {
                 try {
                     messageRouter.removeNextHop(discoveryEntry.getParticipantId());
-                } catch (Exception error) {
+                } catch (final Exception error) {
                     // removeNextHop throws only in case of libjoynr runtime if the communication with the CC fails
                     logger.error("Error while removing routing entry of provider with participantId={} for domain={}, interfaceName={}, major={}, minor={} after failed registration: ",
                                  discoveryEntry.getParticipantId(),
@@ -220,10 +221,10 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         final int majorVersion = ProviderAnnotations.getMajorVersion(provider);
         final int minorVersion = ProviderAnnotations.getMinorVersion(provider);
         final String participantId = participantIdStorage.getProviderParticipantId(domain, interfaceName, majorVersion);
-        final Future<Void> newFuture = new Future<Void>();
-        Callback<Void> callback = new Callback<Void>() {
+        final Future<Void> newFuture = new Future<>();
+        final Callback<Void> callback = new Callback<>() {
             @Override
-            public void onSuccess(Void result) {
+            public void onSuccess(final Void result) {
                 logger.info("Successfully unregistered provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}",
                             participantId,
                             domain,
@@ -232,7 +233,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                             minorVersion);
                 try {
                     messageRouter.removeNextHop(participantId);
-                } catch (Exception error) {
+                } catch (final Exception error) {
                     // removeNextHop throws only in case of libjoynr runtime if the communication with the CC fails
                     logger.error("Error while removing routing entry of unregistered provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}: ",
                                  participantId,
@@ -249,7 +250,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
             }
 
             @Override
-            public void onFailure(JoynrRuntimeException error) {
+            public void onFailure(final JoynrRuntimeException error) {
                 logger.error("Error while unregistering provider with participantId={} for domain={}, interfaceName={}, major={}, minor={}: ",
                              participantId,
                              domain,

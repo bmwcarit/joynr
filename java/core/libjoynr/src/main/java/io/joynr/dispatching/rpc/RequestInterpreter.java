@@ -60,16 +60,16 @@ public class RequestInterpreter {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestInterpreter.class);
 
-    private JoynrMessageScope joynrMessageScope;
+    private final JoynrMessageScope joynrMessageScope;
 
-    private Provider<JoynrMessageCreator> joynrMessageCreatorProvider;
+    private final Provider<JoynrMessageCreator> joynrMessageCreatorProvider;
 
-    private Provider<JoynrMessageMetaInfo> joynrMessageContext;
+    private final Provider<JoynrMessageMetaInfo> joynrMessageContext;
 
     @Inject
-    public RequestInterpreter(JoynrMessageScope joynrMessageScope,
-                              Provider<JoynrMessageCreator> joynrMessageCreatorProvider,
-                              Provider<JoynrMessageMetaInfo> joynrMessageContext) {
+    public RequestInterpreter(final JoynrMessageScope joynrMessageScope,
+                              final Provider<JoynrMessageCreator> joynrMessageCreatorProvider,
+                              final Provider<JoynrMessageMetaInfo> joynrMessageContext) {
         this.joynrMessageScope = joynrMessageScope;
         this.joynrMessageCreatorProvider = joynrMessageCreatorProvider;
         this.joynrMessageContext = joynrMessageContext;
@@ -80,13 +80,13 @@ public class RequestInterpreter {
     // >
     // TODO move methodMetaInformation to a central place, save metaInformations in a cache (e.g. with predefined max
     // size)
-    private final ConcurrentMap<MethodSignature, Method> methodSignatureToMethodMap = new ConcurrentHashMap<MethodSignature, Method>();
+    private final ConcurrentMap<MethodSignature, Method> methodSignatureToMethodMap = new ConcurrentHashMap<>();
 
-    private Reply createReply(Request request, Object... response) {
+    private Reply createReply(final Request request, final Object... response) {
         return new Reply(request.getRequestReplyId(), response);
     }
 
-    private String logRequest(Request request) {
+    private String logRequest(final Request request) {
         if (logger.isTraceEnabled()) {
             return request.toString();
         } else {
@@ -96,7 +96,7 @@ public class RequestInterpreter {
         }
     }
 
-    private String logRequest(OneWayRequest request) {
+    private String logRequest(final OneWayRequest request) {
         if (logger.isTraceEnabled()) {
             return request.toString();
         } else {
@@ -104,21 +104,23 @@ public class RequestInterpreter {
         }
     }
 
-    public void execute(final ProviderCallback<Reply> callback, RequestCaller requestCaller, final Request request) {
-        Promise<? extends AbstractDeferred> promise;
+    public void execute(final ProviderCallback<Reply> callback,
+                        final RequestCaller requestCaller,
+                        final Request request) {
+        final Promise<? extends AbstractDeferred> promise;
         logger.debug("Execute request on provider: {}", logRequest(request));
         try {
             promise = (Promise<?>) invokeMethod(requestCaller, request);
-        } catch (MethodInvocationException | ProviderRuntimeException e) {
+        } catch (final MethodInvocationException | ProviderRuntimeException e) {
             logger.warn("Execute request on provider failed with exception: {}, {}", e, request);
             callback.onFailure(e);
             return;
-        } catch (Exception e) {
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
-                                                                     JoynrVersion.class);
-            MethodInvocationException methodInvocationException = new MethodInvocationException(e,
-                                                                                                new Version(joynrVersion.major(),
-                                                                                                            joynrVersion.minor()));
+        } catch (final Exception e) {
+            final JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
+                                                                           JoynrVersion.class);
+            final MethodInvocationException methodInvocationException = new MethodInvocationException(e,
+                                                                                                      new Version(joynrVersion.major(),
+                                                                                                                  joynrVersion.minor()));
             logger.warn("Execute request on provider failed with exception: {}, {}",
                         methodInvocationException,
                         request);
@@ -128,13 +130,13 @@ public class RequestInterpreter {
         promise.then(new PromiseListener() {
 
             @Override
-            public void onRejection(JoynrException error) {
+            public void onRejection(final JoynrException error) {
                 logger.debug("Execute request on provider onRejection: {}, {}", error, logRequest(request));
                 callback.onFailure(error);
             }
 
             @Override
-            public void onFulfillment(Object... values) {
+            public void onFulfillment(final Object... values) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("Execute request on provider onFulfillment: {}, {}", values, request);
                 } else {
@@ -146,37 +148,39 @@ public class RequestInterpreter {
 
     }
 
-    public Object invokeMethod(RequestCaller requestCaller, OneWayRequest request) {
+    public Object invokeMethod(final RequestCaller requestCaller, final OneWayRequest request) {
         // A method is identified by its defining request caller, its name and the types of its arguments
-        MethodSignature methodSignature = new MethodSignature(requestCaller,
-                                                              request.getMethodName(),
-                                                              request.getParamDatatypes());
+        final MethodSignature methodSignature = new MethodSignature(requestCaller,
+                                                                    request.getMethodName(),
+                                                                    request.getParamDatatypes());
 
         ensureMethodMetaInformationPresent(requestCaller, request, methodSignature);
 
-        Method method = methodSignatureToMethodMap.get(methodSignature);
+        final Method method = methodSignatureToMethodMap.get(methodSignature);
 
-        Object[] params = null;
+        final Object[] params;
         try {
             if (method.getParameterTypes().length > 0) {
                 // method with parameters
                 params = request.getParams();
+            } else {
+                params = null;
             }
             joynrMessageScope.activate();
             setContext(requestCaller, request);
 
             logger.trace("Invoke provider method {}({})", method.getName(), params);
             return requestCaller.invoke(method, params);
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for a non public method {}",
                          logRequest(request));
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
-                                                                     JoynrVersion.class);
+            final JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
+                                                                           JoynrVersion.class);
             throw new MethodInvocationException(e, new Version(joynrVersion.major(), joynrVersion.minor()));
 
-        } catch (InvocationTargetException e) {
+        } catch (final InvocationTargetException e) {
             logger.debug("InvokeMethod error", e);
-            Throwable cause = e.getCause();
+            final Throwable cause = e.getCause();
             logger.error("RequestInterpreter: Could not perform an RPC invocation: {}",
                          cause == null ? e.toString() : cause.getMessage());
             throw new ProviderRuntimeException(cause == null ? e.toString() : cause.toString());
@@ -186,43 +190,43 @@ public class RequestInterpreter {
         }
     }
 
-    private void setContext(RequestCaller requestCaller, OneWayRequest request) {
-        String creatorUserId = request.getCreatorUserId();
-        Map<String, Serializable> context = request.getContext();
+    private void setContext(final RequestCaller requestCaller, final OneWayRequest request) {
+        final String creatorUserId = request.getCreatorUserId();
+        final Map<String, Serializable> context = request.getContext();
 
         // Enable guice-scoped
         joynrMessageCreatorProvider.get().setMessageCreatorId(creatorUserId);
         joynrMessageContext.get().setMessageContext(context);
         // allow requestCaller to set thread-local CallContext
-        CallContext callContext = new CallContext();
+        final CallContext callContext = new CallContext();
         callContext.setContext(context);
         callContext.setPrincipal(creatorUserId);
         requestCaller.setContext(callContext);
     }
 
-    private void ensureMethodMetaInformationPresent(RequestCaller requestCaller,
-                                                    OneWayRequest request,
-                                                    MethodSignature methodSignature) {
+    private void ensureMethodMetaInformationPresent(final RequestCaller requestCaller,
+                                                    final OneWayRequest request,
+                                                    final MethodSignature methodSignature) {
         try {
             if (!methodSignatureToMethodMap.containsKey(methodSignature)) {
-                Method method;
-                method = ReflectionUtils.findMethodByParamTypeNames(methodSignature.getRequestCaller()
-                                                                                   .getProxy()
-                                                                                   .getClass(),
-                                                                    methodSignature.getMethodName(),
-                                                                    methodSignature.getParameterTypeNames());
+                final Method method = ReflectionUtils.findMethodByParamTypeNames(methodSignature.getRequestCaller()
+                                                                                                .getProxy()
+                                                                                                .getClass(),
+                                                                                 methodSignature.getMethodName(),
+                                                                                 methodSignature.getParameterTypeNames());
                 methodSignatureToMethodMap.putIfAbsent(methodSignature, method);
             }
-        } catch (NoSuchMethodException e) {
+        } catch (final NoSuchMethodException e) {
             logger.error("RequestInterpreter: Received an RPC invocation for non existing method in {}. Error:",
                          logRequest(request),
                          e);
-            JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
-                                                                     JoynrVersion.class);
+            final JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
+                                                                           JoynrVersion.class);
             throw new MethodInvocationException(e.toString(), new Version(joynrVersion.major(), joynrVersion.minor()));
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public void removeAllMethodInformation(final Class providerClass) {
         final var toRemove = methodSignatureToMethodMap.keySet()
                                                        .stream()

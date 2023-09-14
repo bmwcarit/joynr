@@ -27,16 +27,15 @@ import io.joynr.provider.JoynrProvider;
 
 public class RequestCaller implements JoynrProvider {
 
-    private Object provider;
-    private Object proxy;
+    private final Object provider;
+    private final Object proxy;
 
-    public RequestCaller(Object proxy, Object provider) {
+    public RequestCaller(final Object proxy, final Object provider) {
         this.proxy = proxy;
         this.provider = provider;
     }
 
-    public void setContext(CallContext context) {
-
+    public void setContext(final CallContext context) {
         if (provider instanceof AbstractJoynrProvider) {
             if (context != null) {
                 AbstractJoynrProvider.setCallContext(context);
@@ -50,8 +49,9 @@ public class RequestCaller implements JoynrProvider {
         }
     }
 
-    public Object invoke(Method method, Object[] params) throws IllegalAccessException, IllegalArgumentException,
-                                                         InvocationTargetException {
+    public Object invoke(final Method method, final Object[] params) throws IllegalAccessException,
+                                                                     IllegalArgumentException,
+                                                                     InvocationTargetException {
         return method.invoke(proxy, params);
     }
 
