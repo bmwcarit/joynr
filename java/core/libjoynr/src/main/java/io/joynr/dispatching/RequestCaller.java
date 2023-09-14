@@ -58,4 +58,8 @@ public class RequestCaller implements JoynrProvider {
     public Object getProxy() {
         return proxy;
     }
+
+    public Object getProvider() {
+        return provider;
+    }
 }

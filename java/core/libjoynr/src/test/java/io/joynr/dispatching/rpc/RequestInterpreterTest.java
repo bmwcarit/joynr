@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,18 @@
 package io.joynr.dispatching.rpc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.spy;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.joynr.proxy.MethodSignature;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -113,5 +117,27 @@ public class RequestInterpreterTest {
         verify(requestCallerSpy).setContext(callContextCaptor.capture());
         assertEquals(context, callContextCaptor.getValue().getContext());
         assertEquals(creatorUserId, callContextCaptor.getValue().getPrincipal());
+    }
+
+    @Test
+    public void testRemoveAllMethodInformation() {
+        final var map = getSubjectMap();
+        assertTrue(map.isEmpty());
+        subject.invokeMethod(requestCaller, request);
+        assertEquals(1, map.keySet().size());
+
+        subject.removeAllMethodInformation(requestCaller.getProvider().getClass());
+        assertTrue(map.isEmpty());
+    }
+
+    private Map<MethodSignature, Method> getSubjectMap() {
+        try {
+            final var field = RequestInterpreter.class.getDeclaredField("methodSignatureToMethodMap");
+            field.setAccessible(true);
+            return (Map<MethodSignature, Method>) field.get(subject);
+        } catch (final NoSuchFieldException | IllegalAccessException e) {
+            fail("Unexpected exception caught: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }

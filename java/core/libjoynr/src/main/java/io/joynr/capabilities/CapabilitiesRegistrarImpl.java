@@ -22,6 +22,7 @@ import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
 
 import javax.inject.Named;
 
+import io.joynr.dispatching.rpc.RequestInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     private ProviderDirectory providerDirectory;
     private ProviderContainerFactory providerContainerFactory;
 
+    private RequestInterpreter requestInterpreter;
+
     private long defaultExpiryTimeMs;
 
     @Inject
@@ -67,7 +70,8 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                                      ProviderDirectory providerDirectory,
                                      ParticipantIdStorage participantIdStorage,
                                      @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS) long defaultExpiryTimeMs,
-                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress) {
+                                     @Named(SystemServicesSettings.PROPERTY_DISPATCHER_ADDRESS) Address dispatcherAddress,
+                                     final RequestInterpreter requestInterpreter) {
         super();
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.providerContainerFactory = providerContainerFactory;
@@ -76,6 +80,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
         this.participantIdStorage = participantIdStorage;
         this.defaultExpiryTimeMs = defaultExpiryTimeMs;
         this.libjoynrMessagingAddress = dispatcherAddress;
+        this.requestInterpreter = requestInterpreter;
     }
 
     /*
@@ -210,8 +215,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
     }
 
     @Override
-    public Future<Void> unregisterProvider(final String domain, Object provider) {
-
+    public Future<Void> unregisterProvider(final String domain, final Object provider) {
         final String interfaceName = ProviderAnnotations.getInterfaceName(provider);
         final int majorVersion = ProviderAnnotations.getMajorVersion(provider);
         final int minorVersion = ProviderAnnotations.getMinorVersion(provider);
@@ -240,6 +244,7 @@ public class CapabilitiesRegistrarImpl implements CapabilitiesRegistrar {
                 }
                 providerDirectory.remove(participantId);
                 providerContainerFactory.removeProviderContainer(provider);
+                requestInterpreter.removeAllMethodInformation(provider.getClass());
                 newFuture.resolve();
             }
 

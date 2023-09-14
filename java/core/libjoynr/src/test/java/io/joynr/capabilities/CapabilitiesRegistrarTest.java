@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import io.joynr.dispatching.rpc.RequestInterpreter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,6 +101,8 @@ public class CapabilitiesRegistrarTest {
 
     @Mock
     private ParticipantIdStorage participantIdStorage;
+    @Mock
+    private RequestInterpreter requestInterpreter;
 
     private String domain = "domain";
     private String participantId = "participantId";
@@ -125,7 +128,8 @@ public class CapabilitiesRegistrarTest {
                                                   providerDirectory,
                                                   participantIdStorage,
                                                   ONE_DAY_IN_MS,
-                                                  dispatcherAddress);
+                                                  dispatcherAddress,
+                                                  requestInterpreter);
         currentJoynrVersion = (JoynrVersion) TestProvider.class.getAnnotation(JoynrVersion.class);
         testVersion = new Version(currentJoynrVersion.major(), currentJoynrVersion.minor());
 
@@ -341,6 +345,7 @@ public class CapabilitiesRegistrarTest {
             future.get(5000);
             verify(providerDirectory).remove(eq(participantId));
             verify(messageRouter).removeNextHop(eq(participantId));
+            verify(requestInterpreter).removeAllMethodInformation(testProvider.getClass());
         } catch (Exception e) {
             Assert.fail("Unexpected exception from unregisterProvider: " + e);
         }

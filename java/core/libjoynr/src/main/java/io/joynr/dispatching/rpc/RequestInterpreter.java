@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,9 @@ import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
 import joynr.types.Version;
 
+import javax.inject.Singleton;
+
+@Singleton
 public class RequestInterpreter {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestInterpreter.class);
@@ -216,6 +220,28 @@ public class RequestInterpreter {
             JoynrVersion joynrVersion = AnnotationUtil.getAnnotation(requestCaller.getProxy().getClass(),
                                                                      JoynrVersion.class);
             throw new MethodInvocationException(e.toString(), new Version(joynrVersion.major(), joynrVersion.minor()));
+        }
+    }
+
+    public void removeAllMethodInformation(final Class providerClass) {
+        final var toRemove = methodSignatureToMethodMap.keySet()
+                                                       .stream()
+                                                       .filter(methodSignature -> methodSignature.getRequestCaller()
+                                                                                                 .getProvider()
+                                                                                                 .getClass()
+                                                                                                 .equals(providerClass))
+                                                       .collect(Collectors.toList());
+        if (!toRemove.isEmpty()) {
+            logger.info("Removing {} method signature information records for provider class: {}",
+                        toRemove.size(),
+                        providerClass);
+
+            toRemove.forEach(methodSignature -> {
+                final var removed = methodSignatureToMethodMap.remove(methodSignature);
+                logger.info("Method signature information was removed: provider class: {}; method: {}",
+                            providerClass,
+                            removed.getName());
+            });
         }
     }
 }
