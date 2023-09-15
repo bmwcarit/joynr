@@ -1,23 +1,46 @@
 #!/bin/bash
 
+echo "Launching docker containers"
 docker-compose up -d
 sleep 2
+
 while [ -z "$(docker logs --tail 50 consumer 2>&1 | grep FINISHED)" ]; do
 	echo "Waiting for scenario to finish ..."
 	sleep 10
 done
 
 echo "Scenario finished. Checking for success."
-CONSUMER_LOG="$(docker logs consumer 2>&1)"
 
-PREPARE_FOR_SHUTDOWN_FOUND="$(echo ${CONSUMER_LOG} | grep 'Provider is preparing for shutdown. Message not sent.')"
-FAILURE_REPORT_NOT_EMPTY="$(echo ${CONSUMER_LOG} | grep 'Second level failure report:' | sed 's/.*Second level failure report://')"
-if [ ! -z "${PREPARE_FOR_SHUTDOWN_FOUND}" ] && [ ! -z "${FAILURE_REPORT_NOT_EMPTY}" ] ; then
-	echo SUCCESS
+echo "Obtaining and writing consumer logs"
+CONSUMER_LOG="$(docker logs consumer 2>&1)"
+echo "$CONSUMER_LOG" > consumer.log
+echo "Analysing logs"
+
+SUCCESS='[SUCCESS]'
+FAIL="[FAIL]"
+LOG_BEFORE_PFS="$(grep 'Messages processed before prepare for shutdown signal fired:' consumer.log)"
+LOG_AFTER_PFS="$(grep 'Messages created after prepare for shutdown signal fired:' consumer.log)"
+LOG_DURING_PFS="$(grep 'Messages created before prepare for shutdown signal fired but processed after:' consumer.log)"
+
+if [[ $LOG_BEFORE_PFS == *"$SUCCESS"* ]] && [[ $LOG_AFTER_PFS == *"$SUCCESS"* ]] && [[ $LOG_DURING_PFS == *"$SUCCESS"* ]]; then
+  echo SUCCESS
 else
-	echo FAILED
-	echo ${PREPARE_FOR_SHUTDOWN_FOUND}
-	echo ${FAILURE_REPORT_NOT_EMPTY}
+  if [[ $LOG_BEFORE_PFS == *"$FAIL"* ]]; then
+    echo "$LOG_BEFORE_PFS"
+  else
+    echo "Not found log entry about messages processed before prepare for shutdown signal fired."
+  fi
+  if [[ $LOG_AFTER_PFS == *"$FAIL"* ]]; then
+    echo "$LOG_AFTER_PFS"
+  else
+      echo "Not found log entry about messages created after prepare for shutdown signal fired."
+  fi
+  if [[ $LOG_DURING_PFS == *"$FAIL"* ]]; then
+    echo "$LOG_DURING_PFS"
+  else
+      echo "Not found log entry about messages created before prepare for shutdown signal fired but processed after."
+  fi
+  echo FAILED
 fi
 
 docker-compose stop

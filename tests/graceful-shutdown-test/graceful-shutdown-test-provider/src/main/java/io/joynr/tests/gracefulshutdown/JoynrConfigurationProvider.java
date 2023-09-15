@@ -39,6 +39,7 @@ public class JoynrConfigurationProvider {
         joynrProperties.setProperty(MqttModule.PROPERTY_MQTT_BROKER_URIS, "tcp://mqttbroker:1883");
         joynrProperties.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, "jee-provider-joynr.properties");
         joynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_SEPARATE_CONNECTIONS, "true");
+        joynrProperties.setProperty("joynr.runtime.prepareforshutdowntimeout", "15");
 
         return joynrProperties;
     }
