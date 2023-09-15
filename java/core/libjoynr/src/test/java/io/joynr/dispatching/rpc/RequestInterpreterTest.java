@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,18 @@
 package io.joynr.dispatching.rpc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.spy;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.joynr.proxy.MethodSignature;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,11 +77,11 @@ public class RequestInterpreterTest {
 
     private OneWayRequest request;
 
-    private String creatorUserId = "creator";
+    private final String creatorUserId = "creator";
 
     @Before
     public void setup() {
-        RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
+        final RequestCallerFactory requestCallerFactory = new RequestCallerFactory();
         requestCaller = requestCallerFactory.create(new DefaulttestProvider());
         subject = new RequestInterpreter(joynrMessageScope, joynrMessageCreatorProvider, joynrMessageContextProvider);
         request = new OneWayRequest("getTestAttribute", new Object[0], new Class[0]);
@@ -102,16 +106,39 @@ public class RequestInterpreterTest {
 
     @Test
     public void testContextSet() {
-        Map<String, Serializable> context = new HashMap<String, Serializable>();
+        final Map<String, Serializable> context = new HashMap<>();
         context.put("key1", "value1");
         request.setContext(context);
-        RequestCaller requestCallerSpy = spy(requestCaller);
+        final RequestCaller requestCallerSpy = spy(requestCaller);
         subject.invokeMethod(requestCallerSpy, request);
         verify(joynrMessageContextProvider).get();
         verify(joynrMessageContext).setMessageContext(eq(context));
-        ArgumentCaptor<CallContext> callContextCaptor = ArgumentCaptor.forClass(CallContext.class);
+        final ArgumentCaptor<CallContext> callContextCaptor = ArgumentCaptor.forClass(CallContext.class);
         verify(requestCallerSpy).setContext(callContextCaptor.capture());
         assertEquals(context, callContextCaptor.getValue().getContext());
         assertEquals(creatorUserId, callContextCaptor.getValue().getPrincipal());
+    }
+
+    @Test
+    public void testRemoveAllMethodInformation() {
+        final var map = getSubjectMap();
+        assertTrue(map.isEmpty());
+        subject.invokeMethod(requestCaller, request);
+        assertEquals(1, map.keySet().size());
+
+        subject.removeAllMethodInformation(requestCaller.getProvider().getClass());
+        assertTrue(map.isEmpty());
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<MethodSignature, Method> getSubjectMap() {
+        try {
+            final var field = RequestInterpreter.class.getDeclaredField("methodSignatureToMethodMap");
+            field.setAccessible(true);
+            return (Map<MethodSignature, Method>) field.get(subject);
+        } catch (final NoSuchFieldException | IllegalAccessException e) {
+            fail("Unexpected exception caught: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }
