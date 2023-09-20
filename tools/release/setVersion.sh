@@ -66,6 +66,9 @@ tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/package.json \
 examples/radio-node/pom.xml \
 examples/radio-node/package.json \
+examples/radio-spring-boot/pom.xml \
+examples/radio-spring-boot/radio-spring-boot-api/pom.xml \
+examples/radio-spring-boot/radio-spring-boot-service/pom.xml \
 javascript/libjoynr-js/package.json \
 javascript/libjoynr-js/src/main/js/package.json \
 tools/generator/joynr-generator-npm/package.json \
