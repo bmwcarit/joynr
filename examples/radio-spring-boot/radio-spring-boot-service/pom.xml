@@ -24,12 +24,12 @@
 
     <groupId>io.joynr.examples.radio-spring-boot</groupId>
     <artifactId>radio-spring-boot-service</artifactId>
-    <version>1.23.2-SNAPSHOT</version>
+    <version>1.24.0-SNAPSHOT</version>
 
     <parent>
         <groupId>io.joynr.examples</groupId>
         <artifactId>radio-spring-boot</artifactId>
-        <version>1.23.2-SNAPSHOT</version>
+        <version>1.24.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
