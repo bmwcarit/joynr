@@ -2,6 +2,42 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.0
+
+## API relevant changes
+* **[Java]** `ShutdownListener` interface has been split into two interfaces:
+  `ShutdownListener` and `PrepareForShutdownListener`.
+* **[Java]** `ShutdownNotifier` holds separate lists of `ShutdownListener` and
+  `PrepareForShutdownListener` interface implementations. Additionally, implementations of
+  `ProxyInvocationHandler`, `HivemqMqttClientFactory` and `MessageTrackerForGracefulShutdown`
+  are stored as separate variables and shall be registered by using dedicated methods:
+  * `registerProxyInvocationHandlerPrepareForShutdownListener`
+  * `registerHivemqMqttPrepareForShutdownListener`
+  * `registerMessageTrackerPrepareForShutdownListener`
+  * `registerProxyInvocationHandlerShutdownListener`
+  * `registerHivemqMqttShutdownListener`
+  * `registerMessageTrackerShutdownListener`
+  This will allow joynr to guarantee specific order of invocation.
+## Other Changes
+* **[Docker]** Updated link to download Payara.
+* **[Java]** Spring Boot Service implementation of radio-app has been added to examples.
+* **[Java]** Tests regarding stateless-async requests have been implemented.
+* **[Java]** Busy loops using `Thread.Sleep` have been replaced with wait/notify approach.
+* **[Wiki]** Documented Graceful Shutdown process.
+  See [Tutorial](Tutorial.md) and [Java Developer Guide](java.md) for more details.
+* **[Java]** Updated dependency: org.slf4j: 1.7.36 -> 2.0.9
+* **[C++]** Cmake now accepts prefix parameter pointing to resources directory
+* **[Java]** Changed log level in `MessageTrackerForGracefulShutdown`
+
+## Configuration Property Changes
+* **[Java, JEE]** Removed property `PROPERTY_MESSAGE_QUEUE_SHUTDOWN_MAX_TIMEOUT`
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Fixed libjoynr crash due to Turkish locale.
+
 # joynr 1.23.1
 
 ## API relevant changes
