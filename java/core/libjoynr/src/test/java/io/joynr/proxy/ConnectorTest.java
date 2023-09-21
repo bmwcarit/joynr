@@ -40,28 +40,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-
-import io.joynr.Async;
-import io.joynr.StatelessAsync;
-import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.dispatcher.rpc.annotation.FireAndForget;
-import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
-import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.proxy.ConnectorTest.TestBroadcastInterface.TestBroadcastListener;
+import io.joynr.proxy.TestBroadcastInterface.TestBroadcastListener;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
@@ -69,7 +57,6 @@ import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.BroadcastFilterParameters;
 import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
@@ -84,10 +71,6 @@ import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
 
 public class ConnectorTest {
-
-    private enum ApplicationErrors {
-        ERROR_VALUE_1, ERROR_VALUE_2, ERROR_VALUE_3
-    }
 
     @Mock
     private ReplyCallerDirectory replyCallerDirectory;
@@ -128,77 +111,6 @@ public class ConnectorTest {
 
     }
 
-    interface TestSubscriptionInterface {
-
-        @JoynrRpcSubscription(attributeName = "testAttribute", attributeType = String.class)
-        public Future<String> subscribeToTestAttribute(AttributeSubscriptionListener<String> listener,
-                                                       SubscriptionQos subscriptionQos);
-
-        public void unsubscribeFromTestAttribute(String subscriptionId);
-    }
-
-    interface TestBroadcastInterface {
-
-        public interface TestBroadcastListener extends BroadcastSubscriptionListener {
-            public void onReceive(String testString);
-        }
-
-        public class TestBroadcastAdapter implements TestBroadcastListener {
-            @Override
-            public void onReceive(String testString) {
-                // empty implementation
-            }
-
-            @Override
-            public void onError(SubscriptionException error) {
-                // empty implementation
-            }
-
-            @Override
-            public void onSubscribed(String subscriptionId) {
-                // empty implementation
-            }
-        }
-
-        @JoynrRpcBroadcast(broadcastName = "testBroadcast")
-        abstract Future<String> subscribeToTestBroadcast(TestBroadcastListener subscriptionListener,
-                                                         OnChangeSubscriptionQos subscriptionQos,
-                                                         BroadcastFilterParameters filterParameters);
-
-        @JoynrMulticast(name = "testMulticast")
-        abstract Future<String> subscribeToTestMulticast(TestBroadcastListener subscriptionListener,
-                                                         MulticastSubscriptionQos subscriptionQos,
-                                                         String... partitions);
-
-        abstract void unsubscribeFromTestBroadcast(String subscriptionId);
-
-    }
-
-    @Sync
-    interface TestSyncInterface {
-        void methodWithoutParameters();
-
-        void methodWithoutParametersWithModelledErrors() throws ApplicationException;
-    }
-
-    @FireAndForget
-    interface TestFireAndForgetInterface {
-        void methodWithoutParameters();
-    }
-
-    @Async
-    interface TestAsyncInterface {
-        void someMethodwithoutAnnotations(Integer a, String b) throws JsonMappingException;
-
-        Future<Void> methodWithoutParameters(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback);
-    }
-
-    @StatelessAsync
-    interface TestStatelessAsyncInterface {
-        @StatelessCallbackCorrelation("correlationId")
-        void testMethod(MessageIdCallback messageIdCallback);
-    }
-
     @Test
     public void asyncMethodCallWithoutAnnotationThrowsException() throws JoynrIllegalStateException {
 
@@ -207,7 +119,7 @@ public class ConnectorTest {
         try {
             Future<String> future = new Future<String>();
             connector.executeAsyncMethod(proxy,
-                                         TestAsyncInterface.class.getDeclaredMethod("someMethodwithoutAnnotations",
+                                         TestAsyncInterface.class.getDeclaredMethod("someMethodWithoutAnnotations",
                                                                                     Integer.class,
                                                                                     String.class),
                                          new Object[]{ 1, "test" },
