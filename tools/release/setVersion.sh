@@ -64,6 +64,7 @@ tests/inter-language-test/inter-language-test-base/package.json \
 tests/performance-test/package.json \
 tests/system-integration-test/sit-node-app/package.json \
 tests/test-base/package.json \
+tests/gcd-e2e-test/pom.xml \
 examples/radio-node/pom.xml \
 examples/radio-node/package.json \
 examples/radio-spring-boot/pom.xml \
