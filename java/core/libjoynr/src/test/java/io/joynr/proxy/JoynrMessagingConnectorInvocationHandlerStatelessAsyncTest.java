@@ -85,14 +85,14 @@ public class JoynrMessagingConnectorInvocationHandlerStatelessAsyncTest
         parameters = new Object[]{ mock(MessageIdCallback.class) };
         handler.executeStatelessAsyncMethod(method, parameters);
 
-        final var requestCaptor = ArgumentCaptor.forClass(Request.class);
+        final ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
 
         verify(requestReplyManager).sendRequest(eq(STATELESS_ASYNC_PARTICIPANT_ID),
                                                 eq(toDiscoveryEntry),
                                                 requestCaptor.capture(),
                                                 any(MessagingQos.class));
 
-        final var request = requestCaptor.getValue();
+        final Request request = requestCaptor.getValue();
         assertNotNull(request);
         assertEquals(method.getName(), request.getMethodName());
     }

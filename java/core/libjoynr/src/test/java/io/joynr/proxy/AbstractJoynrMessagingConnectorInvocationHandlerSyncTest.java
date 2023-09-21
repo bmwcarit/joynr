@@ -26,7 +26,7 @@ import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
-import joynr.MethodMetaInformation;
+import io.joynr.util.ObjectMapper;
 import joynr.Reply;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
@@ -35,10 +35,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
+// CHECKSTYLE IGNORE IllegalImport FOR NEXT 1 LINES
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
@@ -79,14 +78,14 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
         mockSendSyncRequest(new Object());
 
         try {
-            final var result = handler.executeSyncMethod(method, parameters);
+            final Object result = handler.executeSyncMethod(method, parameters);
             assertNull(result);
 
-            final var requestReplyIdCaptor = ArgumentCaptor.forClass(String.class);
-            final var replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-            final var syncReplyCallerCaptor = ArgumentCaptor.forClass(SynchronizedReplyCaller.class);
-            final var expiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
-            final var requestCaptor = ArgumentCaptor.forClass(Request.class);
+            final ArgumentCaptor<String> requestReplyIdCaptor = ArgumentCaptor.forClass(String.class);
+            final ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
+            final ArgumentCaptor<SynchronizedReplyCaller> syncReplyCallerCaptor = ArgumentCaptor.forClass(SynchronizedReplyCaller.class);
+            final ArgumentCaptor<ExpiryDate> expiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
+            final ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
 
             verify(replyCallerDirectory).addReplyCaller(requestReplyIdCaptor.capture(),
                                                         replyCallerCaptor.capture(),
@@ -97,19 +96,19 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
                                                         syncReplyCallerCaptor.capture(),
                                                         any(MessagingQos.class));
 
-            final var requestReplyId = requestReplyIdCaptor.getValue();
+            final String requestReplyId = requestReplyIdCaptor.getValue();
             assertNotNull(requestReplyId);
-            final var replyCaller = replyCallerCaptor.getValue();
+            final ReplyCaller replyCaller = replyCallerCaptor.getValue();
             assertNotNull(replyCaller);
             assertTrue(replyCaller instanceof SynchronizedReplyCaller);
-            final var expiryDate = expiryDateCaptor.getValue();
+            final ExpiryDate expiryDate = expiryDateCaptor.getValue();
             assertNotNull(expiryDate);
             assertEquals(60000, expiryDate.getRelativeTtl());
             assertTrue(expiryDate.getValue() > 0);
-            final var request = requestCaptor.getValue();
+            final Request request = requestCaptor.getValue();
             assertNotNull(request);
             assertEquals(requestReplyId, request.getRequestReplyId());
-            final var syncReplyCaller = syncReplyCallerCaptor.getValue();
+            final SynchronizedReplyCaller syncReplyCaller = syncReplyCallerCaptor.getValue();
             assertNotNull(syncReplyCaller);
             assertEquals(replyCaller, syncReplyCaller);
         } catch (final ApplicationException exception) {
@@ -193,28 +192,24 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
     public void testExecuteSyncMethodWithParametersAndResultsShouldSucceed() {
         method = getSyncMethod("methodWithParameters", Integer.class, Integer.class);
         parameters = new Object[]{};
-        final var expectedResult = Integer.valueOf(42);
+        final Object expectedResult = Integer.valueOf(42);
         mockSendSyncRequest(expectedResult);
+        setUpRpcUtils();
 
-        try (MockedStatic<RpcUtils> mockRpcUtils = Mockito.mockStatic(RpcUtils.class)) {
-            mockRpcUtils.when(() -> RpcUtils.reconstructReturnedObject(any(Method.class),
-                                                                       any(MethodMetaInformation.class),
-                                                                       any())).thenReturn(expectedResult);
-            try {
-                final var result = handler.executeSyncMethod(method, parameters);
-                assertNotNull(result);
-                assertEquals(expectedResult, result);
+        try {
+            final Object result = handler.executeSyncMethod(method, parameters);
+            assertNotNull(result);
+            assertEquals(expectedResult, result);
 
-                verify(replyCallerDirectory).addReplyCaller(anyString(), any(ReplyCaller.class), any(ExpiryDate.class));
-                verify(requestReplyManager).sendSyncRequest(eq(FROM_PARTICIPANT_ID),
-                                                            eq(toDiscoveryEntry),
-                                                            any(Request.class),
-                                                            any(SynchronizedReplyCaller.class),
-                                                            any(MessagingQos.class));
-            } catch (final ApplicationException exception) {
-                fail("Unexpected exception: " + exception.getMessage());
-                throw new RuntimeException(exception);
-            }
+            verify(replyCallerDirectory).addReplyCaller(anyString(), any(ReplyCaller.class), any(ExpiryDate.class));
+            verify(requestReplyManager).sendSyncRequest(eq(FROM_PARTICIPANT_ID),
+                                                        eq(toDiscoveryEntry),
+                                                        any(Request.class),
+                                                        any(SynchronizedReplyCaller.class),
+                                                        any(MessagingQos.class));
+        } catch (final ApplicationException exception) {
+            fail("Unexpected exception: " + exception.getMessage());
+            throw new RuntimeException(exception);
         }
     }
 
@@ -239,19 +234,34 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
     }
 
     protected void mockLogger(final boolean traceEnabled) {
-        //        loggerMock = mock(Logger.class);
         when(loggerMock.isTraceEnabled()).thenReturn(traceEnabled);
+        final Field field = getField(handler.getClass(), "logger");
+        setFieldValue(field, loggerMock);
+    }
 
+    protected void setUpRpcUtils() {
+        final Field field = getField(RpcUtils.class, "objectMapper");
+        setFieldValue(field, new ObjectMapper());
+    }
+
+    private Field getField(@SuppressWarnings("rawtypes") final Class aClass, final String fieldName) {
         try {
-            final Field field = handler.getClass().getDeclaredField("logger");
+            return aClass.getDeclaredField(fieldName);
+        } catch (final NoSuchFieldException exception) {
+            fail("Unexpected exception: " + exception.getMessage());
+            throw new RuntimeException(exception);
+        }
+    }
 
-            final var unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+    private void setFieldValue(final Field field, final Object value) {
+        try {
+            final Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
             unsafeField.setAccessible(true);
-            final var unsafe = (Unsafe) unsafeField.get(null);
+            final Unsafe unsafe = (Unsafe) unsafeField.get(null);
 
-            final var staticFieldBase = unsafe.staticFieldBase(field);
-            final var staticFieldOffset = unsafe.staticFieldOffset(field);
-            unsafe.putObject(staticFieldBase, staticFieldOffset, loggerMock);
+            final Object staticFieldBase = unsafe.staticFieldBase(field);
+            final long staticFieldOffset = unsafe.staticFieldOffset(field);
+            unsafe.putObject(staticFieldBase, staticFieldOffset, value);
         } catch (final NoSuchFieldException | IllegalAccessException exception) {
             fail("Unexpected exception: " + exception.getMessage());
             throw new RuntimeException(exception);

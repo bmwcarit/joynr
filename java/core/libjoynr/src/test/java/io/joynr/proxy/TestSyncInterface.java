@@ -30,5 +30,26 @@ public interface TestSyncInterface {
 
     Integer methodWithParameters(final Integer a, final Integer b);
 
-    MultiReturnValuesContainer methodReturningMultiValues();
+    TestMultiResult methodReturningMultiValues();
+
+    class TestMultiResult implements MultiReturnValuesContainer {
+
+        public static final String VALUE_A = "[VALUE_A]";
+        public static final String VALUE_B = "[VALUE_B]";
+
+        private Object[] values;
+
+        public TestMultiResult() {
+            this.values = new Object[]{ VALUE_A, VALUE_B };
+        }
+
+        @Override
+        public Object[] getValues() {
+            return this.values;
+        }
+
+        public void setValues(final Object[] values) {
+            this.values = values;
+        }
+    }
 }

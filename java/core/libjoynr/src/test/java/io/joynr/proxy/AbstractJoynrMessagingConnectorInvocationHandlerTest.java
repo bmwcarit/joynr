@@ -82,7 +82,7 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerTest {
     }
 
     protected void addNewDiscoveryEntry() {
-        final var newEntry = new DiscoveryEntryWithMetaInfo();
+        final DiscoveryEntryWithMetaInfo newEntry = new DiscoveryEntryWithMetaInfo();
         newEntry.setParticipantId(UUID.randomUUID().toString());
         toDiscoveryEntries.add(newEntry);
     }

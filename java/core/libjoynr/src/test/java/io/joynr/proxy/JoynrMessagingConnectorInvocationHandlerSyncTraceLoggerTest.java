@@ -19,20 +19,15 @@
 package io.joynr.proxy;
 
 import io.joynr.common.ExpiryDate;
-import io.joynr.dispatcher.rpc.MultiReturnValuesContainer;
 import io.joynr.dispatching.rpc.ReplyCaller;
-import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.messaging.MessagingQos;
-import joynr.MethodMetaInformation;
 import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
-import java.lang.reflect.Method;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -55,53 +50,40 @@ public class JoynrMessagingConnectorInvocationHandlerSyncTraceLoggerTest
     public void testExecuteSyncMethodThatReturnsMultiValueShouldSucceed() {
         method = getSyncMethod("methodReturningMultiValues");
         parameters = new Object[]{};
-        final var expectedResult = new TestMultiResult();
+        final TestSyncInterface.TestMultiResult expectedResult = new TestSyncInterface.TestMultiResult();
         mockSendSyncRequest(expectedResult);
+        setUpRpcUtils();
 
-        try (MockedStatic<RpcUtils> mockRpcUtils = Mockito.mockStatic(RpcUtils.class)) {
-            mockRpcUtils.when(() -> RpcUtils.reconstructReturnedObject(any(Method.class),
-                                                                       any(MethodMetaInformation.class),
-                                                                       any())).thenReturn(expectedResult);
-            try {
-                final var traceMsgParamsCaptor = ArgumentCaptor.forClass(Object[].class);
-                doNothing().when(loggerMock).trace(anyString(), traceMsgParamsCaptor.capture());
+        try {
+            final ArgumentCaptor<Object[]> traceMsgParamsCaptor = ArgumentCaptor.forClass(Object[].class);
+            doNothing().when(loggerMock).trace(anyString(), traceMsgParamsCaptor.capture());
 
-                final var result = handler.executeSyncMethod(method, parameters);
-                assertNotNull(result);
-                assertTrue(result instanceof TestMultiResult);
-                assertEquals(expectedResult, result);
+            final Object result = handler.executeSyncMethod(method, parameters);
+            assertNotNull(result);
+            assertTrue(result instanceof TestSyncInterface.TestMultiResult);
+            //noinspection deprecation
+            assertEquals(expectedResult.getValues(), ((TestSyncInterface.TestMultiResult) result).getValues());
 
-                final var traceMessageParams = traceMsgParamsCaptor.getAllValues();
-                assertNotNull(traceMessageParams);
-                assertEquals(3, traceMessageParams.size());
-                final var responseString = (Object) traceMessageParams.get(2);
-                assertNotNull(responseString);
-                //noinspection ConstantConditions
-                assertTrue(responseString instanceof String);
-                assertTrue(((String) responseString).contains(TestMultiResult.VALUE_A));
-                assertTrue(((String) responseString).contains(TestMultiResult.VALUE_B));
+            final List<?> traceMessageParams = traceMsgParamsCaptor.getAllValues();
+            assertNotNull(traceMessageParams);
+            assertEquals(3, traceMessageParams.size());
+            final Object responseString = traceMessageParams.get(2);
+            assertNotNull(responseString);
+            //noinspection ConstantConditions
+            assertTrue(responseString instanceof String);
+            assertTrue(((String) responseString).contains(TestSyncInterface.TestMultiResult.VALUE_A));
+            assertTrue(((String) responseString).contains(TestSyncInterface.TestMultiResult.VALUE_B));
 
-                verify(replyCallerDirectory).addReplyCaller(anyString(), any(ReplyCaller.class), any(ExpiryDate.class));
-                verify(requestReplyManager).sendSyncRequest(eq(FROM_PARTICIPANT_ID),
-                                                            eq(toDiscoveryEntry),
-                                                            any(Request.class),
-                                                            any(SynchronizedReplyCaller.class),
-                                                            any(MessagingQos.class));
-            } catch (final ApplicationException exception) {
-                fail("Unexpected exception: " + exception.getMessage());
-                throw new RuntimeException(exception);
-            }
+            verify(replyCallerDirectory).addReplyCaller(anyString(), any(ReplyCaller.class), any(ExpiryDate.class));
+            verify(requestReplyManager).sendSyncRequest(eq(FROM_PARTICIPANT_ID),
+                                                        eq(toDiscoveryEntry),
+                                                        any(Request.class),
+                                                        any(SynchronizedReplyCaller.class),
+                                                        any(MessagingQos.class));
+        } catch (final ApplicationException exception) {
+            fail("Unexpected exception: " + exception.getMessage());
+            throw new RuntimeException(exception);
         }
     }
 
-    static class TestMultiResult implements MultiReturnValuesContainer {
-
-        public static final String VALUE_A = "[VALUE_A]";
-        public static final String VALUE_B = "[VALUE_B]";
-
-        @Override
-        public Object[] getValues() {
-            return new Object[]{ VALUE_A, VALUE_B };
-        }
-    }
 }

@@ -52,9 +52,11 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
 
     @Test
     public void testUnsubscribingShouldSucceed() {
-        final var subscriptionId = UUID.randomUUID().toString();
+        final String subscriptionId = UUID.randomUUID().toString();
         method = getSubscriptionMethod("unsubscribeFromTestAttribute", String.class);
-        final var invocation = new UnsubscribeInvocation(method, new Object[]{ subscriptionId }, null);
+        final UnsubscribeInvocation invocation = new UnsubscribeInvocation(method,
+                                                                           new Object[]{ subscriptionId },
+                                                                           null);
 
         handler.executeSubscriptionMethod(invocation);
 
@@ -66,9 +68,11 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
 
     @Test
     public void testUnsubscribingShouldFailIfDiscoveryEntrySetIsEmpty() {
-        final var subscriptionId = UUID.randomUUID().toString();
+        final String subscriptionId = UUID.randomUUID().toString();
         method = getSubscriptionMethod("unsubscribeFromTestAttribute", String.class);
-        final var invocation = new UnsubscribeInvocation(method, new Object[]{ subscriptionId }, null);
+        final UnsubscribeInvocation invocation = new UnsubscribeInvocation(method,
+                                                                           new Object[]{ subscriptionId },
+                                                                           null);
         toDiscoveryEntries.clear();
         try {
             handler.executeSubscriptionMethod(invocation);
@@ -85,15 +89,16 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
 
     @Test
     public void testSubscribingToAttributeShouldSucceed() {
-        final var listener = new AttributeSubscriptionAdapter<String>();
-        final var subscriptionQos = new OnChangeSubscriptionQos();
+        final AttributeSubscriptionAdapter<String> listener = new AttributeSubscriptionAdapter<>();
+        final OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         method = getSubscriptionMethod("subscribeToTestAttribute",
                                        AttributeSubscriptionListener.class,
                                        SubscriptionQos.class);
-        final var invocation = new AttributeSubscribeInvocation(method,
-                                                                new Object[]{ listener, subscriptionQos },
-                                                                null,
-                                                                proxy);
+        final AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method,
+                                                                                         new Object[]{ listener,
+                                                                                                 subscriptionQos },
+                                                                                         null,
+                                                                                         proxy);
         handler.executeSubscriptionMethod(invocation);
 
         verify(subscriptionManager).registerAttributeSubscription(eq(FROM_PARTICIPANT_ID),
@@ -103,15 +108,16 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
 
     @Test
     public void testSubscribingToAttributeShouldFailIfDiscoveryEntrySetIsEmpty() {
-        final var listener = new AttributeSubscriptionAdapter<String>();
-        final var subscriptionQos = new OnChangeSubscriptionQos();
+        final AttributeSubscriptionAdapter<String> listener = new AttributeSubscriptionAdapter<>();
+        final OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         method = getSubscriptionMethod("subscribeToTestAttribute",
                                        AttributeSubscriptionListener.class,
                                        SubscriptionQos.class);
-        final var invocation = new AttributeSubscribeInvocation(method,
-                                                                new Object[]{ listener, subscriptionQos },
-                                                                null,
-                                                                proxy);
+        final AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method,
+                                                                                         new Object[]{ listener,
+                                                                                                 subscriptionQos },
+                                                                                         null,
+                                                                                         proxy);
         toDiscoveryEntries.clear();
         try {
             handler.executeSubscriptionMethod(invocation);
@@ -127,17 +133,18 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
 
     @Test
     public void testSubscriptionToBroadcastShouldSucceed() {
-        final var listener = new TestBroadcastInterface.TestBroadcastAdapter();
-        final var subscriptionQos = new OnChangeSubscriptionQos();
+        final TestBroadcastInterface.TestBroadcastAdapter listener = new TestBroadcastInterface.TestBroadcastAdapter();
+        final OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         method = getBroadcastMethod("subscribeToTestBroadcast",
                                     TestBroadcastInterface.TestBroadcastListener.class,
                                     OnChangeSubscriptionQos.class,
                                     BroadcastFilterParameters.class);
-        final var invocation = new BroadcastSubscribeInvocation(method,
-                                                                new Object[]{ listener, subscriptionQos,
-                                                                        new BroadcastFilterParameters() },
-                                                                null,
-                                                                proxy);
+        final BroadcastSubscribeInvocation invocation = new BroadcastSubscribeInvocation(method,
+                                                                                         new Object[]{ listener,
+                                                                                                 subscriptionQos,
+                                                                                                 new BroadcastFilterParameters() },
+                                                                                         null,
+                                                                                         proxy);
 
         handler.executeSubscriptionMethod(invocation);
         verify(subscriptionManager).registerBroadcastSubscription(eq(FROM_PARTICIPANT_ID),
@@ -147,17 +154,18 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
 
     @Test
     public void testSubscriptionToBroadcastShouldFailIfDiscoveryEntrySetIsEmpty() {
-        final var listener = new TestBroadcastInterface.TestBroadcastAdapter();
-        final var subscriptionQos = new OnChangeSubscriptionQos();
+        final TestBroadcastInterface.TestBroadcastAdapter listener = new TestBroadcastInterface.TestBroadcastAdapter();
+        final OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         method = getBroadcastMethod("subscribeToTestBroadcast",
                                     TestBroadcastInterface.TestBroadcastListener.class,
                                     OnChangeSubscriptionQos.class,
                                     BroadcastFilterParameters.class);
-        final var invocation = new BroadcastSubscribeInvocation(method,
-                                                                new Object[]{ listener, subscriptionQos,
-                                                                        new BroadcastFilterParameters() },
-                                                                null,
-                                                                proxy);
+        final BroadcastSubscribeInvocation invocation = new BroadcastSubscribeInvocation(method,
+                                                                                         new Object[]{ listener,
+                                                                                                 subscriptionQos,
+                                                                                                 new BroadcastFilterParameters() },
+                                                                                         null,
+                                                                                         proxy);
         toDiscoveryEntries.clear();
         try {
             handler.executeSubscriptionMethod(invocation);
@@ -172,17 +180,19 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
 
     @Test
     public void testSubscriptionToMulticastShouldSucceed() {
-        final var listener = new TestBroadcastInterface.TestBroadcastAdapter();
-        final var subscriptionQos = new MulticastSubscriptionQos();
-        final var partitions = new String[]{ "partition1", "partition2", "partition3" };
+        final TestBroadcastInterface.TestBroadcastAdapter listener = new TestBroadcastInterface.TestBroadcastAdapter();
+        final MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos();
+        final String[] partitions = new String[]{ "partition1", "partition2", "partition3" };
         method = getBroadcastMethod("subscribeToTestMulticast",
                                     TestBroadcastInterface.TestBroadcastListener.class,
                                     MulticastSubscriptionQos.class,
                                     String[].class);
-        final var invocation = new MulticastSubscribeInvocation(method,
-                                                                new Object[]{ listener, subscriptionQos, partitions },
-                                                                null,
-                                                                proxy);
+        final MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method,
+                                                                                         new Object[]{ listener,
+                                                                                                 subscriptionQos,
+                                                                                                 partitions },
+                                                                                         null,
+                                                                                         proxy);
 
         handler.executeSubscriptionMethod(invocation);
         verify(subscriptionManager).registerMulticastSubscription(eq(FROM_PARTICIPANT_ID),
@@ -192,17 +202,19 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
 
     @Test
     public void testSubscriptionToMulticastShouldFailIfDiscoveryEntrySetIsEmpty() {
-        final var listener = new TestBroadcastInterface.TestBroadcastAdapter();
-        final var subscriptionQos = new MulticastSubscriptionQos();
-        final var partitions = new String[]{ "partition1", "partition2", "partition3" };
+        final TestBroadcastInterface.TestBroadcastAdapter listener = new TestBroadcastInterface.TestBroadcastAdapter();
+        final MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos();
+        final String[] partitions = new String[]{ "partition1", "partition2", "partition3" };
         method = getBroadcastMethod("subscribeToTestMulticast",
                                     TestBroadcastInterface.TestBroadcastListener.class,
                                     MulticastSubscriptionQos.class,
                                     String[].class);
-        final var invocation = new MulticastSubscribeInvocation(method,
-                                                                new Object[]{ listener, subscriptionQos, partitions },
-                                                                null,
-                                                                proxy);
+        final MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method,
+                                                                                         new Object[]{ listener,
+                                                                                                 subscriptionQos,
+                                                                                                 partitions },
+                                                                                         null,
+                                                                                         proxy);
 
         toDiscoveryEntries.clear();
         try {

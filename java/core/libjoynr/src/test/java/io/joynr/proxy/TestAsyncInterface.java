@@ -28,9 +28,7 @@ public interface TestAsyncInterface {
 
     void someMethodWithAnnotation(final Integer a,
                                   final String b,
-                                  @JoynrRpcCallback(deserializationType = Void.class) final Callback<Void> callback)
-            throws JsonMappingException;
+                                  @JoynrRpcCallback(deserializationType = Void.class) final Callback<Void> callback) throws JsonMappingException;
 
-    Future<Void> methodWithoutParameters(@JoynrRpcCallback(
-            deserializationType = Void.class) final Callback<Void> callback);
+    Future<Void> methodWithoutParameters(@JoynrRpcCallback(deserializationType = Void.class) final Callback<Void> callback);
 }

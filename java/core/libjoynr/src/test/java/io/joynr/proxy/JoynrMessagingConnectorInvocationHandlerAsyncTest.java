@@ -104,11 +104,11 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
         } };
         handler.executeAsyncMethod(proxy, method, parameters, future);
 
-        final var requestReplyIdCaptor = ArgumentCaptor.forClass(String.class);
-        final var replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-        final var expiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
-        final var requestCaptor = ArgumentCaptor.forClass(Request.class);
-        final var messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
+        final ArgumentCaptor<String> requestReplyIdCaptor = ArgumentCaptor.forClass(String.class);
+        final ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
+        final ArgumentCaptor<ExpiryDate> expiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
+        final ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        final ArgumentCaptor<MessagingQos> messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
 
         verify(replyCallerDirectory).addReplyCaller(requestReplyIdCaptor.capture(),
                                                     replyCallerCaptor.capture(),
@@ -118,21 +118,21 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
                                                 requestCaptor.capture(),
                                                 messagingQosCaptor.capture());
 
-        final var requestReplyId = requestReplyIdCaptor.getValue();
+        final String requestReplyId = requestReplyIdCaptor.getValue();
         assertNotNull(requestReplyId);
-        final var replyCaller = replyCallerCaptor.getValue();
+        final ReplyCaller replyCaller = replyCallerCaptor.getValue();
         assertNotNull(replyCaller);
         assertTrue(replyCaller instanceof RpcAsyncRequestReplyCaller);
         assertEquals(proxy, ((RpcAsyncRequestReplyCaller) replyCaller).getProxy());
-        final var expiryDate = expiryDateCaptor.getValue();
+        final ExpiryDate expiryDate = expiryDateCaptor.getValue();
         assertNotNull(expiryDate);
         assertEquals(60000, expiryDate.getRelativeTtl());
         assertTrue(expiryDate.getValue() > 0);
-        final var request = requestCaptor.getValue();
+        final Request request = requestCaptor.getValue();
         assertNotNull(request);
         assertEquals(requestReplyId, request.getRequestReplyId());
         assertEquals(method.getName(), request.getMethodName());
-        final var messagingQos = messagingQosCaptor.getValue();
+        final MessagingQos messagingQos = messagingQosCaptor.getValue();
         assertNotNull(messagingQos);
         assertEquals(60000, messagingQos.getRoundTripTtl_ms());
     }

@@ -48,14 +48,14 @@ public class JoynrMessagingConnectorInvocationHandlerOneWayMethodTest
         parameters = new Object[]{};
         handler.executeOneWayMethod(method, parameters);
 
-        final var requestCaptor = ArgumentCaptor.forClass(OneWayRequest.class);
+        final ArgumentCaptor<OneWayRequest> requestCaptor = ArgumentCaptor.forClass(OneWayRequest.class);
 
         verify(requestReplyManager).sendOneWayRequest(eq(FROM_PARTICIPANT_ID),
                                                       eq(toDiscoveryEntries),
                                                       requestCaptor.capture(),
                                                       any(MessagingQos.class));
 
-        final var request = requestCaptor.getValue();
+        final OneWayRequest request = requestCaptor.getValue();
         assertNotNull(request);
         assertEquals(method.getName(), request.getMethodName());
     }
