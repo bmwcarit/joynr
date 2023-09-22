@@ -142,6 +142,8 @@ request.setParams(
 	#include «broadcastFilterParameters»
 «ENDFOR»
 
+using joynr::util::safeInvokeCallback;
+
 «getNamespaceStarter(francaIntf, generateVersion)»
 «val className = interfaceName + "JoynrMessagingConnector"»
 «className»::«className»(
@@ -186,10 +188,8 @@ request.setParams(
 						methodName,
 						joynr::serializer::serializeToJson(«attributeName»)
 				);
+				safeInvokeCallback(logger(), onSuccess, «attributeName»);
 				future->onSuccess(«attributeName»);
-				if (onSuccess){
-					onSuccess(«attributeName»);
-				}
 			};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
@@ -213,10 +213,8 @@ request.setParams(
 						methodName,
 						error->what()
 				);
+				safeInvokeCallback(logger(), onError, static_cast<const exceptions::JoynrRuntimeException&>(*error));
 				future->onError(error);
-				if (onError){
-					onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
-				}
 			};
 
 			try {
@@ -228,17 +226,13 @@ request.setParams(
 				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
+				safeInvokeCallback(logger(), onError, *joynrException);
 				future->onError(joynrException);
-				if (onError){
-					onError(*joynrException);
-				}
 			} catch (const joynr::exceptions::JoynrRuntimeException& exception) {
 				std::shared_ptr<joynr::exceptions::JoynrRuntimeException> exceptionPtr;
 				exceptionPtr.reset(exception.clone());
+				safeInvokeCallback(logger(), onError, exception);
 				future->onError(exceptionPtr);
-				if (onError){
-					onError(exception);
-				}
 			}
 			return future;
 		}
@@ -266,10 +260,8 @@ request.setParams(
 						requestReplyId,
 						methodName
 				);
+				safeInvokeCallback(logger(), onSuccess);
 				future->onSuccess();
-				if (onSuccess) {
-					onSuccess();
-				}
 			};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
@@ -293,10 +285,8 @@ request.setParams(
 					methodName,
 					error->what()
 				);
+				safeInvokeCallback(logger(), onError, static_cast<const exceptions::JoynrRuntimeException&>(*error));
 				future->onError(error);
-				if (onError) {
-					onError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
-				}
 			};
 
 			try {
@@ -309,17 +299,13 @@ request.setParams(
 				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
+				safeInvokeCallback(logger(), onError, *joynrException);
 				future->onError(joynrException);
-				if (onError){
-					onError(*joynrException);
-				}
 			} catch (const joynr::exceptions::JoynrRuntimeException& exception) {
 				std::shared_ptr<joynr::exceptions::JoynrRuntimeException> exceptionPtr;
 				exceptionPtr.reset(exception.clone());
+				safeInvokeCallback(logger(), onError, exception);
 				future->onError(exceptionPtr);
-				if (onError){
-					onError(exception);
-				}
 			}
 			return future;
 		}
@@ -438,10 +424,12 @@ request.setParams(
 						joynr::serializer::serializeToJson(«outParam.joynrName»)
 					«ENDFOR»
 				);
+				«IF outputUntypedParamList.length > 0»
+				safeInvokeCallback(logger(), onSuccess, «outputUntypedParamList»);
+				«ELSE»
+				safeInvokeCallback(logger(), onSuccess);
+				«ENDIF»
 				future->onSuccess(«outputUntypedParamList»);
-				if (onSuccess) {
-					onSuccess(«outputUntypedParamList»);
-				}
 			};
 
 			std::function<void(const std::shared_ptr<exceptions::JoynrException>& error)> onErrorWrapper = [
@@ -477,17 +465,13 @@ request.setParams(
 				operationRequest(std::move(replyCaller), std::move(request), std::move(qos));
 			} catch (const std::invalid_argument& exception) {
 				auto joynrException = std::make_shared<joynr::exceptions::MethodInvocationException>(exception.what());
+				safeInvokeCallback(logger(), onRuntimeError, *joynrException);
 				future->onError(joynrException);
-				if (onRuntimeError){
-					onRuntimeError(*joynrException);
-				}
 			} catch (const joynr::exceptions::JoynrRuntimeException& exception) {
 				std::shared_ptr<joynr::exceptions::JoynrRuntimeException> exceptionPtr;
 				exceptionPtr.reset(exception.clone());
+				safeInvokeCallback(logger(), onRuntimeError, exception);
 				future->onError(exceptionPtr);
-				if (onRuntimeError){
-					onRuntimeError(exception);
-				}
 			}
 			return future;
 		}

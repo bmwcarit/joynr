@@ -104,7 +104,11 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
                 }
                 // Callback must be called first before releasing the future
                 if (callback != null) {
-                    callback.resolve(response);
+                    try {
+                        callback.resolve(response);
+                    } catch (Exception e) {
+                        logger.error("Exception was thrown during execution of callback: {}", e.getMessage());
+                    }
                 }
 
                 if (future != null) {
@@ -136,18 +140,22 @@ public class RpcAsyncRequestReplyCaller<T> implements ReplyCaller {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void errorCallback(JoynrException error) {
         if (callback != null) {
-            if (error instanceof JoynrRuntimeException) {
-                callback.onFailure((JoynrRuntimeException) error);
-            } else if (error instanceof ApplicationException) {
-                if (callback instanceof ICallbackWithModeledError) {
-                    ((ICallbackWithModeledError) callback).onFailure(((ApplicationException) error).getError());
+            try {
+                if (error instanceof JoynrRuntimeException) {
+                    callback.onFailure((JoynrRuntimeException) error);
+                } else if (error instanceof ApplicationException) {
+                    if (callback instanceof ICallbackWithModeledError) {
+                        ((ICallbackWithModeledError) callback).onFailure(((ApplicationException) error).getError());
+                    } else {
+                        callback.onFailure(new JoynrRuntimeException("An ApplicationException was received, but none was expected."
+                                + " Is the provider version incompatible with the consumer? " + error));
+                    }
                 } else {
-                    callback.onFailure(new JoynrRuntimeException("An ApplicationException was received, but none was expected."
-                            + " Is the provider version incompatible with the consumer? " + error));
+                    callback.onFailure(new JoynrRuntimeException("unexpected exception type received: ",
+                                                                 (Throwable) error));
                 }
-            } else {
-                callback.onFailure(new JoynrRuntimeException("unexpected exception type received: ",
-                                                             (Throwable) error));
+            } catch (Exception e) {
+                logger.error("Exception was thrown during execution of callback: {}", e.getMessage());
             }
         }
     }
