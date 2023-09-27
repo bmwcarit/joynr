@@ -19,11 +19,8 @@
 package io.joynr.integration.util;
 
 import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.AcceptsMessageReceiver;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.MessageReceiverType;
 
-@AcceptsMessageReceiver(MessageReceiverType.ANY)
 public class DummyJoynrApplication extends AbstractJoynrApplication {
 
     @Override

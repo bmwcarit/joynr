@@ -21,12 +21,9 @@ package io.joynr.test.gcd;
 import com.google.inject.Inject;
 
 import io.joynr.runtime.AbstractJoynrApplication;
-import io.joynr.runtime.AcceptsMessageReceiver;
 import io.joynr.runtime.JoynrRuntime;
-import io.joynr.runtime.MessageReceiverType;
 import io.joynr.util.ObjectMapper;
 
-@AcceptsMessageReceiver(MessageReceiverType.ANY)
 public class GcdDummyApplication extends AbstractJoynrApplication {
 
     @Inject
