@@ -33,7 +33,6 @@ import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryModule;
 import io.joynr.messaging.GbidArrayFactory;
 import io.joynr.messaging.MulticastReceiverRegistrar;
-import io.joynr.messaging.NoBackendMessagingModule;
 import io.joynr.messaging.routing.CcMessageRouter;
 import io.joynr.messaging.routing.CcRoutingTableAddressValidator;
 import io.joynr.messaging.routing.MessageProcessedHandler;
@@ -53,7 +52,6 @@ public abstract class ClusterControllerRuntimeModule extends AbstractRuntimeModu
     protected void configure() {
         super.configure();
         install(new LocalCapabilitiesDirectoryModule());
-        install(new NoBackendMessagingModule());
         install(new AccessControlClientModule());
         bind(RoutingProvider.class).to(RoutingProviderImpl.class);
 
