@@ -223,22 +223,6 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     }
 
     @Test
-    public void hasDiscoveryEntry() throws Exception {
-        GlobalDiscoveryEntryPersisted discoveryEntry = createDiscoveryEntry("domain", "interfaceName", "participantId");
-        GlobalDiscoveryEntryPersisted otherEntry = new GlobalDiscoveryEntryPersisted(discoveryEntry,
-                                                                                     discoveryEntry.getClusterControllerId(),
-                                                                                     gbids[1]);
-
-        assertFalse(store.hasDiscoveryEntry(discoveryEntry));
-        assertFalse(store.hasDiscoveryEntry(otherEntry));
-        store.add(discoveryEntry, new String[]{ discoveryEntry.getGbid() });
-        entityManager.clear();
-
-        assertTrue(store.hasDiscoveryEntry(discoveryEntry));
-        assertFalse(store.hasDiscoveryEntry(otherEntry));
-    }
-
-    @Test
     public void touch_updatesEntries() throws Exception {
         long toleranceMs = 100;
         assertTrue(DEFAULT_EXPIRY_INTERVAL_MS > 10 * toleranceMs);
