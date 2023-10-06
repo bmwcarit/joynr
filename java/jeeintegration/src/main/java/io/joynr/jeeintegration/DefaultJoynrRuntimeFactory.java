@@ -20,6 +20,7 @@ package io.joynr.jeeintegration;
 
 import static com.google.inject.util.Modules.override;
 import static java.lang.String.format;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -65,7 +66,6 @@ import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.JoynrInterface;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -284,12 +284,18 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         };
     }
 
-    private Properties prepareJoynrProperties(Properties configuredProperties) {
-        Properties defaultJoynrProperties = new Properties();
+    private Properties prepareJoynrProperties(final Properties configuredProperties) {
+        final Properties defaultJoynrProperties = new Properties();
         defaultJoynrProperties.setProperty(AbstractJoynrApplication.PROPERTY_JOYNR_DOMAIN_LOCAL, joynrLocalDomain);
         defaultJoynrProperties.putAll(configuredProperties);
-        logger.info("Enabled Shared Subscriptions Property is explicitly set to true.");
-        defaultJoynrProperties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
+        if(!defaultJoynrProperties.containsKey(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS)) {
+            logger.info("Shared Subscriptions Option is explicitly set to true.");
+            defaultJoynrProperties.setProperty(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
+        } else {
+            logger.info("Shared Subscriptions Option is specified in properties: {}.",
+                        defaultJoynrProperties.getProperty(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS));
+        }
+
         return defaultJoynrProperties;
     }
 

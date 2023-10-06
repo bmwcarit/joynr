@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ package io.joynr.jeeintegration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -58,7 +60,6 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.ProviderAnnotations;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
@@ -277,19 +278,19 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @Test
-    public void testSharedSubscriptionsAreEnabledWhenInPropertiesThisOptionWasDisabled() throws Exception {
+    public void testSharedSubscriptionsAreDisabledWhenInPropertiesThisOptionWasDisabled() throws Exception {
         final Properties properties = new Properties();
-        properties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
+        properties.setProperty(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
         createFixture(properties);
 
         final boolean sharedSubscriptionValue = getSharedSubscriptionOption();
-        assertTrue(sharedSubscriptionValue);
+        assertFalse(sharedSubscriptionValue);
     }
 
     @Test
     public void testSharedSubscriptionsAreEnabledWhenInPropertiesThisOptionWasEnabled() throws Exception {
         final Properties properties = new Properties();
-        properties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
+        properties.setProperty(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
         createFixture(properties);
 
         final boolean sharedSubscriptionValue = getSharedSubscriptionOption();
@@ -298,7 +299,7 @@ public class DefaultJoynrRuntimeFactoryTest {
 
     private boolean getSharedSubscriptionOption() throws NoSuchFieldException, IllegalAccessException {
         final Properties joynrProperties = extractProperties();
-        return Boolean.valueOf((String) joynrProperties.get(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS));
+        return Boolean.valueOf((String) joynrProperties.get(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS));
     }
 
     private Properties extractProperties() throws NoSuchFieldException, IllegalAccessException {
