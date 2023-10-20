@@ -326,23 +326,20 @@ class CppInterfaceUtil extends InterfaceUtil {
 	def produceApplicationRuntimeErrorSplitForOnErrorWrapper(FInterface serviceInterface, FMethod method, boolean generateVersion)
 '''
 	«IF method.hasErrorEnum»
-		future->onError(error);
 		if (const exceptions::JoynrRuntimeException* runtimeError = dynamic_cast<const exceptions::JoynrRuntimeException*>(error.get())) {
-			if(onRuntimeError) {
-				onRuntimeError(*runtimeError);
-			}
+			safeInvokeCallback(logger(), onRuntimeError, *runtimeError);
 		}
 		else if (const exceptions::ApplicationException* applicationError = dynamic_cast<const exceptions::ApplicationException*>(error.get())) {
 			const std::string& enumName = applicationError->getName();
 			if(onApplicationError) {
 				JOYNR_LOG_DEBUG(logger(), "An ApplicationException was received. Error: {}, message: {}", enumName, applicationError->getMessage());
-				onApplicationError(muesli::EnumTraits<«getMethodErrorEnum(serviceInterface, method, generateVersion)»>::Wrapper::getEnum(enumName));
+				safeInvokeCallback(logger(), onApplicationError, muesli::EnumTraits<«getMethodErrorEnum(serviceInterface, method, generateVersion)»>::Wrapper::getEnum(enumName));
 			}
 			else if (onRuntimeError) {
 				const std::string errorMessage = "An ApplicationException was received, but no onApplicationError callback function was provided." \
 					" Error " + enumName + ", message: " + applicationError->getMessage();
 				JOYNR_LOG_WARN(logger(), errorMessage);
-				onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
+				safeInvokeCallback(logger(), onRuntimeError, exceptions::JoynrRuntimeException(errorMessage));
 			}
 			else{
 				JOYNR_LOG_WARN(logger(),
@@ -352,29 +349,24 @@ class CppInterfaceUtil extends InterfaceUtil {
 		}
 		else {
 			const std::string errorMessage = "Unknown exception: " + error->getTypeName() + ": " + error->getMessage();
-				JOYNR_LOG_ERROR(logger(), errorMessage);
-			if (onRuntimeError) {
-				onRuntimeError(exceptions::JoynrRuntimeException(errorMessage));
-			}
+			JOYNR_LOG_ERROR(logger(), errorMessage);
+			safeInvokeCallback(logger(), onRuntimeError, exceptions::JoynrRuntimeException(errorMessage));
 		}
+		future->onError(error);
 	«ELSE»
 		if (const exceptions::ApplicationException* applicationError = dynamic_cast<const exceptions::ApplicationException*>(error.get())) {
 			const std::string& enumName = applicationError->getName();
-				const std::string errorMessage = "An ApplicationException was received, but none was expected." \
+			const std::string errorMessage = "An ApplicationException was received, but none was expected." \
 					" Is the provider version incompatible with the consumer?" \
 					" Error " + enumName + ", message: " + applicationError->getMessage();
-				JOYNR_LOG_ERROR(logger(), errorMessage);
-				std::shared_ptr<exceptions::JoynrRuntimeException> wrappedException = std::make_shared<exceptions::JoynrRuntimeException>(errorMessage);
-				future->onError(wrappedException);
-				if (onRuntimeError) {
-					onRuntimeError(static_cast<const exceptions::JoynrRuntimeException&>(*wrappedException));
-				}
+			JOYNR_LOG_ERROR(logger(), errorMessage);
+			std::shared_ptr<exceptions::JoynrRuntimeException> wrappedException = std::make_shared<exceptions::JoynrRuntimeException>(errorMessage);
+			safeInvokeCallback(logger(), onRuntimeError, static_cast<const exceptions::JoynrRuntimeException&>(*wrappedException));
+			future->onError(wrappedException);
 		}
 		else {
+			safeInvokeCallback(logger(), onRuntimeError, static_cast<const exceptions::JoynrRuntimeException&>(*error));
 			future->onError(error);
-			if (onRuntimeError) {
-				onRuntimeError(static_cast<const exceptions::JoynrRuntimeException&>(*error));
-			}
 		}
 	«ENDIF»
 '''
