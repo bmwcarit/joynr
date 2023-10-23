@@ -18,50 +18,16 @@
  */
 package io.joynr.proxy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
-
-import io.joynr.Async;
-import io.joynr.StatelessAsync;
-import io.joynr.Sync;
 import io.joynr.arbitration.ArbitrationResult;
-import io.joynr.dispatcher.rpc.annotation.FireAndForget;
-import io.joynr.dispatcher.rpc.annotation.JoynrMulticast;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcCallback;
-import io.joynr.dispatcher.rpc.annotation.JoynrRpcSubscription;
-import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
-import io.joynr.exceptions.SubscriptionException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
-import io.joynr.proxy.ConnectorTest.TestBroadcastInterface.TestBroadcastListener;
+import io.joynr.proxy.TestBroadcastInterface.TestBroadcastListener;
 import io.joynr.proxy.invocation.AttributeSubscribeInvocation;
 import io.joynr.proxy.invocation.BroadcastSubscribeInvocation;
 import io.joynr.proxy.invocation.MulticastSubscribeInvocation;
@@ -69,7 +35,6 @@ import io.joynr.proxy.invocation.UnsubscribeInvocation;
 import io.joynr.pubsub.SubscriptionQos;
 import io.joynr.pubsub.subscription.AttributeSubscriptionAdapter;
 import io.joynr.pubsub.subscription.AttributeSubscriptionListener;
-import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import joynr.BroadcastFilterParameters;
 import joynr.MulticastSubscriptionQos;
 import joynr.OnChangeSubscriptionQos;
@@ -82,12 +47,27 @@ import joynr.system.RoutingTypes.Address;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 import joynr.types.Localisation.GpsPosition;
 import joynr.vehicle.LocalisationSubscriptionInterface;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 public class ConnectorTest {
-
-    private enum ApplicationErrors {
-        ERROR_VALUE_1, ERROR_VALUE_2, ERROR_VALUE_3
-    }
 
     @Mock
     private ReplyCallerDirectory replyCallerDirectory;
@@ -106,108 +86,32 @@ public class ConnectorTest {
 
     private String fromParticipantId;
     private String statelessAsyncParticipantId;
-    private String toParticipantId;
     private DiscoveryEntryWithMetaInfo toDiscoveryEntry;
     private Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries;
     private MessagingQos qosSettings;
     private Object proxy;
+    private ConnectorInvocationHandler connector;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        openMocks(this);
         fromParticipantId = "fromParticipantId";
-        toParticipantId = "toParticipantId";
+        statelessAsyncParticipantId = "statelessAsyncParticipantId";
+        final var toParticipantId = "toParticipantId";
         toDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
         toDiscoveryEntry.setParticipantId(toParticipantId);
-        toDiscoveryEntries = new HashSet<>(Arrays.asList(toDiscoveryEntry));
+        toDiscoveryEntries = new HashSet<>(singletonList(toDiscoveryEntry));
         qosSettings = new MessagingQos();
         proxy = new Object();
-    }
-
-    interface TestProxyInterface extends TestSyncInterface, TestAsyncInterface {
-
-    }
-
-    interface TestSubscriptionInterface {
-
-        @JoynrRpcSubscription(attributeName = "testAttribute", attributeType = String.class)
-        public Future<String> subscribeToTestAttribute(AttributeSubscriptionListener<String> listener,
-                                                       SubscriptionQos subscriptionQos);
-
-        public void unsubscribeFromTestAttribute(String subscriptionId);
-    }
-
-    interface TestBroadcastInterface {
-
-        public interface TestBroadcastListener extends BroadcastSubscriptionListener {
-            public void onReceive(String testString);
-        }
-
-        public class TestBroadcastAdapter implements TestBroadcastListener {
-            @Override
-            public void onReceive(String testString) {
-                // empty implementation
-            }
-
-            @Override
-            public void onError(SubscriptionException error) {
-                // empty implementation
-            }
-
-            @Override
-            public void onSubscribed(String subscriptionId) {
-                // empty implementation
-            }
-        }
-
-        @JoynrRpcBroadcast(broadcastName = "testBroadcast")
-        abstract Future<String> subscribeToTestBroadcast(TestBroadcastListener subscriptionListener,
-                                                         OnChangeSubscriptionQos subscriptionQos,
-                                                         BroadcastFilterParameters filterParameters);
-
-        @JoynrMulticast(name = "testMulticast")
-        abstract Future<String> subscribeToTestMulticast(TestBroadcastListener subscriptionListener,
-                                                         MulticastSubscriptionQos subscriptionQos,
-                                                         String... partitions);
-
-        abstract void unsubscribeFromTestBroadcast(String subscriptionId);
-
-    }
-
-    @Sync
-    interface TestSyncInterface {
-        void methodWithoutParameters();
-
-        void methodWithoutParametersWithModelledErrors() throws ApplicationException;
-    }
-
-    @FireAndForget
-    interface TestFireAndForgetInterface {
-        void methodWithoutParameters();
-    }
-
-    @Async
-    interface TestAsyncInterface {
-        void someMethodwithoutAnnotations(Integer a, String b) throws JsonMappingException;
-
-        Future<Void> methodWithoutParameters(@JoynrRpcCallback(deserializationType = Void.class) Callback<Void> callback);
-    }
-
-    @StatelessAsync
-    interface TestStatelessAsyncInterface {
-        @StatelessCallbackCorrelation("correlationId")
-        void testMethod(MessageIdCallback messageIdCallback);
+        connector = createConnector();
     }
 
     @Test
     public void asyncMethodCallWithoutAnnotationThrowsException() throws JoynrIllegalStateException {
-
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
         try {
-            Future<String> future = new Future<String>();
+            final var future = new Future<String>();
             connector.executeAsyncMethod(proxy,
-                                         TestAsyncInterface.class.getDeclaredMethod("someMethodwithoutAnnotations",
+                                         TestAsyncInterface.class.getDeclaredMethod("someMethodWithoutAnnotations",
                                                                                     Integer.class,
                                                                                     String.class),
                                          new Object[]{ 1, "test" },
@@ -217,60 +121,37 @@ public class ConnectorTest {
             // This is what is supposed to happen -> no error handling
             assertEquals(JoynrIllegalStateException.class, e.getClass());
         }
-
     }
 
     @Test
     public void subscriptionMethodCallWithNoExpiryDate() throws JoynrIllegalStateException {
-
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
         try {
-            Future<String> future = new Future<String>();
-            String subscriptionId = "subscriptionId";
-            PeriodicSubscriptionQos subscriptionQos = new PeriodicSubscriptionQos();
-            subscriptionQos.setPeriodMs(1000).setExpiryDateMs(0).setAlertAfterIntervalMs(1000);
-            AttributeSubscriptionListener<GpsPosition> listener = new AttributeSubscriptionAdapter<GpsPosition>();
-            Object[] args = new Object[]{ listener, subscriptionQos, subscriptionId };
-            Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("subscribeToGPSPosition",
-                                                                                      String.class,
-                                                                                      AttributeSubscriptionListener.class,
-                                                                                      SubscriptionQos.class);
-            AttributeSubscribeInvocation attributeSubscription = new AttributeSubscribeInvocation(method,
-                                                                                                  args,
-                                                                                                  future,
-                                                                                                  proxy);
+            final var attributeSubscription = createSubscribeToGpsInvocation();
             connector.executeSubscriptionMethod(attributeSubscription);
-            verify(subscriptionManager,
-                   times(1)).registerAttributeSubscription(eq(fromParticipantId),
-                                                           eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
-                                                           eq(attributeSubscription));
-        } catch (Exception e) {
+            verify(subscriptionManager).registerAttributeSubscription(eq(fromParticipantId),
+                                                                      eq(toDiscoveryEntries),
+                                                                      eq(attributeSubscription));
+        } catch (final Exception e) {
             // This is what is supposed to happen -> no error handling
             fail("Calling a subscription method with no expiry date throws an exception.");
         }
-
     }
 
     @Test
     public void unsubscriptionMethodCall() throws JoynrIllegalStateException {
-
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
         try {
-            Future<String> future = new Future<String>();
-            String subscriptionId = "subscriptionId";
-            Object[] args = new Object[]{ subscriptionId };
-            Method method = LocalisationSubscriptionInterface.class.getDeclaredMethod("unsubscribeFromGPSPosition",
-                                                                                      String.class);
-            UnsubscribeInvocation unsubscribeInvocation = new UnsubscribeInvocation(method, args, future);
+            final var future = new Future<String>();
+            final var subscriptionId = "subscriptionId";
+            final var args = new Object[]{ subscriptionId };
+            final var method = LocalisationSubscriptionInterface.class.getDeclaredMethod("unsubscribeFromGPSPosition",
+                                                                                         String.class);
+            final var unsubscribeInvocation = new UnsubscribeInvocation(method, args, future);
             connector.executeSubscriptionMethod(unsubscribeInvocation);
-            verify(subscriptionManager,
-                   times(1)).unregisterSubscription(eq(fromParticipantId),
-                                                    eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
-                                                    eq(subscriptionId),
-                                                    any(MessagingQos.class));
-        } catch (Exception e) {
+            verify(subscriptionManager).unregisterSubscription(eq(fromParticipantId),
+                                                               eq(toDiscoveryEntries),
+                                                               eq(subscriptionId),
+                                                               any(MessagingQos.class));
+        } catch (final Exception e) {
             // This is what is supposed to happen -> no error handling
             fail("Calling a subscription method with no expiry date throws an exception.");
         }
@@ -278,39 +159,32 @@ public class ConnectorTest {
 
     @Test
     public void asyncMethodCallCallsRequestReplyManagerWithCorrectArguments() {
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
-        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
-        Future<Void> future = new Future<Void>();
+        final var requestCaptor = ArgumentCaptor.forClass(Request.class);
+        final var future = new Future<Void>();
         try {
-            Method method = TestAsyncInterface.class.getDeclaredMethod("methodWithoutParameters", Callback.class);
+            final var method = TestAsyncInterface.class.getDeclaredMethod("methodWithoutParameters", Callback.class);
             connector.executeAsyncMethod(proxy, method, new Object[]{ voidCallback }, future);
-            verify(requestReplyManager, times(1)).sendRequest(eq(fromParticipantId),
-                                                              eq(toDiscoveryEntry),
-                                                              requestCaptor.capture(),
-                                                              eq(qosSettings));
+            verify(requestReplyManager).sendRequest(eq(fromParticipantId),
+                                                    eq(toDiscoveryEntry),
+                                                    requestCaptor.capture(),
+                                                    eq(qosSettings));
 
-            Request actualRequest = requestCaptor.getValue();
-            Request expectedRequest = new Request(method.getName(),
-                                                  new Object[]{},
-                                                  new String[]{},
-                                                  actualRequest.getRequestReplyId());
+            final var actualRequest = requestCaptor.getValue();
+            final var expectedRequest = new Request(method.getName(),
+                                                    new Object[]{},
+                                                    new String[]{},
+                                                    actualRequest.getRequestReplyId());
             assertEquals(expectedRequest, actualRequest);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             fail("Unexpected exception from async method call: " + e);
         }
     }
 
     @Test
-    public void syncMethodCallWithModelledError_throwsApplicationException() throws NoSuchMethodException,
-                                                                             ApplicationException {
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
-        Method method = TestSyncInterface.class.getDeclaredMethod("methodWithoutParametersWithModelledErrors");
-        ApplicationErrors errorValue = ApplicationErrors.ERROR_VALUE_1;
-        ApplicationException expected = new ApplicationException(errorValue);
+    public void syncMethodCallWithModelledError_throwsApplicationException() throws NoSuchMethodException {
+        final var method = TestSyncInterface.class.getDeclaredMethod("methodWithoutParametersWithModelledErrors");
+        final var errorValue = ApplicationErrors.ERROR_VALUE_1;
+        final var expected = new ApplicationException(errorValue);
 
         when(requestReplyManager.sendSyncRequest(any(String.class),
                                                  any(DiscoveryEntryWithMetaInfo.class),
@@ -320,7 +194,7 @@ public class ConnectorTest {
         try {
             connector.executeSyncMethod(method, new Object[]{});
             fail("Unexpected success from sync method call.");
-        } catch (ApplicationException ex) {
+        } catch (final ApplicationException ex) {
             assertEquals(ex, expected);
         }
     }
@@ -328,12 +202,9 @@ public class ConnectorTest {
     @Test
     public void syncMethodCallWithoutModelledError_doesNotThrowApplicationException() throws NoSuchMethodException,
                                                                                       ApplicationException {
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
-        Method method = TestSyncInterface.class.getDeclaredMethod("methodWithoutParameters");
-        ApplicationErrors errorValue = ApplicationErrors.ERROR_VALUE_1;
-        ApplicationException expected = new ApplicationException(errorValue);
+        final var method = TestSyncInterface.class.getDeclaredMethod("methodWithoutParameters");
+        final var errorValue = ApplicationErrors.ERROR_VALUE_1;
+        final var expected = new ApplicationException(errorValue);
         when(requestReplyManager.sendSyncRequest(any(String.class),
                                                  any(DiscoveryEntryWithMetaInfo.class),
                                                  any(Request.class),
@@ -342,7 +213,7 @@ public class ConnectorTest {
         try {
             connector.executeSyncMethod(method, new Object[]{});
             fail("Unexpected success from sync method call.");
-        } catch (JoynrRuntimeException ex) {
+        } catch (final JoynrRuntimeException ex) {
             String message = "An ApplicationException was received, but none was expected. Is the provider version incompatible with the consumer? "
                     + expected;
             assertEquals(message, ex.getMessage());
@@ -351,194 +222,192 @@ public class ConnectorTest {
 
     @Test
     public void syncMethodCallCallsRequestReplyManagerWithCorrectArguments() {
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
-        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        final var requestCaptor = ArgumentCaptor.forClass(Request.class);
         try {
-            Method method = TestSyncInterface.class.getDeclaredMethod("methodWithoutParameters");
+            final var method = TestSyncInterface.class.getDeclaredMethod("methodWithoutParameters");
             when(requestReplyManager.sendSyncRequest(any(String.class),
                                                      any(DiscoveryEntryWithMetaInfo.class),
                                                      any(Request.class),
                                                      any(SynchronizedReplyCaller.class),
                                                      any(MessagingQos.class))).thenReturn(new Reply());
             connector.executeSyncMethod(method, new Object[]{});
-            verify(requestReplyManager, times(1)).sendSyncRequest(eq(fromParticipantId),
-                                                                  eq(toDiscoveryEntry),
-                                                                  requestCaptor.capture(),
-                                                                  isA(SynchronizedReplyCaller.class),
-                                                                  eq(qosSettings));
+            verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
+                                                        eq(toDiscoveryEntry),
+                                                        requestCaptor.capture(),
+                                                        isA(SynchronizedReplyCaller.class),
+                                                        eq(qosSettings));
 
-            Request actualRequest = requestCaptor.getValue();
-            Request expectedRequest = new Request(method.getName(),
-                                                  new Object[]{},
-                                                  new String[]{},
-                                                  actualRequest.getRequestReplyId());
+            final var actualRequest = requestCaptor.getValue();
+            final var expectedRequest = new Request(method.getName(),
+                                                    new Object[]{},
+                                                    new String[]{},
+                                                    actualRequest.getRequestReplyId());
             assertEquals(expectedRequest, actualRequest);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             fail("Unexpected exception from sync method call: " + e);
         }
     }
 
     @Test
     public void oneWayMethodCallCallsRequestReplyManagerWithCorrectArguments() {
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
-        ArgumentCaptor<OneWayRequest> requestCaptor = ArgumentCaptor.forClass(OneWayRequest.class);
+        final var requestCaptor = ArgumentCaptor.forClass(OneWayRequest.class);
         try {
-            Method method = TestFireAndForgetInterface.class.getDeclaredMethod("methodWithoutParameters");
+            final var method = TestFireAndForgetInterface.class.getDeclaredMethod("methodWithoutParameters");
             connector.executeOneWayMethod(method, new Object[]{});
-            verify(requestReplyManager, times(1)).sendOneWayRequest(eq(fromParticipantId),
-                                                                    eq(toDiscoveryEntries),
-                                                                    requestCaptor.capture(),
-                                                                    eq(qosSettings));
+            verify(requestReplyManager).sendOneWayRequest(eq(fromParticipantId),
+                                                          eq(toDiscoveryEntries),
+                                                          requestCaptor.capture(),
+                                                          eq(qosSettings));
 
-            OneWayRequest actualRequest = requestCaptor.getValue();
-            OneWayRequest expectedRequest = new OneWayRequest(method.getName(), new Object[]{}, new String[]{});
+            final var actualRequest = requestCaptor.getValue();
+            final var expectedRequest = new OneWayRequest(method.getName(), new Object[]{}, new String[]{});
             assertEquals(expectedRequest, actualRequest);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             fail("Unexpected exception from one way method call: " + e);
         }
     }
 
     @Test
     public void unsubscriptionMethodCallCallsSubscriptionManagerWithCorrectArguments() {
-        String subscriptionId = "subscriptionId";
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
+        final var subscriptionId = "subscriptionId";
         try {
-            Method method = TestSubscriptionInterface.class.getDeclaredMethod("unsubscribeFromTestAttribute",
-                                                                              String.class);
-            UnsubscribeInvocation invocation = new UnsubscribeInvocation(method, new Object[]{ subscriptionId }, null);
+            final var method = TestSubscriptionInterface.class.getDeclaredMethod("unsubscribeFromTestAttribute",
+                                                                                 String.class);
+            final var invocation = new UnsubscribeInvocation(method, new Object[]{ subscriptionId }, null);
             connector.executeSubscriptionMethod(invocation);
-            verify(subscriptionManager, times(1)).unregisterSubscription(fromParticipantId,
-                                                                         toDiscoveryEntries,
-                                                                         subscriptionId,
-                                                                         qosSettings);
-        } catch (Exception e) {
+            verify(subscriptionManager).unregisterSubscription(fromParticipantId,
+                                                               toDiscoveryEntries,
+                                                               subscriptionId,
+                                                               qosSettings);
+        } catch (final Exception e) {
             fail("Unexpected exception from unsubscribe call: " + e);
         }
     }
 
     @Test
     public void subscribeToAttributeCallCallsSubscriptionManagerWithCorrectArguments() {
-        AttributeSubscriptionListener<String> listener = new AttributeSubscriptionAdapter<>();
-        SubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
         try {
-            Method method = TestSubscriptionInterface.class.getDeclaredMethod("subscribeToTestAttribute",
-                                                                              AttributeSubscriptionListener.class,
-                                                                              SubscriptionQos.class);
-            AttributeSubscribeInvocation invocation = new AttributeSubscribeInvocation(method,
-                                                                                       new Object[]{ listener,
-                                                                                               subscriptionQos },
-                                                                                       null,
-                                                                                       proxy);
+            final var invocation = createSubscribeToAttributeInvocation();
             connector.executeSubscriptionMethod(invocation);
-            verify(subscriptionManager, times(1)).registerAttributeSubscription(fromParticipantId,
-                                                                                toDiscoveryEntries,
-                                                                                invocation);
-        } catch (Exception e) {
+            verify(subscriptionManager).registerAttributeSubscription(fromParticipantId,
+                                                                      toDiscoveryEntries,
+                                                                      invocation);
+        } catch (final Exception e) {
             fail("Unexpected exception from attribute subscribe call: " + e);
         }
     }
 
     @Test
     public void subscribeToBroadcastCallCallsSubscriptionManagerWithCorrectArguments() {
-        TestBroadcastListener listener = new TestBroadcastInterface.TestBroadcastAdapter();
-        OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
         try {
-            Method method = TestBroadcastInterface.class.getDeclaredMethod("subscribeToTestBroadcast",
-                                                                           TestBroadcastListener.class,
-                                                                           OnChangeSubscriptionQos.class,
-                                                                           BroadcastFilterParameters.class);
-            BroadcastSubscribeInvocation invocation = new BroadcastSubscribeInvocation(method,
-                                                                                       new Object[]{ listener,
-                                                                                               subscriptionQos,
-                                                                                               new BroadcastFilterParameters() },
-                                                                                       null,
-                                                                                       proxy);
+            final var invocation = createBroadcastInvocation();
             connector.executeSubscriptionMethod(invocation);
-            verify(subscriptionManager, times(1)).registerBroadcastSubscription(fromParticipantId,
-                                                                                toDiscoveryEntries,
-                                                                                invocation);
-        } catch (Exception e) {
+            verify(subscriptionManager).registerBroadcastSubscription(fromParticipantId,
+                                                                      toDiscoveryEntries,
+                                                                      invocation);
+        } catch (final Exception e) {
             fail("Unexpected exception from broadcast subscribe call: " + e);
         }
     }
 
     @Test
     public void subscribeToMulticastCallCallsSubscriptionManagerWithCorrectArguments() {
-        TestBroadcastListener listener = new TestBroadcastInterface.TestBroadcastAdapter();
-        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos();
-        String[] partitions = new String[]{ "partition1", "partition2", "partition3" };
-        ConnectorInvocationHandler connector = createConnector();
-        assertNotNull(connector);
-
         try {
-            Method method = TestBroadcastInterface.class.getDeclaredMethod("subscribeToTestMulticast",
-                                                                           TestBroadcastListener.class,
-                                                                           MulticastSubscriptionQos.class,
-                                                                           String[].class);
-            MulticastSubscribeInvocation invocation = new MulticastSubscribeInvocation(method,
-                                                                                       new Object[]{ listener,
-                                                                                               subscriptionQos,
-                                                                                               partitions },
-                                                                                       null,
-                                                                                       proxy);
+            final var invocation = createMulticastInvocation();
             connector.executeSubscriptionMethod(invocation);
-            verify(subscriptionManager, times(1)).registerMulticastSubscription(fromParticipantId,
-                                                                                toDiscoveryEntries,
-                                                                                invocation);
-        } catch (Exception e) {
+            verify(subscriptionManager).registerMulticastSubscription(fromParticipantId,
+                                                                      toDiscoveryEntries,
+                                                                      invocation);
+        } catch (final Exception e) {
             fail("Unexpected exception from multicast subscribe call: " + e);
         }
     }
 
     @Test
     public void executeStatelessAsyncCallsRequestReplyManagerCorrectly() throws Exception {
-        statelessAsyncParticipantId = "statelessAsyncParticipantId";
-        ConnectorInvocationHandler connector = createConnector();
-        Method method = TestStatelessAsyncInterface.class.getMethod("testMethod",
-                                                                    new Class[]{ MessageIdCallback.class });
-        StatelessAsyncCallback statelessAsyncCallback = mock(StatelessAsyncCallback.class);
+        final var method = TestStatelessAsyncInterface.class.getMethod("testMethod", MessageIdCallback.class);
+        final var statelessAsyncCallback = mock(StatelessAsyncCallback.class);
         when(statelessAsyncCallback.getUseCase()).thenReturn("useCase");
-        MessageIdCallback messageIdCallback = mock(MessageIdCallback.class);
+        final var messageIdCallback = mock(MessageIdCallback.class);
         when(statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(eq(method))).thenReturn("requestReplyId");
         when(statelessAsyncIdCalculator.calculateStatelessCallbackMethodId(eq(method))).thenReturn("correlationId");
         connector.executeStatelessAsyncMethod(method, new Object[]{ messageIdCallback });
-        ArgumentCaptor<Request> captor = ArgumentCaptor.forClass(Request.class);
+        final var captor = ArgumentCaptor.forClass(Request.class);
         verify(requestReplyManager).sendRequest(eq(statelessAsyncParticipantId),
                                                 eq(toDiscoveryEntry),
                                                 captor.capture(),
                                                 any());
-        Request request = captor.getValue();
+        final var request = captor.getValue();
         assertEquals("correlationId", request.getStatelessAsyncCallbackMethodId());
         assertEquals("requestReplyId", request.getRequestReplyId());
     }
 
     private ConnectorInvocationHandler createConnector() {
-        ArbitrationResult arbitrationResult = new ArbitrationResult();
+        final var arbitrationResult = new ArbitrationResult();
         arbitrationResult.setDiscoveryEntries(toDiscoveryEntries);
-        JoynrMessagingConnectorFactory joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
-                                                                                                           replyCallerDirectory,
-                                                                                                           subscriptionManager,
-                                                                                                           statelessAsyncIdCalculator);
-        ConnectorFactory connectorFactory = new ConnectorFactory(joynrMessagingConnectorFactory,
-                                                                 messageRouter,
-                                                                 libJoynrMessagingAddress);
-        ConnectorInvocationHandler connector = connectorFactory.create(fromParticipantId,
-                                                                       arbitrationResult,
-                                                                       qosSettings,
-                                                                       statelessAsyncParticipantId)
-                                                               .get();
-        return connector;
+        final var optional = getConnectorFactory().create(fromParticipantId,
+                                                          arbitrationResult,
+                                                          qosSettings,
+                                                          statelessAsyncParticipantId);
+        assertTrue(optional.isPresent());
+        return optional.get();
+    }
+
+    private ConnectorFactory getConnectorFactory() {
+        final var joynrMessagingConnectorFactory = new JoynrMessagingConnectorFactory(requestReplyManager,
+                                                                                      replyCallerDirectory,
+                                                                                      subscriptionManager,
+                                                                                      statelessAsyncIdCalculator);
+        return new ConnectorFactory(joynrMessagingConnectorFactory, messageRouter, libJoynrMessagingAddress);
+    }
+
+    private MulticastSubscribeInvocation createMulticastInvocation() throws NoSuchMethodException {
+        final var partitions = new String[]{ "partition1", "partition2", "partition3" };
+        final var listener = new TestBroadcastInterface.TestBroadcastAdapter();
+        final var subscriptionQos = new MulticastSubscriptionQos();
+        final var method = TestBroadcastInterface.class.getDeclaredMethod("subscribeToTestMulticast",
+                                                                          TestBroadcastListener.class,
+                                                                          MulticastSubscriptionQos.class,
+                                                                          String[].class);
+        return new MulticastSubscribeInvocation(method,
+                                                new Object[]{ listener, subscriptionQos, partitions },
+                                                null,
+                                                proxy);
+    }
+
+    private AttributeSubscribeInvocation createSubscribeToGpsInvocation() throws NoSuchMethodException {
+        final var future = new Future<String>();
+        final var subscriptionQos = new PeriodicSubscriptionQos();
+        subscriptionQos.setPeriodMs(1000).setExpiryDateMs(0).setAlertAfterIntervalMs(1000);
+        final var listener = new AttributeSubscriptionAdapter<GpsPosition>();
+        final var args = new Object[]{ listener, subscriptionQos, "subscriptionId" };
+        final var method = LocalisationSubscriptionInterface.class.getDeclaredMethod("subscribeToGPSPosition",
+                                                                                     String.class,
+                                                                                     AttributeSubscriptionListener.class,
+                                                                                     SubscriptionQos.class);
+        return new AttributeSubscribeInvocation(method, args, future, proxy);
+    }
+
+    private AttributeSubscribeInvocation createSubscribeToAttributeInvocation() throws NoSuchMethodException {
+        final var listener = new AttributeSubscriptionAdapter<String>();
+        final var subscriptionQos = new OnChangeSubscriptionQos();
+        final var method = TestSubscriptionInterface.class.getDeclaredMethod("subscribeToTestAttribute",
+                                                                             AttributeSubscriptionListener.class,
+                                                                             SubscriptionQos.class);
+        return new AttributeSubscribeInvocation(method, new Object[]{ listener, subscriptionQos }, null, proxy);
+    }
+
+    private BroadcastSubscribeInvocation createBroadcastInvocation() throws NoSuchMethodException {
+        final var listener = new TestBroadcastInterface.TestBroadcastAdapter();
+        final var subscriptionQos = new OnChangeSubscriptionQos();
+        final var method = TestBroadcastInterface.class.getDeclaredMethod("subscribeToTestBroadcast",
+                                                                          TestBroadcastListener.class,
+                                                                          OnChangeSubscriptionQos.class,
+                                                                          BroadcastFilterParameters.class);
+        return new BroadcastSubscribeInvocation(method,
+                                                new Object[]{ listener, subscriptionQos,
+                                                        new BroadcastFilterParameters() },
+                                                null,
+                                                proxy);
     }
 }
