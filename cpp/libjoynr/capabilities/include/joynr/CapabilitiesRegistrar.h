@@ -93,8 +93,9 @@ public:
         const std::string participantId = _participantIdStorage->getProviderParticipantId(
                 domain, interfaceName, T::MAJOR_VERSION);
         std::shared_ptr<RequestCaller> caller = RequestCallerFactory::create<T>(provider);
-        provider->registerBroadcastListener(
-                std::make_shared<MulticastBroadcastListener>(participantId, _publicationManager));
+        auto multicastBroadcastListener =
+                std::make_shared<MulticastBroadcastListener>(participantId, _publicationManager);
+        provider->registerBroadcastListener(multicastBroadcastListener);
 
         const std::int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                                          std::chrono::system_clock::now().time_since_epoch())
@@ -119,14 +120,18 @@ public:
                                            discoveryEntryExpiryDateMs,
                                            defaultPublicKeyId);
         bool isGloballyVisible = providerQos.getScope() == types::ProviderScope::GLOBAL;
-
+        auto onErrorWrapper = [provider, multicastBroadcastListener, onError = std::move(onError)](
+                                      const joynr::exceptions::JoynrRuntimeException& error) {
+            provider->unregisterBroadcastListener(multicastBroadcastListener);
+            onError(error);
+        };
         for (auto&& gbid : gbids) {
             if (gbid.empty()) {
-                onError(joynr::exceptions::JoynrRuntimeException("gbid(s) must not be empty"));
+                onErrorWrapper(
+                        joynr::exceptions::JoynrRuntimeException("gbid(s) must not be empty"));
                 return participantId;
             }
         }
-
         // dispatcher is captured here to avoid compilation problem with gcc 7.x
         auto onSuccessWrapper = [domain,
                                  interfaceName,
@@ -140,7 +145,7 @@ public:
                                  entry = std::move(entry),
                                  awaitGlobalRegistration,
                                  onSuccess = std::move(onSuccess),
-                                 onError,
+                                 onErrorWrapper,
                                  persist,
                                  isInternalProvider,
                                  addToAll,
@@ -153,25 +158,26 @@ public:
                 }
             }
 
-            auto onErrorWrapper = [participantId,
-                                   messageRouter = std::move(messageRouter),
-                                   onError = std::move(onError)](
-                                          const joynr::exceptions::JoynrRuntimeException& error) {
-                if (auto ptr = messageRouter.lock()) {
-                    ptr->removeNextHop(participantId);
-                }
-                onError(error);
-            };
-
-            auto onApplicationErrorWrapper =
+            auto onErrorWrapperInternal =
                     [participantId,
                      messageRouter = std::move(messageRouter),
-                     onError = std::move(onError)](
+                     onErrorWrapper = std::move(onErrorWrapper)](
+                            const joynr::exceptions::JoynrRuntimeException& error) {
+                        if (auto ptr = messageRouter.lock()) {
+                            ptr->removeNextHop(participantId);
+                        }
+                        onErrorWrapper(error);
+                    };
+
+            auto onApplicationErrorWrapperInternal =
+                    [participantId,
+                     messageRouter = std::move(messageRouter),
+                     onErrorWrapper = std::move(onErrorWrapper)](
                             const joynr::types::DiscoveryError::Enum& errorEnum) {
                         if (auto ptr = messageRouter.lock()) {
                             ptr->removeNextHop(participantId);
                         }
-                        onError(joynr::exceptions::JoynrRuntimeException(
+                        onErrorWrapper(joynr::exceptions::JoynrRuntimeException(
                                 "Registration failed with DiscoveryError " +
                                 joynr::types::DiscoveryError::getLiteral(errorEnum)));
                     };
@@ -194,8 +200,8 @@ public:
                                                    interfaceName);
                                     onSuccess();
                                 },
-                                std::move(onApplicationErrorWrapper),
-                                std::move(onErrorWrapper),
+                                std::move(onApplicationErrorWrapperInternal),
+                                std::move(onErrorWrapperInternal),
                                 messagingQos);
                     } else {
                         discoveryProxyPtr->addAsync(
@@ -212,8 +218,8 @@ public:
                                                    interfaceName);
                                     onSuccess();
                                 },
-                                std::move(onApplicationErrorWrapper),
-                                std::move(onErrorWrapper),
+                                std::move(onApplicationErrorWrapperInternal),
+                                std::move(onErrorWrapperInternal),
                                 messagingQos);
                     }
                 } else {
@@ -231,8 +237,8 @@ public:
                                                    interfaceName);
                                     onSuccess();
                                 },
-                                std::move(onApplicationErrorWrapper),
-                                std::move(onErrorWrapper));
+                                std::move(onApplicationErrorWrapperInternal),
+                                std::move(onErrorWrapperInternal));
                     } else {
                         discoveryProxyPtr->addAsync(
                                 entry,
@@ -248,14 +254,14 @@ public:
                                                    interfaceName);
                                     onSuccess();
                                 },
-                                std::move(onApplicationErrorWrapper),
-                                std::move(onErrorWrapper));
+                                std::move(onApplicationErrorWrapperInternal),
+                                std::move(onErrorWrapperInternal));
                     }
                 }
             } else {
                 const joynr::exceptions::JoynrRuntimeException error(
                         "runtime and required discovery proxy have been already destroyed");
-                onErrorWrapper(error);
+                onErrorWrapperInternal(error);
             }
         };
 
@@ -269,7 +275,7 @@ public:
                                    expiryDateMs,
                                    isSticky,
                                    std::move(onSuccessWrapper),
-                                   std::move(onError));
+                                   std::move(onErrorWrapper));
 
         return participantId;
     }
