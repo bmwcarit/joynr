@@ -432,7 +432,7 @@
 		<sonarsource.version>3.9.1.2184</sonarsource.version>
 		<surefire.version>3.0.0-M3</surefire.version>
 		<ow2_asm.version>9.4</ow2_asm.version>
-		<guava.version>31.1-jre</guava.version>
+		<guava.version>32.0.1-jre</guava.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
 	</properties>
 
