@@ -968,7 +968,7 @@
 				<groupId>org.xerial</groupId>
 				<artifactId>sqlite-jdbc</artifactId>
 				<type>jar</type>
-				<version>3.41.0.0</version>
+				<version>3.43.2.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.javassist</groupId>
