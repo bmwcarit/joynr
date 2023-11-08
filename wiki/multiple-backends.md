@@ -78,9 +78,9 @@ override of the GBIDs selection in the cluster controller. The global capabiliti
 identified by the first selected GBID performs the registration.
 
 Please refer to the language specific developer guides for further details on the provider registration:
-* Java: [Java Developer Guide](wiki/java.md#building-a-java-provider-application)
-* C\+\+: [C++ Developer Guide](wiki/cplusplus.md#registering-provider)
-* Javascript: [JavaScript Developer Guide](wiki/javascript.md#building-a-javascript-provider-application)
+* Java: [Java Developer Guide](java.md#building-a-java-provider-application)
+* C\+\+: [C++ Developer Guide](cplusplus.md#registering-provider)
+* Javascript: [JavaScript Developer Guide](javascript.md#building-a-javascript-provider-application)
 
 ## (Global) Proxy creation (discovery) with multiple backends
 
@@ -91,9 +91,9 @@ The global lookup is performed by the CC via the GCD instance in the CC's defaul
 To discover a provider only in selected backends and/or via different JDS instances, a list of GBIDs has to be selected at the proxy builder. The first selected GBID determines the GCD instance that will be used by the CC to perform the global lookup.
 
 Please refer to the language specific developer guides for further details on the proxy creation:
-* Java: [Java Developer Guide](wiki/java.md#building-a-java-consumer-application)
-* C\+\+: [C++ Developer Guide](wiki/cplusplus.md#creating-a-proxy)
-* Javascript: [JavaScript Developer Guide](wiki/javascript.md#building-a-proxy)
+* Java: [Java Developer Guide](java.md#building-a-java-consumer-application)
+* C\+\+: [C++ Developer Guide](cplusplus.md#creating-a-proxy)
+* Javascript: [JavaScript Developer Guide](javascript.md#building-a-proxy)
 
 
 ## Mqtt Status Metrics for multiple backends (Java/JEE)
@@ -102,7 +102,7 @@ The joynr status metrics for MQTT (Java, JEE) are retrieved via the JoynrStatusM
 There, you can call the method `getAllConnectionStatusMetrics()` or
 `getConnectionStatusMetrics(gbid)` to retrieve up to two ConnectionStatusMetrics objects per GBID,
 depending on whether separate sending and receiving connections are configured.  
-See [Java Developer Guide](java.md#status_monitoring) for more information.
+See [Java Developer Guide](java.md#joynr-status-monitoring) for more information.
 
 ## Known limitations and issues of multiple backends support in joynr
 
