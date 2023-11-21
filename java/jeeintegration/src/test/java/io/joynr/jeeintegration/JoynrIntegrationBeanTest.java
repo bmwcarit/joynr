@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -321,15 +322,13 @@ public class JoynrIntegrationBeanTest {
     @Test
     public void testInitialise_noSharedSubscriptionsOptionIsOverwritten() {
         mockInjector(true, false, true, GBIDS);
-        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
-                                                          .getSkeleton(any(Address.class));
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(new HashSet<>());
 
         subject.initialise();
 
         verify(joynrRuntimeFactory).create(new HashSet<>());
         verify(serviceProviderDiscovery).findServiceProviderBeans();
-        verify(messagingSkeletonFactory, times(3)).getSkeleton(any(Address.class));
+        verify(messagingSkeletonFactory, never()).getSkeleton(any(Address.class));
     }
 
     @Test
@@ -801,8 +800,6 @@ public class JoynrIntegrationBeanTest {
     public void testManualSubscribe_noSharedSubscriptions_nosubscribeOnstartup() {
         when(serviceProviderDiscovery.findServiceProviderBeans()).thenReturn(new HashSet<>());
         mockInjector(false, false, false, GBIDS);
-        doReturn(Optional.of(sharedSubscriptionsSkeleton)).when(messagingSkeletonFactory)
-                                                          .getSkeleton(any(Address.class));
 
         subject.initialise();
 
@@ -814,6 +811,6 @@ public class JoynrIntegrationBeanTest {
 
         verify(joynrRuntimeFactory).create(new HashSet<>());
         verify(serviceProviderDiscovery).findServiceProviderBeans();
-        verify(messagingSkeletonFactory, times(3)).getSkeleton(any(Address.class));
+        verify(messagingSkeletonFactory, never()).getSkeleton(any(Address.class));
     }
 }
