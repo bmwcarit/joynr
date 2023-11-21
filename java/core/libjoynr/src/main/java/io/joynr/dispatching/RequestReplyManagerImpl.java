@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2021 BMW Car IT GmbH
+ * Copyright (C) 2021-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -438,19 +438,6 @@ public class RequestReplyManagerImpl
             return;
         }
         callBack.messageCallBack(reply);
-    }
-
-    @Override
-    public void handleError(Request request, Throwable error) {
-        boolean stateless = request.getStatelessAsyncCallbackMethodId() != null;
-        String callbackId = stateless ? request.getStatelessAsyncCallbackMethodId() : request.getRequestReplyId();
-        if (callbackId != null) {
-            ReplyCaller replyCaller = stateless ? replyCallerDirectory.get(callbackId)
-                    : replyCallerDirectory.remove(callbackId);
-            if (replyCaller != null) {
-                replyCaller.error(error);
-            }
-        }
     }
 
     @Override
