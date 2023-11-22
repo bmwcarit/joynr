@@ -103,6 +103,7 @@ import joynr.types.DiscoveryEntryWithMetaInfo;
 @RunWith(MockitoJUnitRunner.class)
 public class RequestReplyManagerTest {
     private static final long TIME_TO_LIVE = 10000L;
+    private final static long REPLY_DIRECTORY_CLEANUP_TASK_INTERVAL_MS = 5000L;
     private RequestReplyManager requestReplyManager;
     private ReplyCallerDirectory replyCallerDirectory;
     private ProviderDirectory providerDirectory;
@@ -348,18 +349,25 @@ public class RequestReplyManagerTest {
     }
 
     @Test
-    public void requestReplyMessagesRemoveCallBackByTtl() throws Exception {
+    public void removesExpiredRequestReply() throws Exception {
         TestProvider testResponder = new TestProvider(1);
-        ExpiryDate ttlReplyCaller = ExpiryDate.fromRelativeTtl(1000L);
+        // To expire within 1000 ms from now
+        ExpiryDate ttlReplyCaller1 = ExpiryDate.fromRelativeTtl(1000L);
+        final ReplyCaller replyCaller1 = mock(ReplyCaller.class);
+        replyCallerDirectory.addReplyCaller(request1.getRequestReplyId(), replyCaller1, ttlReplyCaller1);
+        // To expire within REPLY_DIRECTORY_CLEANUP_TASK_INTERVAL_MS + 1000L ms (~6s) from now
+        ExpiryDate ttlReplyCaller2 = ExpiryDate.fromRelativeTtl(REPLY_DIRECTORY_CLEANUP_TASK_INTERVAL_MS + 1000L);
+        final ReplyCaller replyCaller2 = mock(ReplyCaller.class);
+        replyCallerDirectory.addReplyCaller(request2.getRequestReplyId(), replyCaller2, ttlReplyCaller2);
 
-        final ReplyCaller replyCaller = mock(ReplyCaller.class);
-        replyCallerDirectory.addReplyCaller(request1.getRequestReplyId(), replyCaller, ttlReplyCaller);
-
-        Thread.sleep(ttlReplyCaller.getRelativeTtl() + 100);
+        Thread.sleep(REPLY_DIRECTORY_CLEANUP_TASK_INTERVAL_MS + 100L);
         requestReplyManager.handleReply(new Reply(request1.getRequestReplyId(),
                                                   testResponder.getSentPayloadFor(request1)));
 
-        verify(replyCaller, never()).messageCallBack(any(Reply.class));
+        verify(replyCaller1, never()).messageCallBack(any(Reply.class));
+        verify(replyCaller1, times(1)).error(any(Throwable.class));
+        verify(replyCaller2, never()).messageCallBack(any(Reply.class));
+        verify(replyCaller2, never()).error(any(Throwable.class));
     }
 
     @Test
