@@ -35,6 +35,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
+import io.joynr.messaging.mqtt.MqttModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,11 +82,12 @@ public class JoynrIntegrationBean {
 
     private CallbackHandlerDiscovery callbackHandlerDiscovery;
 
-    private Set<Object> registeredProviders = new HashSet<>();
+    private final Set<Object> registeredProviders = new HashSet<>();
 
     private JoynrRuntime joynrRuntime;
 
     private boolean subscribeOnStartup;
+    private boolean sharedSubscriptionsEnabled;
 
     public JoynrIntegrationBean() {
     }
@@ -108,15 +110,19 @@ public class JoynrIntegrationBean {
         joynrRuntime = joynrRuntimeFactory.create(getServiceProviderInterfaceClasses(serviceProviderBeans));
         registerProviders(serviceProviderBeans, joynrRuntime);
         registerCallbackHandlers(joynrRuntime);
+        sharedSubscriptionsEnabled = (getJoynrInjector().getInstance(Key.get(Boolean.class,
+                                                                             Names.named(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS))));
         subscribeOnStartup = (getJoynrInjector().getInstance(Key.get(Boolean.class,
                                                                      Names.named(JeeIntegrationPropertyKeys.PROPERTY_KEY_JEE_SUBSCRIBE_ON_STARTUP))));
-        if (subscribeOnStartup) {
+        if (sharedSubscriptionsEnabled && subscribeOnStartup) {
             subscribeToSharedSubscriptionsTopicInternal();
         }
     }
 
     public void subscribeToSharedSubscriptionsTopic() {
-        if (!subscribeOnStartup) {
+        if (!sharedSubscriptionsEnabled) {
+            logger.error("Shared subscriptions are disabled. No subscription to the shared topic will be performed.");
+        } else if (!subscribeOnStartup) {
             subscribeToSharedSubscriptionsTopicInternal();
         } else {
             logger.error("Subscription to shared topic has already been performed on startup. Manually triggered subscription will not be performed.");
