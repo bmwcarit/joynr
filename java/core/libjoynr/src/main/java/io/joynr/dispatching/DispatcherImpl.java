@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -390,36 +390,6 @@ public class DispatcherImpl implements Dispatcher {
                         final String fromParticipantId,
                         final String toParticipantId) {
         publicationManager.addSubscriptionRequest(fromParticipantId, toParticipantId, subscriptionRequest);
-    }
-
-    @Override
-    public void error(ImmutableMessage message, Throwable error) {
-        if (message == null) {
-            logger.error("Error: ", error);
-            return;
-        }
-
-        Message.MessageType type = message.getType();
-        String payload;
-
-        try {
-            payload = new String(message.getUnencryptedBody(), StandardCharsets.UTF_8);
-        } catch (EncodingException e) {
-            logger.error("Error extracting payload for message with ID {}:", message.getId(), e);
-            return;
-        }
-
-        try {
-            if (type.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
-                Request request = objectMapper.readValue(payload, Request.class);
-                requestReplyManager.handleError(request, error);
-            }
-        } catch (IOException e) {
-            logger.error("Error extracting payload for message with ID {}, raw payload: {}. Error: ",
-                         message.getId(),
-                         payload,
-                         e);
-        }
     }
 
     private Object[] getPublicationValues(Class<?>[] parameterTypes, List<?> publicizedValues) {
