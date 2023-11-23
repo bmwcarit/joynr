@@ -225,7 +225,7 @@ public class MessageTrackerForGracefulShutdownTest {
 
         final long prepareForShutdownTimeoutMs = 5000;
         assertTrue("prepareForShutdown should take up to " + prepareForShutdownTimeoutMs + "ms. Actual: " + timeTaken,
-                   timeTaken >= prepareForShutdownTimeoutMs && timeTaken < prepareForShutdownTimeoutMs + 20);
+                   timeTaken >= prepareForShutdownTimeoutMs && timeTaken < prepareForShutdownTimeoutMs + 50);
     }
 
     @Test

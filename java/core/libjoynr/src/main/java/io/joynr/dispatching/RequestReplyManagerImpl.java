@@ -123,12 +123,21 @@ public class RequestReplyManagerImpl
                             final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
                             Request request,
                             MessagingQos messagingQos) {
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos, false);
+    }
+
+    @Override
+    public void sendRequest(String fromParticipantId,
+                            DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                            Request request,
+                            MessagingQos messagingQos,
+                            boolean isStatelessAsync) {
         MutableMessage message = messageFactory.createRequest(fromParticipantId,
                                                               toDiscoveryEntry.getParticipantId(),
                                                               request,
                                                               messagingQos);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
-        message.setStatelessAsync(request.getStatelessAsyncCallbackMethodId() != null);
+        message.setStatelessAsync(isStatelessAsync);
 
         if (logger.isTraceEnabled()) {
             logger.trace("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain: {}, interfaceName: {}, {}, params: {}",

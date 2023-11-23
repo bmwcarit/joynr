@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -258,7 +258,8 @@ public class RequestReplyManagerTest {
         requestReplyManager.sendRequest(testSenderParticipantId,
                                         testMessageResponderDiscoveryEntry,
                                         request4,
-                                        new MessagingQos(TIME_TO_LIVE));
+                                        new MessagingQos(TIME_TO_LIVE),
+                                        true);
 
         ArgumentCaptor<MutableMessage> messageCaptor = ArgumentCaptor.forClass(MutableMessage.class);
         verify(messageSenderMock).sendMessage(messageCaptor.capture());
