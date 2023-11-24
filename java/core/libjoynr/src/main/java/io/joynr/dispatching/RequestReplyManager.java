@@ -32,42 +32,65 @@ public interface RequestReplyManager {
 
     /**
      * Sends a request, the reply message is passed to the specified callBack in a different thread.
+     * In order to send stateless async request, use overload of this method which takes
+     * boolean isStatelessAsync as an argument.
      *
      * @param fromParticipantId
      *            ParticipantId of the sending endpoint.
      * @param toDiscoveryEntry
      *            DiscoveryEntry of the endpoint to send to
      * @param request
-     *            Request to be send
+     *            Request to be sent
      * @param qosSettings MessagingQos for the request
      */
 
-    public void sendRequest(final String fromParticipantId,
-                            final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                            Request request,
-                            MessagingQos qosSettings);
+    void sendRequest(final String fromParticipantId,
+                     final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                     Request request,
+                     MessagingQos qosSettings);
 
     /**
-     * Sends a request and blocks the current thread until the response is received or the roundTripTtl is reached. If
-     * an error occures or no response arrives in time an JoynCommunicationException is thrown.
+     * Sends a request, the reply message is passed to the specified callBack in a different thread.
      *
      * @param fromParticipantId
      *            ParticipantId of the sending endpoint.
      * @param toDiscoveryEntry
      *            DiscoveryEntry of the endpoint to send to
      * @param request
-     *            Request to be send
+     *            Request to be sent
+     * @param qosSettings
+     *            MessagingQos for the request
+     * @param isStatelessAsync
+     *            Whether a request is stateless async
+     */
+
+    void sendRequest(final String fromParticipantId,
+                     final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                     Request request,
+                     MessagingQos qosSettings,
+                     boolean isStatelessAsync);
+
+    /**
+     * Sends a request and blocks the current thread until the response is received or the roundTripTtl is reached. If
+     * an error occurs or no response arrives in time an JoynrCommunicationException is thrown.
+     *
+     * @param fromParticipantId
+     *            ParticipantId of the sending endpoint.
+     * @param toDiscoveryEntry
+     *            DiscoveryEntry of the endpoint to send to
+     * @param request
+     *            Request to be sent
      * @param synchronizedReplyCaller
      *            Synchronized reply caller
      * @param qosSettings MessagingQos for the request
      * @return response object
      */
 
-    public Reply sendSyncRequest(final String fromParticipantId,
-                                 final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                                 Request request,
-                                 SynchronizedReplyCaller synchronizedReplyCaller,
-                                 MessagingQos qosSettings);
+    Reply sendSyncRequest(final String fromParticipantId,
+                          final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                          Request request,
+                          SynchronizedReplyCaller synchronizedReplyCaller,
+                          MessagingQos qosSettings);
 
     /**
      * Send a one way message.
@@ -75,25 +98,25 @@ public interface RequestReplyManager {
      * @param fromParticipantId
      *            ParticipantId of the endpoint to send to
      * @param toDiscoveryEntries
-     *            DiscveryEntries of the endpoints to send to
+     *            DiscoveryEntries of the endpoints to send to
      * @param oneWayRequest
      *            The request data tto send to the endpoints
      * @param messagingQos MessagingQos for the request
      */
 
-    public void sendOneWayRequest(final String fromParticipantId,
-                                  final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
-                                  OneWayRequest oneWayRequest,
-                                  MessagingQos messagingQos);
+    void sendOneWayRequest(final String fromParticipantId,
+                           final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
+                           OneWayRequest oneWayRequest,
+                           MessagingQos messagingQos);
 
-    public void handleReply(Reply reply);
+    void handleReply(Reply reply);
 
-    public void handleRequest(ProviderCallback<Reply> replyCallback,
-                              String providerParticipant,
-                              Request request,
-                              long expiryDate);
+    void handleRequest(ProviderCallback<Reply> replyCallback,
+                       String providerParticipant,
+                       Request request,
+                       long expiryDate);
 
-    public void handleOneWayRequest(String providerParticipantId, OneWayRequest request, long expiryDate);
+    void handleOneWayRequest(String providerParticipantId, OneWayRequest request, long expiryDate);
 
-    public void shutdown();
+    void shutdown();
 }

@@ -90,7 +90,8 @@ public class JoynrMessagingConnectorInvocationHandlerStatelessAsyncTest
         verify(requestReplyManager).sendRequest(eq(STATELESS_ASYNC_PARTICIPANT_ID),
                                                 eq(toDiscoveryEntry),
                                                 requestCaptor.capture(),
-                                                any(MessagingQos.class));
+                                                any(MessagingQos.class),
+                                                eq(true));
 
         final Request request = requestCaptor.getValue();
         assertNotNull(request);
