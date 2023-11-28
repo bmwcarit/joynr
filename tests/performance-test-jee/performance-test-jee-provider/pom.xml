@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.performance</groupId>
 		<artifactId>performance-test-jee</artifactId>
-		<version>1.25.0-SNAPSHOT</version>
+		<version>1.24.1-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
