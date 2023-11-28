@@ -19,7 +19,7 @@
 #ifndef MY_HELPER_H
 #define MY_HELPER_H
 
-//#include "joynr/joynrlogging.h"
+// #include "joynr/joynrlogging.h"
 #include "joynr/Logger.h"
 
 /**

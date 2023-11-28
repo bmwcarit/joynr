@@ -1,4 +1,4 @@
-FROM fedora:36
+FROM fedora:37
 
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
