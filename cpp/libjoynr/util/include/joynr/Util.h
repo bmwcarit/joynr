@@ -157,8 +157,8 @@ template <template <typename...> class T, typename U>
 struct IsDerivedFromTemplate {
 private:
     template <typename... Args>
-    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{})
-            test(const T<Args...>&);
+    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{}) test(
+            const T<Args...>&);
     static std::false_type test(...);
 
 public:
