@@ -2,6 +2,67 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.1
+
+## API relevant changes
+* **[Java]** New overload of `RequestReplyManager.sendRequest` has been added.
+  It specifies whether the request is stateless async or not by new method argument
+  `isStatelessAsync` and not by a call to `Request.getStatelessAsyncCallbackMethodId`.
+  Old version of `sendRequest` is still available and it calls new overload with
+  `isStatelessAsync` set to false.
+* **[Java]** Removed unused methods:
+  * `RequestReplyManager.handleError`
+  * `RequestReplyManagerImpl.handleError`
+  * `MessageArrivedListener.error`
+  * `DispatcherImpl.error`
+* **[Jee]** Shared subsctioptions can be disabled in JEE by setting
+  MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS to false.
+  By default this key is set to true.
+* **[Java]** Removed superfluous classes:
+  * `DefaultBootstrap`
+  * `MessageReceiver`
+  * `MessageReceiverType`
+  * `AcceptsMessageReceiver`
+  * `NoBackendMessagingModule`
+  * `NoBackendMessagingReceiver`
+* **[Java]** Removed unused methods from `GlobalDiscoveryEntryStore`:
+  * `getAllDiscoveryEntries`
+  * `hasDiscoveryEntry`
+
+## Other Changes
+* **[C++/Java]** Align invocation order of callbacks and futures
+* **[Java]** Updated dependencies:
+```
+  * org.eclipse.tycho                             0.24.0              -> 1.6.0
+  * org.xerial:sqlite-jdbc                        3.41.0.0            -> 3.42.2.2
+  * io.netty                                      4.1.89.Final        -> 4.1.100.Final
+  * org.eclipse.jetty                             11.0.11             -> 11.0.18
+  * com.google.guava:guava                        31.1-jre            -> 32.0.1-jre
+  * com.google.errorprone:error_prone_annotations 2.3.4 / 2.11.0      -> 2.18.0
+  * com.google.j2objc:j2objc-annotations          1.3                 -> 2.8
+  * org.checkerframework:checker-qual             3.12.0              -> 3.33.0
+  * org.slf4j:slf4j-api                           1.7.36              -> 2.0.9
+```
+* **[Java]** `MqttMessagingSkeleton` will log `JoynrMessageExpiredException` as a warning,
+  not as an error.
+* **[Java]** `JoynrMessagingConnectorInvocationHandler` refactoring. Code smells fixes,
+  unnecessary conditions have been removed and unit tests have been aded.
+* **[Docker]** Updated fedora from version 36 to 37, it affects `joynr-base`
+  and `joynr-runtime-environment-base`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Updated com.google.guava:guava from `31.1-jre` to `32.0.1-jre` and its compile dependecies, fixing `CVE-2023-2976` and `CVE-2020-8908`. Updated versions are described in section Other Changes above.
+* **[Java]** Updated org.xerial:sqlite-jdbc from `3.41.0.0` to `3.42.2.2`, fixing `CVE-2023-32697`
+* **[Java]** Updated org.eclipse.jetty from `11.0.11` to `11.0.18`, fixing `CVE-2023-26049`, `CVE-2023-26048`, `CVE-2023-40167` and `CVE-2023-36478`
+* **[Java]** Updated io.netty from `4.1.89.Final` to `4.1.100.Final`, fixing `CVE-2023-4586` and
+  `CVE-2023-34462`
+
+## Bug Fixes
+* **[C++]** Fix memory leak during provider registration (Aggregation of MulticastBroadcastListener in addAsync caused memory leak).
+
 # joynr 1.24.0
 
 ## API relevant changes
