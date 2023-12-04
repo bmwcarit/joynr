@@ -51,7 +51,7 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
         extends AbstractJoynrMessagingConnectorInvocationHandlerTest {
 
     @Test
-    public void testUnsubscribingShouldSucceed() {
+    public void testUnsubscribingShouldSucceed() throws NoSuchMethodException {
         final String subscriptionId = UUID.randomUUID().toString();
         method = getSubscriptionMethod("unsubscribeFromTestAttribute", String.class);
         final UnsubscribeInvocation invocation = new UnsubscribeInvocation(method,
@@ -67,7 +67,7 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
     }
 
     @Test
-    public void testUnsubscribingShouldFailIfDiscoveryEntrySetIsEmpty() {
+    public void testUnsubscribingShouldFailIfDiscoveryEntrySetIsEmpty() throws NoSuchMethodException {
         final String subscriptionId = UUID.randomUUID().toString();
         method = getSubscriptionMethod("unsubscribeFromTestAttribute", String.class);
         final UnsubscribeInvocation invocation = new UnsubscribeInvocation(method,
@@ -88,7 +88,7 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
     }
 
     @Test
-    public void testSubscribingToAttributeShouldSucceed() {
+    public void testSubscribingToAttributeShouldSucceed() throws NoSuchMethodException {
         final AttributeSubscriptionAdapter<String> listener = new AttributeSubscriptionAdapter<>();
         final OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         method = getSubscriptionMethod("subscribeToTestAttribute",
@@ -107,7 +107,7 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
     }
 
     @Test
-    public void testSubscribingToAttributeShouldFailIfDiscoveryEntrySetIsEmpty() {
+    public void testSubscribingToAttributeShouldFailIfDiscoveryEntrySetIsEmpty() throws NoSuchMethodException {
         final AttributeSubscriptionAdapter<String> listener = new AttributeSubscriptionAdapter<>();
         final OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         method = getSubscriptionMethod("subscribeToTestAttribute",
@@ -132,7 +132,7 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
     }
 
     @Test
-    public void testSubscriptionToBroadcastShouldSucceed() {
+    public void testSubscriptionToBroadcastShouldSucceed() throws NoSuchMethodException {
         final TestBroadcastInterface.TestBroadcastAdapter listener = new TestBroadcastInterface.TestBroadcastAdapter();
         final OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         method = getBroadcastMethod("subscribeToTestBroadcast",
@@ -153,7 +153,7 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
     }
 
     @Test
-    public void testSubscriptionToBroadcastShouldFailIfDiscoveryEntrySetIsEmpty() {
+    public void testSubscriptionToBroadcastShouldFailIfDiscoveryEntrySetIsEmpty() throws NoSuchMethodException {
         final TestBroadcastInterface.TestBroadcastAdapter listener = new TestBroadcastInterface.TestBroadcastAdapter();
         final OnChangeSubscriptionQos subscriptionQos = new OnChangeSubscriptionQos();
         method = getBroadcastMethod("subscribeToTestBroadcast",
@@ -179,7 +179,7 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
     }
 
     @Test
-    public void testSubscriptionToMulticastShouldSucceed() {
+    public void testSubscriptionToMulticastShouldSucceed() throws NoSuchMethodException {
         final TestBroadcastInterface.TestBroadcastAdapter listener = new TestBroadcastInterface.TestBroadcastAdapter();
         final MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos();
         final String[] partitions = new String[]{ "partition1", "partition2", "partition3" };
@@ -201,7 +201,7 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
     }
 
     @Test
-    public void testSubscriptionToMulticastShouldFailIfDiscoveryEntrySetIsEmpty() {
+    public void testSubscriptionToMulticastShouldFailIfDiscoveryEntrySetIsEmpty() throws NoSuchMethodException {
         final TestBroadcastInterface.TestBroadcastAdapter listener = new TestBroadcastInterface.TestBroadcastAdapter();
         final MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos();
         final String[] partitions = new String[]{ "partition1", "partition2", "partition3" };
@@ -228,11 +228,13 @@ public class JoynrMessagingConnectorInvocationHandlerSubscriptionTest
         }
     }
 
-    private Method getSubscriptionMethod(final String methodName, final Class<?>... parameterTypes) {
+    private Method getSubscriptionMethod(final String methodName,
+                                         final Class<?>... parameterTypes) throws NoSuchMethodException {
         return getMethod(TestSubscriptionInterface.class, methodName, parameterTypes);
     }
 
-    private Method getBroadcastMethod(final String methodName, final Class<?>... parameterTypes) {
+    private Method getBroadcastMethod(final String methodName,
+                                      final Class<?>... parameterTypes) throws NoSuchMethodException {
         return getMethod(TestBroadcastInterface.class, methodName, parameterTypes);
     }
 }

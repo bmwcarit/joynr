@@ -102,15 +102,12 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
             result = testInterfaceProxy.getAttributeBooleanReadonly();
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (result != true) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");
@@ -136,15 +133,12 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
             result = testInterfaceProxy.getAttributeInt8readonlyNoSubscriptions();
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (result != -128) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");
@@ -246,15 +240,12 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
             result = testInterfaceProxy.getAttributeExtendedEnumerationReadonly();
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (result != ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");
@@ -299,16 +290,13 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
         try {
             testInterfaceProxy.getAttributeWithExceptionFromGetter();
             fail(name.getMethodName() + " - FAILED - unexpected return without exception");
-            return;
         } catch (ProviderRuntimeException e) {
             if (e.getMessage() == null
                     || !e.getMessage().endsWith("Exception from getAttributeWithExceptionFromGetter")) {
                 fail(name.getMethodName() + " - FAILED - caught invalid exception: " + e.getMessage());
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");
@@ -320,16 +308,13 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
         try {
             testInterfaceProxy.setAttributeWithExceptionFromSetter(false);
             fail(name.getMethodName() + " - FAILED - got no result");
-            return;
         } catch (ProviderRuntimeException e) {
             if (e.getMessage() == null
                     || !e.getMessage().endsWith("Exception from setAttributeWithExceptionFromSetter")) {
                 fail(name.getMethodName() + " - FAILED - caught invalid exception: " + e.getMessage());
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");

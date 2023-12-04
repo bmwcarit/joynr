@@ -97,7 +97,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     public void callSubscribeBroadcastWithSinglePrimitiveParameter() {
         Future<String> subscriptionIdFuture;
         String subscriptionId;
-        boolean result;
 
         logger.info(name.getMethodName() + "");
 
@@ -140,17 +139,14 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeBroadcastWithSinglePrimitiveParameterCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeBroadcastWithSinglePrimitiveParameterCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
+            } else if (!subscribeBroadcastWithSinglePrimitiveParameterCallbackResult) {
                 fail(name.getMethodName()
                         + " - FAILED - callback got called but received unexpected error or publication content");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // try to unsubscribe in any case
             try {
@@ -158,19 +154,12 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on subscribe: " + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -225,16 +214,13 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeBroadcastWithMultiplePrimitiveParametersCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
+            } else if (!subscribeBroadcastWithMultiplePrimitiveParametersCallbackResult) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // try to unsubscribe in any case
             try {
@@ -243,19 +229,12 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -267,7 +246,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     public void callSubscribeBroadcastWithSingleArrayParameter() {
         Future<String> subscriptionIdFuture;
         String subscriptionId;
-        boolean result;
 
         logger.info(name.getMethodName() + "");
 
@@ -312,17 +290,14 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeBroadcastWithSingleArrayParameterCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeBroadcastWithSingleArrayParameterCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
+            } else if (!subscribeBroadcastWithSingleArrayParameterCallbackResult) {
                 fail(name.getMethodName()
                         + " - FAILED - callback got called but received unexpected error or publication content");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // try to unsubscribe in any case
             try {
@@ -331,19 +306,12 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -355,7 +323,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     public void callSubscribeBroadcastWithMultipleArrayParameters() {
         Future<String> subscriptionIdFuture;
         String subscriptionId;
-        boolean result;
 
         logger.info(name.getMethodName() + "");
 
@@ -399,17 +366,14 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeBroadcastWithMultipleArrayParametersCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeBroadcastWithMultipleArrayParametersCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
+            } else if (!subscribeBroadcastWithMultipleArrayParametersCallbackResult) {
                 fail(name.getMethodName()
                         + " - FAILED - callback got called but received unexpected error or publication event");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // try to unsubscribe in any case
             try {
@@ -418,19 +382,12 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -622,17 +579,14 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeBroadcastWithSingleEnumerationParameterCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeBroadcastWithSingleEnumerationParameterCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
+            } else if (!subscribeBroadcastWithSingleEnumerationParameterCallbackResult) {
                 fail(name.getMethodName()
                         + " - FAILED - callback got called but received unexpected error or publication content");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // try to unsubscribe in any case
             try {
@@ -641,19 +595,12 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -665,7 +612,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     public void callSubscribeBroadcastWithMultipleEnumerationParameters() {
         Future<String> subscriptionIdFuture;
         String subscriptionId;
-        boolean result;
 
         logger.info(name.getMethodName() + "");
 
@@ -710,17 +656,14 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeBroadcastWithMultipleEnumerationParametersCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeBroadcastWithMultipleEnumerationParametersCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
+            } else if (!subscribeBroadcastWithMultipleEnumerationParametersCallbackResult) {
                 fail(name.getMethodName()
                         + " - FAILED - callback got called but received unexpected error or publication content");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // try to unsubscribe in any case
             try {
@@ -729,19 +672,12 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -753,7 +689,6 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
     public void callSubscribeBroadcastWithSingleStructParameter() {
         Future<String> subscriptionIdFuture;
         String subscriptionId;
-        boolean result;
 
         logger.info(name.getMethodName() + "");
 
@@ -796,17 +731,14 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeBroadcastWithSingleStructParameterCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeBroadcastWithSingleStructParameterCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
+            } else if (!subscribeBroadcastWithSingleStructParameterCallbackResult) {
                 fail(name.getMethodName()
                         + " - FAILED - callback got callback but received unexpected error or publication content");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // try to unsubscribe in any case
             try {
@@ -814,19 +746,12 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -884,17 +809,14 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeBroadcastWithMultipleStructParametersCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get callback in time");
-                result = false;
-            } else if (subscribeBroadcastWithMultipleStructParametersCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
+            } else if (!subscribeBroadcastWithMultipleStructParametersCallbackResult) {
                 fail(name.getMethodName()
                         + " - FAILED - callback got called but received unexpected error or publication content");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // try to unsubscribe in any case
             try {
@@ -903,19 +825,12 @@ public class IltConsumerBroadcastSubscriptionTest extends IltConsumerTest {
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 }

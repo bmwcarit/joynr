@@ -85,7 +85,6 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             testInterfaceProxy.methodWithoutParameters();
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -102,7 +101,6 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -115,7 +113,6 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             testInterfaceProxy.methodWithoutOutputParameter(arg);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -164,7 +161,6 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             // might be different.
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (!IltUtil.cmpDouble(result.doubleOut, arg2) || !result.stringOut.equals(Integer.toString(arg1))) {
                 logger.info(name.getMethodName() + " - int32Arg = " + arg1);
@@ -172,11 +168,9 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - result.doubleOut = " + result.doubleOut);
                 logger.info(name.getMethodName() + " - result.stringOut = " + result.stringOut);
                 fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -206,27 +200,21 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
 
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (!IltUtil.checkUInt64Array(result.uInt64ArrayOut)) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - stringArrayArg");
-                return;
             }
             if (result.structWithStringArrayArrayOut.length != 2) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - structWithStringArrayArrayOut");
-                return;
             }
             if (!IltUtil.checkStructWithStringArray(result.structWithStringArrayArrayOut[0])) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - structWithStringArrayArrayOut[0]");
-                return;
             }
             if (!IltUtil.checkStructWithStringArray(result.structWithStringArrayArrayOut[1])) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - structWithStringArrayArrayOut[1]");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -362,17 +350,14 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             result = testInterfaceProxy.methodWithMultipleEnumParameters(enumerationArg, extendedEnumerationArg);
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (result.enumerationOut != Enumeration.ENUM_0_VALUE_1
                     || result.extendedEnumerationOut != ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES) {
                 logger.info(name.getMethodName() + " - FAILED");
                 fail(name.getMethodName() + " - FAILED - got invalid result - enumerationOut");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -402,21 +387,17 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
                                                                            baseStructOut);
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (!IltUtil.checkBaseStructWithoutElements(result.baseStructWithoutElementsOut)) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - baseStructWithoutElementsOut");
-                return;
             }
 
             ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
             if (!result.extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - extendedExtendedBaseStructOut");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -429,15 +410,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             result = testInterfaceProxy.overloadedMethod();
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (!result.equals("TestString 1")) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -466,22 +444,18 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
 
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             String[] stringArray = { "Hello", "World" };
             if (result.doubleOut != 0d || (!Arrays.equals(stringArray, result.stringArrayOut))) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - doubleOut");
-                return;
             }
 
             ExtendedBaseStruct extendedBaseStruct = IltUtil.createExtendedBaseStruct();
             if (!result.extendedBaseStructOut.equals(extendedBaseStruct)) {
                 fail(name.getMethodName() + " - FAILED - got invalid result - extendedBaseStructOut");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -494,15 +468,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             result = testInterfaceProxy.overloadedMethodWithSelector();
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (!result.equals("Return value from overloadedMethodWithSelector 1")) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -530,7 +501,6 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             result = testInterfaceProxy.overloadedMethodWithSelector(enumArrayArg, int64arg, baseStructArg, booleanArg);
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             String[] stringArray = { "Hello", "World" };
 
@@ -538,11 +508,9 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             if (!IltUtil.cmpDouble(result.doubleOut, 1.1d) || (!result.extendedBaseStructOut.equals(extendedBaseStruct))
                     || (!Arrays.equals(stringArray, result.stringArrayOut))) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -557,15 +525,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             result = testInterfaceProxy.methodWithStringsAndSpecifiedStringOutLength(stringArg, int32StringLengthArg);
             if (result == null) {
                 fail(name.getMethodName() + " - FAILED - got no result");
-                return;
             }
             if (result.length() != int32StringLengthArg) {
                 fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -581,15 +546,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ProviderRuntimeException";
             testInterfaceProxy.methodWithoutErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - unexpected return");
-            return;
         } catch (ProviderRuntimeException e) {
             if (e.getMessage() == null || !e.getMessage().endsWith("Exception from methodWithoutErrorEnum")) {
                 fail(name.getMethodName() + " - FAILED - invalid exception message");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -601,15 +563,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ProviderRuntimeException";
             testInterfaceProxy.methodWithAnonymousErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - got no result");
-            return;
         } catch (ProviderRuntimeException e) {
             if (e.getMessage() == null || !e.getMessage().endsWith("Exception from methodWithAnonymousErrorEnum")) {
                 fail(name.getMethodName() + " - FAILED - got invalid ProviderRuntimeException");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         // 2nd test
@@ -617,15 +576,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ApplicationException";
             testInterfaceProxy.methodWithAnonymousErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - unexpected return of method");
-            return;
         } catch (ApplicationException e) {
             if (e.getError() != MethodWithAnonymousErrorEnumErrorEnum.ERROR_3_1_NTC) {
                 fail(name.getMethodName() + " - FAILED - got invalid exception error enum value");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -639,15 +595,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ProviderRuntimeException";
             testInterfaceProxy.methodWithExistingErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - 1st - unexpected return without exception");
-            return;
         } catch (ProviderRuntimeException e) {
             if (e.getMessage() == null || !e.getMessage().endsWith("Exception from methodWithExistingErrorEnum")) {
                 fail(name.getMethodName() + " - FAILED - 1st - got invalid exception content");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - 1st - caught unexpected exception type: " + e.getMessage());
-            return;
         }
 
         // 2nd test
@@ -655,15 +608,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ApplicationException_1";
             testInterfaceProxy.methodWithExistingErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - 2nd - unexpected return without exception");
-            return;
         } catch (ApplicationException e) {
             if (e.getError() != ExtendedErrorEnumTc.ERROR_2_3_TC2) {
                 fail(name.getMethodName() + " - FAILED - 2nd - unexpected exception error enum value");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         // 3rd test
@@ -671,15 +621,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ApplicationException_2";
             testInterfaceProxy.methodWithExistingErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - 3rd - unexpected return without exception");
-            return;
         } catch (ApplicationException e) {
             if (e.getError() != ExtendedErrorEnumTc.ERROR_1_2_TC_2) {
                 fail(name.getMethodName() + " - FAILED - 3rd - unexpected exception error enum value");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -693,15 +640,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ProviderRuntimeException";
             testInterfaceProxy.methodWithExtendedErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - 1st - unexpected return without exception");
-            return;
         } catch (ProviderRuntimeException e) {
             if (e.getMessage() == null || !e.getMessage().endsWith("Exception from methodWithExtendedErrorEnum")) {
                 fail(name.getMethodName() + " - FAILED - 1st - invalid exception message");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         // 2nd test
@@ -709,15 +653,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ApplicationException_1";
             testInterfaceProxy.methodWithExtendedErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - 2nd - unexpected return without exception");
-            return;
         } catch (ApplicationException e) {
             if (e.getError() != MethodWithExtendedErrorEnumErrorEnum.ERROR_3_3_NTC) {
                 fail(name.getMethodName() + " - FAILED - 2nd - unexpected exception error enum value");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         // 3rd test
@@ -725,15 +666,12 @@ public class IltConsumerSyncMethodTest extends IltConsumerTest {
             String wantedExceptionArg = "ApplicationException_2";
             testInterfaceProxy.methodWithExtendedErrorEnum(wantedExceptionArg);
             fail(name.getMethodName() + " - FAILED - 3rd - unexpected return without exception");
-            return;
         } catch (ApplicationException e) {
             if (e.getError() != MethodWithExtendedErrorEnumErrorEnum.ERROR_2_1_TC2) {
                 fail(name.getMethodName() + " - FAILED - 3rd - unexpected exception error enum value");
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }

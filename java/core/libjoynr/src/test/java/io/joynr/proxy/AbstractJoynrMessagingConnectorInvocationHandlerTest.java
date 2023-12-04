@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.Assert.fail;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public abstract class AbstractJoynrMessagingConnectorInvocationHandlerTest {
@@ -88,12 +87,9 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerTest {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Method getMethod(final Class interfaceClass, final String methodName, final Class<?>... parameterTypes) {
-        try {
-            return interfaceClass.getDeclaredMethod(methodName, parameterTypes);
-        } catch (final NoSuchMethodException e) {
-            fail("Unexpected exception: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
+    protected Method getMethod(final Class interfaceClass,
+                               final String methodName,
+                               final Class<?>... parameterTypes) throws NoSuchMethodException {
+        return interfaceClass.getDeclaredMethod(methodName, parameterTypes);
     }
 }

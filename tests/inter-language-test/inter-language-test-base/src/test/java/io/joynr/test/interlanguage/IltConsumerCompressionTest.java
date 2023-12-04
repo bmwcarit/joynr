@@ -59,7 +59,6 @@ public class IltConsumerCompressionTest extends IltConsumerTest {
             testInterfaceProxy.methodWithoutParameters();
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -78,7 +77,6 @@ public class IltConsumerCompressionTest extends IltConsumerTest {
             assertTrue(result.stringOut.equals(Integer.toString(intArg)));
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }

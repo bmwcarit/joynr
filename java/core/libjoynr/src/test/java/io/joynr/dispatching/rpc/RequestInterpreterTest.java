@@ -20,7 +20,6 @@ package io.joynr.dispatching.rpc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.spy;
@@ -120,7 +119,7 @@ public class RequestInterpreterTest {
     }
 
     @Test
-    public void testRemoveAllMethodInformation() {
+    public void testRemoveAllMethodInformation() throws NoSuchFieldException, IllegalAccessException {
         final var map = getSubjectMap();
         assertTrue(map.isEmpty());
         subject.invokeMethod(requestCaller, request);
@@ -131,14 +130,9 @@ public class RequestInterpreterTest {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<MethodSignature, Method> getSubjectMap() {
-        try {
-            final var field = RequestInterpreter.class.getDeclaredField("methodSignatureToMethodMap");
-            field.setAccessible(true);
-            return (Map<MethodSignature, Method>) field.get(subject);
-        } catch (final NoSuchFieldException | IllegalAccessException e) {
-            fail("Unexpected exception caught: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
+    private Map<MethodSignature, Method> getSubjectMap() throws NoSuchFieldException, IllegalAccessException {
+        final var field = RequestInterpreter.class.getDeclaredField("methodSignatureToMethodMap");
+        field.setAccessible(true);
+        return (Map<MethodSignature, Method>) field.get(subject);
     }
 }

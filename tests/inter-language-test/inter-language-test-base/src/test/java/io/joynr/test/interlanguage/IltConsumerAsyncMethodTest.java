@@ -203,20 +203,17 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 MethodWithMultipleStructParametersReturned result = future.get(timeoutInMilliseconds);
                 if (result == null) {
                     fail(name.getMethodName() + " - FAILED - got no result");
-                    return;
                 }
                 logger.info(name.getMethodName() + " - returned from future.get");
 
                 // check results from future
                 if (!IltUtil.checkBaseStructWithoutElements(result.baseStructWithoutElementsOut)) {
                     fail(name.getMethodName() + " - FAILED - got invalid result - baseStructWithoutElementsOut");
-                    return;
                 }
 
                 ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
                 if (!result.extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
                     fail(name.getMethodName() + " - FAILED - got invalid result - extendedExtendedBaseStructOut");
-                    return;
                 }
                 logger.info(name.getMethodName() + " - future result checks OK");
 
@@ -231,20 +228,16 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 }
                 if (methodWithMultipleStructParametersAsyncCallbackDone == false) {
                     fail(name.getMethodName() + " - FAILED - callback NOT done");
-                    return;
                 }
                 if (methodWithMultipleStructParametersAsyncCallbackResult == false) {
                     fail(name.getMethodName() + " - FAILED - callback reported error");
-                    return;
                 }
                 logger.info(name.getMethodName() + " - callback has set OK flags");
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -489,7 +482,6 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - 1st - about to call future.get");
                 future.get(timeoutInMilliseconds);
                 fail(name.getMethodName() + " - FAILED - unexpected return from future");
-                return;
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException error) {
                 if (error instanceof ProviderRuntimeException) {
                     if (((ProviderRuntimeException) error).getMessage()
@@ -500,16 +492,13 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     } else {
                         // incorrect message
                         fail(name.getMethodName() + " - FAILED - caught invalid exception: " + error.getMessage());
-                        return;
                     }
                 } else if (error instanceof JoynrRuntimeException) {
                     // incorrect exception, can output message
                     fail(name.getMethodName() + " - FAILED - caught invalid exception: " + error.getMessage());
-                    return;
                 } else {
                     // incorrect exception, can not output message
                     fail(name.getMethodName() + " - FAILED - caught unexpected exception");
-                    return;
                 }
 
                 // check results from callback; expect to be finished within 1 second
@@ -523,17 +512,14 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 }
                 if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
                     fail(name.getMethodName() + " - FAILED - callback NOT done");
-                    return;
                 }
                 if (!methodWithExtendedErrorEnumAsyncCallbackResult) {
                     fail(name.getMethodName() + " - FAILED - callback reported failure");
-                    return;
                 }
                 logger.info(name.getMethodName() + " - 1st - callback caught expected exception");
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - ProviderRuntimeException check done");
@@ -584,7 +570,6 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - 2nd - about to call future.get");
                 future.get(timeoutInMilliseconds);
                 fail(name.getMethodName() + " - FAILED - unexpected return from future");
-                return;
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException error) {
                 if (error instanceof ApplicationException) {
                     if (((ApplicationException) error).getError() == MethodWithExtendedErrorEnumErrorEnum.ERROR_3_3_NTC) {
@@ -593,17 +578,14 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     } else {
                         fail(name.getMethodName() + " - FAILED - 2nd - caught invalid ApplicationException with enum: "
                                 + ((ApplicationException) error).getError());
-                        return;
                     }
                 } else if (error instanceof JoynrRuntimeException) {
                     // incorrect exception, can output message
                     fail(name.getMethodName() + " - FAILED - 2nd - caught invalid JoynrRuntimeException: "
                             + error.getMessage());
-                    return;
                 } else {
                     // incorrect exception, can not output message
                     fail(name.getMethodName() + " - FAILED - caught invalid other exception");
-                    return;
                 }
 
                 // check results from callback; expect to be finished within 1 second
@@ -617,21 +599,17 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 }
                 if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
                     fail(name.getMethodName() + " - FAILED - 2nd - callback NOT done");
-                    return;
                 }
                 if (!methodWithExtendedErrorEnumAsyncCallbackResult) {
                     fail(name.getMethodName() + " - FAILED - 2nd - callback reported success");
-                    return;
                 }
                 logger.info(name.getMethodName() + " - 2nd - callback has got expected exception");
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - ApplicationException check done");
         logger.info(name.getMethodName() + " - OK");
-        return;
 
         // 3rd test omitted
     }

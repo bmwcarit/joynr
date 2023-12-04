@@ -43,7 +43,7 @@ public class JoynrMessagingConnectorInvocationHandlerOneWayMethodTest
         extends AbstractJoynrMessagingConnectorInvocationHandlerTest {
 
     @Test
-    public void testExecuteOneWayMethodShouldSucceed() {
+    public void testExecuteOneWayMethodShouldSucceed() throws NoSuchMethodException {
         method = getFireAndForgetMethod("methodWithoutParameters");
         parameters = new Object[]{};
         handler.executeOneWayMethod(method, parameters);
@@ -61,7 +61,7 @@ public class JoynrMessagingConnectorInvocationHandlerOneWayMethodTest
     }
 
     @Test
-    public void testExecuteOneWayMethodShouldFailIfDiscoveryEntrySetIsEmpty() {
+    public void testExecuteOneWayMethodShouldFailIfDiscoveryEntrySetIsEmpty() throws NoSuchMethodException {
         method = getFireAndForgetMethod("methodWithoutParameters");
         parameters = new Object[]{};
         toDiscoveryEntries.clear();
@@ -78,7 +78,8 @@ public class JoynrMessagingConnectorInvocationHandlerOneWayMethodTest
         }
     }
 
-    private Method getFireAndForgetMethod(final String methodName, final Class<?>... parameterTypes) {
+    private Method getFireAndForgetMethod(final String methodName,
+                                          final Class<?>... parameterTypes) throws NoSuchMethodException {
         return getMethod(TestFireAndForgetInterface.class, methodName, parameterTypes);
     }
 }

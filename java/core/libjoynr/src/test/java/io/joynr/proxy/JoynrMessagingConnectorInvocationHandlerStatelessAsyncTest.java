@@ -45,7 +45,7 @@ public class JoynrMessagingConnectorInvocationHandlerStatelessAsyncTest
         extends AbstractJoynrMessagingConnectorInvocationHandlerTest {
 
     @Test
-    public void testExecuteStatelessAsyncMethodShouldFailIfMethodHasNoCallbackParam() {
+    public void testExecuteStatelessAsyncMethodShouldFailIfMethodHasNoCallbackParam() throws NoSuchMethodException {
         method = getStatelessAsyncMethod("testMethodWithoutCallbackParam", String.class);
         parameters = new Object[]{ "test" };
 
@@ -63,7 +63,7 @@ public class JoynrMessagingConnectorInvocationHandlerStatelessAsyncTest
     }
 
     @Test
-    public void testExecuteStatelessAsyncMethodShouldFailIfDiscoveryEntrySetHasMoreThanOneItem() {
+    public void testExecuteStatelessAsyncMethodShouldFailIfDiscoveryEntrySetHasMoreThanOneItem() throws NoSuchMethodException {
         method = getStatelessAsyncMethod("testMethodWithoutCallbackParam", String.class);
         parameters = new Object[]{ "test" };
         addNewDiscoveryEntry();
@@ -80,7 +80,7 @@ public class JoynrMessagingConnectorInvocationHandlerStatelessAsyncTest
     }
 
     @Test
-    public void testExecuteStatelessAsyncMethodShouldSucceed() {
+    public void testExecuteStatelessAsyncMethodShouldSucceed() throws NoSuchMethodException {
         method = getStatelessAsyncMethod("testMethod", MessageIdCallback.class);
         parameters = new Object[]{ mock(MessageIdCallback.class) };
         handler.executeStatelessAsyncMethod(method, parameters);
@@ -98,7 +98,8 @@ public class JoynrMessagingConnectorInvocationHandlerStatelessAsyncTest
         assertEquals(method.getName(), request.getMethodName());
     }
 
-    private Method getStatelessAsyncMethod(final String methodName, final Class<?>... parameterTypes) {
+    private Method getStatelessAsyncMethod(final String methodName,
+                                           final Class<?>... parameterTypes) throws NoSuchMethodException {
         return getMethod(TestStatelessAsyncInterface.class, methodName, parameterTypes);
     }
 }
