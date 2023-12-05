@@ -19,8 +19,8 @@
 package io.joynr.messaging;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,18 +87,12 @@ public class MessagingQosCustomHeadersTest {
         MessagingQos messagingQos = new MessagingQos();
         try {
             messagingQos.putCustomMessageHeader(key, value);
-            if (!conforms) {
-                fail("key: " + key + " value: " + value + " should have caused an exception");
-            }
+            assertTrue("key: " + key + " value: " + value + " should have caused an exception", conforms);
             Map<String, String> customMessageHeaders = messagingQos.getCustomMessageHeaders();
             assertTrue(customMessageHeaders.containsKey(key));
             assertEquals(value, customMessageHeaders.get(key));
         } catch (Exception e) {
-            if (conforms) {
-                fail("key: " + key + " value: " + value + " should not have caused an exception");
-            } else {
-                return;
-            }
+            assertFalse("key: " + key + " value: " + value + " should not have caused an exception", conforms);
         }
     }
 
@@ -109,18 +103,12 @@ public class MessagingQosCustomHeadersTest {
         customHeaders.put(key, value);
         try {
             messagingQos.putAllCustomMessageHeaders(customHeaders);
-            if (!conforms) {
-                fail("key: " + key + " value: " + value + " should have caused an exception");
-            }
+            assertTrue("key: " + key + " value: " + value + " should have caused an exception", conforms);
             Map<String, String> customMessageHeaders = messagingQos.getCustomMessageHeaders();
             assertTrue(customMessageHeaders.containsKey(key));
             assertEquals(value, customMessageHeaders.get(key));
         } catch (Exception e) {
-            if (conforms) {
-                fail("key: " + key + " value: " + value + " should not have caused an exception");
-            } else {
-                return;
-            }
+            assertFalse("key: " + key + " value: " + value + " should not have caused an exception", conforms);
         }
     }
 }

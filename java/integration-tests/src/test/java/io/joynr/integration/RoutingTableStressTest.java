@@ -257,10 +257,8 @@ public class RoutingTableStressTest extends AbstractRoutingTableCleanupTest {
                 Thread.sleep(100);
             }
         }
-        if (!garbageCollected) {
-            fail("Stress test failed! Garbage collector was not called! Number of routing entries in table: "
-                    + routingTableHashMap.size());
-        }
+        assertTrue("Stress test failed! Garbage collector was not called! Number of routing entries in table: "
+                + routingTableHashMap.size(), garbageCollected);
     }
 
     private void checkRoutingTables(ConcurrentMap<String, RoutingEntry> desiredRoutingTable,

@@ -18,7 +18,9 @@
  */
 package io.joynr.test.interlanguage.jee;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -79,17 +81,12 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callGetAttributeBooleanReadOnly() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
-            Boolean result;
             // value is hardcoded on provider side since it is readonly
-            result = testInterfaceProxy.getAttributeBooleanReadonly();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-            }
-            if (result != true) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-            }
+            Boolean result = testInterfaceProxy.getAttributeBooleanReadonly();
+            assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            assertTrue(name.getMethodName() + " - FAILED - got invalid result", result);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
@@ -110,17 +107,12 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callSetAndGetAttributeInt8readonlyNoSubscriptions() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
-            Byte result;
             // value is hardcoded on provider side since it is readonly
-            result = testInterfaceProxy.getAttributeInt8readonlyNoSubscriptions();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-            }
-            if (result != -128) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-            }
+            Byte result = testInterfaceProxy.getAttributeInt8readonlyNoSubscriptions();
+            assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            assertEquals(name.getMethodName() + " - FAILED - got invalid result", -128, (byte) result);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
@@ -216,18 +208,14 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callGetAttributeExtendedEnumerationReadonly() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
-            ExtendedEnumerationWithPartlyDefinedValues result;
-
             // value is hardcoded on provider side since it is readonly
-            result = testInterfaceProxy.getAttributeExtendedEnumerationReadonly();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-            }
-            if (result != ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-            }
+            ExtendedEnumerationWithPartlyDefinedValues result = testInterfaceProxy.getAttributeExtendedEnumerationReadonly();
+            assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            assertSame(name.getMethodName() + " - FAILED - got invalid result",
+                       result,
+                       ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
         }
@@ -270,7 +258,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callGetAttributeWithExceptionFromGetter() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
             testInterfaceProxy.getAttributeWithExceptionFromGetter();
             fail(name.getMethodName() + " - FAILED - unexpected return without exception");
@@ -288,7 +276,7 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callSetAttributeWithExceptionFromSetter() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
             testInterfaceProxy.setAttributeWithExceptionFromSetter(false);
             fail(name.getMethodName() + " - FAILED - got no result");
