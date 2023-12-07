@@ -19,6 +19,8 @@
 package io.joynr.messaging;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -39,12 +41,17 @@ import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.DelayQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import io.joynr.messaging.routing.LibJoynrMessageWorkable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,6 +84,8 @@ import joynr.system.RoutingTypes.MqttAddress;
 import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LibJoynrMessageRouterTest {
@@ -368,4 +377,97 @@ public class LibJoynrMessageRouterTest {
         verify(shutdownNotifier).registerForShutdown(messageRouter);
     }
 
+    @Test
+    public void testShutdownCancelWorkerFuturesWhenTimeoutOccurs() throws NoSuchFieldException, IllegalAccessException {
+        replaceWorker(new TestMessageWorker(2000L));
+
+        messageRouter.shutdown();
+
+        final List<Future<?>> futures = getWorkerFutures();
+        assertNotNull(futures);
+        assertEquals(1, futures.size());
+        futures.forEach(future -> assertTrue(future.isCancelled()));
+    }
+
+    @Test
+    public void testShutdownDoesNotCancelWorkerFuturesWhenNoTimeoutOccurs() throws NoSuchFieldException,
+                                                                            IllegalAccessException {
+        replaceWorker(new TestMessageWorker(100L));
+
+        messageRouter.shutdown();
+
+        final List<Future<?>> futures = getWorkerFutures();
+        assertNotNull(futures);
+        assertEquals(1, futures.size());
+        futures.forEach(future -> assertFalse(future.isCancelled()));
+    }
+
+    private void replaceWorker(final LibJoynrMessageWorkable workable) throws NoSuchFieldException,
+                                                                       IllegalAccessException {
+        final List<Runnable> workers = getWorkers();
+        final List<Future<?>> futures = getWorkerFutures();
+        final ScheduledExecutorService executor = getExecutor();
+
+        futures.forEach(future -> future.cancel(true));
+        workers.clear();
+        futures.clear();
+        workers.add(workable);
+        futures.add(executor.schedule(workable, 0, TimeUnit.MILLISECONDS));
+    }
+
+    private ScheduledExecutorService getExecutor() throws NoSuchFieldException, IllegalAccessException {
+        final Field field = LibJoynrMessageRouter.class.getDeclaredField("scheduler");
+        field.setAccessible(true);
+        return (ScheduledExecutorService) field.get(messageRouter);
+    }
+
+    private List<Runnable> getWorkers() throws NoSuchFieldException, IllegalAccessException {
+        final Field field = LibJoynrMessageRouter.class.getDeclaredField("messageWorkers");
+        field.setAccessible(true);
+        return (List<Runnable>) field.get(messageRouter);
+    }
+
+    private List<Future<?>> getWorkerFutures() throws NoSuchFieldException, IllegalAccessException {
+        final Field field = LibJoynrMessageRouter.class.getDeclaredField("messageWorkerFutures");
+        field.setAccessible(true);
+        return (List<Future<?>>) field.get(messageRouter);
+    }
+
+    class TestMessageWorker implements LibJoynrMessageWorkable {
+        private Logger logger = LoggerFactory.getLogger(TestMessageWorker.class);
+        private CountDownLatch countDownLatch;
+        private volatile boolean stopped;
+        private long sleepAfterStop;
+        private ScheduledExecutorService executor;
+
+        public TestMessageWorker(final long sleepAfterStop) {
+            this.stopped = false;
+            this.sleepAfterStop = sleepAfterStop;
+            this.executor = Executors.newSingleThreadScheduledExecutor();
+        }
+
+        @Override
+        public void stopWorker(final CountDownLatch countDownLatch) {
+            this.countDownLatch = countDownLatch;
+            this.stopped = true;
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (!stopped) {
+                    sleep(100L);
+                }
+                sleep(sleepAfterStop);
+            } catch (final InterruptedException | ExecutionException e) {
+                logger.error("Unexpected exception occurred: " + e.getMessage());
+            } finally {
+                countDownLatch.countDown();
+            }
+        }
+
+        private void sleep(final long millis) throws InterruptedException, ExecutionException {
+            executor.schedule(() -> millis, millis, TimeUnit.MILLISECONDS).get();
+        }
+    }
 }

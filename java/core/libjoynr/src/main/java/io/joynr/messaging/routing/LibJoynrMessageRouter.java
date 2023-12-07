@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,7 +77,8 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
     private final MessageQueue messageQueue;
 
-    private List<MessageWorker> messageWorkers;
+    private List<LibJoynrMessageWorkable> messageWorkers;
+    private List<Future<?>> messageWorkerFutures;
 
     private static interface QueuedParentRoutingUpdate {
         void execute();
@@ -124,13 +126,20 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         return true;
     }
 
-    private void startMessageWorkerThreads(int numberOfWorkThreads) {
-        messageWorkers = new ArrayList<MessageWorker>(numberOfWorkThreads);
+    private void startMessageWorkerThreads(final int numberOfWorkThreads) {
+        messageWorkers = new ArrayList<>(numberOfWorkThreads);
+        messageWorkerFutures = new ArrayList<>(numberOfWorkThreads);
         for (int i = 0; i < numberOfWorkThreads; i++) {
-            MessageWorker messageWorker = new MessageWorker(i);
-            scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
+            final MessageWorker messageWorker = new MessageWorker(i);
+            final Future<?> future = scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
+            messageWorkerFutures.add(future);
             messageWorkers.add(messageWorker);
         }
+    }
+
+    private void cancelMessageWorkerFutures() {
+        logger.error("Cancelling all message worker futures");
+        messageWorkerFutures.forEach(future -> future.cancel(true));
     }
 
     @Override
@@ -389,38 +398,40 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     @Override
     public void shutdown() {
         // tell all message workers to stop
-        CountDownLatch countDownLatch = new CountDownLatch(messageWorkers.size());
-        for (MessageWorker worker : messageWorkers) {
+        final CountDownLatch countDownLatch = new CountDownLatch(messageWorkers.size());
+        for (final LibJoynrMessageWorkable worker : messageWorkers) {
             worker.stopWorker(countDownLatch);
         }
         try {
             if (!countDownLatch.await(1500, TimeUnit.MILLISECONDS)) {
                 logger.error("FAILURE: waiting for message workers to stop timed out");
+                cancelMessageWorkerFutures();
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             logger.error("Interrupted while waiting for message workers to stop.", e);
             Thread.currentThread().interrupt();
         }
     }
 
-    class MessageWorker implements Runnable {
+    class MessageWorker implements LibJoynrMessageWorkable {
         private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
         private CountDownLatch countDownLatch;
         private volatile boolean stopped;
 
-        public MessageWorker(int number) {
+        public MessageWorker(final int number) {
             this.number = number;
             countDownLatch = null;
             stopped = false;
         }
 
-        void stopWorker(CountDownLatch countDownLatch) {
+        @Override
+        public void stopWorker(final CountDownLatch countDownLatch) {
             this.countDownLatch = countDownLatch;
             stopped = true;
         }
 
-        void handleOutgoingMessage(DelayableImmutableMessage delayableMessage) {
+        void handleOutgoingMessage(final DelayableImmutableMessage delayableMessage) {
             FailureAction failureAction = null;
             try {
                 ImmutableMessage message = delayableMessage.getMessage();
@@ -443,7 +454,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
             }
         }
 
-        void handleIncomingMessage(DelayableImmutableMessage delayableMessage) {
+        void handleIncomingMessage(final DelayableImmutableMessage delayableMessage) {
             try {
                 ImmutableMessage message = delayableMessage.getMessage();
                 logger.trace("Starting processing of incoming message {}", message);
@@ -477,7 +488,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                             handleOutgoingMessage(delayableMessage);
                         }
                     }
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     logger.trace("MessageWorker interrupted. Stopping.");
                     Thread.currentThread().interrupt();
                     return;
