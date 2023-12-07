@@ -109,7 +109,6 @@ public class GarbageCollectionHandlerTest {
             proxyParticipantIdToProxyInformationMap = (ConcurrentHashMap<String, Object>) proxyParticipantIdToProxyInformationMapField.get(subject);
         } catch (Exception exception) {
             fail(exception.getMessage());
-            return;
         }
 
         assertNotNull(proxyParticipantIdToProxyInformationMap);

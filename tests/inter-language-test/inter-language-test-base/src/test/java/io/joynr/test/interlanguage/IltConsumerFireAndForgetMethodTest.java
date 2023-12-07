@@ -75,8 +75,8 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
         public Void answer(InvocationOnMock invocation) throws Throwable {
             JoynrRuntimeException error = (JoynrRuntimeException) invocation.getArguments()[0];
             publicationReceivedSemaphore.release();
-            fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + error.getMessage());
-            return null;
+            throw new AssertionError(name.getMethodName() + " - FAILED - caught unexpected exception: "
+                    + error.getMessage());
         }
     };
 
@@ -177,7 +177,6 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
             assertEquals(expected, attributeFireAndForgetValue);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
@@ -193,7 +192,6 @@ public class IltConsumerFireAndForgetMethodTest extends IltConsumerTest {
             assertEquals(expected, attributeFireAndForgetValue);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }

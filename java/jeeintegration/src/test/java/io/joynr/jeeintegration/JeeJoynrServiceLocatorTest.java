@@ -40,7 +40,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -317,48 +316,30 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testBuilder_withCallback_fails_withSyncInterfaceAndUseCase() throws Exception {
-        Semaphore semaphore = new Semaphore(0);
+    public void testBuilder_withCallback_fails_withSyncInterfaceAndUseCase() {
         setupSyncInterface();
 
         ProxyCreatedCallback<MyServiceSync> callback = new ProxyCreatedCallback<MyServiceSync>() {
             @Override
             public void onProxyCreationFinished(MyServiceSync result) {
                 fail("proxy creation succeeded");
-                semaphore.release();
             }
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("callback: onProxyCreationError called: " + error);
-                semaphore.release();
             }
         };
 
         subject.builder(MyServiceSync.class, "local").withCallback(callback).withUseCase("useCase").build();
         fail("Should not be able to build a service proxy with a use case and a non @StatelessAsync service interface");
-
-        assertTrue(semaphore.tryAcquire(1, TimeUnit.SECONDS));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testBuilder_withFuture_fails_withSyncInterfaceAndUseCase() throws Exception {
+    public void testBuilder_withFuture_fails_withSyncInterfaceAndUseCase() {
         setupSyncInterface();
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local")
-                                                         .useFuture()
-                                                         .withUseCase("useCase")
-                                                         .build();
+        subject.builder(MyServiceSync.class, "local").useFuture().withUseCase("useCase").build();
         fail("Should not be able to build a service proxy with a use case and a non @StatelessAsync service interface");
-        future.whenCompleteAsync((proxy, error) -> {
-            if (proxy != null && error == null) {
-                fail("future: proxy creation succeeded");
-            } else if (error != null) {
-                fail("future: error: " + error);
-            }
-            countDownLatch.countDown();
-        });
-        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -370,48 +351,30 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testBuilder_withCallback_fails_withStatelessAsyncInterfaceWithoutUseCase() throws Exception {
-        Semaphore semaphore = new Semaphore(0);
+    public void testBuilder_withCallback_fails_withStatelessAsyncInterfaceWithoutUseCase() {
         setupStatelessAsyncInterface();
 
         ProxyCreatedCallback<MyServiceStatelessAsync> callback = new ProxyCreatedCallback<MyServiceStatelessAsync>() {
             @Override
             public void onProxyCreationFinished(MyServiceStatelessAsync result) {
                 fail("proxy creation succeeded");
-                semaphore.release();
             }
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("callback: onProxyCreationError called: " + error);
-                semaphore.release();
             }
         };
 
         subject.builder(MyServiceStatelessAsync.class, "local").withCallback(callback).build();
         fail("Should not be able to build stateless async proxy without a use case specified.");
-
-        assertTrue(semaphore.tryAcquire(1, TimeUnit.SECONDS));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testBuilder_withFuture_fails_withStatelessAsyncInterfaceWithoutUseCase() throws Exception {
+    public void testBuilder_withFuture_fails_withStatelessAsyncInterfaceWithoutUseCase() {
         setupStatelessAsyncInterface();
-
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        CompletableFuture<MyServiceStatelessAsync> future = subject.builder(MyServiceStatelessAsync.class, "local")
-                                                                   .useFuture()
-                                                                   .build();
+        subject.builder(MyServiceStatelessAsync.class, "local").useFuture().build();
         fail("Should not be able to build stateless async proxy without a use case specified.");
-        future.whenCompleteAsync((proxy, error) -> {
-            if (proxy != null && error == null) {
-                fail("future: proxy creation succeeded");
-            } else if (error != null) {
-                fail("future: error: " + error);
-            }
-            countDownLatch.countDown();
-        });
-        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -422,46 +385,30 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testBuilder_withCallback_fails_noRuntime() throws Exception {
-        Semaphore semaphore = new Semaphore(0);
+    public void testBuilder_withCallback_fails_noRuntime() {
         when(joynrIntegrationBean.getRuntime()).thenReturn(null);
 
         ProxyCreatedCallback<MyServiceSync> callback = new ProxyCreatedCallback<MyServiceSync>() {
             @Override
             public void onProxyCreationFinished(MyServiceSync result) {
                 fail("callback: proxy creation succeeded");
-                semaphore.release();
             }
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("callback: onProxyCreationError called: " + error);
-                semaphore.release();
             }
         };
 
         subject.builder(MyServiceSync.class, "local").withCallback(callback).build();
         fail("Should not be able to build a proxy without runtime.");
-
-        assertTrue(semaphore.tryAcquire(1, TimeUnit.SECONDS));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testBuilder_withFuture_fails_noRuntime() throws Exception {
+    public void testBuilder_withFuture_fails_noRuntime() {
         when(joynrIntegrationBean.getRuntime()).thenReturn(null);
-
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local").useFuture().build();
+        subject.builder(MyServiceSync.class, "local").useFuture().build();
         fail("Should not be able to build a proxy without runtime.");
-        future.whenCompleteAsync((proxy, error) -> {
-            if (proxy != null && error == null) {
-                fail("future: proxy creation succeeded");
-            } else if (error != null) {
-                fail("future: error: " + error);
-            }
-            countDownLatch.countDown();
-        });
-        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
     }
 
     private void forceJoynrProxyToThrowSpecifiedException(Exception exceptionToThrow) {
@@ -616,7 +563,6 @@ public class JeeJoynrServiceLocatorTest {
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("Should never get called.");
-                countDownLatch.countDown();
             }
         };
 

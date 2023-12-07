@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -46,7 +45,7 @@ import joynr.tests.testSync;
 public class MethodMetaInformationTest {
 
     @Test
-    public void methodWithNoParametersShouldNotHaveCallbackIndexSet() {
+    public void methodWithNoParametersShouldNotHaveCallbackIndexSet() throws NoSuchMethodException {
         final Method method = getMethod(TestSyncInterface.class, "methodWithoutParameters");
 
         final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
@@ -56,7 +55,7 @@ public class MethodMetaInformationTest {
     }
 
     @Test
-    public void methodWithSingleInputParameterShouldNotHaveCallbackIndexSet() {
+    public void methodWithSingleInputParameterShouldNotHaveCallbackIndexSet() throws NoSuchMethodException {
         final Method method = getMethod(TestSyncInterface.class, "methodWithSingleInputParameter", Integer.class);
 
         final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
@@ -66,7 +65,7 @@ public class MethodMetaInformationTest {
     }
 
     @Test
-    public void methodWithSingleCallbackShouldHaveCallbackIndexSet() {
+    public void methodWithSingleCallbackShouldHaveCallbackIndexSet() throws NoSuchMethodException {
         final Method method = getMethod(TestAsyncInterface.class, "methodWithoutParameters", Callback.class);
 
         final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
@@ -76,7 +75,7 @@ public class MethodMetaInformationTest {
     }
 
     @Test
-    public void methodWithSingleCallbackButWithoutAnnotationShouldNotHaveCallbackIndexSet() {
+    public void methodWithSingleCallbackButWithoutAnnotationShouldNotHaveCallbackIndexSet() throws NoSuchMethodException {
         final Method method = getMethod(TestAsyncInterface.class,
                                         "methodWithoutParametersAndNoAnnotation",
                                         Callback.class);
@@ -88,7 +87,7 @@ public class MethodMetaInformationTest {
     }
 
     @Test
-    public void methodWithSingleCallbackButWithoutProperAnnotationShouldNotHaveCallbackIndexSet() {
+    public void methodWithSingleCallbackButWithoutProperAnnotationShouldNotHaveCallbackIndexSet() throws NoSuchMethodException {
         final Method method = getMethod(TestAsyncInterface.class,
                                         "methodWithoutParametersWithoutProperAnnotation",
                                         Callback.class);
@@ -100,7 +99,7 @@ public class MethodMetaInformationTest {
     }
 
     @Test
-    public void hasModelledErrros_syncMethodWithErrors() {
+    public void hasModelledErrors_syncMethodWithErrors() throws NoSuchMethodException {
         final Method method = getMethod(testSync.class, "methodWithErrorEnum");
         final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
 
@@ -108,7 +107,7 @@ public class MethodMetaInformationTest {
     }
 
     @Test
-    public void hasModelledErrros_asyncMethodWithErrors() {
+    public void hasModelledErrors_asyncMethodWithErrors() throws NoSuchMethodException {
         final Method method = getMethod(testAsync.class, "methodWithErrorEnum", CallbackWithModeledError.class);
         final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
 
@@ -116,7 +115,7 @@ public class MethodMetaInformationTest {
     }
 
     @Test
-    public void hasModelledErrros_syncMethodWithoutErrors() {
+    public void hasModelledErrors_syncMethodWithoutErrors() throws NoSuchMethodException {
         final Method method = getMethod(testSync.class, "voidOperation");
         final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
 
@@ -124,20 +123,17 @@ public class MethodMetaInformationTest {
     }
 
     @Test
-    public void hasModelledErrros_asyncMethodWithoutErrors() {
+    public void hasModelledErrors_asyncMethodWithoutErrors() throws NoSuchMethodException {
         final Method method = getMethod(testAsync.class, "voidOperation", Callback.class);
         final MethodMetaInformation methodMetaInformation = new MethodMetaInformation(method);
 
         assertFalse(methodMetaInformation.hasModelledErrors());
     }
 
-    private Method getMethod(final Class<?> interfaceClass, final String methodName, final Class<?>... parameterTypes) {
-        try {
-            return interfaceClass.getDeclaredMethod(methodName, parameterTypes);
-        } catch (final NoSuchMethodException exception) {
-            fail("Unexpected exception while getting method via reflection: " + exception.getMessage());
-            return null;
-        }
+    private Method getMethod(final Class<?> interfaceClass,
+                             final String methodName,
+                             final Class<?>... parameterTypes) throws NoSuchMethodException {
+        return interfaceClass.getDeclaredMethod(methodName, parameterTypes);
     }
 
     private void assertMethodMetaInformation(final MethodMetaInformation actualMethodMetaInformation,

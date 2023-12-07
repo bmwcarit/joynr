@@ -72,7 +72,7 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
     }
 
     @Test
-    public void testExecuteSyncMethodWithoutParametersShouldSucceed() {
+    public void testExecuteSyncMethodWithoutParametersShouldSucceed() throws NoSuchMethodException {
         method = getSyncMethod("methodWithoutParameters");
         parameters = new Object[]{};
         mockSendSyncRequest(new Object());
@@ -113,12 +113,11 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
             assertEquals(replyCaller, syncReplyCaller);
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
-            throw new RuntimeException(exception);
         }
     }
 
     @Test
-    public void testExecuteSyncMethodWithoutParametersShouldThrowJoynrRuntimeExceptionOnApplicationException() {
+    public void testExecuteSyncMethodWithoutParametersShouldThrowJoynrRuntimeExceptionOnApplicationException() throws NoSuchMethodException {
         method = getSyncMethod("methodWithoutParameters");
         parameters = new Object[]{};
         mockSendSyncRequestError(new ApplicationException(ApplicationErrors.ERROR_VALUE_2));
@@ -128,7 +127,6 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
             fail("An exception is expected");
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
-            throw new RuntimeException(exception);
         } catch (final JoynrRuntimeException exception) {
             assertNotNull(exception);
             assertNotNull(exception.getMessage());
@@ -136,7 +134,7 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
     }
 
     @Test
-    public void testExecuteSyncMethodWithoutParametersShouldFailIfDiscoveryEntrySetHasMoreThanOneItem() {
+    public void testExecuteSyncMethodWithoutParametersShouldFailIfDiscoveryEntrySetHasMoreThanOneItem() throws NoSuchMethodException {
         method = getSyncMethod("methodWithoutParameters");
         parameters = new Object[]{};
         addNewDiscoveryEntry();
@@ -145,7 +143,6 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
             fail("Exception excepted");
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
-            throw new RuntimeException(exception);
         } catch (final JoynrIllegalStateException exception) {
             assertTrue(exception.getMessage().contains("multiple participants"));
             verify(requestReplyManager, never()).sendRequest(anyString(),
@@ -156,7 +153,7 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
     }
 
     @Test
-    public void testExecuteSyncMethodWithoutParametersShouldThrowApplicationExceptionOnApplicationException() {
+    public void testExecuteSyncMethodWithoutParametersShouldThrowApplicationExceptionOnApplicationException() throws NoSuchMethodException {
         method = getSyncMethod("methodWithoutParametersWithModelledErrors");
         parameters = new Object[]{};
         mockSendSyncRequestError(new ApplicationException(ApplicationErrors.ERROR_VALUE_1));
@@ -171,7 +168,7 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
     }
 
     @Test
-    public void testExecuteSyncMethodWithoutParametersShouldThrowJoynrRuntimeExceptionOnJoynrRuntimeException() {
+    public void testExecuteSyncMethodWithoutParametersShouldThrowJoynrRuntimeExceptionOnJoynrRuntimeException() throws NoSuchMethodException {
         method = getSyncMethod("methodWithoutParameters");
         parameters = new Object[]{};
         mockSendSyncRequestError(new JoynrRuntimeException("Oops"));
@@ -181,7 +178,6 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
             fail("An exception is expected");
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
-            throw new RuntimeException(exception);
         } catch (final JoynrRuntimeException exception) {
             assertNotNull(exception);
             assertNotNull(exception.getMessage());
@@ -189,7 +185,7 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
     }
 
     @Test
-    public void testExecuteSyncMethodWithParametersAndResultsShouldSucceed() {
+    public void testExecuteSyncMethodWithParametersAndResultsShouldSucceed() throws NoSuchMethodException {
         method = getSyncMethod("methodWithParameters", Integer.class, Integer.class);
         parameters = new Object[]{};
         final Object expectedResult = Integer.valueOf(42);
@@ -209,7 +205,6 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
                                                         any(MessagingQos.class));
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
-            throw new RuntimeException(exception);
         }
     }
 
@@ -229,7 +224,8 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
                                                  any(MessagingQos.class))).thenReturn(reply);
     }
 
-    protected Method getSyncMethod(final String methodName, final Class<?>... parameterTypes) {
+    protected Method getSyncMethod(final String methodName,
+                                   final Class<?>... parameterTypes) throws NoSuchMethodException {
         return getMethod(TestSyncInterface.class, methodName, parameterTypes);
     }
 
@@ -248,7 +244,6 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
         try {
             return aClass.getDeclaredField(fieldName);
         } catch (final NoSuchFieldException exception) {
-            fail("Unexpected exception: " + exception.getMessage());
             throw new RuntimeException(exception);
         }
     }
@@ -263,7 +258,6 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
             final long staticFieldOffset = unsafe.staticFieldOffset(field);
             unsafe.putObject(staticFieldBase, staticFieldOffset, value);
         } catch (final NoSuchFieldException | IllegalAccessException exception) {
-            fail("Unexpected exception: " + exception.getMessage());
             throw new RuntimeException(exception);
         }
     }

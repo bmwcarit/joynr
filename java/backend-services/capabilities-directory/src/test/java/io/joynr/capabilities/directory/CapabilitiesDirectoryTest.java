@@ -172,7 +172,6 @@ public class CapabilitiesDirectoryTest {
             @Override
             public void onFulfillment(Object... values) {
                 fail("expected rejection");
-
             }
         });
         assertTrue("promise error timeout", countDownLatch.await(1000, TimeUnit.MILLISECONDS));
@@ -197,7 +196,6 @@ public class CapabilitiesDirectoryTest {
             @Override
             public void onFulfillment(Object... values) {
                 fail("expected rejection");
-
             }
         });
         assertTrue("promise exception timeout", countDownLatch.await(1000, TimeUnit.MILLISECONDS));

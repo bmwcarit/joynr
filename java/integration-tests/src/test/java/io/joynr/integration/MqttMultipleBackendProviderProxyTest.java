@@ -229,7 +229,6 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("Proxy creation failed: " + error.toString());
-
             }
         });
         assertTrue(semaphore.tryAcquire(10, TimeUnit.SECONDS));

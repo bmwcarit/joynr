@@ -72,8 +72,6 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                                                                                                          .setValidityMs(validityMs)
                                                                                                          .setAlertAfterIntervalMs(alertAfterIntervalMs)
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
-        boolean result;
-
         logger.info(name.getMethodName() + "");
 
         try {
@@ -113,11 +111,9 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
-            if (subscribeAttributeEnumerationCallbackDone && subscribeAttributeEnumerationCallbackResult) {
-                result = true;
-            } else {
+
+            if (!(subscribeAttributeEnumerationCallbackDone && subscribeAttributeEnumerationCallbackResult)) {
                 fail(name.getMethodName() + " - FAILED - callback NOT done");
-                result = false;
             }
 
             // try to unsubscribe in any case
@@ -126,19 +122,12 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -160,8 +149,6 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                                                                                                          .setValidityMs(validityMs)
                                                                                                          .setAlertAfterIntervalMs(alertAfterIntervalMs)
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
-        boolean result;
-
         logger.info(name.getMethodName() + "");
 
         try {
@@ -208,16 +195,13 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
+
             if (!subscribeAttributeWithExceptionFromGetterCallbackDone) {
                 fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeAttributeWithExceptionFromGetterCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected exception");
-                result = true;
-            } else {
+            } else if (!subscribeAttributeWithExceptionFromGetterCallbackResult) {
                 fail(name.getMethodName() + " - FAILED - callback got called but received unexpected result");
-                result = false;
             }
+            logger.info(name.getMethodName() + " - callback got called and received expected exception");
 
             // try to unsubscribe in any case
             try {
@@ -226,21 +210,14 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             logger.info(name.getMethodName() + " - caught unexpected exception");
             logger.info(name.getMethodName() + " - FAILED");
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 }

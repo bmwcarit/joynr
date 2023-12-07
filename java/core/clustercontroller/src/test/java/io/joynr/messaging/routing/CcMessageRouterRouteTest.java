@@ -291,7 +291,6 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
         try {
             return joynrMessage.getImmutableMessage();
         } catch (final Exception e) {
-            fail("Unexpected failure while getting immutable message: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }

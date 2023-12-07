@@ -114,7 +114,6 @@ public class GcdConsumerSyncMethodTest extends GcdConsumerTest {
             mqttAddressSerialized2 = new ObjectMapper().writeValueAsString(mqttAddress2);
         } catch (Exception e) {
             fail("ObjectMapper failed to serialize mqttAddress1/mqtAddress2");
-            return;
         }
 
         // V1.0

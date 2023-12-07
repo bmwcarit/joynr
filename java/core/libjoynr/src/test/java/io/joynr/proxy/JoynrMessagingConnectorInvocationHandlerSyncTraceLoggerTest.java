@@ -47,7 +47,7 @@ public class JoynrMessagingConnectorInvocationHandlerSyncTraceLoggerTest
     }
 
     @Test
-    public void testExecuteSyncMethodThatReturnsMultiValueShouldSucceed() {
+    public void testExecuteSyncMethodThatReturnsMultiValueShouldSucceed() throws NoSuchMethodException {
         method = getSyncMethod("methodReturningMultiValues");
         parameters = new Object[]{};
         final TestSyncInterface.TestMultiResult expectedResult = new TestSyncInterface.TestMultiResult();
@@ -82,7 +82,6 @@ public class JoynrMessagingConnectorInvocationHandlerSyncTraceLoggerTest
                                                         any(MessagingQos.class));
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
-            throw new RuntimeException(exception);
         }
     }
 

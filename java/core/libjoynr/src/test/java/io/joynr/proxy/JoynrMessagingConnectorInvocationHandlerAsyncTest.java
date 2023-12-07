@@ -48,7 +48,7 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
         extends AbstractJoynrMessagingConnectorInvocationHandlerTest {
 
     @Test
-    public void testExecuteAsyncMethodShouldFailIfMethodHasNoCallbackAnnotation() {
+    public void testExecuteAsyncMethodShouldFailIfMethodHasNoCallbackAnnotation() throws NoSuchMethodException {
         method = getAsyncMethod("someMethodWithoutAnnotations", Integer.class, String.class);
         parameters = new Object[]{ 1, "test" };
         try {
@@ -68,7 +68,7 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
     }
 
     @Test
-    public void testExecuteAsyncMethodShouldFailIfDiscoveryEntrySetHasMoreThanOneItem() {
+    public void testExecuteAsyncMethodShouldFailIfDiscoveryEntrySetHasMoreThanOneItem() throws NoSuchMethodException {
         method = getAsyncMethod("someMethodWithoutAnnotations", Integer.class, String.class);
         parameters = new Object[]{ 1, "test" };
         addNewDiscoveryEntry();
@@ -89,7 +89,7 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
 
     @Test
     @SuppressWarnings("rawtypes")
-    public void testExecuteAsyncMethodShouldSucceed() {
+    public void testExecuteAsyncMethodShouldSucceed() throws NoSuchMethodException {
         method = getAsyncMethod("someMethodWithAnnotation", Integer.class, String.class, Callback.class);
         parameters = new Object[]{ 1, "test", new Callback<Void>() {
             @Override
@@ -137,7 +137,8 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
         assertEquals(60000, messagingQos.getRoundTripTtl_ms());
     }
 
-    private Method getAsyncMethod(final String methodName, final Class<?>... parameterTypes) {
+    private Method getAsyncMethod(final String methodName,
+                                  final Class<?>... parameterTypes) throws NoSuchMethodException {
         return getMethod(TestAsyncInterface.class, methodName, parameterTypes);
     }
 }
