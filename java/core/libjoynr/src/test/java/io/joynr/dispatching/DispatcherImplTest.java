@@ -93,13 +93,10 @@ import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MulticastPublication;
-import joynr.MulticastSubscriptionQos;
-import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
 import joynr.Request;
-import joynr.SubscriptionRequest;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DispatcherImplTest {
@@ -300,37 +297,6 @@ public class DispatcherImplTest {
         fixture.sendMulticast(fromParticipantId, multicastPublication, messagingQos);
 
         verify(messageFactoryMock).createMulticast(eq(fromParticipantId), eq(multicastPublication), eq(messagingQos));
-    }
-
-    @Test
-    public void testReceiveMulticastSubscription() throws Exception {
-        String from = "from";
-        String to = "to";
-        MulticastSubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest("multicastId",
-                                                                                            "subscriptionId",
-                                                                                            "multicastName",
-                                                                                            new MulticastSubscriptionQos());
-        MutableMessage joynrMessage = messageFactory.createSubscriptionRequest(from,
-                                                                               to,
-                                                                               subscriptionRequest,
-                                                                               new MessagingQos(1000L));
-
-        MutableMessageFactory messageFactoryMock = mock(MutableMessageFactory.class);
-        ObjectMapper objectMapperMock = mock(ObjectMapper.class);
-        when(objectMapperMock.readValue(anyString(), eq(SubscriptionRequest.class))).thenReturn(subscriptionRequest);
-
-        fixture = new DispatcherImpl(requestReplyManagerMock,
-                                     subscriptionManagerMock,
-                                     publicationManagerMock,
-                                     messageSenderMock,
-                                     messageFactoryMock,
-                                     objectMapperMock,
-                                     compress,
-                                     statelessAsyncIdCalculator);
-
-        fixture.messageArrived(joynrMessage.getImmutableMessage());
-
-        verify(publicationManagerMock).addSubscriptionRequest(eq(from), eq(to), eq(subscriptionRequest));
     }
 
     private void testPropagateCompressFlagFromRequestToRepliesImpl(final boolean compress,

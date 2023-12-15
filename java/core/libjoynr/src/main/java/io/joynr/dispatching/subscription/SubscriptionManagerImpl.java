@@ -60,7 +60,6 @@ import io.joynr.pubsub.subscription.BroadcastSubscriptionListener;
 import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 import joynr.BroadcastSubscriptionRequest;
-import joynr.MulticastSubscriptionRequest;
 import joynr.SubscriptionReply;
 import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
@@ -289,10 +288,14 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
                                          multicastReceiverRegistrar.addMulticastReceiver(multicastId,
                                                                                          fromParticipantId,
                                                                                          toDiscoveryEntry.getParticipantId());
-                                         return new MulticastSubscriptionRequest(multicastId,
-                                                                                 multicastSubscribeInvocation.getSubscriptionId(),
-                                                                                 multicastSubscribeInvocation.getSubscriptionName(),
-                                                                                 multicastSubscribeInvocation.getQos());
+
+                                         /*
+                                         Note: a Multicast Subscription Request should not be sent.
+                                         It is sufficient just to subscribe to MQTT topic.
+                                         Sending such request runs the risk of blocking the provider.
+                                         That is why null is returned here - nothing to be sent via dispatcher.
+                                          */
+                                         return null;
                                      }
                                  });
         }
@@ -315,17 +318,29 @@ public class SubscriptionManagerImpl implements SubscriptionManager, ShutdownLis
         subscriptionFutureMap.put(subscriptionId, subscriptionInvocation.getFuture());
         registerSubscription(subscriptionInvocation.getProxy(), subscriptionInvocation.getQos(), subscriptionId);
 
-        SubscriptionRequest subscriptionRequest = registerDataAndCreateSubscriptionRequest.execute();
+        final SubscriptionRequest subscriptionRequest = registerDataAndCreateSubscriptionRequest.execute();
 
-        MessagingQos messagingQos = new MessagingQos();
-        SubscriptionQos qos = subscriptionRequest.getQos();
-        if (qos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
-            messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+        if (subscriptionRequest != null) {
+            // receiving not null Subscription Request means that it should be sent via dispatcher
+            final MessagingQos messagingQos = new MessagingQos();
+            final SubscriptionQos qos = subscriptionRequest.getQos();
+            if (qos.getExpiryDateMs() == SubscriptionQos.NO_EXPIRY_DATE) {
+                messagingQos.setTtl_ms(SubscriptionQos.INFINITE_SUBSCRIPTION);
+            } else {
+                messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
+            }
+
+            dispatcher.sendSubscriptionRequest(fromParticipantId,
+                                               toDiscoveryEntries,
+                                               subscriptionRequest,
+                                               messagingQos);
         } else {
-            messagingQos.setTtl_ms(qos.getExpiryDateMs() - System.currentTimeMillis());
+            // receiving null Subscription Request means that it should not be sent via dispatcher
+            if (subscriptionFutureMap.containsKey(subscriptionId)) {
+                // remove future from map and resolve it as it will not be resolved in handleSubscriptionReply method
+                subscriptionFutureMap.remove(subscriptionId).onSuccess(subscriptionId);
+            }
         }
-
-        dispatcher.sendSubscriptionRequest(fromParticipantId, toDiscoveryEntries, subscriptionRequest, messagingQos);
     }
 
     @Override
