@@ -174,12 +174,12 @@ public class IltProviderBean
 
     @Override
     public BaseStruct getAttributeBaseStruct() {
-        return attributeBaseStruct;
+        return (attributeBaseStruct != null) ? new BaseStruct(attributeBaseStruct) : null;
     }
 
     @Override
     public void setAttributeBaseStruct(BaseStruct attributeBaseStruct) {
-        this.attributeBaseStruct = attributeBaseStruct;
+        this.attributeBaseStruct = (attributeBaseStruct != null) ? new BaseStruct(attributeBaseStruct) : null;
 
         // TODO
         //attributeBaseStructChanged(attributeBaseStruct);
@@ -187,12 +187,16 @@ public class IltProviderBean
 
     @Override
     public ExtendedExtendedBaseStruct getAttributeExtendedExtendedBaseStruct() {
-        return attributeExtendedExtendedBaseStruct;
+        return (attributeExtendedExtendedBaseStruct != null)
+                ? new ExtendedExtendedBaseStruct(attributeExtendedExtendedBaseStruct)
+                : null;
     }
 
     @Override
     public void setAttributeExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct attributeExtendedExtendedBaseStruct) {
-        this.attributeExtendedExtendedBaseStruct = attributeExtendedExtendedBaseStruct;
+        this.attributeExtendedExtendedBaseStruct = (attributeExtendedExtendedBaseStruct != null)
+                ? new ExtendedExtendedBaseStruct(attributeExtendedExtendedBaseStruct)
+                : null;
 
         // TODO
         //attributeExtendedExtendedBaseStructChanged(attributeExtendedExtendedBaseStruct);
@@ -241,12 +245,12 @@ public class IltProviderBean
 
     @Override
     public BaseStruct getAttributeStructTypeDef() {
-        return attributeStructTypeDef;
+        return (attributeStructTypeDef != null) ? new BaseStruct(attributeStructTypeDef) : null;
     }
 
     @Override
     public void setAttributeStructTypeDef(BaseStruct attributeStructTypeDef) {
-        this.attributeStructTypeDef = attributeStructTypeDef;
+        this.attributeStructTypeDef = (attributeStructTypeDef != null) ? new BaseStruct(attributeStructTypeDef) : null;
 
         // TODO
         // attributeStructTypeDefChanged(attributeStructTypeDef);
@@ -254,12 +258,12 @@ public class IltProviderBean
 
     @Override
     public MapStringString getAttributeMapTypeDef() {
-        return attributeMapTypeDef;
+        return (attributeMapTypeDef != null) ? new MapStringString(attributeMapTypeDef) : null;
     }
 
     @Override
     public void setAttributeMapTypeDef(MapStringString attributeMapTypeDef) {
-        this.attributeMapTypeDef = attributeMapTypeDef;
+        this.attributeMapTypeDef = (attributeMapTypeDef != null) ? new MapStringString(attributeMapTypeDef) : null;
 
         // TODO
         // attributeMapTypeDefChanged(attributeMapTypeDef);
@@ -307,12 +311,13 @@ public class IltProviderBean
 
     @Override
     public ArrayTypeDefStruct getAttributeArrayTypeDef() {
-        return attributeArrayTypeDef;
+        return (attributeArrayTypeDef != null) ? new ArrayTypeDefStruct(attributeArrayTypeDef) : null;
     }
 
     @Override
     public void setAttributeArrayTypeDef(ArrayTypeDefStruct attributeArrayTypeDef) {
-        this.attributeArrayTypeDef = attributeArrayTypeDef;
+        this.attributeArrayTypeDef = (attributeArrayTypeDef != null) ? new ArrayTypeDefStruct(attributeArrayTypeDef)
+                : null;
 
         // TODO
         // attributeArrayTypeDefChanged(attributeArrayTypeDef);
@@ -1082,12 +1087,14 @@ public class IltProviderBean
 
     @Override
     public MapStringString getAttributeMapStringString() {
-        return attributeMapStringString;
+        return (attributeMapStringString != null) ? new MapStringString(attributeMapStringString) : null;
     }
 
     @Override
     public void setAttributeMapStringString(MapStringString attributeMapStringString) {
-        this.attributeMapStringString = attributeMapStringString;
+        this.attributeMapStringString = (attributeMapStringString != null)
+                ? new MapStringString(attributeMapStringString)
+                : null;
 
         // TODO
         //attributeMapStringStringChanged(attributeMapStringString);
