@@ -431,10 +431,10 @@ public class SubscriptionManagerTest {
         verify(mockMulticastReceiverRegistrar).addMulticastReceiver(multicastId,
                                                                     fromParticipantId,
                                                                     toDiscoveryEntry.getParticipantId());
-        verify(dispatcher).sendSubscriptionRequest(eq(fromParticipantId),
-                                                   eq(new HashSet<DiscoveryEntryWithMetaInfo>(Arrays.asList(toDiscoveryEntry))),
-                                                   any(SubscriptionRequest.class),
-                                                   any(MessagingQos.class));
+        verify(dispatcher, never()).sendSubscriptionRequest(eq(fromParticipantId),
+                                                            eq(new HashSet<>(Arrays.asList(toDiscoveryEntry))),
+                                                            any(SubscriptionRequest.class),
+                                                            any(MessagingQos.class));
     }
 
     @Test

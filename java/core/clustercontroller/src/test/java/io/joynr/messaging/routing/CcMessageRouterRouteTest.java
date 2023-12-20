@@ -32,7 +32,6 @@ import joynr.BroadcastSubscriptionRequest;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MulticastPublication;
-import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
@@ -99,7 +98,6 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     private final Supplier<ImmutableMessage> statelessAsyncRequestSupplier = this::createStatelessAsyncRequest;
     private final Supplier<ImmutableMessage> oneWayRequestSupplier = this::createOneWayRequest;
     private final Supplier<ImmutableMessage> multicastPublicationSupplier = this::createMulticastPublication;
-    private final Supplier<ImmutableMessage> multicastSubscriptionRequestSupplier = this::createMulticastSubscriptionRequest;
     private final Supplier<ImmutableMessage> broadcastSubscriptionRequestSupplier = this::createBroadcastSubscriptionRequest;
 
     @Test
@@ -200,16 +198,6 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     @Test
     public void testMulticastPublicationProcessedWithErrorIsTracked() throws InterruptedException {
         testMessageType(multicastPublicationSupplier, MSG_ERROR);
-    }
-
-    @Test
-    public void testMulticastSubscriptionRequestProcessedSuccessfullyIsTracked() throws InterruptedException {
-        testMessageType(multicastSubscriptionRequestSupplier, MSG_SUCCESS);
-    }
-
-    @Test
-    public void testMulticastSubscriptionRequestProcessedWithErrorIsTracked() throws InterruptedException {
-        testMessageType(multicastSubscriptionRequestSupplier, MSG_ERROR);
     }
 
     @Test
@@ -388,18 +376,6 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
         final MutableMessage mutableMessage = messageFactory.createMulticast(fromParticipantId,
                                                                              multicastPublication,
                                                                              new MessagingQos());
-        return getImmutableMessage(mutableMessage);
-    }
-
-    private ImmutableMessage createMulticastSubscriptionRequest() {
-        final MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(CcMessageRouterRouteTest.MULTICAST_ID,
-                                                                                                           CcMessageRouterRouteTest.SUBSCRIPTION_ID,
-                                                                                                           "multicastName",
-                                                                                                           new OnChangeSubscriptionQos());
-        final MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                                       toParticipantId,
-                                                                                       multicastSubscriptionRequest,
-                                                                                       new MessagingQos());
         return getImmutableMessage(mutableMessage);
     }
 

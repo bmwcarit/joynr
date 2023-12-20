@@ -41,7 +41,6 @@ import io.joynr.util.ObjectMapper;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.Message;
 import joynr.MulticastPublication;
-import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -174,8 +173,6 @@ public class MutableMessageFactory {
         Message.MessageType messageType;
         if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
             messageType = Message.MessageType.VALUE_MESSAGE_TYPE_BROADCAST_SUBSCRIPTION_REQUEST;
-        } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
-            messageType = Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST;
         } else {
             messageType = Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REQUEST;
         }

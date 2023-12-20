@@ -84,8 +84,6 @@ import io.joynr.util.MultiMap;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
-import joynr.MulticastSubscriptionQos;
-import joynr.MulticastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.PeriodicSubscriptionQos;
 import joynr.SubscriptionPublication;
@@ -105,8 +103,6 @@ public class PublicationManagerTest {
     private static final String PROXY_PARTICIPANT_ID = "proxyParticipantId";
 
     private static final String SUBSCRIPTION_ID = "PublicationTest_id";
-    private static final boolean SUBSCRIPTIONSREQUEST_PERSISTENCY_ENABLED = true;
-    private static final boolean SUBSCRIPTIONSREQUEST_PERSISTENCY_DISABLED = false;
 
     ScheduledExecutorService cleanupScheduler;
     PublicationManagerImpl publicationManager;
@@ -360,62 +356,6 @@ public class PublicationManagerTest {
                                                                   argThat(mySet -> mySet.contains(PROXY_PARTICIPANT_ID)),
                                                                   any(SubscriptionPublication.class),
                                                                   any(MessagingQos.class));
-    }
-
-    @Test(timeout = 3000)
-    public void addAndStopMulticastSubscriptionNonQueued() throws Exception {
-        long publicationActiveForMs = 300;
-        final String multicastId = "multicastId";
-        final String multicastName = "multicastName";
-
-        SubscriptionQos qos = new MulticastSubscriptionQos().setValidityMs(publicationActiveForMs);
-        SubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest(multicastId,
-                                                                                   SUBSCRIPTION_ID,
-                                                                                   multicastName,
-                                                                                   qos);
-
-        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(providerContainer);
-
-        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
-        verify(routingTable, times(0)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
-
-        verify(dispatcher, times(1)).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
-                                                           eq(PROXY_PARTICIPANT_ID),
-                                                           any(SubscriptionReply.class),
-                                                           any(MessagingQos.class));
-
-        publicationManager.stopPublication(SUBSCRIPTION_ID);
-        verify(routingTable, times(0)).remove(PROXY_PARTICIPANT_ID);
-        verifyNoMoreInteractions(dispatcher, routingTable);
-    }
-
-    @Test(timeout = 3000)
-    public void addMulticastSubscriptionQueuedWithExpiryDate() throws Exception {
-        long publicationActiveForMs = 200;
-        final String multicastId = "multicastId";
-        final String multicastName = "multicastName";
-
-        SubscriptionQos qos = new MulticastSubscriptionQos().setValidityMs(publicationActiveForMs);
-        SubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest(multicastId,
-                                                                                   SUBSCRIPTION_ID,
-                                                                                   multicastName,
-                                                                                   qos);
-
-        when(providerDirectory.get(eq(PROVIDER_PARTICIPANT_ID))).thenReturn(null);
-
-        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
-        checkRequestsQueue(subscriptionRequest);
-
-        verify(routingTable, times(0)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
-        verify(dispatcher, times(0)).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
-                                                           eq(PROXY_PARTICIPANT_ID),
-                                                           any(SubscriptionReply.class),
-                                                           any(MessagingQos.class));
-
-        Thread.sleep(publicationActiveForMs * 2);
-        assertEquals(0, getQueuedSubscriptionRequests().size());
-        verify(routingTable, times(0)).remove(PROXY_PARTICIPANT_ID);
-        verifyNoMoreInteractions(dispatcher, routingTable);
     }
 
     @SuppressWarnings("unchecked")
@@ -1159,19 +1099,6 @@ public class PublicationManagerTest {
                                                  any(MessagingQos.class));
     }
 
-    @Test
-    public void multicastSubscriptionRequestWithoutRoutingTableEntry() throws Exception {
-        MulticastSubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest("multicastId",
-                                                                                            SUBSCRIPTION_ID,
-                                                                                            "multicastName",
-                                                                                            new OnChangeSubscriptionQos());
-        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
-        assertEquals(1, getQueuedSubscriptionRequests().size());
-        verify(dispatcher, never()).sendSubscriptionReply(any(), any(), any(), any());
-        verify(routingTable, never()).incrementReferenceCount(any());
-        verify(routingTable, never()).remove(any());
-    }
-
     @Test(expected = SubscriptionException.class)
     public void addSubscriptionRequestExpired() throws Exception {
         SubscriptionRequest subscriptionRequest = new SubscriptionRequest(SUBSCRIPTION_ID,
@@ -1233,54 +1160,6 @@ public class PublicationManagerTest {
         verify(routingTable, times(1)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
         verify(routingTable, times(1)).remove(PROXY_PARTICIPANT_ID);
         verifyNoMoreInteractions(dispatcher, routingTable);
-    }
-
-    @Test(expected = SubscriptionException.class)
-    public void addMulticastSubscriptionRequestExpired() throws Exception {
-        final String multicastId = "multicastId";
-        final String multicastName = "multicastName";
-        SubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest(multicastId,
-                                                                                   SUBSCRIPTION_ID,
-                                                                                   multicastName,
-                                                                                   new OnChangeSubscriptionQos().setValidityMs(0));
-        Thread.sleep(5);
-        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
-        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
-        assertEquals(0, getQueuedSubscriptionRequests().size());
-        verify(routingTable, times(0)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
-        verify(routingTable, times(0)).remove(PROXY_PARTICIPANT_ID);
-    }
-
-    @Test
-    public void addMulticastSubscriptionRequestExpiredAtReply() throws Exception {
-        doThrow(JoynrMessageExpiredException.class).doNothing()
-                                                   .when(dispatcher)
-                                                   .sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
-                                                                          eq(PROXY_PARTICIPANT_ID),
-                                                                          any(),
-                                                                          any());
-        final String multicastId = "multicastId";
-        final String multicastName = "multicastName";
-        SubscriptionRequest subscriptionRequest = new MulticastSubscriptionRequest(multicastId,
-                                                                                   SUBSCRIPTION_ID,
-                                                                                   multicastName,
-                                                                                   new OnChangeSubscriptionQos());
-        when(providerDirectory.get(PROVIDER_PARTICIPANT_ID)).thenReturn(providerContainer);
-        publicationManager.entryAdded(PROVIDER_PARTICIPANT_ID, providerContainer);
-        publicationManager.addSubscriptionRequest(PROXY_PARTICIPANT_ID, PROVIDER_PARTICIPANT_ID, subscriptionRequest);
-        assertEquals(0, getQueuedSubscriptionRequests().size());
-        verify(dispatcher).sendSubscriptionReply(eq(PROVIDER_PARTICIPANT_ID),
-                                                 eq(PROXY_PARTICIPANT_ID),
-                                                 argThat(new ArgumentMatcher<SubscriptionReply>() {
-                                                     @Override
-                                                     public boolean matches(SubscriptionReply argument) {
-                                                         SubscriptionReply reply = (SubscriptionReply) argument;
-                                                         return null != reply.getError();
-                                                     }
-                                                 }),
-                                                 any(MessagingQos.class));
-        verify(routingTable, times(0)).incrementReferenceCount(PROXY_PARTICIPANT_ID);
-        verify(routingTable, times(0)).remove(PROXY_PARTICIPANT_ID);
     }
 
 }
