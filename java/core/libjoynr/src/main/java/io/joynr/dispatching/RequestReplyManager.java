@@ -20,6 +20,7 @@ package io.joynr.dispatching;
 
 import java.util.Set;
 
+import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.provider.ProviderCallback;
@@ -43,11 +44,33 @@ public interface RequestReplyManager {
      *            Request to be sent
      * @param qosSettings MessagingQos for the request
      */
+    default void sendRequest(final String fromParticipantId,
+                             final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                             final Request request,
+                             final MessagingQos qosSettings) {
+        final ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(qosSettings.getRoundTripTtl_ms());
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, qosSettings, expiryDate);
+    }
 
+    /**
+     * Sends a request, the reply message is passed to the specified callBack in a different thread.
+     * In order to send stateless async request, use overload of this method which takes
+     * boolean isStatelessAsync as an argument.
+     *
+     * @param fromParticipantId
+     *            ParticipantId of the sending endpoint.
+     * @param toDiscoveryEntry
+     *            DiscoveryEntry of the endpoint to send to
+     * @param request
+     *            Request to be sent
+     * @param qosSettings MessagingQos for the request
+     * @param expiryDate message expiry date
+     */
     void sendRequest(final String fromParticipantId,
                      final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                     Request request,
-                     MessagingQos qosSettings);
+                     final Request request,
+                     final MessagingQos qosSettings,
+                     final ExpiryDate expiryDate);
 
     /**
      * Sends a request, the reply message is passed to the specified callBack in a different thread.
@@ -64,11 +87,37 @@ public interface RequestReplyManager {
      *            Whether a request is stateless async
      */
 
+    default void sendRequest(final String fromParticipantId,
+                             final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                             final Request request,
+                             final MessagingQos qosSettings,
+                             final boolean isStatelessAsync) {
+        final ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(qosSettings.getRoundTripTtl_ms());
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, qosSettings, isStatelessAsync, expiryDate);
+    }
+
+    /**
+     * Sends a request, the reply message is passed to the specified callBack in a different thread.
+     *
+     * @param fromParticipantId
+     *            ParticipantId of the sending endpoint.
+     * @param toDiscoveryEntry
+     *            DiscoveryEntry of the endpoint to send to
+     * @param request
+     *            Request to be sent
+     * @param qosSettings
+     *            MessagingQos for the request
+     * @param isStatelessAsync
+     *            Whether a request is stateless async
+     * @param expiryDate
+     *            message expiry date
+     */
     void sendRequest(final String fromParticipantId,
                      final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                     Request request,
-                     MessagingQos qosSettings,
-                     boolean isStatelessAsync);
+                     final Request request,
+                     final MessagingQos qosSettings,
+                     final boolean isStatelessAsync,
+                     final ExpiryDate expiryDate);
 
     /**
      * Sends a request and blocks the current thread until the response is received or the roundTripTtl is reached. If
@@ -83,14 +132,16 @@ public interface RequestReplyManager {
      * @param synchronizedReplyCaller
      *            Synchronized reply caller
      * @param qosSettings MessagingQos for the request
+     * @param expiryDate message expiry date
      * @return response object
      */
 
     Reply sendSyncRequest(final String fromParticipantId,
                           final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                          Request request,
-                          SynchronizedReplyCaller synchronizedReplyCaller,
-                          MessagingQos qosSettings);
+                          final Request request,
+                          final SynchronizedReplyCaller synchronizedReplyCaller,
+                          final MessagingQos qosSettings,
+                          final ExpiryDate expiryDate);
 
     /**
      * Send a one way message.

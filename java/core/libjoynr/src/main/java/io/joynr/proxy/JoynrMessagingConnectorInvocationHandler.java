@@ -153,7 +153,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         requestReplyManager.sendRequest(fromParticipantId,
                                         toDiscoveryEntries.iterator().next(),
                                         request,
-                                        strippedArguments.messagingQos);
+                                        strippedArguments.messagingQos,
+                                        expiryDate);
         return future;
     }
 
@@ -216,7 +217,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                                                                 toDiscoveryEntries.iterator().next(),
                                                                 request,
                                                                 synchronizedReplyCaller,
-                                                                strippedArguments.messagingQos);
+                                                                strippedArguments.messagingQos,
+                                                                expiryDate);
         if (reply.getError() == null) {
             if (method.getReturnType().equals(void.class)) {
                 logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: [void]",

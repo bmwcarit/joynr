@@ -65,28 +65,30 @@ public class MutableMessageFactory {
         this.messageProcessors = messageProcessors;
     }
 
-    private MutableMessage createMessage(Message.MessageType joynrMessageType,
-                                         String fromParticipantId,
-                                         String toParticipantId,
-                                         Object payload,
-                                         MessagingQos messagingQos) {
-        return createMessage(joynrMessageType, fromParticipantId, toParticipantId, payload, messagingQos, true);
+    private MutableMessage createMessage(final Message.MessageType joynrMessageType,
+                                         final String fromParticipantId,
+                                         final String toParticipantId,
+                                         final Object payload,
+                                         final MessagingQos messagingQos,
+                                         final ExpiryDate expiryDate) {
+        return createMessage(joynrMessageType,
+                             fromParticipantId,
+                             toParticipantId,
+                             payload,
+                             messagingQos,
+                             true,
+                             expiryDate);
     }
 
-    private MutableMessage createMessage(Message.MessageType joynrMessageType,
-                                         String fromParticipantId,
-                                         String toParticipantId,
-                                         Object payload,
-                                         MessagingQos messagingQos,
-                                         boolean upliftTtl) {
-        ExpiryDate expiryDate;
-        if (!upliftTtl) {
-            expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
-        } else if (messagingQos.getRoundTripTtl_ms() > (Long.MAX_VALUE - ttlUpliftMs)) {
-            expiryDate = ExpiryDate.fromRelativeTtl(Long.MAX_VALUE);
-        } else {
-            expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms() + ttlUpliftMs);
-        }
+    private MutableMessage createMessage(final Message.MessageType joynrMessageType,
+                                         final String fromParticipantId,
+                                         final String toParticipantId,
+                                         final Object payload,
+                                         final MessagingQos messagingQos,
+                                         final boolean upliftTtl,
+                                         final ExpiryDate expiryDate) {
+        final ExpiryDate adjustedExpiryDate = adjustExpiryDate(expiryDate, upliftTtl);
+
         MutableMessage message = new MutableMessage();
         message.setType(joynrMessageType);
         if (messagingQos.getEffort() != null && !MessagingQosEffort.NORMAL.equals(messagingQos.getEffort())) {
@@ -95,7 +97,7 @@ public class MutableMessageFactory {
         message.setSender(fromParticipantId);
         message.setRecipient(toParticipantId);
         message.setTtlAbsolute(true);
-        message.setTtlMs(expiryDate.getValue());
+        message.setTtlMs(adjustedExpiryDate.getValue());
         message.setPayload(serializePayload(payload));
         message.setCustomHeaders(messagingQos.getCustomMessageHeaders());
         message.setCompressed(messagingQos.getCompress());
@@ -103,31 +105,61 @@ public class MutableMessageFactory {
             message = processor.processOutgoing(message);
         }
 
-        logger.trace("Message {} has expiry date: {}", message.getId(), expiryDate);
+        logger.trace("Message {} has expiry date: {}", message.getId(), adjustedExpiryDate);
 
         return message;
     }
 
+    private ExpiryDate adjustExpiryDate(final ExpiryDate expiryDate, final boolean upliftTtl) {
+        if (!upliftTtl) {
+            return expiryDate;
+        } else if (expiryDate.getRelativeTtl() > (Long.MAX_VALUE - ttlUpliftMs)) {
+            return ExpiryDate.fromRelativeTtl(Long.MAX_VALUE);
+        } else {
+            return ExpiryDate.fromRelativeTtl(expiryDate.getRelativeTtl() + ttlUpliftMs);
+        }
+    }
+
     public MutableMessage createOneWayRequest(final String fromParticipantId,
                                               final String toParticipantId,
-                                              OneWayRequest request,
-                                              MessagingQos messagingQos) {
+                                              final OneWayRequest request,
+                                              final MessagingQos messagingQos) {
+        final ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
+        return createOneWayRequest(fromParticipantId, toParticipantId, request, messagingQos, expiryDate);
+    }
+
+    public MutableMessage createOneWayRequest(final String fromParticipantId,
+                                              final String toParticipantId,
+                                              final OneWayRequest request,
+                                              final MessagingQos messagingQos,
+                                              final ExpiryDate expiryDate) {
         return createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_ONE_WAY,
                              fromParticipantId,
                              toParticipantId,
                              request,
-                             messagingQos);
+                             messagingQos,
+                             expiryDate);
     }
 
     public MutableMessage createRequest(final String fromParticipantId,
                                         final String toParticipantId,
-                                        Request request,
-                                        MessagingQos messagingQos) {
+                                        final Request request,
+                                        final MessagingQos messagingQos) {
+        final ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
+        return createRequest(fromParticipantId, toParticipantId, request, messagingQos, expiryDate);
+    }
+
+    public MutableMessage createRequest(final String fromParticipantId,
+                                        final String toParticipantId,
+                                        final Request request,
+                                        final MessagingQos messagingQos,
+                                        final ExpiryDate expiryDate) {
         MutableMessage msg = createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST,
                                            fromParticipantId,
                                            toParticipantId,
                                            request,
-                                           messagingQos);
+                                           messagingQos,
+                                           expiryDate);
         addRequestReplyIdCustomHeader(msg, request.getRequestReplyId());
         return msg;
     }
@@ -141,14 +173,24 @@ public class MutableMessageFactory {
 
     public MutableMessage createReply(final String fromParticipantId,
                                       final String toParticipantId,
-                                      Reply reply,
-                                      MessagingQos messagingQos) {
+                                      final Reply reply,
+                                      final MessagingQos messagingQos) {
+        final ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms());
+        return createReply(fromParticipantId, toParticipantId, reply, messagingQos, expiryDate);
+    }
+
+    public MutableMessage createReply(final String fromParticipantId,
+                                      final String toParticipantId,
+                                      final Reply reply,
+                                      final MessagingQos messagingQos,
+                                      final ExpiryDate expiryDate) {
         MutableMessage msg = createMessage(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY,
                                            fromParticipantId,
                                            toParticipantId,
                                            reply,
                                            messagingQos,
-                                           false);
+                                           false,
+                                           expiryDate);
         addRequestReplyIdCustomHeader(msg, reply.getRequestReplyId());
         return msg;
     }
@@ -161,7 +203,8 @@ public class MutableMessageFactory {
                                            fromParticipantId,
                                            toParticipantId,
                                            subscriptionReply,
-                                           messagingQos);
+                                           messagingQos,
+                                           ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
         addRequestReplyIdCustomHeader(msg, subscriptionReply.getSubscriptionId());
         return msg;
     }
@@ -180,7 +223,8 @@ public class MutableMessageFactory {
                                            fromParticipantId,
                                            toParticipantId,
                                            subscriptionRequest,
-                                           messagingQos);
+                                           messagingQos,
+                                           ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
         addRequestReplyIdCustomHeader(msg, subscriptionRequest.getSubscriptionId());
         return msg;
     }
@@ -193,7 +237,8 @@ public class MutableMessageFactory {
                                            fromParticipantId,
                                            toParticipantId,
                                            publication,
-                                           messagingQos);
+                                           messagingQos,
+                                           ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
         addRequestReplyIdCustomHeader(msg, publication.getSubscriptionId());
         return msg;
     }
@@ -206,7 +251,8 @@ public class MutableMessageFactory {
                                            fromParticipantId,
                                            toParticipantId,
                                            subscriptionStop,
-                                           messagingQos);
+                                           messagingQos,
+                                           ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
         addRequestReplyIdCustomHeader(msg, subscriptionStop.getSubscriptionId());
         return msg;
     }
@@ -218,7 +264,8 @@ public class MutableMessageFactory {
                              fromParticipantId,
                              multicastPublication.getMulticastId(),
                              multicastPublication,
-                             messagingQos);
+                             messagingQos,
+                             ExpiryDate.fromRelativeTtl(messagingQos.getRoundTripTtl_ms()));
     }
 
     private byte[] serializePayload(Object payload) {

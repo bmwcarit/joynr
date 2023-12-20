@@ -19,6 +19,7 @@
 package io.joynr.proxy;
 
 import io.joynr.arbitration.ArbitrationResult;
+import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.RequestReplyManager;
 import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
@@ -167,7 +168,8 @@ public class ConnectorTest {
             verify(requestReplyManager).sendRequest(eq(fromParticipantId),
                                                     eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
-                                                    eq(qosSettings));
+                                                    eq(qosSettings),
+                                                    any(ExpiryDate.class));
 
             final var actualRequest = requestCaptor.getValue();
             final var expectedRequest = new Request(method.getName(),
@@ -190,7 +192,8 @@ public class ConnectorTest {
                                                  any(DiscoveryEntryWithMetaInfo.class),
                                                  any(Request.class),
                                                  any(SynchronizedReplyCaller.class),
-                                                 any(MessagingQos.class))).thenReturn(new Reply("rrid", expected));
+                                                 any(MessagingQos.class),
+                                                 any(ExpiryDate.class))).thenReturn(new Reply("rrid", expected));
         try {
             connector.executeSyncMethod(method, new Object[]{});
             fail("Unexpected success from sync method call.");
@@ -209,7 +212,8 @@ public class ConnectorTest {
                                                  any(DiscoveryEntryWithMetaInfo.class),
                                                  any(Request.class),
                                                  any(SynchronizedReplyCaller.class),
-                                                 any(MessagingQos.class))).thenReturn(new Reply("rrid", expected));
+                                                 any(MessagingQos.class),
+                                                 any(ExpiryDate.class))).thenReturn(new Reply("rrid", expected));
         try {
             connector.executeSyncMethod(method, new Object[]{});
             fail("Unexpected success from sync method call.");
@@ -229,13 +233,15 @@ public class ConnectorTest {
                                                      any(DiscoveryEntryWithMetaInfo.class),
                                                      any(Request.class),
                                                      any(SynchronizedReplyCaller.class),
-                                                     any(MessagingQos.class))).thenReturn(new Reply());
+                                                     any(MessagingQos.class),
+                                                     any(ExpiryDate.class))).thenReturn(new Reply());
             connector.executeSyncMethod(method, new Object[]{});
             verify(requestReplyManager).sendSyncRequest(eq(fromParticipantId),
                                                         eq(toDiscoveryEntry),
                                                         requestCaptor.capture(),
                                                         isA(SynchronizedReplyCaller.class),
-                                                        eq(qosSettings));
+                                                        eq(qosSettings),
+                                                        any(ExpiryDate.class));
 
             final var actualRequest = requestCaptor.getValue();
             final var expectedRequest = new Request(method.getName(),

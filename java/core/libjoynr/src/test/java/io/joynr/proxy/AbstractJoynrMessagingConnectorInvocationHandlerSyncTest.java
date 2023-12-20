@@ -84,33 +84,39 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
             final ArgumentCaptor<String> requestReplyIdCaptor = ArgumentCaptor.forClass(String.class);
             final ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
             final ArgumentCaptor<SynchronizedReplyCaller> syncReplyCallerCaptor = ArgumentCaptor.forClass(SynchronizedReplyCaller.class);
-            final ArgumentCaptor<ExpiryDate> expiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
+            final ArgumentCaptor<ExpiryDate> replyCallerExpiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
+            final ArgumentCaptor<ExpiryDate> requestReplyManagerExpiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
             final ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
 
             verify(replyCallerDirectory).addReplyCaller(requestReplyIdCaptor.capture(),
                                                         replyCallerCaptor.capture(),
-                                                        expiryDateCaptor.capture());
+                                                        replyCallerExpiryDateCaptor.capture());
             verify(requestReplyManager).sendSyncRequest(eq(FROM_PARTICIPANT_ID),
                                                         eq(toDiscoveryEntry),
                                                         requestCaptor.capture(),
                                                         syncReplyCallerCaptor.capture(),
-                                                        any(MessagingQos.class));
+                                                        any(MessagingQos.class),
+                                                        requestReplyManagerExpiryDateCaptor.capture());
 
             final String requestReplyId = requestReplyIdCaptor.getValue();
             assertNotNull(requestReplyId);
             final ReplyCaller replyCaller = replyCallerCaptor.getValue();
             assertNotNull(replyCaller);
             assertTrue(replyCaller instanceof SynchronizedReplyCaller);
-            final ExpiryDate expiryDate = expiryDateCaptor.getValue();
-            assertNotNull(expiryDate);
-            assertEquals(60000, expiryDate.getRelativeTtl());
-            assertTrue(expiryDate.getValue() > 0);
+            final ExpiryDate replyCallerExpiryDate = replyCallerExpiryDateCaptor.getValue();
+            assertNotNull(replyCallerExpiryDate);
+            assertEquals(60000, replyCallerExpiryDate.getRelativeTtl());
+            assertTrue(replyCallerExpiryDate.getValue() > 0);
             final Request request = requestCaptor.getValue();
             assertNotNull(request);
             assertEquals(requestReplyId, request.getRequestReplyId());
             final SynchronizedReplyCaller syncReplyCaller = syncReplyCallerCaptor.getValue();
             assertNotNull(syncReplyCaller);
             assertEquals(replyCaller, syncReplyCaller);
+            final ExpiryDate requestReplyManagerExpiryDate = requestReplyManagerExpiryDateCaptor.getValue();
+            assertEquals(60000, requestReplyManagerExpiryDate.getRelativeTtl());
+            assertTrue(requestReplyManagerExpiryDate.getValue() > 0);
+            assertEquals(replyCallerExpiryDate, requestReplyManagerExpiryDate);
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
         }
@@ -148,7 +154,8 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
             verify(requestReplyManager, never()).sendRequest(anyString(),
                                                              any(DiscoveryEntryWithMetaInfo.class),
                                                              any(Request.class),
-                                                             any(MessagingQos.class));
+                                                             any(MessagingQos.class),
+                                                             any(ExpiryDate.class));
         }
     }
 
@@ -202,7 +209,8 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
                                                         eq(toDiscoveryEntry),
                                                         any(Request.class),
                                                         any(SynchronizedReplyCaller.class),
-                                                        any(MessagingQos.class));
+                                                        any(MessagingQos.class),
+                                                        any(ExpiryDate.class));
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
         }
@@ -221,7 +229,8 @@ public abstract class AbstractJoynrMessagingConnectorInvocationHandlerSyncTest
                                                  any(DiscoveryEntryWithMetaInfo.class),
                                                  any(Request.class),
                                                  any(SynchronizedReplyCaller.class),
-                                                 any(MessagingQos.class))).thenReturn(reply);
+                                                 any(MessagingQos.class),
+                                                 any(ExpiryDate.class))).thenReturn(reply);
     }
 
     protected Method getSyncMethod(final String methodName,

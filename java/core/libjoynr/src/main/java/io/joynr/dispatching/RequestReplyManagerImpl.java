@@ -121,21 +121,24 @@ public class RequestReplyManagerImpl
     @Override
     public void sendRequest(final String fromParticipantId,
                             final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                            Request request,
-                            MessagingQos messagingQos) {
-        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos, false);
+                            final Request request,
+                            final MessagingQos messagingQos,
+                            final ExpiryDate expiryDate) {
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos, false, expiryDate);
     }
 
     @Override
-    public void sendRequest(String fromParticipantId,
-                            DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                            Request request,
-                            MessagingQos messagingQos,
-                            boolean isStatelessAsync) {
+    public void sendRequest(final String fromParticipantId,
+                            final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                            final Request request,
+                            final MessagingQos messagingQos,
+                            final boolean isStatelessAsync,
+                            final ExpiryDate expiryDate) {
         MutableMessage message = messageFactory.createRequest(fromParticipantId,
                                                               toDiscoveryEntry.getParticipantId(),
                                                               request,
-                                                              messagingQos);
+                                                              messagingQos,
+                                                              expiryDate);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
         message.setStatelessAsync(isStatelessAsync);
 
@@ -165,11 +168,12 @@ public class RequestReplyManagerImpl
     }
 
     @Override
-    public Reply sendSyncRequest(String fromParticipantId,
-                                 DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                                 Request request,
-                                 SynchronizedReplyCaller synchronizedReplyCaller,
-                                 MessagingQos messagingQos) {
+    public Reply sendSyncRequest(final String fromParticipantId,
+                                 final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                                 final Request request,
+                                 final SynchronizedReplyCaller synchronizedReplyCaller,
+                                 final MessagingQos messagingQos,
+                                 final ExpiryDate expiryDate) {
 
         if (shuttingDown) {
             final String message = String.format("Request: %s failed. SenderImpl ID: %s: joynr is shutting down",
@@ -182,7 +186,7 @@ public class RequestReplyManagerImpl
         // the synchronizedReplyCaller will complete the future when a message arrives
         synchronizedReplyCaller.setResponseFuture(responseFuture);
 
-        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos);
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos, expiryDate);
 
         // saving all pending futures so that they can be cancelled at shutdown
         Reply response = null;
