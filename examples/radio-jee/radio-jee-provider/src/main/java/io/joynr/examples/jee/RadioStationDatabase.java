@@ -50,21 +50,21 @@ public class RadioStationDatabase {
     }
 
     public RadioStation getCurrentStation() {
-        return currentStation;
+        return new RadioStation(currentStation);
     }
 
     public void setCurrentStation(RadioStation currentStation) {
-        if (!radioStations.contains(currentStation)) {
-            radioStations.add(currentStation);
-        }
-        this.currentStation = currentStation;
+        RadioStation newCurrentStation = new RadioStation(currentStation);
+        radioStations.add(newCurrentStation);
+        this.currentStation = newCurrentStation;
     }
 
     public void addRadioStation(RadioStation newRadioStation) throws ApplicationException {
-        if (radioStations.contains(newRadioStation)) {
+        RadioStation newStation = new RadioStation(newRadioStation);
+        if (radioStations.contains(newStation)) {
             throw new ApplicationException(Radio.AddFavoriteStationErrorEnum.DUPLICATE_RADIOSTATION);
         }
-        radioStations.add(newRadioStation);
+        radioStations.add(newStation);
     }
 
     public Set<RadioStation> getRadioStations() {
