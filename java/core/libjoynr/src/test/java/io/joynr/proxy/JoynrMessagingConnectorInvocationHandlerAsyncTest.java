@@ -63,7 +63,8 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
             verify(requestReplyManager, never()).sendRequest(anyString(),
                                                              any(DiscoveryEntryWithMetaInfo.class),
                                                              any(Request.class),
-                                                             any(MessagingQos.class));
+                                                             any(MessagingQos.class),
+                                                             any(ExpiryDate.class));
         }
     }
 
@@ -83,7 +84,8 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
             verify(requestReplyManager, never()).sendRequest(anyString(),
                                                              any(DiscoveryEntryWithMetaInfo.class),
                                                              any(Request.class),
-                                                             any(MessagingQos.class));
+                                                             any(MessagingQos.class),
+                                                             any(ExpiryDate.class));
         }
     }
 
@@ -106,17 +108,19 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
 
         final ArgumentCaptor<String> requestReplyIdCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<ReplyCaller> replyCallerCaptor = ArgumentCaptor.forClass(ReplyCaller.class);
-        final ArgumentCaptor<ExpiryDate> expiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
+        final ArgumentCaptor<ExpiryDate> replyCallerExpiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
+        final ArgumentCaptor<ExpiryDate> requestReplyManagerExpiryDateCaptor = ArgumentCaptor.forClass(ExpiryDate.class);
         final ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         final ArgumentCaptor<MessagingQos> messagingQosCaptor = ArgumentCaptor.forClass(MessagingQos.class);
 
         verify(replyCallerDirectory).addReplyCaller(requestReplyIdCaptor.capture(),
                                                     replyCallerCaptor.capture(),
-                                                    expiryDateCaptor.capture());
+                                                    replyCallerExpiryDateCaptor.capture());
         verify(requestReplyManager).sendRequest(eq(FROM_PARTICIPANT_ID),
                                                 eq(toDiscoveryEntry),
                                                 requestCaptor.capture(),
-                                                messagingQosCaptor.capture());
+                                                messagingQosCaptor.capture(),
+                                                requestReplyManagerExpiryDateCaptor.capture());
 
         final String requestReplyId = requestReplyIdCaptor.getValue();
         assertNotNull(requestReplyId);
@@ -124,10 +128,10 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
         assertNotNull(replyCaller);
         assertTrue(replyCaller instanceof RpcAsyncRequestReplyCaller);
         assertEquals(proxy, ((RpcAsyncRequestReplyCaller) replyCaller).getProxy());
-        final ExpiryDate expiryDate = expiryDateCaptor.getValue();
-        assertNotNull(expiryDate);
-        assertEquals(60000, expiryDate.getRelativeTtl());
-        assertTrue(expiryDate.getValue() > 0);
+        final ExpiryDate replyCallerExpiryDate = replyCallerExpiryDateCaptor.getValue();
+        assertNotNull(replyCallerExpiryDate);
+        assertEquals(60000, replyCallerExpiryDate.getRelativeTtl());
+        assertTrue(replyCallerExpiryDate.getValue() > 0);
         final Request request = requestCaptor.getValue();
         assertNotNull(request);
         assertEquals(requestReplyId, request.getRequestReplyId());
@@ -135,6 +139,11 @@ public class JoynrMessagingConnectorInvocationHandlerAsyncTest
         final MessagingQos messagingQos = messagingQosCaptor.getValue();
         assertNotNull(messagingQos);
         assertEquals(60000, messagingQos.getRoundTripTtl_ms());
+        final ExpiryDate requestReplyManagerExpiryDate = replyCallerExpiryDateCaptor.getValue();
+        assertNotNull(requestReplyManagerExpiryDate);
+        assertEquals(60000, requestReplyManagerExpiryDate.getRelativeTtl());
+        assertTrue(requestReplyManagerExpiryDate.getValue() > 0);
+        assertEquals(replyCallerExpiryDate, requestReplyManagerExpiryDate);
     }
 
     private Method getAsyncMethod(final String methodName,

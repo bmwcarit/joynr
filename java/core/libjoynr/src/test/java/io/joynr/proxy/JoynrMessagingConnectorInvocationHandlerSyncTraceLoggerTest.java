@@ -79,7 +79,8 @@ public class JoynrMessagingConnectorInvocationHandlerSyncTraceLoggerTest
                                                         eq(toDiscoveryEntry),
                                                         any(Request.class),
                                                         any(SynchronizedReplyCaller.class),
-                                                        any(MessagingQos.class));
+                                                        any(MessagingQos.class),
+                                                        any(ExpiryDate.class));
         } catch (final ApplicationException exception) {
             fail("Unexpected exception: " + exception.getMessage());
         }

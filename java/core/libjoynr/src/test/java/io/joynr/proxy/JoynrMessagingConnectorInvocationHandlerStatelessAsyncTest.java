@@ -18,6 +18,7 @@
  */
 package io.joynr.proxy;
 
+import io.joynr.common.ExpiryDate;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.MessagingQos;
 import joynr.Request;
@@ -58,7 +59,8 @@ public class JoynrMessagingConnectorInvocationHandlerStatelessAsyncTest
             verify(requestReplyManager, never()).sendRequest(anyString(),
                                                              any(DiscoveryEntryWithMetaInfo.class),
                                                              any(Request.class),
-                                                             any(MessagingQos.class));
+                                                             any(MessagingQos.class),
+                                                             any(ExpiryDate.class));
         }
     }
 
@@ -75,7 +77,8 @@ public class JoynrMessagingConnectorInvocationHandlerStatelessAsyncTest
             verify(requestReplyManager, never()).sendRequest(anyString(),
                                                              any(DiscoveryEntryWithMetaInfo.class),
                                                              any(Request.class),
-                                                             any(MessagingQos.class));
+                                                             any(MessagingQos.class),
+                                                             any(ExpiryDate.class));
         }
     }
 

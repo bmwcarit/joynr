@@ -473,7 +473,8 @@ public class ProxyTest {
                                                          Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
-                                                         Mockito.<MessagingQos> any()))
+                                                         Mockito.<MessagingQos> any(),
+                                                         Mockito.<ExpiryDate> any()))
                .thenReturn(new Reply(requestReplyId, "Answer"));
 
         ProxyBuilder<TestInterface> proxyBuilder = getProxyBuilder(TestInterface.class);
@@ -490,7 +491,8 @@ public class ProxyTest {
                                                     Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                     requestCaptor.capture(),
                                                     Mockito.<SynchronizedReplyCaller> any(),
-                                                    messagingQosCaptor.capture());
+                                                    messagingQosCaptor.capture(),
+                                                    Mockito.<ExpiryDate> any());
         Assert.assertEquals(expectedMessagingQos.getRoundTripTtl_ms(),
                             messagingQosCaptor.getValue().getRoundTripTtl_ms());
         Assert.assertFalse(requestCaptor.getValue().hasParams());
@@ -517,7 +519,8 @@ public class ProxyTest {
                                                          Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                          Mockito.<Request> any(),
                                                          Mockito.<SynchronizedReplyCaller> any(),
-                                                         Mockito.<MessagingQos> any()))
+                                                         Mockito.<MessagingQos> any(),
+                                                         Mockito.<ExpiryDate> any()))
                .thenReturn(new Reply(requestReplyId,
                                      new ApplicationException(ApplicationErrors.ERROR_VALUE_2,
                                                               "syncMethodCallApplicationException")));
@@ -567,7 +570,8 @@ public class ProxyTest {
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
                                                  Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                  Mockito.<Request> any(),
-                                                 Mockito.<MessagingQos> any());
+                                                 Mockito.<MessagingQos> any(),
+                                                 Mockito.<ExpiryDate> any());
 
         final Future<String> future;
         if (privateMessagingQos != null) {
@@ -584,7 +588,8 @@ public class ProxyTest {
         verify(requestReplyManager).sendRequest(Mockito.<String> any(),
                                                 Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                 requestCaptor.capture(),
-                                                messagingQosCaptor.capture());
+                                                messagingQosCaptor.capture(),
+                                                Mockito.<ExpiryDate> any());
         verify(callback).resolve(asyncReplyText);
         Assert.assertEquals(expectedMessagingQos.getRoundTripTtl_ms(),
                             messagingQosCaptor.getValue().getRoundTripTtl_ms());
@@ -688,7 +693,8 @@ public class ProxyTest {
         }).when(requestReplyManager).sendRequest(Mockito.<String> any(),
                                                  Mockito.<DiscoveryEntryWithMetaInfo> any(),
                                                  Mockito.<Request> any(),
-                                                 Mockito.<MessagingQos> any());
+                                                 Mockito.<MessagingQos> any(),
+                                                 Mockito.<ExpiryDate> any());
 
         boolean exceptionThrown = false;
         String reply = "";
