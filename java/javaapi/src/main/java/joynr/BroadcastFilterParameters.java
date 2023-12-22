@@ -28,11 +28,11 @@ public class BroadcastFilterParameters implements JoynrType {
     Map<String, String> filterParameters = new HashMap<String, String>();
 
     public Map<String, String> getFilterParameters() {
-        return filterParameters;
+        return new HashMap<>(filterParameters);
     }
 
     public void setFilterParameters(Map<String, String> filterParameters) {
-        this.filterParameters = filterParameters;
+        this.filterParameters = (filterParameters != null) ? new HashMap<>(filterParameters) : new HashMap<>();
     }
 
     protected void setFilterParameter(String key, String value) {
