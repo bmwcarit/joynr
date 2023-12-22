@@ -18,6 +18,7 @@
  */
 package joynr;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -33,7 +34,7 @@ public abstract class AbstractPublication implements JoynrMessageType {
     }
 
     public AbstractPublication(List<? extends Object> response) {
-        this.response = response;
+        this.response = (response != null) ? new ArrayList<>(response) : null;
     }
 
     public AbstractPublication(JoynrRuntimeException error) {
@@ -41,7 +42,7 @@ public abstract class AbstractPublication implements JoynrMessageType {
     }
 
     public Object getResponse() {
-        return response;
+        return (response != null) ? new ArrayList<>(response) : null;
     }
 
     public JoynrRuntimeException getError() {

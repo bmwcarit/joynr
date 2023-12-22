@@ -117,7 +117,7 @@ public class DiscoveryResult {
      * @return Returns a Collection with all DiscoveryEntries in this DiscoveryResult.
      */
     public Collection<DiscoveryEntry> getAllDiscoveryEntries() {
-        return discoveryEntries;
+        return new ArrayList<>(discoveryEntries);
     }
 
     /**

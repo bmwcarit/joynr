@@ -97,7 +97,7 @@ public class ProviderRegistrar {
      * @return the ProviderRegistrar instance.
      */
     public ProviderRegistrar withProviderQos(ProviderQos providerQos) {
-        this.providerQos = providerQos;
+        this.providerQos = (providerQos != null) ? new ProviderQos(providerQos) : new ProviderQos();
         return this;
     }
 
