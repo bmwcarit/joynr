@@ -175,7 +175,7 @@ TEST_F(ArbitratorTest, arbitrationTimeout_callsOnErrorIfNoRetryIsPossible)
                                              _mockDiscovery,
                                              discoveryQos,
                                              _emptyGbidsVector,
-                                             move(_lastSeenArbitrationStrategyFunction));
+                                             std::move(_lastSeenArbitrationStrategyFunction));
 
     auto onSuccess = [](const ArbitrationResult&) { FAIL(); };
 
@@ -340,7 +340,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_selectsCorrectProvide
                                                       _mockDiscovery,
                                                       discoveryQos,
                                                       _emptyGbidsVector,
-                                                      move(_qosArbitrationStrategyFunction));
+                                                      std::move(_qosArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &participantIds](const ArbitrationResult& arbitrationResult) {
@@ -414,7 +414,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksVersion)
                                                       _mockDiscovery,
                                                       discoveryQos,
                                                       _emptyGbidsVector,
-                                                      move(_qosArbitrationStrategyFunction));
+                                                      std::move(_qosArbitrationStrategyFunction));
 
     // Check that one of the expected participant was selected
     auto onSuccess = [this, &expectedParticipantIds](const ArbitrationResult& arbitrationResult) {
@@ -491,7 +491,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_highestPriority_checksOnChange)
                                                       _mockDiscovery,
                                                       discoveryQos,
                                                       _emptyGbidsVector,
-                                                      move(_qosArbitrationStrategyFunction));
+                                                      std::move(_qosArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantId](const ArbitrationResult& arbitrationResult) {
@@ -580,7 +580,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_selectsCorrectProvider)
                                                       _mockDiscovery,
                                                       discoveryQos,
                                                       _emptyGbidsVector,
-                                                      move(_keywordArbitrationStrategyFunction));
+                                                      std::move(_keywordArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantId](const ArbitrationResult& arbitrationResult) {
@@ -659,7 +659,7 @@ TEST_F(ArbitratorTest, arbitrationStrategy_keyword_checksVersion)
                                                       _mockDiscovery,
                                                       discoveryQos,
                                                       _emptyGbidsVector,
-                                                      move(_keywordArbitrationStrategyFunction));
+                                                      std::move(_keywordArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &expectedParticipantIds](const ArbitrationResult& arbitrationResult) {
@@ -711,7 +711,7 @@ TEST_F(ArbitratorTest, allowFourRetries_expectFiveDiscoveryAttempts)
                                          _mockDiscovery,
                                          discoveryQos,
                                          _emptyGbidsVector,
-                                         move(_lastSeenArbitrationStrategyFunction));
+                                         std::move(_lastSeenArbitrationStrategyFunction));
 
     auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
         types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
@@ -830,7 +830,7 @@ TEST_F(ArbitratorTest, getHighestPriorityReturnsNoCompatibleProviderFoundExcepti
                                                       _mockDiscovery,
                                                       discoveryQos,
                                                       _emptyGbidsVector,
-                                                      move(_qosArbitrationStrategyFunction));
+                                                      std::move(_qosArbitrationStrategyFunction));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -929,7 +929,7 @@ TEST_F(ArbitratorTest, getKeywordProviderReturnsNoCompatibleProviderFoundExcepti
                                          _mockDiscovery,
                                          discoveryQos,
                                          _emptyGbidsVector,
-                                         move(_keywordArbitrationStrategyFunction));
+                                         std::move(_keywordArbitrationStrategyFunction));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -1010,7 +1010,7 @@ TEST_F(ArbitratorTest, getFixedParticipantProviderReturnsNoCompatibleProviderFou
                                          _mockDiscovery,
                                          discoveryQos,
                                          _emptyGbidsVector,
-                                         move(_fixedParticipantArbitrationStrategyFunction));
+                                         std::move(_fixedParticipantArbitrationStrategyFunction));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersion2);
@@ -1105,7 +1105,7 @@ TEST_F(ArbitratorTest, getDefaultReturnsNoCompatibleProviderFoundException)
                                          _mockDiscovery,
                                          discoveryQos,
                                          _emptyGbidsVector,
-                                         move(_lastSeenArbitrationStrategyFunction));
+                                         std::move(_lastSeenArbitrationStrategyFunction));
 
     std::unordered_set<joynr::types::Version> expectedVersions;
     expectedVersions.insert(providerVersions2.begin(), providerVersions2.end());
@@ -1316,7 +1316,7 @@ TEST_F(ArbitratorTest, filterByVersionAndArbitrationStrategy_disabled_versionAnd
                                                    _mockDiscovery,
                                                    discoveryQos,
                                                    _emptyGbidsVector,
-                                                   move(_lastSeenArbitrationStrategyFunction));
+                                                   std::move(_lastSeenArbitrationStrategyFunction));
 
     // Check that the correct participant was selected
     auto onSuccess = [this, &discoveryEntries, &discoveryEntry1, &discoveryEntry2](
@@ -2025,7 +2025,7 @@ TEST_P(ArbitratorTestWithParams, discoveryException_emptyResult)
                                                    _mockDiscovery,
                                                    discoveryQos,
                                                    _emptyGbidsVector,
-                                                   move(_qosArbitrationStrategyFunction));
+                                                   std::move(_qosArbitrationStrategyFunction));
 
     arbitrator->startArbitration(onSuccess, onError);
     EXPECT_TRUE(_semaphore->waitFor(
@@ -2081,7 +2081,7 @@ void ArbitratorTest::testArbitrationStopsOnShutdown(bool testRetry)
                                                 _mockDiscovery,
                                                 discoveryQos,
                                                 _emptyGbidsVector,
-                                                move(_lastSeenArbitrationStrategyFunction));
+                                                std::move(_lastSeenArbitrationStrategyFunction));
 
     auto onSuccess = [](const ArbitrationResult& arbitrationResult) {
         types::DiscoveryEntryWithMetaInfo result = arbitrationResult.getDiscoveryEntries().front();
