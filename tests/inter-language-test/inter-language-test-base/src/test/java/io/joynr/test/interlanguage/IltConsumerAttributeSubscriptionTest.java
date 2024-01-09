@@ -18,6 +18,7 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.AfterClass;
@@ -72,7 +73,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                                                                                                          .setValidityMs(validityMs)
                                                                                                          .setAlertAfterIntervalMs(alertAfterIntervalMs)
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
 
         try {
             // must set the value before it can be retrieved again via subscription
@@ -104,7 +105,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeAttributeEnumerationCallbackDone == false) {
+            if (!subscribeAttributeEnumerationCallbackDone) {
                 logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 logger.info(name.getMethodName() + " - wait for callback is over");
@@ -112,9 +113,8 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - callback already done");
             }
 
-            if (!(subscribeAttributeEnumerationCallbackDone && subscribeAttributeEnumerationCallbackResult)) {
-                fail(name.getMethodName() + " - FAILED - callback NOT done");
-            }
+            assertTrue(name.getMethodName() + " - FAILED - callback NOT done",
+                       subscribeAttributeEnumerationCallbackDone && subscribeAttributeEnumerationCallbackResult);
 
             // try to unsubscribe in any case
             try {
@@ -149,7 +149,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                                                                                                          .setValidityMs(validityMs)
                                                                                                          .setAlertAfterIntervalMs(alertAfterIntervalMs)
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
 
         try {
             subscriptionIdFuture = testInterfaceProxy.subscribeToAttributeWithExceptionFromGetter(new AttributeSubscriptionAdapter<Boolean>() {
@@ -188,7 +188,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeAttributeWithExceptionFromGetterCallbackDone == false) {
+            if (!subscribeAttributeWithExceptionFromGetterCallbackDone) {
                 logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 logger.info(name.getMethodName() + " - wait for callback is over");
@@ -196,11 +196,10 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - callback already done");
             }
 
-            if (!subscribeAttributeWithExceptionFromGetterCallbackDone) {
-                fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-            } else if (!subscribeAttributeWithExceptionFromGetterCallbackResult) {
-                fail(name.getMethodName() + " - FAILED - callback got called but received unexpected result");
-            }
+            assertTrue(name.getMethodName() + " - FAILED - callback did not get called in time",
+                       subscribeAttributeWithExceptionFromGetterCallbackDone);
+            assertTrue(name.getMethodName() + " - FAILED - callback got called but received unexpected result",
+                       subscribeAttributeWithExceptionFromGetterCallbackResult);
             logger.info(name.getMethodName() + " - callback got called and received expected exception");
 
             // try to unsubscribe in any case

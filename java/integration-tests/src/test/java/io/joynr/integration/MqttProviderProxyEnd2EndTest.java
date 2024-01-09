@@ -20,7 +20,6 @@ package io.joynr.integration;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -159,9 +158,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
 
         provider.fireEmptyBroadcast("one", "two", "three");
         assertTrue(semaphore.tryAcquire(1, 60, TimeUnit.SECONDS));
-        if (errors.size() > 0) {
-            fail("Got errors. " + errors);
-        }
+        assertTrue("Got errors. " + errors, errors.isEmpty());
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -189,9 +186,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two", "three"); // match
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six"); // match
         assertTrue(semaphore.tryAcquire(4, 60, TimeUnit.SECONDS));
-        if (errors.size() > 0) {
-            fail("Got errors. " + errors);
-        }
+        assertTrue("Got errors. " + errors, errors.isEmpty());
 
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfWildCard.get());
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfOtherTopics.get());

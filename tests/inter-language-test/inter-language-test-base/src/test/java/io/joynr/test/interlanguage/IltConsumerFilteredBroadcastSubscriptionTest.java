@@ -18,6 +18,8 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.PrintWriter;
@@ -76,7 +78,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                                                                                                          .setValidityMs(validityMs)
                                                                                                          .setAlertAfterIntervalMs(alertAfterIntervalMs)
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
 
         try {
             BroadcastWithFilteringBroadcastFilterParameters filterParameters = new BroadcastWithFilteringBroadcastFilterParameters();
@@ -165,7 +167,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeBroadcastWithFilteringCallbackDone == false) {
+            if (!subscribeBroadcastWithFilteringCallbackDone) {
                 logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 logger.info(name.getMethodName() + " - wait for callback is over");
@@ -173,12 +175,11 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                 logger.info(name.getMethodName() + " - callback already done");
             }
 
-            if (!subscribeBroadcastWithFilteringCallbackDone) {
-                fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-            } else if (!subscribeBroadcastWithFilteringCallbackResult) {
-                fail(name.getMethodName()
-                        + " - FAILED - callback got called but received unexpected error or publication content");
-            }
+            assertTrue(name.getMethodName() + " - FAILED - callback did not get called in time",
+                       subscribeBroadcastWithFilteringCallbackDone);
+            assertTrue(name.getMethodName()
+                    + " - FAILED - callback got called but received unexpected error or publication content",
+                       subscribeBroadcastWithFilteringCallbackResult);
             logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // reset counter for 2nd test
@@ -192,7 +193,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeBroadcastWithFilteringCallbackDone == false) {
+            if (!subscribeBroadcastWithFilteringCallbackDone) {
                 logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 logger.info(name.getMethodName() + " - wait for callback is over");
@@ -200,9 +201,8 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                 logger.info(name.getMethodName() + " - callback already done");
             }
 
-            if (subscribeBroadcastWithFilteringCallbackDone) {
-                fail(name.getMethodName() + " - FAILED - callback got called unexpectedly");
-            }
+            assertFalse(name.getMethodName() + " - FAILED - callback got called unexpectedly",
+                        subscribeBroadcastWithFilteringCallbackDone);
             logger.info(name.getMethodName() + " - callback did not get called in time (expected)");
 
             // try to unsubscribe

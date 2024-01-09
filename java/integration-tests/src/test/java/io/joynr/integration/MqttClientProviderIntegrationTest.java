@@ -19,7 +19,7 @@
 package io.joynr.integration;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -210,12 +210,8 @@ public class MqttClientProviderIntegrationTest {
 
                                   }
                               });
-        if (!cdl.await(1000, TimeUnit.MILLISECONDS)) {
-            fail();
-        }
-        if (!provider.getSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS)) {
-            fail();
-        }
+        assertTrue(cdl.await(1000, TimeUnit.MILLISECONDS));
+        assertTrue(provider.getSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS));
         verify(provider, times(1)).voidOperation();
         Map<String, String> receivedCustomHeadersMap = provider.getCustomHeaders();
         for (String key : expectedHeaders.keySet()) {
@@ -278,12 +274,8 @@ public class MqttClientProviderIntegrationTest {
 
                                   }
                               });
-        if (!cdl.await(1000, TimeUnit.MILLISECONDS)) {
-            fail();
-        }
-        if (!provider.getSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS)) {
-            fail();
-        }
+        assertTrue(cdl.await(1000, TimeUnit.MILLISECONDS));
+        assertTrue(provider.getSemaphore().tryAcquire(1000, TimeUnit.MILLISECONDS));
         verify(provider, times(1)).voidOperation();
         Map<String, String> receivedCustomHeadersMap = provider.getCustomHeaders();
         for (String key : expectedHeaders.keySet()) {

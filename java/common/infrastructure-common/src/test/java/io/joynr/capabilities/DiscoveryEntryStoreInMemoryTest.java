@@ -20,6 +20,7 @@ package io.joynr.capabilities;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -412,9 +413,8 @@ public class DiscoveryEntryStoreInMemoryTest {
             // the list associated with that entry should have expected number of entries
             String domainInterfaceId = domainInterfaceKey(globalEntry.getDomain(), globalEntry.getInterfaceName());
             List<String> mapping = interfaceAddressToCapabilityMapping.get(domainInterfaceId);
-            if (mapping == null) {
-                fail("required mapping not found in interfaceAddressToCapabilityMapping");
-            }
+
+            assertNotNull("required mapping not found in interfaceAddressToCapabilityMapping", mapping);
             assertEquals(storeLimit, mapping.size());
         } catch (Exception exception) {
             fail(exception.getMessage());

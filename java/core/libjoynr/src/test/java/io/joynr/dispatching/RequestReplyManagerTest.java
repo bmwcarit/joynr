@@ -405,9 +405,7 @@ public class RequestReplyManagerTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 callCount.countDown();
-                if (!semaphore.tryAcquire(5000, TimeUnit.MILLISECONDS)) {
-                    fail("wait time expired for semaphore");
-                }
+                assertTrue("wait time expired for semaphore", semaphore.tryAcquire(5000, TimeUnit.MILLISECONDS));
                 @SuppressWarnings("unchecked")
                 ProviderCallback<Reply> cb = (ProviderCallback<Reply>) invocation.getArguments()[0];
                 cb.onSuccess(new Reply());
@@ -493,9 +491,7 @@ public class RequestReplyManagerTest {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 callCount.countDown();
-                if (!semaphore.tryAcquire(5000, TimeUnit.MILLISECONDS)) {
-                    fail("wait time expired for semaphore");
-                }
+                assertTrue("wait time expired for semaphore", semaphore.tryAcquire(5000, TimeUnit.MILLISECONDS));
                 replyCount.countDown();
                 return null;
             }
