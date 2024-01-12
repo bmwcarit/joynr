@@ -22,13 +22,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import io.joynr.messaging.websocket.MessageHelper;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -240,7 +240,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                     logger.error("Error parsing WebSocketClientAddress: ", e);
                 }
             } else {
-                messageArrivedListener.messageArrived(Arrays.copyOfRange(payload, offset, offset + len));
+                messageArrivedListener.messageArrived(MessageHelper.extractMessage(payload, offset, len));
             }
         }
 
