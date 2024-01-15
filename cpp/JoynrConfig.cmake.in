@@ -3,7 +3,7 @@ set(JOYNR_SUPPORT_WEBSOCKET @JOYNR_SUPPORT_WEBSOCKET@)
 set(JOYNR_SUPPORT_UDS @JOYNR_SUPPORT_UDS@)
 
 include(CMakeFindDependencyMacro)
-include(FindPkgConfig)
+find_package(PkgConfig)
 
 set(Boost_FOUND False)
 find_dependency(Boost @JOYNR_BOOST_REQUIRED_VERSION@ REQUIRED
