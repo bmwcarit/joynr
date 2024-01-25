@@ -415,7 +415,7 @@
 		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.14.2</jackson.version>
 		<netty.version>4.1.100.Final</netty.version>
-		<guice.version>5.1.0</guice.version>
+		<guice.version>6.0.0</guice.version>
 		<jetty.version>11.0.18</jetty.version>
 		<tycho.version>1.6.0</tycho.version>
 		<hibernate.version>5.6.11.Final</hibernate.version>
@@ -431,7 +431,7 @@
 		<jacoco.version>0.8.7</jacoco.version>
 		<sonarsource.version>3.9.1.2184</sonarsource.version>
 		<surefire.version>3.0.0-M3</surefire.version>
-		<ow2_asm.version>9.4</ow2_asm.version>
+		<ow2_asm.version>9.5</ow2_asm.version>
 		<guava.version>32.0.1-jre</guava.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
 	</properties>

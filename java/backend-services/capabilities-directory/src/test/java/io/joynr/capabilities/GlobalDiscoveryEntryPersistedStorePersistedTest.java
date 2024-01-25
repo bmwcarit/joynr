@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 
+import com.google.inject.persist.jpa.JpaPersistOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +72,10 @@ public class GlobalDiscoveryEntryPersistedStorePersistedTest {
     @Before
     public void setUp() throws Exception {
 
-        JpaPersistModule jpaModule = new JpaPersistModule("CapabilitiesDirectory");
+        JpaPersistOptions jpaOptions = JpaPersistOptions.builder()
+                                                        .setAutoBeginWorkOnEntityManagerCreation(true)
+                                                        .build();
+        JpaPersistModule jpaModule = new JpaPersistModule("CapabilitiesDirectory", jpaOptions);
         Properties jpaProperties = new Properties();
         jpaProperties.setProperty("javax.persistence.jdbc.url", "jdbc:postgresql://localhost:5432/gcd-test");
         // create-drop: drop the schema at the end of the session
