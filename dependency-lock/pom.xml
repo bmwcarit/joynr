@@ -155,19 +155,19 @@
 				<groupId>com.google.inject</groupId>
 				<artifactId>guice</artifactId>
 				<type>jar</type>
-				<version>5.1.0</version>
+				<version>6.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
 				<artifactId>guice-assistedinject</artifactId>
 				<type>jar</type>
-				<version>5.1.0</version>
+				<version>6.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
 				<artifactId>guice-persist</artifactId>
 				<type>jar</type>
-				<version>5.1.0</version>
+				<version>6.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.j2objc</groupId>
@@ -276,6 +276,12 @@
 				<artifactId>rxjava</artifactId>
 				<type>jar</type>
 				<version>2.2.19</version>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.inject</groupId>
+				<artifactId>jakarta.inject-api</artifactId>
+				<type>jar</type>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.platform</groupId>
