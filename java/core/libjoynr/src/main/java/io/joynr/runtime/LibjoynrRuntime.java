@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import io.joynr.proxy.ProxyBuilderFactory;
 import io.joynr.proxy.StatelessAsyncCallbackDirectory;
 import io.joynr.util.ObjectMapper;
 import joynr.system.RoutingProxy;
-import joynr.system.RoutingTypes.Address;
 
 public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
@@ -53,7 +52,6 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
                            DiscoverySettingsStorage discoverySettingsStorage,
                            VersionCompatibilityChecker versionCompatibilityChecker,
                            @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
-                           @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) final Address ccMessagingAddress,
                            final LibJoynrMessageRouter messageRouter,
                            final LibJoynrMessageSender messageSender,
                            @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) final String parentRoutingProviderParticipantId) {
@@ -74,7 +72,6 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
             public void onProxyCreationFinished(RoutingProxy routingProxy) {
                 try {
                     messageRouter.setParentRouter(routingProxy,
-                                                  ccMessagingAddress,
                                                   parentRoutingProviderParticipantId,
                                                   proxyBuilder.getParticipantId());
                     messageSender.setReplyToAddress(routingProxy.getReplyToAddress(), routingProxy.getGlobalAddress());

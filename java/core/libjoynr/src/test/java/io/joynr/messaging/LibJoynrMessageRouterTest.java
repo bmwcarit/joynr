@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2023 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,6 +110,8 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private MessagingStubFactory messagingStubFactory;
     @Mock
+    private MessagingStubFactory messagingStubFactoryForUdsAddress;
+    @Mock
     private MessagingSkeletonFactory messagingSkeletonFactory;
     @Mock
     private AddressManager addressManager;
@@ -139,6 +141,7 @@ public class LibJoynrMessageRouterTest {
         messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>()));
         lenient().when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
+        when(messagingStubFactoryForUdsAddress.create(any(Address.class))).thenReturn(messagingStub);
         lenient().when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");
         lenient().when(messagingSkeletonFactory.getSkeleton(any(Address.class))).thenReturn(Optional.empty());
 
@@ -149,16 +152,18 @@ public class LibJoynrMessageRouterTest {
                                                   messageQueue,
                                                   shutdownNotifier,
                                                   dispatcherMock,
-                                                  messageTrackerMock);
+                                                  messageTrackerMock,
+                                                  parentAddress);
         messageRouterForUdsAddresses = new LibJoynrMessageRouter(incomingUdsClientAddress,
                                                                  provideMessageSchedulerThreadPoolExecutor(),
                                                                  maxParallelSends,
-                                                                 messagingStubFactory,
+                                                                 messagingStubFactoryForUdsAddress,
                                                                  messageQueue,
                                                                  shutdownNotifier,
                                                                  dispatcherMock,
-                                                                 messageTrackerMock);
-        messageRouter.setParentRouter(messageRouterParent, parentAddress, "parentParticipantId", "proxyParticipantId");
+                                                                 messageTrackerMock,
+                                                                 parentAddress);
+        messageRouter.setParentRouter(messageRouterParent, "parentParticipantId", "proxyParticipantId");
         ObjectMapper objectMapper = new ObjectMapper();
         messageFactory = new MutableMessageFactory(objectMapper, new HashSet<JoynrMessageProcessor>());
         Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
@@ -169,7 +174,6 @@ public class LibJoynrMessageRouterTest {
     public void setParentRouter_UdsClientAddress_throws() {
         // throws because UdsClientAddress is not supported in Java
         messageRouterForUdsAddresses.setParentRouter(messageRouterParentUdsAddress,
-                                                     parentAddress,
                                                      "anotherParentParticipantId",
                                                      "anotherProxyParticipantId");
     }
@@ -185,7 +189,8 @@ public class LibJoynrMessageRouterTest {
                                                                              messageQueue,
                                                                              shutdownNotifier,
                                                                              dispatcherMock,
-                                                                             messageTrackerMock);
+                                                                             messageTrackerMock,
+                                                                             parentAddress);
         Field messageWorkerField = LibJoynrMessageRouter.class.getDeclaredField("messageWorkers");
         messageWorkerField.setAccessible(true);
         assertTrue(((List) messageWorkerField.get(localMessageRouter)).size() >= 2);
@@ -284,7 +289,8 @@ public class LibJoynrMessageRouterTest {
                                                                                 messageQueue,
                                                                                 shutdownNotifier,
                                                                                 dispatcherMock,
-                                                                                messageTrackerMock);
+                                                                                messageTrackerMock,
+                                                                                parentAddress);
         String routingProxyParticipantId = "proxyParticipantId";
         String[] participantIdsAdd = new String[]{ "participant0", "participant1", "participant2", "participant3" };
         String[] participantIdsRemove = new String[]{ "particpantIdRemoveOnly", "participant1", "participant3",
@@ -299,7 +305,6 @@ public class LibJoynrMessageRouterTest {
         deferredMessageRouter.removeNextHop(participantIdsRemove[3]);
         verifyNoInteractions(deferredMessageRouterParent);
         deferredMessageRouter.setParentRouter(deferredMessageRouterParent,
-                                              parentAddress,
                                               "parentParticipantId",
                                               routingProxyParticipantId);
         InOrder inOrder = inOrder(deferredMessageRouterParent);
@@ -327,7 +332,8 @@ public class LibJoynrMessageRouterTest {
                                                                                 messageQueue,
                                                                                 shutdownNotifier,
                                                                                 dispatcherMock,
-                                                                                messageTrackerMock);
+                                                                                messageTrackerMock,
+                                                                                parentAddress);
         String[] multicastIds = new String[]{ "multicastId1", "multicastId2", "multicastId3" };
         String[] subscriberParticipantIds = new String[]{ "subscriberParticipantId1", "subscriberParticipantId2",
                 "subscriberParticipantId3" };
@@ -350,7 +356,6 @@ public class LibJoynrMessageRouterTest {
                                                    providerParticipantIds[2]);
         verifyNoInteractions(deferredMessageRouterParent);
         deferredMessageRouter.setParentRouter(deferredMessageRouterParent,
-                                              parentAddress,
                                               "parentParticipantId",
                                               routingProxyParticipantId);
         verify(deferredMessageRouterParent).addNextHop(eq(routingProxyParticipantId), eq(incomingAddress), eq(false));

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2023 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     }
 
     private Address parentRouterMessagingAddress;
+    private IMessagingStub outgoingMessagingStub;
     private RoutingProxy parentRouter;
     private Address incomingAddress;
     private Dispatcher dispatcher;
@@ -106,7 +107,8 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                                  MessageQueue messageQueue,
                                  ShutdownNotifier shutdownNotifier,
                                  Dispatcher dispatcher,
-                                 MessageTrackerForGracefulShutdown messageTracker) {
+                                 MessageTrackerForGracefulShutdown messageTracker,
+                                 @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) final Address parentRouterMessagingAddress) {
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.scheduler = scheduler;
         this.dispatcher = dispatcher;
@@ -119,6 +121,8 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         startMessageWorkerThreads(maxParallelSends);
         this.incomingAddress = incomingAddress;
         this.messageTracker = messageTracker;
+        this.parentRouterMessagingAddress = parentRouterMessagingAddress;
+        this.outgoingMessagingStub = messagingStubFactory.create(parentRouterMessagingAddress);
     }
 
     @Override
@@ -259,10 +263,8 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     }
 
     public void setParentRouter(RoutingProxy parentRouter,
-                                Address parentRouterMessagingAddress,
                                 String parentRoutingProviderParticipantId,
                                 String routingProxyParticipantId) {
-        this.parentRouterMessagingAddress = parentRouterMessagingAddress;
         this.parentRouter = parentRouter;
 
         // because the routing provider is local, therefore isGloballyVisible is false
@@ -442,8 +444,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                 failureAction = createFailureAction(delayableMessage);
                 logger.trace(">>>>> SEND message {}", message.getId());
 
-                IMessagingStub messagingStub = messagingStubFactory.create(parentRouterMessagingAddress);
-                messagingStub.transmit(message, messageProcessedAction, failureAction);
+                outgoingMessagingStub.transmit(message, messageProcessedAction, failureAction);
                 messageTracker.unregister(message);
             } catch (Exception error) {
                 logger.error("Error in scheduled MessageWorker thread while processing outgoing message:", error);
