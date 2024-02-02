@@ -63,12 +63,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import io.joynr.dispatching.Dispatcher;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;
-import io.joynr.messaging.routing.AddressManager;
 import io.joynr.messaging.routing.DelayableImmutableMessage;
 import io.joynr.messaging.routing.LibJoynrMessageRouter;
 import io.joynr.messaging.routing.MessageQueue;
 import io.joynr.messaging.routing.MessagingStubFactory;
-import io.joynr.messaging.routing.RoutingTable;
 import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
 import io.joynr.runtime.ShutdownNotifier;
 import io.joynr.util.JoynrThreadFactory;
@@ -90,9 +88,14 @@ import org.slf4j.LoggerFactory;
 @RunWith(MockitoJUnitRunner.class)
 public class LibJoynrMessageRouterTest {
     // TODO test queue for removeNextHop
+    private static final String UNKNOWN_PARTICIPANT_ID = "unknownParticipantId";
+    private static final int MAX_PARALLEL_SENDS = 2;
+    private final static String GLOBAL_ADDRESS = "global-address";
+    private final static String TO_PARTICIPANT_ID = "toParticipantId";
+    private final static String FROM_PARTICIPANT_ID = "fromParticipantId";
 
     @Mock
-    IMessagingStub messagingStub;
+    private IMessagingStub messagingStub;
     @Mock
     private RoutingProxy messageRouterParent;
     @Mock
@@ -114,11 +117,7 @@ public class LibJoynrMessageRouterTest {
     @Mock
     private MessagingSkeletonFactory messagingSkeletonFactory;
     @Mock
-    private AddressManager addressManager;
-    @Mock
     private ShutdownNotifier shutdownNotifier;
-    @Mock
-    RoutingTable routingTableMock;
     @Mock
     private Dispatcher dispatcherMock;
     private MessageQueue messageQueue;
@@ -126,20 +125,12 @@ public class LibJoynrMessageRouterTest {
     private MessageTrackerForGracefulShutdown messageTrackerMock;
     private LibJoynrMessageRouter messageRouter;
     private LibJoynrMessageRouter messageRouterForUdsAddresses;
-    private String unknownParticipantId = "unknownParticipantId";
-    private int maxParallelSends = 2;
-
-    private MutableMessageFactory messageFactory;
     private MutableMessage joynrMessage;
-
-    private String globalAddress = "global-address";
-    private String toParticipantId = "toParticipantId";
-    private String fromParticipantId = "fromParticipantId";
 
     @Before
     public void setUp() {
-        messageQueue = spy(new MessageQueue(new DelayQueue<DelayableImmutableMessage>()));
-        lenient().when(messageRouterParent.getReplyToAddress()).thenReturn(globalAddress);
+        messageQueue = spy(new MessageQueue(new DelayQueue<>()));
+        lenient().when(messageRouterParent.getReplyToAddress()).thenReturn(GLOBAL_ADDRESS);
         when(messagingStubFactory.create(any(Address.class))).thenReturn(messagingStub);
         when(messagingStubFactoryForUdsAddress.create(any(Address.class))).thenReturn(messagingStub);
         lenient().when(parentAddress.getTopic()).thenReturn("LibJoynrMessageRouterTestChannel");
@@ -147,7 +138,7 @@ public class LibJoynrMessageRouterTest {
 
         messageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                   provideMessageSchedulerThreadPoolExecutor(),
-                                                  maxParallelSends,
+                                                  MAX_PARALLEL_SENDS,
                                                   messagingStubFactory,
                                                   messageQueue,
                                                   shutdownNotifier,
@@ -156,29 +147,31 @@ public class LibJoynrMessageRouterTest {
                                                   parentAddress);
         messageRouterForUdsAddresses = new LibJoynrMessageRouter(incomingUdsClientAddress,
                                                                  provideMessageSchedulerThreadPoolExecutor(),
-                                                                 maxParallelSends,
+                                                                 MAX_PARALLEL_SENDS,
                                                                  messagingStubFactoryForUdsAddress,
                                                                  messageQueue,
                                                                  shutdownNotifier,
                                                                  dispatcherMock,
                                                                  messageTrackerMock,
                                                                  parentAddress);
-        messageRouter.setParentRouter(messageRouterParent, "parentParticipantId", "proxyParticipantId");
+        messageRouter.setParentRouter(messageRouterParent, "proxyParticipantId");
         ObjectMapper objectMapper = new ObjectMapper();
-        messageFactory = new MutableMessageFactory(objectMapper, new HashSet<JoynrMessageProcessor>());
+        MutableMessageFactory messageFactory = new MutableMessageFactory(objectMapper, new HashSet<>());
         Request request = new Request("noMethod", new Object[]{}, new String[]{}, "requestReplyId");
-        joynrMessage = messageFactory.createRequest(fromParticipantId, toParticipantId, request, new MessagingQos());
+        joynrMessage = messageFactory.createRequest(FROM_PARTICIPANT_ID,
+                                                    TO_PARTICIPANT_ID,
+                                                    request,
+                                                    new MessagingQos());
     }
 
     @Test(expected = ProviderRuntimeException.class)
     public void setParentRouter_UdsClientAddress_throws() {
         // throws because UdsClientAddress is not supported in Java
-        messageRouterForUdsAddresses.setParentRouter(messageRouterParentUdsAddress,
-                                                     "anotherParentParticipantId",
-                                                     "anotherProxyParticipantId");
+        messageRouterForUdsAddresses.setParentRouter(messageRouterParentUdsAddress, "anotherProxyParticipantId");
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testAlwaysAtLeastTwoMessageWorkersAvailable() throws NoSuchFieldException, SecurityException,
                                                               IllegalArgumentException, IllegalAccessException {
         int localMaxParallelSends = 1;
@@ -199,15 +192,15 @@ public class LibJoynrMessageRouterTest {
     @Test
     public void passesNextHopToParent() {
         final boolean isGloballyVisible = true;
-        messageRouter.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
-        verify(messageRouterParent).addNextHop(eq(unknownParticipantId), eq(incomingAddress), eq(isGloballyVisible));
+        messageRouter.addNextHop(UNKNOWN_PARTICIPANT_ID, nextHopAddress, isGloballyVisible);
+        verify(messageRouterParent).addNextHop(eq(UNKNOWN_PARTICIPANT_ID), eq(incomingAddress), eq(isGloballyVisible));
     }
 
     @Test
     public void passesAddNextHopToParent_UdsClientAddress() {
         // parent router is not called because UdsClientAddress is not supported
         final boolean isGloballyVisible = true;
-        messageRouterForUdsAddresses.addNextHop(unknownParticipantId, nextHopAddress, isGloballyVisible);
+        messageRouterForUdsAddresses.addNextHop(UNKNOWN_PARTICIPANT_ID, nextHopAddress, isGloballyVisible);
         verify(messageRouterParentUdsAddress, times(0)).addNextHop(anyString(),
                                                                    any(UdsClientAddress.class),
                                                                    anyBoolean());
@@ -284,7 +277,7 @@ public class LibJoynrMessageRouterTest {
     public void queuedParentHopCallsHappenAfterParentRouterSet() {
         LibJoynrMessageRouter deferredMessageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                                                 provideMessageSchedulerThreadPoolExecutor(),
-                                                                                maxParallelSends,
+                                                                                MAX_PARALLEL_SENDS,
                                                                                 messagingStubFactory,
                                                                                 messageQueue,
                                                                                 shutdownNotifier,
@@ -304,9 +297,7 @@ public class LibJoynrMessageRouterTest {
         deferredMessageRouter.removeNextHop(participantIdsRemove[2]);
         deferredMessageRouter.removeNextHop(participantIdsRemove[3]);
         verifyNoInteractions(deferredMessageRouterParent);
-        deferredMessageRouter.setParentRouter(deferredMessageRouterParent,
-                                              "parentParticipantId",
-                                              routingProxyParticipantId);
+        deferredMessageRouter.setParentRouter(deferredMessageRouterParent, routingProxyParticipantId);
         InOrder inOrder = inOrder(deferredMessageRouterParent);
         inOrder.verify(deferredMessageRouterParent)
                .addNextHop(eq(routingProxyParticipantId), eq(incomingAddress), eq(false));
@@ -327,7 +318,7 @@ public class LibJoynrMessageRouterTest {
         String routingProxyParticipantId = "proxyParticipantId";
         LibJoynrMessageRouter deferredMessageRouter = new LibJoynrMessageRouter(incomingAddress,
                                                                                 provideMessageSchedulerThreadPoolExecutor(),
-                                                                                maxParallelSends,
+                                                                                MAX_PARALLEL_SENDS,
                                                                                 messagingStubFactory,
                                                                                 messageQueue,
                                                                                 shutdownNotifier,
@@ -355,9 +346,7 @@ public class LibJoynrMessageRouterTest {
                                                    subscriberParticipantIds[2],
                                                    providerParticipantIds[2]);
         verifyNoInteractions(deferredMessageRouterParent);
-        deferredMessageRouter.setParentRouter(deferredMessageRouterParent,
-                                              "parentParticipantId",
-                                              routingProxyParticipantId);
+        deferredMessageRouter.setParentRouter(deferredMessageRouterParent, routingProxyParticipantId);
         verify(deferredMessageRouterParent).addNextHop(eq(routingProxyParticipantId), eq(incomingAddress), eq(false));
         verify(deferredMessageRouterParent).addMulticastReceiver(eq(multicastIds[0]),
                                                                  eq(subscriberParticipantIds[0]),
@@ -378,7 +367,7 @@ public class LibJoynrMessageRouterTest {
     }
 
     @Test
-    public void testShutdown() throws InterruptedException {
+    public void testShutdown() {
         verify(shutdownNotifier).registerForShutdown(messageRouter);
     }
 
@@ -426,24 +415,26 @@ public class LibJoynrMessageRouterTest {
         return (ScheduledExecutorService) field.get(messageRouter);
     }
 
+    @SuppressWarnings("unchecked")
     private List<Runnable> getWorkers() throws NoSuchFieldException, IllegalAccessException {
         final Field field = LibJoynrMessageRouter.class.getDeclaredField("messageWorkers");
         field.setAccessible(true);
         return (List<Runnable>) field.get(messageRouter);
     }
 
+    @SuppressWarnings("unchecked")
     private List<Future<?>> getWorkerFutures() throws NoSuchFieldException, IllegalAccessException {
         final Field field = LibJoynrMessageRouter.class.getDeclaredField("messageWorkerFutures");
         field.setAccessible(true);
         return (List<Future<?>>) field.get(messageRouter);
     }
 
-    class TestMessageWorker implements LibJoynrMessageWorkable {
-        private Logger logger = LoggerFactory.getLogger(TestMessageWorker.class);
+    static class TestMessageWorker implements LibJoynrMessageWorkable {
+        private final Logger logger = LoggerFactory.getLogger(TestMessageWorker.class);
         private CountDownLatch countDownLatch;
         private volatile boolean stopped;
-        private long sleepAfterStop;
-        private ScheduledExecutorService executor;
+        private final long sleepAfterStop;
+        private final ScheduledExecutorService executor;
 
         public TestMessageWorker(final long sleepAfterStop) {
             this.stopped = false;

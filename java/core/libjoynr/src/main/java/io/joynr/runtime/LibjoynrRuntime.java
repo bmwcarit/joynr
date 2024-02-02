@@ -44,17 +44,16 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public LibjoynrRuntime(ObjectMapper objectMapper,
-                           ProxyBuilderFactory proxyBuilderFactory,
-                           MessagingSkeletonFactory messagingSkeletonFactory,
-                           LocalDiscoveryAggregator localDiscoveryAggregator,
-                           StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
-                           DiscoverySettingsStorage discoverySettingsStorage,
-                           VersionCompatibilityChecker versionCompatibilityChecker,
-                           @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
+    public LibjoynrRuntime(final ObjectMapper objectMapper,
+                           final ProxyBuilderFactory proxyBuilderFactory,
+                           final MessagingSkeletonFactory messagingSkeletonFactory,
+                           final LocalDiscoveryAggregator localDiscoveryAggregator,
+                           final StatelessAsyncCallbackDirectory statelessAsyncCallbackDirectory,
+                           final DiscoverySettingsStorage discoverySettingsStorage,
+                           final VersionCompatibilityChecker versionCompatibilityChecker,
+                           final @Named(SystemServicesSettings.PROPERTY_SYSTEM_SERVICES_DOMAIN) String systemServicesDomain,
                            final LibJoynrMessageRouter messageRouter,
-                           final LibJoynrMessageSender messageSender,
-                           @Named(SystemServicesSettings.PROPERTY_CC_ROUTING_PROVIDER_PARTICIPANT_ID) final String parentRoutingProviderParticipantId) {
+                           final LibJoynrMessageSender messageSender) {
         super(objectMapper,
               proxyBuilderFactory,
               messagingSkeletonFactory,
@@ -66,23 +65,21 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
         final ProxyBuilder<RoutingProxy> proxyBuilder = getProxyBuilder(systemServicesDomain, RoutingProxy.class);
 
-        ProxyCreatedCallback<RoutingProxy> routingProxyCreatedCallback = new ProxyCreatedCallback<RoutingProxy>() {
+        final ProxyCreatedCallback<RoutingProxy> routingProxyCreatedCallback = new ProxyCreatedCallback<>() {
 
             @Override
-            public void onProxyCreationFinished(RoutingProxy routingProxy) {
+            public void onProxyCreationFinished(final RoutingProxy routingProxy) {
                 try {
-                    messageRouter.setParentRouter(routingProxy,
-                                                  parentRoutingProviderParticipantId,
-                                                  proxyBuilder.getParticipantId());
+                    messageRouter.setParentRouter(routingProxy, proxyBuilder.getParticipantId());
                     messageSender.setReplyToAddress(routingProxy.getReplyToAddress(), routingProxy.getGlobalAddress());
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     logger.error("Error during runtime creation, communication with other joynr runtimes might not be possible.",
                                  e);
                 }
             }
 
             @Override
-            public void onProxyCreationError(JoynrRuntimeException error) {
+            public void onProxyCreationError(final JoynrRuntimeException error) {
                 logger.error("Fatal error during runtime creation, no communication with other joynr runtimes is possible:"
                         + " Routing proxy creation failed:", error);
             }

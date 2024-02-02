@@ -69,64 +69,59 @@ import joynr.system.RoutingTypes.WebSocketClientAddress;
 public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRegistrar, ShutdownListener {
     private static final Logger logger = LoggerFactory.getLogger(LibJoynrMessageRouter.class);
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:sss z");
-    private ScheduledExecutorService scheduler;
+    private final ScheduledExecutorService scheduler;
+    @SuppressWarnings("FieldCanBeLocal")
     @Inject(optional = true)
     @Named(ConfigurableMessagingSettings.PROPERTY_ROUTING_MAX_RETRY_COUNT)
     private long maxRetryCount = ConfigurableMessagingSettings.DEFAULT_ROUTING_MAX_RETRY_COUNT;
-    private MessagingStubFactory messagingStubFactory;
 
     private final MessageQueue messageQueue;
 
     private List<LibJoynrMessageWorkable> messageWorkers;
     private List<Future<?>> messageWorkerFutures;
 
-    private static interface QueuedParentRoutingUpdate {
+    private interface QueuedParentRoutingUpdate {
         void execute();
     }
 
-    private static interface QueuedMulticastRegistration {
+    private interface QueuedMulticastRegistration {
         void register();
     }
 
-    private Address parentRouterMessagingAddress;
-    private IMessagingStub outgoingMessagingStub;
+    private final IMessagingStub outgoingMessagingStub;
     private RoutingProxy parentRouter;
-    private Address incomingAddress;
-    private Dispatcher dispatcher;
-    private List<QueuedParentRoutingUpdate> queuedParentRoutingUpdates = new ArrayList<>();
-    private Map<String, QueuedMulticastRegistration> queuedMulticastRegistrations = new HashMap<>();
-    private boolean ready = false;
-    private MessageTrackerForGracefulShutdown messageTracker;
+    private final Address incomingAddress;
+    private final Dispatcher dispatcher;
+    private final List<QueuedParentRoutingUpdate> queuedParentRoutingUpdates = new ArrayList<>();
+    private final Map<String, QueuedMulticastRegistration> queuedMulticastRegistrations = new HashMap<>();
+    private volatile boolean ready = false;
+    private final MessageTrackerForGracefulShutdown messageTracker;
 
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
-    public LibJoynrMessageRouter(@Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
-                                 @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
-                                 @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
-                                 MessagingStubFactory messagingStubFactory,
-                                 MessageQueue messageQueue,
-                                 ShutdownNotifier shutdownNotifier,
-                                 Dispatcher dispatcher,
-                                 MessageTrackerForGracefulShutdown messageTracker,
-                                 @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) final Address parentRouterMessagingAddress) {
+    public LibJoynrMessageRouter(final @Named(SystemServicesSettings.LIBJOYNR_MESSAGING_ADDRESS) Address incomingAddress,
+                                 final @Named(SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
+                                 final @Named(ConfigurableMessagingSettings.PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maxParallelSends,
+                                 final MessagingStubFactory messagingStubFactory,
+                                 final MessageQueue messageQueue,
+                                 final ShutdownNotifier shutdownNotifier,
+                                 final Dispatcher dispatcher,
+                                 final MessageTrackerForGracefulShutdown messageTracker,
+                                 final @Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address parentRouterMessagingAddress) {
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         this.scheduler = scheduler;
         this.dispatcher = dispatcher;
-        this.messagingStubFactory = messagingStubFactory;
         this.messageQueue = messageQueue;
         shutdownNotifier.registerForShutdown(this);
-        if (maxParallelSends < 2) {
-            maxParallelSends = 2;
-        }
-        startMessageWorkerThreads(maxParallelSends);
+        final int threadCount = maxParallelSends < 2 ? 2 : maxParallelSends;
+        startMessageWorkerThreads(threadCount);
         this.incomingAddress = incomingAddress;
         this.messageTracker = messageTracker;
-        this.parentRouterMessagingAddress = parentRouterMessagingAddress;
         this.outgoingMessagingStub = messagingStubFactory.create(parentRouterMessagingAddress);
     }
 
     @Override
-    public boolean resolveNextHop(String participantId) {
+    public boolean resolveNextHop(final String participantId) {
         return true;
     }
 
@@ -153,12 +148,8 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
             // proxy for parent router is not ready. Once ready == true, it will never be set to false again.
             synchronized (this) {
                 if (!ready) {
-                    QueuedParentRoutingUpdate queuedAdd = new QueuedParentRoutingUpdate() {
-                        @Override
-                        public void execute() {
-                            addNextHopToParent(participantId, isGloballyVisible);
-                        }
-                    };
+                    final QueuedParentRoutingUpdate queuedAdd = () -> addNextHopToParent(participantId,
+                                                                                         isGloballyVisible);
                     logger.debug("Queuing addNextHop for participantId {}", participantId);
                     queuedParentRoutingUpdates.add(queuedAdd);
                     return;
@@ -175,12 +166,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
             // proxy for parent router is not ready. Once ready == true, it will never be set to false again.
             synchronized (this) {
                 if (!ready) {
-                    QueuedParentRoutingUpdate queuedAdd = new QueuedParentRoutingUpdate() {
-                        @Override
-                        public void execute() {
-                            removeNextHopFromParent(participantId);
-                        }
-                    };
+                    final QueuedParentRoutingUpdate queuedAdd = () -> removeNextHopFromParent(participantId);
                     logger.debug("Queuing removeNextHop for participantId {}", participantId);
                     queuedParentRoutingUpdates.add(queuedAdd);
                     return;
@@ -190,7 +176,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         removeNextHopFromParent(participantId);
     }
 
-    private void addNextHopToParent(String participantId, boolean isGloballyVisible) {
+    private void addNextHopToParent(final String participantId, final boolean isGloballyVisible) {
         logger.trace("Adding next hop with participantId {} to parent router", participantId);
         if (incomingAddress instanceof WebSocketAddress) {
             parentRouter.addNextHop(participantId, (WebSocketAddress) incomingAddress, isGloballyVisible);
@@ -204,7 +190,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         }
     }
 
-    private void removeNextHopFromParent(String participantId) {
+    private void removeNextHopFromParent(final String participantId) {
         logger.trace("Removing next hop with participantId {} from parent router", participantId);
         parentRouter.removeNextHop(participantId);
     }
@@ -213,15 +199,12 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     public void addMulticastReceiver(final String multicastId,
                                      final String subscriberParticipantId,
                                      final String providerParticipantId) {
-        QueuedMulticastRegistration registerWithParent = new QueuedMulticastRegistration() {
-            @Override
-            public void register() {
-                logger.trace("Adding multicast receiver {} for multicast {} on provider {}",
-                             subscriberParticipantId,
-                             multicastId,
-                             providerParticipantId);
-                parentRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
-            }
+        final QueuedMulticastRegistration registerWithParent = () -> {
+            logger.trace("Adding multicast receiver {} for multicast {} on provider {}",
+                         subscriberParticipantId,
+                         multicastId,
+                         providerParticipantId);
+            parentRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         };
         if (!ready) {
             // lazy synchronization: synchronization is only required if message router is not yet ready, i.e.
@@ -242,9 +225,9 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     }
 
     @Override
-    public void removeMulticastReceiver(String multicastId,
-                                        String subscriberParticipantId,
-                                        String providerParticipantId) {
+    public void removeMulticastReceiver(final String multicastId,
+                                        final String subscriberParticipantId,
+                                        final String providerParticipantId) {
         logger.trace("Removing multicast receiver {} for multicast {} on provider {}",
                      subscriberParticipantId,
                      multicastId,
@@ -262,43 +245,43 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         parentRouter.removeMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
     }
 
-    public void setParentRouter(RoutingProxy parentRouter,
-                                String parentRoutingProviderParticipantId,
-                                String routingProxyParticipantId) {
+    public void setParentRouter(final RoutingProxy parentRouter, final String routingProxyParticipantId) {
         this.parentRouter = parentRouter;
 
         // because the routing provider is local, therefore isGloballyVisible is false
         final boolean isGloballyVisible = false;
         addNextHopToParent(routingProxyParticipantId, isGloballyVisible);
         synchronized (this) {
-            for (QueuedParentRoutingUpdate queuedParentHopCall : queuedParentRoutingUpdates) {
-                queuedParentHopCall.execute();
-            }
-            queuedParentRoutingUpdates = new ArrayList<>();
-            for (QueuedMulticastRegistration registerWithParent : queuedMulticastRegistrations.values()) {
-                registerWithParent.register();
-            }
+            queuedParentRoutingUpdates.forEach(QueuedParentRoutingUpdate::execute);
+            queuedParentRoutingUpdates.clear();
+            queuedMulticastRegistrations.values().forEach(QueuedMulticastRegistration::register);
             queuedMulticastRegistrations.clear();
             ready = true;
         }
     }
 
     @Override
-    public void routeIn(ImmutableMessage message) {
+    public void routeIn(final ImmutableMessage message) {
         messageTracker.register(message);
-        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, Set.of("incoming"), 0);
+        final DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message,
+                                                                                         0,
+                                                                                         Set.of("incoming"),
+                                                                                         0);
         messageQueue.put(delayableMessage);
     }
 
     @Override
-    public void routeOut(ImmutableMessage message) {
+    public void routeOut(final ImmutableMessage message) {
         logger.trace("Scheduling outgoing message {} with delay {} and retries {}", message, 0, 0);
         messageTracker.register(message);
-        DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message, 0, Set.of("outgoing"), 0);
+        final DelayableImmutableMessage delayableMessage = new DelayableImmutableMessage(message,
+                                                                                         0,
+                                                                                         Set.of("outgoing"),
+                                                                                         0);
         scheduleOutgoingMessage(delayableMessage);
     }
 
-    private void scheduleOutgoingMessage(DelayableImmutableMessage delayableMessage) {
+    private void scheduleOutgoingMessage(final DelayableImmutableMessage delayableMessage) {
         final int retriesCount = delayableMessage.getRetriesCount();
         if (maxRetryCount > -1) {
             if (retriesCount > maxRetryCount) {
@@ -318,12 +301,12 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     }
 
     private FailureAction createFailureAction(final DelayableImmutableMessage delayableMessage) {
-        final FailureAction failureAction = new FailureAction() {
+        return new FailureAction() {
             private final AtomicBoolean failureActionExecutedOnce = new AtomicBoolean(false);
 
             @Override
-            public void execute(Throwable error) {
-                ImmutableMessage messageNotSent = delayableMessage.getMessage();
+            public void execute(final Throwable error) {
+                final ImmutableMessage messageNotSent = delayableMessage.getMessage();
 
                 if (!failureActionExecutedOnce.compareAndSet(false, true)) {
                     logger.trace("Failure action for message {} already executed once. Ignoring further call.",
@@ -348,7 +331,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                             messageNotSent.getTrackingInfo(),
                             error);
 
-                long delayMs;
+                final long delayMs;
                 if (error instanceof JoynrDelayMessageException) {
                     delayMs = ((JoynrDelayMessageException) error).getDelayMs();
                 } else {
@@ -363,23 +346,15 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
                             delayableMessage.getRetriesCount());
                 try {
                     scheduleOutgoingMessage(delayableMessage);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     logger.warn("Rescheduling of message {} failed", messageNotSent.getTrackingInfo());
                 }
             }
         };
-        return failureAction;
     }
 
     private SuccessAction createMessageProcessedAction(final ImmutableMessage message) {
-        final SuccessAction successAction = new SuccessAction() {
-
-            @Override
-            public void execute() {
-                messageTracker.unregister(message);
-            }
-        };
-        return successAction;
+        return () -> messageTracker.unregister(message);
     }
 
     private void checkExpiry(final ImmutableMessage message) {
@@ -388,10 +363,10 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         }
 
         if (MessageRouterUtil.isExpired(message)) {
-            long currentTimeMillis = System.currentTimeMillis();
-            String errorMessage = MessageFormat.format("Received expired message: (now ={0}). Dropping the message {1}",
-                                                       currentTimeMillis,
-                                                       message.getTrackingInfo());
+            final long currentTimeMillis = System.currentTimeMillis();
+            final String errorMessage = MessageFormat.format("Received expired message: (now ={0}). Dropping the message {1}",
+                                                             currentTimeMillis,
+                                                             message.getTrackingInfo());
             logger.trace(errorMessage);
             throw new JoynrMessageExpiredException(errorMessage);
         }
@@ -416,8 +391,8 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
     }
 
     class MessageWorker implements LibJoynrMessageWorkable {
-        private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
-        private int number;
+        private final Logger logger = LoggerFactory.getLogger(MessageWorker.class);
+        private final int number;
         private CountDownLatch countDownLatch;
         private volatile boolean stopped;
 
@@ -436,17 +411,17 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
         void handleOutgoingMessage(final DelayableImmutableMessage delayableMessage) {
             FailureAction failureAction = null;
             try {
-                ImmutableMessage message = delayableMessage.getMessage();
+                final ImmutableMessage message = delayableMessage.getMessage();
                 logger.trace("Starting processing of outgoing message {}", message);
                 checkExpiry(message);
 
-                SuccessAction messageProcessedAction = createMessageProcessedAction(message);
+                final SuccessAction messageProcessedAction = createMessageProcessedAction(message);
                 failureAction = createFailureAction(delayableMessage);
                 logger.trace(">>>>> SEND message {}", message.getId());
 
                 outgoingMessagingStub.transmit(message, messageProcessedAction, failureAction);
                 messageTracker.unregister(message);
-            } catch (Exception error) {
+            } catch (final Exception error) {
                 logger.error("Error in scheduled MessageWorker thread while processing outgoing message:", error);
                 if (failureAction == null) {
                     failureAction = createFailureAction(delayableMessage);
@@ -457,12 +432,12 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
 
         void handleIncomingMessage(final DelayableImmutableMessage delayableMessage) {
             try {
-                ImmutableMessage message = delayableMessage.getMessage();
+                final ImmutableMessage message = delayableMessage.getMessage();
                 logger.trace("Starting processing of incoming message {}", message);
                 checkExpiry(message);
                 dispatcher.messageArrived(message);
                 messageTracker.unregister(message);
-            } catch (Exception error) {
+            } catch (final Exception error) {
                 logger.error("Error in scheduled MessageWorker thread while processing incoming message:", error);
             }
         }
@@ -472,7 +447,7 @@ public class LibJoynrMessageRouter implements MessageRouter, MulticastReceiverRe
             Thread.currentThread().setName("joynrMessageWorker-" + number);
 
             while (!stopped) {
-                DelayableImmutableMessage delayableMessage = null;
+                DelayableImmutableMessage delayableMessage;
 
                 try {
                     delayableMessage = messageQueue.poll(1000, TimeUnit.MILLISECONDS);
