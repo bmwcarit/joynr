@@ -2,6 +2,32 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.2
+
+## API relevant changes
+* **[Java]** Removed unused MulticastSubscriptionRequest class.
+* **[Java]** Due to guice update, JpaPersistModules have to be built with JpaPersistOpion autoBeginWorkOnEntityManagerCreation set to true.
+
+## Other Changes
+* **[Java]** MutableMessageFactory uses already known expiration date from upstream (JoynrMessagingConnectorInvocationHandler) instead of creating its own based on messaging QoS. 
+* **[Java]** CountDownLatch.await() return value is now used in CcMessageRouter and LibJoynrMessageRouter and futures are stopped if false is returned.
+* **[Java]** Tests have been refactored. Calls to `fail()` have been replaced with calls to more specific JUnit asserts. Unreachable code has been removed.
+* **[Java]** Updated dependencies:
+```
+  * guice                 5.1.0               -> 6.0.0
+  * org.ow2.asm:asm*      9.4                 -> 9.5
+```
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Removed race conditions in LocalCapabilitiesDirectoryImpl
+* **[Java]** Fixed possible buffer overrun in in WebSocketJettyClient and WebSocketJettyServer
+
 # joynr 1.24.1
 
 ## API relevant changes
