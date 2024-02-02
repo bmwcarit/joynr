@@ -6,7 +6,7 @@ the versioning scheme [here](JoynrVersioning.md).
 
 ## API relevant changes
 * **[Java]** Removed unused MulticastSubscriptionRequest class.
-* **[Java]** Due to guice update, JpaPersistModules have to be built with JpaPersistOpion autoBeginWorkOnEntityManagerCreation set to true.
+* **[Java]** Due to guice update, JpaPersistModules have to be built with JpaPersistOption autoBeginWorkOnEntityManagerCreation set to true.
 
 ## Other Changes
 * **[Java]** MutableMessageFactory uses already known expiration date from upstream (JoynrMessagingConnectorInvocationHandler) instead of creating its own based on messaging QoS. 

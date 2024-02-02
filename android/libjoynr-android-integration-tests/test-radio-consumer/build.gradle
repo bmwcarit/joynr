@@ -10,7 +10,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.0'
-        classpath 'io.joynr.tools.generator:joynr-generator-gradle-plugin:1.24.2-SNAPSHOT'
+        classpath 'io.joynr.tools.generator:joynr-generator-gradle-plugin:1.24.2'
     }
 }
 
