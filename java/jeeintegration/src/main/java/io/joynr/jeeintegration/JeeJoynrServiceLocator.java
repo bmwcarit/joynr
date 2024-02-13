@@ -180,13 +180,13 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
 
         @Override
         public ServiceProxyBuilder<T> withMessagingQos(MessagingQos messagingQos) {
-            this.messagingQos = messagingQos;
+            this.messagingQos = (messagingQos != null) ? new MessagingQos(messagingQos) : new MessagingQos();
             return this;
         }
 
         @Override
         public ServiceProxyBuilder<T> withDiscoveryQos(DiscoveryQos discoveryQos) {
-            this.discoveryQos = discoveryQos;
+            this.discoveryQos = (discoveryQos != null) ? new DiscoveryQos(discoveryQos) : new DiscoveryQos();
             return this;
         }
 

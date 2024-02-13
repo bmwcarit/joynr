@@ -184,7 +184,7 @@ public class GuidedProxyBuilder {
             messagingQos.setTtl_ms(maxMessagingTtl);
         }
 
-        this.messagingQos = messagingQos;
+        this.messagingQos = new MessagingQos(messagingQos);
         return this;
     }
 

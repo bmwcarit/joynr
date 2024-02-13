@@ -18,6 +18,7 @@
  */
 package io.joynr.exceptions;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +46,7 @@ public class MultiDomainNoCompatibleProviderFoundException extends JoynrRuntimeE
      *            the exceptions keyed by domain.
      */
     public MultiDomainNoCompatibleProviderFoundException(Map<String, NoCompatibleProviderFoundException> exceptionsByDomain) {
-        this.exceptionsByDomain = exceptionsByDomain;
+        this.exceptionsByDomain = (exceptionsByDomain != null) ? new HashMap<>(exceptionsByDomain) : null;
     }
 
     /**
@@ -54,7 +55,7 @@ public class MultiDomainNoCompatibleProviderFoundException extends JoynrRuntimeE
      * @return see method description.
      */
     public Map<String, NoCompatibleProviderFoundException> getExceptionsByDomain() {
-        return exceptionsByDomain;
+        return (exceptionsByDomain != null) ? new HashMap<>(exceptionsByDomain) : null;
     }
 
     /**

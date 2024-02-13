@@ -147,9 +147,12 @@ public class StaticCapabilitiesProvisioning implements CapabilitiesProvisioning 
         }
     }
 
+    /**
+     * @return deep copy of discoveryEntries
+     */
     @Override
     public Collection<GlobalDiscoveryEntry> getDiscoveryEntries() {
-        return discoveryEntries;
+        return new HashSet<>(discoveryEntries);
     }
 
 }

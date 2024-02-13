@@ -86,10 +86,10 @@ public class Arbitrator {
                       DiscoveryEntryVersionFilter discoveryEntryVersionFilter,
                       String[] gbids,
                       MessageRouter messageRouter) {
-        this.domains = domains;
+        this.domains = (domains != null) ? new HashSet<>(domains) : new HashSet<>();
         this.interfaceName = interfaceName;
-        this.interfaceVersion = interfaceVersion;
-        this.discoveryQos = discoveryQos;
+        this.interfaceVersion = (interfaceVersion != null) ? new Version(interfaceVersion) : null;
+        this.discoveryQos = new DiscoveryQos(discoveryQos);
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeoutMs();

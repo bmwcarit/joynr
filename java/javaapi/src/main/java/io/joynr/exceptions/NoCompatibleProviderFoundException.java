@@ -20,6 +20,7 @@ package io.joynr.exceptions;
 
 import static java.lang.String.format;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import joynr.types.Version;
@@ -60,9 +61,9 @@ public class NoCompatibleProviderFoundException extends DiscoveryException {
                      domain,
                      discoveredVersions));
         this.interfaceName = interfaceName;
-        this.interfaceVersion = interfaceVersion;
+        this.interfaceVersion = (interfaceVersion != null) ? new Version(interfaceVersion) : null;
         this.domain = domain;
-        this.discoveredVersions = discoveredVersions;
+        this.discoveredVersions = (discoveredVersions != null) ? new HashSet<>(discoveredVersions) : null;
     }
 
     public String getInterfaceName() {
@@ -70,7 +71,7 @@ public class NoCompatibleProviderFoundException extends DiscoveryException {
     }
 
     public Version getInterfaceVersion() {
-        return interfaceVersion;
+        return (interfaceVersion != null) ? new Version(interfaceVersion) : null;
     }
 
     public String getDomain() {
@@ -78,7 +79,7 @@ public class NoCompatibleProviderFoundException extends DiscoveryException {
     }
 
     public Set<Version> getDiscoveredVersions() {
-        return discoveredVersions;
+        return (discoveredVersions != null) ? new HashSet<>(discoveredVersions) : null;
     }
 
     @Override
