@@ -37,6 +37,7 @@
 #include "joynr/JoynrRuntime.h"
 #include "joynr/LibjoynrSettings.h"
 #include "joynr/Logger.h"
+#include "joynr/MessagingStubFactory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/PrivateCopyAssign.h"
 #include "joynr/Semaphore.h"
@@ -155,6 +156,7 @@ protected:
     std::shared_ptr<LocalCapabilitiesDirectory> _localCapabilitiesDirectory;
 
     std::shared_ptr<InProcessMessagingSkeleton> _libJoynrMessagingSkeleton;
+    std::shared_ptr<MessagingStubFactory> _messagingStubFactory;
 
     MqttMessagingSkeletonFactory _mqttMessagingSkeletonFactory;
 
