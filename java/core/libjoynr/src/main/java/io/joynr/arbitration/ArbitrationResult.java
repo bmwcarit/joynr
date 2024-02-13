@@ -53,7 +53,8 @@ public class ArbitrationResult {
     }
 
     public void setOtherDiscoveryEntries(Set<DiscoveryEntryWithMetaInfo> otherDiscoveryEntries) {
-        this.otherDiscoveryEntries = (otherDiscoveryEntries != null) ? new HashSet<>(otherDiscoveryEntries) : new HashSet<>();
+        this.otherDiscoveryEntries = (otherDiscoveryEntries != null) ? new HashSet<>(otherDiscoveryEntries)
+                : new HashSet<>();
     }
 
     @Override

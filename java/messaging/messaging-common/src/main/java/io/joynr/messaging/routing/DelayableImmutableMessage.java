@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import joynr.ImmutableMessage;
@@ -44,7 +45,7 @@ public class DelayableImmutableMessage extends TimedDelayed {
     }
 
     public Set<String> getRecipients() {
-        return recipients;
+        return (recipients != null) ? new HashSet<>(recipients) : null;
     }
 
     public int getRetriesCount() {

@@ -144,9 +144,13 @@ public class HivemqMqttClientCreator implements JoynrMqttClientCreator {
         this.cleanSession = cleanSession;
         this.scheduledExecutorService = scheduledExecutorService;
         this.joynrStatusMetricsReceiver = joynrStatusMetricsReceiver;
-        this.mqttGbidToBrokerUriMap = mqttGbidToBrokerUriMap;
-        this.mqttGbidToKeepAliveTimerSecMap = mqttGbidToKeepAliveTimerSecMap;
-        this.mqttGbidToConnectionTimeoutSecMap = mqttGbidToConnectionTimeoutSecMap;
+        this.mqttGbidToBrokerUriMap = (mqttGbidToBrokerUriMap != null) ? new HashMap<>(mqttGbidToBrokerUriMap) : null;
+        this.mqttGbidToKeepAliveTimerSecMap = (mqttGbidToKeepAliveTimerSecMap != null)
+                ? new HashMap<>(mqttGbidToKeepAliveTimerSecMap)
+                : null;
+        this.mqttGbidToConnectionTimeoutSecMap = (mqttGbidToConnectionTimeoutSecMap != null)
+                ? new HashMap<>(mqttGbidToConnectionTimeoutSecMap)
+                : null;
         this.trustManagerFactory = trustManagerFactory;
     }
 

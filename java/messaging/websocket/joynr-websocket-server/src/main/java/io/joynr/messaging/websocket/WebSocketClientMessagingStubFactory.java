@@ -36,7 +36,7 @@ public class WebSocketClientMessagingStubFactory
     @Inject
     public WebSocketClientMessagingStubFactory(@Named(WebsocketModule.WEBSOCKET_SERVER_ADDRESS) WebSocketAddress serverAddress,
                                                WebSocketEndpointFactory webSocketEndpointFactory) {
-        this.serverAddress = serverAddress;
+        this.serverAddress = (serverAddress != null) ? new WebSocketAddress(serverAddress) : null;
         this.webSocketEndpointFactory = webSocketEndpointFactory;
     }
 

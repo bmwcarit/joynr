@@ -113,15 +113,15 @@ public class MqttMultipleBackendPropertyProvider {
     }
 
     public HashMap<String, String> provideGbidToBrokerUriMap() {
-        return gbidToBrokerUriMap;
+        return (gbidToBrokerUriMap != null) ? new HashMap<>(gbidToBrokerUriMap) : null;
     }
 
     public final HashMap<String, Integer> provideGbidToKeepAliveTimerSecMap() {
-        return gbidToKeepAliveTimerSecMap;
+        return (gbidToKeepAliveTimerSecMap != null) ? new HashMap<>(gbidToKeepAliveTimerSecMap) : null;
     }
 
     public final HashMap<String, Integer> provideGbidToConnectionTimeoutSecMap() {
-        return gbidToConnectionTimeoutSecMap;
+        return (gbidToConnectionTimeoutSecMap != null) ? new HashMap<>(gbidToConnectionTimeoutSecMap) : null;
     }
 
 }

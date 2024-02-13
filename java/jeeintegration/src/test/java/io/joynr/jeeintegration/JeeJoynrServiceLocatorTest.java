@@ -46,6 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -512,13 +513,11 @@ public class JeeJoynrServiceLocatorTest {
     public void testBuilder_withDiscoveryQos() {
         setupSyncInterface();
 
-        DiscoveryQos expectedDiscoveryQos = new DiscoveryQos(42, ArbitrationStrategy.FixedChannel, 32);
-        MyServiceSync result = subject.builder(MyServiceSync.class, "local")
-                                      .withDiscoveryQos(expectedDiscoveryQos)
-                                      .build();
+        DiscoveryQos discoveryQos = new DiscoveryQos(42, ArbitrationStrategy.FixedChannel, 32);
+        MyServiceSync result = subject.builder(MyServiceSync.class, "local").withDiscoveryQos(discoveryQos).build();
 
         verify(joynrRuntime).getProxyBuilder(eq(new HashSet<>(Arrays.asList("local"))), eq(MyServiceSync.class));
-        verify(proxyBuilderSync).setDiscoveryQos(expectedDiscoveryQos);
+        verify(proxyBuilderSync).setDiscoveryQos(ArgumentMatchers.refEq(discoveryQos));
 
         testSyncProxyCall(result);
     }

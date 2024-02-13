@@ -100,9 +100,10 @@ public class MutableMessageFactoryTest {
                                                                                          .toInstance(new JoynrMessageProcessor() {
                                                                                              @Override
                                                                                              public MutableMessage processOutgoing(MutableMessage joynrMessage) {
-                                                                                                 joynrMessage.getCustomHeaders()
-                                                                                                             .put("test",
-                                                                                                                  "test");
+                                                                                                 HashMap<String, String> customHeaders = new HashMap<>();
+                                                                                                 customHeaders.put("test",
+                                                                                                                   "test");
+                                                                                                 joynrMessage.setCustomHeaders(customHeaders);
                                                                                                  return joynrMessage;
                                                                                              }
 
@@ -178,7 +179,7 @@ public class MutableMessageFactoryTest {
         final String headerName = "header";
         final String headerValue = "value";
         myCustomHeaders.put(headerName, headerValue);
-        messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
+        messagingQos.putAllCustomMessageHeaders(myCustomHeaders);
         MutableMessage message = mutableMessageFactory.createRequest(fromParticipantId,
                                                                      toParticipantId,
                                                                      request,
@@ -214,7 +215,7 @@ public class MutableMessageFactoryTest {
         final String headerName = "header";
         final String headerValue = "value";
         myCustomHeaders.put(headerName, headerValue);
-        messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
+        messagingQos.putAllCustomMessageHeaders(myCustomHeaders);
         MutableMessage message = mutableMessageFactory.createOneWayRequest(fromParticipantId,
                                                                            toParticipantId,
                                                                            request,

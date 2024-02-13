@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
@@ -63,7 +64,9 @@ public class MessagingSkeletonFactory implements ShutdownListener {
     public MessagingSkeletonFactory(@Named(MIDDLEWARE_MESSAGING_SKELETON_FACTORIES) Map<Class<? extends Address>, IMessagingSkeletonFactory> messagingSkeletonFactories,
                                     @Named(MessageRouter.SCHEDULEDTHREADPOOL) ScheduledExecutorService scheduler,
                                     ShutdownNotifier shutdownNotifier) {
-        this.messagingSkeletonFactories = messagingSkeletonFactories;
+        this.messagingSkeletonFactories = (messagingSkeletonFactories != null)
+                ? new HashMap<>(messagingSkeletonFactories)
+                : null;
         this.scheduler = scheduler;
         shutdownNotifier.registerForShutdown(this);
     }

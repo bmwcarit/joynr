@@ -54,6 +54,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -92,7 +93,9 @@ public class DefaultJoynrRuntimeFactoryTest {
     private static class JoynrMessageProcessorTest implements JoynrMessageProcessor {
         @Override
         public MutableMessage processOutgoing(final MutableMessage joynrMessage) {
-            joynrMessage.getCustomHeaders().put("test", "test");
+            HashMap<String, String> hashMap = new HashMap<>();
+            hashMap.put("test", "test");
+            joynrMessage.setCustomHeaders(hashMap);
             return joynrMessage;
         }
 
