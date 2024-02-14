@@ -19,5 +19,5 @@
 package io.joynr.proxy;
 
 public enum ConnectorStatus {
-    ConnectorNotAvailabe, ConnectorFailed, ConnectorSuccesful
+    ConnectorNotAvailable, ConnectorFailed, ConnectorSuccessful
 }
