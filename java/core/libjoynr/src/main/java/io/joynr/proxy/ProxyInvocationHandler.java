@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -208,12 +207,11 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     }
 
     /**
-     * Checks the connector status before a method call is executed. Instantly returns True if the connector already
-     * finished successfully , otherwise it will block up to the amount of milliseconds defined by the
-     * arbitrationTimeout or until the ProxyInvocationHandler is notified about a successful connection.
+     * Checks the connector status before a method call is executed. Instantly returns True if the connector
+     * already finished successfully, otherwise it will block until the ProxyInvocationHandler is notified
+     * about a successful connection.
      *
-     * @return True if the connector was finished successfully in time, False if the connector failed or could not be
-     * finished in time.
+     * @return True if the connector was finished successfully, False if the connector failed
      * @throws InterruptedException in case thread is interrupted
      */
     public boolean waitForConnectorFinished() throws InterruptedException {
@@ -223,7 +221,10 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                 return true;
             }
 
-            return connectorFinished.await(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
+            while (connectorStatus == ConnectorStatus.ConnectorNotAvailabe) {
+                connectorFinished.await();
+            }
+            return connectorStatus == ConnectorStatus.ConnectorSuccesful;
 
         } finally {
             connectorStatusLock.unlock();
