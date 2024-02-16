@@ -18,16 +18,14 @@
  */
 package io.joynr.messaging;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 /**
  * Storage class for network configuration used to send messages.
  */
 
 @Singleton
-public class ConfigurableMessagingSettings implements MessagingSettings {
+public class ConfigurableMessagingSettings {
     public static final String PROPERTY_CC_CONNECTION_TYPE = "joynr.messaging.cc.connectiontype";
 
     public static final String PROPERTY_CAPABILITIES_DIRECTORY_PARTICIPANT_ID = "joynr.messaging.capabilitiesdirectoryparticipantid";
@@ -40,7 +38,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_SEND_MSG_RETRY_INTERVAL_MS = "joynr.messaging.sendmsgretryintervalms";
     public static final String PROPERTY_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr.discovery.participantids_persistence_file";
-    public static final String DEFAULT_PARTICIPANTIDS_PERSISTENCE_FILE = "joynr_participantIds.properties";
 
     public static final String PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS = "joynr.messaging.maximumparallelsends";
 
@@ -60,29 +57,6 @@ public class ConfigurableMessagingSettings implements MessagingSettings {
 
     public static final String PROPERTY_GLOBAL_CAPABILITIES_DIRECTORY_URL = "joynr.messaging.gcd.url";
 
-    private final long sendMsgRetryIntervalMs;
-    private int maximumParallelSends;
-
-    @Inject
-    // CHECKSTYLE:OFF
-    public ConfigurableMessagingSettings(@Named(PROPERTY_SEND_MSG_RETRY_INTERVAL_MS) long sendMsgRetryIntervalMs,
-                                         @Named(PROPERTY_MESSAGING_MAXIMUM_PARALLEL_SENDS) int maximumParallelSends) {
-        // CHECKSTYLE:ON
-        this.maximumParallelSends = maximumParallelSends;
-        this.sendMsgRetryIntervalMs = sendMsgRetryIntervalMs;
-    }
-
-    public int getMaximumParallelSends() {
-        return maximumParallelSends;
-    }
-
-    @Override
-    public long getSendMsgRetryIntervalMs() {
-        return sendMsgRetryIntervalMs;
-    }
-
-    @Override
-    public String toString() {
-        return "MessagingSettings [sendMsgRetryIntervalMs=" + sendMsgRetryIntervalMs + "]";
+    private ConfigurableMessagingSettings() {
     }
 }

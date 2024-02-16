@@ -56,12 +56,10 @@ import io.joynr.dispatching.subscription.SubscriptionManager;
 import io.joynr.dispatching.subscription.SubscriptionManagerImpl;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
-import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.IMessagingSkeletonFactory;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.JsonMessageSerializerModule;
-import io.joynr.messaging.MessagingSettings;
 import io.joynr.messaging.MessagingSkeletonFactory;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
@@ -132,7 +130,6 @@ abstract class AbstractRuntimeModule extends AbstractModule {
         bind(DiscoveryAsync.class).to(LocalDiscoveryAggregator.class);
         bind(CapabilitiesRegistrar.class).to(CapabilitiesRegistrarImpl.class);
         bind(ParticipantIdStorage.class).to(PropertiesFileParticipantIdStorage.class);
-        bind(MessagingSettings.class).to(ConfigurableMessagingSettings.class);
         bind(MulticastReceiverRegistry.class).to(InMemoryMulticastReceiverRegistry.class).asEagerSingleton();
         bind(RawMessagingPreprocessor.class).to(NoOpRawMessagingPreprocessor.class);
         bind(ScheduledExecutorService.class).annotatedWith(Names.named(MessageRouter.SCHEDULEDTHREADPOOL))
