@@ -1209,7 +1209,7 @@
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.runtime</artifactId>
-							<version>3.14.0</version>
+							<version>3.26.100</version>
 							<exclusions>
 								<exclusion>
 									<groupId>org.eclipse.platform</groupId>
@@ -1533,7 +1533,7 @@
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.runtime</artifactId>
-							<version>3.14.0</version>
+							<version>3.26.100</version>
 							<exclusions>
 								<exclusion>
 									<groupId>org.eclipse.platform</groupId>
