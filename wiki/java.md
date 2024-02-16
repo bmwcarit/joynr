@@ -1862,7 +1862,7 @@ public class <Filter>BroadcastFilter extends <Interface><Broadcast>BroadcastFilt
 }
 ```
 
-# <a name="status_monitoring"></a> Joynr Status Monitoring
+# Joynr Status Monitoring
 
 Joynr provides metrics to monitor the connectivity status of its connections which can be used to
 detect invalid states and situations which require a restart of an instance. Currently,
