@@ -20,11 +20,9 @@ package io.joynr.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -75,9 +73,9 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     private DiscoveryQos discoveryQos;
     protected ConnectorInvocationHandler connector;
     protected final String proxyParticipantId;
-    private ConcurrentLinkedQueue<MethodInvocation<?>> queuedRpcList = new ConcurrentLinkedQueue<MethodInvocation<?>>();
-    private ConcurrentLinkedQueue<SubscriptionAction> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<SubscriptionAction>();
-    private ConcurrentLinkedQueue<UnsubscribeInvocation> queuedUnsubscribeInvocationList = new ConcurrentLinkedQueue<UnsubscribeInvocation>();
+    private ConcurrentLinkedQueue<MethodInvocation<?>> queuedRpcList = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<SubscriptionAction> queuedSubscriptionInvocationList = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<UnsubscribeInvocation> queuedUnsubscribeInvocationList = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<StatelessAsyncMethodInvocation> queuedStatelessAsyncInvocationList = new ConcurrentLinkedQueue<>();
     private String interfaceName;
     private Set<String> domains;
@@ -103,7 +101,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         this.discoveryQos = discoveryQos;
         this.qosSettings = messagingQos;
         this.separateReplyReceiver = separateReplyReceiver;
-        this.connectorStatus = ConnectorStatus.ConnectorNotAvailabe;
+        this.connectorStatus = ConnectorStatus.ConnectorNotAvailable;
 
         shutdownListener = new ShutdownListener() {
             @Override
@@ -127,7 +125,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         }
     }
 
-    private static interface ConnectorCaller {
+    private interface ConnectorCaller {
         Object call(Method method, Object[] args) throws ApplicationException;
     }
 
@@ -152,7 +150,6 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
 
     private Optional<Object> executeOneWayMethod(Method method, Object[] args) throws ApplicationException {
         Object result = executeMethodWithCaller(method, args, new ConnectorCaller() {
-
             @Override
             public Object call(Method method, Object[] args) {
                 connector.executeOneWayMethod(method, args);
@@ -208,22 +205,24 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     }
 
     /**
-     * Checks the connector status before a method call is executed. Instantly returns True if the connector already
-     * finished successfully , otherwise it will block up to the amount of milliseconds defined by the
-     * arbitrationTimeout or until the ProxyInvocationHandler is notified about a successful connection.
+     * Checks the connector status before a method call is executed. Instantly returns True if the connector
+     * already finished successfully, otherwise it will block until the ProxyInvocationHandler is notified
+     * about a successful connection.
      *
-     * @return True if the connector was finished successfully in time, False if the connector failed or could not be
-     * finished in time.
+     * @return True if the connector was finished successfully, False if the connector failed
      * @throws InterruptedException in case thread is interrupted
      */
     public boolean waitForConnectorFinished() throws InterruptedException {
         connectorStatusLock.lock();
         try {
-            if (connectorStatus == ConnectorStatus.ConnectorSuccesful) {
+            if (connectorStatus == ConnectorStatus.ConnectorSuccessful) {
                 return true;
             }
 
-            return connectorFinished.await(discoveryQos.getDiscoveryTimeoutMs(), TimeUnit.MILLISECONDS);
+            while (connectorStatus == ConnectorStatus.ConnectorNotAvailable) {
+                connectorFinished.await();
+            }
+            return connectorStatus == ConnectorStatus.ConnectorSuccessful;
 
         } finally {
             connectorStatusLock.unlock();
@@ -240,15 +239,10 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     public boolean isConnectorReady() {
         connectorStatusLock.lock();
         try {
-            if (connectorStatus == ConnectorStatus.ConnectorSuccesful) {
-                return true;
-            }
-            return false;
-
+            return connectorStatus == ConnectorStatus.ConnectorSuccessful;
         } finally {
             connectorStatusLock.unlock();
         }
-
     }
 
     private void sendQueuedSubscriptionInvocations() {
@@ -329,7 +323,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     protected void setConnectorStatusSuccessAndSendQueuedRequests() {
         connectorStatusLock.lock();
         try {
-            connectorStatus = ConnectorStatus.ConnectorSuccesful;
+            connectorStatus = ConnectorStatus.ConnectorSuccessful;
             connectorFinished.signalAll();
 
             if (connector != null) {
@@ -344,7 +338,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
     }
 
     private Optional<Object> executeSubscriptionMethod(Object proxy, Method method, Object[] args) {
-        Future<String> future = new Future<String>();
+        Future<String> future = new Future<>();
         if (method.getName().startsWith("subscribeTo")) {
             checkIfExecutionIsAllowed();
 
@@ -461,7 +455,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
         try {
             if (!isConnectorReady()) {
                 // waiting for arbitration -> queue invocation
-                queuedRpcList.offer(new MethodInvocation<T>(proxy, method, args, future));
+                queuedRpcList.offer(new MethodInvocation<>(proxy, method, args, future));
                 return future;
             }
         } finally {
@@ -520,13 +514,13 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             if (JoynrSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)
                     || JoynrBroadcastSubscriptionInterface.class.isAssignableFrom(methodInterfaceClass)) {
                 Optional<Object> result = executeSubscriptionMethod(proxy, method, args);
-                return result.isPresent() ? result.get() : null;
+                return result.orElse(null);
             } else if (methodInterfaceClass.getAnnotation(FireAndForget.class) != null) {
                 Optional<Object> result = executeOneWayMethod(method, args);
-                return result.isPresent() ? result.get() : null;
+                return result.orElse(null);
             } else if (methodInterfaceClass.getAnnotation(Sync.class) != null) {
                 Optional<Object> result = executeSyncMethod(method, args);
-                return result.isPresent() ? result.get() : null;
+                return result.orElse(null);
             } else if (methodInterfaceClass.getAnnotation(Async.class) != null) {
                 return executeAsyncMethod(proxy, method, args);
             } else if (methodInterfaceClass.getAnnotation(StatelessAsync.class) != null) {
@@ -553,9 +547,7 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             connectorStatusLock.unlock();
         }
 
-        for (Iterator<MethodInvocation<?>> iterator = queuedRpcList.iterator(); iterator.hasNext();) {
-            MethodInvocation<?> invocation = iterator.next();
-
+        for (MethodInvocation<?> invocation : queuedRpcList) {
             final MethodMetaInformation metaInfo = new MethodMetaInformation(invocation.getMethod());
             final int callbackIndex = metaInfo.getCallbackIndex();
             if (callbackIndex > -1) {
@@ -572,10 +564,10 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
             invocation.getFuture().onFailure(exception);
         }
 
-        for (Iterator<UnsubscribeInvocation> iterator = queuedUnsubscribeInvocationList.iterator(); iterator.hasNext();) {
-            Invocation<String> invocation = iterator.next();
+        for (Invocation<String> invocation : queuedUnsubscribeInvocationList) {
             invocation.getFuture().onFailure(exception);
         }
+
         for (SubscriptionAction subscriptionAction : queuedSubscriptionInvocationList) {
             subscriptionAction.fail(exception);
         }
