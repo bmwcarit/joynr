@@ -78,7 +78,7 @@ public class ImmutableMessage extends Message {
     }
 
     public Map<String, String> getExtraCustomHeaders() {
-        return (extraCustomHeaders != null) ? new HashMap<>(extraCustomHeaders) : new HashMap<>();
+        return (extraCustomHeaders != null) ? new HashMap<>(extraCustomHeaders) : null;
     }
 
     public ImmutableMessage(byte[] serializedMessage) throws EncodingException, UnsuppportedVersionException {
@@ -161,11 +161,11 @@ public class ImmutableMessage extends Message {
     }
 
     public void setContext(HashMap<String, Serializable> context) {
-        this.context = (context != null) ? new HashMap<>(context) : new HashMap<>();
+        this.context = (context != null) ? new HashMap<>(context) : null;
     }
 
     public Map<String, Serializable> getContext() {
-        return new HashMap<>(context);
+        return (context != null) ? new HashMap<>(context) : null;
     }
 
     public void setReceivedFromGlobal(boolean receivedFromGlobal) {

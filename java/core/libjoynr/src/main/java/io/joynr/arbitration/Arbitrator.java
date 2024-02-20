@@ -86,9 +86,10 @@ public class Arbitrator {
                       DiscoveryEntryVersionFilter discoveryEntryVersionFilter,
                       String[] gbids,
                       MessageRouter messageRouter) {
-        this.domains = (domains != null) ? new HashSet<>(domains) : new HashSet<>();
+        this.domains = (domains != null) ? new HashSet<>(domains) : null;
         this.interfaceName = interfaceName;
         this.interfaceVersion = (interfaceVersion != null) ? new Version(interfaceVersion) : null;
+        // null checks done in GuidedProxyBuilder/ProxyBuilderDefaultImpl
         this.discoveryQos = new DiscoveryQos(discoveryQos);
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;

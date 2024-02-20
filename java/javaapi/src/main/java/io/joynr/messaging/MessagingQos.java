@@ -114,7 +114,7 @@ public class MessagingQos {
     public MessagingQos(long ttl_ms, MessagingQosEffort effort, Map<String, String> customHeaders, boolean compress) {
         this.ttl_ms = ttl_ms;
         this.effort = effort;
-        this.customHeaders = (customHeaders != null) ? new HashMap<>(customHeaders) : new HashMap<>();
+        this.customHeaders = (customHeaders != null) ? new HashMap<>(customHeaders) : null;
         this.compress = compress;
     }
 
@@ -213,7 +213,7 @@ public class MessagingQos {
     }
 
     public Map<String, String> getCustomMessageHeaders() {
-        return (customHeaders != null) ? new HashMap<>(customHeaders) : new HashMap<>();
+        return (customHeaders != null) ? new HashMap<>(customHeaders) : null;
     }
 
     @Override

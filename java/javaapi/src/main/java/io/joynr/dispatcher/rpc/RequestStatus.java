@@ -48,11 +48,11 @@ public class RequestStatus {
     }
 
     public List<String> getDescriptionList() {
-        return new ArrayList<>(descriptionList);
+        return (descriptionList != null) ? new ArrayList<>(descriptionList) : null;
     }
 
     public void setDescriptionList(List<String> description) {
-        this.descriptionList = (description != null) ? new ArrayList<>(description) : new ArrayList<>();
+        this.descriptionList = (description != null) ? new ArrayList<>(description) : null;
     }
 
     public void addDescription(String additionalDescription) {

@@ -96,11 +96,11 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                                   ShutdownNotifier shutdownNotifier,
                                   StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         // CHECKSTYLE:ON
-        this.domains = (domains != null) ? new HashSet<>(domains) : new HashSet<>();
+        this.domains = (domains != null) ? new HashSet<>(domains) : null;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
-        this.discoveryQos = (discoveryQos != null) ? new DiscoveryQos(discoveryQos) : new DiscoveryQos();
-        this.qosSettings = new MessagingQos(messagingQos);
+        this.discoveryQos = (discoveryQos != null) ? new DiscoveryQos(discoveryQos) : null;
+        this.qosSettings = (messagingQos != null) ? new MessagingQos(messagingQos) : null;
         this.separateReplyReceiver = separateReplyReceiver;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailable;
 
