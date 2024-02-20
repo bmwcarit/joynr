@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -70,9 +71,9 @@ public class RequestReplyManagerImpl
     private boolean shuttingDown = false;
 
     private List<CompletableFuture<Reply>> outstandingRequestFutures = Collections.synchronizedList(new ArrayList<CompletableFuture<Reply>>());
-    private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>>> oneWayRequestQueue = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
+    private HashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new HashMap<>();
+    private HashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>>> oneWayRequestQueue = new HashMap<>();
+    private HashMap<Request, ProviderCallback<Reply>> replyCallbacks = new HashMap<Request, ProviderCallback<Reply>>();
 
     private ReplyCallerDirectory replyCallerDirectory;
     private ProviderDirectory providerDirectory;
