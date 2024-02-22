@@ -39,6 +39,15 @@ public class RequestStatus {
         this.descriptionList = new ArrayList<String>();
     }
 
+    /**
+     * Copy constructor
+     */
+    public RequestStatus(RequestStatus other) {
+        super();
+        this.code = other.code;
+        this.descriptionList = (other.descriptionList != null) ? new ArrayList<>(other.descriptionList) : null;
+    }
+
     public RequestStatusCode getCode() {
         return code;
     }
