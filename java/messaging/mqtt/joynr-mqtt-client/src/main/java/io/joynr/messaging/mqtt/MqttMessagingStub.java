@@ -45,7 +45,7 @@ public class MqttMessagingStub implements IMessagingStub {
     private JoynrMqttClient mqttClient;
 
     public MqttMessagingStub(MqttAddress address, JoynrMqttClient mqttClient) {
-        this.address = address;
+        this.address = (address != null) ? new MqttAddress(address) : null;
         this.mqttClient = mqttClient;
     }
 

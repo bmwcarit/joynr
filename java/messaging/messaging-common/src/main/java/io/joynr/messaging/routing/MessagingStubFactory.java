@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging.routing;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.inject.Inject;
@@ -37,7 +38,9 @@ public class MessagingStubFactory {
 
     @Inject
     public MessagingStubFactory(@Named(MIDDLEWARE_MESSAGING_STUB_FACTORIES) Map<Class<? extends Address>, AbstractMiddlewareMessagingStubFactory<? extends IMessagingStub, ? extends Address>> middlewareMessagingStubFactories) {
-        this.middlewareMessagingStubFactories = middlewareMessagingStubFactories;
+        this.middlewareMessagingStubFactories = (middlewareMessagingStubFactories != null)
+                ? new HashMap<>(middlewareMessagingStubFactories)
+                : null;
     }
 
     public IMessagingStub create(Address address) {

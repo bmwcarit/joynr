@@ -64,7 +64,7 @@ public class MqttCiphersuiteListFactory {
     }
 
     public List<String> create() {
-        return cipherList;
+        return (cipherList != null) ? new ArrayList<>(cipherList) : null;
     }
 
 }

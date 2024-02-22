@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.lang.reflect.Field;
@@ -38,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -47,8 +47,7 @@ public class MessageQueueTest {
     @Mock
     private DelayableImmutableMessage mockMessage;
 
-    @Spy
-    private DelayQueue<DelayableImmutableMessage> delayQueue = new DelayQueue<>();
+    private final DelayQueue<DelayableImmutableMessage> delayQueue = spy(new DelayQueue<>());
 
     private MessageQueue subject;
 
@@ -117,7 +116,11 @@ public class MessageQueueTest {
         final TimeUnit timeUnit = TimeUnit.SECONDS;
         subject.poll(timeOut, timeUnit);
 
+        Field field = MessageQueue.class.getDeclaredField("delayableImmutableMessages");
+        field.setAccessible(true);
+        DelayQueue<DelayableImmutableMessage> actualQueue = (DelayQueue<DelayableImmutableMessage>) field.get(subject);
+
         // The in-memory queue is polled once for the message above
-        verify(delayQueue, times(1)).poll(timeOut, timeUnit);
+        verify(actualQueue, times(1)).poll(timeOut, timeUnit);
     }
 }

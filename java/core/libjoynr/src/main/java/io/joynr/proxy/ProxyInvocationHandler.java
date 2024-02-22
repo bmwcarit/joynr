@@ -20,6 +20,7 @@ package io.joynr.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -95,11 +96,11 @@ public abstract class ProxyInvocationHandler implements InvocationHandler {
                                   ShutdownNotifier shutdownNotifier,
                                   StatelessAsyncIdCalculator statelessAsyncIdCalculator) {
         // CHECKSTYLE:ON
-        this.domains = domains;
+        this.domains = (domains != null) ? new HashSet<>(domains) : null;
         this.proxyParticipantId = proxyParticipantId;
         this.interfaceName = interfaceName;
-        this.discoveryQos = discoveryQos;
-        this.qosSettings = messagingQos;
+        this.discoveryQos = (discoveryQos != null) ? new DiscoveryQos(discoveryQos) : null;
+        this.qosSettings = (messagingQos != null) ? new MessagingQos(messagingQos) : null;
         this.separateReplyReceiver = separateReplyReceiver;
         this.connectorStatus = ConnectorStatus.ConnectorNotAvailable;
 

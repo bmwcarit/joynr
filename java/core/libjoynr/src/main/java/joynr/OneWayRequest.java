@@ -20,6 +20,7 @@ package joynr;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,11 +95,11 @@ public class OneWayRequest implements JoynrMessageType {
 
     @JsonIgnore
     public Map<String, Serializable> getContext() {
-        return context;
+        return (context != null) ? new HashMap<>(context) : null;
     }
 
     public void setContext(Map<String, Serializable> context) {
-        this.context = context;
+        this.context = (context != null) ? new HashMap<>(context) : null;
     }
 
     @JsonIgnore

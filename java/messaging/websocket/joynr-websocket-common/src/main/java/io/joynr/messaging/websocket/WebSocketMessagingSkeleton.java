@@ -20,6 +20,7 @@ package io.joynr.messaging.websocket;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -75,11 +76,11 @@ public class WebSocketMessagingSkeleton implements IWebSocketMessagingSkeleton {
                                       MessageRouter messageRouter,
                                       MainTransportFlagBearer mainTransportFlagBearer,
                                       Set<JoynrMessageProcessor> messageProcessors) {
-        this.serverAddress = serverAddress;
+        this.serverAddress = (serverAddress != null) ? new WebSocketAddress(serverAddress) : null;
         this.webSocketEndpointFactory = webSocketEndpointFactory;
         this.messageRouter = messageRouter;
         this.mainTransport = mainTransportFlagBearer.isMainTransport();
-        this.messageProcessors = messageProcessors;
+        this.messageProcessors = (messageProcessors != null) ? new HashSet<>(messageProcessors) : null;
     }
 
     @Override

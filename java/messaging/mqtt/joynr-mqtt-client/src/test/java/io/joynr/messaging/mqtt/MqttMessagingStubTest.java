@@ -34,6 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,10 +82,15 @@ public class MqttMessagingStubTest {
     }
 
     @Test
-    public void testMessagePublishedToCorrectTopic() {
+    public void testMessagePublishedToCorrectTopic() throws NoSuchFieldException, IllegalAccessException {
         final String testTopic = "topicTestTopic";
         final String expectedTopic = testTopic + "/low";
-        when(mqttAddress.getTopic()).thenReturn(testTopic);
+
+        Field field = MqttMessagingStub.class.getDeclaredField("address");
+        field.setAccessible(true);
+        MqttAddress address = (MqttAddress) field.get(subject);
+        address.setTopic(testTopic);
+
         subject.transmit(joynrMessage, successAction, failureAction);
 
         verify(mqttClient).publishMessage(eq(expectedTopic),
@@ -97,14 +103,18 @@ public class MqttMessagingStubTest {
     }
 
     @Test
-    public void testMulticastMessagePublishedToCorrectTopic() {
+    public void testMulticastMessagePublishedToCorrectTopic() throws NoSuchFieldException, IllegalAccessException {
         final String testTopic = "topicTestTopic";
-        final String expectedTopic = testTopic;
-        when(mqttAddress.getTopic()).thenReturn(testTopic);
+
+        Field field = MqttMessagingStub.class.getDeclaredField("address");
+        field.setAccessible(true);
+        MqttAddress address = (MqttAddress) field.get(subject);
+        address.setTopic(testTopic);
+
         when(joynrMessage.getType()).thenReturn(MessageType.VALUE_MESSAGE_TYPE_MULTICAST);
         subject.transmit(joynrMessage, successAction, failureAction);
 
-        verify(mqttClient).publishMessage(eq(expectedTopic),
+        verify(mqttClient).publishMessage(eq(testTopic),
                                           any(byte[].class),
                                           anyMap(),
                                           eq(MqttMessagingStub.DEFAULT_QOS_LEVEL),

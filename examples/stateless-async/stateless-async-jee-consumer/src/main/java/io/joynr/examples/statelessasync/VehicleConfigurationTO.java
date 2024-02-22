@@ -18,6 +18,7 @@
  */
 package io.joynr.examples.statelessasync;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class VehicleConfigurationTO {
@@ -33,10 +34,10 @@ public class VehicleConfigurationTO {
     }
 
     public Map<String, String> getEntries() {
-        return entries;
+        return (entries != null) ? new HashMap<>(entries) : null;
     }
 
     public void setEntries(Map<String, String> entries) {
-        this.entries = entries;
+        this.entries = (entries != null) ? new HashMap<>(entries) : null;
     }
 }

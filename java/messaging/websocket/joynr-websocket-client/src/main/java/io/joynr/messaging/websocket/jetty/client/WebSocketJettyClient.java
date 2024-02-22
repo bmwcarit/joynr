@@ -79,8 +79,8 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
                                 long reconnectDelay,
                                 long websocketIdleTimeout,
                                 ObjectMapper objectMapper) {
-        this.serverAddress = serverAddress;
-        this.ownAddress = ownAddress;
+        this.serverAddress = (serverAddress != null) ? new WebSocketAddress(serverAddress) : null;
+        this.ownAddress = (ownAddress != null) ? new WebSocketClientAddress(ownAddress) : null;
         this.maxMessageSize = maxMessageSize;
         this.reconnectDelay = reconnectDelay;
         this.websocketIdleTimeout = websocketIdleTimeout;

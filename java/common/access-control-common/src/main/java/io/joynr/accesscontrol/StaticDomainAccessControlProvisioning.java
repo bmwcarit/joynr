@@ -76,11 +76,11 @@ public class StaticDomainAccessControlProvisioning implements DomainAccessContro
 
     @Override
     public Collection<DomainRoleEntry> getDomainRoleEntries() {
-        return domainRoleEntries;
+        return (domainRoleEntries != null) ? new ArrayList<>(domainRoleEntries) : null;
     }
 
     @Override
     public Collection<MasterAccessControlEntry> getMasterAccessControlEntries() {
-        return masterControlEntries;
+        return (masterControlEntries != null) ? new ArrayList<>(masterControlEntries) : null;
     }
 }

@@ -29,13 +29,13 @@ public class JoynrJeeMessageMetaInfo {
     private Map<String, Serializable> context = new HashMap<String, Serializable>();
 
     public Map<String, Serializable> getMessageContext() {
-        return context;
+        return (context != null) ? new HashMap<>(context) : null;
     }
 
     public void setMessageContext(Map<String, Serializable> context) {
         if (context == null) {
             return;
         }
-        this.context = context;
+        this.context = new HashMap<>(context);
     }
 }

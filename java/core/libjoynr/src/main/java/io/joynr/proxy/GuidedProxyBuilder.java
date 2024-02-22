@@ -127,7 +127,7 @@ public class GuidedProxyBuilder {
         this.maxMessagingTtl = discoverySettingsStorage.getMaxMessagingTtl();
         this.defaultDiscoveryTimeoutMs = discoverySettingsStorage.getDefaultDiscoveryTimeoutMs();
         this.defaultDiscoveryRetryIntervalMs = discoverySettingsStorage.getDefaultDiscoveryRetryIntervalMs();
-        this.domains = domains;
+        this.domains = (domains != null) ? new HashSet<>(domains) : null;
         this.messageRouter = messageRouter;
         this.versionCompatibilityChecker = versionCompatibilityChecker;
         try {
@@ -184,7 +184,7 @@ public class GuidedProxyBuilder {
             messagingQos.setTtl_ms(maxMessagingTtl);
         }
 
-        this.messagingQos = messagingQos;
+        this.messagingQos = new MessagingQos(messagingQos);
         return this;
     }
 
