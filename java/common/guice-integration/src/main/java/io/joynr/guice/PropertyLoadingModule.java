@@ -63,10 +63,23 @@ public class PropertyLoadingModule extends AbstractModule {
     protected void logProperties() {
         Properties filteredProperties = getFilteredProperties("joynr.");
         filteredProperties.putAll(getFilteredProperties("javax.net.ssl"));
+        maskPasswordProperties(filteredProperties);
         if (logger.isInfoEnabled()) {
             String formattedPropertiesOutput = filteredProperties.toString().replaceAll(",", "\n");
             logger.info("Properties loaded:\n{}", formattedPropertiesOutput);
         }
+    }
+
+    private void maskPasswordProperties(final Properties properties) {
+        properties.keySet()
+                  .stream()
+                  .map(Object::toString)
+                  .filter(this::isPasswordKey)
+                  .forEach(key -> properties.put(key, "********"));
+    }
+
+    private boolean isPasswordKey(final String key) {
+        return key != null && key.contains("password");
     }
 
     protected Properties getFilteredProperties(String prefix) {
