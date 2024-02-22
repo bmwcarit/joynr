@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020-2023 BMW Car IT GmbH
+ * Copyright (C) 2020-2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -892,32 +892,38 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
             handleLocalOnly(capabilitiesCallback, localEntries);
             break;
         case LOCAL_THEN_GLOBAL:
-            handleLocalThenGlobal(domains,
-                                  interfaceName,
-                                  discoveryQos,
-                                  gbids,
-                                  capabilitiesCallback,
-                                  localEntries,
-                                  cachedEntries);
+            handleBothLocalAndGlobalEntries(domains,
+                                            interfaceName,
+                                            discoveryQos,
+                                            gbids,
+                                            capabilitiesCallback,
+                                            localEntries,
+                                            cachedEntries,
+                                            false,
+                                            true);
             break;
         case LOCAL_AND_GLOBAL:
-            handleLocalAndGlobal(domains,
-                                 interfaceName,
-                                 discoveryQos,
-                                 gbids,
-                                 capabilitiesCallback,
-                                 localEntries,
-                                 cachedEntries);
+            handleBothLocalAndGlobalEntries(domains,
+                                            interfaceName,
+                                            discoveryQos,
+                                            gbids,
+                                            capabilitiesCallback,
+                                            localEntries,
+                                            cachedEntries,
+                                            true,
+                                            false);
             break;
         case GLOBAL_ONLY:
             // localEntries only contains globally registered providers, already filtered by gbids, in case of DiscoveryScope.GLOBAL_ONLY
-            handleGlobalOnly(domains,
-                             interfaceName,
-                             discoveryQos,
-                             gbids,
-                             capabilitiesCallback,
-                             localEntries,
-                             cachedEntries);
+            handleBothLocalAndGlobalEntries(domains,
+                                            interfaceName,
+                                            discoveryQos,
+                                            gbids,
+                                            capabilitiesCallback,
+                                            localEntries,
+                                            cachedEntries,
+                                            true,
+                                            true);
             break;
         default:
             throw new IllegalStateException("Unknown or illegal DiscoveryScope value: " + discoveryScope);
@@ -930,36 +936,56 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
         capabilitiesCallback.processCapabilitiesReceived(Optional.of(localDiscoveryEntries));
     }
 
-    private void handleLocalThenGlobal(String[] domains,
-                                       String interfaceName,
-                                       DiscoveryQos discoveryQos,
-                                       String[] gbids,
-                                       CapabilitiesCallback capabilitiesCallback,
-                                       Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
-                                       Set<GlobalDiscoveryEntry> globalDiscoveryEntries) {
-        Set<String> missingDomains = new HashSet<String>(Arrays.asList(domains));
+    private void addLocalEntries(final Set<DiscoveryEntryWithMetaInfo> resultDiscoveryEntries,
+                                 final Set<String> missingDomains,
+                                 final Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
+                                 final boolean removeFromMissingDomainsForLocalDiscoveryEntries) {
+        resultDiscoveryEntries.addAll(localDiscoveryEntries);
+        if (removeFromMissingDomainsForLocalDiscoveryEntries) {
+            localDiscoveryEntries.forEach(entry -> missingDomains.remove(entry.getDomain()));
+        }
+    }
 
-        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
-        boolean globalEntriesAdded = false;
+    private void processGlobalCache(final boolean removeFromMissingDomainsGlobalCacheEntries,
+                                    final Set<String> missingDomains,
+                                    final Set<GlobalDiscoveryEntry> globalDiscoveryCacheEntries) {
+        if (removeFromMissingDomainsGlobalCacheEntries) {
+            globalDiscoveryCacheEntries.forEach(entry -> missingDomains.remove(entry.getDomain()));
+        }
+    }
+
+    // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
+    private void handleBothLocalAndGlobalEntries(final String[] domains,
+                                                 final String interfaceName,
+                                                 final DiscoveryQos discoveryQos,
+                                                 final String[] gbids,
+                                                 final CapabilitiesCallback capabilitiesCallback,
+                                                 final Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
+                                                 final Set<GlobalDiscoveryEntry> globalDiscoveryCacheEntries,
+                                                 final boolean addAllItemsFromGlobalCache,
+                                                 final boolean removeFromMissingDomainsForLocalDiscoveryEntries) {
+        // CHECKSTYLE ON
+        final Set<String> missingDomains = new HashSet<>(Arrays.asList(domains));
+        final Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
 
         // look for the domains in the local entries first
-        for (DiscoveryEntryWithMetaInfo entry : localDiscoveryEntries) {
-            result.add(entry);
-            missingDomains.remove(entry.getDomain());
-        }
+        addLocalEntries(result,
+                        missingDomains,
+                        localDiscoveryEntries,
+                        removeFromMissingDomainsForLocalDiscoveryEntries);
 
         // If there still some missing domains, search in the globalCache
-        if (!missingDomains.isEmpty()) {
-            globalEntriesAdded = true;
-            globalDiscoveryEntries.forEach(entry -> missingDomains.remove(entry.getDomain()));
-        }
+        final boolean addGlobalCacheEntries = !missingDomains.isEmpty() || addAllItemsFromGlobalCache;
+        processGlobalCache(addGlobalCacheEntries, missingDomains, globalDiscoveryCacheEntries);
 
         if (missingDomains.isEmpty()) {
             localDiscoveryEntries.forEach(entry -> routingTable.incrementReferenceCount(entry.getParticipantId()));
-            if (globalEntriesAdded) {
-                globalDiscoveryEntries.forEach(entry -> {
+            if (addGlobalCacheEntries) {
+                globalDiscoveryCacheEntries.forEach(entry -> {
                     try {
                         addToRoutingTable(entry);
+                        // ParticipantIds are unique across the local store and the global cache
+                        // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
                         result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
                     } catch (Exception e) {
                         // it should never happen because addNextHop was successful at least once when we received the entry from GCD
@@ -969,89 +995,11 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
             }
             capabilitiesCallback.processCapabilitiesReceived(Optional.of(result));
         } else {
-            if (globalEntriesAdded) {
-                globalDiscoveryEntries.forEach(entry -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                       entry)));
+            if (addGlobalCacheEntries) {
+                globalDiscoveryCacheEntries.forEach(entry -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                            entry)));
             }
-            asyncGetGlobalCapabilities(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, result);
-        }
-    }
-
-    private void handleLocalAndGlobal(String[] domains,
-                                      String interfaceName,
-                                      DiscoveryQos discoveryQos,
-                                      String[] gbids,
-                                      CapabilitiesCallback capabilitiesCallback,
-                                      Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries,
-                                      Set<GlobalDiscoveryEntry> globalDiscoveryEntries) {
-        Set<String> missingDomains = new HashSet<String>(Arrays.asList(domains));
-        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
-        result.addAll(localDiscoveryEntries);
-
-        for (GlobalDiscoveryEntry globalEntry : globalDiscoveryEntries) {
-            missingDomains.remove(globalEntry.getDomain());
-        }
-
-        if (missingDomains.isEmpty()) {
-            localDiscoveryEntries.forEach(entry -> routingTable.incrementReferenceCount(entry.getParticipantId()));
-            globalDiscoveryEntries.forEach(entry -> {
-                try {
-                    addToRoutingTable(entry);
-                    // ParticipantIds are unique across the local store and the global cache
-                    // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
-                    result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
-                } catch (Exception e) {
-                    // it should never happen because addNextHop was successful at least once when we received the entry from GCD
-                    logger.error(REMOVE_LOOKUP_RESULT_MESSAGE, entry, e);
-                }
-            });
-            capabilitiesCallback.processCapabilitiesReceived(Optional.of(result));
-        } else {
-            // ParticipantIds are unique across the local store and the global cache
-            // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
-            globalDiscoveryEntries.forEach(entry -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                   entry)));
-            asyncGetGlobalCapabilities(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, result);
-        }
-    }
-
-    private void handleGlobalOnly(String[] domains,
-                                  String interfaceName,
-                                  DiscoveryQos discoveryQos,
-                                  String[] gbids,
-                                  CapabilitiesCallback capabilitiesCallback,
-                                  Set<DiscoveryEntryWithMetaInfo> localEntries,
-                                  Set<GlobalDiscoveryEntry> globalDiscoveryEntries) {
-        Set<String> missingDomains = new HashSet<>(Arrays.asList(domains));
-        Set<DiscoveryEntryWithMetaInfo> result = new HashSet<>();
-        result.addAll(localEntries);
-
-        for (DiscoveryEntryWithMetaInfo entry : result) {
-            missingDomains.remove(entry.getDomain());
-        }
-
-        globalDiscoveryEntries.forEach(entry -> missingDomains.remove(entry.getDomain()));
-
-        if (missingDomains.isEmpty()) {
-            localEntries.forEach(entry -> routingTable.incrementReferenceCount(entry.getParticipantId()));
-            globalDiscoveryEntries.forEach(entry -> {
-                try {
-                    addToRoutingTable(entry);
-                    // ParticipantIds are unique across the local store and the global cache
-                    // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
-                    result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false, entry));
-                } catch (Exception e) {
-                    // it should never happen because addNextHop was successful at least once when we received the entry from GCD
-                    logger.error(REMOVE_LOOKUP_RESULT_MESSAGE, entry, e);
-                }
-            });
-            capabilitiesCallback.processCapabilitiesReceived(Optional.of(result));
-        } else {
-            // ParticipantIds are unique across the local store and the global cache
-            // see add method and asyncGetGlobalCapabilities/asyncGetGlobalCapability
-            globalDiscoveryEntries.forEach(entry -> result.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
-                                                                                                                   entry)));
-            asyncGetGlobalCapabilities(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback, result);
+            asyncGetGlobalCapabilities(domains, interfaceName, discoveryQos, gbids, capabilitiesCallback);
         }
     }
 
@@ -1344,8 +1292,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                                             final String interfaceName,
                                             DiscoveryQos discoveryQos,
                                             final String[] gbids,
-                                            final CapabilitiesCallback capabilitiesCallback,
-                                            Collection<DiscoveryEntryWithMetaInfo> localDiscoveryEntries) {
+                                            final CapabilitiesCallback capabilitiesCallback) {
         boolean isLookupCalledWithEmptyGbid = Arrays.equals(new String[]{ "" }, gbids);
         globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>() {
             @Override
@@ -1390,6 +1337,19 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                         }
                     }
                 }
+
+                final Set<DiscoveryEntryWithMetaInfo> localDiscoveryEntries = getLocalEntries(discoveryQos.getDiscoveryScope(),
+                                                                                              gbids,
+                                                                                              domains,
+                                                                                              interfaceName,
+                                                                                              discoveryQos.getCacheMaxAge());
+                final Set<GlobalDiscoveryEntry> cachedEntries = getCachedEntriesIfRequired(discoveryQos.getDiscoveryScope(),
+                                                                                           gbids,
+                                                                                           domains,
+                                                                                           interfaceName,
+                                                                                           discoveryQos.getCacheMaxAge());
+                cachedEntries.forEach(entry -> localDiscoveryEntries.add(CapabilityUtils.convertToDiscoveryEntryWithMetaInfo(false,
+                                                                                                                             entry)));
 
                 addLocalDiscoveriesToResult(localDiscoveryEntries, allDiscoveryEntries, addedParticipantIds);
                 capabilitiesCallback.processCapabilitiesReceived(Optional.of(allDiscoveryEntries));
