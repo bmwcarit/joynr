@@ -208,7 +208,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     @Override
     public Promise<DeferredVoid> setAttributeBaseStruct(BaseStruct attributeBaseStruct) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeBaseStruct = attributeBaseStruct;
+        this.attributeBaseStruct = (attributeBaseStruct != null) ? new BaseStruct(attributeBaseStruct) : null;
         attributeBaseStructChanged(attributeBaseStruct);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -224,7 +224,9 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     @Override
     public Promise<DeferredVoid> setAttributeExtendedExtendedBaseStruct(ExtendedExtendedBaseStruct attributeExtendedExtendedBaseStruct) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeExtendedExtendedBaseStruct = attributeExtendedExtendedBaseStruct;
+        this.attributeExtendedExtendedBaseStruct = (attributeExtendedExtendedBaseStruct != null)
+                ? new ExtendedExtendedBaseStruct(attributeExtendedExtendedBaseStruct)
+                : null;
         attributeExtendedExtendedBaseStructChanged(attributeExtendedExtendedBaseStruct);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -293,7 +295,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     @Override
     public Promise<DeferredVoid> setAttributeStructTypeDef(BaseStruct attributeStructTypeDef) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeStructTypeDef = attributeStructTypeDef;
+        this.attributeStructTypeDef = (attributeStructTypeDef != null) ? new BaseStruct(attributeStructTypeDef) : null;
         attributeStructTypeDefChanged(attributeStructTypeDef);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -309,7 +311,7 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     @Override
     public Promise<DeferredVoid> setAttributeMapTypeDef(MapStringString attributeMapTypeDef) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeMapTypeDef = attributeMapTypeDef;
+        this.attributeMapTypeDef = (attributeMapTypeDef != null) ? new MapStringString(attributeMapTypeDef) : null;
         attributeMapTypeDefChanged(attributeMapTypeDef);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -358,7 +360,8 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     @Override
     public Promise<DeferredVoid> setAttributeArrayTypeDef(ArrayTypeDefStruct attributeArrayTypeDef) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeArrayTypeDef = attributeArrayTypeDef;
+        this.attributeArrayTypeDef = (attributeArrayTypeDef != null) ? new ArrayTypeDefStruct(attributeArrayTypeDef)
+                : null;
         attributeArrayTypeDefChanged(attributeArrayTypeDef);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
@@ -1255,7 +1258,9 @@ public class IltProvider extends TestInterfaceAbstractProvider {
     @Override
     public Promise<DeferredVoid> setAttributeMapStringString(MapStringString attributeMapStringString) {
         DeferredVoid deferred = new DeferredVoid();
-        this.attributeMapStringString = attributeMapStringString;
+        this.attributeMapStringString = (attributeMapStringString != null)
+                ? new MapStringString(attributeMapStringString)
+                : null;
         attributeMapStringStringChanged(attributeMapStringString);
         deferred.resolve();
         return new Promise<DeferredVoid>(deferred);
