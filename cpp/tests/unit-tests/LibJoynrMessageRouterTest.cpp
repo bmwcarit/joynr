@@ -986,7 +986,7 @@ TEST_F(LibJoynrMessageRouterTest, invalidIncomingAddress)
     EXPECT_CALL(*stubFactory, create(_)).Times(0);
     EXPECT_CALL(*stubFactory, remove(_)).Times(0);
     EXPECT_CALL(*stubFactory, contains(_)).Times(0);
-    EXPECT_CALL(*stubFactory, shutdown()).Times(1);
+    EXPECT_CALL(*stubFactory, shutdown()).Times(0);
     boost::asio::io_service ioService;
     std::unique_ptr<IMulticastAddressCalculator> noMultiCast(nullptr);
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;
@@ -1026,7 +1026,7 @@ TEST_F(LibJoynrMessageRouterTest, udsIncomingAddress)
     EXPECT_CALL(*stubFactory, create(_)).Times(0);
     EXPECT_CALL(*stubFactory, remove(_)).Times(0);
     EXPECT_CALL(*stubFactory, contains(_)).Times(0);
-    EXPECT_CALL(*stubFactory, shutdown()).Times(1);
+    EXPECT_CALL(*stubFactory, shutdown()).Times(0);
     boost::asio::io_service ioService;
     std::unique_ptr<IMulticastAddressCalculator> noMultiCast(nullptr);
     std::vector<std::shared_ptr<ITransportStatus>> transportStatuses;

@@ -1009,7 +1009,6 @@ TEST_F(CcMessageRouterTest, routingTableGetsCleaned)
                                         std::chrono::system_clock::now().time_since_epoch())
                                         .count() +
                                 4000;
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
     _messageRouter->addNextHop(
@@ -1252,7 +1251,6 @@ TEST_F(CcMessageRouterTest, checkSubscriptionStopToNonExistingRecipientIsQueued)
 
 TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsDiscardedWhenEnabled)
 {
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
     _messageRouter = createMessageRouter();
@@ -1262,7 +1260,6 @@ TEST_F(CcMessageRouterTest, checkReplyToNonExistingProxyIsDiscardedWhenEnabled)
 
 TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsDiscardedWhenEnabled)
 {
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
     _messageRouter = createMessageRouter();
@@ -1272,7 +1269,6 @@ TEST_F(CcMessageRouterTest, checkSubscriptionReplyToNonExistingRecipientIsDiscar
 
 TEST_F(CcMessageRouterTest, checkPublicationToNonExistingRecipientIsDiscardedWhenEnabled)
 {
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messagingSettings.setDiscardUnroutableRepliesAndPublications(true);
     _messageRouter = createMessageRouter();
@@ -1374,7 +1370,6 @@ TEST_F(CcMessageRouterTest, addressValidation_globalAddressMustNotReferToOurClus
     auto ownAddress =
             std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
 
@@ -1398,7 +1393,6 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesOfOwnAddressTypeAreA
     auto ownAddress =
             std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
 
@@ -1432,7 +1426,6 @@ TEST_F(CcMessageRouterTest, addressValidation_otherAddressesTypesAreAddedToRouti
     auto ownAddress =
             std::make_shared<const system::RoutingTypes::MqttAddress>("brokerUri", "ownTopic");
     setOwnAddress(ownAddress);
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
     addressIsNotAddedToRoutingTable(ownAddress);
@@ -1939,7 +1932,6 @@ TEST_F(CcMessageRouterTest, routingTableRemoveEntriesWorksForWebsocket)
     const std::string providerParticipantId2("providerParticipantId2");
     const std::string providerParticipantId3("providerParticipantId3");
 
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
 
@@ -1984,7 +1976,6 @@ TEST_F(CcMessageRouterTest, routingTableRemoveEntriesWorksForUds)
     const std::string providerParticipantId2("providerParticipantId2");
     const std::string providerParticipantId3("providerParticipantId3");
 
-    EXPECT_CALL(*_messagingStubFactory, shutdown()).Times(1);
     _messageRouter->shutdown();
     _messageRouter = createMessageRouter();
 
