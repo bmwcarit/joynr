@@ -93,7 +93,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
-        this.messageProcessors = messageProcessors;
+        this.messageProcessors = (messageProcessors != null) ? new HashSet<>(messageProcessors) : null;
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
         this.ownGbid = ownGbid;

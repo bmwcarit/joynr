@@ -24,6 +24,7 @@ import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_BACKEND_UID;
 import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
 import static io.joynr.messaging.MessagingPropertyKeys.PROPERTY_KEY_SEPARATE_REPLY_RECEIVER;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -95,7 +96,7 @@ public class MqttMessagingSkeletonProvider implements Provider<IMessagingSkeleto
 
         sharedSubscriptionsEnabled = enableSharedSubscriptions;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
-        this.messageProcessors = messageProcessors;
+        this.messageProcessors = (messageProcessors != null) ? new HashSet<>(messageProcessors) : null;
         this.messageRouter = messageRouter;
         this.messageProcessedHandler = messageProcessedHandler;
         this.mqttClientFactory = mqttClientFactory;

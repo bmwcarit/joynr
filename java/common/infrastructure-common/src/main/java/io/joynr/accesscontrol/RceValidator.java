@@ -35,9 +35,9 @@ public class RceValidator {
     public RceValidator(MasterRegistrationControlEntry masterRce,
                         MasterRegistrationControlEntry mediatorRce,
                         OwnerRegistrationControlEntry ownerRce) {
-        this.masterRce = masterRce;
-        this.mediatorRce = mediatorRce;
-        this.ownerRce = ownerRce;
+        this.masterRce = (masterRce != null) ? new MasterRegistrationControlEntry(masterRce) : null;
+        this.mediatorRce = (mediatorRce != null) ? new MasterRegistrationControlEntry(mediatorRce) : null;
+        this.ownerRce = (ownerRce != null) ? new OwnerRegistrationControlEntry(ownerRce) : null;
     }
 
     public boolean isValid() {

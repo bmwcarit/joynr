@@ -40,17 +40,19 @@ public class RequestDurationData {
         this.totalIterationDurationMs = totalDurationMs;
     }
 
-    public RequestDurationData(List<Long> durationList, long totalDurationMs) {
-        this.requestDurationList = durationList;
-        this.totalIterationDurationMs = totalDurationMs;
+    public RequestDurationData(RequestDurationData other) {
+        assert other != null : "RequestDurationData must not be null";
+        this.requestDurationList = new ArrayList<>(other.requestDurationList);
+        this.totalIterationDurationMs = other.totalIterationDurationMs;
     }
 
     public void setRequestDurationList(List<Long> durationList) {
-        this.requestDurationList = durationList;
+        this.requestDurationList = (durationList != null) ? new ArrayList<>(this.requestDurationList)
+                : new ArrayList<>();
     }
 
     public List<Long> getRequestDurationList() {
-        return this.requestDurationList;
+        return new ArrayList<>(this.requestDurationList);
     }
 
     public void setTotalDurationMs(long totalDurationMs) {
