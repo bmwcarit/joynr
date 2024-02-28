@@ -157,7 +157,9 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
     }
 
     public void setMajorVersion(Integer majorVersion) {
-        getProviderVersion().setMajorVersion(majorVersion);
+        Version version = getProviderVersion();
+        version.setMajorVersion(majorVersion);
+        setProviderVersion(version);
     }
 
     @Column
@@ -166,7 +168,9 @@ public class GlobalDiscoveryEntryPersisted extends GlobalDiscoveryEntry {
     }
 
     public void setMinorVersion(Integer minorVersion) {
-        getProviderVersion().setMinorVersion(minorVersion);
+        Version version = getProviderVersion();
+        version.setMinorVersion(minorVersion);
+        setProviderVersion(version);
     }
 
     @Column

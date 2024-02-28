@@ -107,7 +107,8 @@ public class LocalCapabilitiesDirectoryRemoveTest extends AbstractLocalCapabilit
 
     @Test(timeout = TEST_TIMEOUT)
     public void remove_localProvider_GcdNotCalled() throws InterruptedException {
-        discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        setProviderQos(discoveryEntry, ProviderScope.LOCAL);
+
         final boolean awaitGlobalRegistration = true;
         final Promise<DeferredVoid> addPromise = localCapabilitiesDirectory.add(discoveryEntry,
                                                                                 awaitGlobalRegistration);

@@ -58,7 +58,7 @@ public class LocalCapabilitiesDirectoryTouchTest extends AbstractLocalCapabiliti
 
         final GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
 
-        entry1.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(entry1, ProviderScope.GLOBAL);
         entry1.setParticipantId(participantId1);
 
         final GlobalDiscoveryEntry entry2 = new GlobalDiscoveryEntry(entry1);
@@ -136,7 +136,7 @@ public class LocalCapabilitiesDirectoryTouchTest extends AbstractLocalCapabiliti
 
         final GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
 
-        entry1.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(entry1, ProviderScope.GLOBAL);
         entry1.setParticipantId(participantId1);
         entry1.setExpiryDateMs(0L);
         entry1.setLastSeenDateMs(0L);
@@ -180,7 +180,7 @@ public class LocalCapabilitiesDirectoryTouchTest extends AbstractLocalCapabiliti
 
         final GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
 
-        entry1.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(entry1, ProviderScope.GLOBAL);
         entry1.setParticipantId(participantId1);
         entry1.setExpiryDateMs(0L);
         entry1.setLastSeenDateMs(0L);
@@ -220,7 +220,7 @@ public class LocalCapabilitiesDirectoryTouchTest extends AbstractLocalCapabiliti
 
         final GlobalDiscoveryEntry entry1 = new GlobalDiscoveryEntry(globalDiscoveryEntry);
 
-        entry1.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(entry1, ProviderScope.GLOBAL);
         entry1.setParticipantId(participantId1);
         entry1.setExpiryDateMs(0L);
         entry1.setLastSeenDateMs(0L);
