@@ -154,7 +154,7 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
         final String participantId2 = "participantId2";
 
         final DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(discoveryEntry);
-        discoveryEntry1.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(discoveryEntry1, ProviderScope.GLOBAL);
         discoveryEntry1.setParticipantId(participantId1);
 
         final DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(discoveryEntry1);
@@ -408,7 +408,7 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
         // A sequence of add-remove-add for the same provider could lead to a non-registered provider in earlier versions
         final boolean awaitGlobalRegistration = true;
         final String participantId = discoveryEntry.getParticipantId();
-        discoveryEntry.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(discoveryEntry, ProviderScope.GLOBAL);
         expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
         globalDiscoveryEntry = discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, globalAddress1);
 
@@ -491,7 +491,7 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
         // second add call
         final boolean awaitGlobalRegistration = false;
         final String participantId = discoveryEntry.getParticipantId();
-        discoveryEntry.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(discoveryEntry, ProviderScope.GLOBAL);
         expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
         globalDiscoveryEntry = discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, globalAddress1);
 
@@ -605,8 +605,8 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
     }
 
     private void checkAddRemovesCachedEntryWithSameParticipantId(final ProviderScope scope) throws InterruptedException {
-        discoveryEntry.getQos().setScope(scope);
-        expectedDiscoveryEntry.getQos().setScope(scope);
+        setProviderQos(discoveryEntry, scope);
+        setProviderQos(expectedDiscoveryEntry, scope);
 
         doReturn(false).when(localDiscoveryEntryStoreMock)
                        .hasDiscoveryEntry(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
@@ -653,8 +653,8 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
     @Test(timeout = TEST_TIMEOUT)
     public void localAddRemoveAddInSequence_doesNotInvokeGcdAndCache() throws InterruptedException {
         final String participantId = discoveryEntry.getParticipantId();
-        discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
-        expectedDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        setProviderQos(discoveryEntry, ProviderScope.LOCAL);
+        setProviderQos(expectedDiscoveryEntry, ProviderScope.LOCAL);
         doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock).lookup(eq(participantId), anyLong());
 
         // 3 actions. 1 global add 1 lcd.remove and 1 global add
@@ -680,8 +680,8 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
 
     @Test(timeout = TEST_TIMEOUT)
     public void add_local_doesNotInvokeGcdAndCache() throws InterruptedException {
-        discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
-        expectedDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        setProviderQos(discoveryEntry, ProviderScope.LOCAL);
+        setProviderQos(expectedDiscoveryEntry, ProviderScope.LOCAL);
 
         sleep(100);
         final Promise<DeferredVoid> promise = localCapabilitiesDirectory.add(discoveryEntry);
@@ -696,8 +696,8 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
 
     @Test(timeout = TEST_TIMEOUT)
     public void testAddKnownLocalEntryDoesNothing() throws InterruptedException {
-        discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
-        expectedDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        setProviderQos(discoveryEntry, ProviderScope.LOCAL);
+        setProviderQos(expectedDiscoveryEntry, ProviderScope.LOCAL);
         doReturn(true).when(localDiscoveryEntryStoreMock)
                       .hasDiscoveryEntry(argThat(new DiscoveryEntryWithUpdatedLastSeenDateMsMatcher(expectedDiscoveryEntry)));
         doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
@@ -721,7 +721,7 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
     public void testAddKnownLocalEntryWithDifferentExpiryDateAddsAgain() throws InterruptedException {
         final DiscoveryEntry newDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
         newDiscoveryEntry.setExpiryDateMs(discoveryEntry.getExpiryDateMs() + 1);
-        newDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        setProviderQos(newDiscoveryEntry, ProviderScope.LOCAL);
         doReturn(true).when(localDiscoveryEntryStoreMock).hasDiscoveryEntry(newDiscoveryEntry);
         doReturn(Optional.of(discoveryEntry)).when(localDiscoveryEntryStoreMock)
                                              .lookup(newDiscoveryEntry.getParticipantId(), Long.MAX_VALUE);
@@ -743,8 +743,8 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
 
     @Test(timeout = TEST_TIMEOUT)
     public void testAddToAll_local() throws InterruptedException {
-        discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
-        expectedDiscoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        setProviderQos(discoveryEntry, ProviderScope.LOCAL);
+        setProviderQos(expectedDiscoveryEntry, ProviderScope.LOCAL);
         final boolean awaitGlobalRegistration = true;
 
         final Promise<DiscoveryProvider.AddToAllDeferred> promise = localCapabilitiesDirectory.addToAll(discoveryEntry,
@@ -1000,7 +1000,7 @@ public class LocalCapabilitiesDirectoryAddTest extends AbstractLocalCapabilities
     public void getAwaitGlobalRegistration_removeLastStoredValue() throws InterruptedException {
         final boolean awaitGlobalRegistration = false;
         final String participantId = discoveryEntry.getParticipantId();
-        discoveryEntry.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(discoveryEntry, ProviderScope.GLOBAL);
         expectedDiscoveryEntry = new DiscoveryEntry(discoveryEntry);
         globalDiscoveryEntry = discoveryEntry2GlobalDiscoveryEntry(discoveryEntry, globalAddress1);
 

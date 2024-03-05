@@ -107,6 +107,8 @@ public class «className» extends «abstractProviderName» {
 				} else {
 					this.«attributeName» = null;
 				}
+				«ELSEIF (isMap(attribute.type) || isCompound(attribute.type))»
+				this.«attributeName» = new «attributeType»(«attributeName»);
 				«ELSE»
 				this.«attributeName» = «attributeName»;
 				«ENDIF»

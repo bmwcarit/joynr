@@ -515,7 +515,7 @@ public class LocalCapabilitiesDirectorySequencerTest extends AbstractLocalCapabi
         final String participantId2 = "participantId2";
 
         final DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(discoveryEntry);
-        discoveryEntry1.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(discoveryEntry1, ProviderScope.GLOBAL);
         discoveryEntry1.setParticipantId(participantId1);
 
         final DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(discoveryEntry1);
@@ -588,7 +588,7 @@ public class LocalCapabilitiesDirectorySequencerTest extends AbstractLocalCapabi
         final String participantId2 = "participantId2";
 
         final DiscoveryEntry discoveryEntry1 = new DiscoveryEntry(discoveryEntry);
-        discoveryEntry1.getQos().setScope(ProviderScope.GLOBAL);
+        setProviderQos(discoveryEntry1, ProviderScope.GLOBAL);
         discoveryEntry1.setParticipantId(participantId1);
 
         final DiscoveryEntry discoveryEntry2 = new DiscoveryEntry(discoveryEntry);

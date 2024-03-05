@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import joynr.types.ProviderScope;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.ArgumentCaptor;
@@ -483,6 +484,12 @@ public abstract class AbstractLocalCapabilitiesDirectoryTest {
         } catch (final InterruptedException exception) {
             fail("Unexpected exception during waiting: " + exception.getMessage());
         }
+    }
+
+    protected void setProviderQos(DiscoveryEntry discoveryEntry, ProviderScope providerScope) {
+        ProviderQos providerQos = discoveryEntry.getQos();
+        providerQos.setScope(providerScope);
+        discoveryEntry.setQos(providerQos);
     }
 
     protected abstract Logger getLogger();

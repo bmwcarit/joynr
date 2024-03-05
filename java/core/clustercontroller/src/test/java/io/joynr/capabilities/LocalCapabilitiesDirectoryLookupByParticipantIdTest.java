@@ -382,7 +382,7 @@ public class LocalCapabilitiesDirectoryLookupByParticipantIdTest extends Abstrac
 
         discoveryQos = new DiscoveryQos(cacheMaxAge, discoveryTimeout, discoveryScope, false);
         // register local only
-        discoveryEntry.getQos().setScope(ProviderScope.LOCAL);
+        setProviderQos(discoveryEntry, ProviderScope.LOCAL);
         final Promise<Add1Deferred> promiseAdd = localCapabilitiesDirectory.add(discoveryEntry, true, knownGbids);
         promiseChecker.checkPromiseSuccess(promiseAdd, MSG_ON_ADD_REJECT);
         reset(localDiscoveryEntryStoreMock, globalDiscoveryEntryCacheMock, globalCapabilitiesDirectoryClient);
