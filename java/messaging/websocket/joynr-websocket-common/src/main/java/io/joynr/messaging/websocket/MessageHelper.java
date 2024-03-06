@@ -31,9 +31,14 @@ public class MessageHelper {
     private static final Logger logger = LoggerFactory.getLogger(MessageHelper.class);
 
     public static byte[] extractMessage(final byte[] payload, final int offset, final int length) {
+        if (payload == null) {
+            Exception exception = new NullPointerException("payload must not be null");
+            throw new JoynrRuntimeException(ERR_EXTRACTION_FAILED, exception);
+        }
+
         try {
             return Arrays.copyOfRange(payload, offset, offset + length);
-        } catch (final ArrayIndexOutOfBoundsException | IllegalArgumentException | NullPointerException exception) {
+        } catch (final ArrayIndexOutOfBoundsException | IllegalArgumentException exception) {
             logger.error(ERR_EXTRACTION_FAILED, exception);
             throw new JoynrRuntimeException(ERR_EXTRACTION_FAILED, exception);
         }

@@ -18,6 +18,7 @@
  */
 package io.joynr.examples.statelessasync;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -34,8 +35,10 @@ public class VehicleStateCallback implements VehicleStateStatelessAsyncCallback 
 
     public VehicleStateCallback(Map<String, Runnable> addConfigurationCallbacks,
                                 Map<String, BiConsumer<VehicleConfiguration, VehicleState.GetCurrentConfigErrorEnum>> getCurrentConfigCallbacks) {
-        this.addConfigurationCallbacks = addConfigurationCallbacks;
-        this.getCurrentConfigCallbacks = getCurrentConfigCallbacks;
+        this.addConfigurationCallbacks = (addConfigurationCallbacks != null) ? new HashMap<>(addConfigurationCallbacks)
+                : null;
+        this.getCurrentConfigCallbacks = (getCurrentConfigCallbacks != null) ? new HashMap<>(getCurrentConfigCallbacks)
+                : null;
     }
 
     @Override
