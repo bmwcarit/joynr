@@ -41,6 +41,15 @@ public class VehicleStateCallback implements VehicleStateStatelessAsyncCallback 
                 : null;
     }
 
+    public void setAddConfigurationCallback(String key, Runnable runnable) {
+        addConfigurationCallbacks.put(key, runnable);
+    }
+
+    public void setGetCurrentConfigCallback(String key,
+                                            BiConsumer<VehicleConfiguration, VehicleState.GetCurrentConfigErrorEnum> biConsumer) {
+        getCurrentConfigCallbacks.put(key, biConsumer);
+    }
+
     @Override
     public String getUseCase() {
         return "pure-java-proxy";
