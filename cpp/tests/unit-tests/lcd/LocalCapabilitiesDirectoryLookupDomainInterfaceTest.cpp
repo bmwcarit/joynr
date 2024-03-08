@@ -412,6 +412,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList))
             .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(3)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -476,6 +479,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(2)
             .WillRepeatedly(InvokeArgument<4>(globalEntryVec));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -530,6 +534,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList))
             .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(6)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -590,6 +597,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList))
             .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(6)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -630,6 +640,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, Eq(multipleGbids), _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -657,6 +670,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, Eq(_KNOWN_GBIDS), _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntryResultList));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -728,6 +744,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest, lookupByDomainInterf
             lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, Eq(_KNOWN_GBIDS), _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntriesResultList));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -759,7 +776,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
                 _semaphore->notify();
             };
 
-    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(2);
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(2).WillRepeatedly(InvokeArgument<5>());
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _)).Times(0);
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _)).Times(0);
     // the following special expectation hits first and retires on saturation, i.e.
@@ -800,6 +817,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, Eq(_KNOWN_GBIDS), _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntriesResultList));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -878,6 +896,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             .Times(1)
             .WillOnce(InvokeArgument<4>(discoveryEntriesResultList))
             .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -918,6 +939,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest, lookupForInterfaceAd
             .Times(1)
             .WillOnce(InvokeArgument<4>(onSuccessResult))
             .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -947,6 +971,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest, lookupForInterfaceAd
                 lookup(ElementsAre(_DOMAIN_1_NAME), _INTERFACE_1_NAME, _, _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(onSuccessResult));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1020,6 +1047,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest, registerLocalCapabil
             .Times(1)
             .InSequence(s)
             .WillOnce(InvokeArgument<4>(onSuccessResult));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(3)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1100,6 +1130,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             .Times(1)
             .WillRepeatedly(
                     DoAll(AcquireSemaphore(gcdSemaphore), InvokeArgument<4>(onSuccessResult)));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1143,6 +1174,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
             .Times(1)
             .WillRepeatedly(
                     DoAll(AcquireSemaphore(gcdSemaphore), InvokeArgument<4>(onSuccessResult)));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1260,6 +1294,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillRepeatedly(InvokeArgument<4>(onSuccessResult));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1331,6 +1368,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillRepeatedly(InvokeArgument<4>(onSuccessResult));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1406,6 +1446,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillRepeatedly(InvokeArgument<4>(onSuccessResult));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(2)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1476,6 +1519,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillRepeatedly(InvokeArgument<4>(onSuccessResult));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -2075,6 +2121,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest, registerGlobalCapabi
     EXPECT_CALL(
             *_globalCapabilitiesDirectoryClient, remove(_dummyParticipantIdsVector[0], _, _, _, _))
             .Times(1);
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(1)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -2193,6 +2242,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest, localAndGlobalDoesNo
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(globalEntryVec));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -2256,6 +2306,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest, localAndGlobalDoesNo
     EXPECT_CALL(*_globalCapabilitiesDirectoryClient, lookup(_, _, _, _, _, _, _))
             .Times(1)
             .WillOnce(InvokeArgument<4>(globalEntryVec));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();

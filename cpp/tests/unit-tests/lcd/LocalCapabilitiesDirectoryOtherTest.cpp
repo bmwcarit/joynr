@@ -820,6 +820,9 @@ TEST_F(LocalCapabilitiesDirectoryOtherTest, clearRemovesEntries)
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
             .InSequence(s);
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1028,6 +1031,9 @@ TEST_F(LocalCapabilitiesDirectoryOtherTest, removeGlobalExpiredEntries_ReturnNon
                 lookup(Eq(domainVector), Eq(_INTERFACE_3_NAME), _, _, _, _, _))
             .WillOnce(InvokeArgument<4>(expectedResultInterface3))
             .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(3)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();

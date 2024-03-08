@@ -522,6 +522,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest,
                                                             _))
             .Times(1)
             .WillOnce(InvokeArgument<3>(onSuccessResult));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -666,6 +667,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest, lookupForPartic
             .WillOnce(Invoke(
                     this, &LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::fakeLookupByParticipantIdWithResult))
             .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -701,6 +705,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest, lookupForPartic
             .Times(1)
             .WillOnce(
                     Invoke(this, &LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::fakeLookupNoEntryForParticipant));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _)).Times(0);
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -731,6 +736,9 @@ TEST_F(LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest, lookupForPartic
             .Times(1)
             .WillOnce(Invoke(
                     this, &LocalCapabilitiesDirectoryLookupParticipantIdMethodsTest::fakeLookupByParticipantIdWithResult));
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
