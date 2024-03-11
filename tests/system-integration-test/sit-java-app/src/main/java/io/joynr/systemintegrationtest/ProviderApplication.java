@@ -21,6 +21,7 @@ package io.joynr.systemintegrationtest;
 import java.util.Arrays;
 import java.util.Properties;
 
+import joynr.types.CustomParameter;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -58,6 +59,8 @@ public class ProviderApplication extends AbstractJoynrApplication {
     private static String[] gbids;
     private static boolean registerGlobally = false;
     private static boolean expectedFailure = false;
+    private static boolean providerHasCustomParameters = false;
+    private static CustomParameter[] providerCustomParameters;
 
     public static void main(String[] args) throws Exception {
         CommandLine line;
@@ -105,6 +108,10 @@ public class ProviderApplication extends AbstractJoynrApplication {
                 expectedFailure = true;
                 logger.info("expectedFailure = " + expectedFailure);
             }
+            if (line.hasOption('P')) {
+                providerHasCustomParameters = true;
+                providerCustomParameters = parseCustomParameters(line.getOptionValue('P'));
+            }
         } catch (ParseException e) {
             logger.error("failed to parse command line: " + e);
             HelpFormatter formatter = new HelpFormatter();
@@ -134,6 +141,22 @@ public class ProviderApplication extends AbstractJoynrApplication {
 
         joynrApplication.run();
         joynrApplication.shutdown();
+    }
+
+    private static CustomParameter[] parseCustomParameters(final String initialValue) {
+        logger.info("Parsing provider custom parameters. Initial value: {};", initialValue);
+        final String[] parameters = initialValue.split(";");
+        return Arrays.stream(parameters).map(ProviderApplication::parseCustomParameter).toArray(CustomParameter[]::new);
+    }
+
+    private static CustomParameter parseCustomParameter(final String rawValue) {
+        final String[] keyAndValue = rawValue.split("=");
+        if (keyAndValue.length == 2) {
+            return new CustomParameter(keyAndValue[0], keyAndValue[1]);
+        } else {
+            throw new IllegalArgumentException("Unable to parse Provider Custom Parameter \"" + rawValue
+                    + "\". It is expected to like key=value string separated by semicolon.");
+        }
     }
 
     private static void setupOptions(Options options, Options helpOptions) {
@@ -180,12 +203,23 @@ public class ProviderApplication extends AbstractJoynrApplication {
                                              .longOpt("expected-failure")
                                              .hasArg(false)
                                              .build();
+        final Option optionCustomParameters = Option.builder("P")
+                                                    .required(false)
+                                                    .argName("providerCustomParameters")
+                                                    .desc("provider custom parameters. It is expected as key=value sequence separated by semicolon. For example: keyA=valueA;keyB=valueB")
+                                                    .longOpt("providerCustomParameters")
+                                                    .hasArg(true)
+                                                    .numberOfArgs(1)
+                                                    .type(String.class)
+                                                    .build();
+
         options.addOption(optionDomain);
         options.addOption(optionHelp);
         options.addOption(optionRunforever);
         options.addOption(optionGbids);
         options.addOption(optionGlobal);
         options.addOption(optionExpectedFailure);
+        options.addOption(optionCustomParameters);
         helpOptions.addOption(optionHelp);
     }
 
@@ -215,6 +249,9 @@ public class ProviderApplication extends AbstractJoynrApplication {
         // by default, ProviderScope is set to GLOBAL
         providerQos.setScope(registerGlobally == true ? ProviderScope.GLOBAL : ProviderScope.LOCAL);
         providerQos.setPriority(System.currentTimeMillis());
+        if (providerHasCustomParameters) {
+            providerQos.setCustomParameters(providerCustomParameters);
+        }
 
         // access to provider is needed inside the hook, so it must be added here
         Thread shutdownHook = new Thread() {
