@@ -71,10 +71,10 @@ public class ConsumerApplication extends AbstractJoynrApplication {
             vehicleConfiguration.setEntries(new KeyValue[]{ new KeyValue("key-" + counter, "value-" + counter) });
             vehicleStateProxy.addConfiguration(vehicleConfiguration, addConfigurationMessageId -> {
                 logger.info("Message sent with ID: {}", addConfigurationMessageId);
-                addConfigurationCallbacks.put(addConfigurationMessageId, () -> {
+                vehicleStateCallback.setAddConfigurationCallback(addConfigurationMessageId, () -> {
                     logger.info("Add configuration reply for message {}", addConfigurationMessageId);
                     vehicleStateProxy.getCurrentConfig(vehicleConfiguration.getId(), getConfigurationMessageId -> {
-                        getConfigurationCallbacks.put(getConfigurationMessageId, (config, error) -> {
+                        vehicleStateCallback.setGetCurrentConfigCallback(getConfigurationMessageId, (config, error) -> {
                             logger.info("Get configuration reply for message {}", getConfigurationMessageId);
                             if (config != null && !config.getId().equals(vehicleConfiguration.getId())) {
                                 logger.error("Mismatched config IDs: " + vehicleConfiguration + " / " + config);
