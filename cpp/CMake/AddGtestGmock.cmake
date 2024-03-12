@@ -145,7 +145,8 @@ function(RegisterToCtest TARGET ${ARGN})
     )
 
     gtest_discover_tests(${TARGET}
-        WORKING_DIRECTORY ${output_directory}
+            PROPERTIES TEST_DISCOVERY_TIMEOUT 600
+            WORKING_DIRECTORY ${output_directory}
     )
 endfunction(RegisterToCtest)
 
