@@ -2,7 +2,7 @@
 ###
 # #%L
 # %%
-# Copyright (C) 2019 BMW Car IT GmbH
+# Copyright (C) 2019-2024 BMW Car IT GmbH
 # %%
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -180,6 +180,11 @@ do
 	cd ${DATA_DIR}/sit-java-app-provider-${BACKEND_PREFIX[$i]}
 	java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication -d ${BACKEND_PREFIX[$i]}_$DOMAIN_PREFIX.java -r -g ${GBIDS[$i]} -G > ${LOG_DIR}/provider_java_${BACKEND_PREFIX[$i]}.log 2>&1 &
 	JAVA_PROVIDER_PID[$i]=$!
+
+	echo "SIT: Starting Java provider with custom parameters for domain ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params.java"
+  cd ${DATA_DIR}/sit-java-app-provider-${BACKEND_PREFIX[$i]}
+  java -cp *.jar io.joynr.systemintegrationtest.ProviderApplication -d ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params.java -r -g ${GBIDS[$i]} -G -P keyA=valueA > ${LOG_DIR}/provider_java_with_custom_params_${BACKEND_PREFIX[$i]}.log 2>&1 &
+  JAVA_PROVIDER_WITH_CUSTOM_PARAMS_PID[$i]=$!
 done
 
 echo "SIT: Starting C++ provider registration failure in invalid backend test"
@@ -264,6 +269,21 @@ do
 				echo "SIT RESULT ERROR joynr cpp system integration test against java provider failed with error code $?"
 			fi
 		done
+
+    for i in 0 1 2
+    do
+      # cpp - run the test against java provider registered with custom parameters
+      echo "SIT: running cpp<->java (with custom params) joynr system integration test for domain ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params.java"
+      cd ${CPP_HOME}/${BACKEND_PREFIX[$i]}
+      ./jsit-consumer-ws -d ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params.java -g ${GBIDS[$i]} -G
+
+      if [ $? -eq 0 ]
+      then
+        echo "SIT: cpp<->java (with custom params) joynr system integration test for domain ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params succeeded"
+      else
+        echo "SIT RESULT ERROR joynr cpp consumer system integration test against java provider with custom parameters failed with error code $?"
+      fi
+    done
 
 		for i in 0 1 2
 		do
@@ -354,6 +374,21 @@ do
 			fi
 		done
 
+    for i in 0 1 2
+		do
+      # java - run the test against java provider registered with custom parameters
+      echo "SIT: run java<->java (with custom params) joynr system integration test for domain ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params.java"
+      cd ${DATA_DIR}/sit-java-app-consumer-${BACKEND_PREFIX[$i]}
+      rm -f *.persistence_file joynr_participantIds.properties
+      java -cp *.jar io.joynr.systemintegrationtest.ConsumerApplication -d ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params.java -g ${GBIDS[$i]} -G
+      if [ $? -eq 0 ]
+      then
+        echo "SIT: java<->java (with custom params) joynr system integration test for domain ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params succeeded"
+      else
+        echo "SIT RESULT ERROR joynr java system integration test against java provider with custom parameters failed with error code $?"
+      fi
+    done
+
 		for i in 0 1 2
 		do
 			# java - run the test against node provider
@@ -437,6 +472,18 @@ do
 				--sit-node-app:cc:port=4242 \
 				--sit-node-app:gbids=${GBIDS[$i]}
 		done
+
+		for i in 0 1 2
+    do
+      # node - run the test against java provider with custom parameters
+      echo "SIT: run node<->java joynr system integration test for domain ${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params.java"
+      cd ${DATA_DIR}/sit-node-app-${BACKEND_PREFIX[$i]}
+      npm run-script startconsumer \
+        --sit-node-app:domain=${BACKEND_PREFIX[$i]}_${DOMAIN_PREFIX}_with_custom_params.java \
+        --sit-node-app:cc:host=127.0.0.1 \
+        --sit-node-app:cc:port=4242 \
+        --sit-node-app:gbids=${GBIDS[$i]}
+    done
 
 		for i in 0 1 2
 		do
