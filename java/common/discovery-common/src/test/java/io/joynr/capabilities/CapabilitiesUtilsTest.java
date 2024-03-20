@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,7 +52,9 @@ public class CapabilitiesUtilsTest {
     @Before
     public void setUp() throws Exception {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+        objectMapper.activateDefaultTypingAsProperty(LaissezFaireSubTypeValidator.instance,
+                                                     DefaultTyping.JAVA_LANG_OBJECT,
+                                                     "_typeName");
         Field objectMapperField = CapabilityUtils.class.getDeclaredField("objectMapper");
         objectMapperField.setAccessible(true);
         objectMapperField.set(CapabilityUtils.class, objectMapper);

@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,6 +43,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 public class ObjectMapper {
 
@@ -151,11 +153,25 @@ public class ObjectMapper {
         }
     }
 
+    /**
+     * @deprecated use {@link #activateDefaultTypingAsProperty(PolymorphicTypeValidator, DefaultTyping, String)} instead.
+     */
     @Deprecated
     public void enableDefaultTypingAsProperty(DefaultTyping applicability, String propertyName) {
         lock.writeLock().lock();
         try {
             realObjectMapper.enableDefaultTypingAsProperty(applicability, propertyName);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void activateDefaultTypingAsProperty(PolymorphicTypeValidator ptv,
+                                                DefaultTyping applicability,
+                                                String propertyName) {
+        lock.writeLock().lock();
+        try {
+            realObjectMapper.activateDefaultTypingAsProperty(ptv, applicability, propertyName);
         } finally {
             lock.writeLock().unlock();
         }
@@ -183,6 +199,15 @@ public class ObjectMapper {
         lock.writeLock().lock();
         try {
             realObjectMapper.configure(f, state);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void configOverrideSetInclude(Class<?> clazz, JsonInclude.Include value, JsonInclude.Include content) {
+        lock.writeLock().lock();
+        try {
+            realObjectMapper.configOverride(clazz).setInclude(JsonInclude.Value.construct(value, content));
         } finally {
             lock.writeLock().unlock();
         }

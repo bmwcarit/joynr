@@ -18,6 +18,7 @@
  */
 package io.joynr.messaging;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -26,8 +27,9 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.type.SimpleType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -70,6 +72,8 @@ import joynr.exceptions.IllegalAccessException;
 import joynr.exceptions.MethodInvocationException;
 import joynr.exceptions.ProviderRuntimeException;
 
+import java.util.Map;
+
 public class JsonMessageSerializerModule extends AbstractModule {
 
     private ObjectMapper objectMapper;
@@ -86,13 +90,15 @@ public class JsonMessageSerializerModule extends AbstractModule {
         objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         objectMapper.configure(DeserializationFeature.USE_JAVA_ARRAY_FOR_JSON_ARRAY, true);
         // objectMapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
-        objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, true);
+        objectMapper.configOverrideSetInclude(Map.class, JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL);
         objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+        objectMapper.activateDefaultTypingAsProperty(LaissezFaireSubTypeValidator.instance,
+                                                     DefaultTyping.JAVA_LANG_OBJECT,
+                                                     "_typeName");
         TypeResolverBuilder<?> joynrTypeResolverBuilder = objectMapper.getSerializationConfig()
-                                                                      .getDefaultTyper(SimpleType.construct(Object.class));
+                                                                      .getDefaultTyper(TypeFactory.unknownType());
 
         SimpleModule module = new SimpleModule("NonTypedModule", new Version(1, 0, 0, "", "", ""));
         module.addSerializer(new JoynrEnumSerializer());
@@ -100,7 +106,7 @@ public class JsonMessageSerializerModule extends AbstractModule {
         module.addSerializer(new JoynrArraySerializer());
 
         TypeDeserializer typeDeserializer = joynrTypeResolverBuilder.buildTypeDeserializer(objectMapper.getDeserializationConfig(),
-                                                                                           SimpleType.construct(Object.class),
+                                                                                           TypeFactory.unknownType(),
                                                                                            null);
 
         module.addDeserializer(Request.class, new RequestDeserializer(objectMapper));
