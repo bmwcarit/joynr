@@ -74,7 +74,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
 
-    private Set<String> trackerRegisteredMessages;
+    private Set<MessageTrackerForGracefulShutdown.MessageToTrack> trackerRegisteredMessages;
     private Semaphore semaphore;
     private MessageProcessedListener mockMessageProcessedListener;
 
@@ -234,7 +234,10 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
         ccMessageRouter.routeIn(immutableMessage);
         if (trackable) {
             assertEquals(1, trackerRegisteredMessages.size());
-            assertTrue(trackerRegisteredMessages.contains(requestReplyId));
+            final MessageTrackerForGracefulShutdown.MessageToTrack messageToTrack = new MessageTrackerForGracefulShutdown.MessageToTrack(immutableMessage.getId(),
+                                                                                                                                         requestReplyId,
+                                                                                                                                         immutableMessage.getType());
+            assertTrue(trackerRegisteredMessages.contains(messageToTrack));
         } else {
             assertEquals(0, trackerRegisteredMessages.size());
         }
@@ -402,7 +405,7 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
             final MessageTrackerForGracefulShutdown tracker = (MessageTrackerForGracefulShutdown) trackerField.get(ccMessageRouter);
             final Field messageSetField = MessageTrackerForGracefulShutdown.class.getDeclaredField("registeredMessages");
             messageSetField.setAccessible(true);
-            trackerRegisteredMessages = (Set<String>) messageSetField.get(tracker);
+            trackerRegisteredMessages = (Set<MessageTrackerForGracefulShutdown.MessageToTrack>) messageSetField.get(tracker);
         } catch (final NoSuchFieldException | IllegalAccessException e) {
             fail("Unable to access CcMessageRouter's messageTracker: " + e.getMessage());
         }
