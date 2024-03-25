@@ -1576,7 +1576,7 @@ The following allows anyone to access interface:
 ```java
 private static void provisionAccessControl(Properties properties, String domain) throws Exception {
    ObjectMapper objectMapper = new ObjectMapper();
-   objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+   objectMapper.activateDefaultTypingAsProperty(LaissezFaireSubTypeValidator.instance, DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
    MasterAccessControlEntry newMasterAccessControlEntry = new MasterAccessControlEntry(
        "*",
        domain,

@@ -40,6 +40,7 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,7 +315,9 @@ public class DefaultJoynrRuntimeFactory implements JoynrRuntimeFactory {
         }
         final ObjectMapper objectMapper = new ObjectMapper();
         //noinspection deprecation
-        objectMapper.enableDefaultTypingAsProperty(DefaultTyping.JAVA_LANG_OBJECT, "_typeName");
+        objectMapper.activateDefaultTypingAsProperty(LaissezFaireSubTypeValidator.instance,
+                                                     DefaultTyping.JAVA_LANG_OBJECT,
+                                                     "_typeName");
 
         final MasterAccessControlEntry[] provisionedAccessControlEntries = Arrays.stream(interfaceNames)
                                                                                  .map(interfaceName -> createMasterAccessControlEntry(interfaceName,
