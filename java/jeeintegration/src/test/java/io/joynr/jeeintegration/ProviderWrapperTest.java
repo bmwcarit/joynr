@@ -47,7 +47,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.util.AnnotationLiteral;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import org.junit.Assert;
 import org.junit.Test;

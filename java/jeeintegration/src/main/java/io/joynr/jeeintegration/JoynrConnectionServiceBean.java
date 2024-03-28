@@ -19,7 +19,7 @@
 package io.joynr.jeeintegration;
 
 import javax.ejb.Singleton;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.JoynrConnectionService;
 

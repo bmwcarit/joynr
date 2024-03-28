@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Singleton;
+import com.google.inject.Singleton;
 
 import io.joynr.exceptions.JoynrWaitExpiredException;
 

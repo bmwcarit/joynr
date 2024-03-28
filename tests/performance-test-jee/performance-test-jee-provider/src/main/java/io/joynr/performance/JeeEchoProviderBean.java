@@ -19,7 +19,7 @@
 package io.joynr.performance;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.ProviderDomain;
 import io.joynr.jeeintegration.api.ServiceProvider;

@@ -18,10 +18,9 @@
  */
 package io.joynr.messaging.websocket;
 
-import javax.inject.Named;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.name.Named;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
 

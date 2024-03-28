@@ -57,6 +57,12 @@
 			<groupId>com.hivemq</groupId>
 			<artifactId>hivemq-mqtt-client</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.inject</groupId>
+					<artifactId>javax.inject</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
@@ -178,11 +184,6 @@
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

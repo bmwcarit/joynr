@@ -18,7 +18,7 @@
  */
 package io.joynr.systemintegrationtest.jeestatelessasync;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

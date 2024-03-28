@@ -18,10 +18,9 @@
  */
 package io.joynr.messaging.websocket.server;
 
-import javax.inject.Named;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;
 import io.joynr.messaging.websocket.JoynrWebSocketEndpoint;

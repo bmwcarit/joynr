@@ -23,7 +23,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import javax.inject.Inject
+import com.google.inject.Inject
 import org.franca.core.franca.FMapType
 
 class MapCppTemplate extends MapTemplate {

@@ -20,7 +20,7 @@ package itest.io.joynr.jeeintegration;
 
 import java.io.File;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

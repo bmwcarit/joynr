@@ -19,14 +19,13 @@
 package itest.io.joynr.jeeintegration;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceSubscriptionPublisher;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-import joynr.jeeintegration.servicelocator.MyService.CallMeWithExceptionErrorEnum;
 
 @Stateless
 @ServiceProvider(serviceInterface = MyServiceSync.class)

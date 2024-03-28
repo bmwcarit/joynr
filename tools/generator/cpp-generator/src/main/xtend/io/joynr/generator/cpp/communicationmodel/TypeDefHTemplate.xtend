@@ -22,7 +22,7 @@ import io.joynr.generator.cpp.util.JoynrCppGeneratorExtensions
 import io.joynr.generator.cpp.util.TemplateBase
 import io.joynr.generator.templates.TypeDefTemplate
 import io.joynr.generator.templates.util.NamingUtil
-import javax.inject.Inject
+import com.google.inject.Inject
 import org.franca.core.franca.FTypeDef
 import org.franca.core.franca.FType
 import org.franca.core.franca.FBasicTypeId

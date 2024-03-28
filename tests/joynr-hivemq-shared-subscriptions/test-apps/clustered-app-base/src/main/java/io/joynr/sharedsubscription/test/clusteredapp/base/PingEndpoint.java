@@ -23,7 +23,7 @@ import static java.lang.String.valueOf;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;

@@ -18,10 +18,9 @@
  */
 package io.joynr.runtime;
 
-import javax.inject.Named;
-
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.websocket.WebSocketClientMessagingStubFactory;

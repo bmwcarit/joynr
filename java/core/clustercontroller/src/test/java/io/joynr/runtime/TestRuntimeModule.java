@@ -21,11 +21,10 @@ package io.joynr.runtime;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Named;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import io.joynr.messaging.AbstractMiddlewareMessagingStubFactory;
 import io.joynr.messaging.inprocess.InProcessAddress;

@@ -22,8 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.inject.Inject;
-
+import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
 import io.joynr.messaging.ConfigurableMessagingSettings;

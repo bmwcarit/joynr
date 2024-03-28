@@ -41,7 +41,7 @@ import java.io.File
 import java.util.Arrays
 import java.util.HashSet
 import java.util.Map
-import javax.inject.Inject
+import com.google.inject.Inject
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.franca.core.dsl.FrancaPersistenceManager

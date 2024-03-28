@@ -19,7 +19,7 @@
 package itest.io.joynr.jeeintegration.multicast;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;

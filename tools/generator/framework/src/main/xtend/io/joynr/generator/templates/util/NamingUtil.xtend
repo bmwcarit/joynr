@@ -18,7 +18,7 @@ package io.joynr.generator.templates.util
  */
 
 import com.google.inject.Inject
-import javax.inject.Singleton
+import com.google.inject.Singleton
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FBasicTypeId

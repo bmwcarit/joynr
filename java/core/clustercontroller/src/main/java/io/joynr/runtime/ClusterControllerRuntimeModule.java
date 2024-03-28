@@ -22,10 +22,9 @@ import static io.joynr.messaging.MessagingPropertyKeys.GBID_ARRAY;
 
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.inject.Named;
-
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import io.joynr.accesscontrol.AccessControlClientModule;

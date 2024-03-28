@@ -28,7 +28,7 @@ import java.io.File;
 import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

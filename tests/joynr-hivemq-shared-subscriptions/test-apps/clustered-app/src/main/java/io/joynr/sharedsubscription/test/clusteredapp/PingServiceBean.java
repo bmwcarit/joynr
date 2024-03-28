@@ -22,7 +22,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import javax.ejb.Stateless;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.sharedsubscription.test.clusteredapp.base.CallStatistics;

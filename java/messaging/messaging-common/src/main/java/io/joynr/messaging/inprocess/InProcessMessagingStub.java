@@ -18,7 +18,7 @@
  */
 package io.joynr.messaging.inprocess;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;

@@ -22,7 +22,7 @@ import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.annotation.Resource;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
