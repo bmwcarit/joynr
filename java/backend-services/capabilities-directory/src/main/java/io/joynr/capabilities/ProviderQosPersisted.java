@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Embeddable;
-import javax.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.OneToMany;
 
 import joynr.types.CustomParameter;
 import joynr.types.ProviderQos;
@@ -69,6 +70,7 @@ public class ProviderQosPersisted extends ProviderQos implements Serializable {
     }
 
     @Override
+    @Column(columnDefinition = "int4")
     public ProviderScope getScope() {
         return super.getScope();
     }

@@ -140,7 +140,7 @@ public class CapabilitiesDirectoryLauncher {
             joynrConfig.remove(GCD_JPA_PROPERTIES);
         }
 
-        jpaProperties.setProperty("javax.persistence.jdbc.url",
+        jpaProperties.setProperty("jakarta.persistence.jdbc.url",
                                   "jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName);
         jpaModule.properties(jpaProperties);
 

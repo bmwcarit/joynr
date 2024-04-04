@@ -418,7 +418,7 @@
 		<guice.version>7.0.0</guice.version>
 		<jetty.version>11.0.18</jetty.version>
 		<tycho.version>1.6.0</tycho.version>
-		<hibernate.version>5.6.11.Final</hibernate.version>
+		<hibernate.version>6.5.2.Final</hibernate.version>
 		<android.platform.version>9_r6</android.platform.version>
 		<android.platform.level>28</android.platform.level>
 		<skipTests>true</skipTests>
@@ -493,6 +493,11 @@
 				<groupId>jakarta.inject</groupId>
 				<artifactId>jakarta.inject-api</artifactId>
 				<version>2.0.1</version>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.persistence</groupId>
+				<artifactId>jakarta.persistence-api</artifactId>
+				<version>3.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.persistence</groupId>
@@ -801,12 +806,12 @@
 				<version>${franca.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.hibernate</groupId>
+				<groupId>org.hibernate.orm</groupId>
 				<artifactId>hibernate-core</artifactId>
 				<version>${hibernate.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.hibernate</groupId>
+				<groupId>org.hibernate.orm</groupId>
 				<artifactId>hibernate-core</artifactId>
 				<version>${hibernate.version}</version>
 				<classifier>sources</classifier>
