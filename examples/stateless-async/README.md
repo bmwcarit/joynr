@@ -46,6 +46,11 @@ This project is built using Maven. Simply execute `mvn install` from the root to
 Once the Java applications have been built, use the various `docker-build.sh` scripts in the sub-projects
 in order to create the necessary docker images.
 
+The `joynr-gcd` and `joynr-gcd-db` images can be built with
+`${joynr_project_root}/docker/build_backend.sh`.
+
+This project requires docker image `java-11-with-curl` which can be built with `${joynr_project_root}/docker/java-11-with-curl/build_docker_image.sh`.
+
 ## Running
 
 The root of the project contains a `docker-compose.yml`, with service definitions for all actors in the
