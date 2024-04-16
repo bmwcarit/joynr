@@ -148,6 +148,32 @@
 		<Class name="io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClient" />
 		<Bug pattern="RV_RETURN_VALUE_IGNORED"/>
 	</Match>
+	<!-- Remove EI_EXPOSE_REP and EI_EXPOSE_REP2 warnings from hibernate modules -->
+	<Match>
+		<Class name="io.joynr.capabilities.ProviderQosPersisted" />
+		<Method name="getCustomParameterList"/>
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.ProviderQosPersisted" />
+		<Method name="setCustomParameterList"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.directory.CapabilitiesDirectoryImpl"/>
+		<Field name="discoveryEntryStore"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.GlobalDiscoveryEntryPersisted"/>
+		<Method name="getProviderQosPersisted"/>
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.GlobalDiscoveryEntryPersisted"/>
+		<Method name="setProviderQosPersisted"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
 	<!-- remove all null pointer warnings from tests -->
 	<Match>
 		<Class name="~.*\.*Tests" />
