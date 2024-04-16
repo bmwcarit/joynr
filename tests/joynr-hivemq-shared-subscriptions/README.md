@@ -54,6 +54,10 @@ The joynr backend docker images `joynr-gcd-db` and `joynr-gcd` are required to r
 
 You can build them by running `cd <joynr_repo>/docker/ && ./build_backend.sh`.
 
+Common docker image `java-11-with-curl` is required to run the tests.
+
+You can build it by running `cd <joynr_repo>/docker/ && ./build_docker_image.sh`.
+
 ### Test docker images
 
 The easiest way to build all necessary images is to execute the
@@ -83,6 +87,7 @@ You should now see the appropriate Docker Images:
     shared-subs-test-clustered-app               latest   6528b5fd9ad6   6 days ago     1.27GB
     backpressure-test-monitor-app                latest   9863d9cf8cf6   6 days ago     1.27GB
     backpressure-test-clustered-provider         latest   cd240788b955   6 days ago     1.27GB
+    java-11-with-curl                            latest   1d4701bc9bf4   16 hours ago   272MB
     joynr-gcd                                    latest   7948363be5d6   15 hours ago   261MB
     joynr-gcd-db                                 latest   8a2e8fa2c8cc   15 hours ago   192MB
     hivemq/hivemq-ce                             latest   a03634593620   2 months ago   392MB

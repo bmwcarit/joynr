@@ -36,6 +36,8 @@ create the necessary docker images.
 The `joynr-gcd` and `joynr-gcd-db` images can be built with
 `${joynr_project_root}/docker/build_backend.sh`.
 
+This project requires docker image `java-11-with-curl` which can be built with `${joynr_project_root}/docker/java-11-with-curl/build_docker_image.sh`.
+
 ## Running
 
 Use the provided `run_example.sh` script. You will see the response of the method call in the
