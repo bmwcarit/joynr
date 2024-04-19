@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,11 +32,11 @@ public class MessageQueue {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageQueue.class);
 
-    private DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
+    private final DelayQueue<DelayableImmutableMessage> delayableImmutableMessages;
 
     @Inject
     public MessageQueue(DelayQueue<DelayableImmutableMessage> delayableImmutableMessages) {
-        this.delayableImmutableMessages = delayableImmutableMessages;
+        this.delayableImmutableMessages = new DelayQueue<>(delayableImmutableMessages);
     }
 
     /**
@@ -57,7 +57,6 @@ public class MessageQueue {
      * @throws InterruptedException if the thread was interrupted while waiting for a message to become available.
      */
     public DelayableImmutableMessage poll(long timeout, TimeUnit unit) throws InterruptedException {
-        DelayableImmutableMessage message = delayableImmutableMessages.poll(timeout, unit);
-        return message;
+        return delayableImmutableMessages.poll(timeout, unit);
     }
 }
