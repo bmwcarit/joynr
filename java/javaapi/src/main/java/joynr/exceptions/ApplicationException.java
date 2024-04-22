@@ -63,6 +63,10 @@ public class ApplicationException extends Exception implements JoynrException {
     /**
      * DO NOT USE
      * Constructor for deserializer
+     *
+     * @param error error enum to be reported
+     * @param message description of the reported error
+     * @param deserializer deserializer of the exception
      */
     public ApplicationException(Enum<?> error, String message, StdDeserializer<ApplicationException> deserializer) {
         super(message);

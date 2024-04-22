@@ -32,6 +32,10 @@ public class JoynrTimeoutException extends JoynrRuntimeException {
     /**
      * DO NOT USE
      * Constructor for deserializer
+     *
+     * @param message description of the reported error
+     * @param expiryDate expiry date
+     * @param deserializer deserializer of the exception
      */
     public JoynrTimeoutException(String message, long expiryDate, StdDeserializer<JoynrTimeoutException> deserializer) {
         super(message);

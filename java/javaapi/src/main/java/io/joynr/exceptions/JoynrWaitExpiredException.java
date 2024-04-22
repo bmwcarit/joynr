@@ -25,6 +25,9 @@ public class JoynrWaitExpiredException extends JoynrTimeoutException {
     /**
      * DO NOT USE
      * Constructor for deserializer
+     *
+     * @param expiryDate expiry date
+     * @param deserializer deserializer of the exception
      */
     public JoynrWaitExpiredException(long expiryDate, StdDeserializer<JoynrWaitExpiredException> deserializer) {
         super(expiryDate);
