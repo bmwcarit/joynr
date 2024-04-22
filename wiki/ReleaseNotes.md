@@ -2,6 +2,20 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.21.9.1
+
+## API relevant changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Fixed libjoynr crash due to Turkish locale.
+
 # joynr 1.21.9
 
 ## API relevant changes
