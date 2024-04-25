@@ -209,33 +209,6 @@ void MessageSender::sendBroadcastSubscriptionRequest(
     }
 }
 
-void MessageSender::sendMulticastSubscriptionRequest(
-        const std::string& senderParticipantId,
-        const std::string& receiverParticipantId,
-        const MessagingQos& qos,
-        const MulticastSubscriptionRequest& subscriptionRequest,
-        bool isLocalMessage)
-{
-    std::ignore = isLocalMessage;
-
-    try {
-        // MulticastSubscriptionRequest is no longer transmitted, instead
-        // the SubscriptionReply formerly sent by provider is simulated and
-        // routed back to invoke regular reply handling as before.
-        JOYNR_LOG_DEBUG(logger(),
-                        "MulticastSubscription: subscriptionId: {}, "
-                        "proxy participantId: {}, provider participantId: {}",
-                        subscriptionRequest.getSubscriptionId(),
-                        senderParticipantId,
-                        receiverParticipantId);
-        SubscriptionReply subscriptionReply;
-        subscriptionReply.setSubscriptionId(subscriptionRequest.getSubscriptionId());
-        sendSubscriptionReply(receiverParticipantId, senderParticipantId, qos, subscriptionReply);
-    } catch (const std::invalid_argument& exception) {
-        throw joynr::exceptions::MethodInvocationException(exception.what());
-    }
-}
-
 void MessageSender::sendSubscriptionReply(const std::string& senderParticipantId,
                                           const std::string& receiverParticipantId,
                                           const MessagingQos& qos,

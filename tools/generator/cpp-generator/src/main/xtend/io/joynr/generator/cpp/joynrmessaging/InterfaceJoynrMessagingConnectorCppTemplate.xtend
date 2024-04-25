@@ -574,25 +574,25 @@ using joynr::util::safeInvokeCallback;
 		«ELSE»
 			auto subscriptionCallback = std::make_shared<joynr::MulticastSubscriptionCallback<«returnTypes»>
 			>(subscriptionRequest->getSubscriptionId(), future, _subscriptionManager, messagingConnector);
+			std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
 			std::function<void()> onSuccess =
 					[messageSender = _messageSender,
 					proxyParticipantId = _proxyParticipantId,
 					providerParticipantId = _providerParticipantId,
-					clonedMessagingQos, subscriptionRequest,
-					isLocalMessage = _providerDiscoveryEntry.getIsLocal()] () {
+					clonedMessagingQos, subscriptionId] () {
 						if (auto ptr = messageSender.lock())
 						{
-							ptr->sendMulticastSubscriptionRequest(
-										proxyParticipantId,
+                            SubscriptionReply subscriptionReply;
+                            subscriptionReply.setSubscriptionId(subscriptionId);
+							ptr->sendSubscriptionReply(
 										providerParticipantId,
+										proxyParticipantId,
 										clonedMessagingQos,
-										*subscriptionRequest,
-										isLocalMessage
+										subscriptionReply
 							);
 						}
 					};
 
-			std::string subscriptionId = subscriptionRequest«IF broadcast.selective».«ELSE»->«ENDIF»getSubscriptionId();
 			std::function<void(const exceptions::ProviderRuntimeException& error)> onError =
 					[subscriptionListener,
 					subscriptionManager = _subscriptionManager,
