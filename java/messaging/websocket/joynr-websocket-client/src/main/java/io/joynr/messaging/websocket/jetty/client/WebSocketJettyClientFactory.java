@@ -53,7 +53,7 @@ public class WebSocketJettyClientFactory implements WebSocketEndpointFactory {
         this.maxMessageSize = maxMessageSize;
         this.reconnectDelay = reconnectDelay;
         this.websocketIdleTimeout = websocketIdleTimeout;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
     }
 
     @Override

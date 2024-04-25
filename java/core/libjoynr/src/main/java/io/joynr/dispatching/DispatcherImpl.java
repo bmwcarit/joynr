@@ -89,7 +89,7 @@ public class DispatcherImpl implements Dispatcher {
         this.publicationManager = publicationManager;
         this.messageSender = messageSender;
         this.messageFactory = messageFactory;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
         this.overrideCompress = overrideCompress;
         this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }

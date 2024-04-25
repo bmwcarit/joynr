@@ -61,7 +61,7 @@ public class MutableMessageFactory {
 
     @Inject
     public MutableMessageFactory(ObjectMapper objectMapper, Set<JoynrMessageProcessor> messageProcessors) {
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
         this.messageProcessors = messageProcessors;
     }
 

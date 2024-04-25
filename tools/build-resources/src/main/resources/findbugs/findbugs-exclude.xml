@@ -174,6 +174,22 @@
 		<Method name="setProviderQosPersisted"/>
 		<Bug pattern="EI_EXPOSE_REP2"/>
 	</Match>
+	<!--
+		Remove EI_EXPOSE_REP and EI_EXPOSE_REP2 warnings regarding ObjectMapper
+	    introduced by JsonMessageSerializerModule. RequestDeserializer and OneWayRequestDeserializer
+	    require the same objectMapper which is later modified in JsonMessageSerializerModule.
+	    Defensive copy provides different copy object due to this modification.
+	-->
+	<Match>
+		<Class name="io.joynr.messaging.serialize.RequestDeserializer" />
+		<Field name="objectMapper"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.messaging.serialize.OneWayRequestDeserializer" />
+		<Field name="objectMapper"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
 	<!-- remove all null pointer warnings from tests -->
 	<Match>
 		<Class name="~.*\.*Tests" />

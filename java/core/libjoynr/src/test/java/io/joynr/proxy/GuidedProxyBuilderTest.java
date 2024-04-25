@@ -98,8 +98,7 @@ public class GuidedProxyBuilderTest {
     @Mock
     private ShutdownNotifier shutdownNotifier;
 
-    @Mock
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private GuidedProxyBuilder subject;
     private Set<String> domains;

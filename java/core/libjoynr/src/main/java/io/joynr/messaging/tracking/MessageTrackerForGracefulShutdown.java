@@ -75,7 +75,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
     public MessageTrackerForGracefulShutdown(final ShutdownNotifier shutdownNotifier, final ObjectMapper objectMapper) {
         shutdownNotifier.registerMessageTrackerShutdownListener(this);
         shutdownNotifier.registerMessageTrackerPrepareForShutdownListener(this);
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
     }
 
     /**

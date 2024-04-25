@@ -44,7 +44,7 @@ public class WebSocketJettyServerFactory implements WebSocketEndpointFactory {
                                        ObjectMapper objectMapper) {
         this.maxMessageSize = maxMessageSize;
         this.websocketIdleTimeout = websocketIdleTimeout;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
     }
 
     @Override
