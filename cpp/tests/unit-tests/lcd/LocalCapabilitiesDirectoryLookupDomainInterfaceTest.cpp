@@ -1271,7 +1271,7 @@ TEST_F(LocalCapabilitiesDirectoryLookupDomainInterfaceTest,
 
     _localCapabilitiesDirectory->add(
             entry, _defaultOnSuccess, _defaultProviderRuntimeExceptionError);
-    _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME, _DOMAIN_2_NAME},
+    _localCapabilitiesDirectory->lookup({_DOMAIN_1_NAME},
                                         _INTERFACE_1_NAME,
                                         localDiscoveryQosryQos,
                                         _KNOWN_GBIDS,

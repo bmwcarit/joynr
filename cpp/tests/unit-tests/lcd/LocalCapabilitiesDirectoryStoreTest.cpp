@@ -98,8 +98,12 @@ protected:
         InterfaceAddress interfaceAddressGlobal(
                 _globalEntry.getDomain(), _globalEntry.getInterfaceName());
         std::vector<InterfaceAddress> interfaceAddresses;
-        interfaceAddresses.push_back(interfaceAddress);
-        interfaceAddresses.push_back(interfaceAddressGlobal);
+        if(discoveryQos.getDiscoveryScope() != types::DiscoveryScope::GLOBAL_ONLY){
+            interfaceAddresses.push_back(interfaceAddress);
+        }
+        if(discoveryQos.getDiscoveryScope() != types::DiscoveryScope::LOCAL_ONLY){
+            interfaceAddresses.push_back(interfaceAddressGlobal);
+        }
 
         std::vector<std::string> gbids = {"gbid1", "gbid2"};
 
@@ -578,6 +582,86 @@ TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_partic
             _globalEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
     ASSERT_FALSE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
             _localEntry.getParticipantId(), discoveryQos, gbids, localCapabilitiesCallback));
+
+    EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
+}
+
+/// @brief Testing if there are missing domains in interface adresses list.
+///        Local and global entries are added to interface adresses list but
+///        only local domains are added to capabilities directory store.
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities__areMissingDomains_globalDomainsMissing)
+{
+    std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+                ASSERT_EQ(1, result.size());
+                ASSERT_EQ(_localEntry.getParticipantId(), result.at(0).getParticipantId());
+                _semaphore->notify();
+            };
+    std::function<void(const types::DiscoveryError::Enum&)> onError =
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
+
+    auto localCapabilitiesCallback =
+            std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
+
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(LONG_MAX);
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_AND_GLOBAL);
+
+    InterfaceAddress interfaceAddress(_localEntry.getDomain(), _localEntry.getInterfaceName());
+    InterfaceAddress interfaceAddressGlobal(
+            _globalEntry.getDomain(), _globalEntry.getInterfaceName());
+    std::vector<InterfaceAddress> interfaceAddresses;
+    interfaceAddresses.push_back(interfaceAddress);
+    interfaceAddresses.push_back(interfaceAddressGlobal);
+
+    std::vector<std::string> gbids = {"gbid1", "gbid2"};
+
+    _localCapabilitiesDirectoryStore.insertInLocalCapabilitiesStorage(_localEntry, true);
+
+    ASSERT_FALSE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
+            interfaceAddresses, discoveryQos, gbids, localCapabilitiesCallback));
+
+    EXPECT_FALSE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
+}
+
+/// @brief Testing if there are missing domains in interface adresses list.
+///        Local and global entries are added to interface adresses list no capabilities are stored.
+///        areMissingDomains returns true as there is no check due to no capabilities are stored in local/cashed storage.
+///        Expect true as Local only discovery scope call receiver even for empty storage. 
+TEST_F(LocalCapabilitiesDirectoryStoreTest, getLocalAndCachedCapabilities_areMissingDomains_noCapabilitiesStored_localOnly)
+{
+    std::function<void(const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>&)> onSuccess =
+            [this](const std::vector<joynr::types::DiscoveryEntryWithMetaInfo>& result) {
+                ASSERT_EQ(0, result.size());
+                _semaphore->notify();
+            };
+    std::function<void(const types::DiscoveryError::Enum&)> onError =
+            [](const types::DiscoveryError::Enum& errorEnum) {
+                FAIL() << "Unexpected onError call: " +
+                                  types::DiscoveryError::getLiteral(errorEnum);
+            };
+
+    auto localCapabilitiesCallback =
+            std::make_shared<LocalCapabilitiesCallback>(std::move(onSuccess), std::move(onError));
+
+    types::DiscoveryQos discoveryQos;
+    discoveryQos.setCacheMaxAge(LONG_MAX);
+    discoveryQos.setDiscoveryScope(types::DiscoveryScope::LOCAL_ONLY);
+
+    InterfaceAddress interfaceAddress(_localEntry.getDomain(), _localEntry.getInterfaceName());
+    InterfaceAddress interfaceAddressGlobal(
+            _globalEntry.getDomain(), _globalEntry.getInterfaceName());
+    std::vector<InterfaceAddress> interfaceAddresses;
+    interfaceAddresses.push_back(interfaceAddress);
+    interfaceAddresses.push_back(interfaceAddressGlobal);
+
+    std::vector<std::string> gbids = {"gbid1", "gbid2"};
+
+    ASSERT_TRUE(_localCapabilitiesDirectoryStore.getLocalAndCachedCapabilities(
+            interfaceAddresses, discoveryQos, gbids, localCapabilitiesCallback));
 
     EXPECT_TRUE(_semaphore->waitFor(std::chrono::milliseconds(1000)));
 }
