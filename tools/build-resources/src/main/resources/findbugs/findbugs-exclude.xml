@@ -190,6 +190,35 @@
 		<Field name="objectMapper"/>
 		<Bug pattern="EI_EXPOSE_REP2"/>
 	</Match>
+	<!--
+	    Interface RoutingTable is implemented by singleton class RoutingTableImpl
+	    and by DummyRoutingTable which is bound as eager singleton in Guice.
+	-->
+	<Match>
+		<Class name="io.joynr.messaging.routing.AddressManager"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.messaging.routing.CcMessageRouter"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.dispatching.subscription.PublicationManagerImpl"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.LocalCapabilitiesDirectoryImpl"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
 	<!-- remove all null pointer warnings from tests -->
 	<Match>
 		<Class name="~.*\.*Tests" />
