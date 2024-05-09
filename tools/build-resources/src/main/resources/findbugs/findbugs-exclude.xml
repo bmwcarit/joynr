@@ -219,6 +219,30 @@
 		<Field name="routingTable"/>
 		<Bug pattern="EI_EXPOSE_REP2"/>
 	</Match>
+	<!--
+	  Remove EI_EXPOSE_REP and EI_EXPOSE_REP2 from
+	  SubscriptionRequest and SubscriptionInvocation
+	  -->
+	<Match>
+		<Class name="io.joynr.proxy.invocation.SubscriptionInvocation"/>
+		<Field name="qos"/>
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.proxy.invocation.SubscriptionInvocation"/>
+		<Field name="qos"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="joynr.SubscriptionRequest"/>
+		<Field name="qos"/>
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
+		<Class name="joynr.SubscriptionRequest"/>
+		<Field name="qos"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
 	<!-- remove all null pointer warnings from tests -->
 	<Match>
 		<Class name="~.*\.*Tests" />
