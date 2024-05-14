@@ -23,6 +23,7 @@ import static joynr.Message.CUSTOM_HEADER_REQUEST_REPLY_ID;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,7 +63,7 @@ public class MutableMessageFactory {
     @Inject
     public MutableMessageFactory(ObjectMapper objectMapper, Set<JoynrMessageProcessor> messageProcessors) {
         this.objectMapper = new ObjectMapper(objectMapper);
-        this.messageProcessors = messageProcessors;
+        this.messageProcessors = new HashSet<>(messageProcessors);
     }
 
     private MutableMessage createMessage(final Message.MessageType joynrMessageType,
