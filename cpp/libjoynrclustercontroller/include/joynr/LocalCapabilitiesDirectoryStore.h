@@ -128,11 +128,37 @@ private:
             const std::vector<InterfaceAddress>& interfaceAddress,
             const std::vector<std::string>& gbids,
             std::chrono::milliseconds maxCacheAge);
-    bool callReceiverIfPossible(
-            joynr::types::DiscoveryScope::Enum& scope,
-            const std::vector<joynr::types::DiscoveryEntry>& localCapabilities,
-            const std::vector<joynr::types::DiscoveryEntry>& globallyCachedCapabilities,
+
+    bool areMissingDomains(const std::vector<InterfaceAddress>& interfaceAddresses,
+                           const std::vector<joynr::types::DiscoveryEntry>& localCapabilities,
+                           const std::vector<types::DiscoveryEntry>& globallyCachedEntries);
+
+    bool areMissingDomains(const joynr::types::DiscoveryScope::Enum& scope,
+                           const std::string& participantId,
+                           const std::vector<joynr::types::DiscoveryEntry>& localCapabilities,
+                           const std::vector<types::DiscoveryEntry>& globallyCachedEntries);
+
+    bool collectCapabilities(joynr::types::DiscoveryScope::Enum& scope,
+                             const std::vector<types::DiscoveryEntry>& localCapabilities,
+                             const std::vector<types::DiscoveryEntry>& globallyCachedEntries,
+                             std::shared_ptr<ILocalCapabilitiesCallback> callback);
+
+    bool getLocalCapabilities(const std::vector<types::DiscoveryEntry>& localCapabilities,
+                              std::shared_ptr<ILocalCapabilitiesCallback> callback);
+
+    bool getLocalThenGlobalCapabilities(
+            const std::vector<types::DiscoveryEntry>& localCapabilities,
+            const std::vector<types::DiscoveryEntry>& globallyCachedCapabilities,
             std::shared_ptr<ILocalCapabilitiesCallback> callback);
+
+    bool getLocalAndGlobalCapabilities(
+            const std::vector<types::DiscoveryEntry>& localCapabilities,
+            const std::vector<types::DiscoveryEntry>& globallyCachedCapabilities,
+            std::shared_ptr<ILocalCapabilitiesCallback> callback);
+
+    bool getGlobalCapabilities(const std::vector<types::DiscoveryEntry>& localCapabilities,
+                               const std::vector<types::DiscoveryEntry>& globallyCachedCapabilities,
+                               std::shared_ptr<ILocalCapabilitiesCallback> callback);
 
     void mapGbidsToGlobalProviderParticipantId(const std::string& participantId,
                                                std::vector<std::string>& allGbids);
