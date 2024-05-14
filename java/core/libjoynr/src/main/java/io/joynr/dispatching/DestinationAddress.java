@@ -28,7 +28,7 @@ public class DestinationAddress {
     private String messagingClientId;
 
     public DestinationAddress(InterfaceAddress interfaceAddress, String messagingClientId) {
-        this.interfaceAddress = interfaceAddress;
+        this.interfaceAddress = new InterfaceAddress(interfaceAddress);
         this.messagingClientId = messagingClientId;
     }
 
