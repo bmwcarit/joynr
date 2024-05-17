@@ -148,6 +148,141 @@
 		<Class name="io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClient" />
 		<Bug pattern="RV_RETURN_VALUE_IGNORED"/>
 	</Match>
+	<!-- Remove EI_EXPOSE_REP and EI_EXPOSE_REP2 warnings from hibernate modules -->
+	<Match>
+		<Class name="io.joynr.capabilities.ProviderQosPersisted" />
+		<Method name="getCustomParameterList"/>
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.ProviderQosPersisted" />
+		<Method name="setCustomParameterList"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.directory.CapabilitiesDirectoryImpl"/>
+		<Field name="discoveryEntryStore"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.GlobalDiscoveryEntryPersisted"/>
+		<Method name="getProviderQosPersisted"/>
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.GlobalDiscoveryEntryPersisted"/>
+		<Method name="setProviderQosPersisted"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<!--
+	  Remove EI_EXPOSE_REP and EI_EXPOSE_REP2 warnings regarding ObjectMapper
+	  introduced by JsonMessageSerializerModule. RequestDeserializer and OneWayRequestDeserializer
+	  require the same objectMapper which is later modified in JsonMessageSerializerModule.
+	  Defensive copy provides different copy object due to this modification.
+	-->
+	<Match>
+		<Class name="io.joynr.messaging.serialize.RequestDeserializer" />
+		<Field name="objectMapper"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.messaging.serialize.OneWayRequestDeserializer" />
+		<Field name="objectMapper"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<!--
+	  Interface RoutingTable is implemented by singleton class RoutingTableImpl
+	  and by DummyRoutingTable which is bound as eager singleton in Guice.
+	-->
+	<Match>
+		<Class name="io.joynr.messaging.routing.AddressManager"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.messaging.routing.CcMessageRouter"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.messaging.mqtt.MqttMessagingSkeletonProvider"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.dispatching.subscription.PublicationManagerImpl"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.capabilities.LocalCapabilitiesDirectoryImpl"/>
+		<Field name="routingTable"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<!--
+	  Remove EI_EXPOSE_REP and EI_EXPOSE_REP2 from
+	  SubscriptionRequest and SubscriptionInvocation
+	  -->
+	<Match>
+		<Class name="io.joynr.proxy.invocation.SubscriptionInvocation"/>
+		<Field name="qos"/>
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.proxy.invocation.SubscriptionInvocation"/>
+		<Field name="qos"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="joynr.SubscriptionRequest"/>
+		<Field name="qos"/>
+		<Bug pattern="EI_EXPOSE_REP"/>
+	</Match>
+	<Match>
+		<Class name="joynr.SubscriptionRequest"/>
+		<Field name="qos"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<!--
+	  Remove EI_EXPOSE_REP2 from subclasses of Directory,
+	  since all subclasses are singletons and can can be mutated.
+	  -->
+	<Match>
+		<Class name="io.joynr.capabilities.CapabilitiesRegistrarImpl"/>
+		<Field name="providerDirectory"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.dispatching.RequestReplyManagerImpl"/>
+		<Field name="providerDirectory"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.dispatching.subscription.PublicationManagerImpl"/>
+		<Field name="providerDirectory"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<!-- Remove EI_EXPOSE_REP2 from a singleton class RequestInterpreter -->
+	<Match>
+		<Class name="io.joynr.capabilities.CapabilitiesRegistrarImpl"/>
+		<Field name="requestInterpreter"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<Match>
+		<Class name="io.joynr.dispatching.RequestReplyManagerImpl"/>
+		<Field name="requestInterpreter"/>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
+	<!-- Remove EI_EXPOSE_REP2 from a singleton class LocalCapabilitiesDirectoryImpl -->
+	<Match>
+		<Class name="io.joynr.capabilities.LocalCapabilitiesDirectoryImpl"/>
+		<Or>
+			<Field name="globalCapabilitiesDirectoryClient"/>
+			<Field name="globalDiscoveryEntryCache"/>
+			<Field name="localDiscoveryEntryStore"/>
+		</Or>
+		<Bug pattern="EI_EXPOSE_REP2"/>
+	</Match>
 	<!-- remove all null pointer warnings from tests -->
 	<Match>
 		<Class name="~.*\.*Tests" />

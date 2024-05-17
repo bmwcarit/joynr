@@ -280,13 +280,13 @@ public class DispatcherImplTest {
     @Test
     public void testSendMulticastMessage() {
         MutableMessageFactory messageFactoryMock = mock(MutableMessageFactory.class);
-        ObjectMapper objectMapperMock = mock(ObjectMapper.class);
+        ObjectMapper objectMapper = new ObjectMapper();
         fixture = new DispatcherImpl(requestReplyManagerMock,
                                      subscriptionManagerMock,
                                      publicationManagerMock,
                                      messageSenderMock,
                                      messageFactoryMock,
-                                     objectMapperMock,
+                                     objectMapper,
                                      compress,
                                      statelessAsyncIdCalculator);
 
@@ -325,16 +325,14 @@ public class DispatcherImplTest {
             verify(messageSenderMock).sendMessage(argThat(new MessageIsCompressedMatcher(compress)));
         } else {
             MutableMessageFactory messageFactoryMock = mock(MutableMessageFactory.class);
-            ObjectMapper objectMapperMock = mock(ObjectMapper.class);
-
-            when(objectMapperMock.readValue(any(String.class), eq(Request.class))).thenReturn(request);
+            ObjectMapper objectMapper = new ObjectMapper();
 
             fixture = new DispatcherImpl(requestReplyManagerMock,
                                          subscriptionManagerMock,
                                          publicationManagerMock,
                                          messageSenderMock,
                                          messageFactoryMock,
-                                         objectMapperMock,
+                                         objectMapper,
                                          compressAllOutgoingReplies,
                                          statelessAsyncIdCalculator);
 

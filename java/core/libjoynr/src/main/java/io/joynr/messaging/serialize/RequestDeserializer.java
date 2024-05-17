@@ -40,7 +40,7 @@ import joynr.Request;
 public class RequestDeserializer extends JsonDeserializer<Request> {
     private static final Logger logger = LoggerFactory.getLogger(RequestDeserializer.class);
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public RequestDeserializer(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;

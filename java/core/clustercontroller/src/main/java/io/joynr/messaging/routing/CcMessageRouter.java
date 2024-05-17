@@ -143,7 +143,7 @@ public class CcMessageRouter
 
         this.accessController = accessController;
         this.enableAccessControl = enableAccessControl;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
         this.messageTracker = messageTracker;
     }
 

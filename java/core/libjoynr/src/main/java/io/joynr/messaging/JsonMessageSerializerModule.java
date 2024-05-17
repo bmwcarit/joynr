@@ -76,7 +76,7 @@ import java.util.Map;
 
 public class JsonMessageSerializerModule extends AbstractModule {
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public abstract class ThrowableMixIn {
         // force serialization of detailMessage
@@ -135,7 +135,7 @@ public class JsonMessageSerializerModule extends AbstractModule {
     @Provides
     @Singleton
     public ObjectMapper provideObjectMapper() {
-        return objectMapper;
+        return new ObjectMapper(objectMapper);
     }
 
     @Override

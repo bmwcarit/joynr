@@ -55,6 +55,17 @@ public class ObjectMapper {
         this(new com.fasterxml.jackson.databind.ObjectMapper());
     }
 
+    /**
+     * Copy constructor
+     *
+     * @param other reference to the object to be copied
+     */
+    public ObjectMapper(ObjectMapper other) {
+        this.realObjectMapper = other.realObjectMapper.copy();
+        this.registeredSubtypes = new HashSet<>(other.registeredSubtypes);
+        this.lock = new ReentrantReadWriteLock();
+    }
+
     ObjectMapper(com.fasterxml.jackson.databind.ObjectMapper realObjectMapper) {
         Objects.requireNonNull(realObjectMapper);
         this.realObjectMapper = realObjectMapper;

@@ -63,7 +63,7 @@ public class MessageQueueTest {
         objectMapperField.setAccessible(true);
         objectMapperField.set(RoutingTypesUtil.class, new ObjectMapper());
         // create test subject
-        subject = new MessageQueue(delayQueue);
+        subject = spy(new MessageQueue(delayQueue));
     }
 
     @Test
@@ -116,11 +116,7 @@ public class MessageQueueTest {
         final TimeUnit timeUnit = TimeUnit.SECONDS;
         subject.poll(timeOut, timeUnit);
 
-        Field field = MessageQueue.class.getDeclaredField("delayableImmutableMessages");
-        field.setAccessible(true);
-        DelayQueue<DelayableImmutableMessage> actualQueue = (DelayQueue<DelayableImmutableMessage>) field.get(subject);
-
         // The in-memory queue is polled once for the message above
-        verify(actualQueue, times(1)).poll(timeOut, timeUnit);
+        verify(subject, times(1)).poll(timeOut, timeUnit);
     }
 }

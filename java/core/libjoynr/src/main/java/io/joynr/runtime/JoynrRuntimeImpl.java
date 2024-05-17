@@ -95,7 +95,7 @@ abstract public class JoynrRuntimeImpl implements JoynrRuntime {
                             DiscoverySettingsStorage discoverySettingsStorage,
                             VersionCompatibilityChecker versionCompatibilityChecker) {
         this.messageRouter = messageRouter;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
         this.statelessAsyncCallbackDirectory = statelessAsyncCallbackDirectory;
         this.discoverySettingsStorage = discoverySettingsStorage;
         this.versionCompatibilityChecker = versionCompatibilityChecker;

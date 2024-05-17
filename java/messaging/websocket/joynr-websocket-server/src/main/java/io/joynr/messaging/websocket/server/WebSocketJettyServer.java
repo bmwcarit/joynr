@@ -78,7 +78,7 @@ public class WebSocketJettyServer implements JoynrWebSocketEndpoint, WebSocketMe
                                 int maxMessageSize,
                                 long websocketIdleTimeout) {
         this.address = (address != null) ? new WebSocketAddress(address) : null;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
         this.maxMessageSize = maxMessageSize;
         this.websocketIdleTimeout = websocketIdleTimeout;
     }

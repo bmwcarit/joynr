@@ -84,7 +84,7 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
         this.maxMessageSize = maxMessageSize;
         this.reconnectDelay = reconnectDelay;
         this.websocketIdleTimeout = websocketIdleTimeout;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
     }
 
     @Override
