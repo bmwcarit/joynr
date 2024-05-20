@@ -175,17 +175,16 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
 {
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
-    auto mockTaskSequencerRef = mockTaskSequencer.get();
+    auto semaphore = std::make_shared<Semaphore>();
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+
+    EXPECT_CALL(*mockTaskSequencer, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
                     clusterControllerSettings, std::move(mockTaskSequencer));
-    auto semaphore = std::make_shared<Semaphore>();
-    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
-
-    EXPECT_CALL(*mockTaskSequencerRef, add(_))
-            .Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     bool onRuntimeErrorCalled = false;
     bool exceptionMessageFound = false;
@@ -212,16 +211,15 @@ void GlobalCapabilitiesDirectoryClientTest::testAddTaskExpiryDateHasCorrectValue
 {
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
-    auto mockTaskSequencerRef = mockTaskSequencer.get();
-    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
-            std::make_shared<GlobalCapabilitiesDirectoryClient>(
-                    clusterControllerSettings, std::move(mockTaskSequencer));
     auto semaphore = std::make_shared<Semaphore>();
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
 
-    EXPECT_CALL(*mockTaskSequencerRef, add(_))
+    EXPECT_CALL(*mockTaskSequencer, add(_))
             .Times(1)
             .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
+    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
+            std::make_shared<GlobalCapabilitiesDirectoryClient>(
+                    clusterControllerSettings, std::move(mockTaskSequencer));
     gcdClient->add(globalDiscoveryEntry,
                    awaitGlobalRegistration,
                    gbids,
@@ -262,19 +260,18 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
 {
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
-    auto mockTaskSequencerRef = mockTaskSequencer.get();
+    auto semaphore = std::make_shared<Semaphore>();
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    EXPECT_CALL(*mockTaskSequencer, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
                     clusterControllerSettings, std::move(mockTaskSequencer));
     gcdClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
 
-    auto semaphore = std::make_shared<Semaphore>();
-    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture1;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture2;
-    EXPECT_CALL(*mockTaskSequencerRef, add(_))
-            .Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -352,20 +349,19 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
 {
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
-    auto mockTaskSequencerRef = mockTaskSequencer.get();
+    auto semaphore = std::make_shared<Semaphore>();
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    EXPECT_CALL(*mockTaskSequencer, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
                     clusterControllerSettings, std::move(mockTaskSequencer));
     gcdClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
 
-    auto semaphore = std::make_shared<Semaphore>();
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture1;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture2;
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture3;
-    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
-    EXPECT_CALL(*mockTaskSequencerRef, add(_))
-            .Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -480,18 +476,17 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
 {
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
-    auto mockTaskSequencerRef = mockTaskSequencer.get();
+    auto semaphore = std::make_shared<Semaphore>();
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    EXPECT_CALL(*mockTaskSequencer, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
+
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
                     clusterControllerSettings, std::move(mockTaskSequencer));
 
     gcdClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
-
-    auto semaphore = std::make_shared<Semaphore>();
-    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
-    EXPECT_CALL(*mockTaskSequencerRef, add(_))
-            .Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -514,18 +509,17 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testReAddTask_entryWithoutGbids_re
 {
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
-    auto mockTaskSequencerRef = mockTaskSequencer.get();
+    auto semaphore = std::make_shared<Semaphore>();
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    EXPECT_CALL(*mockTaskSequencer, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
                     clusterControllerSettings, std::move(mockTaskSequencer));
     gcdClient->setProxy(mockGlobalCapabilitiesDirectoryProxy);
 
-    auto semaphore = std::make_shared<Semaphore>();
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
-    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
-    EXPECT_CALL(*mockTaskSequencerRef, add(_))
-            .Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
 
     gcdClient->reAdd(mockLCDStore, capSerializedMqttAddress);
 
@@ -840,17 +834,16 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest, testRemoveTaskExpiryDateHasCorrect
 {
     std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
-    auto mockTaskSequencerRef = mockTaskSequencer.get();
+    auto semaphore = std::make_shared<Semaphore>();
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    EXPECT_CALL(*mockTaskSequencer, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
     std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
             std::make_shared<GlobalCapabilitiesDirectoryClient>(
                     clusterControllerSettings, std::move(mockTaskSequencer));
-    auto semaphore = std::make_shared<Semaphore>();
-    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
     TimePoint expectedTaskExpiryDate = TimePoint::max();
 
-    EXPECT_CALL(*mockTaskSequencerRef, add(_))
-            .Times(1)
-            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
     gcdClient->remove(capParticipantId,
                       std::vector<std::string>{gbids},
                       onRemoveSuccess,
