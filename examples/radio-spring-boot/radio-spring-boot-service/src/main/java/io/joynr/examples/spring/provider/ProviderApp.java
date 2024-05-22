@@ -18,6 +18,7 @@
  */
 package io.joynr.examples.spring.provider;
 
+import com.google.inject.Injector;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.proxy.Future;
 import io.joynr.runtime.AbstractJoynrApplication;
@@ -32,12 +33,13 @@ public class ProviderApp extends AbstractJoynrApplication {
     private static final Logger logger = LoggerFactory.getLogger(ProviderApp.class);
 
     private RadioProvider provider;
+    private Injector injector;
 
     private boolean working = false;
 
     @Override
     public void run() {
-        provider = new RadioProvider();
+        provider = new RadioProvider(injector);
         final ProviderQos providerQos = new ProviderQos();
         providerQos.setPriority(System.currentTimeMillis());
         providerQos.setScope(ProviderScope.GLOBAL);
@@ -85,5 +87,9 @@ public class ProviderApp extends AbstractJoynrApplication {
         } else {
             throw new IllegalStateException("No provider");
         }
+    }
+
+    public void setInjector(final Injector injector) {
+        this.injector = injector;
     }
 }

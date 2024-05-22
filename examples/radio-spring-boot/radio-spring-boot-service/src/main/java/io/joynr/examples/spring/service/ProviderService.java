@@ -18,6 +18,7 @@
  */
 package io.joynr.examples.spring.service;
 
+import com.google.inject.Injector;
 import io.joynr.examples.spring.provider.ProviderApp;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.runtime.JoynrApplicationModule;
@@ -46,16 +47,13 @@ public class ProviderService {
     @Autowired
     private JoynrRuntimeService runtimeService;
 
+    private JoynrInjectorFactory injectorFactory;
     private ProviderApp provider;
 
     public ProviderApp getProvider() {
         if (provider == null) {
             final Properties appConfig = new Properties();
-            final Properties joynrConfig = new Properties();
-            joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, staticPersistenceFile);
-            joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
-            provider = (ProviderApp) new JoynrInjectorFactory(joynrConfig,
-                                                              runtimeService.createRuntimeModule(joynrConfig)).createApplication(
+            provider = (ProviderApp) getInjectorFactory().createApplication(
                     new JoynrApplicationModule(ProviderApp.class, appConfig) {
                         @Override
                         protected void configure() {
@@ -63,9 +61,24 @@ public class ProviderService {
                             bind(ProviderScope.class).toInstance(ProviderScope.GLOBAL);
                         }
                     });
-
+            provider.setInjector(getInjectorFactory().getInjector());
             Executors.newFixedThreadPool(1).submit(provider);
         }
         return provider;
+    }
+
+    private JoynrInjectorFactory getInjectorFactory() {
+        if (injectorFactory == null) {
+            final Properties joynrConfig = new Properties();
+            joynrConfig.setProperty(MessagingPropertyKeys.PERSISTENCE_FILE, staticPersistenceFile);
+            joynrConfig.setProperty(PROPERTY_JOYNR_DOMAIN_LOCAL, localDomain);
+
+            injectorFactory = new JoynrInjectorFactory(joynrConfig, runtimeService.createRuntimeModule(joynrConfig));
+        }
+        return injectorFactory;
+    }
+
+    public Injector getInjector() {
+        return getInjectorFactory().getInjector();
     }
 }

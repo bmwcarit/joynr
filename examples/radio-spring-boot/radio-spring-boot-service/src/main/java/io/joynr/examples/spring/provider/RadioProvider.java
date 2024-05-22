@@ -18,6 +18,8 @@
  */
 package io.joynr.examples.spring.provider;
 
+import com.google.inject.Injector;
+import io.joynr.messaging.JoynrMessageMetaInfo;
 import io.joynr.provider.Deferred;
 import io.joynr.provider.DeferredVoid;
 import io.joynr.provider.Promise;
@@ -30,10 +32,12 @@ import joynr.vehicle.RadioStation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RadioProvider extends RadioAbstractProvider {
@@ -41,6 +45,7 @@ public class RadioProvider extends RadioAbstractProvider {
     private static final Logger logger = LoggerFactory.getLogger(RadioProvider.class);
     private static final String PRINT_BORDER = "\n####################\n";
     public static final String MISSING_NAME = "MISSING_NAME";
+    private static final String CONTEXT_KEY = "someKey";
 
     private final List<RadioStation> radioStations = new ArrayList<>();
     private final Map<Country, GeoPosition> geoPositions = new HashMap<>();
@@ -49,7 +54,10 @@ public class RadioProvider extends RadioAbstractProvider {
     private int getCurrentStationInvocationCount = 0;
     private int shuffleStationsInvocationCount = 0;
 
-    public RadioProvider() {
+    private final Injector injector;
+
+    public RadioProvider(final Injector injector) {
+        this.injector = injector;
         init();
     }
 
@@ -70,7 +78,7 @@ public class RadioProvider extends RadioAbstractProvider {
     @Override
     public Promise<Deferred<RadioStation>> getCurrentStation() {
         final Deferred<RadioStation> deferred = new Deferred<>();
-        logger.info(PRINT_BORDER + "getCurrentStation -> " + this.currentStation + PRINT_BORDER);
+        logger.info(PRINT_BORDER + "getCurrentStation -> {}" + PRINT_BORDER, this.currentStation);
         deferred.resolve(currentStation);
         getCurrentStationInvocationCount++;
         return new Promise<>(deferred);
@@ -78,11 +86,40 @@ public class RadioProvider extends RadioAbstractProvider {
 
     @Override
     public Promise<DeferredVoid> shuffleStations() {
+        final Serializable initialValue = getMessageContextValue(CONTEXT_KEY).orElse("default-value");
+        setMessageContextValue(CONTEXT_KEY, initialValue);
+        final Serializable modifiedValue = "non-" + getMessageContextValue(CONTEXT_KEY).orElse("this-should-not-be-empty-anymore");
+        setMessageContextValue(CONTEXT_KEY, modifiedValue);
+
         final DeferredVoid deferred = new DeferredVoid();
         this.currentStation = getRandomStation();
         deferred.resolve();
         shuffleStationsInvocationCount++;
         return new Promise<>(deferred);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void setMessageContextValue(final String key, final Serializable value) {
+        final JoynrMessageMetaInfo metaInfo = injector.getInstance(JoynrMessageMetaInfo.class);
+        final Map<String, Serializable> context = metaInfo.getMessageContext();
+        context.put(key, value);
+        metaInfo.setMessageContext(context);
+        logger.info("Setting message context key {} with a value {}.", key, value);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private Optional<Serializable> getMessageContextValue(final String key) {
+        logger.info("Retrieving vale from message context by key {}", key);
+        final JoynrMessageMetaInfo metaInfo = injector.getInstance(JoynrMessageMetaInfo.class);
+        final Map<String, Serializable> context = metaInfo.getMessageContext();
+        if (context.containsKey(key)) {
+            final Serializable value = context.get(key);
+            logger.info("Message context contains key {} with a value {}.", key, value);
+            return Optional.of(value);
+        } else {
+            logger.info("Message context does not contain key {}.", key);
+            return Optional.empty();
+        }
     }
 
     private RadioStation getRandomStation() {
@@ -107,7 +144,7 @@ public class RadioProvider extends RadioAbstractProvider {
             }
         }
         if (!duplicateFound) {
-            logger.info(PRINT_BORDER + "addFavoriteStation(" + newFavoriteStation + ")" + PRINT_BORDER);
+            logger.info(PRINT_BORDER + "addFavoriteStation({})" + PRINT_BORDER, newFavoriteStation);
             this.radioStations.add(newFavoriteStation);
             deferred.resolve(true);
         }
@@ -120,7 +157,9 @@ public class RadioProvider extends RadioAbstractProvider {
     public Promise<GetLocationOfCurrentStationDeferred> getLocationOfCurrentStation() {
         final Country country = currentStation.getCountry();
         final GeoPosition location = this.geoPositions.get(country);
-        logger.info(PRINT_BORDER + "getLocationOfCurrentStation: country: " + country.name() + ", location: " + location + PRINT_BORDER);
+        logger.info(PRINT_BORDER + "getLocationOfCurrentStation: country: {}, location: {}" + PRINT_BORDER,
+                    country.name(),
+                    location);
         final GetLocationOfCurrentStationDeferred deferred = new GetLocationOfCurrentStationDeferred();
         // actions that take no time can be returned immediately by resolving the deferred.
         deferred.resolve(country, location);
