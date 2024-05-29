@@ -26,7 +26,7 @@ endif()
 
 find_package(Java COMPONENTS Runtime REQUIRED)
 
-function(JoynrGenerator)
+function(JoynrGeneratorCommand)
     set(singleValueArgs
         OUTPUTPATH
         MODELPATH
@@ -67,8 +67,26 @@ function(JoynrGenerator)
         list(APPEND joynrGeneratorCmd "-addVersionTo" "${joynrGenerator_ADD_VERSION_TO}")
     endif()
 
+    set(joynrGeneratorCmd ${Java_JAVA_EXECUTABLE} ${joynrGeneratorCmd} PARENT_SCOPE)
+endfunction(JoynrGeneratorCommand)
+
+function(JoynrGeneratorFiles)
+    JoynrGeneratorCommand(${ARGN})
     execute_process(
-        COMMAND ${Java_JAVA_EXECUTABLE} ${joynrGeneratorCmd}
+        COMMAND ${joynrGeneratorCmd} "-generate" "false"
+        OUTPUT_VARIABLE joynrGeneratorFiles
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    string(REPLACE "\n" ";" joynrGeneratorFiles "${joynrGeneratorFiles}")
+    set(joynrGeneratorFiles ${joynrGeneratorFiles} PARENT_SCOPE)
+    set(joynrGeneratorCmd ${joynrGeneratorCmd} PARENT_SCOPE)
+endfunction(JoynrGeneratorFiles)
+
+function(JoynrGenerator)
+    JoynrGeneratorCommand(${ARGN})
+
+    execute_process(
+        COMMAND ${joynrGeneratorCmd}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         RESULT_VARIABLE joynrGenerator_EXIT_CODE
         OUTPUT_VARIABLE joynrGenerator_OUTPUT
@@ -84,4 +102,5 @@ function(JoynrGenerator)
         set(errorMsg "${errorMsg}\n${joynrGenerator_OUTPUT}")
         message(FATAL_ERROR "${errorMsg}")
     endif()
+
 endfunction(JoynrGenerator)
