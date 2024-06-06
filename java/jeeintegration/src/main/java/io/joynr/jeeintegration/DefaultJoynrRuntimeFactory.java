@@ -30,14 +30,14 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
-import javax.annotation.Resource;
-import javax.ejb.DependsOn;
-import javax.ejb.Singleton;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.annotation.Resource;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.Singleton;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.util.AnnotationLiteral;
 import com.google.inject.Inject;
 
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;

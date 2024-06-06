@@ -21,7 +21,7 @@ package io.joynr.sharedsubscription.test.clusteredapp;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;

@@ -23,9 +23,9 @@ import static io.joynr.systemintegrationtest.jee.JoynrConfigurationProvider.SIT_
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.Stateless;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.Stateless;
 import com.google.inject.Inject;
 
 import org.slf4j.Logger;

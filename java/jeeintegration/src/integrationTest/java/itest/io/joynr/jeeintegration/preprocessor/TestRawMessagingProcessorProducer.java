@@ -18,7 +18,7 @@
  */
 package itest.io.joynr.jeeintegration.preprocessor;
 
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Produces;
 
 import io.joynr.jeeintegration.api.JoynrRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;

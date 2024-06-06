@@ -25,9 +25,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.EJBException;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.ejb.EJBException;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

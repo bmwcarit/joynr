@@ -18,7 +18,7 @@
  */
 package io.joynr.examples.jee;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 public class JoynrWebApplicationException extends Exception {
     final Response.Status status;

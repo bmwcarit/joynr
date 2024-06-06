@@ -18,7 +18,7 @@
  */
 package io.joynr.systemintegrationtest.jee;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
 import joynr.test.SystemIntegrationTestSync;

@@ -18,10 +18,10 @@
  */
 package io.joynr.examples.customheaders;
 
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.Singleton;
-import javax.inject.Inject;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.Singleton;
+import jakarta.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceLocator;
 import joynr.examples.customheaders.HeaderPingSync;

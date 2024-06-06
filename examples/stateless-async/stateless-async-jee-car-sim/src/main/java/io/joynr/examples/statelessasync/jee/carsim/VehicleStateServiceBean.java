@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.ejb.Singleton;
-import javax.inject.Inject;
+import jakarta.ejb.Singleton;
+import jakarta.inject.Inject;
 
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import joynr.examples.statelessasync.VehicleStateSubscriptionPublisher;

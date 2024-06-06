@@ -18,7 +18,7 @@
  */
 package io.joynr.jeeintegration;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.JoynrConnectionService;

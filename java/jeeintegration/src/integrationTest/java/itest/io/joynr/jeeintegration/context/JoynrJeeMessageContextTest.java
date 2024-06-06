@@ -25,9 +25,9 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 
-import javax.enterprise.context.ContextNotActiveException;
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.context.ContextNotActiveException;
+import jakarta.enterprise.context.spi.Context;
+import jakarta.enterprise.inject.spi.BeanManager;
 import com.google.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;

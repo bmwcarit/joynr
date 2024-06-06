@@ -24,14 +24,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import javax.inject.Qualifier;
+import jakarta.inject.Qualifier;
 
 /**
- * Qualifier annotation for a {@link javax.enterprise.inject.Produces producer} method, which returns <code>Properties</code> to use in creating
+ * Qualifier annotation for a {@link jakarta.enterprise.inject.Produces producer} method, which returns <code>Properties</code> to use in creating
  * the joynr runtime in the {@link io.joynr.jeeintegration.JoynrRuntimeFactory}.
  * <p>
  * In order to specify your own joynr properties, create a <code>@Singleton</code> EJB which has a method annotated with
- * {@link javax.enterprise.inject.Produces} and <code>JoynrProperties</code> and returns a <code>Properties</code> instance. These properties
+ * {@link jakarta.enterprise.inject.Produces} and <code>JoynrProperties</code> and returns a <code>Properties</code> instance. These properties
  * are then added to the default joynr properties and also override these properties as necessary.
  * <p>
  * <b>Note</b> that if the EJB which contains the producer methods implements an interface, then the producer methods

@@ -189,7 +189,7 @@
     </build>
 
     <properties>
-        <jaxb-runtime.version>2.3.5</jaxb-runtime.version>
+        <jaxb-runtime.version>4.0.5</jaxb-runtime.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 

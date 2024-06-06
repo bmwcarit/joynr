@@ -20,7 +20,7 @@ package io.joynr.sharedsubscription.test.clusteredapp.base;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 
 @Singleton
 public class CallStatistics {

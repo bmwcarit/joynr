@@ -18,8 +18,8 @@
  */
 package io.joynr.tests.gracefulshutdown;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import joynr.tests.graceful.shutdown.SecondLevelServiceSync;

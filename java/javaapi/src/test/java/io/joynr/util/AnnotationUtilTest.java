@@ -37,7 +37,7 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import javax.inject.Qualifier;
+import jakarta.inject.Qualifier;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

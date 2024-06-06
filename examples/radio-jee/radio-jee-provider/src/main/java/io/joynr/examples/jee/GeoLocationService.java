@@ -21,8 +21,8 @@ package io.joynr.examples.jee;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Singleton;
 
 import joynr.vehicle.Country;
 import joynr.vehicle.GeoPosition;

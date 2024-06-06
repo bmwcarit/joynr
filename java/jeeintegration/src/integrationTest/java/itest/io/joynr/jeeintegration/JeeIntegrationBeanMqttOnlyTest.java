@@ -21,7 +21,7 @@ package itest.io.joynr.jeeintegration;
 import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import com.google.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;

@@ -21,10 +21,10 @@ package io.joynr.jeeintegration;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.ejb.Singleton;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.ejb.Singleton;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.util.AnnotationLiteral;
 import com.google.inject.Inject;
 
 import org.slf4j.Logger;

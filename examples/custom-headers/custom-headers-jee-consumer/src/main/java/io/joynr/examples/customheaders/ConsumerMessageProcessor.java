@@ -22,7 +22,7 @@ import static io.joynr.util.JoynrUtil.createUuidString;
 
 import java.util.Map;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

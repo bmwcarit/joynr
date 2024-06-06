@@ -18,7 +18,7 @@
  */
 package io.joynr.exceptions;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

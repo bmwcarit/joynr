@@ -18,7 +18,7 @@
  */
 package itest.io.joynr.jeeintegration.multicast;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;

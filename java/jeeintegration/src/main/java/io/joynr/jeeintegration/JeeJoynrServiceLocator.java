@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-import javax.ejb.Singleton;
+import jakarta.ejb.Singleton;
 import com.google.inject.Inject;
 
 import io.joynr.StatelessAsync;

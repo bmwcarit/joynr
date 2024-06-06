@@ -20,8 +20,8 @@ package io.joynr.backpressure.test.monitorapp;
 
 import java.util.Properties;
 
-import javax.ejb.Singleton;
-import javax.enterprise.inject.Produces;
+import jakarta.ejb.Singleton;
+import jakarta.enterprise.inject.Produces;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

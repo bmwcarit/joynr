@@ -18,7 +18,7 @@
  */
 package itest.io.joynr.jeeintegration.exceptions;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 import com.google.inject.Inject;
 
 import org.slf4j.Logger;

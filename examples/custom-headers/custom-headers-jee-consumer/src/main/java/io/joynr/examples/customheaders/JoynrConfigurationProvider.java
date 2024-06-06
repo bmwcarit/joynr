@@ -20,8 +20,8 @@ package io.joynr.examples.customheaders;
 
 import java.util.Properties;
 
-import javax.ejb.Singleton;
-import javax.enterprise.inject.Produces;
+import jakarta.ejb.Singleton;
+import jakarta.enterprise.inject.Produces;
 
 import io.joynr.jeeintegration.api.JoynrLocalDomain;
 import io.joynr.jeeintegration.api.JoynrProperties;

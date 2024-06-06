@@ -84,6 +84,10 @@
 			<artifactId>log4j-api</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>jakarta.platform</groupId>
+			<artifactId>jakarta.jakartaee-api</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -104,6 +108,7 @@
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-api</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.reactivestreams:reactive-streams</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>jakarta.platform:jakarta.jakartaee-api</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
 						</execution>

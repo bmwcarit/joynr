@@ -21,8 +21,8 @@ package io.joynr.jeeintegration;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 public class BeanCallingProxy<T> implements InvocationHandler {
 

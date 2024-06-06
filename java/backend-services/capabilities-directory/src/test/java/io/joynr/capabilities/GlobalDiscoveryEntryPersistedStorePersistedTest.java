@@ -33,7 +33,7 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import com.google.inject.persist.jpa.JpaPersistOptions;
 import org.junit.After;

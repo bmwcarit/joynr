@@ -19,7 +19,7 @@
 
 package itest.io.joynr.jeeintegration.mqttclientidprovider;
 
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.inject.Produces;
 
 import io.joynr.jeeintegration.api.JoynrMqttClientIdProvider;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
