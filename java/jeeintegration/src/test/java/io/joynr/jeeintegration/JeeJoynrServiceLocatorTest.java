@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrTimeoutException;
@@ -330,6 +331,11 @@ public class JeeJoynrServiceLocatorTest {
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("callback: onProxyCreationError called: " + error);
             }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                fail("callback: onProxyCreationError called: " + error);
+            }
         };
 
         subject.builder(MyServiceSync.class, "local").withCallback(callback).withUseCase("useCase").build();
@@ -365,6 +371,11 @@ public class JeeJoynrServiceLocatorTest {
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("callback: onProxyCreationError called: " + error);
             }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                fail("callback: onProxyCreationError called: " + error);
+            }
         };
 
         subject.builder(MyServiceStatelessAsync.class, "local").withCallback(callback).build();
@@ -397,6 +408,11 @@ public class JeeJoynrServiceLocatorTest {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("callback: onProxyCreationError called: " + error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 fail("callback: onProxyCreationError called: " + error);
             }
         };
@@ -563,6 +579,11 @@ public class JeeJoynrServiceLocatorTest {
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("Should never get called.");
             }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                fail("Should never get called.");
+            }
         };
 
         MyServiceSync result = subject.builder(MyServiceSync.class, "local").withCallback(callback).build();
@@ -577,7 +598,7 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test
-    public void testBuilder_withCallback_fails() throws Exception {
+    public void testBuilder_withCallback_failsWithJoynrRuntimeException() throws InterruptedException {
         setupSyncInterface();
 
         when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback<MyServiceSync>> any())).thenReturn(myJoynrProxy);
@@ -593,6 +614,11 @@ public class JeeJoynrServiceLocatorTest {
             public void onProxyCreationError(JoynrRuntimeException error) {
                 countDownLatch.countDown();
             }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                fail("Should never get called.");
+            }
         };
 
         subject.builder(MyServiceSync.class, "local").withCallback(callback).build();
@@ -600,6 +626,39 @@ public class JeeJoynrServiceLocatorTest {
         verify(proxyBuilderSync).build(callbackSyncCaptor.capture());
         ProxyBuilder.ProxyCreatedCallback<MyServiceSync> capturedCallback = callbackSyncCaptor.getValue();
         capturedCallback.onProxyCreationError(new JoynrRuntimeException());
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testBuilder_withCallback_failsWithDiscoveryException() throws InterruptedException {
+        setupSyncInterface();
+
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback<MyServiceSync>> any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
+            @Override
+            public void onProxyCreationFinished(MyServiceSync result) {
+                fail("Should never get called.");
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("Should never get called.");
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                countDownLatch.countDown();
+            }
+        };
+
+        subject.builder(MyServiceSync.class, "local").withCallback(callback).build();
+
+        verify(proxyBuilderSync).build(callbackSyncCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> capturedCallback = callbackSyncCaptor.getValue();
+        capturedCallback.onProxyCreationError(new DiscoveryException("Discovery exception"));
 
         countDownLatch.await(100L, TimeUnit.MILLISECONDS);
     }
@@ -629,7 +688,7 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test
-    public void testBuilder_withFuture_fails() throws Exception {
+    public void testBuilder_withFuture_failsWithJoynrRuntimeException() throws InterruptedException {
         setupSyncInterface();
 
         when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback<MyServiceSync>> any())).thenReturn(myJoynrProxy);
@@ -658,6 +717,35 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test
+    public void testBuilder_withFuture_failsWithDiscoveryException() throws InterruptedException {
+        setupSyncInterface();
+
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback<MyServiceSync>> any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local").useFuture().build();
+        future.whenCompleteAsync((proxy, error) -> {
+            if (error != null && proxy == null) {
+                countDownLatch.countDown();
+            }
+        });
+
+        verify(proxyBuilderSync).build(callbackSyncCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> value = callbackSyncCaptor.getValue();
+        value.onProxyCreationError(new DiscoveryException("test"));
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
+        try {
+            future.get();
+            fail("Should never get this far.");
+        } catch (ExecutionException e) {
+            if (!(e.getCause() instanceof DiscoveryException)) {
+                fail("Nested exception not of expected type.");
+            }
+        }
+    }
+
+    @Test
     public void testBuilder_withFutureAndCallback() throws Exception {
         setupSyncInterface();
 
@@ -672,6 +760,11 @@ public class JeeJoynrServiceLocatorTest {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("Should never get called");
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 fail("Should never get called");
             }
         };
@@ -695,7 +788,7 @@ public class JeeJoynrServiceLocatorTest {
     }
 
     @Test
-    public void testBuilder_withFutureAndCallback_fails() throws Exception {
+    public void testBuilder_withFutureAndCallback_failsWithJoynrRuntimeException() throws InterruptedException {
         setupSyncInterface();
 
         when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback<MyServiceSync>> any())).thenReturn(myJoynrProxy);
@@ -710,6 +803,11 @@ public class JeeJoynrServiceLocatorTest {
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 countDownLatch.countDown();
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                fail("Should never get called");
             }
         };
 
@@ -727,6 +825,48 @@ public class JeeJoynrServiceLocatorTest {
         verify(proxyBuilderSync).build(callbackSyncCaptor.capture());
         ProxyBuilder.ProxyCreatedCallback<MyServiceSync> capturedCallback = callbackSyncCaptor.getValue();
         capturedCallback.onProxyCreationError(new JoynrRuntimeException());
+
+        countDownLatch.await(100L, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testBuilder_withFutureAndCallback_failsWithDiscoveryException() throws InterruptedException {
+        setupSyncInterface();
+
+        when(proxyBuilderSync.build(Mockito.<io.joynr.proxy.ProxyBuilder.ProxyCreatedCallback<MyServiceSync>> any())).thenReturn(myJoynrProxy);
+
+        CountDownLatch countDownLatch = new CountDownLatch(2);
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> callback = new ProxyBuilder.ProxyCreatedCallback<MyServiceSync>() {
+            @Override
+            public void onProxyCreationFinished(MyServiceSync result) {
+                fail("Should never get called");
+            }
+
+            @Override
+            public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("Should never get called");
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                countDownLatch.countDown();
+            }
+        };
+
+        CompletableFuture<MyServiceSync> future = subject.builder(MyServiceSync.class, "local")
+                                                         .withCallback(callback)
+                                                         .useFuture()
+                                                         .build();
+
+        future.whenCompleteAsync((proxy, error) -> {
+            if (proxy == null && error != null) {
+                countDownLatch.countDown();
+            }
+        });
+
+        verify(proxyBuilderSync).build(callbackSyncCaptor.capture());
+        ProxyBuilder.ProxyCreatedCallback<MyServiceSync> capturedCallback = callbackSyncCaptor.getValue();
+        capturedCallback.onProxyCreationError(new DiscoveryException("Discovery exception"));
 
         countDownLatch.await(100L, TimeUnit.MILLISECONDS);
     }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -95,6 +96,11 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
 
                                              @Override
                                              public void onProxyCreationError(JoynrRuntimeException error) {
+                                                 logger.error("Proxy creation failed: {}", error);
+                                             }
+
+                                             @Override
+                                             public void onProxyCreationError(DiscoveryException error) {
                                                  logger.error("Proxy creation failed: {}", error);
                                              }
                                          });

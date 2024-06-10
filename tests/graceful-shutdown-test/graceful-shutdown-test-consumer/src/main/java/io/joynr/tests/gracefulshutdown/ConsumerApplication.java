@@ -1,7 +1,7 @@
 /*-
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2018 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.MessagingQosEffort;
@@ -108,6 +109,11 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
             @Override
             public void onProxyCreationError(final JoynrRuntimeException error) {
+                proxyFuture.onFailure(error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 proxyFuture.onFailure(error);
             }
         });

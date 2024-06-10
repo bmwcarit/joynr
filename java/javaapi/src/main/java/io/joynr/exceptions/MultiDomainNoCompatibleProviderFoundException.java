@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import joynr.types.Version;
  * the domains being queried. It contains a map from domain to the specific {@link NoCompatibleProviderFoundException}
  * information for that domain.
  */
-public class MultiDomainNoCompatibleProviderFoundException extends JoynrRuntimeException {
+public class MultiDomainNoCompatibleProviderFoundException extends DiscoveryException {
 
     /**
      * For serialization.
@@ -46,6 +46,7 @@ public class MultiDomainNoCompatibleProviderFoundException extends JoynrRuntimeE
      *            the exceptions keyed by domain.
      */
     public MultiDomainNoCompatibleProviderFoundException(Map<String, NoCompatibleProviderFoundException> exceptionsByDomain) {
+        super("MultiDomainNoCompatibleProviderFoundException");
         this.exceptionsByDomain = (exceptionsByDomain != null) ? new HashMap<>(exceptionsByDomain) : null;
     }
 

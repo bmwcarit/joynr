@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,8 @@ import joynr.types.Version;
 
 public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
     private static final Logger logger = LoggerFactory.getLogger(ProxyBuilderDefaultImpl.class);
+    private static final String ERROR_CREATING_PROXY = "Error creating proxy: interface: {} domains: {}, {}, Error:";
+    private static final String DISCOVERY_ERROR = "DISCOVERY " + ERROR_CREATING_PROXY;
     private final String interfaceName;
     private final long maxMessagingTtl;
     private final long defaultDiscoveryTimeoutMs;
@@ -210,11 +212,13 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 errorHolder[0] = error;
-                logger.error("Error creating proxy: interface: {} domains: {}, {}, Error:",
-                             interfaceName,
-                             domains,
-                             interfaceVersion,
-                             error);
+                logger.error(ERROR_CREATING_PROXY, interfaceName, domains, interfaceVersion, error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                errorHolder[0] = error;
+                logger.error(ERROR_CREATING_PROXY, interfaceName, domains, interfaceVersion, error);
             }
         });
         if (errorHolder[0] != null) {
@@ -249,12 +253,12 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
             proxyInvocationHandler.registerProxy(proxy);
             arbitrator.scheduleArbitration(true);
             return proxy;
+        } catch (DiscoveryException e) {
+            logger.debug(ERROR_CREATING_PROXY, interfaceName, domains, interfaceVersion, e);
+            callback.onProxyCreationError(e);
+            return null;
         } catch (JoynrRuntimeException e) {
-            logger.debug("Error creating proxy: interface: {} domains: {}, {}, Error:",
-                         interfaceName,
-                         domains,
-                         interfaceVersion,
-                         e);
+            logger.debug(ERROR_CREATING_PROXY, interfaceName, domains, interfaceVersion, e);
             callback.onProxyCreationError(e);
             return null;
         }
@@ -285,7 +289,16 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
         // This shall be forwarded to the user
         // We should clean up unused routing entries / reference counts if createConnector throws but
         // it is very unlikely to happen and in the worst case there are just some unused routing entries.
-        proxyInvocationHandler.createConnector(result);
+        try {
+            proxyInvocationHandler.createConnector(result);
+        } catch (Exception exception) {
+            // We should clean up unused routing entries / reference counts but
+            // it is very unlikely to happen and in the worst case there are just some unused routing entries.
+            logger.error(DISCOVERY_ERROR, interfaceName, domains, interfaceVersion, exception);
+            throw new DiscoveryException("DISCOVERY Error creating proxy: interface: " + interfaceName + "domains: "
+                    + domains + ", " + interfaceVersion + ", Error: ");
+        }
+
         logger.trace("Proxy participantId {} created: interface: {} domains: {} : {}",
                      proxyParticipantId,
                      interfaceName,
@@ -335,31 +348,17 @@ public class ProxyBuilderDefaultImpl<T> implements ProxyBuilder<T> {
                 } catch (Exception error) {
                     // We should clean up unused routing entries / reference counts but
                     // it is very unlikely to happen and in the worst case there are just some unused routing entries.
-                    logger.error("DISCOVERY Error creating proxy: interface: {} domains: {}, {}, Error:",
-                                 interfaceName,
-                                 domains,
-                                 interfaceVersion,
-                                 error);
-                    callback.onProxyCreationError(new JoynrRuntimeException("DISCOVERY Error creating proxy: interface: "
+                    logger.error(DISCOVERY_ERROR, interfaceName, domains, interfaceVersion, error);
+                    callback.onProxyCreationError(new DiscoveryException("DISCOVERY Error creating proxy: interface: "
                             + interfaceName + "domains: " + domains + ", " + interfaceVersion + ", Error: "));
                 }
             }
 
             @Override
-            public void onError(Throwable throwable) {
-                JoynrRuntimeException reason;
-                if (throwable instanceof JoynrRuntimeException) {
-                    reason = (JoynrRuntimeException) throwable;
-                } else {
-                    reason = new JoynrRuntimeException(throwable);
-                }
-                logger.debug("DISCOVERY Error creating proxy: interface: {} domains: {}, {}, Error:",
-                             interfaceName,
-                             domains,
-                             interfaceVersion,
-                             reason);
-                proxyInvocationHandler.abort(reason);
-                callback.onProxyCreationError(reason);
+            public void onError(DiscoveryException exception) {
+                logger.debug(DISCOVERY_ERROR, interfaceName, domains, interfaceVersion, exception);
+                proxyInvocationHandler.abort(exception);
+                callback.onProxyCreationError(exception);
             }
         });
 

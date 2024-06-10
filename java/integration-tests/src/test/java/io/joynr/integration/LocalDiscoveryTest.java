@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,7 @@ import io.joynr.capabilities.ExpiredDiscoveryEntryCacheCleaner;
 import io.joynr.capabilities.GlobalCapabilitiesDirectoryClient;
 import io.joynr.capabilities.LocalCapabilitiesDirectory;
 import io.joynr.capabilities.LocalCapabilitiesDirectoryImpl;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.MessagingQos;
@@ -302,6 +303,11 @@ public class LocalDiscoveryTest {
             public void onProxyCreationError(JoynrRuntimeException error) {
                 future.onFailure(error);
             }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                future.onFailure(error);
+            }
         });
 
         try {
@@ -379,6 +385,11 @@ public class LocalDiscoveryTest {
             public void onProxyCreationError(JoynrRuntimeException error) {
                 future.onFailure(error);
             }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                future.onFailure(error);
+            }
         });
 
         try {
@@ -441,6 +452,11 @@ public class LocalDiscoveryTest {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
+                future.onFailure(error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 future.onFailure(error);
             }
         });
@@ -548,6 +564,11 @@ public class LocalDiscoveryTest {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
+                future.onFailure(error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 future.onFailure(error);
             }
         });

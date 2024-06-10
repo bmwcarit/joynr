@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -447,7 +447,7 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
 
-        verify(arbitrationCallback, times(1)).onError(any(Throwable.class));
+        verify(arbitrationCallback, times(1)).onError(any(DiscoveryException.class));
         verify(arbitrationCallback, never()).onSuccess(any(ArbitrationResult.class));
     }
 
@@ -662,7 +662,7 @@ public class ArbitrationTest {
 
         createArbitratorWithCallbackAndAwaitArbitration(discoveryQos);
 
-        verify(arbitrationCallback, times(1)).onError(any(Throwable.class));
+        verify(arbitrationCallback, times(1)).onError(any(DiscoveryException.class));
         verify(arbitrationCallback, never()).onSuccess(any(ArbitrationResult.class));
     }
 
@@ -1163,7 +1163,7 @@ public class ArbitrationTest {
         return new Answer<Future<Void>>() {
 
             @Override
-            public Future<Void> answer(InvocationOnMock invocation) throws Throwable {
+            public Future<Void> answer(InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
                 @SuppressWarnings("unchecked")
                 CallbackWithModeledError<Void, DiscoveryError> callback = ((CallbackWithModeledError<Void, DiscoveryError>) args[0]);
@@ -1175,43 +1175,27 @@ public class ArbitrationTest {
     }
 
     @Test
-    public void testJoynrRuntimeExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported_JoynrShutdownException_WithoutRetry() throws InterruptedException {
+    public void testJoynrShutdownExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported_DiscoveryException_WithoutRetry() throws InterruptedException {
         JoynrShutdownException exception = new JoynrShutdownException("");
-        JoynrShutdownException expectedException = new JoynrShutdownException("");
-        testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(exception,
-                                                                                    expectedException,
-                                                                                    false,
-                                                                                    false);
+        testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(exception, false, false);
     }
 
     @Test
-    public void testJoynrRuntimeExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported_JoynrShutdownException_WithRetry_failsImmediately() throws InterruptedException {
+    public void testJoynrShutdownExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported_DiscoveryException_WithRetry_failsImmediately() throws InterruptedException {
         JoynrShutdownException exception = new JoynrShutdownException("");
-        JoynrShutdownException expectedException = new JoynrShutdownException("");
-        testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(exception,
-                                                                                    expectedException,
-                                                                                    true,
-                                                                                    false);
+        testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(exception, true, false);
     }
 
     @Test
-    public void testJoynrRuntimeExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported_JoynrRuntimeException_WithoutRetry() throws InterruptedException {
+    public void testJoynrRuntimeExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported_DiscoveryException_WithoutRetry() throws InterruptedException {
         JoynrRuntimeException exception = new JoynrRuntimeException("");
-        JoynrRuntimeException expectedException = new JoynrRuntimeException("");
-        testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(exception,
-                                                                                    expectedException,
-                                                                                    false,
-                                                                                    false);
+        testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(exception, false, false);
     }
 
     @Test
-    public void testJoynrRuntimeExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported_JoynrRuntimeException_WithRetry() throws InterruptedException {
+    public void testJoynrRuntimeExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported_DiscoveryException_WithRetry() throws InterruptedException {
         JoynrRuntimeException exception = new JoynrRuntimeException("");
-        JoynrRuntimeException expectedException = new JoynrRuntimeException("");
-        testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(exception,
-                                                                                    expectedException,
-                                                                                    true,
-                                                                                    true);
+        testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(exception, true, true);
     }
 
     @Test
@@ -1382,18 +1366,17 @@ public class ArbitrationTest {
                                                     eq(gbids));
         }
 
-        ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
-        verify(arbitrationCallback, times(1)).onError(throwableCaptor.capture());
+        ArgumentCaptor<DiscoveryException> discoveryExceptionCaptor = ArgumentCaptor.forClass(DiscoveryException.class);
+        verify(arbitrationCallback, times(1)).onError(discoveryExceptionCaptor.capture());
         verify(messageRouter, never()).removeNextHop(any());
-        assertTrue(throwableCaptor.getValue() instanceof DiscoveryException);
-        assertNotNull(throwableCaptor.getValue().getMessage());
-        assertTrue((throwableCaptor.getValue().getMessage()).contains(interfaceName));
-        assertTrue((throwableCaptor.getValue().getMessage()).contains(Arrays.toString(gbids)));
-        assertTrue((throwableCaptor.getValue().getMessage()).contains(expectedError.toString()));
+        assertNotNull(discoveryExceptionCaptor.getValue());
+        assertNotNull(discoveryExceptionCaptor.getValue().getMessage());
+        assertTrue((discoveryExceptionCaptor.getValue().getMessage()).contains(interfaceName));
+        assertTrue((discoveryExceptionCaptor.getValue().getMessage()).contains(Arrays.toString(gbids)));
+        assertTrue((discoveryExceptionCaptor.getValue().getMessage()).contains(expectedError.toString()));
     }
 
     private void testJoynrExceptionFromLocalDiscoveryAggregatorToArbitrationCallbackReported(JoynrRuntimeException exception,
-                                                                                             JoynrRuntimeException expectedException,
                                                                                              boolean withRetry,
                                                                                              boolean expectRetry) throws InterruptedException {
         String[] domains = new String[]{ domain };
@@ -1433,12 +1416,11 @@ public class ArbitrationTest {
                                     any(String[].class));
         }
 
-        ArgumentCaptor<Throwable> throwableCaptor = ArgumentCaptor.forClass(Throwable.class);
-        verify(arbitrationCallback, times(1)).onError(throwableCaptor.capture());
+        ArgumentCaptor<DiscoveryException> discoveryExceptionCaptor = ArgumentCaptor.forClass(DiscoveryException.class);
+        verify(arbitrationCallback, times(1)).onError(discoveryExceptionCaptor.capture());
         verify(messageRouter, never()).removeNextHop(any());
 
-        assertNotNull(throwableCaptor.getValue().getMessage());
-        assertEquals(throwableCaptor.getValue(), expectedException);
+        assertNotNull(discoveryExceptionCaptor.getValue().getMessage());
     }
 
     @Test

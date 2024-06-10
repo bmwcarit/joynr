@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
@@ -110,6 +111,9 @@ public class ProxyBuilderDefaultImplTest {
 
     @Captor
     private ArgumentCaptor<JoynrRuntimeException> exceptionCaptor;
+
+    @Captor
+    private ArgumentCaptor<DiscoveryException> discoveryExceptionCaptor;
 
     private ProxyBuilderDefaultImpl<TestInterface> subject;
 
@@ -186,8 +190,8 @@ public class ProxyBuilderDefaultImplTest {
         subject.build(proxyCreatedCallback);
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
-        verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
-        JoynrRuntimeException capturedException = exceptionCaptor.getValue();
+        verify(proxyCreatedCallback).onProxyCreationError(discoveryExceptionCaptor.capture());
+        JoynrRuntimeException capturedException = discoveryExceptionCaptor.getValue();
         assertTrue(capturedException instanceof NoCompatibleProviderFoundException);
     }
 
@@ -238,8 +242,8 @@ public class ProxyBuilderDefaultImplTest {
         subject.build(proxyCreatedCallback);
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
-        verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
-        JoynrRuntimeException capturedException = exceptionCaptor.getValue();
+        verify(proxyCreatedCallback).onProxyCreationError(discoveryExceptionCaptor.capture());
+        JoynrRuntimeException capturedException = discoveryExceptionCaptor.getValue();
         assertTrue(capturedException instanceof MultiDomainNoCompatibleProviderFoundException);
     }
 
