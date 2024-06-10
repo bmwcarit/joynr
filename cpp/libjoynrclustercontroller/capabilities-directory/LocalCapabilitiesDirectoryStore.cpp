@@ -29,6 +29,7 @@
 #include "joynr/LCDUtil.h"
 #include "joynr/LocalCapabilitiesDirectoryStore.h"
 #include "joynr/Util.h"
+#include "joynr/system/RoutingTypes/MqttAddress.h"
 #include "joynr/types/DiscoveryQos.h"
 
 namespace joynr
@@ -150,6 +151,90 @@ bool LocalCapabilitiesDirectoryStore::getAwaitGlobalRegistration(
     return false;
 }
 
+std::vector<std::string> LocalCapabilitiesDirectoryStore::
+        touchAndReturnGlobalParticipantIdsFromLocalCapabilities(
+                const std::unique_lock<std::recursive_mutex>& cacheLock,
+                const std::int64_t& newLastSeenDateMs,
+                const std::int64_t& newExpiryDateMs)
+{
+    return getLocallyRegisteredCapabilities(cacheLock)->touchAndReturnGlobalParticipantIds(
+            newLastSeenDateMs, newExpiryDateMs);
+}
+
+void LocalCapabilitiesDirectoryStore::touchSelectedGlobalParticipant(
+        const std::unique_lock<std::recursive_mutex>& cacheLock,
+        const std::vector<std::string>& participantIds,
+        const std::int64_t& newLastSeenDateMs,
+        const std::int64_t& newExpiryDateMs)
+{
+    getGlobalLookupCache(cacheLock)->touchSelected(
+            participantIds, newLastSeenDateMs, newExpiryDateMs);
+}
+
+void LocalCapabilitiesDirectoryStore::insertIntoLocallyRegisteredCapabilities(
+        const std::unique_lock<std::recursive_mutex>& cacheLock,
+        const joynr::types::DiscoveryEntry& capability,
+        std::vector<std::string> gbids)
+{
+    auto locallyRegisteredCapabilities{getLocallyRegisteredCapabilities(cacheLock)};
+    if (!gbids.empty()) {
+        locallyRegisteredCapabilities->insert(capability, gbids);
+    } else {
+        locallyRegisteredCapabilities->insert(capability);
+    }
+}
+
+void LocalCapabilitiesDirectoryStore::insertIntoGlobalCachedCapabilities(
+        const std::unique_lock<std::recursive_mutex>& cacheLock,
+        const joynr::types::DiscoveryEntry& capability)
+{
+    getGlobalLookupCache(cacheLock)->insert(capability);
+}
+
+std::vector<joynr::types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::
+        removeExpiredCapabilitiesFromGlobalCache(
+                const std::unique_lock<std::recursive_mutex>& cacheLock)
+{
+    return getGlobalLookupCache(cacheLock)->removeExpired();
+}
+
+std::vector<joynr::types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::
+        removeExpiredLocallyRegisteredCapabilities(
+                const std::unique_lock<std::recursive_mutex>& cacheLock)
+{
+    return getLocallyRegisteredCapabilities(cacheLock)->removeExpired();
+}
+
+std::size_t LocalCapabilitiesDirectoryStore::getLocallyRegisteredCapabilitiesCount(
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
+{
+    return getLocallyRegisteredCapabilities(cacheLock)->size();
+}
+
+std::size_t LocalCapabilitiesDirectoryStore::getGlobalCachedCapabilitiesCount(
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
+{
+    return getGlobalLookupCache(cacheLock)->size();
+}
+
+std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::
+        insertLocallyRegisteredCapabilitesToEntryList(
+                const std::unique_lock<std::recursive_mutex>& cacheLock,
+                const std::int64_t& currentTime,
+                const std::int64_t& newExpiryDateMs)
+{
+    std::vector<types::DiscoveryEntry> entries{};
+    for (auto capability : *(getLocallyRegisteredCapabilities(cacheLock))) {
+        if (capability.getExpiryDateMs() < newExpiryDateMs) {
+            capability.setExpiryDateMs(newExpiryDateMs);
+        }
+        if (capability.getLastSeenDateMs() < currentTime) {
+            capability.setLastSeenDateMs(currentTime);
+        }
+        entries.push_back(capability);
+    }
+    return entries;
+}
 bool LocalCapabilitiesDirectoryStore::getLocalCapabilities(
         const std::vector<types::DiscoveryEntry>& localCapabilities,
         std::shared_ptr<ILocalCapabilitiesCallback> callback)
@@ -250,12 +335,23 @@ void LocalCapabilitiesDirectoryStore::mapGbidsToGlobalProviderParticipantId(
     _globalParticipantIdsToGbidsMap[participantId] = allGbids;
 }
 
+boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::lookupGlobalEntry(
+        const std::string& participantId)
+{
+    return _globalLookupCache->lookupByParticipantId(participantId);
+}
+
+boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::lookupLocalEntry(
+        const std::string& participantId)
+{
+    return _locallyRegisteredCapabilities->lookupByParticipantId(participantId);
+}
+
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getLocalCapabilities(
         const std::string& participantId)
 {
     std::lock_guard<std::recursive_mutex> localCachedRetrievalLock(_cacheLock);
-    return LCDUtil::optionalToVector(
-            _locallyRegisteredCapabilities->lookupByParticipantId(participantId));
+    return LCDUtil::optionalToVector(lookupLocalEntry(participantId));
 }
 
 std::vector<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::getLocalCapabilities(
@@ -323,6 +419,39 @@ void LocalCapabilitiesDirectoryStore::insertInGlobalLookupCache(
             _globalLookupCache->size());
 }
 
+void LocalCapabilitiesDirectoryStore::insertRemoteEntriesIntoGlobalCache(
+        const types::DiscoveryEntry& entry,
+        const std::shared_ptr<const joynr::system::RoutingTypes::Address>& address,
+        const std::vector<std::string>& knownGbids)
+{
+    std::vector<std::string> gbids;
+    if (auto mqttAddress = dynamic_cast<const system::RoutingTypes::MqttAddress*>(address.get())) {
+        gbids.push_back(mqttAddress->getBrokerUri());
+    } else {
+        // use default GBID for all other address types
+        gbids.push_back(knownGbids[0]);
+    }
+    insertInGlobalLookupCache(std::move(entry), std::move(gbids));
+}
+
+void LocalCapabilitiesDirectoryStore::removeLocallyRegisteredParticipant(
+        const std::string& participantId,
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
+{
+    getLocallyRegisteredCapabilities(cacheLock)->removeByParticipantId(participantId);
+    eraseParticipantIdToAwaitGlobalRegistrationMapping(participantId, cacheLock);
+}
+
+void LocalCapabilitiesDirectoryStore::removeParticipant(
+        const std::string& participantId,
+        const std::unique_lock<std::recursive_mutex>& cacheLock)
+{
+    eraseParticipantIdToGbidMapping(participantId, cacheLock);
+    getGlobalLookupCache(cacheLock)->removeByParticipantId(participantId);
+    getLocallyRegisteredCapabilities(cacheLock)->removeByParticipantId(participantId);
+    eraseParticipantIdToAwaitGlobalRegistrationMapping(participantId, cacheLock);
+}
+
 boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchGlobalCache(
         const std::string& participantId,
         const std::vector<std::string>& gbids,
@@ -333,7 +462,7 @@ boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchGl
     if (maxCacheAge.count() >= 0) {
         entry = _globalLookupCache->lookupCacheByParticipantId(participantId, maxCacheAge);
     } else {
-        entry = _globalLookupCache->lookupByParticipantId(participantId);
+        entry = lookupGlobalEntry(participantId);
     }
 
     if (entry) {
@@ -410,8 +539,8 @@ bool LocalCapabilitiesDirectoryStore::areMissingDomains(
     bool areMissingEntries{false};
     auto localCapabilitesEntries{localCapabilities};
     auto globalCapabilitiesEntries{globallyCachedEntries};
-    auto localEntry{_locallyRegisteredCapabilities->lookupByParticipantId(participantId)};
-    auto globalEntry{_globalLookupCache->lookupByParticipantId(participantId)};
+    auto localEntry{lookupLocalEntry(participantId)};
+    auto globalEntry{lookupGlobalEntry(participantId)};
 
     if (localEntry && scope == joynr::types::DiscoveryScope::GLOBAL_ONLY) {
         globalEntry = localEntry;
@@ -490,8 +619,7 @@ boost::optional<types::DiscoveryEntry> LocalCapabilitiesDirectoryStore::searchLo
 {
     // search locally registered entry in local store
     std::lock_guard<std::recursive_mutex> localSearchLock(_cacheLock);
-    boost::optional<types::DiscoveryEntry> entry =
-            _locallyRegisteredCapabilities->lookupByParticipantId(participantId);
+    boost::optional<types::DiscoveryEntry> entry = lookupLocalEntry(participantId);
     if (entry && (_includeLocalScopes.find(scope) == _includeLocalScopes.end() &&
                   entry->getQos().getScope() == types::ProviderScope::LOCAL)) {
         // ignore the found entry
