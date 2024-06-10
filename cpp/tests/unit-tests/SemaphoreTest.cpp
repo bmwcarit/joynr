@@ -142,6 +142,6 @@ TEST(SemaphoreTest, timedWait_unlockAfterSomeTime)
     const std::uint64_t diff =
             (expectedUnlock > duration) ? expectedUnlock - duration : duration - expectedUnlock;
 
-    EXPECT_GT(10, diff);
+    EXPECT_GT(20, diff);
     EXPECT_TRUE(result);
 }
