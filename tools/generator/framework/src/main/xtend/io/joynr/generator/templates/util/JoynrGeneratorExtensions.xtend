@@ -26,6 +26,7 @@ import io.joynr.generator.templates.EnumTemplate
 import io.joynr.generator.templates.InterfaceTemplate
 import io.joynr.generator.templates.MapTemplate
 import io.joynr.generator.templates.TypeDefTemplate
+import io.joynr.generator.util.FileSystemAccessUtil;
 import java.util.Arrays
 import java.util.HashSet
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl
@@ -186,6 +187,9 @@ class JoynrGeneratorExtensions {
 		if (generate) {
 			fsa.generateFile(path, generator.generate(generateVersion).toString);
 		}
+		else {
+			System.out.println(FileSystemAccessUtil.getFilePath(fsa, path));
+		}
 	}
 
 	def generateFile(
@@ -215,6 +219,9 @@ class JoynrGeneratorExtensions {
 		}
 		if (generate) {
 			fsa.generateFile(path, generator.generate(generateVersion).toString);
+		}
+		else {
+			System.out.println(FileSystemAccessUtil.getFilePath(fsa, path));
 		}
 	}
 

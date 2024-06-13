@@ -33,4 +33,12 @@ public class FileSystemAccessUtil {
                                                      .get(IFileSystemAccess.DEFAULT_OUTPUT)
                                                      .setCreateOutputDirectory(true);
     }
+
+    public static String getFilePath(IFileSystemAccess fileSystemAccess, String filePath) {
+        String dirPath = ((AbstractFileSystemAccess) fileSystemAccess).getOutputConfigurations()
+                                                                      .get(IFileSystemAccess.DEFAULT_OUTPUT)
+                                                                      .getOutputDirectory()
+                                                                      .toString();
+        return dirPath + "/" + filePath;
+    }
 }
