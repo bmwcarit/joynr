@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -416,6 +418,22 @@ public class ProxyBuilderDefaultImplTest {
                      discoveryQosCaptor.getValue().getProviderMustSupportOnChange());
         assertEquals(originalRetryIntervalMs, discoveryQosCaptor.getValue().getRetryIntervalMs());
         assertEquals(originalDiscoveryScope, discoveryQosCaptor.getValue().getDiscoveryScope());
+    }
+
+    @Test(expected = DiscoveryException.class)
+    public void buildMethodForGuidedBuilder_throwsDiscoveryException() throws Exception {
+        setup(new HashSet<>(List.of("domain")));
+        String testParticipantId = "test";
+        DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        mockedDiscoveryEntry.setParticipantId(testParticipantId);
+        Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries, null);
+
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        subject.setDiscoveryQos(discoveryQos);
+
+        doThrow(new RuntimeException("exception")).when(proxyInvocationHandler).createConnector(any());
+        subject.build(mockedArbitrationResult);
     }
 
 }
