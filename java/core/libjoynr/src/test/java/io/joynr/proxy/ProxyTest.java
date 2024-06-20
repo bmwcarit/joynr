@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,7 @@ import io.joynr.dispatching.rpc.ReplyCallerDirectory;
 import io.joynr.dispatching.rpc.RpcUtils;
 import io.joynr.dispatching.rpc.SynchronizedReplyCaller;
 import io.joynr.dispatching.subscription.SubscriptionManager;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrCommunicationException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
@@ -229,6 +230,11 @@ public class ProxyTest {
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("Navigation proxy creation failed: " + error);
             }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                fail("Navigation proxy creation failed: " + error);
+            }
         };
         testInterfaceProxyCreatedSemaphore = new Semaphore(0);
         testInterfaceProxyCreatedCallback = new ProxyCreatedCallback<TestInterface>() {
@@ -239,6 +245,11 @@ public class ProxyTest {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
+                fail("TestInterface proxy creation failed: " + error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 fail("TestInterface proxy creation failed: " + error);
             }
         };

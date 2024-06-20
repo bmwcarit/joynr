@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2018 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.integration.util.TestSetup;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -184,6 +185,11 @@ public class RoutingTableOverwriteEnd2EndTest {
                         public void onProxyCreationError(JoynrRuntimeException error) {
                             proxy1Future.onFailure(error);
                         }
+
+                        @Override
+                        public void onProxyCreationError(DiscoveryException error) {
+                            proxy1Future.onFailure(error);
+                        }
                     });
         testProxy proxy1 = proxy1Future.get();
 
@@ -212,6 +218,11 @@ public class RoutingTableOverwriteEnd2EndTest {
 
                         @Override
                         public void onProxyCreationError(JoynrRuntimeException error) {
+                            proxy2Future.onFailure(error);
+                        }
+
+                        @Override
+                        public void onProxyCreationError(DiscoveryException error) {
                             proxy2Future.onFailure(error);
                         }
                     });
@@ -267,6 +278,11 @@ public class RoutingTableOverwriteEnd2EndTest {
 
                         @Override
                         public void onProxyCreationError(JoynrRuntimeException error) {
+                            proxy1Future.onFailure(error);
+                        }
+
+                        @Override
+                        public void onProxyCreationError(DiscoveryException error) {
                             proxy1Future.onFailure(error);
                         }
                     });
@@ -345,6 +361,11 @@ public class RoutingTableOverwriteEnd2EndTest {
 
                         @Override
                         public void onProxyCreationError(JoynrRuntimeException error) {
+                            proxy1Future.onFailure(error);
+                        }
+
+                        @Override
+                        public void onProxyCreationError(DiscoveryException error) {
                             proxy1Future.onFailure(error);
                         }
                     });
@@ -426,6 +447,11 @@ public class RoutingTableOverwriteEnd2EndTest {
 
                                     @Override
                                     public void onProxyCreationError(JoynrRuntimeException error) {
+                                        proxy1Future.onFailure(error);
+                                    }
+
+                                    @Override
+                                    public void onProxyCreationError(DiscoveryException error) {
                                         proxy1Future.onFailure(error);
                                     }
                                 });

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,8 +55,8 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.runtime.ShutdownNotifier;
@@ -189,18 +189,7 @@ public class GuidedProxyBuilderTest {
         ArgumentCaptor<ArbitrationCallback> callbackCaptor = ArgumentCaptor.forClass(ArbitrationCallback.class);
         verify(arbitrator).setArbitrationListener(callbackCaptor.capture());
         verify(arbitrator).scheduleArbitration(false);
-        callbackCaptor.getValue().onError(new JoynrRuntimeException());
-        result.get();
-    }
-
-    @Test(expected = ExecutionException.class)
-    public void testLookupExceptionIsProperlyThrownNonJoynrRuntimeException() throws Exception {
-        setup();
-        CompletableFuture<DiscoveryResult> result = subject.discoverAsync();
-        ArgumentCaptor<ArbitrationCallback> callbackCaptor = ArgumentCaptor.forClass(ArbitrationCallback.class);
-        verify(arbitrator).setArbitrationListener(callbackCaptor.capture());
-        verify(arbitrator).scheduleArbitration(false);
-        callbackCaptor.getValue().onError(new NullPointerException());
+        callbackCaptor.getValue().onError(new DiscoveryException("Test exception"));
         result.get();
     }
 

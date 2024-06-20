@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -196,6 +196,11 @@ public abstract class IltConsumerTest {
 
                                              @Override
                                              public void onProxyCreationError(JoynrRuntimeException error) {
+                                                 logger.info("error creating proxy");
+                                             }
+
+                                             @Override
+                                             public void onProxyCreationError(DiscoveryException error) {
                                                  logger.info("error creating proxy");
                                              }
                                          });

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,7 +172,7 @@ public final class ArbitratorFactory {
                 } catch (Exception e) {
                     logger.error("Unexpected exception in ArbitratorRunnable: ", e);
                     if (delayableArbitration != null) {
-                        delayableArbitration.getArbitration().arbitrationFailed(e);
+                        delayableArbitration.getArbitration().arbitrationFailed(new DiscoveryException(e));
                     }
                 }
             }

@@ -48,6 +48,7 @@ import com.google.inject.name.Named;
 
 import io.joynr.accesscontrol.AccessController;
 import io.joynr.capabilities.GcdTask.CallbackCreator;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -1621,6 +1622,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
             CallbackWithModeledError<Void, DiscoveryError> cb = task.getCallbackCreator().createCallback();
             try {
                 globalCapabilitiesDirectoryClient.add(cb, task.getGlobalDiscoveryEntry(), ttlMs, task.getGbids());
+            } catch (DiscoveryException exception) {
+                cb.onFailure(exception);
             } catch (Exception exception) {
                 if (exception instanceof JoynrRuntimeException) {
                     cb.onFailure((JoynrRuntimeException) exception);

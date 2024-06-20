@@ -18,6 +18,7 @@
  */
 package io.joynr.runtime;
 
+import io.joynr.exceptions.DiscoveryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +81,12 @@ public class LibjoynrRuntime extends JoynrRuntimeImpl {
 
             @Override
             public void onProxyCreationError(final JoynrRuntimeException error) {
+                logger.error("Fatal error during runtime creation, no communication with other joynr runtimes is possible:"
+                        + " Routing proxy creation failed:", error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 logger.error("Fatal error during runtime creation, no communication with other joynr runtimes is possible:"
                         + " Routing proxy creation failed:", error);
             }

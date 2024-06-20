@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
 import io.joynr.exceptions.NoCompatibleProviderFoundException;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.proxy.CallbackWithModeledError;
-import joynr.exceptions.ApplicationException;
 import joynr.system.DiscoveryAsync;
 import joynr.types.DiscoveryEntry;
 import joynr.types.DiscoveryEntryWithMetaInfo;
@@ -65,6 +64,8 @@ public class Arbitrator {
     private Semaphore arbitrationListenerSemaphore = new Semaphore(0);
     private long retryDelay = 0;
     private long arbitrationDeadline;
+    // Allow retry only in case of JoynrRuntimeException
+    private boolean shouldRetry;
     private Set<String> domains;
     private String interfaceName;
     private Version interfaceVersion;
@@ -94,6 +95,7 @@ public class Arbitrator {
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.arbitrationStrategyFunction = arbitrationStrategyFunction;
         arbitrationDeadline = System.currentTimeMillis() + discoveryQos.getDiscoveryTimeoutMs();
+        shouldRetry = false;
         this.discoveryEntryVersionFilter = discoveryEntryVersionFilter;
         if (gbids == null) {
             this.gbids = new String[0];
@@ -103,19 +105,15 @@ public class Arbitrator {
         this.messageRouter = messageRouter;
     }
 
-    protected void onError(Throwable exception) {
-        if (exception instanceof JoynrShutdownException) {
-            arbitrationFailed(exception);
-        } else if (exception instanceof JoynrRuntimeException) {
-            if (isArbitrationInTime()) {
-                restartArbitration(exception);
-            } else {
-                arbitrationFailed(exception);
-            }
-        } else if (exception instanceof ApplicationException) {
-            arbitrationFailed(exception);
+    protected void onError(JoynrShutdownException exception) {
+        arbitrationFailed(new DiscoveryException(exception));
+    }
+
+    protected void onError(DiscoveryException exception) {
+        if (shouldRetry && isArbitrationInTime()) {
+            restartArbitration(exception);
         } else {
-            arbitrationFailed(new JoynrRuntimeException(exception));
+            arbitrationFailed(exception);
         }
     }
 
@@ -192,7 +190,7 @@ public class Arbitrator {
         restartArbitration(null);
     }
 
-    protected void restartArbitration(Throwable exception) {
+    protected void restartArbitration(DiscoveryException exception) {
         retryDelay = discoveryQos.getRetryIntervalMs();
         if (System.currentTimeMillis() + retryDelay > arbitrationDeadline) {
             arbitrationFailed(exception);
@@ -206,19 +204,15 @@ public class Arbitrator {
         arbitrationFailed(null);
     }
 
-    protected void arbitrationFailed(Throwable exception) {
+    protected void arbitrationFailed(DiscoveryException exception) {
         arbitrationStatus = ArbitrationStatus.ArbitrationCanceledForever;
-        Throwable reason;
+        DiscoveryException reason;
         if (arbitrationListenerSemaphore.tryAcquire()) {
             if (exception != null) {
-                if (exception instanceof ApplicationException) {
-                    DiscoveryError discoveryError = ((ApplicationException) exception).getError();
-                    reason = new DiscoveryException("Unable to find provider due to DiscoveryError: " + discoveryError
-                            + " interface: " + interfaceName + " domains: " + domains + " gbids: "
-                            + Arrays.toString(gbids) + " " + interfaceVersion);
-                } else {
-                    reason = exception;
-                }
+                DiscoveryError discoveryError = (DiscoveryError) exception.getError();
+                reason = new DiscoveryException("Unable to find provider due to DiscoveryError: " + discoveryError
+                        + " interface: " + interfaceName + " domains: " + domains + " gbids: " + Arrays.toString(gbids)
+                        + " " + interfaceVersion);
             } else if (discoveredVersionsByDomainMap.isEmpty()) {
                 reason = new DiscoveryException("Unable to find provider in time: interface: " + interfaceName
                         + " domains: " + domains + " " + interfaceVersion);
@@ -229,11 +223,11 @@ public class Arbitrator {
         }
     }
 
-    private Throwable noCompatibleProviderFound() {
-        Throwable reason = null;
+    private DiscoveryException noCompatibleProviderFound() {
+        DiscoveryException reason = null;
         if (domains.size() == 1) {
             if (discoveredVersionsByDomainMap.size() != 1) {
-                reason = new IllegalStateException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
+                reason = new DiscoveryException("Only looking for one domain, but got multi-domain result with discovered but incompatible versions.");
             } else {
                 reason = new NoCompatibleProviderFoundException(interfaceName,
                                                                 interfaceVersion,
@@ -334,11 +328,18 @@ public class Arbitrator {
 
         @Override
         public void onFailure(JoynrRuntimeException error) {
-            Arbitrator.this.onError(error);
+            if (error instanceof JoynrShutdownException) {
+                shouldRetry = false;
+                Arbitrator.this.onError((JoynrShutdownException) error);
+            } else {
+                shouldRetry = true;
+                Arbitrator.this.onError(new DiscoveryException(error));
+            }
         }
 
         @Override
         public void onFailure(DiscoveryError error) {
+            shouldRetry = false;
             switch (error) {
             case NO_ENTRY_FOR_PARTICIPANT:
             case NO_ENTRY_FOR_SELECTED_BACKENDS:
@@ -350,9 +351,9 @@ public class Arbitrator {
                              Arrays.toString(gbids),
                              error);
                 if (isArbitrationInTime()) {
-                    restartArbitration(new ApplicationException(error));
+                    restartArbitration(new DiscoveryException("", error));
                 } else {
-                    arbitrationFailed(new ApplicationException(error));
+                    arbitrationFailed(new DiscoveryException("", error));
                 }
                 break;
             case UNKNOWN_GBID:
@@ -366,7 +367,7 @@ public class Arbitrator {
                              interfaceVersion,
                              Arrays.toString(gbids),
                              error);
-                arbitrationFailed(new ApplicationException(error));
+                arbitrationFailed(new DiscoveryException("", error));
                 break;
             }
         }
