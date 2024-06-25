@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2024 BMW Car IT GmbH
+ * Copyright (C) 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,18 @@
  */
 package io.joynr.examples.jee;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
-
-@ApplicationPath("/")
-public class RadioConsumerRestApplication extends Application {
-
+@Provider
+public class JoynrWebApplicationExceptionMapper implements ExceptionMapper<JoynrWebApplicationException> {
     @Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> classes = new HashSet<>(List.of(RadioConsumerRestEndpoint.class));
-
-        // Add exception mappers
-        classes.add(JoynrWebApplicationExceptionMapper.class);
-        return classes;
+    public Response toResponse(JoynrWebApplicationException exception) {
+        return Response.status(exception.getStatus())
+                       .entity(exception.getMessage())
+                       .type(MediaType.TEXT_PLAIN_TYPE)
+                       .build();
     }
-
 }
