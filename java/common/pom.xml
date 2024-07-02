@@ -36,4 +36,19 @@
 		<module>access-control-common</module>
 		<module>status-metrics</module>
 	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.joynr.java</groupId>
+				<artifactId>javaapi</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.messaging</groupId>
+				<artifactId>messaging-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>
