@@ -106,7 +106,6 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
