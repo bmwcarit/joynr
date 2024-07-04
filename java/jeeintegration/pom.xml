@@ -53,7 +53,6 @@
 									<ignoredUnusedDeclaredDependency>fish.payara.arquillian:arquillian-payara-server-embedded</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>fish.payara.extras:payara-embedded-all</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
-									<ignoredUnusedDeclaredDependency>com.google.guava:guava</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.checkerframework:checker-qual</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>com.google.j2objc:j2objc-annotations</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
@@ -233,10 +232,6 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.checkerframework</groupId>
