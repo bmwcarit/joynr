@@ -825,7 +825,7 @@
 			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
-				<version>42.5.4</version>
+				<version>42.5.5</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.inject.extensions</groupId>
