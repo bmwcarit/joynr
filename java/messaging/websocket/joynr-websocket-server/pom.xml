@@ -30,15 +30,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.google.inject</groupId>
-			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java</groupId>
-			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
@@ -47,6 +38,14 @@
 			<groupId>io.joynr.java.messaging.websocket</groupId>
 			<artifactId>joynr-websocket-common</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>

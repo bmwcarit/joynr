@@ -32,27 +32,22 @@
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr-websocket-runtime</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging.websocket</groupId>
 			<artifactId>joynr-websocket-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<!-- Logging used in the app -->

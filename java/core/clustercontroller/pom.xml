@@ -32,51 +32,43 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>io.joynr.java</groupId>
-			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java</groupId>
-			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>access-control-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>discovery-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>infrastructure-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>guice-integration</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>

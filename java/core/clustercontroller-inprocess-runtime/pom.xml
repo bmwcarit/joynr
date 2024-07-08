@@ -32,11 +32,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>io.joynr.java</groupId>
-			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>clustercontroller</artifactId>
 			<version>${project.version}</version>
@@ -47,9 +42,12 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.inject</groupId>
