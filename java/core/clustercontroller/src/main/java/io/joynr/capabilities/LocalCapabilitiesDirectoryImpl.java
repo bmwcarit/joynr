@@ -583,6 +583,29 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                         }
 
                         if (doRetry && exception instanceof JoynrTimeoutException) {
+                            if (!providerParticipantIdToAwaitGlobalRegistrationMap.containsKey(globalDiscoveryEntry.getParticipantId())) {
+                                logger.error("Global provider registration failed, no retry, provider already unregistered: participantId {}, domain {}, interface {}, {}",
+                                             globalDiscoveryEntry.getParticipantId(),
+                                             globalDiscoveryEntry.getDomain(),
+                                             globalDiscoveryEntry.getInterfaceName(),
+                                             globalDiscoveryEntry.getProviderVersion(),
+                                             exception);
+                                gcdTaskSequencer.taskFinished();
+                                deferred.reject(new ProviderRuntimeException(exception.toString()));
+                                return;
+                            }
+                            if (globalDiscoveryEntry.getExpiryDateMs() < System.currentTimeMillis()) {
+                                logger.error("Global provider registration failed, no retry, expiryDateMs already expired: participantId {}, domain {}, interface {}, {}",
+                                             globalDiscoveryEntry.getParticipantId(),
+                                             globalDiscoveryEntry.getDomain(),
+                                             globalDiscoveryEntry.getInterfaceName(),
+                                             globalDiscoveryEntry.getProviderVersion(),
+                                             exception);
+                                gcdTaskSequencer.taskFinished();
+                                deferred.reject(new ProviderRuntimeException(exception.toString()));
+                                return;
+                            }
+
                             logger.warn("Global provider registration failed due to timeout, retrying: participantId {}, domain {}, interface {}, {}",
                                         globalDiscoveryEntry.getParticipantId(),
                                         globalDiscoveryEntry.getDomain(),
