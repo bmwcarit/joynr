@@ -135,6 +135,7 @@ protected:
     void testAdd(bool awaitGlobalRegistration);
     void testAddTaskExpiryDateHasCorrectValue(bool awaitGlobalRegistration,
                                               const joynr::TimePoint& expiryDate);
+    joynr::TimePoint getAddTaskExpiryDateForProviderExpirationTest(std::int64_t capExpiryDateMs);
 
     const std::string capDomain;
     const std::string capInterface;
@@ -213,6 +214,7 @@ void GlobalCapabilitiesDirectoryClientTest::testAddTaskExpiryDateHasCorrectValue
             std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
     auto semaphore = std::make_shared<Semaphore>();
     MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    globalDiscoveryEntry.setExpiryDateMs(expectedTaskExpiryDate.toMilliseconds());
 
     EXPECT_CALL(*mockTaskSequencer, add(_))
             .Times(1)
@@ -253,6 +255,48 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     bool awaitGlobalRegistration = false;
     TimePoint taskExpiryDate = TimePoint::max();
     testAddTaskExpiryDateHasCorrectValue(awaitGlobalRegistration, taskExpiryDate);
+}
+
+joynr::TimePoint GlobalCapabilitiesDirectoryClientTest::getAddTaskExpiryDateForProviderExpirationTest(
+        std::int64_t expiryDateMs)
+{
+    bool awaitGlobalRegistration = false;
+    std::unique_ptr<MockTaskSequencer<void>> mockTaskSequencer =
+        std::make_unique<MockTaskSequencer<void>>(std::chrono::milliseconds(60000));
+    auto semaphore = std::make_shared<Semaphore>();
+    MockTaskSequencer<void>::MockTaskWithExpiryDate capturedTask;
+    globalDiscoveryEntry.setExpiryDateMs(expiryDateMs);
+
+    EXPECT_CALL(*mockTaskSequencer, add(_))
+            .Times(1)
+            .WillOnce(DoAll(SaveArg<0>(&capturedTask), ReleaseSemaphore(semaphore)));
+    std::shared_ptr<GlobalCapabilitiesDirectoryClient> gcdClient =
+            std::make_shared<GlobalCapabilitiesDirectoryClient>(
+                    clusterControllerSettings, std::move(mockTaskSequencer));
+    gcdClient->add(globalDiscoveryEntry,
+                   awaitGlobalRegistration,
+                   gbids,
+                   onSuccess,
+                   onError,
+                   onRuntimeError);
+    EXPECT_TRUE(semaphore->waitFor(std::chrono::seconds(10))) << "TaskSequencer.add() not called.";
+    return capturedTask._expiryDate;
+}
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAddTaskExpiryDateHasCorrectValueWithoutAwaitGlobalRegistrationProviderExpired)
+{
+    auto actualTaskExpiryDate = getAddTaskExpiryDateForProviderExpirationTest(capExpiryDateMs);
+    ASSERT_NE(TimePoint::max().toMilliseconds(), actualTaskExpiryDate.toMilliseconds());
+}
+
+
+TEST_F(GlobalCapabilitiesDirectoryClientTest,
+       testAddTaskExpiryDateHasCorrectValueWithoutAwaitGlobalRegistrationProviderNotExpired)
+{
+    auto actualTaskExpiryDate = getAddTaskExpiryDateForProviderExpirationTest(
+            TimePoint::fromRelativeMs(capExpiryDateMs).toMilliseconds());
+    ASSERT_EQ(TimePoint::max().toMilliseconds(), actualTaskExpiryDate.toMilliseconds());
 }
 
 TEST_F(GlobalCapabilitiesDirectoryClientTest,
@@ -583,6 +627,7 @@ void GlobalCapabilitiesDirectoryClientTest::testAdd(bool awaitGlobalRegistration
 {
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     auto semaphore = std::make_shared<Semaphore>();
+    globalDiscoveryEntry.setExpiryDateMs(TimePoint::fromRelativeMs(capExpiryDateMs).toMilliseconds());
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
@@ -621,6 +666,7 @@ void GlobalCapabilitiesDirectoryClientTest::testAddUsesCorrectRemainingTtl(
     std::shared_ptr<joynr::MessagingQos> messagingQosCapture;
     auto semaphore = std::make_shared<Semaphore>();
 
+    globalDiscoveryEntry.setExpiryDateMs(TimePoint::fromRelativeMs(capExpiryDateMs).toMilliseconds());
     types::GlobalDiscoveryEntry globalDiscoveryEntry2(globalDiscoveryEntry);
     globalDiscoveryEntry2.setParticipantId("ParticipantId2");
 
@@ -681,6 +727,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
 {
     std::function<void()> onSuccessCallback;
     auto semaphore = std::make_shared<Semaphore>();
+    globalDiscoveryEntry.setExpiryDateMs(TimePoint::fromRelativeMs(capExpiryDateMs).toMilliseconds());
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
@@ -699,6 +746,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
     std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
     constexpr unsigned int numberOfTimeouts = 10;
+    globalDiscoveryEntry.setExpiryDateMs(TimePoint::fromRelativeMs(capExpiryDateMs).toMilliseconds());
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
@@ -740,6 +788,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
 {
     std::function<void(const exceptions::JoynrRuntimeException&)> onRuntimeErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
+    globalDiscoveryEntry.setExpiryDateMs(TimePoint::now().toMilliseconds() + capExpiryDateMs);
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))
@@ -757,6 +806,7 @@ TEST_F(GlobalCapabilitiesDirectoryClientTest,
 {
     std::function<void(const types::DiscoveryError::Enum&)> onApplicationErrorCallback;
     auto semaphore = std::make_shared<Semaphore>();
+    globalDiscoveryEntry.setExpiryDateMs(TimePoint::fromRelativeMs(capExpiryDateMs).toMilliseconds());
 
     EXPECT_CALL(*mockGlobalCapabilitiesDirectoryProxy,
                 addAsyncMock(Eq(globalDiscoveryEntry), Eq(gbids), _, _, _, _))

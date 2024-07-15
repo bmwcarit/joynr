@@ -75,7 +75,10 @@ void GlobalCapabilitiesDirectoryClient::add(
     TaskSequencer<void>::TaskWithExpiryDate addTask;
 
     if (!awaitGlobalRegistration) {
-        addTask._expiryDate = TimePoint::max();
+        addTask._expiryDate =
+                (TimePoint::now() > TimePoint::fromAbsoluteMs(entry.getExpiryDateMs()))
+                        ? TimePoint::now()
+                        : TimePoint::max();
         addTask._timeout = []() {};
     } else {
         addTask._expiryDate =
