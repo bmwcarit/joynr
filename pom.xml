@@ -1028,6 +1028,16 @@
 				<type>jar</type>
 				<version>2.45</version>
 			</dependency>
+			<dependency>
+				<groupId>org.checkerframework</groupId>
+				<artifactId>checker-qual</artifactId>
+				<version>3.45.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.j2objc</groupId>
+				<artifactId>j2objc-annotations</artifactId>
+				<version>3.0.0</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
