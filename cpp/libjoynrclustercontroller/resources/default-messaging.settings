@@ -29,6 +29,8 @@ mqtt-keep-alive-time-seconds=60
 mqtt-reconnect-delay-time-seconds=1
 # Maximum time in milliseconds to wait for network activity before timing out.
 mqtt-connection-timeout-ms=1000
+# If true, mqtt broker will return the last published message upon subscription.
+mqtt-retain=false
 
 send-msg-retry-interval=500
 persistence-file=joynr.settings

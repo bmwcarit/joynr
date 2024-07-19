@@ -53,7 +53,8 @@ public:
               _mqttReconnectMaxDelayTimeSeconds(
                       _messagingSettings.getMqttReconnectMaxDelayTimeSeconds()),
               _isMqttExponentialBackoffEnabled(
-                      _messagingSettings.getMqttExponentialBackoffEnabled())
+                      _messagingSettings.getMqttExponentialBackoffEnabled()),
+              _isMqttRetain(_messagingSettings.getMqttRetain())
     {
     }
 
@@ -92,7 +93,8 @@ protected:
                                                       _mqttReconnectMaxDelayTimeSeconds,
                                                       _isMqttExponentialBackoffEnabled,
                                                       clientId,
-                                                      gbid);
+                                                      gbid,
+                                                      _isMqttRetain);
 
         // register connection to channelId
         mosquittoConnection->registerChannelId(channelId);
@@ -113,6 +115,7 @@ protected:
     std::chrono::seconds _mqttKeepAliveTimeSeconds;
     const std::chrono::seconds _mqttReconnectDelayTimeSeconds, _mqttReconnectMaxDelayTimeSeconds;
     const bool _isMqttExponentialBackoffEnabled;
+    const bool _isMqttRetain;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(MosquittoConnectionTest);

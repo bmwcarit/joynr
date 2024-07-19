@@ -50,6 +50,7 @@ public:
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_CHANNELID();
     static const std::string& SETTING_CAPABILITIES_DIRECTORY_PARTICIPANTID();
     static const std::string& SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS();
+    static const std::string& SETTING_MQTT_RETAIN();
     static const std::string& SETTING_MQTT_RECONNECT_DELAY_TIME_SECONDS();
     static const std::string& SETTING_MQTT_RECONNECT_MAX_DELAY();
     static const std::string& SETTING_MQTT_EXPONENTIAL_BACKOFF_ENABLED();
@@ -121,6 +122,8 @@ public:
 
     std::chrono::seconds getMqttKeepAliveTimeSeconds() const;
     void setMqttKeepAliveTimeSeconds(std::chrono::seconds mqttKeepAliveTimeSeconds);
+    bool getMqttRetain() const;
+    void setMqttRetain(const bool& retainStatus);
     std::chrono::seconds getMqttReconnectDelayTimeSeconds() const;
     void setMqttReconnectDelayTimeSeconds(std::chrono::seconds mqttReconnectDelayTimeSeconds);
     std::chrono::seconds getMqttReconnectMaxDelayTimeSeconds() const;
