@@ -297,6 +297,7 @@ void JoynrClusterControllerRuntime::init()
                 _messagingSettings.getMqttExponentialBackoffEnabled();
         std::chrono::seconds mqttKeepAliveTimeSeconds(0);
         BrokerUrl brokerUrl = defaultBrokerUrl;
+        const bool isRetained{_messagingSettings.getMqttRetain()};
 
         // default brokerIndex = 0
         for (std::uint8_t brokerIndex = 0; brokerIndex < _mqttConnectionDataVector.size();
@@ -321,7 +322,8 @@ void JoynrClusterControllerRuntime::init()
                                                               mqttReconnectMaxDelayTimeSeconds,
                                                               isMqttExponentialBackoffEnabled,
                                                               mqttClientId,
-                                                              _availableGbids[brokerIndex]);
+                                                              _availableGbids[brokerIndex],
+                                                              isRetained);
 
                 const auto& connectionData = _mqttConnectionDataVector[brokerIndex];
 

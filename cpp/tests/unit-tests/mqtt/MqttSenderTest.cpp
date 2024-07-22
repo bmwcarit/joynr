@@ -58,6 +58,7 @@ protected:
         bool isMqttExponentialBackoffEnabled(false);
         const std::string clientId("testClientId");
         const std::string gbid("gbid");
+        const bool isMqttRetain{false};
 
         mockMosquittoConnection =
                 std::make_shared<MockMosquittoConnection>(ccSettings,
@@ -67,7 +68,8 @@ protected:
                                                           mqttReconnectMaxDelayTimeSeconds,
                                                           isMqttExponentialBackoffEnabled,
                                                           clientId,
-                                                          gbid);
+                                                          gbid,
+                                                          isMqttRetain);
 
         ON_CALL(*mockMosquittoConnection, isSubscribedToChannelTopic()).WillByDefault(Return(true));
         ON_CALL(*mockMosquittoConnection, getMqttQos()).WillByDefault(Return(0));

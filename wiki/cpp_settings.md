@@ -99,3 +99,17 @@ Files which cannot be parsed are ignored.
 * **Type**: String
 * **Key**: `acl-entries-directory`
 * **Default value**: Empty (current working directory)
+
+## Messaging setings
+
+### `mqtt-retain`
+
+If set to true, MQTT broker will hold the last published message and the corresponding QoS for that
+topic. When client subscribes to a matching topic pattern of the retained message, it receives the
+retained message right after subscription.
+
+* **OPTIONAL**
+* **Section name**: `messaging`
+* **Type**: Boolean value as string
+* **Key**: `mqtt-retain`
+* **Default value**: `false`

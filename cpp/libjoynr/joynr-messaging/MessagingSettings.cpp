@@ -105,6 +105,12 @@ const std::string& MessagingSettings::SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS()
     return value;
 }
 
+const std::string& MessagingSettings::SETTING_MQTT_RETAIN()
+{
+    static const std::string value("messaging/mqtt-retain");
+    return value;
+}
+
 std::chrono::seconds MessagingSettings::DEFAULT_MQTT_KEEP_ALIVE_TIME_SECONDS()
 {
     static const std::chrono::seconds value(60);
@@ -368,6 +374,16 @@ std::chrono::seconds MessagingSettings::getMqttKeepAliveTimeSeconds() const
 void MessagingSettings::setMqttKeepAliveTimeSeconds(std::chrono::seconds mqttKeepAliveTimeSeconds)
 {
     _settings.set(SETTING_MQTT_KEEP_ALIVE_TIME_SECONDS(), mqttKeepAliveTimeSeconds.count());
+}
+
+bool MessagingSettings::getMqttRetain() const
+{
+    return _settings.get<bool>(SETTING_MQTT_RETAIN());
+}
+
+void MessagingSettings::setMqttRetain(const bool& retainStatus)
+{
+    _settings.set(SETTING_MQTT_RETAIN(), retainStatus);
 }
 
 std::chrono::seconds MessagingSettings::getMqttReconnectDelayTimeSeconds() const
