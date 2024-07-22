@@ -651,6 +651,16 @@ of true.
 * **User property**: `joynr.messaging.mqtt.connectonstart`
 * **Default value**: `true`
 
+### `PROPERTY_KEY_MQTT_RETAIN`
+If set to true, MQTT broker will hold the last published message and the corresponding QoS for that
+topic. When client subscribes to a matching topic pattern of the retained message, it receives the
+retained message right after subscription.
+
+* **OPTIONAL**
+* **Type**: Boolean
+* **User property**: `joynr.messaging.mqtt.retain`
+* **Default value**: `false`
+
 ## SystemServicesSettings
 
 ### `PROPERTY_CC_DISCOVERY_PROVIDER_PARTICIPANT_ID`

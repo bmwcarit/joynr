@@ -132,6 +132,10 @@ public class HivemqMqttClientCreator implements JoynrMqttClientCreator {
     @Named(MqttModule.PROPERTY_KEY_MQTT_RECEIVE_MAXIMUM)
     private int receiveMaximum;
 
+    @Inject(optional = true)
+    @Named(MqttModule.PROPERTY_KEY_MQTT_RETAIN)
+    private Boolean retain = false;
+
     @Inject
     // CHECKSTYLE IGNORE ParameterNumber FOR NEXT 1 LINES
     public HivemqMqttClientCreator(@Named(MqttModule.PROPERTY_MQTT_CLEAN_SESSION) boolean cleanSession,
@@ -222,6 +226,7 @@ public class HivemqMqttClientCreator implements JoynrMqttClientCreator {
                                                        receiveMaximum,
                                                        isReceiver,
                                                        isSender,
+                                                       retain,
                                                        gbid,
                                                        connectionStatusMetrics);
         logger.info("Created MQTT client for gbid {}, uri {}, clientId {}: {}",

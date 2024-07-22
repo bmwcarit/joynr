@@ -158,6 +158,7 @@ public class HivemqMqttClientTest {
                                       defaultReceiveMaximum,
                                       true,
                                       true,
+                                      false,
                                       defaultGbid,
                                       mockConnectionStatusMetrics);
     }
@@ -506,6 +507,7 @@ public class HivemqMqttClientTest {
                                       defaultReceiveMaximum,
                                       true,
                                       true,
+                                      false,
                                       defaultGbid,
                                       mockConnectionStatusMetrics);
         doReturn(MqttClientState.CONNECTED).when(mockClientConfig).getState();
@@ -541,6 +543,7 @@ public class HivemqMqttClientTest {
                                       defaultReceiveMaximum,
                                       true,
                                       true,
+                                      false,
                                       defaultGbid,
                                       mockConnectionStatusMetrics);
 
