@@ -24,6 +24,7 @@ import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import java.io.File
 
 class JoynrGeneratorGradlePlugin : Plugin<Project> {
@@ -91,7 +92,7 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         }
 
         project.afterEvaluate {
-            project.tasks.forEach {
+            project.tasks.withType(Task::class.java).configureEach{
                 when {
                     it.name.matches(TASK_NAME_MATCHER_STRING.toRegex()) -> {
                         // add joynr generate task as a dependency for the appropriate tasks, so we
@@ -105,7 +106,6 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
                     }
                 }
             }
-
         }
 
         // Register our task with the variant's sources
