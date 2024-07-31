@@ -241,7 +241,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
     }
 
     private void mapGbidsToGlobalProviderParticipantId(String participantId, String[] gbids) {
-        List<String> newGbidsList = new ArrayList<String>(Arrays.asList(gbids));
+        List<String> newGbidsList = new ArrayList<>(Arrays.asList(gbids));
         if (globalProviderParticipantIdToGbidListMap.containsKey(participantId)) {
             List<String> nonDuplicateOldGbids = globalProviderParticipantIdToGbidListMap.get(participantId)
                                                                                         .stream()
@@ -292,7 +292,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                                          participantIdToTouch);
                             continue;
                         }
-                        List<String> participantIdsToTouch = new ArrayList<String>(gbidToParticipantIdsListMap.get(gbidToTouch));
+                        List<String> participantIdsToTouch = new ArrayList<>(gbidToParticipantIdsListMap.get(gbidToTouch));
                         participantIdsToTouch.add(participantIdToTouch);
                         gbidToParticipantIdsListMap.put(gbidToTouch, participantIdsToTouch);
                     }
@@ -308,7 +308,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                         continue;
                     }
 
-                    Callback<Void> callback = new Callback<Void>() {
+                    Callback<Void> callback = new Callback<>() {
                         @Override
                         public void onSuccess(Void result) {
                             if (logger.isTraceEnabled()) {
@@ -382,7 +382,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
             return DiscoveryError.INVALID_GBID;
         }
 
-        HashSet<String> gbidSet = new HashSet<String>();
+        HashSet<String> gbidSet = new HashSet<>();
         for (String gbid : gbids) {
             if (gbid == null || gbid.isEmpty() || gbidSet.contains(gbid)) {
                 return DiscoveryError.INVALID_GBID;
@@ -481,7 +481,8 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                     return new Promise<>(deferred);
                 }
             }
-            if (!ProviderScope.GLOBAL.equals(discoveryEntry.getQos().getScope()) || awaitGlobalRegistration == false) {
+            if (!ProviderScope.GLOBAL.equals(discoveryEntry.getQos().getScope())
+                    || Boolean.FALSE.equals(awaitGlobalRegistration)) {
                 addLocal(discoveryEntry, awaitGlobalRegistration, gbids);
             }
         }
@@ -493,7 +494,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
          */
         if (discoveryEntry.getQos().getScope().equals(ProviderScope.GLOBAL)) {
             Add1Deferred deferredForRegisterGlobal;
-            if (awaitGlobalRegistration == true) {
+            if (Boolean.TRUE.equals(awaitGlobalRegistration)) {
                 deferredForRegisterGlobal = deferred;
             } else {
                 // use an independent DeferredVoid not used for waiting
@@ -552,7 +553,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
             @Override
             public CallbackWithModeledError<Void, DiscoveryError> createCallback() {
 
-                return new CallbackWithModeledError<Void, DiscoveryError>() {
+                return new CallbackWithModeledError<>() {
                     private AtomicBoolean callbackCalled = new AtomicBoolean();
 
                     @Override
@@ -567,7 +568,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                                     globalDiscoveryEntry.getInterfaceName(),
                                     globalDiscoveryEntry.getProviderVersion(),
                                     Arrays.toString(gbids));
-                        if (awaitGlobalRegistration == true) {
+                        if (awaitGlobalRegistration) {
                             synchronized (globalDiscoveryEntryCache) {
                                 addLocal(discoveryEntry, awaitGlobalRegistration, gbids);
                             }
@@ -704,7 +705,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
             @Override
             public CallbackWithModeledError<Void, DiscoveryError> createCallback() {
 
-                return new CallbackWithModeledError<Void, DiscoveryError>() {
+                return new CallbackWithModeledError<>() {
 
                     private AtomicBoolean callbackCalled = new AtomicBoolean();
 
@@ -831,7 +832,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
         CapabilitiesCallback callback = new CapabilitiesCallback() {
             @Override
             public void processCapabilitiesReceived(Optional<Collection<DiscoveryEntryWithMetaInfo>> capabilities) {
-                if (!capabilities.isPresent()) {
+                if (capabilities.isEmpty()) {
                     deferred.reject(new ProviderRuntimeException("Received capablities collection was null"));
                 } else {
                     deferred.resolve(capabilities.get()
@@ -1049,7 +1050,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                 return false;
             }
             // local provider which is globally registered
-            if (gbidSet.stream().anyMatch(gbid -> entryBackends.contains(gbid))) {
+            if (gbidSet.stream().anyMatch(entryBackends::contains)) {
                 return true;
             }
         }
@@ -1137,7 +1138,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
 
             @Override
             public void processCapabilityReceived(Optional<DiscoveryEntryWithMetaInfo> capability) {
-                deferred.resolve(capability.isPresent() ? capability.get() : null);
+                deferred.resolve(capability.orElse(null));
             }
 
             @Override
@@ -1249,7 +1250,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
             }
         } else {
             boolean isLookupCalledWithEmptyGbid = Arrays.equals(new String[]{ "" }, gbids);
-            globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<GlobalDiscoveryEntry, DiscoveryError>() {
+            globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<>() {
 
                 @Override
                 public void onSuccess(GlobalDiscoveryEntry newGlobalDiscoveryEntry) {
@@ -1318,15 +1319,15 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                                             final String[] gbids,
                                             final CapabilitiesCallback capabilitiesCallback) {
         boolean isLookupCalledWithEmptyGbid = Arrays.equals(new String[]{ "" }, gbids);
-        globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<List<GlobalDiscoveryEntry>, DiscoveryError>() {
+        globalCapabilitiesDirectoryClient.lookup(new CallbackWithModeledError<>() {
             @Override
             public void onSuccess(List<GlobalDiscoveryEntry> globalDiscoverEntries) {
                 if (globalDiscoverEntries == null) {
                     capabilitiesCallback.onError(new NullPointerException("Received capabilities are null"));
                     return;
                 }
-                Collection<DiscoveryEntryWithMetaInfo> allDiscoveryEntries = new ArrayList<DiscoveryEntryWithMetaInfo>();
-                Collection<String> addedParticipantIds = new ArrayList<String>();
+                Collection<DiscoveryEntryWithMetaInfo> allDiscoveryEntries = new ArrayList<>();
+                Collection<String> addedParticipantIds = new ArrayList<>();
                 synchronized (globalDiscoveryEntryCache) {
                     for (GlobalDiscoveryEntry entry : globalDiscoverEntries) {
                         Optional<DiscoveryEntry> localStoreEntry = localDiscoveryEntryStore.lookup(entry.getParticipantId(),
@@ -1336,7 +1337,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                             boolean returnLocalEntry = !(discoveryQos.getDiscoveryScope()
                                                                      .equals(DiscoveryScope.GLOBAL_ONLY))
                                     || localEntry.getQos().getScope().equals(ProviderScope.GLOBAL);
-                            Set<String> domainSet = new HashSet<String>(Arrays.asList(domains));
+                            Set<String> domainSet = new HashSet<>(Arrays.asList(domains));
                             if (returnLocalEntry && interfaceName.equals(localEntry.getInterfaceName())
                                     && domainSet.contains(localEntry.getDomain())) {
                                 addedParticipantIds.add(entry.getParticipantId());
@@ -1457,7 +1458,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
     }
 
     private void removeStaleProvidersOfClusterController(String gbid) {
-        Callback<Void> callback = new Callback<Void>() {
+        Callback<Void> callback = new Callback<>() {
             @Override
             public void onSuccess(Void result) {
                 logger.info("RemoveStale in gbid={} (maxLastSeenDateMs={}) succeeded.", gbid, ccStartUpDateInMs);
@@ -1686,7 +1687,7 @@ public class LocalCapabilitiesDirectoryImpl extends DiscoveryAbstractProvider im
                 }
 
                 AtomicBoolean callbackCalled = new AtomicBoolean(false);
-                CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<Void, DiscoveryError>() {
+                CallbackWithModeledError<Void, DiscoveryError> callback = new CallbackWithModeledError<>() {
 
                     @Override
                     public void onSuccess(Void nothing) {
