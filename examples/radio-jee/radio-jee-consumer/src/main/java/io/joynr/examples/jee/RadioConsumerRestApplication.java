@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
  */
 package io.joynr.examples.jee;
 
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
@@ -30,7 +30,11 @@ public class RadioConsumerRestApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return new HashSet(Arrays.asList(RadioConsumerRestEndpoint.class));
+        Set<Class<?>> classes = new HashSet<>(List.of(RadioConsumerRestEndpoint.class));
+
+        // Add exception mappers
+        classes.add(JoynrWebApplicationExceptionMapper.class);
+        return classes;
     }
 
 }

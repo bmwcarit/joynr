@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -60,6 +62,7 @@ import io.joynr.arbitration.Arbitrator;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.discovery.LocalDiscoveryAggregator;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.MultiDomainNoCompatibleProviderFoundException;
@@ -110,6 +113,9 @@ public class ProxyBuilderDefaultImplTest {
 
     @Captor
     private ArgumentCaptor<JoynrRuntimeException> exceptionCaptor;
+
+    @Captor
+    private ArgumentCaptor<DiscoveryException> discoveryExceptionCaptor;
 
     private ProxyBuilderDefaultImpl<TestInterface> subject;
 
@@ -186,8 +192,8 @@ public class ProxyBuilderDefaultImplTest {
         subject.build(proxyCreatedCallback);
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
-        verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
-        JoynrRuntimeException capturedException = exceptionCaptor.getValue();
+        verify(proxyCreatedCallback).onProxyCreationError(discoveryExceptionCaptor.capture());
+        JoynrRuntimeException capturedException = discoveryExceptionCaptor.getValue();
         assertTrue(capturedException instanceof NoCompatibleProviderFoundException);
     }
 
@@ -238,8 +244,8 @@ public class ProxyBuilderDefaultImplTest {
         subject.build(proxyCreatedCallback);
         executor.shutdown();
         executor.awaitTermination(100L, TimeUnit.MILLISECONDS);
-        verify(proxyCreatedCallback).onProxyCreationError(exceptionCaptor.capture());
-        JoynrRuntimeException capturedException = exceptionCaptor.getValue();
+        verify(proxyCreatedCallback).onProxyCreationError(discoveryExceptionCaptor.capture());
+        JoynrRuntimeException capturedException = discoveryExceptionCaptor.getValue();
         assertTrue(capturedException instanceof MultiDomainNoCompatibleProviderFoundException);
     }
 
@@ -412,6 +418,22 @@ public class ProxyBuilderDefaultImplTest {
                      discoveryQosCaptor.getValue().getProviderMustSupportOnChange());
         assertEquals(originalRetryIntervalMs, discoveryQosCaptor.getValue().getRetryIntervalMs());
         assertEquals(originalDiscoveryScope, discoveryQosCaptor.getValue().getDiscoveryScope());
+    }
+
+    @Test(expected = DiscoveryException.class)
+    public void buildMethodForGuidedBuilder_throwsDiscoveryException() throws Exception {
+        setup(new HashSet<>(List.of("domain")));
+        String testParticipantId = "test";
+        DiscoveryEntryWithMetaInfo mockedDiscoveryEntry = new DiscoveryEntryWithMetaInfo();
+        mockedDiscoveryEntry.setParticipantId(testParticipantId);
+        Set<DiscoveryEntryWithMetaInfo> mockedSelectedDiscoveryEntries = new HashSet<>(Arrays.asList(mockedDiscoveryEntry));
+        ArbitrationResult mockedArbitrationResult = new ArbitrationResult(mockedSelectedDiscoveryEntries, null);
+
+        DiscoveryQos discoveryQos = new DiscoveryQos();
+        subject.setDiscoveryQos(discoveryQos);
+
+        doThrow(new RuntimeException("exception")).when(proxyInvocationHandler).createConnector(any());
+        subject.build(mockedArbitrationResult);
     }
 
 }

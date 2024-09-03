@@ -26,6 +26,7 @@
 
 #include "joynr/JoynrRuntimeImpl.h"
 #include "joynr/Logger.h"
+#include "joynr/MessagingStubFactory.h"
 #include "joynr/PrivateCopyAssign.h"
 
 namespace joynr
@@ -70,6 +71,7 @@ protected:
 
     std::shared_ptr<SubscriptionManager> _subscriptionManager;
     std::shared_ptr<IMessageSender> _messageSender;
+    std::shared_ptr<MessagingStubFactory> _messagingStubFactory;
     std::shared_ptr<IDispatcher> _joynrDispatcher;
     std::shared_ptr<joynr::system::RoutingProxy> _ccRoutingProxy;
 

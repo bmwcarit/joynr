@@ -315,12 +315,8 @@ public class HivemqMqttClientIntegrationTest {
                         fail("Thread.join() FAILED: " + e);
                     }
                 }
-                if (!publishedLatch.await(5, TimeUnit.SECONDS)) {
-                    fail("PublishLatch.await failed in run " + run);
-                }
-                if (!receivedLatch.await(5, TimeUnit.SECONDS)) {
-                    fail("ReceivedLatch failed in run " + run);
-                }
+                assertTrue("PublishLatch.await failed in run " + run, publishedLatch.await(5, TimeUnit.SECONDS));
+                assertTrue("ReceivedLatch failed in run " + run, receivedLatch.await(5, TimeUnit.SECONDS));
 
                 clientReceiver.unsubscribe(topic);
                 Thread.sleep(1000);

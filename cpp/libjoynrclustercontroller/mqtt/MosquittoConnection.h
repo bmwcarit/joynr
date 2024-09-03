@@ -65,7 +65,8 @@ public:
                                  std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
                                  bool isMqttExponentialBackoffEnabled,
                                  const std::string& clientId,
-                                 const std::string& gbid);
+                                 const std::string& gbid,
+                                 bool isMqttRetain);
 
     virtual ~MosquittoConnection();
 
@@ -162,7 +163,7 @@ private:
     const std::uint16_t _port;
 
     const std::uint16_t _mqttQos = 1;
-    const bool _mqttRetain = false;
+    const bool _mqttRetain;
 
     std::string _channelId;
     int _subscribeChannelMid;

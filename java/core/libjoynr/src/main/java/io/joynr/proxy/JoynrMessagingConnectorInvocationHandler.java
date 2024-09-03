@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ import joynr.Request;
 import joynr.exceptions.ApplicationException;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
+import static io.joynr.proxy.JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent;
+
 //TODO maybe Connector should not be a dynamic proxy. ProxyInvocationHandler could call execute...Method() directly.
 final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(JoynrMessagingConnectorInvocationHandler.class);
@@ -65,14 +67,14 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     private final String statelessAsyncParticipantId;
 
     // CHECKSTYLE:OFF
-    JoynrMessagingConnectorInvocationHandler(Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
-                                             String fromParticipantId,
-                                             MessagingQos qosSettings,
-                                             RequestReplyManager requestReplyManager,
-                                             ReplyCallerDirectory replyCallerDirectory,
-                                             SubscriptionManager subscriptionManager,
-                                             StatelessAsyncIdCalculator statelessAsyncIdCalculator,
-                                             String statelessAsyncParticipantId) {
+    JoynrMessagingConnectorInvocationHandler(final Set<DiscoveryEntryWithMetaInfo> toDiscoveryEntries,
+                                             final String fromParticipantId,
+                                             final MessagingQos qosSettings,
+                                             final RequestReplyManager requestReplyManager,
+                                             final ReplyCallerDirectory replyCallerDirectory,
+                                             final SubscriptionManager subscriptionManager,
+                                             final StatelessAsyncIdCalculator statelessAsyncIdCalculator,
+                                             final String statelessAsyncParticipantId) {
         // CHECKSTYLE:ON
         this.toDiscoveryEntries = toDiscoveryEntries;
         this.fromParticipantId = fromParticipantId;
@@ -93,9 +95,9 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         public Class<?>[] paramDatatypes;
     }
 
-    public StrippedArguments getStrippedArguments(Object[] params, Class<?>[] paramDatatypes) {
+    private StrippedArguments getStrippedArguments(final Object[] params, final Class<?>[] paramDatatypes) {
         // If a MessagingQos is present as last argument then strip it off and extract the value
-        StrippedArguments strippedArguments = new StrippedArguments();
+        final StrippedArguments strippedArguments = new StrippedArguments();
         if (params != null && params.length > 0 && paramDatatypes[params.length - 1].equals(MessagingQos.class)) {
             strippedArguments.messagingQos = (MessagingQos) params[params.length - 1];
             strippedArguments.params = Arrays.copyOf(params, params.length - 1);
@@ -110,71 +112,60 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
 
     @SuppressWarnings("unchecked")
     @Override
-    public Future<?> executeAsyncMethod(Object proxy, Method method, Object[] params, Future<?> future) {
+    public Future<?> executeAsyncMethod(final Object proxy,
+                                        final Method method,
+                                        final Object[] params,
+                                        final Future<?> future) {
+        ensureDiscoveryEntriesSizeIsOne("async");
 
-        if (method == null) {
-            throw new IllegalArgumentException("Method cannot be null");
-        }
-        if (toDiscoveryEntries.size() > 1) {
-            throw new JoynrIllegalStateException("You can't execute async methods for multiple participants.");
-        }
-        if (toDiscoveryEntries.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute an async method.");
-        }
-
-        MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
+        final MethodMetaInformation methodMetaInformation = ensureMethodMetaInformationPresent(method);
         if (methodMetaInformation.getCallbackAnnotation() == null) {
             throw new JoynrIllegalStateException("All async methods need to have a annotated callback parameter.");
         }
 
-        int callbackIndex = methodMetaInformation.getCallbackIndex();
-        ICallback callback = (ICallback) params[callbackIndex];
+        final int callbackIndex = methodMetaInformation.getCallbackIndex();
+        final ICallback callback = (ICallback) params[callbackIndex];
 
-        Object[] paramsWithoutCallback = new Object[params.length - 1];
+        final Object[] paramsWithoutCallback = new Object[params.length - 1];
         copyArrayWithoutElement(params, paramsWithoutCallback, callbackIndex);
-        Class<?>[] paramDatatypes = method.getParameterTypes();
-        Class<?>[] paramDatatypesWithoutCallback = new Class<?>[paramDatatypes.length - 1];
+        final Class<?>[] paramDatatypes = method.getParameterTypes();
+        final Class<?>[] paramDatatypesWithoutCallback = new Class<?>[paramDatatypes.length - 1];
         copyArrayWithoutElement(paramDatatypes, paramDatatypesWithoutCallback, callbackIndex);
 
-        StrippedArguments strippedArguments = getStrippedArguments(paramsWithoutCallback,
-                                                                   paramDatatypesWithoutCallback);
-        Request request = new Request(method.getName(), strippedArguments.params, strippedArguments.paramDatatypes);
-        String requestReplyId = request.getRequestReplyId();
+        final StrippedArguments strippedArguments = getStrippedArguments(paramsWithoutCallback,
+                                                                         paramDatatypesWithoutCallback);
+        final Request request = new Request(method.getName(),
+                                            strippedArguments.params,
+                                            strippedArguments.paramDatatypes);
+        final String requestReplyId = request.getRequestReplyId();
 
         @SuppressWarnings("rawtypes")
-        RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(proxy,
-                                                                                                   requestReplyId,
-                                                                                                   Optional.ofNullable(callback),
-                                                                                                   future,
-                                                                                                   method,
-                                                                                                   methodMetaInformation);
+        final RpcAsyncRequestReplyCaller<?> callbackWrappingReplyCaller = new RpcAsyncRequestReplyCaller(proxy,
+                                                                                                         requestReplyId,
+                                                                                                         Optional.ofNullable(callback),
+                                                                                                         future,
+                                                                                                         method,
+                                                                                                         methodMetaInformation);
 
-        ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(strippedArguments.messagingQos.getRoundTripTtl_ms());
+        final ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(strippedArguments.messagingQos.getRoundTripTtl_ms());
 
         replyCallerDirectory.addReplyCaller(requestReplyId, callbackWrappingReplyCaller, expiryDate);
         requestReplyManager.sendRequest(fromParticipantId,
                                         toDiscoveryEntries.iterator().next(),
                                         request,
-                                        strippedArguments.messagingQos);
+                                        strippedArguments.messagingQos,
+                                        expiryDate);
         return future;
     }
 
-    private void copyArrayWithoutElement(Object[] fromArray, Object[] toArray, int removeIndex) {
+    private void copyArrayWithoutElement(final Object[] fromArray, final Object[] toArray, final int removeIndex) {
         System.arraycopy(fromArray, 0, toArray, 0, removeIndex);
         System.arraycopy(fromArray, removeIndex + 1, toArray, removeIndex, toArray.length - removeIndex);
     }
 
     @Override
-    public void executeStatelessAsyncMethod(Method method, Object[] args) {
-        if (method == null) {
-            throw new IllegalArgumentException("Method cannot be null");
-        }
-        if (toDiscoveryEntries.size() > 1) {
-            throw new JoynrIllegalStateException("You can't execute stateless async methods for multiple participants.");
-        }
-        if (toDiscoveryEntries.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute a stateless async method.");
-        }
+    public void executeStatelessAsyncMethod(final Method method, final Object[] args) {
+        ensureDiscoveryEntriesSizeIsOne("stateless async");
 
         MessageIdCallback messageIdCallback = null;
         int messageIdCallbackIndex = -1;
@@ -187,56 +178,47 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
         if (messageIdCallback == null) {
             throw new JoynrIllegalStateException("Stateless async method calls must have a MessageIdCallback as one of their arguments.");
         }
-        Object[] paramsWithoutMessageIdCallback = new Object[args.length - 1];
+        final Object[] paramsWithoutMessageIdCallback = new Object[args.length - 1];
         copyArrayWithoutElement(args, paramsWithoutMessageIdCallback, messageIdCallbackIndex);
-        Class<?>[] paramDatatypes = method.getParameterTypes();
-        Class<?>[] paramDatatypesWithoutMessageIdCallback = new Class<?>[paramDatatypes.length - 1];
+        final Class<?>[] paramDatatypes = method.getParameterTypes();
+        final Class<?>[] paramDatatypesWithoutMessageIdCallback = new Class<?>[paramDatatypes.length - 1];
         copyArrayWithoutElement(paramDatatypes, paramDatatypesWithoutMessageIdCallback, messageIdCallbackIndex);
 
-        Request request = new Request(method.getName(),
-                                      paramsWithoutMessageIdCallback,
-                                      paramDatatypesWithoutMessageIdCallback,
-                                      statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(method),
-                                      statelessAsyncIdCalculator.calculateStatelessCallbackMethodId(method));
+        final Request request = new Request(method.getName(),
+                                            paramsWithoutMessageIdCallback,
+                                            paramDatatypesWithoutMessageIdCallback,
+                                            statelessAsyncIdCalculator.calculateStatelessCallbackRequestReplyId(method),
+                                            statelessAsyncIdCalculator.calculateStatelessCallbackMethodId(method));
         requestReplyManager.sendRequest(statelessAsyncParticipantId,
                                         toDiscoveryEntries.iterator().next(),
                                         request,
-                                        qosSettings);
+                                        qosSettings,
+                                        true);
         messageIdCallback.accept(request.getRequestReplyId());
     }
 
     @Override
-    public Object executeSyncMethod(Method method, Object[] args) throws ApplicationException {
+    public Object executeSyncMethod(final Method method, final Object[] args) throws ApplicationException {
+        ensureDiscoveryEntriesSizeIsOne("sync");
 
-        // TODO does a method with 0 args pass in an empty args array, or null for args?
-        if (method == null) {
-            throw new IllegalArgumentException("Method cannot be null");
-        }
-        if (toDiscoveryEntries.size() > 1) {
-            throw new JoynrIllegalStateException("You can't execute sync methods for multiple participants.");
-        }
-        if (toDiscoveryEntries.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have exactly one participant to be able to execute a sync method.");
-        }
+        final StrippedArguments strippedArguments = getStrippedArguments(args, method.getParameterTypes());
 
-        MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
+        final Request request = new Request(method.getName(),
+                                            strippedArguments.params,
+                                            strippedArguments.paramDatatypes);
+        final String requestReplyId = request.getRequestReplyId();
 
-        StrippedArguments strippedArguments = getStrippedArguments(args, method.getParameterTypes());
-
-        Request request = new Request(method.getName(), strippedArguments.params, strippedArguments.paramDatatypes);
-        Reply reply;
-        String requestReplyId = request.getRequestReplyId();
-
-        SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
-                                                                                      requestReplyId,
-                                                                                      request);
-        ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(strippedArguments.messagingQos.getRoundTripTtl_ms());
+        final SynchronizedReplyCaller synchronizedReplyCaller = new SynchronizedReplyCaller(fromParticipantId,
+                                                                                            requestReplyId,
+                                                                                            request);
+        final ExpiryDate expiryDate = ExpiryDate.fromRelativeTtl(strippedArguments.messagingQos.getRoundTripTtl_ms());
         replyCallerDirectory.addReplyCaller(requestReplyId, synchronizedReplyCaller, expiryDate);
-        reply = requestReplyManager.sendSyncRequest(fromParticipantId,
-                                                    toDiscoveryEntries.iterator().next(),
-                                                    request,
-                                                    synchronizedReplyCaller,
-                                                    strippedArguments.messagingQos);
+        final Reply reply = requestReplyManager.sendSyncRequest(fromParticipantId,
+                                                                toDiscoveryEntries.iterator().next(),
+                                                                request,
+                                                                synchronizedReplyCaller,
+                                                                strippedArguments.messagingQos,
+                                                                expiryDate);
         if (reply.getError() == null) {
             if (method.getReturnType().equals(void.class)) {
                 logger.debug("REQUEST returns successful: requestReplyId: {}, method {}, response: [void]",
@@ -244,9 +226,12 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                              method.getName());
                 return null;
             }
-            Object response = RpcUtils.reconstructReturnedObject(method, methodMetaInformation, reply.getResponse());
+            final MethodMetaInformation methodMetaInformation = JoynrMessagingConnectorFactory.ensureMethodMetaInformationPresent(method);
+            final Object response = RpcUtils.reconstructReturnedObject(method,
+                                                                       methodMetaInformation,
+                                                                       reply.getResponse());
             if (logger.isTraceEnabled()) {
-                String responseString;
+                final String responseString;
                 if (response instanceof MultiReturnValuesContainer) {
                     responseString = Arrays.deepToString(((MultiReturnValuesContainer) response).getValues());
                 } else {
@@ -264,16 +249,17 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             return response;
         } else if (reply.getError() instanceof ApplicationException) {
             if (logger.isTraceEnabled()) {
-                logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response:",
+                logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
                              requestReplyId,
                              method.getName(),
-                             (ApplicationException) reply.getError());
+                             reply.getError());
             } else {
                 logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
                              requestReplyId,
                              method.getName(),
                              reply.getError().toString());
             }
+            final MethodMetaInformation methodMetaInformation = ensureMethodMetaInformationPresent(method);
             if (!methodMetaInformation.hasModelledErrors()) {
                 String message = "An ApplicationException was received, but none was expected."
                         + " Is the provider version incompatible with the consumer? " + reply.getError();
@@ -284,10 +270,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
             }
         } else {
             if (logger.isTraceEnabled()) {
-                logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response:",
+                logger.trace("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
                              requestReplyId,
                              method.getName(),
-                             (JoynrRuntimeException) reply.getError());
+                             reply.getError());
             } else {
                 logger.debug("REQUEST returns error: requestReplyId: {}, method {}, response: {}",
                              requestReplyId,
@@ -300,16 +286,10 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeOneWayMethod(Method method, Object[] args) {
-        // TODO does a method with 0 args pass in an empty args array, or null for args?
-        if (method == null) {
-            throw new IllegalArgumentException("Method cannot be null");
-        }
-        if (toDiscoveryEntries.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute an oneWayMethod.");
-        }
+    public void executeOneWayMethod(final Method method, final Object[] args) {
+        ensureDiscoveryEntriesAreNotEmpty("an oneWayMethod");
 
-        StrippedArguments strippedArguments = getStrippedArguments(args, method.getParameterTypes());
+        final StrippedArguments strippedArguments = getStrippedArguments(args, method.getParameterTypes());
 
         logger.debug("ONEWAYREQUEST call proxy: method: {}, params: {}, proxy participantId: {}, provider discovery entries: {}",
                      method.getName(),
@@ -317,9 +297,9 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
                      fromParticipantId,
                      toDiscoveryEntries);
 
-        OneWayRequest request = new OneWayRequest(method.getName(),
-                                                  strippedArguments.params,
-                                                  strippedArguments.paramDatatypes);
+        final OneWayRequest request = new OneWayRequest(method.getName(),
+                                                        strippedArguments.params,
+                                                        strippedArguments.paramDatatypes);
         requestReplyManager.sendOneWayRequest(fromParticipantId,
                                               toDiscoveryEntries,
                                               request,
@@ -327,11 +307,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeSubscriptionMethod(UnsubscribeInvocation unsubscribeInvocation) {
-
-        if (toDiscoveryEntries.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
-        }
+    public void executeSubscriptionMethod(final UnsubscribeInvocation unsubscribeInvocation) {
+        ensureDiscoveryEntriesAreNotEmpty("a subscription method");
 
         subscriptionManager.unregisterSubscription(fromParticipantId,
                                                    toDiscoveryEntries,
@@ -340,10 +317,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeSubscriptionMethod(AttributeSubscribeInvocation attributeSubscription) {
-        if (toDiscoveryEntries.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
-        }
+    public void executeSubscriptionMethod(final AttributeSubscribeInvocation attributeSubscription) {
+        ensureDiscoveryEntriesAreNotEmpty("a subscription method");
 
         logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, attribute: {}, qos: {}, proxy participantId: {}, provider discovery entries: {}",
                      attributeSubscription.getSubscriptionId(),
@@ -355,11 +330,8 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeSubscriptionMethod(BroadcastSubscribeInvocation broadcastSubscription) {
-
-        if (toDiscoveryEntries.isEmpty()) {
-            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute a subscription method.");
-        }
+    public void executeSubscriptionMethod(final BroadcastSubscribeInvocation broadcastSubscription) {
+        ensureDiscoveryEntriesAreNotEmpty("a subscription method");
 
         logger.debug("SUBSCRIPTION call proxy: subscriptionId: {}, broadcast: {}, qos: {}, proxy participantId: {}, provider discovery entries: {}",
                      broadcastSubscription.getSubscriptionId(),
@@ -371,7 +343,21 @@ final class JoynrMessagingConnectorInvocationHandler implements ConnectorInvocat
     }
 
     @Override
-    public void executeSubscriptionMethod(MulticastSubscribeInvocation multicastSubscription) {
+    public void executeSubscriptionMethod(final MulticastSubscribeInvocation multicastSubscription) {
         subscriptionManager.registerMulticastSubscription(fromParticipantId, toDiscoveryEntries, multicastSubscription);
+    }
+
+    private void ensureDiscoveryEntriesSizeIsOne(final String methodType) {
+        if (toDiscoveryEntries.size() != 1) {
+            throw new JoynrIllegalStateException("You can't execute " + methodType
+                    + " methods for multiple participants.");
+        }
+    }
+
+    private void ensureDiscoveryEntriesAreNotEmpty(final String methodType) {
+        if (toDiscoveryEntries.isEmpty()) {
+            throw new JoynrIllegalStateException("You must have at least one participant to be able to execute "
+                    + methodType + ".");
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,10 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.runtime;
+package io.joynr.messaging.routing;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.concurrent.CountDownLatch;
 
-/**
- * used to mark an AbstractJoynApplication as not being loadable by the messageingservlet
- * @author david.katz
- *
- */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AcceptsMessageReceiver {
-    MessageReceiverType value();
+public interface LibJoynrMessageWorkable extends Runnable {
+    void stopWorker(final CountDownLatch countDownLatch);
 }

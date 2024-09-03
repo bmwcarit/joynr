@@ -119,9 +119,6 @@ void AbstractMessageRouter::shutdown()
     _messageQueueCleanerTimer.cancel();
     _routingTableCleanerTimer.cancel();
     _messageScheduler->shutdown();
-    if (_messagingStubFactory) {
-        _messagingStubFactory->shutdown();
-    }
 }
 
 void AbstractMessageRouter::addProvisionedNextHop(

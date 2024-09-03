@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -101,7 +102,8 @@ public class CcMessageRouter
     private final MessageQueue messageQueue;
 
     private List<MessageProcessedListener> messageProcessedListeners;
-    private List<MessageWorker> messageWorkers;
+    private List<CcMessageWorkable> messageWorkers;
+    private List<Future<?>> messageWorkerFutures;
 
     private AccessController accessController;
     private boolean enableAccessControl;
@@ -141,7 +143,7 @@ public class CcMessageRouter
 
         this.accessController = accessController;
         this.enableAccessControl = enableAccessControl;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
         this.messageTracker = messageTracker;
     }
 
@@ -238,15 +240,16 @@ public class CcMessageRouter
 
     @Override
     public void shutdown() {
-        CountDownLatch countDownLatch = new CountDownLatch(messageWorkers.size());
-        for (MessageWorker worker : messageWorkers) {
+        final CountDownLatch countDownLatch = new CountDownLatch(messageWorkers.size());
+        for (final CcMessageWorkable worker : messageWorkers) {
             worker.stopWorker(countDownLatch);
         }
         try {
             if (!countDownLatch.await(1500, TimeUnit.MILLISECONDS)) {
                 logger.error("FAILURE: waiting for message workers to stop timed out");
+                cancelMessageWorkerFutures();
             }
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             logger.error("Interrupted while waiting for message workers to stop.", e);
             Thread.currentThread().interrupt();
         }
@@ -327,12 +330,19 @@ public class CcMessageRouter
     }
 
     private void startMessageWorkerThreads(int numberOfWorkThreads) {
-        messageWorkers = new ArrayList<MessageWorker>(numberOfWorkThreads);
+        messageWorkers = new ArrayList<>(numberOfWorkThreads);
+        messageWorkerFutures = new ArrayList<>(numberOfWorkThreads);
         for (int i = 0; i < numberOfWorkThreads; i++) {
-            MessageWorker messageWorker = new MessageWorker(i);
-            scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
+            final MessageWorker messageWorker = new MessageWorker(i);
+            final Future<?> future = scheduler.schedule(messageWorker, 0, TimeUnit.MILLISECONDS);
+            messageWorkerFutures.add(future);
             messageWorkers.add(messageWorker);
         }
+    }
+
+    private void cancelMessageWorkerFutures() {
+        logger.error("Cancelling all message worker futures");
+        messageWorkerFutures.forEach(future -> future.cancel(true));
     }
 
     private void startRoutingTableCleanupThread() {
@@ -529,19 +539,20 @@ public class CcMessageRouter
         }
     }
 
-    class MessageWorker implements Runnable {
+    class MessageWorker implements CcMessageWorkable {
         private Logger logger = LoggerFactory.getLogger(MessageWorker.class);
         private int number;
         private CountDownLatch countDownLatch;
         private volatile boolean stopped;
 
-        public MessageWorker(int number) {
+        public MessageWorker(final int number) {
             this.number = number;
             countDownLatch = null;
             stopped = false;
         }
 
-        void stopWorker(CountDownLatch countDownLatch) {
+        @Override
+        public void stopWorker(final CountDownLatch countDownLatch) {
             this.countDownLatch = countDownLatch;
             stopped = true;
         }

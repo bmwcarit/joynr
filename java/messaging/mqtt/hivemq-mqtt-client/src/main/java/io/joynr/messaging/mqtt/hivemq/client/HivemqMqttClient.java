@@ -83,6 +83,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
     private final String clientInformation;
     private AtomicBoolean shuttingDown = new AtomicBoolean(true);
     private boolean connected = false;
+    private boolean retain;
     private IMqttMessagingSkeleton messagingSkeleton;
     private ConnectionStatusMetricsImpl connectionStatusMetrics;
 
@@ -102,6 +103,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                             int receiveMaximum,
                             boolean isReceiver,
                             boolean isSender,
+                            boolean retain,
                             String gbid,
                             ConnectionStatusMetricsImpl connectionStatusMetrics) {
         this.client = client;
@@ -113,6 +115,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
         this.receiveMaximum = receiveMaximum;
         this.isReceiver = isReceiver;
         this.isSender = isSender;
+        this.retain = retain;
         clientInformation = createClientInformationString(gbid);
         this.connectionStatusMetrics = connectionStatusMetrics;
         this.publishesDisposable = null;
@@ -340,6 +343,7 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                                 .qos(safeParseQos(qosLevel))
                                                 .payload(serializedMessage)
                                                 .messageExpiryInterval(messageExpiryIntervalSec)
+                                                .retain(retain)
                                                 .userProperties(mqtt5UserProperties)
                                                 .build();
         logger.debug("{}: Publishing to topic: {}, size: {}, qos: {}",
@@ -381,12 +385,12 @@ public class HivemqMqttClient implements JoynrMqttClient {
                                  qosLevel,
                                  publishResult);
                 } else {
-                    logger.debug("{}: Publishing to topic: {}, size: {}, qos: {} succeeded.",
+                    logger.debug("{}: Publishing to topic: {}, size: {}, qos: {}, retain: {} succeeded.",
                                  clientInformation,
                                  topic,
                                  serializedMessage.length,
-                                 qosLevel);
-
+                                 qosLevel,
+                                 retain);
                 }
                 successAction.execute();
             }

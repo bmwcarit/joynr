@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2021 BMW Car IT GmbH
+ * Copyright (C) 2021-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -70,9 +71,9 @@ public class RequestReplyManagerImpl
     private boolean shuttingDown = false;
 
     private List<CompletableFuture<Reply>> outstandingRequestFutures = Collections.synchronizedList(new ArrayList<CompletableFuture<Reply>>());
-    private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>>> oneWayRequestQueue = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Request, ProviderCallback<Reply>> replyCallbacks = new ConcurrentHashMap<Request, ProviderCallback<Reply>>();
+    private HashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<Request>>> requestQueue = new HashMap<>();
+    private HashMap<String, ConcurrentLinkedQueue<ContentWithExpiryDate<OneWayRequest>>> oneWayRequestQueue = new HashMap<>();
+    private HashMap<Request, ProviderCallback<Reply>> replyCallbacks = new HashMap<Request, ProviderCallback<Reply>>();
 
     private ReplyCallerDirectory replyCallerDirectory;
     private ProviderDirectory providerDirectory;
@@ -121,14 +122,26 @@ public class RequestReplyManagerImpl
     @Override
     public void sendRequest(final String fromParticipantId,
                             final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                            Request request,
-                            MessagingQos messagingQos) {
+                            final Request request,
+                            final MessagingQos messagingQos,
+                            final ExpiryDate expiryDate) {
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos, false, expiryDate);
+    }
+
+    @Override
+    public void sendRequest(final String fromParticipantId,
+                            final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                            final Request request,
+                            final MessagingQos messagingQos,
+                            final boolean isStatelessAsync,
+                            final ExpiryDate expiryDate) {
         MutableMessage message = messageFactory.createRequest(fromParticipantId,
                                                               toDiscoveryEntry.getParticipantId(),
                                                               request,
-                                                              messagingQos);
+                                                              messagingQos,
+                                                              expiryDate);
         message.setLocalMessage(toDiscoveryEntry.getIsLocal());
-        message.setStatelessAsync(request.getStatelessAsyncCallbackMethodId() != null);
+        message.setStatelessAsync(isStatelessAsync);
 
         if (logger.isTraceEnabled()) {
             logger.trace("REQUEST call proxy: method: {}, requestReplyId: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain: {}, interfaceName: {}, {}, params: {}",
@@ -156,11 +169,12 @@ public class RequestReplyManagerImpl
     }
 
     @Override
-    public Reply sendSyncRequest(String fromParticipantId,
-                                 DiscoveryEntryWithMetaInfo toDiscoveryEntry,
-                                 Request request,
-                                 SynchronizedReplyCaller synchronizedReplyCaller,
-                                 MessagingQos messagingQos) {
+    public Reply sendSyncRequest(final String fromParticipantId,
+                                 final DiscoveryEntryWithMetaInfo toDiscoveryEntry,
+                                 final Request request,
+                                 final SynchronizedReplyCaller synchronizedReplyCaller,
+                                 final MessagingQos messagingQos,
+                                 final ExpiryDate expiryDate) {
 
         if (shuttingDown) {
             final String message = String.format("Request: %s failed. SenderImpl ID: %s: joynr is shutting down",
@@ -173,7 +187,7 @@ public class RequestReplyManagerImpl
         // the synchronizedReplyCaller will complete the future when a message arrives
         synchronizedReplyCaller.setResponseFuture(responseFuture);
 
-        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos);
+        sendRequest(fromParticipantId, toDiscoveryEntry, request, messagingQos, expiryDate);
 
         // saving all pending futures so that they can be cancelled at shutdown
         Reply response = null;
@@ -438,19 +452,6 @@ public class RequestReplyManagerImpl
             return;
         }
         callBack.messageCallBack(reply);
-    }
-
-    @Override
-    public void handleError(Request request, Throwable error) {
-        boolean stateless = request.getStatelessAsyncCallbackMethodId() != null;
-        String callbackId = stateless ? request.getStatelessAsyncCallbackMethodId() : request.getRequestReplyId();
-        if (callbackId != null) {
-            ReplyCaller replyCaller = stateless ? replyCallerDirectory.get(callbackId)
-                    : replyCallerDirectory.remove(callbackId);
-            if (replyCaller != null) {
-                replyCaller.error(error);
-            }
-        }
     }
 
     @Override

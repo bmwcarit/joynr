@@ -38,6 +38,8 @@
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
 
+#include "joynr/Logger.h"
+
 namespace joynr
 {
 
@@ -155,8 +157,8 @@ template <template <typename...> class T, typename U>
 struct IsDerivedFromTemplate {
 private:
     template <typename... Args>
-    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{})
-            test(const T<Args...>&);
+    static decltype(static_cast<const T<Args...>&>(std::declval<U>()), std::true_type{}) test(
+            const T<Args...>&);
     static std::false_type test(...);
 
 public:
@@ -229,6 +231,20 @@ std::enable_if_t<!std::is_floating_point<T>::value, bool> compareValues(
 {
     std::ignore = maxUlps;
     return x == y;
+}
+
+template <typename Logger, typename Method, typename... Args>
+void safeInvokeCallback(const Logger& logger, const Method& method, Args&&... args)
+{
+    try {
+        if (method) {
+            method(std::forward<Args>(args)...);
+        }
+    } catch (const std::exception& e) {
+        JOYNR_LOG_ERROR(logger, "Exception caught during execution of callback: ", e.what());
+    } catch (...) {
+        JOYNR_LOG_ERROR(logger, "Exception caught during execution of callback.");
+    }
 }
 
 } // namespace util

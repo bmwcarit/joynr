@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS public.customparameters
     CONSTRAINT customparameters_pkey PRIMARY KEY (id)
 );
 
+CREATE SEQUENCE IF NOT EXISTS public.customparameters_SEQ increment by 1;
+
 CREATE TABLE IF NOT EXISTS public.discovery_entries
 (
     gbid character varying(255) COLLATE pg_catalog."default" NOT NULL,

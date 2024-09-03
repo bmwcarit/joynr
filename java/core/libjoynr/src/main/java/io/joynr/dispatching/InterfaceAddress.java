@@ -34,6 +34,16 @@ public class InterfaceAddress {
     public InterfaceAddress() {
     }
 
+    /**
+     * Copy constructor
+     *
+     * @param other reference to the object to be copied
+     */
+    public InterfaceAddress(InterfaceAddress other) {
+        this.domain = other.domain;
+        this.anInterface = other.anInterface;
+    }
+
     public String getInterface() {
         return anInterface;
     }

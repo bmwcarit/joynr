@@ -26,24 +26,26 @@
 	<parent>
 		<groupId>io.joynr.performance</groupId>
 		<artifactId>performance-test-jee</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 	</parent>
 
 	<dependencies>
+
+		<!-- Own dependencies -->
 		<dependency>
 			<groupId>io.joynr.performance.performance-test-jee</groupId>
 			<artifactId>performance-test-jee-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<!-- Libraries -->
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>jeeintegration</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.platform</groupId>

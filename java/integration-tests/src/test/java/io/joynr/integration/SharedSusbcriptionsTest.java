@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2021 BMW Car IT GmbH
+ * Copyright (C) 2021 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.provider.Promise;
@@ -157,6 +158,11 @@ public class SharedSusbcriptionsTest {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
+                proxyFuture.onFailure(error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 proxyFuture.onFailure(error);
             }
         });
@@ -276,6 +282,11 @@ public class SharedSusbcriptionsTest {
 
                                               @Override
                                               public void onProxyCreationError(JoynrRuntimeException error) {
+                                                  proxyFuture.onFailure(error);
+                                              }
+
+                                              @Override
+                                              public void onProxyCreationError(DiscoveryException error) {
                                                   proxyFuture.onFailure(error);
                                               }
                                           });

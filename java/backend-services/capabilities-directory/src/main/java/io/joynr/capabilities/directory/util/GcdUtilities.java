@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2019 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import joynr.types.CustomParameter;
+import joynr.types.ProviderQos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,9 +139,29 @@ public class GcdUtilities {
                                                                                                      .next());
 
         GlobalDiscoveryEntry selectedGlobalDiscoveryEntry = new GlobalDiscoveryEntry(gdep);
-
+        replaceCustomParameters(selectedGlobalDiscoveryEntry);
         logger.debug("Selecting persisted GlobalDiscoveryEntry {}", selectedGlobalDiscoveryEntry);
 
         return selectedGlobalDiscoveryEntry;
+    }
+
+    /**
+     * Replaces CustomParameterPersisted instances with CustomParameter equivalents
+     * @param entry global discovery entry to process
+     */
+    public static void replaceCustomParameters(final GlobalDiscoveryEntry entry) {
+        if (entry != null && entry.getQos() != null && entry.getQos().getCustomParameters() != null) {
+            final ProviderQos oldQos = entry.getQos();
+            final CustomParameter[] newCustomParameters = replaceCustomParameters(entry.getQos().getCustomParameters());
+            oldQos.setCustomParameters(newCustomParameters);
+            final ProviderQos newQos = new ProviderQos(oldQos);
+            entry.setQos(newQos);
+        }
+    }
+
+    private static CustomParameter[] replaceCustomParameters(final CustomParameter[] initialArray) {
+        return Arrays.stream(initialArray)
+                     .map(oldParam -> new CustomParameter(oldParam.getName(), oldParam.getValue()))
+                     .toArray(CustomParameter[]::new);
     }
 }

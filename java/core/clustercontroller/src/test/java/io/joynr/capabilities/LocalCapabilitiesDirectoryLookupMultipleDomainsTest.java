@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2022 BMW Car IT GmbH
+ * Copyright (C) 2022-2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -265,11 +265,12 @@ public class LocalCapabilitiesDirectoryLookupMultipleDomainsTest extends Abstrac
                                                                                    INTERFACE_NAME,
                                                                                    discoveryQos);
 
-        verify(localDiscoveryEntryStoreMock).lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)),
-                                                    eq(INTERFACE_NAME));
-        verify(globalDiscoveryEntryCacheMock).lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)),
-                                                     eq(INTERFACE_NAME),
-                                                     eq(discoveryQos.getCacheMaxAge()));
+        verify(localDiscoveryEntryStoreMock,
+               times(2)).lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)), eq(INTERFACE_NAME));
+        verify(globalDiscoveryEntryCacheMock,
+               times(2)).lookup(argThat(org.hamcrest.Matchers.arrayContainingInAnyOrder(domains)),
+                                eq(INTERFACE_NAME),
+                                eq(discoveryQos.getCacheMaxAge()));
         verify(globalCapabilitiesDirectoryClient).lookup(any(),
                                                          eq(domains),
                                                          eq(INTERFACE_NAME),

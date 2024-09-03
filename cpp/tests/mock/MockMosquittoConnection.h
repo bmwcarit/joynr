@@ -35,7 +35,8 @@ public:
                             std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
                             bool isMqttExponentialBackoffEnabled,
                             const std::string& clientId,
-                            const std::string& gbid)
+                            const std::string& gbid,
+                            const bool isMqttRetain)
             : MosquittoConnection(ccSettings,
                                   brokerUrl,
                                   mqttKeepAliveTimeSeconds,
@@ -43,7 +44,8 @@ public:
                                   mqttReconnectMaxDelayTimeSeconds,
                                   isMqttExponentialBackoffEnabled,
                                   clientId,
-                                  gbid)
+                                  gbid,
+                                  isMqttRetain)
     {
     }
 

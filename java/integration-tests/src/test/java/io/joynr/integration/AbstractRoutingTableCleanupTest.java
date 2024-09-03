@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2021-2023 BMW Car IT GmbH
+ * Copyright (C) 2021 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@ import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.common.JoynrPropertiesModule;
 import io.joynr.dispatching.MutableMessageFactory;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.integration.util.TestSetup;
@@ -534,6 +535,11 @@ public class AbstractRoutingTableCleanupTest {
 
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
+                proxyFuture.onFailure(error);
+            }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
                 proxyFuture.onFailure(error);
             }
         });

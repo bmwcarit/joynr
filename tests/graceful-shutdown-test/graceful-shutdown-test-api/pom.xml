@@ -25,7 +25,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>graceful-shutdown-test</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -106,7 +106,6 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

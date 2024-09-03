@@ -161,7 +161,7 @@ public class MutableMessage extends Message {
     }
 
     public Map<String, String> getCustomHeaders() {
-        return customHeaders;
+        return (customHeaders != null) ? new HashMap<>(customHeaders) : null;
     }
 
     public void setCustomHeaders(Map<String, String> customHeaders) {

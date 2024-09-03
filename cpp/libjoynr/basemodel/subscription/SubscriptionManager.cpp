@@ -191,6 +191,13 @@ void SubscriptionManager::registerSubscription(
                 _multicastSubscribersMutex);
         std::string subscriptionId = subscriptionRequest.getSubscriptionId();
 
+        JOYNR_LOG_DEBUG(logger(),
+                        "MulticastSubscription: subscriptionId: {}, "
+                        "proxy participantId: {}, provider participantId: {}",
+                        subscriptionId,
+                        subscriberParticipantId,
+                        providerParticipantId);
+
         // remove pre-exisiting multicast subscription
         if (_subscriptions.contains(subscriptionId)) {
             std::shared_ptr<Subscription> subscription(_subscriptions.value(subscriptionId));

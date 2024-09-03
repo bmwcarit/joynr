@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package io.joynr.integration;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.integration.util.DummyJoynrApplication;
 import io.joynr.messaging.MessagingPropertyKeys;
@@ -98,6 +98,11 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
                                              public void onProxyCreationError(JoynrRuntimeException error) {
                                                  logger.error("Proxy creation failed: {}", error);
                                              }
+
+                                             @Override
+                                             public void onProxyCreationError(DiscoveryException error) {
+                                                 logger.error("Proxy creation failed: {}", error);
+                                             }
                                          });
         assertTrue(proxyCreatedSemaphore.tryAcquire(60, TimeUnit.SECONDS));
         return proxy;
@@ -159,9 +164,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
 
         provider.fireEmptyBroadcast("one", "two", "three");
         assertTrue(semaphore.tryAcquire(1, 60, TimeUnit.SECONDS));
-        if (errors.size() > 0) {
-            fail("Got errors. " + errors);
-        }
+        assertTrue("Got errors. " + errors, errors.isEmpty());
     }
 
     @Test(timeout = CONST_DEFAULT_TEST_TIMEOUT)
@@ -189,9 +192,7 @@ public class MqttProviderProxyEnd2EndTest extends AbstractProviderProxyEnd2EndTe
         provider.fireEmptyBroadcast("one", "two", "three"); // match
         provider.fireEmptyBroadcast("one", "two", "three", "four", "five", "six"); // match
         assertTrue(semaphore.tryAcquire(4, 60, TimeUnit.SECONDS));
-        if (errors.size() > 0) {
-            fail("Got errors. " + errors);
-        }
+        assertTrue("Got errors. " + errors, errors.isEmpty());
 
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfWildCard.get());
         testProxy.unsubscribeFromEmptyBroadcastBroadcast(subscriptionIdOfOtherTopics.get());

@@ -21,6 +21,8 @@ package io.joynr.messaging.routing;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,12 +44,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -96,6 +104,8 @@ import joynr.system.RoutingTypes.UdsClientAddress;
 import joynr.system.RoutingTypes.WebSocketAddress;
 import joynr.system.RoutingTypes.WebSocketClientAddress;
 import joynr.system.RoutingTypes.WebSocketProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterTest extends AbstractCcMessageRouterTest {
@@ -1306,5 +1316,102 @@ public class CcMessageRouterTest extends AbstractCcMessageRouterTest {
         ccMessageRouter.addMulticastReceiver(multicastId, subscriberParticipantId, providerParticipantId);
         verify(messagingSkeletonFactoryMock, times(1)).getSkeleton(mockWebSocketAddress);
         verify(multicastReceiverRegistry, times(1)).registerMulticastReceiver(multicastId, subscriberParticipantId);
+    }
+
+    @Test
+    public void testShutdownCancelWorkerFuturesWhenTimeoutOccurs() throws NoSuchFieldException, IllegalAccessException {
+        createDefaultMessageRouter();
+
+        replaceWorker(new TestMessageWorker(2000L));
+
+        ccMessageRouter.shutdown();
+
+        final List<Future<?>> futures = getWorkerFutures();
+        assertNotNull(futures);
+        assertEquals(1, futures.size());
+        futures.forEach(future -> assertTrue(future.isCancelled()));
+    }
+
+    @Test
+    public void testShutdownDoesNotCancelWorkerFuturesWhenNoTimeoutOccurs() throws NoSuchFieldException,
+                                                                            IllegalAccessException {
+        createDefaultMessageRouter();
+
+        replaceWorker(new TestMessageWorker(100L));
+
+        ccMessageRouter.shutdown();
+
+        final List<Future<?>> futures = getWorkerFutures();
+        assertNotNull(futures);
+        assertEquals(1, futures.size());
+        futures.forEach(future -> assertFalse(future.isCancelled()));
+    }
+
+    private void replaceWorker(final CcMessageWorkable workable) throws NoSuchFieldException, IllegalAccessException {
+        final List<Runnable> workers = getWorkers();
+        final List<Future<?>> futures = getWorkerFutures();
+        final ScheduledExecutorService executor = getExecutor();
+
+        futures.forEach(future -> future.cancel(true));
+        workers.clear();
+        futures.clear();
+        workers.add(workable);
+        futures.add(executor.schedule(workable, 0, TimeUnit.MILLISECONDS));
+    }
+
+    private ScheduledExecutorService getExecutor() throws NoSuchFieldException, IllegalAccessException {
+        final Field field = CcMessageRouter.class.getDeclaredField("scheduler");
+        field.setAccessible(true);
+        return (ScheduledExecutorService) field.get(ccMessageRouter);
+    }
+
+    private List<Runnable> getWorkers() throws NoSuchFieldException, IllegalAccessException {
+        final Field field = CcMessageRouter.class.getDeclaredField("messageWorkers");
+        field.setAccessible(true);
+        return (List<Runnable>) field.get(ccMessageRouter);
+    }
+
+    private List<Future<?>> getWorkerFutures() throws NoSuchFieldException, IllegalAccessException {
+        final Field field = CcMessageRouter.class.getDeclaredField("messageWorkerFutures");
+        field.setAccessible(true);
+        return (List<Future<?>>) field.get(ccMessageRouter);
+    }
+
+    class TestMessageWorker implements CcMessageWorkable {
+        private Logger logger = LoggerFactory.getLogger(TestMessageWorker.class);
+        private CountDownLatch countDownLatch;
+        private volatile boolean stopped;
+        private long sleepAfterStop;
+        private ScheduledExecutorService executor;
+
+        public TestMessageWorker(final long sleepAfterStop) {
+            this.stopped = false;
+            this.sleepAfterStop = sleepAfterStop;
+            this.executor = Executors.newSingleThreadScheduledExecutor();
+        }
+
+        @Override
+        public void stopWorker(final CountDownLatch countDownLatch) {
+            this.countDownLatch = countDownLatch;
+            this.stopped = true;
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (!stopped) {
+                    sleep(100L);
+                }
+                sleep(sleepAfterStop);
+            } catch (final InterruptedException | ExecutionException e) {
+                logger.error("Unexpected exception occurred: " + e.getMessage());
+            } finally {
+                countDownLatch.countDown();
+            }
+        }
+
+        private void sleep(final long millis) throws InterruptedException, ExecutionException {
+            executor.schedule(() -> millis, millis, TimeUnit.MILLISECONDS).get();
+        }
     }
 }

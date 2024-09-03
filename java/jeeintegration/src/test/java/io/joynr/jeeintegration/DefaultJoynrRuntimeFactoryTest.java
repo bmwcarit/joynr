@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,37 +18,11 @@
  */
 package io.joynr.jeeintegration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
-
-import javax.ejb.Stateless;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
-
 import com.google.inject.Binding;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
-
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.dispatching.MutableMessageFactory;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -58,8 +32,8 @@ import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.NoOpRawMessagingPreprocessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
 import io.joynr.messaging.mqtt.MqttClientIdProvider;
-import io.joynr.messaging.mqtt.MqttModule;
 import io.joynr.provider.ProviderAnnotations;
+import io.joynr.runtime.ClusterControllerRuntimeModule;
 import io.joynr.runtime.JoynrRuntime;
 import io.joynr.statusmetrics.JoynrStatusMetricsReceiver;
 import joynr.ImmutableMessage;
@@ -68,6 +42,38 @@ import joynr.Request;
 import joynr.jeeintegration.servicelocator.MyService;
 import joynr.jeeintegration.servicelocator.MyServiceProvider;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
+
+import javax.ejb.Stateless;
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.ScheduledExecutorService;
+
+import static io.joynr.jeeintegration.DefaultJoynrRuntimeFactory.ERROR_LOCAL_DOMAIN_IS_EMPTY;
+import static io.joynr.jeeintegration.DefaultJoynrRuntimeFactory.ERROR_MULTIPLE_ID_CLIENTS;
+import static io.joynr.jeeintegration.DefaultJoynrRuntimeFactory.ERROR_MULTIPLE_LOCAL_DOMAINS;
+import static io.joynr.jeeintegration.DefaultJoynrRuntimeFactory.ERROR_MULTIPLE_PREPROCESSORS;
+import static io.joynr.jeeintegration.DefaultJoynrRuntimeFactory.ERROR_MULTIPLE_PROPERTIES;
+import static io.joynr.jeeintegration.DefaultJoynrRuntimeFactory.ERROR_NO_LOCAL_DOMAIN;
+import static io.joynr.messaging.mqtt.MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the {@link DefaultJoynrRuntimeFactory}.
@@ -77,22 +83,24 @@ public class DefaultJoynrRuntimeFactoryTest {
     private static final String LOCAL_DOMAIN = "local-domain";
     private static final String CHANNEL_ID = "channel_id";
 
-    private ScheduledExecutorService scheduledExecutorService;
-
     private DefaultJoynrRuntimeFactory fixture;
+
+    @SuppressWarnings("deprecation")
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
     @Stateless
-    private class JoynrMessageProcessorTest implements JoynrMessageProcessor {
+    private static class JoynrMessageProcessorTest implements JoynrMessageProcessor {
         @Override
-        public MutableMessage processOutgoing(MutableMessage joynrMessage) {
-            joynrMessage.getCustomHeaders().put("test", "test");
+        public MutableMessage processOutgoing(final MutableMessage joynrMessage) {
+            HashMap<String, String> hashMap = new HashMap<>();
+            hashMap.put("test", "test");
+            joynrMessage.setCustomHeaders(hashMap);
             return joynrMessage;
         }
 
         @Override
-        public ImmutableMessage processIncoming(ImmutableMessage joynrMessage) {
+        public ImmutableMessage processIncoming(final ImmutableMessage joynrMessage) {
             return joynrMessage;
         }
     }
@@ -101,14 +109,14 @@ public class DefaultJoynrRuntimeFactoryTest {
         createFixture(null);
     }
 
-    private void createFixture(Properties additionalProperties) throws Exception {
+    private void createFixture(final Properties additionalProperties) throws Exception {
         createFixture(createPropertiesMock(additionalProperties), createLocalDomainMock());
     }
 
     @SuppressWarnings("unchecked")
-    private Instance<Properties> createPropertiesMock(Properties additionalProperties) {
-        Instance<Properties> joynrProperties = mock(Instance.class);
-        Properties joynrPropertiesValues = new Properties();
+    private Instance<Properties> createPropertiesMock(final Properties additionalProperties) {
+        final Instance<Properties> joynrProperties = mock(Instance.class);
+        final Properties joynrPropertiesValues = new Properties();
         joynrPropertiesValues.setProperty(MessagingPropertyKeys.CHANNELID, CHANNEL_ID);
         if (additionalProperties != null) {
             joynrPropertiesValues.putAll(additionalProperties);
@@ -123,7 +131,7 @@ public class DefaultJoynrRuntimeFactoryTest {
 
     @SuppressWarnings("unchecked")
     private Instance<String> createLocalDomainMock() {
-        Instance<String> joynrLocalDomain = mock(Instance.class);
+        final Instance<String> joynrLocalDomain = mock(Instance.class);
 
         when(joynrLocalDomain.get()).thenReturn(LOCAL_DOMAIN);
         when(joynrLocalDomain.isAmbiguous()).thenReturn(false);
@@ -133,32 +141,62 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @SuppressWarnings("unchecked")
-    private void createFixture(Instance<Properties> joynrProperties,
-                               Instance<String> joynrLocalDomain) throws Exception {
-        Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
+    private Instance<RawMessagingPreprocessor> createPreProcessorMock() {
+        final Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
         when(rawMessageProcessor.get()).thenReturn(new NoOpRawMessagingPreprocessor());
-        BeanManager beanManager = mock(BeanManager.class);
-        Bean<JoynrMessageProcessor> bean = mock(Bean.class);
+        return rawMessageProcessor;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Instance<MqttClientIdProvider> createMqttClientIdProviderMock() {
+        final String mqttClientId = "someTestMqttClientId";
+        final MqttClientIdProvider mqttClientIdProvider = mock(MqttClientIdProvider.class);
+        when(mqttClientIdProvider.getClientId()).thenReturn(mqttClientId);
+        final Instance<MqttClientIdProvider> mqttClientIdProviderInstance = mock(Instance.class);
+        when(mqttClientIdProviderInstance.get()).thenReturn(mqttClientIdProvider);
+        return mqttClientIdProviderInstance;
+    }
+
+    private void createFixture(final Instance<Properties> joynrProperties,
+                               final Instance<String> joynrLocalDomain) throws Exception {
+        createFixture(joynrProperties, joynrLocalDomain, createPreProcessorMock(), createMqttClientIdProviderMock());
+    }
+
+    private void createFixtureWithPreProcessor(final Instance<RawMessagingPreprocessor> rawMessagePreProcessor) throws Exception {
+        createFixture(createPropertiesMock(null),
+                      createLocalDomainMock(),
+                      rawMessagePreProcessor,
+                      createMqttClientIdProviderMock());
+    }
+
+    private void createFixtureWithMqttClientIdProvider(final Instance<MqttClientIdProvider> mqttClientIdProvider) throws Exception {
+        createFixture(createPropertiesMock(null),
+                      createLocalDomainMock(),
+                      createPreProcessorMock(),
+                      mqttClientIdProvider);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createFixture(final Instance<Properties> joynrProperties,
+                               final Instance<String> joynrLocalDomain,
+                               final Instance<RawMessagingPreprocessor> rawMessageProcessor,
+                               final Instance<MqttClientIdProvider> mqttClientIdProvider) throws Exception {
+        final BeanManager beanManager = mock(BeanManager.class);
+        final Bean<JoynrMessageProcessor> bean = mock(Bean.class);
         when(bean.create(Mockito.any())).thenReturn(new JoynrMessageProcessorTest());
         when(beanManager.getBeans(Mockito.<Type> eq(JoynrMessageProcessor.class),
-                                  Mockito.<Annotation> any())).thenReturn(new HashSet<Bean<?>>(Arrays.asList(bean)));
+                                  Mockito.<Annotation> any())).thenReturn(new HashSet<>(List.of(bean)));
 
-        final String mqttClientId = "someTestMqttClientId";
-        MqttClientIdProvider mqttClientIdProvider = mock(MqttClientIdProvider.class);
-        when(mqttClientIdProvider.getClientId()).thenReturn(mqttClientId);
-        Instance<MqttClientIdProvider> mqttClientIdProviderInstance = mock(Instance.class);
-        when(mqttClientIdProviderInstance.get()).thenReturn(mqttClientIdProvider);
-
-        JoynrStatusMetricsReceiver joynrStatusMetrics = mock(JoynrStatusMetricsReceiver.class);
+        final JoynrStatusMetricsReceiver joynrStatusMetrics = mock(JoynrStatusMetricsReceiver.class);
 
         fixture = new DefaultJoynrRuntimeFactory(joynrProperties,
                                                  joynrLocalDomain,
                                                  rawMessageProcessor,
-                                                 mqttClientIdProviderInstance,
+                                                 mqttClientIdProvider,
                                                  beanManager,
                                                  joynrStatusMetrics);
-        scheduledExecutorService = mock(ScheduledExecutorService.class);
-        Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
+        final ScheduledExecutorService scheduledExecutorService = mock(ScheduledExecutorService.class);
+        final Field executorField = DefaultJoynrRuntimeFactory.class.getDeclaredField("scheduledExecutorService");
         executorField.setAccessible(true);
         executorField.set(fixture, scheduledExecutorService);
     }
@@ -166,16 +204,33 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Test
     public void testGetLocalDomain() throws Exception {
         createFixture();
-        String result = fixture.getLocalDomain();
+        final String result = fixture.getLocalDomain();
         assertNotNull(result);
         assertEquals(LOCAL_DOMAIN, result);
     }
 
     @Test
+    public void testGetRawMessagePreProcessor() throws Exception {
+        createFixture();
+        final RawMessagingPreprocessor result = fixture.getRawMessagePreprocessor();
+        assertNotNull(result);
+        assertTrue(result instanceof NoOpRawMessagingPreprocessor);
+    }
+
+    @Test
+    public void testGetMqttClientIdProvider() throws Exception {
+        createFixture();
+        final MqttClientIdProvider result = fixture.getMqttClientIdProvider();
+        assertNotNull(result);
+        //noinspection ConstantValue
+        assertTrue(result instanceof MqttClientIdProvider);
+    }
+
+    @Test
     public void testJoynrMessageProcessorAdded() throws Exception {
         createFixture();
-        Injector injector = fixture.getInjector();
-        List<Binding<JoynrMessageProcessor>> bindings = injector.findBindingsByType(new TypeLiteral<JoynrMessageProcessor>() {
+        final Injector injector = fixture.getInjector();
+        final List<Binding<JoynrMessageProcessor>> bindings = injector.findBindingsByType(new TypeLiteral<>() {
         });
         assertEquals(1, bindings.size());
     }
@@ -183,28 +238,29 @@ public class DefaultJoynrRuntimeFactoryTest {
     @Test
     public void testJoynrMessageProcessorUsed() throws Exception {
         createFixture();
-        Injector injector = fixture.getInjector();
-        MutableMessageFactory messageFactory = injector.getInstance(MutableMessageFactory.class);
-        MutableMessage request = messageFactory.createRequest("from",
-                                                              "to",
-                                                              new Request("name", new Object[0], new Class[0]),
-                                                              new MessagingQos());
+        final Injector injector = fixture.getInjector();
+        final MutableMessageFactory messageFactory = injector.getInstance(MutableMessageFactory.class);
+        final MutableMessage request = messageFactory.createRequest("from",
+                                                                    "to",
+                                                                    new Request("name", new Object[0], new Class[0]),
+                                                                    new MessagingQos());
         assertEquals("test", request.getCustomHeaders().get("test"));
     }
 
     @Test
     public void testClusterableParticipantIdsAdded() throws Exception {
         createFixture();
-        JoynrRuntime joynrRuntime = fixture.create(new HashSet<Class<?>>(Arrays.asList(MyServiceSync.class)));
+        final JoynrRuntime joynrRuntime = fixture.create(new HashSet<>(List.of(MyServiceSync.class)));
         assertNotNull(joynrRuntime);
-        Properties properties = fixture.getInjector()
-                                       .getInstance(Key.get(Properties.class,
-                                                            Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
+        final Properties properties = fixture.getInjector()
+                                             .getInstance(Key.get(Properties.class,
+                                                                  Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
         assertNotNull(properties);
-        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME
-                + ".v" + ProviderAnnotations.getMajorVersion(MyServiceProvider.class)).toLowerCase().replace("/", ".");
+        final String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX
+                + LOCAL_DOMAIN + "." + MyService.INTERFACE_NAME + ".v"
+                + ProviderAnnotations.getMajorVersion(MyServiceProvider.class)).toLowerCase().replace("/", ".");
         assertTrue(properties.containsKey(key));
-        String value = properties.getProperty(key);
+        final String value = properties.getProperty(key);
         assertNotNull(value);
         assertEquals((LOCAL_DOMAIN + "." + CHANNEL_ID + "." + MyService.INTERFACE_NAME + ".v"
                 + ProviderAnnotations.getMajorVersion(MyServiceProvider.class)).replace("/", "."), value);
@@ -212,47 +268,133 @@ public class DefaultJoynrRuntimeFactoryTest {
 
     @Test
     public void testNoOverrideForManuallyAddedParticipantIds() throws Exception {
-        Properties joynrProperties = new Properties();
-        String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "."
+        final Properties joynrProperties = new Properties();
+        final String key = (ParticipantIdKeyUtil.JOYNR_PARTICIPANT_PREFIX + LOCAL_DOMAIN + "."
                 + MyService.INTERFACE_NAME).toLowerCase().replace("/", ".");
         joynrProperties.setProperty(key, "myvalue");
         createFixture(joynrProperties);
 
-        JoynrRuntime joynrRuntime = fixture.create(new HashSet<Class<?>>(Arrays.asList(MyServiceSync.class)));
+        final JoynrRuntime joynrRuntime = fixture.create(new HashSet<>(List.of(MyServiceSync.class)));
         assertNotNull(joynrRuntime);
-        Properties properties = fixture.getInjector()
-                                       .getInstance(Key.get(Properties.class,
-                                                            Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
+        final Properties properties = fixture.getInjector()
+                                             .getInstance(Key.get(Properties.class,
+                                                                  Names.named(MessagingPropertyKeys.JOYNR_PROPERTIES)));
         assertNotNull(properties);
         assertTrue(properties.containsKey(key));
-        String value = properties.getProperty(key);
+        final String value = properties.getProperty(key);
         assertNotNull(value);
         assertEquals("myvalue", value);
     }
 
     @Test
+    public void testCreateWithAccessControlEnabled() throws Exception {
+        final Properties properties = new Properties();
+        properties.put(ClusterControllerRuntimeModule.PROPERTY_ACCESSCONTROL_ENABLE, "true");
+        createFixture(properties);
+        final JoynrRuntime joynrRuntime = fixture.create(new HashSet<>(List.of(MyServiceSync.class)));
+        assertNotNull(joynrRuntime);
+    }
+
+    @Test
     public void testJoynrLocalDomainUnsatisfiedThrows() throws Exception {
-        Instance<String> joynrLocalDomain = createLocalDomainMock();
+        final Instance<String> joynrLocalDomain = createLocalDomainMock();
         when(joynrLocalDomain.isUnsatisfied()).thenReturn(true);
 
         expectedException.expect(JoynrIllegalStateException.class);
-        expectedException.expectMessage("No local domain name specified. Please provide a value for the local domain via @JoynrLocalDomain in your configuration EJB.");
+        expectedException.expectMessage(ERROR_NO_LOCAL_DOMAIN);
         createFixture(createPropertiesMock(null), joynrLocalDomain);
     }
 
     @Test
     public void testJoynrLocalDomainAmbiguousThrows() throws Exception {
-        Instance<String> joynrLocalDomain = createLocalDomainMock();
+        final Instance<String> joynrLocalDomain = createLocalDomainMock();
         when(joynrLocalDomain.isAmbiguous()).thenReturn(true);
 
         expectedException.expect(JoynrIllegalStateException.class);
-        expectedException.expectMessage("Multiple local domain names specified. Please provide only one configuration EJB containing a value for the local domain via @JoynrLocalDomain.");
+        expectedException.expectMessage(ERROR_MULTIPLE_LOCAL_DOMAINS);
         createFixture(createPropertiesMock(null), joynrLocalDomain);
     }
 
     @Test
+    public void testCreateRuntimeFactoryFailsIfLocalDomainIsNull() throws Exception {
+        final Instance<String> joynrLocalDomain = createLocalDomainMock();
+        when(joynrLocalDomain.isAmbiguous()).thenReturn(false);
+        when(joynrLocalDomain.isUnsatisfied()).thenReturn(false);
+        when(joynrLocalDomain.get()).thenReturn(null);
+
+        expectedException.expect(JoynrIllegalStateException.class);
+        expectedException.expectMessage(ERROR_LOCAL_DOMAIN_IS_EMPTY);
+        createFixture(createPropertiesMock(null), joynrLocalDomain);
+    }
+
+    @Test
+    public void testCreateRuntimeFactoryFailsIfLocalDomainIsEmpty() throws Exception {
+        final Instance<String> joynrLocalDomain = createLocalDomainMock();
+        when(joynrLocalDomain.isAmbiguous()).thenReturn(false);
+        when(joynrLocalDomain.isUnsatisfied()).thenReturn(false);
+        when(joynrLocalDomain.get()).thenReturn("");
+
+        expectedException.expect(JoynrIllegalStateException.class);
+        expectedException.expectMessage(ERROR_LOCAL_DOMAIN_IS_EMPTY);
+        createFixture(createPropertiesMock(null), joynrLocalDomain);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateRuntimeFactoryFailsIfMultipleRawMessagePreProcessorsProvided() throws Exception {
+        final Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
+        when(rawMessageProcessor.isAmbiguous()).thenReturn(true);
+
+        expectedException.expect(JoynrIllegalStateException.class);
+        expectedException.expectMessage(ERROR_MULTIPLE_PREPROCESSORS);
+        createFixtureWithPreProcessor(rawMessageProcessor);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateRuntimeFactorySetsNoOpOreProcessorIfNoSpecified() throws Exception {
+        final Instance<RawMessagingPreprocessor> rawMessageProcessor = mock(Instance.class);
+        when(rawMessageProcessor.isUnsatisfied()).thenReturn(true);
+
+        createFixtureWithPreProcessor(rawMessageProcessor);
+
+        assertNotNull(fixture);
+        final Field field = DefaultJoynrRuntimeFactory.class.getDeclaredField("rawMessagePreprocessor");
+        field.setAccessible(true);
+        final Object preProcessor = field.get(fixture);
+        assertNotNull(preProcessor);
+        assertTrue(preProcessor instanceof NoOpRawMessagingPreprocessor);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateRuntimeFactoryFailsIfMultipleMqttClientIdProvidersProvided() throws Exception {
+        final Instance<MqttClientIdProvider> mqttClientIdProvider = mock(Instance.class);
+        when(mqttClientIdProvider.isAmbiguous()).thenReturn(true);
+
+        expectedException.expect(JoynrIllegalStateException.class);
+        expectedException.expectMessage(ERROR_MULTIPLE_ID_CLIENTS);
+        createFixtureWithMqttClientIdProvider(mqttClientIdProvider);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCreateRuntimeFactorySetsNullIfNoMqttClientIdProviderProvided() throws Exception {
+        final Instance<MqttClientIdProvider> mqttClientIdProvider = mock(Instance.class);
+        when(mqttClientIdProvider.isUnsatisfied()).thenReturn(true);
+
+        createFixtureWithMqttClientIdProvider(mqttClientIdProvider);
+
+        assertNotNull(fixture);
+        final Field field = DefaultJoynrRuntimeFactory.class.getDeclaredField("mqttClientIdProvider");
+        field.setAccessible(true);
+        final Object preProcessor = field.get(fixture);
+        assertNull(preProcessor);
+    }
+
+    @Test
     public void testJoynrPropertiesUnsatisfiedDoesNotThrow() throws Exception {
-        Instance<Properties> joynrProperties = createPropertiesMock(null);
+        final Instance<Properties> joynrProperties = createPropertiesMock(null);
         when(joynrProperties.isUnsatisfied()).thenReturn(true);
 
         createFixture(joynrProperties, createLocalDomainMock());
@@ -260,11 +402,11 @@ public class DefaultJoynrRuntimeFactoryTest {
 
     @Test
     public void testJoynrPropertiesAmbiguousThrows() throws Exception {
-        Instance<Properties> joynrProperties = createPropertiesMock(null);
+        final Instance<Properties> joynrProperties = createPropertiesMock(null);
         when(joynrProperties.isAmbiguous()).thenReturn(true);
 
         expectedException.expect(JoynrIllegalStateException.class);
-        expectedException.expectMessage("Multiple joynrProperties specified. Please provide only one configuration EJB containing a value for the joynrProperties via @JoynrProperties.");
+        expectedException.expectMessage(ERROR_MULTIPLE_PROPERTIES);
         createFixture(joynrProperties, createLocalDomainMock());
     }
 
@@ -277,19 +419,19 @@ public class DefaultJoynrRuntimeFactoryTest {
     }
 
     @Test
-    public void testSharedSubscriptionsAreEnabledWhenInPropertiesThisOptionWasDisabled() throws Exception {
+    public void testSharedSubscriptionsAreDisabledWhenInPropertiesThisOptionWasDisabled() throws Exception {
         final Properties properties = new Properties();
-        properties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
+        properties.setProperty(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "false");
         createFixture(properties);
 
         final boolean sharedSubscriptionValue = getSharedSubscriptionOption();
-        assertTrue(sharedSubscriptionValue);
+        assertFalse(sharedSubscriptionValue);
     }
 
     @Test
     public void testSharedSubscriptionsAreEnabledWhenInPropertiesThisOptionWasEnabled() throws Exception {
         final Properties properties = new Properties();
-        properties.setProperty(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
+        properties.setProperty(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS, "true");
         createFixture(properties);
 
         final boolean sharedSubscriptionValue = getSharedSubscriptionOption();
@@ -298,7 +440,7 @@ public class DefaultJoynrRuntimeFactoryTest {
 
     private boolean getSharedSubscriptionOption() throws NoSuchFieldException, IllegalAccessException {
         final Properties joynrProperties = extractProperties();
-        return Boolean.valueOf((String) joynrProperties.get(MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS));
+        return Boolean.parseBoolean((String) joynrProperties.get(PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS));
     }
 
     private Properties extractProperties() throws NoSuchFieldException, IllegalAccessException {

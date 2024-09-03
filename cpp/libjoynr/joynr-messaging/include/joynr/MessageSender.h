@@ -124,12 +124,6 @@ public:
                                           const BroadcastSubscriptionRequest& subscriptionRequest,
                                           bool isLocalMessage) override;
 
-    void sendMulticastSubscriptionRequest(const std::string& senderParticipantId,
-                                          const std::string& receiverParticipantId,
-                                          const MessagingQos& qos,
-                                          const MulticastSubscriptionRequest& subscriptionRequest,
-                                          bool isLocalMessage) override;
-
     void sendSubscriptionReply(const std::string& senderParticipantId,
                                const std::string& receiverParticipantId,
                                const MessagingQos& qos,

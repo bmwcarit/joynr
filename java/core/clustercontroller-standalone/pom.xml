@@ -20,7 +20,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>io.joynr.java</groupId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -28,16 +28,6 @@
 	<artifactId>clustercontroller-standalone</artifactId>
 
 	<dependencies>
-		<dependency>
-			<groupId>io.joynr.java</groupId>
-			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java.common</groupId>
-			<artifactId>infrastructure-common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>clustercontroller-websocket-runtime</artifactId>
@@ -49,19 +39,24 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.joynr.java.common</groupId>
+			<artifactId>infrastructure-common</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
 			<artifactId>hivemq-mqtt-client</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging.websocket</groupId>
 			<artifactId>joynr-websocket-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>

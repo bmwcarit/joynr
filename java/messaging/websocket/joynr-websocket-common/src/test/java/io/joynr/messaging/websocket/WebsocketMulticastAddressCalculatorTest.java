@@ -19,6 +19,7 @@
 package io.joynr.messaging.websocket;
 
 import static org.junit.Assert.assertTrue;
+
 import java.util.Set;
 
 import org.junit.Test;
@@ -45,10 +46,11 @@ public class WebsocketMulticastAddressCalculatorTest {
 
     @Test
     public void testAcceptWebSocketAddress() {
-        WebSocketMulticastAddressCalculator subject = new WebSocketMulticastAddressCalculator(webSocketAddress);
+        WebSocketAddress address = new WebSocketAddress();
+        WebSocketMulticastAddressCalculator subject = new WebSocketMulticastAddressCalculator(address);
         Set<Address> resultSet = subject.calculate(immutableMessage);
         assertTrue(resultSet.size() == 1);
-        assertTrue(resultSet.contains(webSocketAddress));
+        assertTrue(resultSet.contains(address));
     }
 
     @Test

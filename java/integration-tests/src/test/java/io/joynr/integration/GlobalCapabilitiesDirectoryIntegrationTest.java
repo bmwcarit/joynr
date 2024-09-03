@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import io.joynr.arbitration.ArbitrationStrategy;
 import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingPropertyKeys;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
@@ -268,6 +269,11 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
                         public void onProxyCreationError(JoynrRuntimeException error) {
                             futureFirstProxy.onFailure(error);
                         }
+
+                        @Override
+                        public void onProxyCreationError(DiscoveryException error) {
+                            futureFirstProxy.onFailure(error);
+                        }
                     });
         try {
             futureFirstProxy.get();
@@ -292,6 +298,11 @@ public class GlobalCapabilitiesDirectoryIntegrationTest {
 
                              @Override
                              public void onProxyCreationError(JoynrRuntimeException error) {
+                                 futureSecondProxy.onFailure(error);
+                             }
+
+                             @Override
+                             public void onProxyCreationError(DiscoveryException error) {
                                  futureSecondProxy.onFailure(error);
                              }
                          });

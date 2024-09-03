@@ -117,13 +117,6 @@ public:
             const BroadcastSubscriptionRequest& subscriptionRequest,
             bool isLocalMessage) = 0;
 
-    virtual void sendMulticastSubscriptionRequest(
-            const std::string& senderParticipantId,
-            const std::string& receiverParticipantId,
-            const MessagingQos& qos,
-            const MulticastSubscriptionRequest& subscriptionRequest,
-            bool isLocalMessage) = 0;
-
     virtual void sendSubscriptionStop(const std::string& senderParticipantId,
                                       const std::string& receiverParticipantId,
                                       const MessagingQos& qos,

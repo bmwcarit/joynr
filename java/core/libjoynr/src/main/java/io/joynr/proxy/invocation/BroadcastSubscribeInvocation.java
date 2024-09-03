@@ -21,6 +21,7 @@ package io.joynr.proxy.invocation;
 import static io.joynr.proxy.invocation.InvocationReflectionsUtils.extractOutParameterTypes;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
 import io.joynr.dispatcher.rpc.annotation.JoynrRpcBroadcast;
 import io.joynr.exceptions.JoynrIllegalStateException;
@@ -101,7 +102,12 @@ public class BroadcastSubscribeInvocation extends SubscriptionInvocation {
     }
 
     public BroadcastFilterParameters getFilterParameters() {
-        return filterParameters;
+        if (filterParameters == null) {
+            return null;
+        }
+        BroadcastFilterParameters parameters = new BroadcastFilterParameters();
+        parameters.setFilterParameters(new HashMap<>(filterParameters.getFilterParameters()));
+        return parameters;
     }
 
     public String getBroadcastName() {

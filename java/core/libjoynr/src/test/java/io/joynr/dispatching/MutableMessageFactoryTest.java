@@ -54,8 +54,6 @@ import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MulticastPublication;
-import joynr.MulticastSubscriptionQos;
-import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.PeriodicSubscriptionQos;
 import joynr.Reply;
@@ -102,9 +100,10 @@ public class MutableMessageFactoryTest {
                                                                                          .toInstance(new JoynrMessageProcessor() {
                                                                                              @Override
                                                                                              public MutableMessage processOutgoing(MutableMessage joynrMessage) {
-                                                                                                 joynrMessage.getCustomHeaders()
-                                                                                                             .put("test",
-                                                                                                                  "test");
+                                                                                                 HashMap<String, String> customHeaders = new HashMap<>();
+                                                                                                 customHeaders.put("test",
+                                                                                                                   "test");
+                                                                                                 joynrMessage.setCustomHeaders(customHeaders);
                                                                                                  return joynrMessage;
                                                                                              }
 
@@ -180,7 +179,7 @@ public class MutableMessageFactoryTest {
         final String headerName = "header";
         final String headerValue = "value";
         myCustomHeaders.put(headerName, headerValue);
-        messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
+        messagingQos.putAllCustomMessageHeaders(myCustomHeaders);
         MutableMessage message = mutableMessageFactory.createRequest(fromParticipantId,
                                                                      toParticipantId,
                                                                      request,
@@ -216,7 +215,7 @@ public class MutableMessageFactoryTest {
         final String headerName = "header";
         final String headerValue = "value";
         myCustomHeaders.put(headerName, headerValue);
-        messagingQos.getCustomMessageHeaders().putAll(myCustomHeaders);
+        messagingQos.putAllCustomMessageHeaders(myCustomHeaders);
         MutableMessage message = mutableMessageFactory.createOneWayRequest(fromParticipantId,
                                                                            toParticipantId,
                                                                            request,
@@ -302,28 +301,6 @@ public class MutableMessageFactoryTest {
         assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST, joynrMessage.getType());
         assertTrue(new String(joynrMessage.getPayload(),
                               StandardCharsets.UTF_8).contains(MulticastPublication.class.getName()));
-    }
-
-    @Test
-    public void testCreateMulticastSubscriptionRequest() {
-        String multicastId = "multicastId";
-        String subscriptionId = "subscriptionId";
-        String multicastName = "multicastName";
-        MulticastSubscriptionQos subscriptionQos = new MulticastSubscriptionQos();
-
-        MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(multicastId,
-                                                                                                     subscriptionId,
-                                                                                                     multicastName,
-                                                                                                     subscriptionQos);
-
-        MutableMessage result = mutableMessageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                                toParticipantId,
-                                                                                multicastSubscriptionRequest,
-                                                                                messagingQos);
-
-        assertNotNull(result);
-        assertEquals(Message.MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST, result.getType());
-        assertExpiryDateEquals(expiryDate.getValue(), result);
     }
 
     @Test

@@ -399,8 +399,11 @@ public class DiscoveryQos {
         return arbitrationStrategyFunction;
     }
 
+    /**
+     * @return deep copy of customParameters
+     */
     public Map<String, String> getCustomParameters() {
-        return customParameters;
+        return new HashMap<>(customParameters);
     }
 
     /**

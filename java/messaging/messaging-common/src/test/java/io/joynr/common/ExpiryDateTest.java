@@ -24,7 +24,6 @@ import static io.joynr.common.ExpiryDateUtils.MAX_JS_INT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -53,10 +52,10 @@ public class ExpiryDateTest {
     }
 
     @Test
-    public void fromRelativeTtlHappyPassWithPause() {
+    public void fromRelativeTtlHappyPassWithPause() throws InterruptedException {
         final long relativeTtl = TWO_SECONDS;
         // pause is used to simulate not immediate processing
-        pause();
+        Thread.sleep(25L);
         final ExpiryDate expiryDate = fromRelativeTtl(relativeTtl);
 
         checkExactTtlValue(relativeTtl, expiryDate);
@@ -74,11 +73,11 @@ public class ExpiryDateTest {
     }
 
     @Test
-    public void fromRelativeTtlIfMaxLongValueExceededWithPause() {
+    public void fromRelativeTtlIfMaxLongValueExceededWithPause() throws InterruptedException {
         // simulate case when relative time to live + current time slightly exceeds max long value
         final long relativeTtl = Long.MAX_VALUE - currentTime + LESS_THAN_SECOND;
         // pause is used to simulate not immediate processing
-        pause();
+        Thread.sleep(25L);
         final ExpiryDate expiryDate = fromRelativeTtl(relativeTtl);
 
         checkExactTtlValue(relativeTtl, expiryDate);
@@ -96,11 +95,11 @@ public class ExpiryDateTest {
     }
 
     @Test
-    public void fromRelativeTtlIfMaxJSIntValueExceededWithPause() {
+    public void fromRelativeTtlIfMaxJSIntValueExceededWithPause() throws InterruptedException {
         // simulate case when relative time to live + current time slightly exceeds max JS int value
         final long relativeTtl = MAX_JS_INT - currentTime + LESS_THAN_SECOND;
         // pause is used to simulate not immediate processing
-        pause();
+        Thread.sleep(25L);
         final ExpiryDate expiryDate = fromRelativeTtl(relativeTtl);
 
         checkExactTtlValue(relativeTtl, expiryDate);
@@ -118,11 +117,11 @@ public class ExpiryDateTest {
     }
 
     @Test
-    public void fromAbsoluteHappyPassWithPause() {
+    public void fromAbsoluteHappyPassWithPause() throws InterruptedException {
         final long relativeTtl = ONE_SECOND;
         final long absolute = currentTime + relativeTtl;
         // pause is used to simulate not immediate processing
-        pause();
+        Thread.sleep(25L);
         final ExpiryDate expiryDate = fromAbsolute(absolute);
 
         checkTtlValueInRange(relativeTtl, expiryDate);
@@ -140,11 +139,11 @@ public class ExpiryDateTest {
     }
 
     @Test
-    public void fromAbsoluteIfMinLongValueExceededWithPause() {
+    public void fromAbsoluteIfMinLongValueExceededWithPause() throws InterruptedException {
         // simulate case when absolute time - current time slightly less than min long value
         final long absolute = Long.MIN_VALUE + currentTime - LESS_THAN_SECOND;
         // pause is used to simulate not immediate processing
-        pause();
+        Thread.sleep(25L);
         final ExpiryDate expiryDate = fromAbsolute(absolute);
 
         checkTtlIsMin(expiryDate);
@@ -163,15 +162,6 @@ public class ExpiryDateTest {
         assertNotNull(toStringValue);
         assertTrue(toStringValue.contains(String.valueOf(expiryDate.getRelativeTtl())));
         assertTrue(toStringValue.contains(String.valueOf(expiryDate.getValue())));
-    }
-
-    private void pause() {
-        try {
-            Thread.sleep(25L);
-        } catch (final InterruptedException exception) {
-            fail("Unexpected exception: " + exception.getMessage());
-            throw new RuntimeException(exception);
-        }
     }
 
     private void checkValueInRange(final long expectedTime, final long expectedRelativeTtl, final long actualValue) {

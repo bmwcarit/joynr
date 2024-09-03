@@ -656,6 +656,10 @@ public class MyConsumer {
                 public void onProxyCreationError(JoynrRuntimeException error) {
                     LOGGER.error("Unable to create proxy.", error);
                 }
+                @Override
+                public void onProxyCreationError(DiscoveryException error) {
+                    LOGGER.error("Discovery failed.", error);
+                }
             })
             .build();
 

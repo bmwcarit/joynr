@@ -20,9 +20,9 @@ package io.joynr.dispatching.rpc;
 
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +36,6 @@ import com.google.inject.name.Named;
 
 import io.joynr.common.ExpiryDate;
 import io.joynr.dispatching.Directory;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.exceptions.JoynrShutdownException;
 import io.joynr.exceptions.JoynrTimeoutException;
 import io.joynr.messaging.tracking.MessageTrackerForGracefulShutdown;
@@ -45,28 +44,34 @@ import io.joynr.runtime.ShutdownNotifier;
 
 /**
  * Queue to store replyCallers and remove them if the round-trip TTL of the corresponding request expires.
- *
  */
 @Singleton
 public class ReplyCallerDirectory extends Directory<ReplyCaller> implements ShutdownListener {
 
+    private final static long CLEANUP_TASK_INTERVAL_MS = 5000L;
     private boolean shutdown = false;
     private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
 
     private ScheduledExecutorService cleanupScheduler;
 
-    private ConcurrentMap<String, ScheduledFuture<?>> cleanupSchedulerFuturesMap = null;
-
     private MessageTrackerForGracefulShutdown messageTracker;
+
+    private ScheduledFuture<?> cleanupTaskFuture;
+
+    private Map<String, ExpiryDate> expiryDateMap;
 
     @Inject
     public ReplyCallerDirectory(@Named(JOYNR_SCHEDULER_CLEANUP) ScheduledExecutorService cleanupScheduler,
                                 ShutdownNotifier shutdownNotifier,
                                 MessageTrackerForGracefulShutdown messageTracker) {
         this.cleanupScheduler = cleanupScheduler;
-        this.cleanupSchedulerFuturesMap = new ConcurrentHashMap<>();
+        this.expiryDateMap = new HashMap<>();
         shutdownNotifier.registerForShutdown(this);
         this.messageTracker = messageTracker;
+        cleanupTaskFuture = this.cleanupScheduler.scheduleAtFixedRate(this::removeExpiredReplyCallers,
+                                                                      CLEANUP_TASK_INTERVAL_MS,
+                                                                      CLEANUP_TASK_INTERVAL_MS,
+                                                                      TimeUnit.MILLISECONDS);
     }
 
     public void addReplyCaller(final String requestReplyId,
@@ -74,24 +79,14 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
                                final ExpiryDate roundTripTtlExpirationDate) {
         logger.trace("AddReplyCaller: requestReplyId: {}, expiryDate: {}", requestReplyId, roundTripTtlExpirationDate);
         synchronized (this) {
+            if (shutdown) {
+                throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
+            }
             if (super.get(requestReplyId) != null) {
                 logger.error("RequestReplyId should not be replicated: {}", requestReplyId);
             } else {
                 super.add(requestReplyId, replyCaller);
-                try {
-                    ScheduledFuture<?> cleanupSchedulerFuture = cleanupScheduler.schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            removeExpiredReplyCaller(requestReplyId);
-                        }
-                    }, roundTripTtlExpirationDate.getRelativeTtl(), TimeUnit.MILLISECONDS);
-                    cleanupSchedulerFuturesMap.put(requestReplyId, cleanupSchedulerFuture);
-                } catch (RejectedExecutionException e) {
-                    if (shutdown) {
-                        throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
-                    }
-                    throw new JoynrRuntimeException(e);
-                }
+                expiryDateMap.put(requestReplyId, roundTripTtlExpirationDate);
             }
         }
     }
@@ -99,14 +94,28 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
     @Override
     public synchronized ReplyCaller remove(String id) {
         ReplyCaller replyCaller;
-        ScheduledFuture<?> future;
         replyCaller = super.remove(id);
-        future = cleanupSchedulerFuturesMap.remove(id);
-
-        if (future != null) {
-            future.cancel(false);
-        }
+        expiryDateMap.remove(id);
         return replyCaller;
+    }
+
+    private void removeExpiredReplyCallers() {
+        synchronized (this) {
+            ArrayList<String> expiredReplyCallers = new ArrayList<>();
+            super.forEach((requestReplyId, replyCaller) -> {
+                ExpiryDate expiryDate = expiryDateMap.get(requestReplyId);
+                if (expiryDate == null) {
+                    logger.error("Could not find expiry date entry for requestReplyId: {}", requestReplyId);
+                    return;
+                }
+                if (expiryDate.getValue() - System.currentTimeMillis() < 0) {
+                    expiredReplyCallers.add(requestReplyId);
+                }
+            });
+            for (String requestReplyId : expiredReplyCallers) {
+                removeExpiredReplyCaller(requestReplyId);
+            }
+        }
     }
 
     private void removeExpiredReplyCaller(String requestReplyId) {
@@ -125,9 +134,7 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
     @Override
     public void shutdown() {
         synchronized (this) {
-            for (ScheduledFuture<?> cleanupSchedulerFuture : cleanupSchedulerFuturesMap.values()) {
-                cleanupSchedulerFuture.cancel(false);
-            }
+            cleanupTaskFuture.cancel(false);
             shutdown = true;
         }
     }

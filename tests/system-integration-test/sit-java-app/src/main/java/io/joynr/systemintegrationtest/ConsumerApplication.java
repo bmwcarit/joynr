@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -253,6 +253,15 @@ public class ConsumerApplication extends AbstractJoynrApplication {
 
                 @Override
                 public void onProxyCreationError(JoynrRuntimeException error) {
+                    if (expectedFailure) {
+                        expectedAsyncFailure.release();
+                    } else {
+                        logger.error("error creating proxy");
+                    }
+                }
+
+                @Override
+                public void onProxyCreationError(DiscoveryException error) {
                     if (expectedFailure) {
                         expectedAsyncFailure.release();
                     } else {

@@ -109,7 +109,7 @@ public class Future<T> {
     }
 
     public RequestStatus getStatus() {
-        return status;
+        return new RequestStatus(status);
     }
 
     /**

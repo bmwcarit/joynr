@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2019 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import io.joynr.JoynrVersion;
 import io.joynr.capabilities.CapabilityUtils;
 import io.joynr.dispatching.MutableMessageFactory;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.MessagingQos;
@@ -229,7 +230,11 @@ public class MqttMultipleBackendProviderProxyTest extends AbstractMqttMultipleBa
             @Override
             public void onProxyCreationError(JoynrRuntimeException error) {
                 fail("Proxy creation failed: " + error.toString());
+            }
 
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                fail("Proxy creation failed: " + error.toString());
             }
         });
         assertTrue(semaphore.tryAcquire(10, TimeUnit.SECONDS));

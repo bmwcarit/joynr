@@ -32,16 +32,16 @@ public class PerformanceTestData {
 
     public PerformanceTestData(String testName, RequestDurationData requestDurationData, int numberOfProcessedProxies) {
         this.testName = testName;
-        this.requestDurationData = requestDurationData;
+        this.requestDurationData = (requestDurationData != null) ? new RequestDurationData(requestDurationData) : null;
         this.numberOfCreatedProxies = numberOfProcessedProxies;
     }
 
     public RequestDurationData getRequestDurationData() {
-        return this.requestDurationData;
+        return (requestDurationData != null) ? new RequestDurationData(requestDurationData) : null;
     }
 
     public void setRequestDurationData(RequestDurationData durationData) {
-        this.requestDurationData = durationData;
+        this.requestDurationData = (durationData != null) ? new RequestDurationData(durationData) : null;
     }
 
     public int getNumberOfCreatedProxies() {

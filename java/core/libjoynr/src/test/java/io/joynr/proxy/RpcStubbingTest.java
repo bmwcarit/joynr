@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import io.joynr.common.ExpiryDate;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -206,7 +207,8 @@ public class RpcStubbingTest {
                                                  eq(toDiscoveryEntry),
                                                  any(Request.class),
                                                  any(SynchronizedReplyCaller.class),
-                                                 eq(messagingQos))).thenAnswer(new Answer<Reply>() {
+                                                 eq(messagingQos),
+                                                 any(ExpiryDate.class))).thenAnswer(new Answer<Reply>() {
 
                                                      @Override
                                                      public Reply answer(InvocationOnMock invocation) throws Throwable {
@@ -264,7 +266,8 @@ public class RpcStubbingTest {
                                                     eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(messagingQos));
+                                                    eq(messagingQos),
+                                                    any(ExpiryDate.class));
 
         verify(testMock).noParamsNoReturnValue();
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
@@ -290,7 +293,8 @@ public class RpcStubbingTest {
                                                     eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(messagingQos));
+                                                    eq(messagingQos),
+                                                    any(ExpiryDate.class));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(2, requestCaptor.getValue().getParamDatatypes().length);
@@ -311,7 +315,8 @@ public class RpcStubbingTest {
                                                     eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(messagingQos));
+                                                    eq(messagingQos),
+                                                    any(ExpiryDate.class));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);
@@ -331,7 +336,8 @@ public class RpcStubbingTest {
                                                     eq(toDiscoveryEntry),
                                                     requestCaptor.capture(),
                                                     any(SynchronizedReplyCaller.class),
-                                                    eq(messagingQos));
+                                                    eq(messagingQos),
+                                                    any(ExpiryDate.class));
 
         assertEquals(methodName, requestCaptor.getValue().getMethodName());
         assertEquals(0, requestCaptor.getValue().getParamDatatypes().length);

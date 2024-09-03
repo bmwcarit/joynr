@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020-2023 BMW Car IT GmbH
+ * Copyright (C) 2020-2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,12 @@
 package io.joynr.demo;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import joynr.types.CustomParameter;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -68,6 +70,8 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
 
     @Inject
     private ProviderScope providerScope;
+    private static boolean providerHasCustomParameters = false;
+    private static CustomParameter[] providerCustomParameters;
 
     public static void main(String[] args) throws Exception {
         // run application from cmd line using Maven:
@@ -125,6 +129,10 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
             if (line.hasOption('t')) {
                 transport = line.getOptionValue('t').toLowerCase();
                 logger.info("found transport = " + transport);
+            }
+            if (line.hasOption('P')) {
+                providerHasCustomParameters = true;
+                providerCustomParameters = parseCustomParameters(line.getOptionValue('P'));
             }
         } catch (ParseException e) {
             logger.error("failed to parse command line: " + e);
@@ -209,6 +217,24 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         joynrApplication.shutdown();
     }
 
+    private static CustomParameter[] parseCustomParameters(final String initialValue) {
+        logger.info("Parsing provider custom parameters. Initial value: {};", initialValue);
+        final String[] parameters = initialValue.split(";");
+        return Arrays.stream(parameters)
+                     .map(MyRadioProviderApplication::parseCustomParameter)
+                     .toArray(CustomParameter[]::new);
+    }
+
+    private static CustomParameter parseCustomParameter(final String rawValue) {
+        final String[] keyAndValue = rawValue.split("=");
+        if (keyAndValue.length == 2) {
+            return new CustomParameter(keyAndValue[0], keyAndValue[1]);
+        } else {
+            throw new IllegalArgumentException("Unable to parse Provider Custom Parameter \"" + rawValue
+                    + "\". It is expected to like key=value string separated by semicolon.");
+        }
+    }
+
     private static void setupOptions(Options options, Options helpOptions) {
         Option optionDomain = Option.builder("d")
                                     .required(true)
@@ -258,6 +284,15 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
                                        .numberOfArgs(1)
                                        .type(String.class)
                                        .build();
+        final Option optionCustomParameters = Option.builder("P")
+                                                    .required(false)
+                                                    .argName("providerCustomParameters")
+                                                    .desc("provider custom parameters. It is expected as key=value sequence separated by semicolon. For example: keyA=valueA;keyB=valueB")
+                                                    .longOpt("providerCustomParameters")
+                                                    .hasArg(true)
+                                                    .numberOfArgs(1)
+                                                    .type(String.class)
+                                                    .build();
 
         options.addOption(optionDomain);
         options.addOption(optionHelp);
@@ -265,6 +300,7 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         options.addOption(optionLocal);
         options.addOption(optionPort);
         options.addOption(optionTransport);
+        options.addOption(optionCustomParameters);
         helpOptions.addOption(optionHelp);
     }
 
@@ -304,6 +340,9 @@ public class MyRadioProviderApplication extends AbstractJoynrApplication {
         provider.addBroadcastFilter(new TrafficServiceBroadcastFilter());
         provider.addBroadcastFilter(new GeocastBroadcastFilter(jsonSerializer));
         ProviderQos providerQos = new ProviderQos();
+        if (providerHasCustomParameters) {
+            providerQos.setCustomParameters(providerCustomParameters);
+        }
         providerQos.setPriority(System.currentTimeMillis());
         providerQos.setScope(providerScope);
         Future<Void> future = runtime.getProviderRegistrar(localDomain, provider)

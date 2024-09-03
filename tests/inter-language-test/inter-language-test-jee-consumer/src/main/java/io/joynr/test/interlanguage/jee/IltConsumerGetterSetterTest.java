@@ -18,7 +18,9 @@
  */
 package io.joynr.test.interlanguage.jee;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -79,22 +81,14 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callGetAttributeBooleanReadOnly() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
-            Boolean result;
             // value is hardcoded on provider side since it is readonly
-            result = testInterfaceProxy.getAttributeBooleanReadonly();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (result != true) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
+            Boolean result = testInterfaceProxy.getAttributeBooleanReadonly();
+            assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            assertTrue(name.getMethodName() + " - FAILED - got invalid result", result);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");
@@ -113,22 +107,14 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callSetAndGetAttributeInt8readonlyNoSubscriptions() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
-            Byte result;
             // value is hardcoded on provider side since it is readonly
-            result = testInterfaceProxy.getAttributeInt8readonlyNoSubscriptions();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (result != -128) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
+            Byte result = testInterfaceProxy.getAttributeInt8readonlyNoSubscriptions();
+            assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            assertEquals(name.getMethodName() + " - FAILED - got invalid result", -128, (byte) result);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");
@@ -222,23 +208,16 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callGetAttributeExtendedEnumerationReadonly() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
-            ExtendedEnumerationWithPartlyDefinedValues result;
-
             // value is hardcoded on provider side since it is readonly
-            result = testInterfaceProxy.getAttributeExtendedEnumerationReadonly();
-            if (result == null) {
-                fail(name.getMethodName() + " - FAILED - got no result");
-                return;
-            }
-            if (result != ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES) {
-                fail(name.getMethodName() + " - FAILED - got invalid result");
-                return;
-            }
+            ExtendedEnumerationWithPartlyDefinedValues result = testInterfaceProxy.getAttributeExtendedEnumerationReadonly();
+            assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
+            assertSame(name.getMethodName() + " - FAILED - got invalid result",
+                       result,
+                       ExtendedEnumerationWithPartlyDefinedValues.ENUM_2_VALUE_EXTENSION_FOR_ENUM_WITHOUT_DEFINED_VALUES);
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");
@@ -279,20 +258,17 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callGetAttributeWithExceptionFromGetter() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
             testInterfaceProxy.getAttributeWithExceptionFromGetter();
             fail(name.getMethodName() + " - FAILED - unexpected return without exception");
-            return;
         } catch (ProviderRuntimeException e) {
             if (e.getMessage() == null
                     || !e.getMessage().endsWith("Exception from getAttributeWithExceptionFromGetter")) {
                 fail(name.getMethodName() + " - FAILED - caught invalid exception: " + e.getMessage());
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");
@@ -300,20 +276,17 @@ public class IltConsumerGetterSetterTest extends IltConsumerTest {
 
     @Test
     public void callSetAttributeWithExceptionFromSetter() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
             testInterfaceProxy.setAttributeWithExceptionFromSetter(false);
             fail(name.getMethodName() + " - FAILED - got no result");
-            return;
         } catch (ProviderRuntimeException e) {
             if (e.getMessage() == null
                     || !e.getMessage().endsWith("Exception from setAttributeWithExceptionFromSetter")) {
                 fail(name.getMethodName() + " - FAILED - caught invalid exception: " + e.getMessage());
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - OK");

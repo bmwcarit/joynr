@@ -20,13 +20,11 @@ package io.joynr.capabilities;
 
 import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_DISCOVERY_PROVIDER_DEFAULT_EXPIRY_TIME_MS;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -220,56 +218,6 @@ public class GlobalDiscoveryEntryPersistedStorePersisted
             }
         }
         return Optional.ofNullable(queryResult);
-    }
-
-    @Override
-    public Set<GlobalDiscoveryEntryPersisted> getAllDiscoveryEntries() {
-        List<GlobalDiscoveryEntryPersisted> allCapabilityEntries = new ArrayList<>();
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            allCapabilityEntries = entityManager.createQuery("FROM GlobalDiscoveryEntryPersisted gdep",
-                                                             GlobalDiscoveryEntryPersisted.class)
-                                                .setLockMode(LockModeType.PESSIMISTIC_READ)
-                                                .getResultList();
-            transaction.commit();
-            entityManager.clear();
-            logger.trace("GetAllDiscoveryEntries() committed successfully");
-        } catch (Exception e) {
-            logger.error("GetAllDiscoveryEntries() failed.", e);
-        } finally {
-            if (transaction.isActive()) {
-                logger.error("GetAllDiscoveryEntries(): rollback.");
-                transaction.rollback();
-            }
-        }
-        Set<GlobalDiscoveryEntryPersisted> result = new HashSet<>(allCapabilityEntries);
-        logger.debug("Retrieved all discovery entries: {}", result);
-        return result;
-    }
-
-    @Override
-    public boolean hasDiscoveryEntry(GlobalDiscoveryEntryPersisted discoveryEntry) {
-        GlobalDiscoveryEntryPersisted entity = null;
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            GlobalDiscoveryEntryPersistedKey key = new GlobalDiscoveryEntryPersistedKey();
-            key.setGbid(discoveryEntry.getGbid());
-            key.setParticipantId(discoveryEntry.getParticipantId());
-            entity = entityManager.find(GlobalDiscoveryEntryPersisted.class, key, LockModeType.PESSIMISTIC_READ);
-            transaction.commit();
-            entityManager.clear();
-            logger.trace("HasDiscoveryEntry({}) committed successfully", discoveryEntry);
-        } catch (Exception e) {
-            logger.error("HasDiscoveryEntry({}) failed.", discoveryEntry, e);
-        } finally {
-            if (transaction.isActive()) {
-                logger.error("HasDiscoveryEntry({}): rollback.", discoveryEntry);
-                transaction.rollback();
-            }
-        }
-        return entity != null;
     }
 
     @Override

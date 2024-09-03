@@ -47,7 +47,12 @@ public class MessagingPropertiesPersistence {
     }
 
     public Properties getPersistedProperties() {
-        return storage;
+        if (storage == null) {
+            return new Properties();
+        }
+        Properties propertiesCopy = new Properties();
+        propertiesCopy.putAll(storage);
+        return propertiesCopy;
     }
 
     private void persistProperties() {

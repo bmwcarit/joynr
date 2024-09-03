@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.java</groupId>
 		<artifactId>backend-services</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -125,6 +125,7 @@
 							</goals>
 							<configuration>
 								<ignoredUnusedDeclaredDependencies>
+									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-api</ignoredUnusedDeclaredDependency>

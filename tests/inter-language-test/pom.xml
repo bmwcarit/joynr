@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tests</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -36,5 +36,55 @@
 		<module>inter-language-test-jee-consumer</module>
 		<module>inter-language-test-jee-provider</module>
 	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.joynr.java</groupId>
+				<artifactId>javaapi</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java</groupId>
+				<artifactId>jeeintegration</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.messaging</groupId>
+				<artifactId>messaging-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.core</groupId>
+				<artifactId>libjoynr</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.core</groupId>
+				<artifactId>clustercontroller-websocket-runtime</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.core</groupId>
+				<artifactId>clustercontroller-inprocess-runtime</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.core</groupId>
+				<artifactId>libjoynr-websocket-runtime</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.messaging.mqtt</groupId>
+				<artifactId>hivemq-mqtt-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.messaging.websocket</groupId>
+				<artifactId>joynr-websocket-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 </project>

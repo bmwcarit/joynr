@@ -25,33 +25,30 @@
 	<parent>
 		<groupId>io.joynr.java.messaging</groupId>
 		<artifactId>mqtt</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.google.inject</groupId>
-			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.joynr.java</groupId>
-			<artifactId>javaapi</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>io.joynr.java</groupId>
+			<artifactId>javaapi</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>io.joynr.java.common</groupId>
 			<artifactId>status-metrics</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.core</groupId>
 			<artifactId>libjoynr</artifactId>
-			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.inject</groupId>
+			<artifactId>guice</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.smrf.java</groupId>
@@ -62,6 +59,40 @@
 			<artifactId>hivemq-mqtt-client</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-buffer</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-codec</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-handler</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-resolver</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jctools</groupId>
+			<artifactId>jctools-core</artifactId>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>com.google.dagger</groupId>
+			<artifactId>dagger</artifactId>
+			<type>jar</type>
+		</dependency>
+		<dependency>
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
 		</dependency>
@@ -69,6 +100,10 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -104,6 +139,15 @@
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-api</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.netty:netty-buffer</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.netty:netty-codec</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.netty:netty-common</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.netty:netty-handler</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.netty:netty-resolver</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>io.netty:netty-transport</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.jctools:jctools-core</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>com.google.dagger:dagger</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
 						</execution>

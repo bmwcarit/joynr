@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import javax.inject.Inject;
 
 import io.joynr.StatelessAsync;
 import io.joynr.arbitration.DiscoveryQos;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.jeeintegration.api.ServiceLocator;
 import io.joynr.messaging.MessagingQos;
@@ -180,13 +181,13 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
 
         @Override
         public ServiceProxyBuilder<T> withMessagingQos(MessagingQos messagingQos) {
-            this.messagingQos = messagingQos;
+            this.messagingQos = (messagingQos != null) ? new MessagingQos(messagingQos) : null;
             return this;
         }
 
         @Override
         public ServiceProxyBuilder<T> withDiscoveryQos(DiscoveryQos discoveryQos) {
-            this.discoveryQos = discoveryQos;
+            this.discoveryQos = (discoveryQos != null) ? new DiscoveryQos(discoveryQos) : null;
             return this;
         }
 
@@ -290,6 +291,14 @@ public class JeeJoynrServiceLocator implements ServiceLocator {
 
                     @Override
                     public void onProxyCreationError(JoynrRuntimeException error) {
+                        future.completeExceptionally(error);
+                        if (wrappedBuilder.callback != null) {
+                            wrappedBuilder.callback.onProxyCreationError(error);
+                        }
+                    }
+
+                    @Override
+                    public void onProxyCreationError(DiscoveryException error) {
                         future.completeExceptionally(error);
                         if (wrappedBuilder.callback != null) {
                             wrappedBuilder.callback.onProxyCreationError(error);

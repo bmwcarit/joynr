@@ -35,9 +35,9 @@ public class AceValidator {
     public AceValidator(MasterAccessControlEntry masterAce,
                         MasterAccessControlEntry mediatorAce,
                         OwnerAccessControlEntry ownerAce) {
-        this.masterAce = masterAce;
-        this.mediatorAce = mediatorAce;
-        this.ownerAce = ownerAce;
+        this.masterAce = (masterAce != null) ? new MasterAccessControlEntry(masterAce) : null;
+        this.mediatorAce = (mediatorAce != null) ? new MasterAccessControlEntry(mediatorAce) : null;
+        this.ownerAce = (ownerAce != null) ? new OwnerAccessControlEntry(ownerAce) : null;
     }
 
     public boolean isValid() {

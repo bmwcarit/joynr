@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.inject.persist.jpa.JpaPersistOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +118,10 @@ public class CapabilitiesDirectoryLauncher {
 
     private static Module getRuntimeModule(Properties joynrConfig) {
         // JPA
-        JpaPersistModule jpaModule = new JpaPersistModule("CapabilitiesDirectory");
+        JpaPersistOptions jpaOptions = JpaPersistOptions.builder()
+                                                        .setAutoBeginWorkOnEntityManagerCreation(true)
+                                                        .build();
+        JpaPersistModule jpaModule = new JpaPersistModule("CapabilitiesDirectory", jpaOptions);
         Properties jpaProperties = new Properties();
 
         String dbNameProperty = joynrConfig.getProperty(GCD_DB_NAME);

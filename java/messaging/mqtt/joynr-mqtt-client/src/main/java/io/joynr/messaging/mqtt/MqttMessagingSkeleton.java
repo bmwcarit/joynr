@@ -20,6 +20,7 @@ package io.joynr.messaging.mqtt;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
+import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.JoynrMessageProcessor;
 import io.joynr.messaging.RawMessagingPreprocessor;
@@ -91,7 +93,7 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
         this.mqttClientFactory = mqttClientFactory;
         this.mqttTopicPrefixProvider = mqttTopicPrefixProvider;
         this.rawMessagingPreprocessor = rawMessagingPreprocessor;
-        this.messageProcessors = messageProcessors;
+        this.messageProcessors = (messageProcessors != null) ? new HashSet<>(messageProcessors) : null;
         this.incomingMqttRequests = Collections.synchronizedSet(new HashSet<String>());
         this.multicastSubscriptionCount = new ConcurrentHashMap<>();
         this.ownGbid = ownGbid;
@@ -222,7 +224,14 @@ public class MqttMessagingSkeleton extends AbstractGlobalMessagingSkeleton
             mqtt5Publish.acknowledge();
             failureAction.execute(e);
         } catch (Exception e) {
-            logger.error("Message \"{}\" could not be transmitted:", mqtt5Publish.getPayloadAsBytes(), e);
+            final String message = String.format("Message \"%s\" could not be transmitted: %s",
+                                                 Arrays.toString(mqtt5Publish.getPayloadAsBytes()),
+                                                 e);
+            if (e instanceof JoynrMessageExpiredException) {
+                logger.warn(message);
+            } else {
+                logger.error(message);
+            }
             mqtt5Publish.acknowledge();
             failureAction.execute(e);
         }

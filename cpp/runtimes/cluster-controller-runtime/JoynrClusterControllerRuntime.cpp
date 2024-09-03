@@ -55,7 +55,6 @@
 #include "joynr/MessageSender.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/MessagingStubFactory.h"
 #include "joynr/MqttMessagingSkeleton.h"
 #include "joynr/MqttMulticastAddressCalculator.h"
 #include "joynr/MqttReceiver.h"
@@ -130,6 +129,7 @@ JoynrClusterControllerRuntime::JoynrClusterControllerRuntime(
           _messageSender(),
           _localCapabilitiesDirectory(nullptr),
           _libJoynrMessagingSkeleton(nullptr),
+          _messagingStubFactory(nullptr),
           _mqttMessagingSkeletonFactory(std::move(mqttMessagingSkeletonFactory)),
           _settings(std::move(settings)),
           _libjoynrSettings(*(this->_settings)),
@@ -270,8 +270,8 @@ void JoynrClusterControllerRuntime::init()
     std::unique_ptr<IPlatformSecurityManager> securityManager =
             std::make_unique<DummyPlatformSecurityManager>();
 
-    auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
-    messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
+    _messagingStubFactory = std::make_shared<MessagingStubFactory>();
+    _messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     MessagingPropertiesPersistence persist(
             _messagingSettings.getMessagingPropertiesPersistenceFilename());
@@ -297,6 +297,7 @@ void JoynrClusterControllerRuntime::init()
                 _messagingSettings.getMqttExponentialBackoffEnabled();
         std::chrono::seconds mqttKeepAliveTimeSeconds(0);
         BrokerUrl brokerUrl = defaultBrokerUrl;
+        const bool isRetained{_messagingSettings.getMqttRetain()};
 
         // default brokerIndex = 0
         for (std::uint8_t brokerIndex = 0; brokerIndex < _mqttConnectionDataVector.size();
@@ -321,7 +322,8 @@ void JoynrClusterControllerRuntime::init()
                                                               mqttReconnectMaxDelayTimeSeconds,
                                                               isMqttExponentialBackoffEnabled,
                                                               mqttClientId,
-                                                              _availableGbids[brokerIndex]);
+                                                              _availableGbids[brokerIndex],
+                                                              isRetained);
 
                 const auto& connectionData = _mqttConnectionDataVector[brokerIndex];
 
@@ -381,7 +383,7 @@ void JoynrClusterControllerRuntime::init()
     _ccMessageRouter = std::make_shared<CcMessageRouter>(
             _messagingSettings,
             _clusterControllerSettings,
-            messagingStubFactory,
+            _messagingStubFactory,
             _multicastMessagingSkeletonDirectory,
             std::move(securityManager),
             _singleThreadedIOService->getIOService(),
@@ -419,34 +421,38 @@ void JoynrClusterControllerRuntime::init()
         // setup CC WebSocket interface
         _wsMessagingStubFactory = std::make_shared<WebSocketMessagingStubFactory>();
         _wsMessagingStubFactory->registerOnMessagingStubClosedCallback(
-                [messagingStubFactory,
+                [messagingStubFactoryWeakPtr = joynr::util::as_weak_ptr(_messagingStubFactory),
                  ccMessageRouterWeakPtr = joynr::util::as_weak_ptr(_ccMessageRouter)](
                         const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                                 destinationAddress) {
                     if (auto ccMessageRouterSharedPtr = ccMessageRouterWeakPtr.lock()) {
                         ccMessageRouterSharedPtr->removeRoutingEntries(destinationAddress);
                     }
-                    messagingStubFactory->remove(destinationAddress);
+                    if (auto messagingStubFactorySharedPtr = messagingStubFactoryWeakPtr.lock()) {
+                        messagingStubFactorySharedPtr->remove(destinationAddress);
+                    }
                 });
 
-        messagingStubFactory->registerStubFactory(_wsMessagingStubFactory);
+        _messagingStubFactory->registerStubFactory(_wsMessagingStubFactory);
     }
 
     if (_clusterControllerSettings.isUdsEnabled()) {
         // setup CC Uds interface
         _udsMessagingStubFactory = std::make_unique<UdsMessagingStubFactory>();
         _udsMessagingStubFactory->registerOnMessagingStubClosedCallback(
-                [messagingStubFactory,
+                [messagingStubFactoryWeakPtr = joynr::util::as_weak_ptr(_messagingStubFactory),
                  ccMessageRouterWeakPtr = joynr::util::as_weak_ptr(_ccMessageRouter)](
                         const std::shared_ptr<const joynr::system::RoutingTypes::Address>&
                                 destinationAddress) {
                     if (auto ccMessageRouterSharedPtr = ccMessageRouterWeakPtr.lock()) {
                         ccMessageRouterSharedPtr->removeRoutingEntries(destinationAddress);
                     }
-                    messagingStubFactory->remove(destinationAddress);
+                    if (auto messagingStubFactorySharedPtr = messagingStubFactoryWeakPtr.lock()) {
+                        messagingStubFactorySharedPtr->remove(destinationAddress);
+                    }
                 });
 
-        messagingStubFactory->registerStubFactory(_udsMessagingStubFactory);
+        _messagingStubFactory->registerStubFactory(_udsMessagingStubFactory);
     }
 
     /* LibJoynr */
@@ -515,7 +521,7 @@ void JoynrClusterControllerRuntime::init()
                 connectionData->setMqttMessageSender(std::move(mqttMessageSender));
             }
 
-            messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
+            _messagingStubFactory->registerStubFactory(std::make_shared<MqttMessagingStubFactory>(
                     connectionData->getMqttMessageSender(), _availableGbids[brokerIndex]));
         }
     }
@@ -914,6 +920,11 @@ void JoynrClusterControllerRuntime::shutdown()
     if (_joynrDispatcher) {
         _joynrDispatcher->shutdown();
         _joynrDispatcher.reset();
+    }
+
+    if (_messagingStubFactory) {
+        _messagingStubFactory->shutdown();
+        _messagingStubFactory.reset();
     }
 
     _removeStaleTimer.cancel();

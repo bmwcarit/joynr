@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>joynr-hivemq-shared-subscriptions</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -45,5 +45,30 @@
 	<properties>
 		<payaramicro.maven.plugin.version>1.3.0</payaramicro.maven.plugin.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.joynr.java</groupId>
+				<artifactId>javaapi</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java</groupId>
+				<artifactId>jeeintegration</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.messaging</groupId>
+				<artifactId>messaging-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.messaging.mqtt</groupId>
+				<artifactId>joynr-mqtt-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 </project>

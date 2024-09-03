@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
@@ -31,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.joynr.messaging.websocket.MessageHelper;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
 import org.eclipse.jetty.websocket.api.WriteCallback;
@@ -79,12 +79,12 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
                                 long reconnectDelay,
                                 long websocketIdleTimeout,
                                 ObjectMapper objectMapper) {
-        this.serverAddress = serverAddress;
-        this.ownAddress = ownAddress;
+        this.serverAddress = (serverAddress != null) ? new WebSocketAddress(serverAddress) : null;
+        this.ownAddress = (ownAddress != null) ? new WebSocketClientAddress(ownAddress) : null;
         this.maxMessageSize = maxMessageSize;
         this.reconnectDelay = reconnectDelay;
         this.websocketIdleTimeout = websocketIdleTimeout;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
     }
 
     @Override
@@ -220,19 +220,15 @@ public class WebSocketJettyClient extends WebSocketAdapter implements JoynrWebSo
 
     @Override
     public void onWebSocketBinary(byte[] payload, int offset, int len) {
-        final byte[] message = Arrays.copyOfRange(payload, offset, offset + len);
+        final byte[] message = MessageHelper.extractMessage(payload, offset, len);
         if (logger.isTraceEnabled()) {
             logger.trace("Received message: {}", new String(message, CHARSET));
         }
-        messageListener.transmit(message, new FailureAction() {
-
-            @Override
-            public void execute(Throwable error) {
-                if (error instanceof JoynrMessageExpiredException) {
-                    logger.warn("WebSocket message not processed: ", error);
-                } else {
-                    logger.error("WebSocket message not processed: ", error);
-                }
+        messageListener.transmit(message, error -> {
+            if (error instanceof JoynrMessageExpiredException) {
+                logger.warn("WebSocket message not processed: ", error);
+            } else {
+                logger.error("WebSocket message not processed: ", error);
             }
         });
     }

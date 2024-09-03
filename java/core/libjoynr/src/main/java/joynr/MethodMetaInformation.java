@@ -77,7 +77,7 @@ public class MethodMetaInformation {
         return hasModelledErrors;
     }
 
-    public Method getMethod() {
+    Method getMethod() {
         return method;
     }
 

@@ -24,12 +24,12 @@
 
     <groupId>io.joynr.examples.radio-spring-boot</groupId>
     <artifactId>radio-spring-boot-service</artifactId>
-    <version>1.24.0</version>
+    <version>1.25.0</version>
 
     <parent>
         <groupId>io.joynr.examples</groupId>
         <artifactId>radio-spring-boot</artifactId>
-        <version>1.24.0</version>
+        <version>1.25.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -164,6 +164,17 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>2.17.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>32.0.1-jre</version>
         </dependency>
     </dependencies>
 

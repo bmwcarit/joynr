@@ -90,6 +90,7 @@ public class ConnectorFactoryTest {
         reset(messageRouter);
 
         providerQos.setScope(ProviderScope.GLOBAL);
+        discoveryEntry.setQos(providerQos);
         connectorFactory.create(proxyParticipantId, arbitrationResult, messagingQos, statelessAsyncParticipantId);
         verify(messageRouter).addNextHop(proxyParticipantId, dispatcherAddress, true);
     }

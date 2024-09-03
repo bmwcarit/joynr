@@ -37,7 +37,7 @@ public class WebSocketMulticastAddressCalculator implements MulticastAddressCalc
     @Inject
     public WebSocketMulticastAddressCalculator(@Named(SystemServicesSettings.PROPERTY_CC_MESSAGING_ADDRESS) Address globalAddress) {
         if (globalAddress instanceof WebSocketAddress) {
-            this.globalAddress = (WebSocketAddress) globalAddress;
+            this.globalAddress = new WebSocketAddress((WebSocketAddress) globalAddress);
         }
     }
 

@@ -49,11 +49,11 @@ public class WebSocketJettyClientFactory implements WebSocketEndpointFactory {
                                        @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_RECONNECT_DELAY) long reconnectDelay,
                                        @Named(WebsocketModule.PROPERTY_WEBSOCKET_MESSAGING_IDLE_TIMEOUT) long websocketIdleTimeout,
                                        ObjectMapper objectMapper) {
-        this.ownAddress = ownAddress;
+        this.ownAddress = (ownAddress != null) ? new WebSocketClientAddress(ownAddress) : null;
         this.maxMessageSize = maxMessageSize;
         this.reconnectDelay = reconnectDelay;
         this.websocketIdleTimeout = websocketIdleTimeout;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
     }
 
     @Override

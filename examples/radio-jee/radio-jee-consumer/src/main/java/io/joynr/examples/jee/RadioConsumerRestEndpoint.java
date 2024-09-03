@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,11 +58,7 @@ public class RadioConsumerRestEndpoint {
     @GET
     @Path("/current-station")
     public RadioStation getCurrentRadioStation() {
-        try {
-            return getRadioClient().getCurrentStation();
-        } catch (Exception e) {
-            throw new WebApplicationException(e);
-        }
+        return getRadioClient().getCurrentStation();
     }
 
     @GET
@@ -85,11 +81,11 @@ public class RadioConsumerRestEndpoint {
 
     @POST
     @Produces({ MediaType.TEXT_PLAIN })
-    public boolean addRadioStation(String name) {
+    public boolean addRadioStation(String name) throws JoynrWebApplicationException {
         try {
             return getRadioClient().addFavoriteStation(new RadioStation(name, true, Country.GERMANY));
         } catch (ApplicationException e) {
-            throw new WebApplicationException(e.getMessage());
+            throw new JoynrWebApplicationException(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 

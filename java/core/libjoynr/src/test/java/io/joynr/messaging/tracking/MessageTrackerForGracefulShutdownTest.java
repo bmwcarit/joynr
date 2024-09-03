@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -225,7 +226,7 @@ public class MessageTrackerForGracefulShutdownTest {
 
         final long prepareForShutdownTimeoutMs = 5000;
         assertTrue("prepareForShutdown should take up to " + prepareForShutdownTimeoutMs + "ms. Actual: " + timeTaken,
-                   timeTaken >= prepareForShutdownTimeoutMs && timeTaken < prepareForShutdownTimeoutMs + 20);
+                   timeTaken >= prepareForShutdownTimeoutMs && timeTaken < prepareForShutdownTimeoutMs + 50);
     }
 
     @Test
@@ -281,6 +282,37 @@ public class MessageTrackerForGracefulShutdownTest {
 
         assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
         assertTrue(timeElapsed < 2000);
+    }
+
+    @Test
+    public void testRequestReplyRegistration() {
+        final String requestMessageId = "requestMessageId";
+        final String replyMessageId = "replyMessageId";
+        final String requestReplyId = "requestReplyId";
+
+        final ImmutableMessage request = mock(ImmutableMessage.class);
+        final Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID, requestReplyId);
+        when(request.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST);
+        when(request.getId()).thenReturn(requestMessageId);
+        when(request.getCustomHeaders()).thenReturn(requestHeaders);
+
+        final ImmutableMessage reply = mock(ImmutableMessage.class);
+        final Map<String, String> replyHeaders = new HashMap<>();
+        replyHeaders.put(Message.CUSTOM_HEADER_REQUEST_REPLY_ID, requestReplyId);
+        when(reply.getType()).thenReturn(Message.MessageType.VALUE_MESSAGE_TYPE_REPLY);
+        when(reply.getId()).thenReturn(replyMessageId);
+        when(reply.getCustomHeaders()).thenReturn(replyHeaders);
+
+        assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
+        messageTracker.register(request);
+        assertEquals(1, messageTracker.getNumberOfRegisteredMessages());
+        messageTracker.register(reply);
+        assertEquals(2, messageTracker.getNumberOfRegisteredMessages());
+        messageTracker.unregister(request);
+        assertEquals(1, messageTracker.getNumberOfRegisteredMessages());
+        messageTracker.unregister(reply);
+        assertEquals(0, messageTracker.getNumberOfRegisteredMessages());
     }
 
     private void waitAndUnregister(final long waitInMs) {

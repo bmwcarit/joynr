@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.VersionCompatibilityChecker;
 import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrIllegalStateException;
-import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.MessagingQos;
 import io.joynr.messaging.routing.MessageRouter;
 import io.joynr.util.ObjectMapper;
@@ -127,7 +126,7 @@ public class GuidedProxyBuilder {
         this.maxMessagingTtl = discoverySettingsStorage.getMaxMessagingTtl();
         this.defaultDiscoveryTimeoutMs = discoverySettingsStorage.getDefaultDiscoveryTimeoutMs();
         this.defaultDiscoveryRetryIntervalMs = discoverySettingsStorage.getDefaultDiscoveryRetryIntervalMs();
-        this.domains = domains;
+        this.domains = (domains != null) ? new HashSet<>(domains) : null;
         this.messageRouter = messageRouter;
         this.versionCompatibilityChecker = versionCompatibilityChecker;
         try {
@@ -184,7 +183,7 @@ public class GuidedProxyBuilder {
             messagingQos.setTtl_ms(maxMessagingTtl);
         }
 
-        this.messagingQos = messagingQos;
+        this.messagingQos = new MessagingQos(messagingQos);
         return this;
     }
 
@@ -324,15 +323,9 @@ public class GuidedProxyBuilder {
             }
 
             @Override
-            public void onError(Throwable throwable) {
-                JoynrRuntimeException reason;
-                if (throwable instanceof JoynrRuntimeException) {
-                    reason = (JoynrRuntimeException) throwable;
-                } else {
-                    reason = new JoynrRuntimeException(throwable);
-                }
+            public void onError(DiscoveryException exception) {
                 discoveryInProgress = false;
-                resultFuture.completeExceptionally(reason);
+                resultFuture.completeExceptionally(exception);
             }
         });
         savedArbitrationResult = new ArbitrationResult();

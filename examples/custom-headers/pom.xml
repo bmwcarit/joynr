@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -43,7 +43,6 @@
 	</properties>
 
 	<dependencyManagement>
-
 		<dependencies>
 			<dependency>
 				<groupId>io.joynr.java</groupId>
@@ -56,13 +55,16 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>io.joynr.java.messaging.mqtt</groupId>
-				<artifactId>hivemq-mqtt-client</artifactId>
+				<groupId>io.joynr.java.messaging</groupId>
+				<artifactId>messaging-common</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
+			<dependency>
+				<groupId>io.joynr.java.messaging.mqtt</groupId>
+				<artifactId>joynr-mqtt-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
-
 	</dependencyManagement>
 
 </project>

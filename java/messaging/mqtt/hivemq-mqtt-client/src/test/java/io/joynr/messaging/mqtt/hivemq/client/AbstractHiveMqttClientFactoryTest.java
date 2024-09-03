@@ -132,6 +132,7 @@ public abstract class AbstractHiveMqttClientFactoryTest {
                                     0,
                                     isReceiver,
                                     isSender,
+                                    false,
                                     gbid,
                                     connectionStatusMetricsImpl);
     }

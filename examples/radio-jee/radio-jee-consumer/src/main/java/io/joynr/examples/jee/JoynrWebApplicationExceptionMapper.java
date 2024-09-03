@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,20 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.messaging;
+package io.joynr.examples.jee;
 
-import com.google.inject.AbstractModule;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-public class NoBackendMessagingModule extends AbstractModule {
-
+@Provider
+public class JoynrWebApplicationExceptionMapper implements ExceptionMapper<JoynrWebApplicationException> {
     @Override
-    protected void configure() {
-        bind(MessageReceiver.class).to(NoBackendMessagingReceiver.class);
+    public Response toResponse(JoynrWebApplicationException exception) {
+        return Response.status(exception.getStatus())
+                       .entity(exception.getMessage())
+                       .type(MediaType.TEXT_PLAIN_TYPE)
+                       .build();
     }
 }

@@ -86,6 +86,14 @@ public:
     virtual void unregisterBroadcastListener(
             const std::string& broadcastName,
             std::shared_ptr<UnicastBroadcastListener> broadcastListener) = 0;
+    /**
+     * @brief Unregister and delete a listener for multicast broadcasts
+     * @param broadcastName The name of the broadcast for which publications shall be done
+     * @param broadcastListener The listener object containing the callbacks for publications and
+     * failures
+     */
+    virtual void unregisterBroadcastListener(
+            std::shared_ptr<MulticastBroadcastListener> broadcastListener) = 0;
 
     /**
      * @brief Gets the interface name

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2022 BMW Car IT GmbH
+ * Copyright (C) 2022-2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -563,7 +563,7 @@ public class LocalCapabilitiesDirectoryLookupByDomainInterfaceTest extends Abstr
         verify(globalDiscoveryEntryCacheMock, never()).add(any(GlobalDiscoveryEntry.class));
         verify(routingTable, times(1)).incrementReferenceCount(capturedDiscoveryEntries[0].getParticipantId());
         verify(routingTable, never()).put(anyString(), any(Address.class), any(Boolean.class), anyLong());
-        verify(localDiscoveryEntryStoreMock).lookup(domains, INTERFACE_NAME);
+        verify(localDiscoveryEntryStoreMock, times(2)).lookup(domains, INTERFACE_NAME);
     }
 
     @Test(timeout = TEST_TIMEOUT)

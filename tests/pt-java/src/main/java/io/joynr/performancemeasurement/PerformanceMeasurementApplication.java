@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2021 BMW Car IT GmbH
+ * Copyright (C) 2021 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import io.joynr.arbitration.DiscoveryQos;
 import io.joynr.arbitration.DiscoveryScope;
 import io.joynr.capabilities.ParticipantIdKeyUtil;
 import io.joynr.common.JoynrPropertiesModule;
+import io.joynr.exceptions.DiscoveryException;
 import io.joynr.exceptions.JoynrRuntimeException;
 import io.joynr.messaging.mqtt.hivemq.client.HivemqMqttClientModule;
 import io.joynr.performancemeasurement.ApplicationInvocationParameters.TESTCASE;
@@ -275,6 +276,11 @@ public class PerformanceMeasurementApplication {
             public void onProxyCreationError(JoynrRuntimeException error) {
                 gcdProxyFuture.onFailure(error);
             }
+
+            @Override
+            public void onProxyCreationError(DiscoveryException error) {
+                gcdProxyFuture.onFailure(error);
+            }
         });
         return gcdProxyFuture.get();
     }
@@ -332,6 +338,13 @@ public class PerformanceMeasurementApplication {
 
                         @Override
                         public void onProxyCreationError(JoynrRuntimeException error) {
+                            logger.error("PerformanceMeasurement: proxy creation in a separate thread failed!");
+                            proxyCreatedCounter.incrementAndGet();
+                            proxiesCreationMaxInflightSemaphore.release();
+                        }
+
+                        @Override
+                        public void onProxyCreationError(DiscoveryException error) {
                             logger.error("PerformanceMeasurement: proxy creation in a separate thread failed!");
                             proxyCreatedCounter.incrementAndGet();
                             proxiesCreationMaxInflightSemaphore.release();

@@ -18,6 +18,7 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.AfterClass;
@@ -72,9 +73,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                                                                                                          .setValidityMs(validityMs)
                                                                                                          .setAlertAfterIntervalMs(alertAfterIntervalMs)
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
-        boolean result;
-
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
 
         try {
             // must set the value before it can be retrieved again via subscription
@@ -106,19 +105,16 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeAttributeEnumerationCallbackDone == false) {
+            if (!subscribeAttributeEnumerationCallbackDone) {
                 logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 logger.info(name.getMethodName() + " - wait for callback is over");
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
-            if (subscribeAttributeEnumerationCallbackDone && subscribeAttributeEnumerationCallbackResult) {
-                result = true;
-            } else {
-                fail(name.getMethodName() + " - FAILED - callback NOT done");
-                result = false;
-            }
+
+            assertTrue(name.getMethodName() + " - FAILED - callback NOT done",
+                       subscribeAttributeEnumerationCallbackDone && subscribeAttributeEnumerationCallbackResult);
 
             // try to unsubscribe in any case
             try {
@@ -126,19 +122,12 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - unsubscribe successful");
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 
@@ -160,9 +149,7 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
                                                                                                          .setValidityMs(validityMs)
                                                                                                          .setAlertAfterIntervalMs(alertAfterIntervalMs)
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
-        boolean result;
-
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
 
         try {
             subscriptionIdFuture = testInterfaceProxy.subscribeToAttributeWithExceptionFromGetter(new AttributeSubscriptionAdapter<Boolean>() {
@@ -201,23 +188,19 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeAttributeWithExceptionFromGetterCallbackDone == false) {
+            if (!subscribeAttributeWithExceptionFromGetterCallbackDone) {
                 logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 logger.info(name.getMethodName() + " - wait for callback is over");
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
-            if (!subscribeAttributeWithExceptionFromGetterCallbackDone) {
-                fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeAttributeWithExceptionFromGetterCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected exception");
-                result = true;
-            } else {
-                fail(name.getMethodName() + " - FAILED - callback got called but received unexpected result");
-                result = false;
-            }
+
+            assertTrue(name.getMethodName() + " - FAILED - callback did not get called in time",
+                       subscribeAttributeWithExceptionFromGetterCallbackDone);
+            assertTrue(name.getMethodName() + " - FAILED - callback got called but received unexpected result",
+                       subscribeAttributeWithExceptionFromGetterCallbackResult);
+            logger.info(name.getMethodName() + " - callback got called and received expected exception");
 
             // try to unsubscribe in any case
             try {
@@ -226,21 +209,14 @@ public class IltConsumerAttributeSubscriptionTest extends IltConsumerTest {
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             logger.info(name.getMethodName() + " - caught unexpected exception");
             logger.info(name.getMethodName() + " - FAILED");
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
     }
 }

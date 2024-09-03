@@ -26,12 +26,32 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>tests</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 	</parent>
 
 	<modules>
 		<module>performance-test-jee-api</module>
 		<module>performance-test-jee-provider</module>
 	</modules>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.joynr.java</groupId>
+				<artifactId>javaapi</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java</groupId>
+				<artifactId>jeeintegration</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.joynr.java.messaging</groupId>
+				<artifactId>messaging-common</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 </project>

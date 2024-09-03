@@ -29,6 +29,16 @@ public class QualityOfService {
     public QualityOfService() {
     }
 
+    /**
+     * Copy constructor
+     *
+     * @param other reference to the object to be copied
+     */
+    public QualityOfService(QualityOfService other) {
+        this.dataFreshnessMs = other.dataFreshnessMs;
+        this.cacheEntryTimeToLiveMs = other.getCacheTimeToLiveMs();
+    }
+
     public void setCacheTimeToLiveMs(long milliseconds) {
         this.cacheEntryTimeToLiveMs = milliseconds;
     }

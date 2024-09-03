@@ -39,6 +39,15 @@ public class RequestStatus {
         this.descriptionList = new ArrayList<String>();
     }
 
+    /**
+     * Copy constructor
+     */
+    public RequestStatus(RequestStatus other) {
+        super();
+        this.code = other.code;
+        this.descriptionList = (other.descriptionList != null) ? new ArrayList<>(other.descriptionList) : null;
+    }
+
     public RequestStatusCode getCode() {
         return code;
     }
@@ -48,11 +57,11 @@ public class RequestStatus {
     }
 
     public List<String> getDescriptionList() {
-        return descriptionList;
+        return (descriptionList != null) ? new ArrayList<>(descriptionList) : null;
     }
 
     public void setDescriptionList(List<String> description) {
-        this.descriptionList = description;
+        this.descriptionList = (description != null) ? new ArrayList<>(description) : null;
     }
 
     public void addDescription(String additionalDescription) {

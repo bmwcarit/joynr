@@ -43,7 +43,7 @@ public class DiscoverySettingsStorage {
                                     @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_TIMEOUT_MS) long defaultDiscoveryTimeoutMs,
                                     @Named(ConfigurableMessagingSettings.PROPERTY_DISCOVERY_DEFAULT_RETRY_INTERVAL_MS) long defaultDiscoveryRetryIntervalMs) {
         this.proxyBuilderFactory = proxyBuilderFactory;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
         this.localDiscoveryAggregator = localDiscoveryAggregator;
         this.maxMessagingTtl = maxMessagingTtl;
         this.defaultDiscoveryTimeoutMs = defaultDiscoveryTimeoutMs;
@@ -55,7 +55,7 @@ public class DiscoverySettingsStorage {
     }
 
     public ObjectMapper getObjectMapper() {
-        return objectMapper;
+        return new ObjectMapper(objectMapper);
     }
 
     public DiscoveryAsync getLocalDiscoveryAggregator() {

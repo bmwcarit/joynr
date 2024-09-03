@@ -32,7 +32,6 @@ import joynr.BroadcastSubscriptionRequest;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MulticastPublication;
-import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
@@ -75,7 +74,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
 
-    private Set<String> trackerRegisteredMessages;
+    private Set<MessageTrackerForGracefulShutdown.MessageToTrack> trackerRegisteredMessages;
     private Semaphore semaphore;
     private MessageProcessedListener mockMessageProcessedListener;
 
@@ -99,7 +98,6 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     private final Supplier<ImmutableMessage> statelessAsyncRequestSupplier = this::createStatelessAsyncRequest;
     private final Supplier<ImmutableMessage> oneWayRequestSupplier = this::createOneWayRequest;
     private final Supplier<ImmutableMessage> multicastPublicationSupplier = this::createMulticastPublication;
-    private final Supplier<ImmutableMessage> multicastSubscriptionRequestSupplier = this::createMulticastSubscriptionRequest;
     private final Supplier<ImmutableMessage> broadcastSubscriptionRequestSupplier = this::createBroadcastSubscriptionRequest;
 
     @Test
@@ -203,16 +201,6 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
     }
 
     @Test
-    public void testMulticastSubscriptionRequestProcessedSuccessfullyIsTracked() throws InterruptedException {
-        testMessageType(multicastSubscriptionRequestSupplier, MSG_SUCCESS);
-    }
-
-    @Test
-    public void testMulticastSubscriptionRequestProcessedWithErrorIsTracked() throws InterruptedException {
-        testMessageType(multicastSubscriptionRequestSupplier, MSG_ERROR);
-    }
-
-    @Test
     public void testBroadcastSubscriptionRequestProcessedSuccessfullyIsTracked() throws InterruptedException {
         testMessageType(broadcastSubscriptionRequestSupplier, MSG_SUCCESS);
     }
@@ -246,7 +234,10 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
         ccMessageRouter.routeIn(immutableMessage);
         if (trackable) {
             assertEquals(1, trackerRegisteredMessages.size());
-            assertTrue(trackerRegisteredMessages.contains(requestReplyId));
+            final MessageTrackerForGracefulShutdown.MessageToTrack messageToTrack = new MessageTrackerForGracefulShutdown.MessageToTrack(immutableMessage.getId(),
+                                                                                                                                         requestReplyId,
+                                                                                                                                         immutableMessage.getType());
+            assertTrue(trackerRegisteredMessages.contains(messageToTrack));
         } else {
             assertEquals(0, trackerRegisteredMessages.size());
         }
@@ -291,7 +282,6 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
         try {
             return joynrMessage.getImmutableMessage();
         } catch (final Exception e) {
-            fail("Unexpected failure while getting immutable message: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -392,18 +382,6 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
         return getImmutableMessage(mutableMessage);
     }
 
-    private ImmutableMessage createMulticastSubscriptionRequest() {
-        final MulticastSubscriptionRequest multicastSubscriptionRequest = new MulticastSubscriptionRequest(CcMessageRouterRouteTest.MULTICAST_ID,
-                                                                                                           CcMessageRouterRouteTest.SUBSCRIPTION_ID,
-                                                                                                           "multicastName",
-                                                                                                           new OnChangeSubscriptionQos());
-        final MutableMessage mutableMessage = messageFactory.createSubscriptionRequest(fromParticipantId,
-                                                                                       toParticipantId,
-                                                                                       multicastSubscriptionRequest,
-                                                                                       new MessagingQos());
-        return getImmutableMessage(mutableMessage);
-    }
-
     private ImmutableMessage createBroadcastSubscriptionRequest() {
         final BroadcastSubscriptionRequest multicastSubscriptionRequest = new BroadcastSubscriptionRequest(CcMessageRouterRouteTest.SUBSCRIPTION_ID,
                                                                                                            "subscribedToName",
@@ -427,7 +405,7 @@ public class CcMessageRouterRouteTest extends AbstractCcMessageRouterTest {
             final MessageTrackerForGracefulShutdown tracker = (MessageTrackerForGracefulShutdown) trackerField.get(ccMessageRouter);
             final Field messageSetField = MessageTrackerForGracefulShutdown.class.getDeclaredField("registeredMessages");
             messageSetField.setAccessible(true);
-            trackerRegisteredMessages = (Set<String>) messageSetField.get(tracker);
+            trackerRegisteredMessages = (Set<MessageTrackerForGracefulShutdown.MessageToTrack>) messageSetField.get(tracker);
         } catch (final NoSuchFieldException | IllegalAccessException e) {
             fail("Unable to access CcMessageRouter's messageTracker: " + e.getMessage());
         }

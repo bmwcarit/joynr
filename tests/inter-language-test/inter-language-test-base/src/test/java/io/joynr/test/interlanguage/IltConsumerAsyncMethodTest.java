@@ -18,6 +18,8 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -148,7 +150,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
     @Test
     public void callMethodWithMultipleStructParametersAsync() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
             // setup input parameters
             ExtendedStructOfPrimitives extendedStructOfPrimitivesArg = IltUtil.createExtendedStructOfPrimitives();
@@ -201,57 +203,46 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 long timeoutInMilliseconds = 8000;
                 logger.info(name.getMethodName() + " - about to call future.get");
                 MethodWithMultipleStructParametersReturned result = future.get(timeoutInMilliseconds);
-                if (result == null) {
-                    fail(name.getMethodName() + " - FAILED - got no result");
-                    return;
-                }
+                assertNotNull(name.getMethodName() + " - FAILED - got no result", result);
                 logger.info(name.getMethodName() + " - returned from future.get");
 
                 // check results from future
-                if (!IltUtil.checkBaseStructWithoutElements(result.baseStructWithoutElementsOut)) {
-                    fail(name.getMethodName() + " - FAILED - got invalid result - baseStructWithoutElementsOut");
-                    return;
-                }
+                assertTrue(name.getMethodName() + " - FAILED - got invalid result - baseStructWithoutElementsOut",
+                           IltUtil.checkBaseStructWithoutElements(result.baseStructWithoutElementsOut));
 
                 ExtendedExtendedBaseStruct extendedExtendedBaseStruct = IltUtil.createExtendedExtendedBaseStruct();
-                if (!result.extendedExtendedBaseStructOut.equals(extendedExtendedBaseStruct)) {
-                    fail(name.getMethodName() + " - FAILED - got invalid result - extendedExtendedBaseStructOut");
-                    return;
-                }
+                assertEquals(name.getMethodName() + " - FAILED - got invalid result - extendedExtendedBaseStructOut",
+                             result.extendedExtendedBaseStructOut,
+                             extendedExtendedBaseStruct);
                 logger.info(name.getMethodName() + " - future result checks OK");
 
                 // check results from callback; expect to be finished within 1 second
                 // should have been called ahead anyway
-                if (methodWithMultipleStructParametersAsyncCallbackDone == false) {
+                if (!methodWithMultipleStructParametersAsyncCallbackDone) {
                     logger.info(name.getMethodName() + " - about to wait for a second for callback");
                     Thread.sleep(1000);
                     logger.info(name.getMethodName() + " - wait for callback is over");
                 } else {
                     logger.info(name.getMethodName() + " - callback already done");
                 }
-                if (methodWithMultipleStructParametersAsyncCallbackDone == false) {
-                    fail(name.getMethodName() + " - FAILED - callback NOT done");
-                    return;
-                }
-                if (methodWithMultipleStructParametersAsyncCallbackResult == false) {
-                    fail(name.getMethodName() + " - FAILED - callback reported error");
-                    return;
-                }
+
+                assertTrue(name.getMethodName() + " - FAILED - callback NOT done",
+                           methodWithMultipleStructParametersAsyncCallbackDone);
+                assertTrue(name.getMethodName() + " - FAILED - callback reported error",
+                           methodWithMultipleStructParametersAsyncCallbackResult);
                 logger.info(name.getMethodName() + " - callback has set OK flags");
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-                return;
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callMethodWithSingleArrayParametersAsync() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         String[] stringArray = { "Hello", "World" };
         Double[] doubleArrayArg = IltUtil.createDoubleArray();
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithSingleArrayParameters",
@@ -264,7 +255,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
 
     @Test
     public void callMethodWithSinglePrimitiveParametersAsync() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         short shortArg = (short) 32767;
         callProxyMethodWithParameterAsyncAndAssertResult("methodWithSinglePrimitiveParameters",
                                                          shortArg,
@@ -436,7 +427,7 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
     @SuppressWarnings("checkstyle:methodlength")
     @Test
     public void callMethodWithExtendedErrorEnumAsync() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
             // setup input parameters
             String wantedExceptionArg = "ProviderRuntimeException";
@@ -489,7 +480,6 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - 1st - about to call future.get");
                 future.get(timeoutInMilliseconds);
                 fail(name.getMethodName() + " - FAILED - unexpected return from future");
-                return;
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException error) {
                 if (error instanceof ProviderRuntimeException) {
                     if (((ProviderRuntimeException) error).getMessage()
@@ -500,40 +490,33 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     } else {
                         // incorrect message
                         fail(name.getMethodName() + " - FAILED - caught invalid exception: " + error.getMessage());
-                        return;
                     }
                 } else if (error instanceof JoynrRuntimeException) {
                     // incorrect exception, can output message
                     fail(name.getMethodName() + " - FAILED - caught invalid exception: " + error.getMessage());
-                    return;
                 } else {
                     // incorrect exception, can not output message
                     fail(name.getMethodName() + " - FAILED - caught unexpected exception");
-                    return;
                 }
 
                 // check results from callback; expect to be finished within 1 second
                 // should have been called ahead anyway
-                if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
+                if (!methodWithExtendedErrorEnumAsyncCallbackDone) {
                     logger.info(name.getMethodName() + " - 1st - wait a second for callback");
                     Thread.sleep(1000);
                     logger.info(name.getMethodName() + " - 1st - wait for callback is over");
                 } else {
                     logger.info(name.getMethodName() + " - 1st - callback already done");
                 }
-                if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
-                    fail(name.getMethodName() + " - FAILED - callback NOT done");
-                    return;
-                }
-                if (!methodWithExtendedErrorEnumAsyncCallbackResult) {
-                    fail(name.getMethodName() + " - FAILED - callback reported failure");
-                    return;
-                }
+
+                assertTrue(name.getMethodName() + " - FAILED - callback NOT done",
+                           methodWithExtendedErrorEnumAsyncCallbackDone);
+                assertTrue(name.getMethodName() + " - FAILED - callback reported failure",
+                           methodWithExtendedErrorEnumAsyncCallbackResult);
                 logger.info(name.getMethodName() + " - 1st - callback caught expected exception");
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
 
         logger.info(name.getMethodName() + " - ProviderRuntimeException check done");
@@ -584,7 +567,6 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                 logger.info(name.getMethodName() + " - 2nd - about to call future.get");
                 future.get(timeoutInMilliseconds);
                 fail(name.getMethodName() + " - FAILED - unexpected return from future");
-                return;
             } catch (InterruptedException | JoynrRuntimeException | ApplicationException error) {
                 if (error instanceof ApplicationException) {
                     if (((ApplicationException) error).getError() == MethodWithExtendedErrorEnumErrorEnum.ERROR_3_3_NTC) {
@@ -593,45 +575,37 @@ public class IltConsumerAsyncMethodTest extends IltConsumerTest {
                     } else {
                         fail(name.getMethodName() + " - FAILED - 2nd - caught invalid ApplicationException with enum: "
                                 + ((ApplicationException) error).getError());
-                        return;
                     }
                 } else if (error instanceof JoynrRuntimeException) {
                     // incorrect exception, can output message
                     fail(name.getMethodName() + " - FAILED - 2nd - caught invalid JoynrRuntimeException: "
                             + error.getMessage());
-                    return;
                 } else {
                     // incorrect exception, can not output message
                     fail(name.getMethodName() + " - FAILED - caught invalid other exception");
-                    return;
                 }
 
                 // check results from callback; expect to be finished within 1 second
                 // should have been called ahead anyway
-                if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
+                if (!methodWithExtendedErrorEnumAsyncCallbackDone) {
                     logger.info(name.getMethodName() + " - 2nd - about to wait for a second for callback");
                     Thread.sleep(1000);
                     logger.info(name.getMethodName() + " - 2nd - wait for callback is over");
                 } else {
                     logger.info(name.getMethodName() + " - 2nd - callback already done");
                 }
-                if (methodWithExtendedErrorEnumAsyncCallbackDone == false) {
-                    fail(name.getMethodName() + " - FAILED - 2nd - callback NOT done");
-                    return;
-                }
-                if (!methodWithExtendedErrorEnumAsyncCallbackResult) {
-                    fail(name.getMethodName() + " - FAILED - 2nd - callback reported success");
-                    return;
-                }
+
+                assertTrue(name.getMethodName() + " - FAILED - 2nd - callback NOT done",
+                           methodWithExtendedErrorEnumAsyncCallbackDone);
+                assertTrue(name.getMethodName() + " - FAILED - 2nd - callback reported success",
+                           methodWithExtendedErrorEnumAsyncCallbackResult);
                 logger.info(name.getMethodName() + " - 2nd - callback has got expected exception");
             }
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - ApplicationException check done");
         logger.info(name.getMethodName() + " - OK");
-        return;
 
         // 3rd test omitted
     }

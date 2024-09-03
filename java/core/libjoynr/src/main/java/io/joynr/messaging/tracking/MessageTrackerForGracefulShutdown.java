@@ -21,9 +21,12 @@ package io.joynr.messaging.tracking;
 import static io.joynr.proxy.StatelessAsyncIdCalculator.REQUEST_REPLY_ID_SEPARATOR;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,20 +57,25 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
     private static final Set<Message.MessageType> MESSAGE_TYPE_UNSUPPORTED = Set.of(Message.MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY);
 
     private static final String PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT = "joynr.runtime.prepareforshutdowntimeout";
+    private static final String PROPERTY_ENABLE_LOGGING = "joynr.message.tracker.logging.enabled";
 
-    private final Set<String> registeredMessages = ConcurrentHashMap.newKeySet();
+    private final Set<MessageToTrack> registeredMessages = ConcurrentHashMap.newKeySet();
 
     private final ObjectMapper objectMapper;
 
+    @SuppressWarnings("FieldCanBeLocal")
     @Inject(optional = true)
     @Named(PROPERTY_PREPARE_FOR_SHUTDOWN_TIMEOUT)
     private int prepareForShutdownTimeoutSec = 5;
+    @Inject(optional = true)
+    @Named(PROPERTY_ENABLE_LOGGING)
+    private boolean loggingEnabled = false;
 
     @Inject
     public MessageTrackerForGracefulShutdown(final ShutdownNotifier shutdownNotifier, final ObjectMapper objectMapper) {
         shutdownNotifier.registerMessageTrackerShutdownListener(this);
         shutdownNotifier.registerMessageTrackerPrepareForShutdownListener(this);
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
     }
 
     /**
@@ -75,23 +83,86 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
      * @param immutableMessage message to be registered
      */
     public void register(final ImmutableMessage immutableMessage) {
-        if (immutableMessage == null) {
-            throw new JoynrIllegalStateException("ImmutableMessage cannot be null");
-        }
+        process(immutableMessage, registerAction);
+    }
 
-        Message.MessageType type = immutableMessage.getType();
-        if (isMessageTypeUnsupported(type)) {
+    private final Consumer<MessageToTrack> registerAction = messageToTrack -> {
+        logIfPossible("Trying to register message with following ID: {} and requestReplyId: {}",
+                      messageToTrack.getMessageId(),
+                      messageToTrack.getRequestReplyId());
+        if (registeredMessages.add(messageToTrack)) {
+            logIfPossible("Message with following ID: {} and requestReplyId: {} has been successfully registered",
+                          messageToTrack.getMessageId(),
+                          messageToTrack.getRequestReplyId());
+        } else {
+            logIfPossible("Message with following ID: {} and requestReplyId: {} is already registered.",
+                          messageToTrack.getMessageId(),
+                          messageToTrack.getRequestReplyId());
+        }
+    };
+
+    private final Consumer<MessageToTrack> unregisterAction = messageToTrack -> {
+        logIfPossible("Trying to unregister message with following ID: {} and requestReplyId: {}",
+                      messageToTrack.getMessageId(),
+                      messageToTrack.getRequestReplyId());
+        if (registeredMessages.remove(messageToTrack)) {
+            synchronized (registeredMessages) {
+                if (registeredMessages.isEmpty()) {
+                    registeredMessages.notify();
+                }
+            }
+            logIfPossible("Message with following ID: {} and requestReplyId: {} has been successfully unregistered",
+                          messageToTrack.getMessageId(),
+                          messageToTrack.getRequestReplyId());
+        } else {
+            logIfPossible("Message with following ID {} and requestReplyId: {} has not been unregistered.",
+                          messageToTrack.getMessageId(),
+                          messageToTrack.getRequestReplyId());
+        }
+    };
+
+    /**
+     * Processes an action with immutable message
+     * @param immutableMessage immutable message instance
+     * @param action           action to invoke (register or unregister)
+     */
+    private void process(final ImmutableMessage immutableMessage, final Consumer<MessageToTrack> action) {
+        checkIfNull(immutableMessage);
+        if (isMessageTypeUnsupported(immutableMessage)) {
             return;
         }
+        final String messageId = getId(immutableMessage);
+        final String requestReplyId = getRequestReplyId(immutableMessage);
+        final MessageToTrack messageToTrack = new MessageToTrack(messageId, requestReplyId, immutableMessage.getType());
+        action.accept(messageToTrack);
+    }
 
-        String messageId = getId(immutableMessage);
+    /**
+     * Logs message as a debug one if logging is enabled
+     * @param message   message to log
+     * @param parameter parameter of message to log
+     */
+    private void logIfPossible(final String message, final String parameter) {
+        if (loggingEnabled) {
+            logger.debug(message, parameter);
+        }
+    }
 
-        logger.info("Trying to register message with following ID: {}", messageId);
-        boolean isRegistered = registeredMessages.add(messageId);
-        if (isRegistered) {
-            logger.info("Message with following ID: {} has been successfully registered", messageId);
-        } else {
-            logger.warn("Message with following ID is already registered: {}", messageId);
+    /**
+     * Logs message as a debug one if logging is enabled
+     * @param message   message to log
+     * @param parameter1 first parameter of message to log
+     * @param parameter2 second parameter of message to log
+     */
+    private void logIfPossible(final String message, final String parameter1, final String parameter2) {
+        if (loggingEnabled) {
+            logger.debug(message, parameter1, parameter2);
+        }
+    }
+
+    private void checkIfNull(final ImmutableMessage immutableMessage) {
+        if (immutableMessage == null) {
+            throw new JoynrIllegalStateException("ImmutableMessage cannot be null");
         }
     }
 
@@ -100,29 +171,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
      * @param immutableMessage message to be unregistered
      */
     public void unregister(final ImmutableMessage immutableMessage) {
-        if (immutableMessage == null) {
-            throw new JoynrIllegalStateException("ImmutableMessage cannot be null");
-        }
-
-        final Message.MessageType type = immutableMessage.getType();
-        if (isMessageTypeUnsupported(type)) {
-            return;
-        }
-
-        final String messageId = getId(immutableMessage);
-
-        logger.info("Trying to unregister message with following ID: {}", messageId);
-        boolean isUnregistered = registeredMessages.remove(messageId);
-        if (isUnregistered) {
-            synchronized (registeredMessages) {
-                if (registeredMessages.isEmpty()) {
-                    registeredMessages.notify();
-                }
-            }
-            logger.info("Message with following ID: {} has been successfully unregistered", messageId);
-        } else {
-            logger.warn("Message with following ID has not been registered: {}", messageId);
-        }
+        process(immutableMessage, unregisterAction);
     }
 
     /**
@@ -134,19 +183,26 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
             throw new JoynrIllegalStateException("The requestReplyId passed for unregistering is null or empty.");
         }
 
-        logger.info("Trying to unregister request with requestReplyId: {} after expiry ReplyCaller", requestReplyId);
-        final boolean isUnregistered = registeredMessages.remove(requestReplyId);
-        if (isUnregistered) {
+        logIfPossible("Trying to unregister request with requestReplyId: {} after expiry ReplyCaller", requestReplyId);
+        final Optional<MessageToTrack> optional = findRequestByRequestReplyId(requestReplyId);
+        optional.ifPresentOrElse((messageToTrack) -> {
+            registeredMessages.remove(messageToTrack);
             synchronized (registeredMessages) {
                 if (registeredMessages.isEmpty()) {
                     registeredMessages.notify();
                 }
             }
-            logger.info("The request with the following requestReplyId: {} has been successfully unregistered",
-                        requestReplyId);
-        } else {
-            logger.warn("The request with the following requestReplyId has not been registered: {}", requestReplyId);
-        }
+            logIfPossible("The request with the following requestReplyId: {} has been successfully unregistered",
+                          requestReplyId);
+        },
+                                 () -> logIfPossible("The request with the following requestReplyId has not been unregistered: {}",
+                                                     requestReplyId));
+    }
+
+    private Optional<MessageToTrack> findRequestByRequestReplyId(final String requestReplyId) {
+        return registeredMessages.stream()
+                                 .filter(messageToTrack -> messageToTrack.isRequestWithRequestReplyId(requestReplyId))
+                                 .findAny();
     }
 
     /**
@@ -172,14 +228,7 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
      * @return message identifier
      */
     private String getId(final ImmutableMessage immutableMessage) {
-        String messageId;
-
-        if (isRequestOrReply(immutableMessage.getType())) {
-            messageId = getRequestReplyId(immutableMessage);
-        } else {
-            messageId = immutableMessage.getId();
-        }
-
+        final String messageId = immutableMessage.getId();
         if (messageId == null) {
             throw new JoynrIllegalStateException("The id of message or request is null.");
         }
@@ -192,28 +241,37 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
      * @return requestReplyId as String value
      */
     private String getRequestReplyId(final ImmutableMessage immutableMessage) {
-        String requestReplyId = immutableMessage.getCustomHeaders().get(Message.CUSTOM_HEADER_REQUEST_REPLY_ID);
-        if (requestReplyId == null || requestReplyId.isEmpty()) {
-            try {
-                String deserializedPayload = new String(immutableMessage.getUnencryptedBody(), StandardCharsets.UTF_8);
-                final Request request = objectMapper.readValue(deserializedPayload, Request.class);
-                requestReplyId = request.getRequestReplyId();
-            } catch (Exception e) {
-                logger.error("Error while trying to get requestReplyId from the message. msgId: {}. from: {} to: {}. Error:",
-                             immutableMessage.getId(),
-                             immutableMessage.getSender(),
-                             immutableMessage.getRecipient(),
-                             e);
-            }
+        if (isRequestOrReply(immutableMessage.getType())) {
+            String requestReplyId = immutableMessage.getCustomHeaders().get(Message.CUSTOM_HEADER_REQUEST_REPLY_ID);
             if (requestReplyId == null || requestReplyId.isEmpty()) {
+                try {
+                    String deserializedPayload = new String(immutableMessage.getUnencryptedBody(),
+                                                            StandardCharsets.UTF_8);
+                    final Request request = objectMapper.readValue(deserializedPayload, Request.class);
+                    requestReplyId = request.getRequestReplyId();
+                } catch (Exception e) {
+                    logger.error("Error while trying to get requestReplyId from the message. msgId: {}. from: {} to: {}. Error:",
+                                 immutableMessage.getId(),
+                                 immutableMessage.getSender(),
+                                 immutableMessage.getRecipient(),
+                                 e);
+                }
+                if (requestReplyId == null || requestReplyId.isEmpty()) {
+                    return immutableMessage.getId();
+                }
+            }
+            if (requestReplyId.contains(REQUEST_REPLY_ID_SEPARATOR)) {
+                // stateless async
                 return immutableMessage.getId();
             }
-        }
-        if (requestReplyId.contains(REQUEST_REPLY_ID_SEPARATOR)) {
-            // stateless async
+            return requestReplyId;
+        } else {
             return immutableMessage.getId();
         }
-        return requestReplyId;
+    }
+
+    private boolean isMessageTypeUnsupported(final ImmutableMessage immutableMessage) {
+        return isMessageTypeUnsupported(immutableMessage.getType());
     }
 
     private boolean isMessageTypeUnsupported(Message.MessageType type) {
@@ -249,4 +307,46 @@ public class MessageTrackerForGracefulShutdown implements ShutdownListener, Prep
         //The method will remain empty
     }
 
+    public static class MessageToTrack {
+        private final String messageId;
+        private final String requestReplyId;
+        private final Message.MessageType messageType;
+
+        public MessageToTrack(final String messageId,
+                              final String requestReplyId,
+                              final Message.MessageType messageType) {
+            this.messageId = messageId;
+            this.requestReplyId = requestReplyId;
+            this.messageType = messageType;
+        }
+
+        public String getMessageId() {
+            return messageId;
+        }
+
+        public String getRequestReplyId() {
+            return requestReplyId;
+        }
+
+        public boolean isRequestWithRequestReplyId(final String requestReplyId) {
+            return messageType.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)
+                    && this.requestReplyId.equals(requestReplyId);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            final MessageToTrack that = (MessageToTrack) o;
+            return Objects.equals(messageId, that.messageId) && Objects.equals(requestReplyId, that.requestReplyId)
+                    && messageType == that.messageType;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(messageId, requestReplyId, messageType);
+        }
+    }
 }

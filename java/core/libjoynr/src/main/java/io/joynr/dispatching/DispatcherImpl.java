@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2020-2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ import io.joynr.util.ObjectMapper;
 import joynr.ImmutableMessage;
 import joynr.Message;
 import joynr.MulticastPublication;
-import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OneWayRequest;
 import joynr.Reply;
@@ -90,7 +89,7 @@ public class DispatcherImpl implements Dispatcher {
         this.publicationManager = publicationManager;
         this.messageSender = messageSender;
         this.messageFactory = messageFactory;
-        this.objectMapper = objectMapper;
+        this.objectMapper = new ObjectMapper(objectMapper);
         this.overrideCompress = overrideCompress;
         this.statelessAsyncIdCalculator = statelessAsyncIdCalculator;
     }
@@ -109,38 +108,17 @@ public class DispatcherImpl implements Dispatcher {
                                                                               messagingQos);
             message.setLocalMessage(toDiscoveryEntry.getIsLocal());
 
-            if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
-                String multicastId = ((MulticastSubscriptionRequest) subscriptionRequest).getMulticastId();
-                logger.debug("REGISTER MULTICAST SUBSCRIPTION: subscriptionId: {}, multicastId {}, subscribedToName: {}, subscriptionQos.expiryDate: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
-                             subscriptionRequest.getSubscriptionId(),
-                             multicastId,
-                             subscriptionRequest.getSubscribedToName(),
-                             (subscriptionRequest.getQos() == null) ? 0
-                                     : subscriptionRequest.getQos().getExpiryDateMs(),
-                             fromParticipantId,
-                             toDiscoveryEntry.getParticipantId(),
-                             toDiscoveryEntry.getDomain(),
-                             toDiscoveryEntry.getInterfaceName(),
-                             toDiscoveryEntry.getProviderVersion());
-                SubscriptionReply subscriptionReply = new SubscriptionReply(subscriptionRequest.getSubscriptionId());
-                sendSubscriptionReply(toDiscoveryEntry.getParticipantId(),
-                                      fromParticipantId,
-                                      subscriptionReply,
-                                      messagingQos);
-            } else {
-                logger.debug("REGISTER SUBSCRIPTION call proxy: subscriptionId: {}, subscribedToName: {}, subscriptionQos.expiryDate: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
-                             subscriptionRequest.getSubscriptionId(),
-                             subscriptionRequest.getSubscribedToName(),
-                             (subscriptionRequest.getQos() == null) ? 0
-                                     : subscriptionRequest.getQos().getExpiryDateMs(),
-                             message.getId(),
-                             fromParticipantId,
-                             toDiscoveryEntry.getParticipantId(),
-                             toDiscoveryEntry.getDomain(),
-                             toDiscoveryEntry.getInterfaceName(),
-                             toDiscoveryEntry.getProviderVersion());
-                messageSender.sendMessage(message);
-            }
+            logger.debug("REGISTER SUBSCRIPTION call proxy: subscriptionId: {}, subscribedToName: {}, subscriptionQos.expiryDate: {}, messageId: {}, proxy participantId: {}, provider participantId: {}, domain {}, interfaceName {}, {}",
+                         subscriptionRequest.getSubscriptionId(),
+                         subscriptionRequest.getSubscribedToName(),
+                         (subscriptionRequest.getQos() == null) ? 0 : subscriptionRequest.getQos().getExpiryDateMs(),
+                         message.getId(),
+                         fromParticipantId,
+                         toDiscoveryEntry.getParticipantId(),
+                         toDiscoveryEntry.getDomain(),
+                         toDiscoveryEntry.getInterfaceName(),
+                         toDiscoveryEntry.getProviderVersion());
+            messageSender.sendMessage(message);
         }
     }
 
@@ -390,36 +368,6 @@ public class DispatcherImpl implements Dispatcher {
                         final String fromParticipantId,
                         final String toParticipantId) {
         publicationManager.addSubscriptionRequest(fromParticipantId, toParticipantId, subscriptionRequest);
-    }
-
-    @Override
-    public void error(ImmutableMessage message, Throwable error) {
-        if (message == null) {
-            logger.error("Error: ", error);
-            return;
-        }
-
-        Message.MessageType type = message.getType();
-        String payload;
-
-        try {
-            payload = new String(message.getUnencryptedBody(), StandardCharsets.UTF_8);
-        } catch (EncodingException e) {
-            logger.error("Error extracting payload for message with ID {}:", message.getId(), e);
-            return;
-        }
-
-        try {
-            if (type.equals(Message.MessageType.VALUE_MESSAGE_TYPE_REQUEST)) {
-                Request request = objectMapper.readValue(payload, Request.class);
-                requestReplyManager.handleError(request, error);
-            }
-        } catch (IOException e) {
-            logger.error("Error extracting payload for message with ID {}, raw payload: {}. Error: ",
-                         message.getId(),
-                         payload,
-                         e);
-        }
     }
 
     private Object[] getPublicationValues(Class<?>[] parameterTypes, List<?> publicizedValues) {

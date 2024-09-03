@@ -989,7 +989,6 @@ public abstract class AbstractProviderProxyEnd2EndTest extends JoynrEnd2EndTest 
             @Override
             public void onFailure(JoynrRuntimeException error) {
                 fail("byteBuffer was not returned correctly");
-
             }
 
             @Override

@@ -54,19 +54,18 @@ public class IltConsumerCompressionTest extends IltConsumerTest {
     // no check possible other than handling exceptions
     @Test
     public void callMethodWithoutParameters() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
             testInterfaceProxy.methodWithoutParameters();
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }
 
     @Test
     public void callMethodWithMultiplePrimitiveParameters() {
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
         try {
             int intArg = 2147483647;
             float floatArg = 47.11f;
@@ -78,7 +77,6 @@ public class IltConsumerCompressionTest extends IltConsumerTest {
             assertTrue(result.stringOut.equals(Integer.toString(intArg)));
         } catch (Exception e) {
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + e.getMessage());
-            return;
         }
         logger.info(name.getMethodName() + " - OK");
     }

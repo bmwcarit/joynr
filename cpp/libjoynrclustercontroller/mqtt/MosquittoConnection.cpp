@@ -47,7 +47,8 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
                                          std::chrono::seconds mqttReconnectMaxDelayTimeSeconds,
                                          bool isMqttExponentialBackoffEnabled,
                                          const std::string& clientId,
-                                         const std::string& gbid)
+                                         const std::string& gbid,
+                                         bool isMqttRetain)
         : _brokerUrl(brokerUrl),
           _mqttKeepAliveTimeSeconds(mqttKeepAliveTimeSeconds),
           _mqttReconnectDelayTimeSeconds(mqttReconnectDelayTimeSeconds),
@@ -55,6 +56,7 @@ MosquittoConnection::MosquittoConnection(const ClusterControllerSettings& ccSett
           _isMqttExponentialBackoffEnabled(isMqttExponentialBackoffEnabled),
           _host(brokerUrl.getBrokerBaseUrl().getHost()),
           _port(brokerUrl.getBrokerBaseUrl().getPort()),
+          _mqttRetain(isMqttRetain),
           _channelId(),
           _subscribeChannelMid(),
           _topic(),

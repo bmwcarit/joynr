@@ -54,7 +54,6 @@ import com.hivemq.client.internal.checkpoint.Confirmable;
 import com.hivemq.client.internal.mqtt.message.publish.MqttPublish;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 
-import io.joynr.dispatching.subscription.MulticastIdUtil;
 import io.joynr.exceptions.JoynrDelayMessageException;
 import io.joynr.exceptions.JoynrMessageNotSentException;
 import io.joynr.exceptions.JoynrRuntimeException;
@@ -62,7 +61,6 @@ import io.joynr.exceptions.JoynrMessageExpiredException;
 import io.joynr.messaging.FailureAction;
 import io.joynr.messaging.IMessagingStub;
 import io.joynr.messaging.MessagingQos;
-import io.joynr.messaging.MulticastReceiverRegistrar;
 import io.joynr.messaging.SuccessAction;
 import io.joynr.messaging.inprocess.InProcessAddress;
 import io.joynr.messaging.inprocess.InProcessMessagingStub;
@@ -77,8 +75,6 @@ import io.joynr.smrf.EncodingException;
 import io.joynr.smrf.UnsuppportedVersionException;
 import joynr.ImmutableMessage;
 import joynr.Message.MessageType;
-import joynr.MulticastSubscriptionQos;
-import joynr.MulticastSubscriptionRequest;
 import joynr.MutableMessage;
 import joynr.OnChangeSubscriptionQos;
 import joynr.OneWayRequest;
@@ -983,134 +979,6 @@ public class CcRoutingTableCleanupTest extends AbstractRoutingTableCleanupTest {
     @Test
     public void ws_oneWay_success() {
         oneWay_success(wsClientAddress, insertWsMessage);
-    }
-
-    private void mrqSrp_success(Address proxyAddress,
-                                IMessagingStub stub,
-                                boolean increment,
-                                ThrowingConsumer<MutableMessage> fakeIncomingMsg) {
-        createProxyRoutingEntry(proxyAddress);
-        String multicastName = "emptyBroadcast";
-        String multicastId = MulticastIdUtil.createMulticastId(FIXEDPARTICIPANTID1, multicastName, new String[0]);
-
-        // fake incoming subscription request and check refCounts
-        CountDownLatch rqCdl = new CountDownLatch(1);
-        // check refCounts before subscription request execution in PublicationManager
-        doAnswer(factory -> {
-            InProcessMessagingStub inProcessMessagingStubSpy = spy((InProcessMessagingStub) factory.callRealMethod());
-
-            doAnswer(invocation -> {
-                checkIncominMsgAndRefCounts(increment,
-                                            invocation,
-                                            MessageType.VALUE_MESSAGE_TYPE_MULTICAST_SUBSCRIPTION_REQUEST);
-
-                SuccessAction onSuccess = (SuccessAction) invocation.getArguments()[1];
-                invocation.callRealMethod();
-                onSuccess.execute();
-                checkRefCnt(FIXEDPARTICIPANTID1, 1);
-                checkRefCnt(proxyParticipantId, increment ? 2 : 1);
-
-                rqCdl.countDown();
-                return null;
-            }).when(inProcessMessagingStubSpy)
-              .transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
-
-            return inProcessMessagingStubSpy;
-        }).when(inProcessMessagingStubFactorySpy).create(any(InProcessAddress.class));
-
-        // Check refCounts after subscription reply or publication
-        CountDownLatch rpCdl = new CountDownLatch(1);
-        // multicast is published to all GBIDs in case of mqtt
-        CountDownLatch pubCdl = new CountDownLatch(2 * (increment ? gbids.length : 1));
-        doAnswer(invocation -> {
-            ImmutableMessage msg = (ImmutableMessage) invocation.getArguments()[0];
-            if (MessageType.VALUE_MESSAGE_TYPE_MULTICAST.equals(msg.getType())) {
-                assertEquals(multicastId, msg.getRecipient());
-                checkRefCnt(FIXEDPARTICIPANTID1, 1);
-                checkRefCnt(proxyParticipantId, 1);
-                pubCdl.countDown();
-                return null;
-            }
-            assertEquals(proxyParticipantId, msg.getRecipient());
-            assertEquals(MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY, msg.getType());
-            checkRefCnt(FIXEDPARTICIPANTID1, 1);
-            checkRefCnt(proxyParticipantId, increment ? 2 : 1);
-
-            SuccessAction action = (SuccessAction) invocation.getArguments()[1];
-            action.execute();
-            checkRefCnt(FIXEDPARTICIPANTID1, 1);
-            checkRefCnt(proxyParticipantId, 1);
-
-            rpCdl.countDown();
-            return null;
-        }).when(stub).transmit(any(ImmutableMessage.class), any(SuccessAction.class), any(FailureAction.class));
-
-        // fake incoming subscription request and wait for subscription reply
-        String subscriptionId = createUuidString();
-        long validityMs = 5000;
-        MulticastSubscriptionQos qos = new MulticastSubscriptionQos().setValidityMs(validityMs);
-        MulticastSubscriptionRequest request = new MulticastSubscriptionRequest(multicastId,
-                                                                                subscriptionId,
-                                                                                multicastName,
-                                                                                qos);
-        MutableMessage requestMsg = messageFactory.createSubscriptionRequest(proxyParticipantId,
-                                                                             FIXEDPARTICIPANTID1,
-                                                                             request,
-                                                                             defaultMessagingQos);
-        String replyTo = RoutingTypesUtil.toAddressString(replyToAddress);
-        requestMsg.setReplyTo(replyTo);
-        try {
-            fakeIncomingMsg.accept(requestMsg);
-        } catch (Exception e) {
-            fail("fake incoming subscription request failed: " + e);
-        }
-        waitFor(rqCdl, DEFAULT_WAIT_TIME);
-        waitFor(rpCdl, DEFAULT_WAIT_TIME);
-
-        verifyOutgoing(stub, MessageType.VALUE_MESSAGE_TYPE_SUBSCRIPTION_REPLY, 1);
-
-        // sleep some time to make sure that the subscription at the provider's PublicationManager is fully established
-        // (The SubscriptionReply is sent before the publicationInformation is stored in PublicationManager
-        // .subscriptionId2PublicationInformation. A fired broadcast is dropped if this information is missing because
-        // the recipient is unknown (race condition between fire*Broadcast and addSubscriptionRequest).
-        sleep(256);
-        // trigger publications
-        testProvider.fireEmptyBroadcast();
-        testProvider.fireEmptyBroadcast();
-        // wait for publications
-        try {
-            assertTrue(pubCdl.await(10000, TimeUnit.MILLISECONDS));
-        } catch (InterruptedException e) {
-            fail("Wait for publication failed: " + e);
-        }
-        // multicast is published to all GBIDs in case of mqtt
-        verifyOutgoing(stub, MessageType.VALUE_MESSAGE_TYPE_MULTICAST, 2 * (increment ? gbids.length : 1));
-        checkRefCnt(FIXEDPARTICIPANTID1, 1);
-        checkRefCnt(proxyParticipantId, 1);
-
-        // fake incoming subscription stop
-        CountDownLatch sstCdl = fakeIncomingSst(fakeIncomingMsg, subscriptionId, false);
-        waitFor(sstCdl, DEFAULT_WAIT_TIME);
-        checkRefCnt(FIXEDPARTICIPANTID1, 1);
-        checkRefCnt(proxyParticipantId, 1);
-        verifyNoMoreInteractions(stub);
-    }
-
-    @Test
-    public void mqtt_mrqSrp_success() {
-        mrqSrp_success(replyToAddress, mqttMessagingStubMock, true, insertMqttMessage);
-    }
-
-    @Test
-    public void ws_mrqSrp_success() {
-        String multicastName = "emptyBroadcast";
-        String multicastId = MulticastIdUtil.createMulticastId(FIXEDPARTICIPANTID1, multicastName, new String[0]);
-        MulticastReceiverRegistrar multicastRegistrar = injector.getInstance(MulticastReceiverRegistrar.class);
-        multicastRegistrar.addMulticastReceiver(multicastId, proxyParticipantId, FIXEDPARTICIPANTID1);
-        mrqSrp_success(wsClientAddress, webSocketClientMessagingStubMock, false, insertWsMessage);
-        multicastRegistrar.removeMulticastReceiver(multicastId, proxyParticipantId, FIXEDPARTICIPANTID1);
-        // multicast is additionally published via mqtt
-        verifyOutgoing(mqttMessagingStubMock, MessageType.VALUE_MESSAGE_TYPE_MULTICAST, 2 * gbids.length);
     }
 
     private void attributeSrqSrp_success(Address proxyAddress,

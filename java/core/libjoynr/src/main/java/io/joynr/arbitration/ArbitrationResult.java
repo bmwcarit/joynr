@@ -30,10 +30,10 @@ public class ArbitrationResult {
     public ArbitrationResult(final Set<DiscoveryEntryWithMetaInfo> selectedDiscoverEntries,
                              final Set<DiscoveryEntryWithMetaInfo> otherDiscoveryEntries) {
         if (selectedDiscoverEntries != null) {
-            this.selectedDiscoveryEntries = selectedDiscoverEntries;
+            this.selectedDiscoveryEntries = new HashSet<>(selectedDiscoverEntries);
         }
         if (otherDiscoveryEntries != null) {
-            this.otherDiscoveryEntries = otherDiscoveryEntries;
+            this.otherDiscoveryEntries = new HashSet<>(otherDiscoveryEntries);
         }
     }
 
@@ -41,27 +41,20 @@ public class ArbitrationResult {
     }
 
     public Set<DiscoveryEntryWithMetaInfo> getDiscoveryEntries() {
-        return selectedDiscoveryEntries;
+        return new HashSet<>(selectedDiscoveryEntries);
     }
 
     public void setDiscoveryEntries(Set<DiscoveryEntryWithMetaInfo> discoveryEntries) {
-        if (discoveryEntries != null) {
-            this.selectedDiscoveryEntries = discoveryEntries;
-        } else {
-            this.selectedDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
-        }
+        this.selectedDiscoveryEntries = (discoveryEntries != null) ? new HashSet<>(discoveryEntries) : new HashSet<>();
     }
 
     public Set<DiscoveryEntryWithMetaInfo> getOtherDiscoveryEntries() {
-        return otherDiscoveryEntries;
+        return new HashSet<>(otherDiscoveryEntries);
     }
 
     public void setOtherDiscoveryEntries(Set<DiscoveryEntryWithMetaInfo> otherDiscoveryEntries) {
-        if (otherDiscoveryEntries != null) {
-            this.otherDiscoveryEntries = otherDiscoveryEntries;
-        } else {
-            this.otherDiscoveryEntries = new HashSet<DiscoveryEntryWithMetaInfo>();
-        }
+        this.otherDiscoveryEntries = (otherDiscoveryEntries != null) ? new HashSet<>(otherDiscoveryEntries)
+                : new HashSet<>();
     }
 
     @Override

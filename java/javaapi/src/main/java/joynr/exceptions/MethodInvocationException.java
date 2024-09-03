@@ -58,7 +58,7 @@ public class MethodInvocationException extends JoynrRuntimeException {
      */
     public MethodInvocationException(String message, Version providerVersion) {
         super(message);
-        this.providerVersion = providerVersion;
+        this.providerVersion = (providerVersion != null) ? new Version(providerVersion) : null;
     }
 
     /**
@@ -69,7 +69,7 @@ public class MethodInvocationException extends JoynrRuntimeException {
      */
     public MethodInvocationException(Exception cause, Version providerVersion) {
         super(cause);
-        this.providerVersion = providerVersion;
+        this.providerVersion = (providerVersion != null) ? new Version(providerVersion) : null;
     }
 
     /**
@@ -78,7 +78,7 @@ public class MethodInvocationException extends JoynrRuntimeException {
      * @return the version of the provider which could not handle the method invocation
      */
     public Version getProviderVersion() {
-        return providerVersion;
+        return (providerVersion != null) ? new Version(providerVersion) : null;
     }
 
     @Override

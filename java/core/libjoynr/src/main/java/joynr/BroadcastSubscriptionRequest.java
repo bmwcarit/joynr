@@ -20,6 +20,8 @@ package joynr;
 
 import io.joynr.pubsub.SubscriptionQos;
 
+import java.util.HashMap;
+
 public class BroadcastSubscriptionRequest extends SubscriptionRequest {
 
     /**
@@ -49,7 +51,12 @@ public class BroadcastSubscriptionRequest extends SubscriptionRequest {
     }
 
     public BroadcastFilterParameters getFilterParameters() {
-        return filterParameters;
+        if (filterParameters == null) {
+            return null;
+        }
+        BroadcastFilterParameters parameters = new BroadcastFilterParameters();
+        parameters.setFilterParameters(new HashMap<>(filterParameters.getFilterParameters()));
+        return parameters;
     }
 
     @Override

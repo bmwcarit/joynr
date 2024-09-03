@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2023 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,15 @@
  * limitations under the License.
  * #L%
  */
-package io.joynr.runtime;
+package io.joynr.proxy;
 
-public enum MessageReceiverType {
+import io.joynr.StatelessAsync;
+import io.joynr.dispatcher.rpc.annotation.StatelessCallbackCorrelation;
 
-    ANY, LONGPOLLING, SERVLET
+@StatelessAsync
+public interface TestStatelessAsyncInterface {
+    @StatelessCallbackCorrelation("correlationId")
+    void testMethod(final MessageIdCallback messageIdCallback);
 
+    void testMethodWithoutCallbackParam(final String input);
 }

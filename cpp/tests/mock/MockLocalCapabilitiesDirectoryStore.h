@@ -73,18 +73,14 @@ public:
     std::shared_ptr<capabilities::CachingStorage> getGlobalLookupCache(
             const std::unique_lock<std::recursive_mutex>& cacheLock) override
     {
-        if (_globalLookupCache) {
-            return _globalLookupCache;
-        }
-        return joynr::LocalCapabilitiesDirectoryStore::getGlobalLookupCache(cacheLock);
+        std::ignore = cacheLock;
+        return _globalLookupCache;
     }
     std::shared_ptr<capabilities::Storage> getLocallyRegisteredCapabilities(
             const std::unique_lock<std::recursive_mutex>& cacheLock) override
     {
-        if (_locallyRegisteredCapabilities) {
-            return _locallyRegisteredCapabilities;
-        }
-        return joynr::LocalCapabilitiesDirectoryStore::getLocallyRegisteredCapabilities(cacheLock);
+        std::ignore = cacheLock;
+        return _locallyRegisteredCapabilities;
     }
 
 private:

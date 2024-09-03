@@ -903,15 +903,15 @@ public:
 
     void testSubscribeToAttribute()
     {
-        // EXPECT_CALL(*mockMessageSender,
-        //            sendSubscriptionRequest(_,_,_,_)).Times(1);
+        EXPECT_CALL(*mockMessageSender,
+                   sendSubscriptionRequest(_,_,_,_,_)).Times(1);
 
         std::shared_ptr<ISubscriptionListener<types::Localisation::GpsLocation>>
                 subscriptionListener(new MockGpsSubscriptionListener());
-        // TODO uncomment once the connector has the correct signature!
-        // std::shared_ptr<vehicle::IGps> gpsFixture = createFixture(false);
-        // SubscriptionQos subscriptionQos(100, 200, true, 80, 80);
-        // gpsFixture->subscribeToLocation(subscriptionListener, subscriptionQos);
+        auto testFixture{createItestSubscriptionFixture()};
+        std::shared_ptr<SubscriptionQos> subscriptionQos{std::make_shared<SubscriptionQos>()};
+        const std::string subscriptionId{"subscriptionId"};
+        testFixture->subscribeToLocation(subscriptionListener, subscriptionQos, subscriptionId);
     }
 
     void doNotSendSubscriptionStopForMulticastSubscription()

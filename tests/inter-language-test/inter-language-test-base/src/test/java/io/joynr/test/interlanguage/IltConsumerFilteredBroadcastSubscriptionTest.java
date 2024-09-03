@@ -18,6 +18,8 @@
  */
 package io.joynr.test.interlanguage;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.PrintWriter;
@@ -76,14 +78,12 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                                                                                                          .setValidityMs(validityMs)
                                                                                                          .setAlertAfterIntervalMs(alertAfterIntervalMs)
                                                                                                          .setPublicationTtlMs(publicationTtlMs);
-        boolean result;
-
-        logger.info(name.getMethodName() + "");
+        logger.info(name.getMethodName());
 
         try {
             BroadcastWithFilteringBroadcastFilterParameters filterParameters = new BroadcastWithFilteringBroadcastFilterParameters();
-            String stringOfInterst = "fireBroadcast";
-            filterParameters.setStringOfInterest(stringOfInterst);
+            String stringOfInterest = "fireBroadcast";
+            filterParameters.setStringOfInterest(stringOfInterest);
 
             String[] stringArrayOfInterest = { "Hello", "World" };
             String json;
@@ -92,9 +92,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
                 logger.info(name.getMethodName() + " - objectMapper stringArrayOfInterest " + stringArrayOfInterest);
                 json = objectMapper.writeValueAsString(stringArrayOfInterest);
             } catch (JsonProcessingException je) {
-                fail(name.getMethodName() + " - FAILED - got exception when serializing stringArrayOfInterest"
-                        + je.getMessage());
-                return;
+                throw new RuntimeException(getExceptionMessage(je, "stringArrayOfInterest"));
             }
             filterParameters.setStringArrayOfInterest(json);
 
@@ -102,9 +100,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             try {
                 json = objectMapper.writeValueAsString(enumerationOfInterest);
             } catch (JsonProcessingException je) {
-                fail(name.getMethodName() + " - FAILED - got exception when serializing enumerationOfInterest"
-                        + je.getMessage());
-                return;
+                throw new RuntimeException(getExceptionMessage(je, "enumerationOfInterest"));
             }
             filterParameters.setEnumerationOfInterest(json);
 
@@ -112,9 +108,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             try {
                 json = objectMapper.writeValueAsString(structWithStringArrayOfInterest);
             } catch (JsonProcessingException je) {
-                fail(name.getMethodName() + " - FAILED - got exception when serializing structWithStringArrayOfInterest"
-                        + je.getMessage());
-                return;
+                throw new RuntimeException(getExceptionMessage(je, "structWithStringArrayOfInterest"));
             }
             filterParameters.setStructWithStringArrayOfInterest(json);
 
@@ -122,10 +116,7 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             try {
                 json = objectMapper.writeValueAsString(structWithStringArrayArrayOfInterest);
             } catch (JsonProcessingException je) {
-                fail(name.getMethodName()
-                        + " - FAILED - got exception when serializing structWithStringArrayArrayOfInterest"
-                        + je.getMessage());
-                return;
+                throw new RuntimeException(getExceptionMessage(je, "structWithStringArrayArrayOfInterest"));
             }
             filterParameters.setStructWithStringArrayArrayOfInterest(json);
 
@@ -176,29 +167,20 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeBroadcastWithFilteringCallbackDone == false) {
+            if (!subscribeBroadcastWithFilteringCallbackDone) {
                 logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 logger.info(name.getMethodName() + " - wait for callback is over");
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
-            if (!subscribeBroadcastWithFilteringCallbackDone) {
-                fail(name.getMethodName() + " - FAILED - callback did not get called in time");
-                result = false;
-            } else if (subscribeBroadcastWithFilteringCallbackResult) {
-                logger.info(name.getMethodName() + " - callback got called and received expected publication");
-                result = true;
-            } else {
-                fail(name.getMethodName()
-                        + " - FAILED - callback got called but received unexpected error or publication content");
-                result = false;
-            }
 
-            // get out, if first test run failed
-            if (result == false) {
-                return;
-            }
+            assertTrue(name.getMethodName() + " - FAILED - callback did not get called in time",
+                       subscribeBroadcastWithFilteringCallbackDone);
+            assertTrue(name.getMethodName()
+                    + " - FAILED - callback got called but received unexpected error or publication content",
+                       subscribeBroadcastWithFilteringCallbackResult);
+            logger.info(name.getMethodName() + " - callback got called and received expected publication");
 
             // reset counter for 2nd test
             subscribeBroadcastWithFilteringCallbackResult = false;
@@ -211,20 +193,17 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
 
             // check results from callback; expect to be finished within 1 second
             // should have been called ahead anyway
-            if (subscribeBroadcastWithFilteringCallbackDone == false) {
+            if (!subscribeBroadcastWithFilteringCallbackDone) {
                 logger.info(name.getMethodName() + " - about to wait for a second for callback");
                 Thread.sleep(1000);
                 logger.info(name.getMethodName() + " - wait for callback is over");
             } else {
                 logger.info(name.getMethodName() + " - callback already done");
             }
-            if (!subscribeBroadcastWithFilteringCallbackDone) {
-                logger.info(name.getMethodName() + " - callback did not get called in time (expected)");
-                result = true;
-            } else {
-                fail(name.getMethodName() + " - FAILED - callback got called unexpectedly");
-                result = false;
-            }
+
+            assertFalse(name.getMethodName() + " - FAILED - callback got called unexpectedly",
+                        subscribeBroadcastWithFilteringCallbackDone);
+            logger.info(name.getMethodName() + " - callback did not get called in time (expected)");
 
             // try to unsubscribe
             try {
@@ -233,15 +212,9 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             } catch (Exception e) {
                 fail(name.getMethodName() + " - FAILED - caught unexpected exception on unsubscribe: "
                         + e.getMessage());
-                result = false;
             }
 
-            if (!result) {
-                logger.info(name.getMethodName() + " - FAILED");
-            } else {
-                logger.info(name.getMethodName() + " - OK");
-            }
-            return;
+            logger.info(name.getMethodName() + " - OK");
         } catch (Exception e) {
             // also catches InterruptedException from Thread.sleep() call
             StringWriter stringWriter = new StringWriter();
@@ -250,7 +223,10 @@ public class IltConsumerFilteredBroadcastSubscriptionTest extends IltConsumerTes
             printWriter.flush();
 
             fail(name.getMethodName() + " - FAILED - caught unexpected exception: " + stringWriter.toString());
-            return;
         }
+    }
+
+    private String getExceptionMessage(JsonProcessingException exception, String what) {
+        return name.getMethodName() + " - FAILED - got exception when serializing " + what + exception.getMessage();
     }
 }

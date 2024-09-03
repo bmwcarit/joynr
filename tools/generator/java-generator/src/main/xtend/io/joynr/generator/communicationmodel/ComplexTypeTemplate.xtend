@@ -137,6 +137,8 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 			if («member.joynrName» != null) {
 				this.«member.joynrName» = «member.joynrName».clone();
 			}
+		«ELSEIF (isMap(member.type) || isCompound(member.type))»
+			this.«member.joynrName» = new «member.typeName»(«member.joynrName»);
 		«ELSE»
 			this.«member.joynrName» = «member.joynrName»;
 		«ENDIF»
@@ -160,6 +162,8 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 		} else {
 			return null;
 		}
+		«ELSEIF (isMap(member.type) || isCompound(member.type))»
+		return new «member.typeName»(«member.joynrName»);
 		«ELSE»
 		return «member.joynrName»;
 		«ENDIF»
@@ -179,6 +183,8 @@ public class «typeName»«IF hasExtendsDeclaration(type)» extends «type.exten
 		«ENDIF»
 		«IF isArray(member)»
 		this.«member.joynrName» = «member.joynrName».clone();
+		«ELSEIF (isMap(member.type) || isCompound(member.type))»
+		this.«member.joynrName» = new «member.typeName»(«member.joynrName»);
 		«ELSE»
 		this.«member.joynrName» = «member.joynrName»;
 		«ENDIF»

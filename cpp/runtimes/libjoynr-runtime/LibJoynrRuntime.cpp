@@ -43,7 +43,6 @@
 #include "joynr/MessageSender.h"
 #include "joynr/MessagingQos.h"
 #include "joynr/MessagingSettings.h"
-#include "joynr/MessagingStubFactory.h"
 #include "joynr/ParticipantIdStorage.h"
 #include "joynr/ProxyFactory.h"
 #include "joynr/PublicationManager.h"
@@ -79,6 +78,7 @@ LibJoynrRuntime::LibJoynrRuntime(
         : JoynrRuntimeImpl(*settings, std::move(onFatalRuntimeError), std::move(keyChain)),
           _subscriptionManager(nullptr),
           _messageSender(nullptr),
+          _messagingStubFactory(nullptr),
           _joynrDispatcher(nullptr),
           _settings(std::move(settings)),
           _libjoynrSettings(new LibjoynrSettings(*this->_settings)),
@@ -137,6 +137,10 @@ void LibJoynrRuntime::shutdown()
     if (_libJoynrMessageRouter) {
         _libJoynrMessageRouter->shutdown();
     }
+    if (_messagingStubFactory) {
+        _messagingStubFactory->shutdown();
+        _messagingStubFactory.reset();
+    }
 }
 
 void LibJoynrRuntime::init(
@@ -148,14 +152,13 @@ void LibJoynrRuntime::init(
         std::function<void(const joynr::exceptions::JoynrRuntimeException&)> onError)
 {
     // create messaging stub factory
-    auto messagingStubFactory = std::make_shared<MessagingStubFactory>();
+    _messagingStubFactory = std::make_shared<MessagingStubFactory>();
     middlewareMessagingStubFactory->registerOnMessagingStubClosedCallback(
-            [messagingStubFactory](std::shared_ptr<const joynr::system::RoutingTypes::Address>
-                                           destinationAddress) {
-                messagingStubFactory->remove(std::move(destinationAddress));
+            [this](std::shared_ptr<const joynr::system::RoutingTypes::Address> destinationAddress) {
+                _messagingStubFactory->remove(std::move(destinationAddress));
             });
-    messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
-    messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
+    _messagingStubFactory->registerStubFactory(middlewareMessagingStubFactory);
+    _messagingStubFactory->registerStubFactory(std::make_shared<InProcessMessagingStubFactory>());
 
     std::string routingProviderParticipantId =
             _systemServicesSettings.getCcRoutingProviderParticipantId();
@@ -163,7 +166,7 @@ void LibJoynrRuntime::init(
     _libJoynrMessageRouter = std::make_shared<LibJoynrMessageRouter>(
             _messagingSettings,
             libjoynrMessagingAddress,
-            std::move(messagingStubFactory),
+            _messagingStubFactory,
             _singleThreadedIOService->getIOService(),
             std::move(addressCalculator),
             std::vector<std::shared_ptr<ITransportStatus>>{},

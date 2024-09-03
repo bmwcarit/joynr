@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2019 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,6 +171,14 @@ public class AbstractMultipleVersionsEnd2EndTest {
 
                 @Override
                 public void onProxyCreationError(JoynrRuntimeException error) {
+                    if (error instanceof NoCompatibleProviderFoundException
+                            || error instanceof MultiDomainNoCompatibleProviderFoundException) {
+                        noCompatibleProviderFoundCallbackSemaphore.release();
+                    }
+                }
+
+                @Override
+                public void onProxyCreationError(DiscoveryException error) {
                     if (error instanceof NoCompatibleProviderFoundException
                             || error instanceof MultiDomainNoCompatibleProviderFoundException) {
                         noCompatibleProviderFoundCallbackSemaphore.release();

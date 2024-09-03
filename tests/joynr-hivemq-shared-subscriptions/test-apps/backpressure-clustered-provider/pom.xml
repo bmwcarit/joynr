@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions</groupId>
 		<artifactId>test-apps</artifactId>
-		<version>1.24.0</version>
+		<version>1.25.0</version>
 	</parent>
 
 	<build>
@@ -110,17 +110,14 @@
 		<dependency>
 			<groupId>io.joynr.java</groupId>
 			<artifactId>jeeintegration</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.java.messaging.mqtt</groupId>
 			<artifactId>joynr-mqtt-client</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.platform</groupId>

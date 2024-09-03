@@ -2,6 +2,219 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.25.0
+
+## API relevant changes
+* **[C++]** Removed method `IMessageSender::sendMulticastSubscriptionRequest`.
+* **[Java]** Removed interface `MessagingSettings`.
+* **[Java]** Improved handling of custom parameters in GCD. Joynr can now replace instances of
+  `CustomParameterPersisted` with `CustomParameters` equivalents for given global discovery entry 
+  with a call to `GcdUtilities.replaceCustomParameters(GlobalDiscoveryEntry)`.
+* **[Java]** `MessageTrackerForGracefulShutdown` messages are tracked by messageIdm requestReplyId
+  and messageType, preventing from logging redundant messages like "Message with following ID: {}
+  and requestReplyId: {} is already registered".
+* **[Java]** Introduced new methods: `ProxyBuilder.onProxyCreationError(DiscoveryException)` and
+  `ArbitrationCallback.onError(DiscoveryException)`. This allows joynr to differentiate type of 
+  errors on callback and deal with them separately in a more readable way.
+
+## Other Changes
+* **[C++]** Stabilization of flaky test that sometimes failed in the CI.
+* **[C++]** Fixed and re-enabled some tests.
+* **[C++]** Stop retries of add operation (provider registration) when provider has been already
+  unregistered or discovery entry has expired.
+* **[C++]** `LocalCapabilitiesDirectoryStore::getLocalAndCachedCapabilities` checks if the local/
+  cached result contains entries for all domains. If check returns `false` (there are missing domains),
+  joynr calls `collectCapabilities`. This will trigger a global lookup for all domains that will be
+  combined with local entries if required.
+* **[C++]** Added support for moving joynr file generation to CMake build phase from configure phase.
+* **[C++]** Moved a call to `MessagingStubFactory::shutdown` from `AbstractMessageRouter::shutdown`
+  to concrete implementations, i.e. `LibJoynrRuntime::shutdown` and `JoynrClusterControllerRuntime::shutdown`.
+* **[C++]** `joynr/CapabilitiesStorage.h` is no longer included into `LocalCapabilitiesDirectory.cpp`,
+  thus LCD does not know anything about it.
+* **[Docker]** Introduced new common docker image `java-11-with-curl` sharing the same configuration,
+  which is now used as a base docker image for multiple examples and tests.
+* **[Java]** Removed concurrent data structures from `RequestReplyManagerImpl`
+* **[Java]** Prevent `TaskSequencer` from retrying add operation (provider registration) when provider
+  has been already unregistered or discovery entry has expired.
+* **[Java]** Replaced deprecated calls in `ObjectMapper` with non-deprecated.
+* **[Java]** Messaging stub is created only once in LibJoynrMessageRouter - in constructor.
+* **[Java]** LocalCapabilitiesDirectory performs additional local lookup after global one.
+* **[Java]** Improved tracking and management of transitive dependencies.
+* **[Java]** Added example of message context usage in Spring Boot.
+* **[Java]** Updated dependencies in joynr pom:
+```
+  * org.javassist:javassist                       3.25.0-GA    -> 3.29.2-GA
+  * com.esotericsoftware:kryo                     5.0.0-RC1    -> 5.3.0
+  * org.objenesis:objenesis                       2.6          -> 3.3
+  * net.jodah:typetools                           0.6.1        -> 0.6.3
+  * org.reactivestreams:reactive-streams          1.0.3        -> 1.0.4
+  * io.netty:netty-buffer                         4.1.48.Final -> 4.1.100.Final
+  * io.netty:netty-codec                          4.1.48.Final -> 4.1.100.Final
+  * io.netty:netty-common                         4.1.48.Final -> 4.1.100.Final
+  * io.netty:netty-handler                        4.1.48.Final -> 4.1.100.Final
+  * io.netty:netty-resolver                       4.1.48.Final -> 4.1.100.Final
+  * io.netty:netty-transport                      4.1.48.Final -> 4.1.100.Final
+  * org.jctools:jctools-core                      2.1.2        -> 3.3.0
+  * com.google.dagger:dagger                      2.27         -> 2.45
+  * com.google.guava:guava                        31.0.1-jre   -> 32.0.1-jre
+```
+* **[Java]** Updated dependencies in tools pom:
+```
+  * com.google.code.gson:gson                     2.9.0        -> 2.10.1
+  * com.google.errorprone:error_prone_annotations 2.18.0       -> 2.28.0
+  * com.google.guava:failureaccess                1.0.1        -> 1.0.2
+  * com.google.j2objc:j2objc-annotations          2.8          -> 3.0.0
+  * com.google.protobuf:protobuf-java             3.21.7       -> 4.27.2
+  * com.google.protobuf:protobuf-java-util        3.21.7       -> 4.27.2
+  * ch.qos.reload4j:reload4j                      1.2.22       -> 1.2.25
+  * io.github.classgraph:classgraph               4.8.138      -> 4.8.174
+  * org.checkerframework:checker-qual             3.12.0       -> 3.45.0
+  * org.postgresql:postgresql                     42.5.4       -> 42.5.5
+  * org.apache.maven:maven-plugin-api             2.0          -> 3.9.8
+  * org.apache.maven:maven-core                   3.8.6        -> 3.9.8
+  * org.eclipse.emf:org.eclipse.emg.common        2.17.0       -> 2.30.0
+  * org.eclipse.emf:org.eclipse.emg.ecore         2.15.0       -> 2.36.0
+  * org.eclipse.emf:org.eclipse.emg.ecore.xmi     2.16.0       -> 2.37.0
+  * org.eclipse.jdt:org.eclipse.jdt.core          3.23.0       -> 3.26.0
+  * org.eclipse.jdt:org.eclipse.jdt.runtime       3.19.0       -> 3.22.0
+  * org.javassist:javassist                       3.29.2-GA    -> 3.30.2-GA
+  * org.ow2.asm:asm                               9.5          -> 9.7
+  * org.ow2.asm:asm-analysis                      9.5          -> 9.7
+  * org.ow2.asm:asm-commons                       9.5          -> 9.7
+  * org.ow2.asm:asm-tree                          9.5          -> 9.7
+  * org.ow2.asm:asm-util                          9.5          -> 9.7
+  * org.reflections:reflections                   0.9.10       -> 0.9.12
+  * antlr:antlr                                   2.7.7        -> org.antlr:antlr 3.2
+  * antlr:antlr-runtime                           3.2          -> org.antlr:antlr-runtime 3.2
+  * antlr:stringtemplate                          3.2          -> org.antlr:antlr-stringtemplate 3.2
+  * com.google.findbugs:annotations               3.0.1u2      -> com.github.spotbugs:spotbugs-annotations 4.1.4
+  * com.google.findbugs:jsr305                    3.0.2        -> com.github.spotbugs:spotbugs 4.1.4
+  * org.apache.bcel:bcel                                       -> 6.9.0
+  * org.apache.commons:commongs-lang3                          -> 3.13.0
+  * org.apache.commons:commons-text                            -> 1.11.0
+  * org.json:json                                              -> 20231013
+  * jaxen:jaxen                                                -> 2.0.0
+  * net.sf.saxon:Saxon-HE                                      -> 11.4
+  * org.xmlresolver:xmlresolver                                -> 4.4.3
+  * org.apache.httpcomponents.core5:httpcore5                  -> 5.1.3
+  * org.apache.httpcomponents.core5:httpcore5-h2               -> 5.1.3
+  * commons-codes:commons-codec                                -> 1.16.0
+  * xml-apis:xml-apis                                          -> 2.0.2
+  * org.dom4j:dom4j                                            -> 2.1.4
+  * com.android.tools.build:aapt2-proto                        -> 4.0.0-6051327
+```
+
+## Configuration Property Changes
+* **[C++]** Added support for MQTT retain messages, which can be enabled by this setting below.
+  For more details please refer to [Joynr C++ Settings](/wiki/cpp_settings.md#mqtt-retain).  
+```
+  [messaging]
+  retain
+```
+* **[Java]** Added support for MQTT retain messages, which can be enabled by this property: \
+`PROPERTY_KEY_MQTT_RETAIN` `joynr.messaging.mqtt.retain`. For more details please refer to [Java Configuration Reference](JavaSettings.md#property_key_mqtt_retain)
+* **[JEE]** Added property `PROPERTY_ENABLE_LOGGING` `joynr.message.tracker.logging.enabled` allows \
+  to enable logging messages related to registering and unregistering messages. Disabled by default.
+
+## Security Fixes
+* **[Java]** Fix CVE-2024-1597 - update postgresql to 42.5.5.
+* **[Java]** Mask password properties in logs.
+* **[Java]** Properly set sqlite-jdbc version in javaapi and jeeintegration imported into separate projects (not a part of joynr).
+
+## Bug Fixes
+* **[Java]** Fixed example apps: radio-app and radio-jee-provider. Updated required dependencies.
+* **[Java]** Fixed race condition in `ProxyInvocationHandler`.
+* **[Java]** Fixed numerous bugs reported by spotbugs plugin, mostly EI_EXPOSE_REP and EI_EXPOSE_REP2.
+* **[Java]** Prevent mutations of private maps from outside the object in example stateless-async app.
+* **[Java]** Throw correct exception in radio-jee app with help of dedicated ExceptionMapper.
+
+# joynr 1.24.2
+
+## API relevant changes
+* **[Java]** Removed unused MulticastSubscriptionRequest class.
+* **[Java]** Due to guice update, JpaPersistModules have to be built with JpaPersistOption autoBeginWorkOnEntityManagerCreation set to true.
+
+## Other Changes
+* **[Java]** MutableMessageFactory uses already known expiration date from upstream (JoynrMessagingConnectorInvocationHandler) instead of creating its own based on messaging QoS. 
+* **[Java]** CountDownLatch.await() return value is now used in CcMessageRouter and LibJoynrMessageRouter and futures are stopped if false is returned.
+* **[Java]** Tests have been refactored. Calls to `fail()` have been replaced with calls to more specific JUnit asserts. Unreachable code has been removed.
+* **[Java]** Updated dependencies:
+```
+  * guice                 5.1.0               -> 6.0.0
+  * org.ow2.asm:asm*      9.4                 -> 9.5
+```
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Removed race conditions in LocalCapabilitiesDirectoryImpl
+* **[Java]** Fixed possible buffer overrun in in WebSocketJettyClient and WebSocketJettyServer
+
+# joynr 1.24.1
+
+## API relevant changes
+* **[Java]** New overload of `RequestReplyManager.sendRequest` has been added.
+  It specifies whether the request is stateless async or not by new method argument
+  `isStatelessAsync` and not by a call to `Request.getStatelessAsyncCallbackMethodId`.
+  Old version of `sendRequest` is still available and it calls new overload with
+  `isStatelessAsync` set to false.
+* **[Java]** Removed unused methods:
+  * `RequestReplyManager.handleError`
+  * `RequestReplyManagerImpl.handleError`
+  * `MessageArrivedListener.error`
+  * `DispatcherImpl.error`
+* **[Jee]** Shared subsctioptions can be disabled in JEE by setting
+  MqttModule.PROPERTY_KEY_MQTT_ENABLE_SHARED_SUBSCRIPTIONS to false.
+  By default this key is set to true.
+* **[Java]** Removed superfluous classes:
+  * `DefaultBootstrap`
+  * `MessageReceiver`
+  * `MessageReceiverType`
+  * `AcceptsMessageReceiver`
+  * `NoBackendMessagingModule`
+  * `NoBackendMessagingReceiver`
+* **[Java]** Removed unused methods from `GlobalDiscoveryEntryStore`:
+  * `getAllDiscoveryEntries`
+  * `hasDiscoveryEntry`
+
+## Other Changes
+* **[C++/Java]** Align invocation order of callbacks and futures
+* **[Java]** Updated dependencies:
+```
+  * org.eclipse.tycho                             0.24.0              -> 1.6.0
+  * org.xerial:sqlite-jdbc                        3.41.0.0            -> 3.42.2.2
+  * io.netty                                      4.1.89.Final        -> 4.1.100.Final
+  * org.eclipse.jetty                             11.0.11             -> 11.0.18
+  * com.google.guava:guava                        31.1-jre            -> 32.0.1-jre
+  * com.google.errorprone:error_prone_annotations 2.3.4 / 2.11.0      -> 2.18.0
+  * com.google.j2objc:j2objc-annotations          1.3                 -> 2.8
+  * org.checkerframework:checker-qual             3.12.0              -> 3.33.0
+  * org.slf4j:slf4j-api                           1.7.36              -> 2.0.9
+```
+* **[Java]** `MqttMessagingSkeleton` will log `JoynrMessageExpiredException` as a warning,
+  not as an error.
+* **[Java]** `JoynrMessagingConnectorInvocationHandler` refactoring. Code smells fixes,
+  unnecessary conditions have been removed and unit tests have been aded.
+* **[Docker]** Updated fedora from version 36 to 37, it affects `joynr-base`
+  and `joynr-runtime-environment-base`.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Updated com.google.guava:guava from `31.1-jre` to `32.0.1-jre` and its compile dependecies, fixing `CVE-2023-2976` and `CVE-2020-8908`. Updated versions are described in section Other Changes above.
+* **[Java]** Updated org.xerial:sqlite-jdbc from `3.41.0.0` to `3.42.2.2`, fixing `CVE-2023-32697`
+* **[Java]** Updated org.eclipse.jetty from `11.0.11` to `11.0.18`, fixing `CVE-2023-26049`, `CVE-2023-26048`, `CVE-2023-40167` and `CVE-2023-36478`
+* **[Java]** Updated io.netty from `4.1.89.Final` to `4.1.100.Final`, fixing `CVE-2023-4586` and
+  `CVE-2023-34462`
+
+## Bug Fixes
+* **[C++]** Fix memory leak during provider registration (Aggregation of MulticastBroadcastListener in addAsync caused memory leak).
+
 # joynr 1.24.0
 
 ## API relevant changes

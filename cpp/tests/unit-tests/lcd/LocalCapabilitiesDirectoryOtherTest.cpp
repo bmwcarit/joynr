@@ -820,6 +820,9 @@ TEST_F(LocalCapabilitiesDirectoryOtherTest, clearRemovesEntries)
                    A<std::function<void(const exceptions::JoynrRuntimeException& error)>>()))
             .Times(1)
             .InSequence(s);
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(1)
+            .WillOnce(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1028,6 +1031,9 @@ TEST_F(LocalCapabilitiesDirectoryOtherTest, removeGlobalExpiredEntries_ReturnNon
                 lookup(Eq(domainVector), Eq(_INTERFACE_3_NAME), _, _, _, _, _))
             .WillOnce(InvokeArgument<4>(expectedResultInterface3))
             .RetiresOnSaturation();
+    EXPECT_CALL(*_mockMessageRouter, addNextHop(_, _, _, _, _, _, _))
+            .Times(3)
+            .WillRepeatedly(InvokeArgument<5>());
 
     initializeMockLocalCapabilitiesDirectoryStore();
     finalizeTestSetupAfterMockExpectationsAreDone();
@@ -1427,8 +1433,7 @@ TEST_F(LocalCapabilitiesDirectoryOtherTest, touchRefreshesAllEntries_GcdTouchOnl
                       .getExpiryDateMs());
     std::unique_lock<std::recursive_mutex> cacheLock(
             _localCapabilitiesDirectoryStore->getCacheLock());
-    ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)
-                         ->lookupByParticipantId(participantId1));
+    ASSERT_FALSE(_localCapabilitiesDirectoryStore->lookupGlobalEntry(participantId1));
     cacheLock.unlock();
 
     // check entry2
@@ -1441,8 +1446,7 @@ TEST_F(LocalCapabilitiesDirectoryOtherTest, touchRefreshesAllEntries_GcdTouchOnl
     EXPECT_LT(minLastSeenDateMs, lastSeenDateMs2);
     EXPECT_LT(minExpiryDateMs, expiryDateMs2);
     cacheLock.lock();
-    ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)
-                         ->lookupByParticipantId(participantId2));
+    ASSERT_FALSE(_localCapabilitiesDirectoryStore->lookupGlobalEntry(participantId2));
 
     // check entry3
     const std::int64_t lastSeenDateMs3 =
@@ -1452,8 +1456,7 @@ TEST_F(LocalCapabilitiesDirectoryOtherTest, touchRefreshesAllEntries_GcdTouchOnl
     EXPECT_EQ(oldExpiryDateMs3,
               _localCapabilitiesDirectoryStore->getLocalCapabilities(participantId3)[0]
                       .getExpiryDateMs());
-    ASSERT_FALSE(_localCapabilitiesDirectoryStore->getGlobalLookupCache(cacheLock)
-                         ->lookupByParticipantId(participantId3));
+    ASSERT_FALSE(_localCapabilitiesDirectoryStore->lookupGlobalEntry(participantId3));
 }
 
 TEST_F(LocalCapabilitiesDirectoryOtherTest, testRemoveStaleProvidersOfClusterController)

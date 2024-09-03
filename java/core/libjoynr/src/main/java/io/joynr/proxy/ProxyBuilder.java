@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,13 @@ public interface ProxyBuilder<T> {
          * @param error A JoynrRuntimeException that prevented proxy creation
          */
         void onProxyCreationError(JoynrRuntimeException error);
+
+        /**
+         * Called when an error occurred during proxy creation.
+         *
+         * @param error A DiscoveryException that prevented proxy creation
+         */
+        void onProxyCreationError(DiscoveryException error);
     }
 
     /**

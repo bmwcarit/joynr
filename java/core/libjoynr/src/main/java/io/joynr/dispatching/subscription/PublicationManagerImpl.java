@@ -73,7 +73,6 @@ import io.joynr.util.ReflectionUtils;
 import joynr.BroadcastFilterParameters;
 import joynr.BroadcastSubscriptionRequest;
 import joynr.MulticastPublication;
-import joynr.MulticastSubscriptionRequest;
 import joynr.OnChangeSubscriptionQos;
 import joynr.SubscriptionPublication;
 import joynr.SubscriptionReply;
@@ -302,15 +301,6 @@ public class PublicationManagerImpl
         sendSubscriptionReply(publicationInformation, new SubscriptionReply(subscriptionId));
     }
 
-    private void handleMulticastSubscriptionRequest(PublicationInformation publicationInformation,
-                                                    MulticastSubscriptionRequest subscriptionRequest,
-                                                    ProviderContainer providerContainer) {
-        logger.trace("Received multicast subscription request {} for provider with participant ID {}",
-                     subscriptionRequest,
-                     publicationInformation.getProviderParticipantId());
-        sendSubscriptionReply(publicationInformation, new SubscriptionReply(subscriptionRequest.getSubscriptionId()));
-    }
-
     // requires addRemoveLock: handleSubscriptionRequest, handleBroadcastSubscriptionRequest,
     // subscriptionId2PublicationInformation, addSubscriptionCleanupIfNecessary
     private void addSubscriptionRequestInternal(PublicationInformation publicationInformation,
@@ -325,10 +315,6 @@ public class PublicationManagerImpl
         if (subscriptionRequest instanceof BroadcastSubscriptionRequest) {
             handleBroadcastSubscriptionRequest(publicationInformation,
                                                (BroadcastSubscriptionRequest) subscriptionRequest,
-                                               providerContainer);
-        } else if (subscriptionRequest instanceof MulticastSubscriptionRequest) {
-            handleMulticastSubscriptionRequest(publicationInformation,
-                                               (MulticastSubscriptionRequest) subscriptionRequest,
                                                providerContainer);
         } else {
             handleSubscriptionRequest(publicationInformation, subscriptionRequest, providerContainer);
@@ -423,30 +409,26 @@ public class PublicationManagerImpl
                                                                                            subscriptionRequest);
                 long subscriptionEndDelay = validateAndGetSubscriptionEndDelay(subscriptionRequest);
 
-                final boolean isMulticastSubscriptionRequest = subscriptionRequest instanceof MulticastSubscriptionRequest;
-                if (!isMulticastSubscriptionRequest) {
-                    try {
-                        routingTable.incrementReferenceCount(proxyParticipantId);
-                    } catch (JoynrIllegalStateException e) {
-                        logger.error("Error subscribing: {}. Failed to increment reference count of the Proxy's routing entry.",
-                                     subscriptionRequest,
-                                     e);
-                        sendSubscriptionReplyWithError(publicationInformation,
-                                                       new SubscriptionException(subscriptionRequest.getSubscriptionId(),
-                                                                                 e.getMessage()));
-                        return;
-                    }
+                try {
+                    routingTable.incrementReferenceCount(proxyParticipantId);
+                } catch (JoynrIllegalStateException e) {
+                    logger.error("Error subscribing: {}. Failed to increment reference count of the Proxy's routing entry.",
+                                 subscriptionRequest,
+                                 e);
+                    sendSubscriptionReplyWithError(publicationInformation,
+                                                   new SubscriptionException(subscriptionRequest.getSubscriptionId(),
+                                                                             e.getMessage()));
+                    return;
                 }
+
                 ProviderContainer providerContainer = providerDirectory.get(providerParticipantId);
                 PublicationInformation oldEntry = subscriptionId2PublicationInformation.remove(subscriptionRequest.getSubscriptionId());
-                if (oldEntry != null && !(oldEntry.subscriptionRequest instanceof MulticastSubscriptionRequest)) {
+                if (oldEntry != null) {
                     routingTable.remove(proxyParticipantId);
                 }
 
-                if (!isMulticastSubscriptionRequest || providerContainer == null) {
-                    subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
-                                                              publicationInformation);
-                }
+                subscriptionId2PublicationInformation.put(subscriptionRequest.getSubscriptionId(),
+                                                          publicationInformation);
 
                 updateSubscriptionCleanupIfNecessary(subscriptionRequest, subscriptionEndDelay);
                 if (providerContainer == null) {
@@ -478,9 +460,7 @@ public class PublicationManagerImpl
             future.cancel(true);
         }
         PublicationInformation publicationInformation = subscriptionId2PublicationInformation.remove(subscriptionId);
-        if (!(publicationInformation.getSubscriptionRequest() instanceof MulticastSubscriptionRequest)) {
-            routingTable.remove(publicationInformation.getProxyParticipantId());
-        }
+        routingTable.remove(publicationInformation.getProxyParticipantId());
     }
 
     // requires addRemoveLock
@@ -607,9 +587,6 @@ public class PublicationManagerImpl
                 if (!isExpired(publicationInformation)) {
                     try {
                         addSubscriptionRequestInternal(publicationInformation, providerContainer);
-                        if (publicationInformation.getSubscriptionRequest() instanceof MulticastSubscriptionRequest) {
-                            subscriptionId2PublicationInformation.remove(publicationInformation.getSubscriptionId());
-                        }
                     } catch (SubscriptionException e) {
                         removePublication(publicationInformation.getSubscriptionId());
                         sendSubscriptionReplyWithError(publicationInformation, e);

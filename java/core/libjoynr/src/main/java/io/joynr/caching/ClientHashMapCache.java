@@ -41,7 +41,7 @@ public class ClientHashMapCache implements ClientCache {
     }
 
     public void setQoS(QualityOfService qos) {
-        this.qos = qos;
+        this.qos = (qos != null) ? new QualityOfService(qos) : new QualityOfService();
         dataFreshnessCompatibility = new QoSDataFreshnessCompatibility(qos);
     }
 
