@@ -32,7 +32,7 @@ public abstract class SubscriptionQos implements JoynrType {
 
     private long expiryDateMs = NO_EXPIRY_DATE;
     public static final int IGNORE_VALUE = -1;
-    public static final long INFINITE_SUBSCRIPTION = Long.MAX_VALUE;
+    public static final long INFINITE_SUBSCRIPTION = 9007199254740991L;
 
     /**
      * Expiry date value to disable expiration: {@value #NO_EXPIRY_DATE}.

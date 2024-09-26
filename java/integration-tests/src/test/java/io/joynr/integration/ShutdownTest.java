@@ -21,7 +21,6 @@ package io.joynr.integration;
 import java.util.Properties;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -130,8 +129,6 @@ public class ShutdownTest {
     }
 
     @Test(expected = JoynrShutdownException.class)
-    @Ignore
-    // test is taking too long because it is attempting to send deregister requests that are not implemented in the mocks
     public void testProxyCallAfterShutdown() throws DiscoveryException, JoynrIllegalStateException,
                                              InterruptedException {
         Mockito.when(messageReceiverMock.getChannelId()).thenReturn("ShutdownTestChannelId");
