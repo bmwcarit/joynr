@@ -38,7 +38,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -510,7 +509,6 @@ public class TtlUpliftTest {
                                                                   any(MessagingQos.class));
     }
 
-    @Ignore
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void testAttributeSubscriptionWithTtlUpliftWithNoExpiryDate() throws Exception {
@@ -670,7 +668,6 @@ public class TtlUpliftTest {
                                                                   any(MessagingQos.class));
     }
 
-    @Ignore
     @SuppressWarnings("unchecked")
     @Test(timeout = 3000)
     public void testBroadcastSubscriptionWithTtlUpliftWithNoExpiryDate() throws Exception {
