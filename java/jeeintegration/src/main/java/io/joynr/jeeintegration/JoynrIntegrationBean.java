@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2023 BMW Car IT GmbH
+ * Copyright (C) 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import io.joynr.messaging.mqtt.MqttModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
+import jakarta.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;

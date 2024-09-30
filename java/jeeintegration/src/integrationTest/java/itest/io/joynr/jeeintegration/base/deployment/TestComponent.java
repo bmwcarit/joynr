@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2024 BMW Car IT GmbH
+ * Copyright (C) 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,21 @@
  * limitations under the License.
  * #L%
  */
-package itest.io.joynr.jeeintegration.context;
+package itest.io.joynr.jeeintegration.base.deployment;
 
-import io.joynr.jeeintegration.api.JoynrJeeMessageScoped;
+public class TestComponent {
 
-import java.io.Serializable;
+    private String messagePrefix = "Message: ";
 
-@JoynrJeeMessageScoped
-public class MessageScopedBean implements Serializable {
-
-    public String ping(String input) {
-        return input;
+    public String message(final String msg) {
+        return this.messagePrefix + msg;
     }
 
+    public void setMessagePrefix(final String messagePrefix) {
+        this.messagePrefix = messagePrefix;
+    }
+
+    public String getMessagePrefix() {
+        return messagePrefix;
+    }
 }

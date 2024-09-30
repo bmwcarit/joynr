@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,22 @@ package io.joynr.jeeintegration.api;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import jakarta.inject.Scope;
+import jakarta.enterprise.context.NormalScope;
 
 /**
  * Used to identify the scope within which a joynr message is being processed. Like <code>RequestScoped</code>, but for
  * joynr messages.
  */
-@Scope
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented
+@NormalScope
+@Inherited
 public @interface JoynrJeeMessageScoped {
 
 }

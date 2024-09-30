@@ -434,6 +434,7 @@
 		<ow2_asm.version>9.5</ow2_asm.version>
 		<guava.version>32.0.1-jre</guava.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+		<payara.micro.version>6.2024.6</payara.micro.version>
 	</properties>
 
 	<!--
@@ -736,19 +737,19 @@
 				<groupId>org.jboss.arquillian</groupId>
 				<!-- Manage arquillian and shrinkwrap dependencies -->
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.7.0.Alpha14</version>
+				<version>1.8.0.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>fish.payara.arquillian</groupId>
 				<artifactId>arquillian-payara-server-embedded</artifactId>
-				<version>2.4.6</version>
+				<version>3.0</version>
 			</dependency>
 			<dependency>
 				<groupId>fish.payara.extras</groupId>
 				<artifactId>payara-embedded-all</artifactId>
-				<version>5.2022.3</version>
+				<version>6.2024.5</version>
 				<scope>test</scope>
 			</dependency>
 
@@ -1037,6 +1038,21 @@
 				<groupId>com.google.j2objc</groupId>
 				<artifactId>j2objc-annotations</artifactId>
 				<version>3.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian.testenricher</groupId>
+				<artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
+				<version>1.8.0.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>fish.payara.arquillian</groupId>
+				<artifactId>payara-client-ee9</artifactId>
+				<version>3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>fish.payara.arquillian</groupId>
+				<artifactId>arquillian-payara-micro-managed</artifactId>
+				<version>3.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -1666,7 +1682,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M3</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>

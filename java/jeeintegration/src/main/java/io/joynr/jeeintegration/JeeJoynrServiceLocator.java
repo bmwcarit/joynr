@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import jakarta.ejb.Singleton;
-import com.google.inject.Inject;
+import jakarta.inject.Inject;
 
 import io.joynr.StatelessAsync;
 import io.joynr.arbitration.DiscoveryQos;

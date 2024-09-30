@@ -49,12 +49,14 @@
 							<configuration>
 								<ignoredUnusedDeclaredDependencies>
 									<ignoredUnusedDeclaredDependency>org.jboss.arquillian.junit:arquillian-junit-container</ignoredUnusedDeclaredDependency>
-									<ignoredUnusedDeclaredDependency>fish.payara.arquillian:arquillian-payara-server-embedded</ignoredUnusedDeclaredDependency>
-									<ignoredUnusedDeclaredDependency>fish.payara.extras:payara-embedded-all</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.checkerframework:checker-qual</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>com.google.j2objc:j2objc-annotations</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>jakarta.inject:jakarta.inject-api</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.jboss.arquillian.protocol:arquillian-protocol-servlet-jakarta</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>fish.payara.arquillian:payara-client-ee9</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>fish.payara.arquillian:arquillian-payara-micro-managed</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.jboss.arquillian.testenricher:arquillian-testenricher-cdi-jakarta</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
 						</execution>
@@ -288,6 +290,11 @@
 					<scope>test</scope>
 				</dependency>
 				<dependency>
+					<groupId>org.jboss.arquillian.protocol</groupId>
+					<artifactId>arquillian-protocol-servlet-jakarta</artifactId>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
 					<groupId>org.jboss.arquillian.container</groupId>
 					<artifactId>arquillian-container-test-api</artifactId>
 					<scope>test</scope>
@@ -308,13 +315,18 @@
 					<scope>test</scope>
 				</dependency>
 				<dependency>
-					<groupId>fish.payara.arquillian</groupId>
-					<artifactId>arquillian-payara-server-embedded</artifactId>
+					<groupId>org.jboss.arquillian.testenricher</groupId>
+					<artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
 					<scope>test</scope>
 				</dependency>
 				<dependency>
-					<groupId>fish.payara.extras</groupId>
-					<artifactId>payara-embedded-all</artifactId>
+					<groupId>fish.payara.arquillian</groupId>
+					<artifactId>payara-client-ee9</artifactId>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>fish.payara.arquillian</groupId>
+					<artifactId>arquillian-payara-micro-managed</artifactId>
 					<scope>test</scope>
 				</dependency>
 			</dependencies>
@@ -326,6 +338,42 @@
 					</testResource>
 				</testResources>
 				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>copy</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>fish.payara.extras</groupId>
+											<artifactId>payara-micro</artifactId>
+											<version>${payara.micro.version}</version>
+											<type>jar</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${project.build.directory}</outputDirectory>
+											<destFileName>payara-micro.jar</destFileName>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<configuration>
+							<systemPropertyVariables>
+								<payara.microJar>${project.build.directory}/payara-micro.jar</payara.microJar>
+							</systemPropertyVariables>
+						</configuration>
+					</plugin>
+
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
