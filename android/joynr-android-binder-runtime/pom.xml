@@ -273,6 +273,10 @@
 					<groupId>*</groupId>
 					<artifactId>guice</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>jakarta.inject</groupId>
+					<artifactId>jakarta.inject-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -308,6 +312,10 @@
 				<exclusion>
 					<groupId>*</groupId>
 					<artifactId>guice</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jakarta.platform</groupId>
+					<artifactId>jakarta.jakartaee-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

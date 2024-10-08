@@ -40,6 +40,17 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
         private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_DEPENDENCIES    = "/META-INF/DEPENDENCIES"
         private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_INDEX_LIST      = "/META-INF/INDEX.LIST"
         private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_NETTY_VERSIONS  = "/META-INF/io.netty.versions.properties"
+
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_LOG_STRINGS_ALL = "jakarta/faces/LogStrings*.properties"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_LOCAL_STRINGS_ALL = "jakarta/servlet/LocalStrings*.properties"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_JSP_LOCAL_STRINGS_ALL = "jakarta/servlet/jsp/LocalStrings.properties"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_HTTP_LOCAL_STRINGS_ALL = "jakarta/servlet/http/LocalStrings*.properties"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_MESSAGES_ALL = "jakarta/faces/Messages*.properties"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_LICENSE = "META-INF/LICENSE.md"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_NOTICE = "META-INF/NOTICE.md"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_EXCLUDE_COMMON = "exclude-common.xml"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_BEANS_ALL = "beans_*_*.xsd"
+        private const val JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_PRIVATE_MESSAGES = "jakarta/el/PrivateMessages.properties"
     }
 
     override fun apply(project: Project) {
@@ -132,6 +143,37 @@ class JoynrGeneratorGradlePlugin : Plugin<Project> {
                 )
                 androidComponentExtension.packagingOptions.merge(
                         JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_NETTY_VERSIONS
+                )
+
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_LICENSE
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_NOTICE
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_EXCLUDE_COMMON
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_BEANS_ALL
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_LOCAL_STRINGS_ALL
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_LOG_STRINGS_ALL
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_JSP_LOCAL_STRINGS_ALL
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_HTTP_LOCAL_STRINGS_ALL
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_MESSAGES_ALL
+                )
+                androidComponentExtension.packagingOptions.merge(
+                    JOYNR_ANDROID_PACKAGING_OPTIONS_MERGE_PATTERN_JAKARTA_PRIVATE_MESSAGES
                 )
 
                 androidComponentExtension.compileOptions.sourceCompatibility =
