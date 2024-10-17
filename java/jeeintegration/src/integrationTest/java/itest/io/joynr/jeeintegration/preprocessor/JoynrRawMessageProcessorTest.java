@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
  */
 package itest.io.joynr.jeeintegration.preprocessor;
 
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getBeansXml;
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getExtension;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-
-import com.google.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -52,9 +52,12 @@ public class JoynrRawMessageProcessorTest {
         return ShrinkWrap.create(JavaArchive.class)
                          .addClasses(JoynrRawMessagingPreprocessor.class,
                                      TestResult.class,
-                                     TestRawMessagingProcessorProducer.class)
-                         .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"))
-                         .addAsManifestResource(new File("src/main/resources/META-INF/services/javax.enterprise.inject.spi.Extension"));
+                                     TestRawMessagingProcessorProducer.class,
+                                     TestRawMessagingProcessor.class,
+                                     RawMessagingPreprocessor.class)
+                         .addPackages(true, "org.slf4j")
+                         .addAsManifestResource(getBeansXml())
+                         .addAsManifestResource(getExtension());
     }
 
     @Inject

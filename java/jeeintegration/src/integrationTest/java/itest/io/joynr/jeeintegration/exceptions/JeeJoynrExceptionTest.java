@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2019 BMW Car IT GmbH
+ * Copyright (C) 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,27 @@
  */
 package itest.io.joynr.jeeintegration.exceptions;
 
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getBeansXml;
+import static itest.io.joynr.jeeintegration.base.deployment.MavenDependencyHelper.getMavenDependencies;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-
-import com.google.inject.Inject;
+import io.joynr.jeeintegration.JeeJoynrIntegrationModule;
+import io.joynr.jeeintegration.JoynrRuntimeFactory;
+import io.joynr.jeeintegration.api.CallbackHandler;
+import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
+import io.joynr.jeeintegration.api.ServiceLocator;
+import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
+import io.joynr.jeeintegration.messaging.JeeMqttMessagingSkeletonProvider;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeletonFactory;
+import io.joynr.messaging.mqtt.MqttClientIdProvider;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,8 +58,9 @@ public class JeeJoynrExceptionTest {
     private TestBean testBean;
 
     @Deployment
-    public static JavaArchive createTestArchive() {
-        return ShrinkWrap.create(JavaArchive.class)
+    public static WebArchive createTestArchive() {
+        return ShrinkWrap.create(WebArchive.class, "test.war")
+                         .addAsLibraries(getMavenDependencies())
                          .addClasses(ServiceProviderDiscovery.class,
                                      CallbackHandlerDiscovery.class,
                                      DefaultJoynrRuntimeFactory.class,
@@ -57,8 +69,36 @@ public class JeeJoynrExceptionTest {
                                      JeeJoynrStatusMetricsAggregator.class,
                                      JeeJoynrServiceLocator.class,
                                      JoynrRuntimeException.class,
+                                     JoynrRuntimeFactory.class,
+                                     ServiceLocator.class,
+                                     MqttClientIdProvider.class,
+                                     ProviderRegistrationSettingsFactory.class,
+                                     ServiceProviderDiscovery.class,
+                                     ServiceProvider.class,
+                                     JeeJoynrIntegrationModule.class,
+                                     JeeMqttMessageSendingModule.class,
+                                     JeeMqttMessagingSkeletonProvider.class,
+                                     JeeSharedSubscriptionsMqttMessagingSkeletonFactory.class,
+                                     JeeSharedSubscriptionsMqttMessagingSkeleton.class,
+                                     CallbackHandler.class,
                                      TestBean.class)
-                         .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
+                         .addPackages(true, "joynr.jeeintegration.servicelocator")
+                         .addPackages(true, "io.joynr.accesscontrol")
+                         .addPackages(true, "io.joynr.capabilities")
+                         .addPackages(true, "io.joynr.messaging")
+                         .addPackages(true, "io.joynr.runtime")
+                         .addPackages(true, "com.googlecode.cqengine")
+                         .addPackages(true, "com.googlecode.concurrenttrees")
+                         .addPackages(true, "com.google.protobuf")
+                         .addPackages(true, "org.sqlite")
+                         .addPackages(true, "org.antlr")
+                         .addPackages(true, "com.esotericsoftware")
+                         .addPackages(true, "de.javakaffee.kryoserializers")
+                         .addPackages(true, "com.github.andrewoma.dexx")
+                         .addPackages(true, "org.joda.time")
+                         .addPackages(true, "org.apache.wicket.util")
+                         .addPackages(true, "net.sf.cglib.proxy")
+                         .addAsWebInfResource(getBeansXml());
     }
 
     @Test

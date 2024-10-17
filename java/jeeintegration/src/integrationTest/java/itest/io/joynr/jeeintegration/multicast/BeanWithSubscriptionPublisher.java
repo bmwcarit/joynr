@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 package itest.io.joynr.jeeintegration.multicast;
 
 import jakarta.ejb.Stateless;
-import com.google.inject.Inject;
+import jakarta.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;

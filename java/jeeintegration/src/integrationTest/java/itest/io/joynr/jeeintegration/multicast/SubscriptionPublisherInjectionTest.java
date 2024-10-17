@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,18 @@
  */
 package itest.io.joynr.jeeintegration.multicast;
 
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getBeansXml;
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getExtension;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
+import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import jakarta.inject.Inject;
 
-import com.google.inject.Inject;
-
+import jakarta.enterprise.inject.spi.Extension;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Rule;
@@ -53,14 +54,24 @@ public class SubscriptionPublisherInjectionTest {
     private static final Logger logger = LoggerFactory.getLogger(SubscriptionPublisherInjectionTest.class);
 
     @Deployment
-    public static Archive<?> getDeployment() {
+    public static JavaArchive getDeployment() {
         return ShrinkWrap.create(JavaArchive.class)
                          .addClasses(SubscriptionPublisherCdiExtension.class,
                                      SubscriptionPublisherInjectionWrapper.class,
                                      SubscriptionPublisherProducer.class,
-                                     BeanWithSubscriptionPublisher.class)
-                         .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"))
-                         .addAsManifestResource(new File("src/main/resources/META-INF/services/javax.enterprise.inject.spi.Extension"));
+                                     BeanWithSubscriptionPublisher.class,
+                                     SubscriptionPublisher.class,
+                                     io.joynr.provider.SubscriptionPublisher.class)
+                         .addAsServiceProvider(Extension.class, SubscriptionPublisherCdiExtension.class)
+                         .addPackages(true, "joynr.exceptions")
+                         .addPackages(true, "joynr.jeeintegration.servicelocator")
+                         .addPackages(true, "io.joynr.exceptions")
+                         .addPackages(true, "io.joynr.messaging")
+                         .addPackages(true, "io.joynr.runtime")
+                         .addPackages(true, "io.joynr.subtypes")
+                         .addPackages(true, "org.slf4j")
+                         .addAsManifestResource(getBeansXml())
+                         .addAsManifestResource(getExtension());
     }
 
     @Inject

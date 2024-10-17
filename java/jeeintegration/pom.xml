@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2021 BMW Car IT GmbH
+  Copyright (C) 2024 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@
 									<ignoredUnusedDeclaredDependency>fish.payara.arquillian:payara-client-ee9</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>fish.payara.arquillian:arquillian-payara-micro-managed</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.jboss.arquillian.testenricher:arquillian-testenricher-cdi-jakarta</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-depchain</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
 						</execution>
@@ -315,6 +316,22 @@
 					<scope>test</scope>
 				</dependency>
 				<dependency>
+					<groupId>org.jboss.shrinkwrap.resolver</groupId>
+					<artifactId>shrinkwrap-resolver-depchain</artifactId>
+					<type>pom</type>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.shrinkwrap.resolver</groupId>
+					<artifactId>shrinkwrap-resolver-api-maven</artifactId>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.shrinkwrap.resolver</groupId>
+					<artifactId>shrinkwrap-resolver-api</artifactId>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
 					<groupId>org.jboss.arquillian.testenricher</groupId>
 					<artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
 					<scope>test</scope>
@@ -343,8 +360,8 @@
 						<artifactId>maven-dependency-plugin</artifactId>
 						<executions>
 							<execution>
-								<id>unpack</id>
-								<phase>pre-integration-test</phase>
+								<id>copy</id>
+								<phase>package</phase>
 								<goals>
 									<goal>copy</goal>
 								</goals>
@@ -364,16 +381,6 @@
 							</execution>
 						</executions>
 					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<configuration>
-							<systemPropertyVariables>
-								<payara.microJar>${project.build.directory}/payara-micro.jar</payara.microJar>
-							</systemPropertyVariables>
-						</configuration>
-					</plugin>
-
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>

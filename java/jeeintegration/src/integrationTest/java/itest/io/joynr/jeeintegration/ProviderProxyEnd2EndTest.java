@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2022 BMW Car IT GmbH
+ * Copyright (C) 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,28 @@
  */
 package itest.io.joynr.jeeintegration;
 
-import java.io.File;
-
-import com.google.inject.Inject;
+import io.joynr.jeeintegration.JeeJoynrIntegrationModule;
+import io.joynr.jeeintegration.JoynrRuntimeFactory;
+import io.joynr.jeeintegration.ProviderWrapper;
+import io.joynr.jeeintegration.api.CallbackHandler;
+import io.joynr.jeeintegration.api.ProviderDomain;
+import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
+import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.api.SubscriptionPublisher;
+import io.joynr.jeeintegration.context.JoynrJeeMessageContext;
+import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
+import io.joynr.jeeintegration.messaging.JeeMqttMessagingSkeletonProvider;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeletonFactory;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherCdiExtension;
+import io.joynr.jeeintegration.multicast.SubscriptionPublisherInjectionWrapper;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +75,10 @@ import joynr.test.JoynrTestLoggingRule;
 import joynr.exceptions.ApplicationException;
 import io.joynr.proxy.CallbackWithModeledError;
 
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getBeansXml;
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getExtension;
+import static itest.io.joynr.jeeintegration.base.deployment.MavenDependencyHelper.getMavenDependencies;
+
 /**
  * End2End test for provider proxies
  */
@@ -73,9 +91,10 @@ public class ProviderProxyEnd2EndTest {
     public JoynrTestLoggingRule joynrTestRule = new JoynrTestLoggingRule(logger);
 
     @Deployment
-    public static JavaArchive createTestArchive() {
+    public static WebArchive createTestArchive() {
         // @formatter:off
-        return ShrinkWrap.create(JavaArchive.class)
+        return ShrinkWrap.create(WebArchive.class, "test.war")
+                         .addAsLibraries(getMavenDependencies())
                          .addClasses(ServiceProviderDiscovery.class,
                                      CallbackHandlerDiscovery.class,
                                      SubscriptionPublisherProducer.class,
@@ -87,8 +106,46 @@ public class ProviderProxyEnd2EndTest {
                                      TestProvider.class,
                                      MyServiceSync.class,
                                      JoynrCallingPrincipal.class,
-                                     JoynrJeeMessageMetaInfo.class)
-                         .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
+                                     JoynrJeeMessageMetaInfo.class,
+
+                                     JoynrRuntimeFactory.class,
+                                     ServiceLocator.class,
+                                     TestProvider.class,
+                                     DefaultJoynrRuntimeFactory.class,
+                                     ProviderRegistrationSettingsFactory.class,
+                                     ServiceProvider.class,
+                                     JeeJoynrIntegrationModule.class,
+                                     JeeMqttMessageSendingModule.class,
+                                     JeeMqttMessagingSkeletonProvider.class,
+                                     JeeSharedSubscriptionsMqttMessagingSkeletonFactory.class,
+                                     JeeSharedSubscriptionsMqttMessagingSkeleton.class,
+                                     ProviderWrapper.class,
+                                     ProviderDomain.class,
+                                     SubscriptionPublisherInjectionWrapper.class,
+                                     SubscriptionPublisher.class,
+                                     CallbackHandler.class,
+                                     SubscriptionPublisherCdiExtension.class,
+                                     JoynrJeeMessageContext.class)
+                         .addAsServiceProvider(Extension.class, SubscriptionPublisherCdiExtension.class)
+                         .addPackages(true, "joynr.jeeintegration.servicelocator")
+                         .addPackages(true, "io.joynr.accesscontrol")
+                         .addPackages(true, "io.joynr.capabilities")
+                         .addPackages(true, "io.joynr.messaging")
+                         .addPackages(true, "io.joynr.messaging.mqtt")
+                         .addPackages(true, "io.joynr.runtime")
+                         .addPackages(true, "com.googlecode.cqengine")
+                         .addPackages(true, "com.googlecode.concurrenttrees")
+                         .addPackages(true, "com.google.protobuf")
+                         .addPackages(true, "org.sqlite")
+                         .addPackages(true, "org.antlr")
+                         .addPackages(true, "com.esotericsoftware")
+                         .addPackages(true, "de.javakaffee.kryoserializers")
+                         .addPackages(true, "com.github.andrewoma.dexx")
+                         .addPackages(true, "org.joda.time")
+                         .addPackages(true, "org.apache.wicket.util")
+                         .addPackages(true, "net.sf.cglib.proxy")
+                         .addAsWebInfResource(getBeansXml())
+                         .addAsWebInfResource(getExtension());
         // @formatter:on
     }
 

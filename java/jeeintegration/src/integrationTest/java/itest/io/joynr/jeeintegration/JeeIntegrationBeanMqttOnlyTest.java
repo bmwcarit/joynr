@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,26 @@
  */
 package itest.io.joynr.jeeintegration;
 
-import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 
+import io.joynr.jeeintegration.JeeJoynrIntegrationModule;
+import io.joynr.jeeintegration.JoynrRuntimeFactory;
+import io.joynr.jeeintegration.api.CallbackHandler;
+import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
+import io.joynr.jeeintegration.api.ServiceLocator;
+import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
+import io.joynr.jeeintegration.messaging.JeeMqttMessagingSkeletonProvider;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeletonFactory;
 import jakarta.annotation.Resource;
-import com.google.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +52,9 @@ import io.joynr.jeeintegration.JoynrIntegrationBean;
 import io.joynr.jeeintegration.ServiceProviderDiscovery;
 import io.joynr.jeeintegration.api.JeeIntegrationPropertyKeys;
 
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getBeansXml;
+import static itest.io.joynr.jeeintegration.base.deployment.MavenDependencyHelper.getMavenDependencies;
+
 /**
  * Integration tests for the JEE integration bean with the MQTT-only configuration.
  */
@@ -52,9 +64,10 @@ public class JeeIntegrationBeanMqttOnlyTest {
     public Timeout globalTimeout = Timeout.seconds(60);
 
     @Deployment
-    public static JavaArchive createTestArchive() {
+    public static WebArchive createTestArchive() {
         // @formatter:off
-        return ShrinkWrap.create(JavaArchive.class)
+        return ShrinkWrap.create(WebArchive.class, "test.war")
+                         .addAsLibraries(getMavenDependencies())
                          .addClasses(ServiceProviderDiscovery.class,
                                      CallbackHandlerDiscovery.class,
                                      DefaultJoynrRuntimeFactory.class,
@@ -62,8 +75,34 @@ public class JeeIntegrationBeanMqttOnlyTest {
                                      JoynrIntegrationBean.class,
                                      TestResult.class,
                                      JeeJoynrStatusMetricsAggregator.class,
-                                     JeeJoynrServiceLocator.class)
-                         .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
+                                     JeeJoynrServiceLocator.class,
+                                     JoynrRuntimeFactory.class,
+                                     ServiceLocator.class,
+                                     ProviderRegistrationSettingsFactory.class,
+                                     ServiceProvider.class,
+                                     JeeJoynrIntegrationModule.class,
+                                     JeeMqttMessageSendingModule.class,
+                                     JeeMqttMessagingSkeletonProvider.class,
+                                     JeeSharedSubscriptionsMqttMessagingSkeletonFactory.class,
+                                     JeeSharedSubscriptionsMqttMessagingSkeleton.class,
+                                     CallbackHandler.class)
+                         .addPackages(true, "io.joynr.accesscontrol")
+                         .addPackages(true, "io.joynr.capabilities")
+                         .addPackages(true, "io.joynr.messaging")
+                         .addPackages(true, "io.joynr.messaging.mqtt")
+                         .addPackages(true, "io.joynr.runtime")
+                         .addPackages(true, "com.googlecode.cqengine")
+                         .addPackages(true, "com.googlecode.concurrenttrees")
+                         .addPackages(true, "com.google.protobuf")
+                         .addPackages(true, "org.sqlite")
+                         .addPackages(true, "org.antlr")
+                         .addPackages(true, "com.esotericsoftware")
+                         .addPackages(true, "de.javakaffee.kryoserializers")
+                         .addPackages(true, "com.github.andrewoma.dexx")
+                         .addPackages(true, "org.joda.time")
+                         .addPackages(true, "org.apache.wicket.util")
+                         .addPackages(true, "net.sf.cglib.proxy")
+                         .addAsWebInfResource(getBeansXml());
         // @formatter:on
     }
 
