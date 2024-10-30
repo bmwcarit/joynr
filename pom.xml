@@ -430,7 +430,7 @@
 		<smrf.version>0.3.3</smrf.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		<sonarsource.version>4.0.0.4121</sonarsource.version>
-		<surefire.version>3.0.0-M3</surefire.version>
+		<surefire.version>3.5.1</surefire.version>
 		<ow2_asm.version>9.5</ow2_asm.version>
 		<guava.version>32.0.1-jre</guava.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
