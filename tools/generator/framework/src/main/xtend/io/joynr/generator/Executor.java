@@ -20,8 +20,8 @@ package io.joynr.generator;
 
 import static io.joynr.generator.util.FileSystemAccessUtil.createFileSystemAccess;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -41,7 +41,7 @@ import io.joynr.generator.util.InvocationArguments;
 
 public class Executor {
 
-    private final Logger logger = Logger.getLogger("io.joynr.generator.Executor");
+    private final Logger logger = LoggerFactory.getLogger(Executor.class);
     private final InvocationArguments arguments;
     private final IGenerator generator;
     private final IFileSystemAccess outputFileSystem;
@@ -131,7 +131,7 @@ public class Executor {
                 for (Diagnostic error : resource.getErrors()) {
                     errorMsg.append(error.getMessage());
                 }
-                logger.log(Level.SEVERE, errorMsg.toString());
+                logger.error(errorMsg.toString());
                 System.exit(-1);
             } else {
                 joynrGenerator.updateCommunicationModelGeneration(resource);
