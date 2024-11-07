@@ -164,11 +164,11 @@ RUN . /etc/profile \
 ###################################################
 # Install payara
 ###################################################
-ENV PATH ${PATH}:/opt/payara5/glassfish/bin
+ENV PATH ${PATH}:/opt/payara6/glassfish/bin
 
-RUN wget --quiet -O /opt/payara-5.2021.7.zip https://s3-eu-west-1.amazonaws.com/payara.fish/Payara+Downloads/5.2021.7/payara-5.2021.7.zip && \
-    unzip -qq /opt/payara-5.2021.7.zip -d /opt && \
-    rm /opt/payara-5.2021.7.zip
+RUN wget --quiet -O /opt/payara-6.2024.10.zip https://nexus.payara.fish/repository/payara-community/fish/payara/distributions/payara/6.2024.10/payara-6.2024.10.zip && \
+    unzip -qq /opt/payara-6.2024.10.zip -d /opt && \
+    rm /opt/payara-6.2024.10.zip
 
 RUN asadmin --user admin start-domain && \
     asadmin --user admin create-managed-scheduled-executor-service --corepoolsize=100 concurrent/joynrMessagingScheduledExecutor && \
@@ -182,7 +182,7 @@ RUN asadmin --user admin start-domain && \
     asadmin --user admin set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.multiLineMode=false && \
     asadmin --user admin stop-domain --kill=true
 
-RUN chmod -R 777 /opt/payara5
+RUN chmod -R 777 /opt/payara6
 
 ###################################################################################
 # build and install mosquitto 1.6.12 mqtt broker

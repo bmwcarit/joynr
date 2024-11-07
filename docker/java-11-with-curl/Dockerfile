@@ -1,4 +1,4 @@
-FROM alpine:3.13.6
+FROM alpine:3.20.3
 
 LABEL com.jfrog.artifactory.retention.maxCount="25"
 
