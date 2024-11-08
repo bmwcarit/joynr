@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2021 BMW Car IT GmbH
+  Copyright (C) 2024 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -434,7 +434,7 @@
 		<ow2_asm.version>9.5</ow2_asm.version>
 		<guava.version>32.0.1-jre</guava.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
-		<payara.micro.version>6.2024.6</payara.micro.version>
+		<payara.micro.version>6.2024.10</payara.micro.version>
 	</properties>
 
 	<!--

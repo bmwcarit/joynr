@@ -43,7 +43,7 @@
 	</modules>
 
 	<properties>
-		<payaramicro.maven.plugin.version>1.3.0</payaramicro.maven.plugin.version>
+		<payaramicro.maven.plugin.version>2.4</payaramicro.maven.plugin.version>
 	</properties>
 
 	<dependencyManagement>

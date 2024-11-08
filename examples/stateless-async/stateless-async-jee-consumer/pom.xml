@@ -82,7 +82,7 @@
 				</executions>
 
 				<configuration>
-
+					<payaraVersion>${payara.micro.version}</payaraVersion>
 					<useUberJar>true</useUberJar>
 
 					<commandLineOptions>

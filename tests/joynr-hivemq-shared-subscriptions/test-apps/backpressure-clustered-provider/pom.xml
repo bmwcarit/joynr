@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2021 BMW Car IT GmbH
+  Copyright (C) 2024 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@
 							<configuration>
 								<ignoredUnusedDeclaredDependencies>
 									<ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>jakarta.inject:jakarta.inject-api</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
 						</execution>
@@ -77,6 +78,7 @@
 					</execution>
 				</executions>
 				<configuration>
+					<payaraVersion>${payara.micro.version}</payaraVersion>
 					<useUberJar>true</useUberJar>
 					<commandLineOptions>
 						<option>
@@ -124,8 +126,8 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.google.inject</groupId>
-			<artifactId>guice</artifactId>
+			<groupId>jakarta.inject</groupId>
+			<artifactId>jakarta.inject-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

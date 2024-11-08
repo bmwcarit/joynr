@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2024 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import jakarta.ejb.Stateless;
-import com.google.inject.Inject;
+import jakarta.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.sharedsubscription.test.clusteredapp.base.CallStatistics;
