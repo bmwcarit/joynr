@@ -83,19 +83,11 @@ cat > /etc/profile.d/use-my-proxy.sh <<EOF
 echo "use-my-proxy.sh started"
 PROXY_HOST=$proxy_host
 PROXY_PORT=$proxy_port
-http_proxy="$http_proxy"
-https_proxy="$http_proxy"
 ftp_proxy="$http_proxy"
-HTTP_PROXY="$http_proxy"
-HTTPS_PROXY="$http_proxy"
 FTP_PROXY="$http_proxy"
 export PROXY_HOST
 export PROXY_PORT
-export http_proxy
-export https_proxy
 export ftp_proxy
-export HTTP_PROXY
-export HTTPS_PROXY
 export FTP_PROXY
 CURL_HOME=/etc
 export CURL_HOME
