@@ -7,9 +7,9 @@ docker network prune -f
 docker_ps=$(docker ps -a)
 conts=$(echo $docker_ps | cut -d' ' -f9-)
 if [ ! -z "$conts" ]; then
-    echo "Stopping running docker-compose containers, e.g. due to a previous failing build"
-    docker-compose stop
-    docker-compose rm -f
+    echo "Stopping running docker compose containers, e.g. due to a previous failing build"
+    docker compose stop
+    docker compose rm -f
     docker system prune -f
 fi
 
@@ -39,7 +39,7 @@ fi
 mkdir results
 
 echo "Starting the orchestra"
-docker-compose up -d --scale consumer=10
+docker compose up -d --scale consumer=10
 
 if [ $? -ne 0 ]
 then
@@ -55,7 +55,7 @@ trap stop_me SIGINT
 function stop_me {
   echo ""
   echo "Ctrl-c is sent. Logging containers to logsOfAllContainers.log ..."
-  docker-compose logs --no-color > logsOfAllContainers.log
+  docker compose logs --no-color > logsOfAllContainers.log
 
   cat logsOfAllContainers.log | grep -a 'PT RESULT' > pt-result.log
 
@@ -69,13 +69,13 @@ function stop_me {
   fi
 
   echo "Stop and remove all containers"
-  docker-compose stop
+  docker compose stop
 
   echo number of tests: `cat pt-result.log | wc -l`
   echo      successful: `cat pt-result.log | grep success | wc -l`
 
   # clean up
-  docker-compose rm -f
+  docker compose rm -f
   docker system prune -f
 
 if [ -d results ]; then

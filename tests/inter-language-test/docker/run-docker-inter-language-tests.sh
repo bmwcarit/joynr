@@ -124,7 +124,7 @@ echo "JOYNR_VERSION_OLD=$JOYNR_VERSION_OLD"
 echo "JOYNR_VERSION_NEW=$JOYNR_VERSION_NEW"
 echo "JOYNR_BACKEND_IMAGE_VERSION=$JOYNR_BACKEND_IMAGE_VERSION"
 
-# derive image versions used by docker-compose
+# derive image versions used by docker compose
 #
 # Container 1 uses new version
 # while Container 2 uses the old version
@@ -134,11 +134,11 @@ export ILT_ONBOARD_APPS_IMAGE_VERSION_2=$JOYNR_VERSION_OLD
 export JOYNR_BACKEND_IMAGE_VERSION
 
 # start containers in background mode
-docker-compose up -d
+docker compose up -d
 if [ "$?" -ne 0 ]
 then
-    echo "ERROR: docker-compose up -d failed."
-    docker-compose stop
+    echo "ERROR: docker compose up -d failed."
+    docker compose stop
     exit 1
 fi
 
@@ -188,10 +188,10 @@ done
 sleep 5
 
 # stop containers
-docker-compose stop
+docker compose stop
 
 # remove containers
-docker-compose rm -f
+docker compose rm -f
 
 # evaluate results
 NUMBER_OF_FILES=`ls -1 $HOME/docker/build/${JOYNR_CONSUMER_NODE}/*.exitcode 2> /dev/null | wc -l`

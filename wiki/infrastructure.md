@@ -39,7 +39,7 @@ The backend application `capabilities-directory-jar-with-dependencies.jar` needs
 broker and a database.
 
 For this purpose, we need to build two docker images `joynr-gcd-db` and `joynr-gcd` and run
-`docker-compose` which runs the required components of the apps/tests.
+`docker compose` which runs the required components of the apps/tests.
 
 There is a ready script in `joynr/docker` to build the mentioned docker images. Please execute it
 as follows:
@@ -62,7 +62,7 @@ joynr-gcd-db                                latest         471aa4729317   47 hou
 ## Starting the Infrastructure Components with default configuration (single backend, HiveMQ broker, no TLS)
 
 To run apps/tests which interact with the joynr backend we need to run an MQTT
-broker along with a database. We have prepared a docker-compose file `joynr/docker/joynr-backend.yml`
+broker along with a database. We have prepared a docker compose file `joynr/docker/joynr-backend.yml`
 which contains the required services.  
 **Note**: no other service is allowed to use the required ports `1883` (MQTT broker) and `5432`
 (capabilities database) on the machine.
@@ -73,7 +73,7 @@ database, can be started from the joynr/docker directory via the following comma
 ```bash
 cd <joynr_repository>
 cd docker
-docker-compose -f joynr-backend.yml up -d
+docker compose -f joynr-backend.yml up -d
 ```
 This will create a network `docker_default` and start the services.
 
@@ -90,8 +90,8 @@ When the testing is finished, the orchestra should be cleaned up as follows:
 ```bash
 cd <joynr_repository>
 cd docker
-docker-compose -f joynr-backend.yml stop
-docker-compose -f joynr-backend.yml rm -f
+docker compose -f joynr-backend.yml stop
+docker compose -f joynr-backend.yml rm -f
 ```
 
 For configuration options and more information about the local GlobalCapabilitiesDirectory, see the
@@ -107,7 +107,7 @@ When using multiple backends, each backend requires its own MQTT broker and its 
 GCD with appropriate GBID configuration. Please check out [joynr multiple backends Guide](multiple-backends.md)
 for more information about joynr with multiple backends.
 
-We have also prepared a docker-compose file setting up multiple backends in `docker/joynr-multiple-backend.yml`.
+We have also prepared a docker compose file setting up multiple backends in `docker/joynr-multiple-backend.yml`.
 This docker-concerto can be run and torn down just as described above. It will start two backend
 containers that share one database, as well as two MQTT brokers representing the different backends.
 The MQTT brokers are listening to ports 1883 and 1884 outside the docker network, so it has to be
@@ -116,15 +116,15 @@ made sure that those ports are not occupied.
 ```bash
 cd <joynr_repository>
 cd docker
-docker-compose -f joynr-multiple-backend.yml up -d
+docker compose -f joynr-multiple-backend.yml up -d
 # Tear down after testing
-docker-compose -f joynr-multiple-backend.yml stop
-docker-compose -f joynr-multiple-backend.yml rm -f
+docker compose -f joynr-multiple-backend.yml stop
+docker compose -f joynr-multiple-backend.yml rm -f
 ```
 
 ## Adaptions for a single backend test environment with TLS support (HiveMQ broker, TLS)
 
-We have also prepared a docker-compose file setting up single backend with TLS support in `docker/joynr-backend-with-tls-broker.yml`.
+We have also prepared a docker compose file setting up single backend with TLS support in `docker/joynr-backend-with-tls-broker.yml`.
 
 In order to use TLS connections, the certificates used by HiveMQ server and clients running outside the concerto have to be
 prepared in advance. The default certificate directory path is `/data/ssl-data`.
@@ -147,8 +147,8 @@ to use unencrypted connection within the Docker. TLS is only used for connection
 ```bash
 cd <joynr_repository>
 cd docker
-docker-compose -f joynr-backend-with-tls-broker.yml up -d
+docker compose -f joynr-backend-with-tls-broker.yml up -d
 # Tear down after testing
-docker-compose -f joynr-backend-with-tls-broker.yml stop
-docker-compose -f joynr-backend-with-tls-broker.yml rm -f
+docker compose -f joynr-backend-with-tls-broker.yml stop
+docker compose -f joynr-backend-with-tls-broker.yml rm -f
 ```

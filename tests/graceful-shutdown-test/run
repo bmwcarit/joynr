@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Launching docker containers"
-docker-compose up -d
+docker compose up -d
 sleep 2
 
 while [ -z "$(docker logs --tail 50 consumer 2>&1 | grep FINISHED)" ]; do
@@ -43,5 +43,5 @@ else
   echo FAILED
 fi
 
-docker-compose stop
-docker-compose rm -f
+docker compose stop
+docker compose rm -f

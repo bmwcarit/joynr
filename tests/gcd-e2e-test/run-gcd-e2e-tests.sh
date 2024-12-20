@@ -109,24 +109,24 @@ fi
 
 echo "### Stop and remove any potentially still running joynr-backend containers"
 cd $JOYNR_SOURCE_DIR/docker
-docker-compose -f joynr-backend.yml stop
-docker-compose -f joynr-backend.yml rm -f
-docker-compose -f joynr-multiple-backend.yml stop
-docker-compose -f joynr-multiple-backend.yml rm -f
+docker compose -f joynr-backend.yml stop
+docker compose -f joynr-backend.yml rm -f
+docker compose -f joynr-multiple-backend.yml stop
+docker compose -f joynr-multiple-backend.yml rm -f
 
 echo "### Start required joynr-backend"
 if [ $SINGLE_BROKER -eq 1 ]
 then
 	echo "Configuring for single broker"
 	cd $JOYNR_SOURCE_DIR/docker
-	docker-compose -f joynr-backend.yml up -d
+	docker compose -f joynr-backend.yml up -d
 	configure_single_broker
 fi
 if [ $MULTIPLE_BROKER -eq 1 ]
 then
 	echo "Configuring for multiple broker"
 	cd $JOYNR_SOURCE_DIR/docker
-	docker-compose -f joynr-multiple-backend.yml up -d
+	docker compose -f joynr-multiple-backend.yml up -d
 	configure_multiple_broker
 fi
 
@@ -141,14 +141,14 @@ echo "### Stop and remove joynr-backend containers"
 if [ $SINGLE_BROKER -eq 1 ]
 then
     cd $JOYNR_SOURCE_DIR/docker
-    docker-compose -f joynr-backend.yml stop
-    docker-compose -f joynr-backend.yml rm -f
+    docker compose -f joynr-backend.yml stop
+    docker compose -f joynr-backend.yml rm -f
 fi
 if [ $MULTIPLE_BROKER -eq 1 ]
 then
     cd $JOYNR_SOURCE_DIR/docker
-    docker-compose -f joynr-multiple-backend.yml stop
-    docker-compose -f joynr-multiple-backend.yml rm -f
+    docker compose -f joynr-multiple-backend.yml stop
+    docker compose -f joynr-multiple-backend.yml rm -f
 fi
 
 echo "### Test completed with exit code $EXITCODE"
