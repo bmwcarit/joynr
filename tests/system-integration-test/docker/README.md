@@ -176,17 +176,17 @@ can start up the scenario by executing the following script:
 Alternatively, you can also start up the scenario manually by
 executing the following commands:
 
-`docker-compose up -d`
+`docker compose up -d`
 
 Check for progress of the various containers by running:
 
-`docker-compose logs`
+`docker compose logs`
 
 In order to shutdown and remove the containers, issue the
 following commands:
 
-`docker-compose stop`
+`docker compose stop`
 
 and
 
-`docker-compose rm -f`
+`docker compose rm -f`

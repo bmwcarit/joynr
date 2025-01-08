@@ -61,7 +61,7 @@ $ ./build_docker_image.sh --docker-run-flags "-e DEV_UID=$(id -u)" <other params
 ### Run scripts
 
 A parameterized script `<ILT_DIR>/docker/run-docker-inter-language-tests.sh` is
-provided to run the docker concerto using docker-compose and execute the required
+provided to run the docker concerto using docker compose and execute the required
 steps within each container instance.
 
 ```

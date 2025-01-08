@@ -136,6 +136,8 @@ RUN mkdir -p /tmp/patches/java
 COPY patches/java /tmp/patches/java
 RUN cd /usr/lib/jvm/java-11/conf/security \
     && patch < /tmp/patches/java/java-11.security.patch \
+    && cd /usr/lib/jvm/java-17/conf/security \
+    && patch < /tmp/patches/java/java-17.security.patch \
     && rm -fr /tmp/patches/java
 
 ###################################################

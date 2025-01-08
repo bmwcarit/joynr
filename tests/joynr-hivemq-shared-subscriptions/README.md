@@ -18,7 +18,7 @@ using joynr JEE integration with MQTT for incoming communication, allowing joynr
 to scale horizontally in a JEE cluster.
 
 This test setup creates a set of Docker containers using
-docker-compose comprising:
+docker compose comprising:
 * a (mini) JEE cluster offering a joynr provider
 * a single node monitoring application (joynr proxy, also JEE) which communicates with the
 cluster
@@ -32,7 +32,7 @@ messages in case of heavy load situations. For more details on the backpressure 
 https://github.com/bmwcarit/joynr/blob/master/wiki/JavaSettings.md#limitandbackpressuresettings.
 
 This test setup creates a set of Docker containers using
-docker-compose comprising:
+docker compose comprising:
 * a (mini) JEE cluster offering a joynr provider and set up with backpressure mechanism turned on
 * a single node monitoring application (joynr proxy, also JEE) which communicates with the
 cluster and which produces a heavy-load situation
@@ -41,7 +41,7 @@ cluster and which produces a heavy-load situation
 ## Pre-requisites
 
 You must have a version of docker installed `>=1.13`, and
-a matching version of `docker-compose`.
+a matching version of `docker compose`.
 
 You must be able to install the required infrastructure Docker Images
 in your local repository (see below for which ones are required).
@@ -132,7 +132,7 @@ and
 
 If you want to trigger tests manually, execute:
 
-`docker-compose up -d`
+`docker compose up -d`
 
 This will start the docker orchestra. Next connect to one of
 the both monitoring containers. See what its ID is by executing `docker ps`, and
@@ -165,9 +165,9 @@ of the Docker Container running the monitoring application).
 To stop the scenario, `exit` the container you connected to and then
 run the following commands:
 
-`docker-compose stop`
+`docker compose stop`
 
-`docker-compose rm -f`
+`docker compose rm -f`
 
 In case you are executing the `run_tests.sh` script no action is needed
 as the docker orchestra is stopped automatically.

@@ -57,7 +57,7 @@
 		<profile>
 			<id>sonarsource-scanner-maven</id>
 				<properties>
-					<java.version>1.11</java.version>
+					<java.version>17</java.version>
 					<sonar.language>java</sonar.language>
 					<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 					<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
@@ -90,6 +90,9 @@
 					<sonar.test.exclusions>
 						**/test/**
 					</sonar.test.exclusions>
+					<sonar.java.jdkHome>
+						/usr/lib/jvm/java-17-openjdk-17.0.8.0.7-1.fc37.x86_64/
+					</sonar.java.jdkHome>
 				</properties>
 		</profile>
 	</profiles>

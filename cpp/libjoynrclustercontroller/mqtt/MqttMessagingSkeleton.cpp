@@ -135,10 +135,10 @@ void MqttMessagingSkeleton::onMessageReceived(smrf::ByteVector&& rawMessage)
     }
 
     auto onFailure = [messageId = immutableMessage->getId(),
-                      _ownGbid = _ownGbid](const exceptions::JoynrRuntimeException& e) {
+                      ownGbid = _ownGbid](const exceptions::JoynrRuntimeException& e) {
         JOYNR_LOG_ERROR(logger(),
                         "Incoming Message from >{}< with ID {} could not be sent! reason: {}",
-                        _ownGbid,
+                        ownGbid,
                         messageId,
                         e.getMessage());
     };

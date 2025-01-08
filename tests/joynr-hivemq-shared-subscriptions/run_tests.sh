@@ -5,11 +5,11 @@ cd ../../docker/ && ./build_backend.sh
 cd -
 
 echo "killing potentially existing containers, e.g. due to a previous failing build"
-docker-compose stop
-docker-compose rm -f
+docker compose stop
+docker compose rm -f
 
 echo "starting the orchestra"
-docker-compose up -d
+docker compose up -d
 if [ $? -ne 0 ]
 then
   echo "failed to start containers"
@@ -22,17 +22,17 @@ sleep 360
 
 echo "Logging results. Started: $(date). Timeout = 240s"
 
-# timeout runs the docker-compose logs command for 240s, and if it is not terminated,
+# timeout runs the docker compose logs command for 240s, and if it is not terminated,
 # it will kill it after ten seconds
-timeout -k 10s 240s docker-compose logs --no-color -t > sst-full.log
+timeout -k 10s 240s docker compose logs --no-color -t > sst-full.log
 
 echo "Logged: $(du -sh sst-full.log)"
 
 echo "stop all containers"
-docker-compose stop
+docker compose stop
 
 echo "remove all containers"
-docker-compose rm -f
+docker compose rm -f
 
 # Check SST test result
 if grep -F -q '[SST] Triggered 100 pings. 100 were successful' sst-full.log ; then

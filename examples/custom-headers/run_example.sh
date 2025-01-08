@@ -16,11 +16,11 @@ function wait_for_endpoint {
 }
 
 echo "killing potentially existing containers"
-docker-compose stop
-docker-compose rm -f
+docker compose stop
+docker compose rm -f
 
 echo -e "\nstarting the orchestra"
-docker-compose up -d
+docker compose up -d
 if [ $? -ne 0 ]
 then
   echo "failed to start containers"
@@ -35,10 +35,10 @@ echo -e "\n\ntrigger a joynr method call on the consumer"
 curl http://localhost:8081/control/trigger
 sleep 5
 
-docker-compose logs -t > custom-headers-full.log
+docker compose logs -t > custom-headers-full.log
 
 echo -e "\n\nstop all containers"
-docker-compose stop
+docker compose stop
 
 echo -e "\nremove all containers"
-docker-compose rm -f
+docker compose rm -f

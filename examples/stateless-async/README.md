@@ -58,19 +58,19 @@ system required to run an end-to-end test.
 
 First, startup the infrastructure components:
 
-	$ docker-compose up -d hivemq joynr-gcd-db postgresql ; docker-compose logs -f
+	$ docker compose up -d hivemq joynr-gcd-db postgresql ; docker compose logs -f
 
 Wait until no more log entries are written, then start up the joynr backend services:
 
-	$ docker-compose up -d joynr-gcd ; docker-compose logs -f joynr-gcd
+	$ docker compose up -d joynr-gcd ; docker compose logs -f joynr-gcd
 
 Again, wait until it's fully started, then fire up the car simulator:
 
-	$ docker-compose up -d carsim ; docker-compose logs -f carsim
+	$ docker compose up -d carsim ; docker compose logs -f carsim
 
 After this has started, fire up a number of JEE consumer applications. E.g. for starting two instances:
 
-	$ docker-compose up -d jee-consumer-1 jee-consumer-2 ; docker-compose logs -f jee-consumer-1 jee-consumer-2
+	$ docker compose up -d jee-consumer-1 jee-consumer-2 ; docker compose logs -f jee-consumer-1 jee-consumer-2
 
 Wait until these have fully started up, then you can commence testing.
 
@@ -83,7 +83,7 @@ In order to see what the various applications are doing, you should tail the log
 involved. In order to prevent being swamped with log entries, it's recommended to only tail the two JEE
 applications, but feel free to inspect the logs of any and all of the other applications, too.
 
-	$ docker-compose logs -f --tail 10 jee-consumer-1 jee-consumer-2
+	$ docker compose logs -f --tail 10 jee-consumer-1 jee-consumer-2
 
 First we need to create a vehicle configuration entry:
 
@@ -129,7 +129,7 @@ In addition to the JEE consumer application we've provided an example plain-Java
 application which demonstrates the use of the stateless async API. If you want to start up the
 application, then run:
 
-	$ docker-compose up -d java-consumer ; docker-compose logs -f java-consumer
+	$ docker compose up -d java-consumer ; docker compose logs -f java-consumer
 
 It will automatically fire off a set of requests to the car sim application and you can see in the
 logs that the replies have been processed.

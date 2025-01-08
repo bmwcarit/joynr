@@ -43,19 +43,6 @@ gpgcheck=1
 installonly_limit=3
 clean_requirements_on_remove=false
 EOF
-# add dnf proxy configuration if available
-if [ -n "${http_proxy}" ]; then
-  cat >> /etc/dnf/dnf.conf <<EOF
-proxy=${proxy_url}
-EOF
-  # add user/password for proxy if available
-  if [ -n "${proxy_user}" ]; then
-    cat >> /etc/dnf/dnf.conf <<EOF
-proxy_username=${proxy_user}
-proxy_password=${proxy_password}
-EOF
-  fi
-fi
 echo "Final Configuration /etc/dnf/dnf.conf:"
 cat /etc/dnf/dnf.conf
 echo "Setting up proxy configuration in /etc/wgetrc"
@@ -66,9 +53,6 @@ EOF
 if [ -n "${http_proxy}" ]; then
   cat >> /etc/wgetrc <<EOF
 use_proxy=on
-http_proxy=${http_proxy}
-https_proxy=${http_proxy}
-ftp_proxy=${http_proxy}
 EOF
 fi
 echo "Final Configuration /etc/wgetrc:"
@@ -81,22 +65,6 @@ EOF
 echo "Setting up proxy configuration in /etc/profile.d/use-my-proxy.sh"
 cat > /etc/profile.d/use-my-proxy.sh <<EOF
 echo "use-my-proxy.sh started"
-PROXY_HOST=$proxy_host
-PROXY_PORT=$proxy_port
-http_proxy="$http_proxy"
-https_proxy="$http_proxy"
-ftp_proxy="$http_proxy"
-HTTP_PROXY="$http_proxy"
-HTTPS_PROXY="$http_proxy"
-FTP_PROXY="$http_proxy"
-export PROXY_HOST
-export PROXY_PORT
-export http_proxy
-export https_proxy
-export ftp_proxy
-export HTTP_PROXY
-export HTTPS_PROXY
-export FTP_PROXY
 CURL_HOME=/etc
 export CURL_HOME
 echo "Setting up npm configuration in \$HOME/.npmrc"
