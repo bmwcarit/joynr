@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2021 BMW Car IT GmbH
+ * Copyright (C) 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public class CapabilitiesDirectoryLauncher {
             joynrConfig.remove(GCD_JPA_PROPERTIES);
         }
 
-        jpaProperties.setProperty("javax.persistence.jdbc.url",
+        jpaProperties.setProperty("jakarta.persistence.jdbc.url",
                                   "jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName);
         jpaModule.properties(jpaProperties);
 

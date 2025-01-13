@@ -1,7 +1,7 @@
 /*-
  * #%L
  * %%
- * Copyright (C) 2011 - 2018 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import javax.inject.Qualifier;
+import jakarta.inject.Qualifier;
 
 /**
  * Used to mark a bean as a handler for stateless async callback replies. A bean annotated with this qualifier must
  * implement exactly one stateless async callback interface (which extends {@link io.joynr.proxy.StatelessAsyncCallback}).
- * When using callback handlers, the application should use the {@link ServiceLocator} during {@link javax.ejb.Startup}
+ * When using callback handlers, the application should use the {@link ServiceLocator} during {@link jakarta.ejb.Startup}
  * to obtain a proxy instance for which the annotated callback should be used, in order for the system to be able to
  * register the callback for use with that proxy.
  */

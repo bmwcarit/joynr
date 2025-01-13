@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,38 @@
  */
 package itest.io.joynr.jeeintegration;
 
+import static itest.io.joynr.jeeintegration.base.deployment.FileConstants.getBeansXml;
+import static itest.io.joynr.jeeintegration.base.deployment.MavenDependencyHelper.getMavenDependencies;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.annotation.Resource;
-import javax.inject.Inject;
+import io.joynr.jeeintegration.JeeJoynrIntegrationModule;
+import io.joynr.jeeintegration.JoynrRuntimeFactory;
+import io.joynr.jeeintegration.api.CallbackHandler;
+import io.joynr.jeeintegration.api.ProviderRegistrationSettingsFactory;
+import io.joynr.jeeintegration.api.ServiceLocator;
+import io.joynr.jeeintegration.api.ServiceProvider;
+import io.joynr.jeeintegration.messaging.JeeMqttMessageSendingModule;
+import io.joynr.jeeintegration.messaging.JeeMqttMessagingSkeletonProvider;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeleton;
+import io.joynr.jeeintegration.messaging.JeeSharedSubscriptionsMqttMessagingSkeletonFactory;
+import io.joynr.messaging.mqtt.MqttClientIdProvider;
+import jakarta.annotation.Resource;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.spi.TestResult;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
+import jakarta.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
@@ -64,9 +76,10 @@ public class JeeIntegrationBeanTest {
     public Timeout globalTimeout = Timeout.seconds(60);
 
     @Deployment
-    public static JavaArchive createTestArchive() {
+    public static WebArchive createTestArchive() {
         // @formatter:off
-        return ShrinkWrap.create(JavaArchive.class)
+        return ShrinkWrap.create(WebArchive.class, "test.war")
+                         .addAsLibraries(getMavenDependencies())
                          .addClasses(ServiceProviderDiscovery.class,
                                      CallbackHandlerDiscovery.class,
                                      DefaultJoynrRuntimeFactory.class,
@@ -74,8 +87,25 @@ public class JeeIntegrationBeanTest {
                                      JoynrIntegrationBean.class,
                                      TestResult.class,
                                      JeeJoynrStatusMetricsAggregator.class,
-                                     JeeJoynrServiceLocator.class)
-                         .addAsManifestResource(new File("src/main/resources/META-INF/beans.xml"));
+                                     JeeJoynrServiceLocator.class,
+                                     JoynrRuntimeFactory.class,
+                                     ServiceLocator.class,
+                                     MqttClientIdProvider.class,
+                                     ProviderRegistrationSettingsFactory.class,
+                                     ServiceProvider.class,
+                                     JeeJoynrIntegrationModule.class,
+                                     JeeMqttMessageSendingModule.class,
+                                     JeeMqttMessagingSkeletonProvider.class,
+                                     JeeSharedSubscriptionsMqttMessagingSkeletonFactory.class,
+                                     JeeSharedSubscriptionsMqttMessagingSkeleton.class,
+                                     CallbackHandler.class)
+
+                         .addPackages(true, "io.joynr.accesscontrol")
+                         .addPackages(true, "io.joynr.capabilities")
+                         .addPackages(true, "io.joynr.messaging")
+                         .addPackages(true, "io.joynr.runtime")
+                         .addPackages(true, "com.googlecode.cqengine")
+                         .addAsWebInfResource(getBeansXml());
         // @formatter:on
     }
 

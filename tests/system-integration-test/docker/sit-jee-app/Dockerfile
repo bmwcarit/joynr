@@ -1,4 +1,4 @@
-FROM payara/server-full:5.2021.7-jdk11
+FROM payara/server-full:6.2024.10
 
 USER root
 

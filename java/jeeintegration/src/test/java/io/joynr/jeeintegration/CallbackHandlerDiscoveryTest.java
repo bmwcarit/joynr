@@ -1,7 +1,7 @@
 /*-
  * #%L
  * %%
- * Copyright (C) 2011 - 2018 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,9 @@ import static org.mockito.Mockito.when;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.Stateless;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2022 BMW Car IT GmbH
+ * Copyright (C) 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,14 @@
  */
 package itest.io.joynr.jeeintegration;
 
-import javax.ejb.Stateless;
-import javax.inject.Inject;
+import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 
 import io.joynr.jeeintegration.api.ServiceProvider;
 import io.joynr.jeeintegration.api.SubscriptionPublisher;
 import joynr.exceptions.ApplicationException;
 import joynr.jeeintegration.servicelocator.MyServiceSubscriptionPublisher;
 import joynr.jeeintegration.servicelocator.MyServiceSync;
-import joynr.jeeintegration.servicelocator.MyService.CallMeWithExceptionErrorEnum;
 
 @Stateless
 @ServiceProvider(serviceInterface = MyServiceSync.class)

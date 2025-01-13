@@ -1,0 +1,2 @@
+io.joynr.jeeintegration.context.RegisterJoynrJeeMessageContextExtension
+io.joynr.jeeintegration.multicast.SubscriptionPublisherCdiExtension

@@ -2,7 +2,7 @@ package io.joynr.generator.templates.util
 /*
  * !!!
  *
- * Copyright (C) 2020 BMW Car IT GmbH
+ * Copyright (C) 2025 BMW Car IT GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package io.joynr.generator.templates.util
  */
 
 import com.google.inject.Inject
-import javax.inject.Singleton
+import com.google.inject.Singleton
 import org.franca.core.franca.FArgument
 import org.franca.core.franca.FAttribute
 import org.franca.core.franca.FBasicTypeId

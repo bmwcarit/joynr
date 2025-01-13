@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2021 BMW Car IT GmbH
+  Copyright (C) 2025 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<configuration>
-					<excludeArtifactIds></excludeArtifactIds>
+					<excludeArtifactIds>org.eclipse.jetty:jetty-security</excludeArtifactIds>
 				</configuration>
 				<executions>
 					<!-- run analyze before unpack-dependencies to not include transitive dependencies -->
@@ -106,6 +106,32 @@
 							<ignoredUnusedDeclaredDependencies>
 								<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
 							</ignoredUnusedDeclaredDependencies>
+
+							<ignoredUsedUndeclaredDependencies>
+								<ignoredUsedUndeclaredDependency>com.esotericsoftware:</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>com.fasterxml.jackson.core:</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>com.google*:</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>com.hivemq:hivemq-mqtt-client</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>de.javakaffee:kryo-serializers</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>io.joynr.*:</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>io.netty:</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>io.reactivex.rxjava2:rxjava</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>javax.inject:javax.inject</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.antlr:antlr4-runtime</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.apache.logging.log4j</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.checkerframework:checker-qual</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.eclipse.jetty*:</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.javassist:javassist</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.jctools:jctools-core</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.jetbrains:annotations</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.objenesis:objenesis</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.reactivestreams:reactive-streams</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>org.xerial:sqlite-jdbc</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>net.jodah:typetools</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>aopalliance:aopalliance</ignoredUsedUndeclaredDependency>
+								<ignoredUsedUndeclaredDependency>jakarta.*:</ignoredUsedUndeclaredDependency>
+							</ignoredUsedUndeclaredDependencies>
 						</configuration>
 					</execution>
 					<!-- unpack all non-runnable files into WEB-INF/lib -->

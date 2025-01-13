@@ -123,7 +123,13 @@ echo '####################################################'
 
 # 2nd run; now including test execution which requires mosquitto / GCD
 # generate site report
-mvn clean $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle$ANDROID \
+# Set Payara Micro Jar absolute path
+export MICRO_JAR="/data/src/java/jeeintegration/target/payara-micro.jar"
+# Set mandatory script that will be executed after each payara micro boot (creates thread executor)
+export EXTRA_MICRO_OPTIONS='--prebootcommandfile /data/src/docker/joynr-base/scripts/ci/payara-micro-post-boot-command-file'
+# Package goal is needed to download Payara Micro jar and place it to specific place
+mvn clean package
+mvn $GOAL -B -P no-license-and-notice,no-java-formatter,no-checkstyle$ANDROID \
 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
 -DskipTests=false \
 -DshowSuccess=true \

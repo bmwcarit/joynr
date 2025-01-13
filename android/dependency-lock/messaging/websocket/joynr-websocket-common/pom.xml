@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2022 BMW Car IT GmbH
+  Copyright (C) 2025 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -39,10 +39,6 @@
 			<groupId>io.joynr.android</groupId>
 			<artifactId>javaapi</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

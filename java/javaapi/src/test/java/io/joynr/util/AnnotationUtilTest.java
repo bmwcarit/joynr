@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2017 BMW Car IT GmbH
+ * Copyright (C) 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import javax.inject.Qualifier;
+import jakarta.inject.Qualifier;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2011 - 2017 BMW Car IT GmbH
+ * Copyright (C) 2011 - 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@ package io.joynr.capabilities;
 
 import static io.joynr.util.VersionUtil.getVersionFromAnnotation;
 
-import javax.inject.Named;
-
 import io.joynr.dispatching.rpc.RequestInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 import io.joynr.dispatching.ProviderDirectory;
 import io.joynr.exceptions.JoynrRuntimeException;

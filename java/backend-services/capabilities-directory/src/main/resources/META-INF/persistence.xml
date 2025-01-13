@@ -2,7 +2,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2021 BMW Car IT GmbH
+  Copyright (C) 2025 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -33,10 +33,10 @@
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
 
 		<properties>
-			<property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
+			<property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" />
 			<!-- property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/gcd" / -->
-			<property name="javax.persistence.jdbc.user" value="gcd" />
-			<property name="javax.persistence.jdbc.password" value="gcd" />
+			<property name="jakarta.persistence.jdbc.user" value="gcd" />
+			<property name="jakarta.persistence.jdbc.password" value="gcd" />
 			<property name="hibernate.show_sql" value = "true" />
 			<property name="hibernate.hbm2ddl.auto" value="validate" />
 

@@ -51,7 +51,7 @@ fi
 
 if [ -z "$PAYARA_DIR" ]
 then
-	PAYARA_DIR="/opt/payara5"
+	PAYARA_DIR="/opt/payara6"
 fi
 
 PAYARA_BIN_DIR="$PAYARA_DIR/glassfish/bin"

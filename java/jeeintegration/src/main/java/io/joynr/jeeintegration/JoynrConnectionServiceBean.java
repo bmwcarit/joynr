@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2023 BMW Car IT GmbH
+ * Copyright (C) 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
  */
 package io.joynr.jeeintegration;
 
-import javax.ejb.Singleton;
-import javax.inject.Inject;
+import jakarta.ejb.Singleton;
+import com.google.inject.Inject;
 
 import io.joynr.jeeintegration.api.JoynrConnectionService;
 

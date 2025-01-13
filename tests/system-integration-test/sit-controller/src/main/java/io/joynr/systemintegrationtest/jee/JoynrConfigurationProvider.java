@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2018 BMW Car IT GmbH
+ * Copyright (C) 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import static io.joynr.messaging.ConfigurableMessagingSettings.PROPERTY_GLOBAL_C
 
 import java.util.Properties;
 
-import javax.ejb.Singleton;
-import javax.enterprise.inject.Produces;
+import jakarta.ejb.Singleton;
+import jakarta.enterprise.inject.Produces;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

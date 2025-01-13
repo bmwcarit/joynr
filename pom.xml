@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2021 BMW Car IT GmbH
+  Copyright (C) 2025 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -415,10 +415,10 @@
 		<jersey.version>1.19.4</jersey.version>
 		<jackson.version>2.14.2</jackson.version>
 		<netty.version>4.1.100.Final</netty.version>
-		<guice.version>6.0.0</guice.version>
+		<guice.version>7.0.0</guice.version>
 		<jetty.version>11.0.18</jetty.version>
 		<tycho.version>1.6.0</tycho.version>
-		<hibernate.version>5.6.11.Final</hibernate.version>
+		<hibernate.version>6.5.2.Final</hibernate.version>
 		<android.platform.version>9_r6</android.platform.version>
 		<android.platform.level>28</android.platform.level>
 		<skipTests>true</skipTests>
@@ -430,10 +430,11 @@
 		<smrf.version>0.3.3</smrf.version>
 		<jacoco.version>0.8.7</jacoco.version>
 		<sonarsource.version>4.0.0.4121</sonarsource.version>
-		<surefire.version>3.0.0-M3</surefire.version>
+		<surefire.version>3.5.1</surefire.version>
 		<ow2_asm.version>9.5</ow2_asm.version>
 		<guava.version>32.0.1-jre</guava.version>
 		<maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+		<payara.micro.version>6.2024.10</payara.micro.version>
 	</properties>
 
 	<!--
@@ -487,7 +488,7 @@
 			<dependency>
 				<groupId>jakarta.platform</groupId>
 				<artifactId>jakarta.jakartaee-api</artifactId>
-				<version>8.0.0</version>
+				<version>10.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.inject</groupId>
@@ -495,9 +496,9 @@
 				<version>2.0.1</version>
 			</dependency>
 			<dependency>
-				<groupId>javax.inject</groupId>
-				<artifactId>javax.inject</artifactId>
-				<version>1</version>
+				<groupId>jakarta.persistence</groupId>
+				<artifactId>jakarta.persistence-api</artifactId>
+				<version>3.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.interceptor</groupId>
@@ -736,19 +737,19 @@
 				<groupId>org.jboss.arquillian</groupId>
 				<!-- Manage arquillian and shrinkwrap dependencies -->
 				<artifactId>arquillian-bom</artifactId>
-				<version>1.7.0.Alpha14</version>
+				<version>1.8.0.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>fish.payara.arquillian</groupId>
 				<artifactId>arquillian-payara-server-embedded</artifactId>
-				<version>2.4.6</version>
+				<version>3.0</version>
 			</dependency>
 			<dependency>
 				<groupId>fish.payara.extras</groupId>
 				<artifactId>payara-embedded-all</artifactId>
-				<version>5.2022.3</version>
+				<version>6.2024.5</version>
 				<scope>test</scope>
 			</dependency>
 
@@ -801,12 +802,12 @@
 				<version>${franca.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.hibernate</groupId>
+				<groupId>org.hibernate.orm</groupId>
 				<artifactId>hibernate-core</artifactId>
 				<version>${hibernate.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.hibernate</groupId>
+				<groupId>org.hibernate.orm</groupId>
 				<artifactId>hibernate-core</artifactId>
 				<version>${hibernate.version}</version>
 				<classifier>sources</classifier>
@@ -1015,7 +1016,7 @@
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy</artifactId>
 				<type>jar</type>
-				<version>1.12.14</version>
+				<version>1.14.17</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -1037,6 +1038,21 @@
 				<groupId>com.google.j2objc</groupId>
 				<artifactId>j2objc-annotations</artifactId>
 				<version>3.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian.testenricher</groupId>
+				<artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
+				<version>1.8.0.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>fish.payara.arquillian</groupId>
+				<artifactId>payara-client-ee9</artifactId>
+				<version>3.0</version>
+			</dependency>
+			<dependency>
+				<groupId>fish.payara.arquillian</groupId>
+				<artifactId>arquillian-payara-micro-managed</artifactId>
+				<version>3.0</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -1666,7 +1682,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M3</version>
+					<version>3.5.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>

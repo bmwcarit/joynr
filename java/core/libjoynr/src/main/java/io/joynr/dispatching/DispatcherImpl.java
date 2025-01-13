@@ -1,7 +1,7 @@
 /*
  * #%L
  * %%
- * Copyright (C) 2020-2023 BMW Car IT GmbH
+ * Copyright (C) 2020 - 2025 BMW Car IT GmbH
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Singleton;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 import io.joynr.dispatching.subscription.PublicationManager;
@@ -61,6 +60,7 @@ import joynr.SubscriptionRequest;
 import joynr.SubscriptionStop;
 import joynr.types.DiscoveryEntryWithMetaInfo;
 
+@Singleton
 public class DispatcherImpl implements Dispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherImpl.class);
@@ -74,7 +74,6 @@ public class DispatcherImpl implements Dispatcher {
     private boolean overrideCompress;
 
     @Inject
-    @Singleton
     // CHECKSTYLE:OFF
     public DispatcherImpl(RequestReplyManager requestReplyManager,
                           SubscriptionManager subscriptionManager,

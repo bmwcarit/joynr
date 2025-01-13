@@ -1,7 +1,7 @@
 <!--
   #%L
   %%
-  Copyright (C) 2021 BMW Car IT GmbH
+  Copyright (C) 2025 BMW Car IT GmbH
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -237,27 +237,27 @@
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm</artifactId>
-				<version>9.7</version>
+				<version>${asm.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-analysis</artifactId>
-				<version>9.7</version>
+				<version>${asm.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-commons</artifactId>
-				<version>9.7</version>
+				<version>${asm.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-tree</artifactId>
-				<version>9.7</version>
+				<version>${asm.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.ow2.asm</groupId>
 				<artifactId>asm-util</artifactId>
-				<version>9.7</version>
+				<version>${asm.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.android.tools.build</groupId>
@@ -335,5 +335,7 @@
 			</plugin>
 		</plugins>
 	</build>
-
+	<properties>
+		<asm.version>9.7</asm.version>
+	</properties>
 </project>
