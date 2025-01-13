@@ -58,7 +58,7 @@ implement any interfaces) and provide methods annotated with:
 	  providers with.
 
 Additionally, the method must be annotated with
-`javax.enterprise.inject.Produces`.
+`jakarta.enterprise.inject.Produces`.
 
 #### Mandatory Properties
 See Java Configuration Reference for more details on the available properties.

@@ -163,7 +163,7 @@ see [joynr infrastructure](../../wiki/infrastructure.md).
 
 ### Running JEE tests separately
 
-The following describes running the example on [Payara 5](http://www.payara.fish). First,
+The following describes running the example on [Payara 6](http://www.payara.fish). First,
 install the application server.
 
 Start up the Payara server by changing to the Payara install directory and executing
