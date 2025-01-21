@@ -2,6 +2,52 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.26.0
+
+## API relevant changes
+* **[Java]** Payara migration from version 5 to 6. This change includes guice update to
+  version 7.0.0, which drops support for javax namespace. Refer to the list of changed
+  dependencies in section Other Changes below.
+
+## Other Changes
+* **[Java]** Updated dependencies in joynr pom:
+```
+  * com.google.inject:guice                                  6.0.0         -> 7.0.0
+  * com.google.inject.extensions:*                           6.0.0         -> 7.0.0
+  * fish.payara.extras:payara-embedded-all                   5.2022.3      -> 6.2024.5
+  * fish.payara.extras:payara-micro                          5.2022.3      -> 6.2024.5
+  * fish.payara.arquillian:arguillian-payara-micro-managed                 -> 3.0
+  * fish.payara.arguillian:arquillian-payara-server-embedded 2.4.6         -> 3.0
+  * fish.payara.arguillian:payara-client-ee9                               -> 3.0
+  * javax.activation:javax.activation-api                    1.2.0         -> jakarta.activation:jakarta.activation-api 2.1.0
+  * javax.inject:javax.inject-api                            1             -> jakarta.inject:jakarta.inject-api 2.0.1
+  * javax.interceptor:javax.interceptor-api                  1.2.2         -> jakarta.interceptor:jakarta.interceptor-api 2.1.0
+  * javax.persistence:javax.persistence-api                  2.2           -> jakarta.persistence:jakarta.persistence-api 3.1.0
+  * javax.servlet:javax.servlet-api                          3.1.0         -> jakarta.servlet:jakarta.servlet-api 6.0.0
+  * javax.ws.rs:jsr311-api                                   1.1.1         -> jakarta.ws.rs:jakarta.ws.rs-api 3.1.0
+  * javax.xml.bind:jaxb-api                                  2.3.1         -> jakarta.xml.bind:jakarta.xml.bind-api 4.0.0
+  * jakarta.platform:jakarta.jakartaee-api                   8.0.0         -> 10.0.0
+  * net.bytebuddy:byte-buddy                                 1.12.14       -> 1.14.17
+  * org.jboss.arquillian:arquillian-bom                      1.7.0.Alpha14 -> 1.8.0.Final
+  * org.jboss.arquillian.*                                   1.7.0.Alpha14 -> 1.8.0.Final
+  * org.hibernate:hibernate-core                             5.6.11.Final  -> org.hibernate.orm:hibernate-core 6.5.2.Final
+  * org.hinernate:hibernate-entitymanager                    5.6.11.Final  -> 6.5.2.Final
+  * org.hibernate.common:*                                   5.1.2.Final   -> 6.0.6.Final
+```
+* **[Java]** Sonarqube uses JDK17, as required by newer version 4.0.0.4121
+* **[Docker]** Using Compose v2; `docker-compose` calls replaced with `docker compose`.
+* **[Docker]** Updated alpine from 3.13.6 to 3.20.3 in `java-11-with-curl` docker image.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[C++]** Fix field shadow declaration in `MqttMessagingSkeleton`.
+* **[Java]** Fixed TtlUpliftTest and ShutdownTest.
+
 # joynr 1.25.0
 
 ## API relevant changes

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
-project(radio-app VERSION 1.25.1 LANGUAGES CXX)
+project(radio-app VERSION 1.26.0 LANGUAGES CXX)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
@@ -54,7 +54,7 @@ endif(ENABLE_CCACHE)
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.25.1 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
+find_package(Joynr 1.26.0 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
