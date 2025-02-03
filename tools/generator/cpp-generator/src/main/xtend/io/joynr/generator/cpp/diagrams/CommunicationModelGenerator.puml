@@ -1,0 +1,17 @@
+@startuml CommunicationModelGenerator
+
+skin rose
+
+title CommunicationModelGenerator
+
+class CommunicationModelGenerator #Yellow
+
+class JoynrCppGeneratorExtensions #LightYellow
+class CppStdTypeUtil #LightYellow
+class TypeDefHTemplate #LightSkyBlue
+
+JoynrCppGeneratorExtensions <-- CommunicationModelGenerator : JoynrCppGeneratorExtensions
+CppStdTypeUtil <--  CommunicationModelGenerator : CppStdTypeUtil
+TypeDefHTemplate <--  CommunicationModelGenerator : TypeDefHTemplate
+
+@enduml

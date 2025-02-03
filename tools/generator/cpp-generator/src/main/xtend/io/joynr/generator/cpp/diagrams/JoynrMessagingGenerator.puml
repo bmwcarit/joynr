@@ -1,0 +1,23 @@
+@startuml JoynrMessagingGenerator
+
+skin rose
+
+title JoynrMessagingGenerator
+
+class JoynrMessagingGenerator #Yellow
+
+class JoynrCppGeneratorExtensions #LightYellow
+class NamingUtil #LightYellow
+class CppTemplateFactory #DeepSkyBlue
+
+class InterfaceJoynrMessagingConnectorCppTemplate #DeepSkyBlue
+class InterfaceJoynrMessagingConnectorHTemplate #LightSkyBlue
+
+JoynrCppGeneratorExtensions <-- JoynrMessagingGenerator
+NamingUtil <-- JoynrMessagingGenerator
+CppTemplateFactory <-- JoynrMessagingGenerator : templateFactory
+
+InterfaceJoynrMessagingConnectorCppTemplate -- InterfaceJoynrMessagingConnectorHTemplate
+InterfaceJoynrMessagingConnectorHTemplate <-- CppTemplateFactory
+
+@enduml

@@ -1,0 +1,25 @@
+@startuml JoynrCppGenerator
+
+skin rose
+
+title JoynrCppGenerator
+
+class JoynrCppGenerator #Yellow
+
+class CommunicationModelGenerator #Yellow
+class ProxyGenerator #Yellow
+class ProviderGenerator #Yellow
+class FilterGenerator #Yellow
+class InterfaceGenerator #Yellow
+class JoynrMessagingGenerator #Yellow
+class DefaultInterfaceProviderGenerator #Yellow
+
+CommunicationModelGenerator <-- JoynrCppGenerator
+ProxyGenerator <-- JoynrCppGenerator
+ProviderGenerator <-- JoynrCppGenerator
+FilterGenerator <-- JoynrCppGenerator
+InterfaceGenerator <-- JoynrCppGenerator
+JoynrMessagingGenerator <-- JoynrCppGenerator
+DefaultInterfaceProviderGenerator <-- JoynrCppGenerator
+
+@enduml

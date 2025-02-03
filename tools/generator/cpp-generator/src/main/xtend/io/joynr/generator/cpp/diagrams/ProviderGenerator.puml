@@ -1,0 +1,36 @@
+@startuml ProviderGenerator
+
+skin rose
+
+title ProviderGenerator
+
+class ProviderGenerator #Yellow
+
+
+class JoynrCppGeneratorExtensions #LightYellow
+class NamingUtil #LightYellow
+class CppTemplateFactory #DeepSkyBlue
+
+class InterfaceAbstractProviderCppTemplate #DeepSkyBlue
+class InterfaceAbstractProviderHTemplate #LightSkyBlue
+class InterfaceProviderCppTemplate #DeepSkyBlue
+class InterfaceProviderHTemplate #LightSkyBlue
+class InterfaceRequestCallerCppTemplate #DeepSkyBlue
+class InterfaceRequestCallerHTemplate #LightSkyBlue
+class InterfaceRequestInterpreterCppTemplate #DeepSkyBlue
+class InterfaceRequestInterpreterHTemplate #LightSkyBlue
+
+JoynrCppGeneratorExtensions <-- ProviderGenerator : JoynrCppGeneratorExtensions
+NamingUtil <-- ProviderGenerator : NamingUtil
+CppTemplateFactory <-- ProviderGenerator : templateFactory
+
+InterfaceAbstractProviderCppTemplate -- InterfaceAbstractProviderHTemplate
+InterfaceAbstractProviderHTemplate <-- CppTemplateFactory
+InterfaceProviderCppTemplate -- InterfaceProviderHTemplate
+InterfaceProviderHTemplate <-- CppTemplateFactory
+InterfaceRequestCallerCppTemplate -- InterfaceRequestCallerHTemplate
+InterfaceRequestCallerHTemplate <-- CppTemplateFactory
+InterfaceRequestInterpreterCppTemplate -- InterfaceRequestInterpreterHTemplate
+InterfaceRequestInterpreterHTemplate <-- CppTemplateFactory
+
+@enduml

@@ -1,0 +1,12 @@
+@startuml ProxyGenerator
+
+skin rose
+
+title Legend
+
+class CodeGenerator #Yellow
+class GeneratorEndNode #LightYellow
+class TemplateCppGenerator #DeepSkyBlue
+class TemplateHGenerator #LightSkyBlue
+
+@enduml

@@ -1,0 +1,21 @@
+@startuml FilterGenerator
+
+skin rose
+
+title FilterGenerator
+
+class FilterGenerator #Yellow
+
+class JoynrCppGeneratorExtensions #LightYellow
+class NamingUtil #LightYellow
+
+class FilterParameterTemplate #DeepSkyBlue
+class FilterTemplate #DeepSkyBlue
+
+JoynrCppGeneratorExtensions <-- FilterGenerator : JoynrCppGeneratorExtensions
+NamingUtil <-- FilterGenerator : NamingUtil
+
+FilterParameterTemplate <-- FilterGenerator
+FilterTemplate <-- FilterGenerator
+
+@enduml

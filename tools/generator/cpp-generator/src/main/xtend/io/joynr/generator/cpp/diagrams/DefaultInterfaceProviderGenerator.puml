@@ -1,0 +1,23 @@
+@startuml DefaultInterfaceProviderGenerator
+
+skin rose
+
+title DefaultInterfaceProviderGenerator
+
+class DefaultInterfaceProviderGenerator #Yellow
+
+class JoynrCppGeneratorExtensions #LightYellow
+class NamingUtil #LightYellow
+class CppTemplateFactory #DeepSkyBlue
+
+class DefaultInterfaceProviderCppTemplate #DeepSkyBlue
+class DefaultInterfaceProviderHTemplate #LightSkyBlue
+
+JoynrCppGeneratorExtensions <-- DefaultInterfaceProviderGenerator : JoynrCppGeneratorExtensions
+NamingUtil <-- DefaultInterfaceProviderGenerator : NamingUtil
+CppTemplateFactory <-- DefaultInterfaceProviderGenerator : templateFactory
+
+DefaultInterfaceProviderCppTemplate -- DefaultInterfaceProviderHTemplate
+DefaultInterfaceProviderHTemplate <-- CppTemplateFactory
+
+@enduml
