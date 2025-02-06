@@ -1,0 +1,42 @@
+@startuml ProxyGenerator
+
+skin rose
+
+title ProxyGenerator
+
+class ProxyGenerator #Yellow
+class JoynrCppGeneratorExtensions #LightYellow
+class NamingUtil
+class CppTemplateFactory #DeepSkyBlue
+class InterfaceUtil
+
+class IInterfaceConnectorHTemplate #LightSkyBlue
+class InterfaceAsyncProxyCppTemplate #DeepSkyBlue
+class InterfaceAsyncProxyHTemplate #LightSkyBlue
+class InterfaceFireAndForgetProxyCppTemplate #DeepSkyBlue
+class InterfaceFireAndForgetProxyHTemplate #LightSkyBlue
+class InterfaceProxyBaseCppTemplate #DeepSkyBlue
+class InterfaceProxyBaseHTemplate #LightSkyBlue
+class InterfaceProxyCppTemplate #DeepSkyBlue
+class InterfaceProxyHTemplate  #LightSkyBlue
+class InterfaceSyncProxyCppTemplate #DeepSkyBlue
+class InterfaceSyncProxyHTemplate #LightSkyBlue
+
+JoynrCppGeneratorExtensions <-- ProxyGenerator : JoynrCppGeneratorExtensions
+NamingUtil <-- ProxyGenerator : NamingUtil
+CppTemplateFactory <-- ProxyGenerator : templateFactory
+InterfaceUtil <-- ProxyGenerator : InterfaceUtil
+
+IInterfaceConnectorHTemplate <-- CppTemplateFactory
+InterfaceAsyncProxyCppTemplate -- InterfaceAsyncProxyHTemplate
+InterfaceAsyncProxyHTemplate <-- CppTemplateFactory
+InterfaceFireAndForgetProxyCppTemplate -- InterfaceFireAndForgetProxyHTemplate
+InterfaceFireAndForgetProxyHTemplate <-- CppTemplateFactory
+InterfaceProxyBaseCppTemplate -- InterfaceProxyBaseHTemplate
+InterfaceProxyBaseHTemplate <-- CppTemplateFactory
+InterfaceProxyCppTemplate -- InterfaceProxyHTemplate
+InterfaceProxyHTemplate <-- CppTemplateFactory
+InterfaceSyncProxyCppTemplate -- InterfaceSyncProxyHTemplate
+InterfaceSyncProxyHTemplate <-- CppTemplateFactory
+
+@enduml

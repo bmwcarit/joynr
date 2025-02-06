@@ -1,0 +1,26 @@
+@startuml InterfaceGenerator
+
+skin rose
+
+title InterfaceGenerator
+
+class InterfaceGenerator #Yellow
+
+class JoynrCppGeneratorExtensions #LightYellow
+class CppStdTypeUtil #LightYellow
+class NamingUtil #LightYellow
+class InterfaceUtil #LightYellow
+class CppTemplateFactory #DeepSkyBlue
+
+class InterfaceCppTemplate #DeepSkyBlue
+class InterfaceHTemplate #LightSkyBlue
+
+JoynrCppGeneratorExtensions <-- InterfaceGenerator
+CppStdTypeUtil <-- InterfaceGenerator
+NamingUtil <-- InterfaceGenerator
+InterfaceUtil <-- InterfaceGenerator
+CppTemplateFactory <-- InterfaceGenerator : templateFactory
+
+InterfaceCppTemplate -- InterfaceHTemplate
+InterfaceHTemplate <-- CppTemplateFactory
+@enduml
