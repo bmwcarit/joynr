@@ -2,6 +2,24 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.2.1
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Kotlin]** This is a special use case! Joynr Generator Gradle Plugin, which will now
+process tasks with type `Task::class.java` only.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+None.
+
 # joynr 1.24.2
 
 ## API relevant changes
