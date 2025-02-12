@@ -25,7 +25,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<parent>
 		<groupId>io.joynr.examples</groupId>
 		<artifactId>custom-headers</artifactId>
-		<version>1.24.2</version>
+		<version>1.24.2.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
