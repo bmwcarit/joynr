@@ -2,6 +2,24 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.2.2
+
+## API relevant changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Reverted org.slf4j:* from 2.0.9 to 1.7.36, fixing logging issues
+  in Android platform.
+
 # joynr 1.24.2.1
 
 ## API relevant changes
