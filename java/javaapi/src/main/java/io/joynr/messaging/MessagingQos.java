@@ -37,6 +37,7 @@ public class MessagingQos {
         effort = src.getEffort();
         encrypt = src.getEncrypt();
         compress = src.getCompress();
+        customHeaders = (src.customHeaders != null) ? new HashMap<>(src.customHeaders) : null;
     }
 
     /**
