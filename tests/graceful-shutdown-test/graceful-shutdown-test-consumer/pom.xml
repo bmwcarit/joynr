@@ -26,7 +26,7 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>graceful-shutdown-test</artifactId>
-		<version>1.25.0</version>
+		<version>1.25.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
