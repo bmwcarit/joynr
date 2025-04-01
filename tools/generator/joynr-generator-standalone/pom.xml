@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr.tools</groupId>
 		<artifactId>generator</artifactId>
-		<version>1.24.2</version>
+		<version>1.24.4</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
