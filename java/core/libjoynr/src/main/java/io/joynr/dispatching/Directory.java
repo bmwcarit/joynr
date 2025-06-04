@@ -18,8 +18,9 @@
  */
 package io.joynr.dispatching;
 
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,8 +28,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 
 public abstract class Directory<T> {
-    private Set<DirectoryListener<T>> listeners = new HashSet<>();
-    private Map<String, T> entryMap = new HashMap<>();
+    private Set<DirectoryListener<T>> listeners = Collections.synchronizedSet(new HashSet<>());
+    private Map<String, T> entryMap = new ConcurrentHashMap<>();
 
     /**
      * Adds a listener to the directory. The Directory will notify the listeners when an entry is
@@ -37,7 +38,7 @@ public abstract class Directory<T> {
      *
      * @param listener the listener to be added
      */
-    public synchronized void addListener(DirectoryListener<T> listener) {
+    public void addListener(DirectoryListener<T> listener) {
         listeners.add(listener);
     }
 
@@ -46,7 +47,7 @@ public abstract class Directory<T> {
      *
      * @param listener the listener to be removed
      */
-    public synchronized void removeListener(DirectoryListener<T> listener) {
+    public void removeListener(DirectoryListener<T> listener) {
         listeners.remove(listener);
     }
 
@@ -56,7 +57,7 @@ public abstract class Directory<T> {
      * @param participantId the entry's participantId
      * @param entry the entry to be added
      */
-    public synchronized void add(String participantId, T entry) {
+    public void add(String participantId, T entry) {
         entryMap.put(participantId, entry);
         for (DirectoryListener<T> listener : listeners) {
             listener.entryAdded(participantId, entry);
@@ -70,7 +71,7 @@ public abstract class Directory<T> {
      * @param participantId participantId of the entry supposed to be removed
      * @return the previous entry associated with the participantId or null if the participantId was not present
      */
-    public synchronized T remove(String participantId) {
+    public T remove(String participantId) {
         getLogger().trace("remove: {}", participantId);
         T result = entryMap.remove(participantId);
         if (result == null) {
@@ -83,7 +84,7 @@ public abstract class Directory<T> {
         return result;
     }
 
-    public synchronized T get(String participantId) {
+    public T get(String participantId) {
         return entryMap.get(participantId);
     }
 
@@ -91,11 +92,11 @@ public abstract class Directory<T> {
      * Executes the specified consumer on each entry.
      * @param consumer consumer to be executed
      */
-    public synchronized void forEach(BiConsumer<String, T> consumer) {
+    public void forEach(BiConsumer<String, T> consumer) {
         entryMap.forEach(consumer);
     }
 
-    public synchronized boolean isEmpty() {
+    public boolean isEmpty() {
         return entryMap.isEmpty();
     }
 

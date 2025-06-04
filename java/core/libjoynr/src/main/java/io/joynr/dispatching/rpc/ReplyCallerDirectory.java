@@ -21,11 +21,12 @@ package io.joynr.dispatching.rpc;
 import static io.joynr.runtime.JoynrInjectionConstants.JOYNR_SCHEDULER_CLEANUP;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ import io.joynr.runtime.ShutdownNotifier;
 public class ReplyCallerDirectory extends Directory<ReplyCaller> implements ShutdownListener {
 
     private final static long CLEANUP_TASK_INTERVAL_MS = 5000L;
-    private boolean shutdown = false;
+    private AtomicBoolean shutdown = new AtomicBoolean(false);
     private static final Logger logger = LoggerFactory.getLogger(ReplyCallerDirectory.class);
 
     private ScheduledExecutorService cleanupScheduler;
@@ -65,7 +66,7 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
                                 ShutdownNotifier shutdownNotifier,
                                 MessageTrackerForGracefulShutdown messageTracker) {
         this.cleanupScheduler = cleanupScheduler;
-        this.expiryDateMap = new HashMap<>();
+        this.expiryDateMap = new ConcurrentHashMap<>();
         shutdownNotifier.registerForShutdown(this);
         this.messageTracker = messageTracker;
         cleanupTaskFuture = this.cleanupScheduler.scheduleAtFixedRate(this::removeExpiredReplyCallers,
@@ -78,21 +79,19 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
                                final ReplyCaller replyCaller,
                                final ExpiryDate roundTripTtlExpirationDate) {
         logger.trace("AddReplyCaller: requestReplyId: {}, expiryDate: {}", requestReplyId, roundTripTtlExpirationDate);
-        synchronized (this) {
-            if (shutdown) {
-                throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
-            }
-            if (super.get(requestReplyId) != null) {
-                logger.error("RequestReplyId should not be replicated: {}", requestReplyId);
-            } else {
-                super.add(requestReplyId, replyCaller);
-                expiryDateMap.put(requestReplyId, roundTripTtlExpirationDate);
-            }
+        if (shutdown.get()) {
+            throw new JoynrShutdownException("shutdown in ReplyCallerDirectory");
+        }
+        if (super.get(requestReplyId) != null) {
+            logger.error("RequestReplyId should not be replicated: {}", requestReplyId);
+        } else {
+            super.add(requestReplyId, replyCaller);
+            expiryDateMap.put(requestReplyId, roundTripTtlExpirationDate);
         }
     }
 
     @Override
-    public synchronized ReplyCaller remove(String id) {
+    public ReplyCaller remove(String id) {
         ReplyCaller replyCaller;
         replyCaller = super.remove(id);
         expiryDateMap.remove(id);
@@ -100,21 +99,19 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
     }
 
     private void removeExpiredReplyCallers() {
-        synchronized (this) {
-            ArrayList<String> expiredReplyCallers = new ArrayList<>();
-            super.forEach((requestReplyId, replyCaller) -> {
-                ExpiryDate expiryDate = expiryDateMap.get(requestReplyId);
-                if (expiryDate == null) {
-                    logger.error("Could not find expiry date entry for requestReplyId: {}", requestReplyId);
-                    return;
-                }
-                if (expiryDate.getValue() - System.currentTimeMillis() < 0) {
-                    expiredReplyCallers.add(requestReplyId);
-                }
-            });
-            for (String requestReplyId : expiredReplyCallers) {
-                removeExpiredReplyCaller(requestReplyId);
+        ArrayList<String> expiredReplyCallers = new ArrayList<>();
+        super.forEach((requestReplyId, replyCaller) -> {
+            ExpiryDate expiryDate = expiryDateMap.get(requestReplyId);
+            if (expiryDate == null) {
+                logger.error("Could not find expiry date entry for requestReplyId: {}", requestReplyId);
+                return;
             }
+            if (expiryDate.getValue() - System.currentTimeMillis() < 0) {
+                expiredReplyCallers.add(requestReplyId);
+            }
+        });
+        for (String requestReplyId : expiredReplyCallers) {
+            removeExpiredReplyCaller(requestReplyId);
         }
     }
 
@@ -133,10 +130,8 @@ public class ReplyCallerDirectory extends Directory<ReplyCaller> implements Shut
 
     @Override
     public void shutdown() {
-        synchronized (this) {
-            cleanupTaskFuture.cancel(false);
-            shutdown = true;
-        }
+        cleanupTaskFuture.cancel(false);
+        shutdown.set(true);
     }
 
     @Override
