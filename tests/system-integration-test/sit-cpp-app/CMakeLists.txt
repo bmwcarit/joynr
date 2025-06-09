@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 ######## Project settings ########
-project(jsit VERSION 1.24.2 LANGUAGES CXX)
+project(jsit VERSION 1.24.5 LANGUAGES CXX)
 
 # Compile to a bin directory current directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -41,7 +41,7 @@ option(
 ##### Start of build ####################
 
 # Pull in the Joynr configuration
-find_package(Joynr 1.24.2 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
+find_package(Joynr 1.24.5 REQUIRED HINTS "${CMAKE_BINARY_DIR}/../joynr/bin")
 message(STATUS "joynr variable Joynr_VERSION=${Joynr_VERSION}")
 message(STATUS "joynr variable Joynr_EXECUTABLES=${Joynr_EXECUTABLES}")
 message(STATUS "joynr variable Joynr_RESOURCES_DIR=${Joynr_RESOURCES_DIR}")
