@@ -23,6 +23,12 @@ oldVersionWithoutSuffix=`echo $oldVersion | sed -e "s/-.*//g"`
 newVersionWithoutSuffix=`echo $newVersion | sed -e "s/-.*//g"`
 IFS='.' read -a version <<< "$newVersionWithoutSuffix"
 
+version=$(awk -F"[<>]" '{if ($0 ~ /artifactId/ && $3 ~ /joynr/) {getline; print $3; exit}}' pom.xml)
+if [ "$version" != "$oldVersion" ]; then
+  echo "Old version: $oldVersion does not match the actual version found: $version."
+  exit 1
+fi
+
 echo "oldVersion=$oldVersion"
 echo "newVersion=$newVersion"
 echo "oldVersionWithoutSuffix=$oldVersionWithoutSuffix"
