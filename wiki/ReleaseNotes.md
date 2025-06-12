@@ -2,6 +2,25 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.0-ws
+
+This is an on-demand hotfix release.
+
+## API relevant changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[TS]** Upgrade ws library from 7.5.0 to 7.5.10.
+
+## Bug Fixes
+None.
+
 # joynr 1.24.0
 
 ## API relevant changes
