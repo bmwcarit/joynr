@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        joynrVersion = "1.24.0"
+        joynrVersion = "1.24.0-ws"
     }
     repositories {
         google()
@@ -54,7 +54,7 @@ dependencies {
 }
 
 group = 'io.joynr.android'
-version = '1.24.0'
+version = '1.24.0-ws'
 
 task androidSourcesJar(type: Jar) {
     classifier = 'sources'

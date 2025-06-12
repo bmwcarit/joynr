@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>1.24.0</version>
+		<version>1.24.0-ws</version>
 	</parent>
 
 	<build>
