@@ -2,6 +2,29 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.26.1
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Kotlin]** Generator gradle plugin update, processes only tasks with Java type.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Fixed deadlock in ReplyCallerDirectory.removeExpiredReplyCallers being
+stuck in a synchronized block.
+* **[Android]** Revert "Slf4j version update"
+* **[Android]** Update dependency lock
+* **[Java]** Revert "Slf4j version update"
+* **[Java]** Update dependency lock
+* **[Java]** Copy custom headers in copy constructor
+
 # joynr 1.26.0
 
 ## API relevant changes
@@ -48,7 +71,57 @@ None.
 * **[C++]** Fix field shadow declaration in `MqttMessagingSkeleton`.
 * **[Java]** Fixed TtlUpliftTest and ShutdownTest.
 
-# joynr 1.25.0
+# joynr 1.25.2
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Kotlin]** This is a special use case! Joynr Generator Gradle Plugin, which will now
+process tasks with type `Task::class.java` only.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Reverted org.slf4j:* from 2.0.9 to 1.7.36, fixing logging issues
+  in Android platform.
+* **[Java]** MessagingQos.customHeaders are now copied by a copy constructor.
+* **[Android]** Updated dependency-lock
+* **[Java]** Updated dependency-lock
+
+# joynr 1.25.1 **[DO NOT USE]**
+
+**ATTENTION:**
+THIS RELEASE WAS PUBLISHED WITH INCORRECT DEPENDENCY-LOCK FILE.
+USE VERSION 1.25.2 INSTEAD.
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Kotlin]** This is a special use case! Joynr Generator Gradle Plugin, which will now
+process tasks with type `Task::class.java` only.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Reverted org.slf4j:* from 2.0.9 to 1.7.36, fixing logging issues
+  in Android platform.
+* **[Java]** MessagingQos.customHeaders are now copied by a copy constructor.
+
+# joynr 1.25.0 **[DO NOT USE]**
+
+**ATTENTION:**
+THIS RELEASE WAS PUBLISHED WITH INCORRECT DEPENDENCY-LOCK FILE.
+USE VERSION 1.24.4 INSTEAD.
 
 ## API relevant changes
 * **[C++]** Removed method `IMessageSender::sendMulticastSubscriptionRequest`.
@@ -173,6 +246,54 @@ None.
 * **[Java]** Fixed numerous bugs reported by spotbugs plugin, mostly EI_EXPOSE_REP and EI_EXPOSE_REP2.
 * **[Java]** Prevent mutations of private maps from outside the object in example stateless-async app.
 * **[Java]** Throw correct exception in radio-jee app with help of dedicated ExceptionMapper.
+
+# joynr 1.24.5
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Kotlin]** This is a special use case! Joynr Generator Gradle Plugin, which will now
+process tasks with type `Task::class.java` only.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Fixed deadlock in ReplyCallerDirectory.removeExpiredReplyCallers being
+stuck in a synchronized block.
+* **[Android]** Reverted org.slf4j:* from 2.0.9 to 1.7.36, fixing logging issues
+  in Android platform.
+* **[Java]** MessagingQos.customHeaders are now copied by a copy constructor.
+
+# joynr 1.24.4
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Kotlin]** This is a special use case! Joynr Generator Gradle Plugin, which will now
+process tasks with type `Task::class.java` only.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Android]** Reverted org.slf4j:* from 2.0.9 to 1.7.36, fixing logging issues
+  in Android platform.
+* **[Java]** MessagingQos.customHeaders are now copied by a copy constructor.
+
+# joynr 1.24.3 **[DO NOT USE]**
+
+**ATTENTION:**
+THIS RELEASE WAS PUBLISHED WITH INCORRECT DEPENDENCY-LOCK FILE.
+USE VERSION 1.24.4 INSTEAD.
 
 # joynr 1.24.2
 
