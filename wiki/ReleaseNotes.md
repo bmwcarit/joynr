@@ -2,13 +2,41 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
-# joynr 1.24.5
+# joynr 1.24.6
+
+**ATTENTION:** 
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.6, which includes the fix.
 
 ## API relevant changes
 None.
 
 ## Other Changes
 None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed memory leak issue in ShutdownNotifier class. Now, if proxy
+creation fails, ProxyInvocationHandlerImpl objects are correctly cleaned up by
+GarbageCollectionHandler.
+
+# joynr 1.24.5
+
+**ATTENTION:**  
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.6, which includes the fix.
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Kotlin]** This is a special use case! Joynr Generator Gradle Plugin, which will now
+process tasks with type `Task::class.java` only
 
 ## Configuration Property Changes
 None.
@@ -19,13 +47,21 @@ None.
 ## Bug Fixes
 * **[Android]** Fixed deadlock in ReplyCallerDirectory.removeExpiredReplyCallers being
 stuck in a synchronized block.
+* **[Android]** Reverted org.slf4j:* from 2.0.9 to 1.7.36, fixing logging issues
+  in Android platform.
+* **[Java]** MessagingQos.customHeaders are now copied by a copy constructor.
+
+# joynr 1.24.4
+
+**ATTENTION:**  
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.6, which includes the fix.
 
 ## API relevant changes
 None.
 
 ## Other Changes
-* **[Kotlin]** This is a special use case! Joynr Generator Gradle Plugin, which will now
-process tasks with type `Task::class.java` only.
+None
 
 ## Configuration Property Changes
 None.
@@ -34,9 +70,7 @@ None.
 None.
 
 ## Bug Fixes
-* **[Android]** Reverted org.slf4j:* from 2.0.9 to 1.7.36, fixing logging issues
-  in Android platform.
-* **[Java]** MessagingQos.customHeaders are now copied by a copy constructor.
+None
 
 # joynr 1.24.3 **[DO NOT USE]**
 
@@ -44,7 +78,14 @@ None.
 THIS RELEASE WAS PUBLISHED WITH INCORRECT DEPENDENCY-LOCK FILE.
 USE VERSION 1.24.4 INSTEAD.
 
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.6, which includes the fix.
+
 # joynr 1.24.2
+
+**ATTENTION:**  
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.6, which includes the fix.
 
 ## API relevant changes
 * **[Java]** Removed unused MulticastSubscriptionRequest class.
@@ -71,6 +112,10 @@ None.
 * **[Java]** Fixed possible buffer overrun in in WebSocketJettyClient and WebSocketJettyServer
 
 # joynr 1.24.1
+
+**ATTENTION:**  
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.6, which includes the fix.
 
 ## API relevant changes
 * **[Java]** New overload of `RequestReplyManager.sendRequest` has been added.
@@ -132,6 +177,10 @@ None.
 * **[C++]** Fix memory leak during provider registration (Aggregation of MulticastBroadcastListener in addAsync caused memory leak).
 
 # joynr 1.24.0
+
+**ATTENTION:**  
+This contains a memory-leak issue.
+Users are advised to upgrade to version 1.24.6, which includes the fix.
 
 ## API relevant changes
 * **[Java]** `ShutdownListener` interface has been split into two interfaces:
