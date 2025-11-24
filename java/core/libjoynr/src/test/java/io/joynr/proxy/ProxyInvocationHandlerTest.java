@@ -20,7 +20,6 @@ package io.joynr.proxy;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assume.assumeFalse;
@@ -150,6 +149,13 @@ public class ProxyInvocationHandlerTest {
                 return null;
             }
         }).when(mockShutdownNotifier).registerProxyInvocationHandlerPrepareForShutdownListener(any());
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                shutdownListener = (ShutdownListener) invocation.getArguments()[0];
+                return null;
+            }
+        }).when(mockShutdownNotifier).registerProxyInvocationHandlerShutdownListener(any());
         proxyInvocationHandler = new ProxyInvocationHandlerImpl(new HashSet<String>(Arrays.asList(domain)),
                                                                 interfaceName,
                                                                 proxyParticipantId,
