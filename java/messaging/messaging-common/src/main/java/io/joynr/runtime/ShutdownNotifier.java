@@ -307,9 +307,18 @@ public class ShutdownNotifier {
     }
 
     public void unregister(PrepareForShutdownListener listener) {
-        synchronized (prepareForShutdownListenerList) {
-            prepareForShutdownListenerList.remove(listener);
-            logger.trace("Removed ShutdownListener, #ShutdownListeners: {}", shutdownListenerList.size());
+        synchronized (proxyInvocationHandlerPrepareForShutdownListenerList) {
+            proxyInvocationHandlerPrepareForShutdownListenerList.remove(listener);
+            logger.trace("Removed PrepareForShutdownListener, #PrepareForShutdownListeners: {}",
+                         proxyInvocationHandlerPrepareForShutdownListenerList.size());
+        }
+    }
+
+    public void unregister(ShutdownListener listener) {
+        synchronized (proxyInvocationHandlerShutdownListenerList) {
+            proxyInvocationHandlerShutdownListenerList.remove(listener);
+            logger.trace("Removed ShutdownListener, #ShutdownListeners: {}",
+                         proxyInvocationHandlerShutdownListenerList.size());
         }
     }
 }

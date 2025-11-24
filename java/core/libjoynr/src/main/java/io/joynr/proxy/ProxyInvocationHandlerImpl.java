@@ -97,6 +97,6 @@ public class ProxyInvocationHandlerImpl extends ProxyInvocationHandler {
 
     @Override
     public void registerProxy(Object proxy) {
-        gcHandler.registerProxy(proxy, proxyParticipantId, prepareForShutdownListener);
+        gcHandler.registerProxy(proxy, proxyParticipantId, prepareForShutdownListener, shutdownListener);
     }
 }
