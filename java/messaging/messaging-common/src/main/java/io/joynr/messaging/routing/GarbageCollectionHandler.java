@@ -50,11 +50,15 @@ public class GarbageCollectionHandler implements ShutdownListener {
     static class ProxyInformation {
         public String participantId;
         public PrepareForShutdownListener prepareForShutdownListener;
+        public ShutdownListener shutdownListener;
         public final Set<String> providerParticipantIds;
 
-        public ProxyInformation(String participantId, PrepareForShutdownListener prepareForShutdownListener) {
+        public ProxyInformation(String participantId,
+                                PrepareForShutdownListener prepareForShutdownListener,
+                                ShutdownListener shutdownListener) {
             this.participantId = participantId;
             this.prepareForShutdownListener = prepareForShutdownListener;
+            this.shutdownListener = shutdownListener;
             this.providerParticipantIds = new HashSet<String>();
         }
     }
@@ -99,6 +103,7 @@ public class GarbageCollectionHandler implements ShutdownListener {
                         messageRouter.removeNextHop(providerParticipantId);
                     }
                     shutdownNotifier.unregister(proxyInformation.prepareForShutdownListener);
+                    shutdownNotifier.unregister(proxyInformation.shutdownListener);
                     proxyMap.remove(r);
                     proxyParticipantIdToProxyInformationMap.remove(proxyInformation.participantId);
                     synchronized (garbageCollectedProxiesQueue) {
@@ -118,9 +123,12 @@ public class GarbageCollectionHandler implements ShutdownListener {
 
     public void registerProxy(Object proxy,
                               String proxyParticipantId,
-                              PrepareForShutdownListener prepareForShutdownListener) {
+                              PrepareForShutdownListener prepareForShutdownListener,
+                              ShutdownListener shutdownListener) {
         synchronized (garbageCollectedProxiesQueue) {
-            ProxyInformation proxyInformation = new ProxyInformation(proxyParticipantId, prepareForShutdownListener);
+            ProxyInformation proxyInformation = new ProxyInformation(proxyParticipantId,
+                                                                     prepareForShutdownListener,
+                                                                     shutdownListener);
             if (proxyParticipantIdToProxyInformationMap.putIfAbsent(proxyParticipantId, proxyInformation) == null) {
                 logger.debug("registerProxy called for {}", proxyParticipantId);
                 proxyMap.put(new WeakReference<Object>(proxy, garbageCollectedProxiesQueue), proxyInformation);

@@ -20,6 +20,7 @@ package io.joynr.proxy;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.junit.Assume.assumeFalse;
@@ -32,9 +33,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -427,7 +431,7 @@ public class ProxyInvocationHandlerTest {
     public void testRegisterProxy() {
         Object proxy = new Object();
         proxyInvocationHandler.registerProxy(proxy);
-        verify(mockGcHandler).registerProxy(proxy, proxyParticipantId, prepareForShutdownListener);
+        verify(mockGcHandler).registerProxy(proxy, proxyParticipantId, prepareForShutdownListener, shutdownListener);
     }
 
     @Test
@@ -456,5 +460,58 @@ public class ProxyInvocationHandlerTest {
     public void testRegisterPrepareForShutdownListener_throws() {
         ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
         shutdownNotifier.registerPrepareForShutdownListener(proxyInvocationHandler.prepareForShutdownListener);
+    }
+
+    @Test
+    public void testUnregisterPrepareForShutdownListener() throws NoSuchFieldException, IllegalAccessException {
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+
+        List<PrepareForShutdownListener> spyProxyListenerList = injectSpyList(shutdownNotifier,
+                                                                              "proxyInvocationHandlerPrepareForShutdownListenerList");
+        List<PrepareForShutdownListener> spyOtherListenerList = injectSpyList(shutdownNotifier,
+                                                                              "prepareForShutdownListenerList");
+
+        shutdownNotifier.registerProxyInvocationHandlerPrepareForShutdownListener(proxyInvocationHandler.prepareForShutdownListener);
+
+        Mockito.verify(spyProxyListenerList, Mockito.times(1)).add(proxyInvocationHandler.prepareForShutdownListener);
+        Mockito.verify(spyOtherListenerList, Mockito.never()).add(proxyInvocationHandler.prepareForShutdownListener);
+
+        shutdownNotifier.unregister(proxyInvocationHandler.prepareForShutdownListener);
+
+        Mockito.verify(spyProxyListenerList, Mockito.times(1))
+               .remove(proxyInvocationHandler.prepareForShutdownListener);
+        Mockito.verify(spyOtherListenerList, Mockito.never()).remove(proxyInvocationHandler.prepareForShutdownListener);
+    }
+
+    @Test
+    public void testUnregisterShutdownListener() throws NoSuchFieldException, IllegalAccessException {
+        ShutdownNotifier shutdownNotifier = new ShutdownNotifier();
+
+        List<ShutdownListener> spyProxyListenerList = injectSpyList(shutdownNotifier,
+                                                                    "proxyInvocationHandlerShutdownListenerList");
+        List<ShutdownListener> spyOtherListenerList = injectSpyList(shutdownNotifier, "shutdownListenerList");
+
+        shutdownNotifier.registerProxyInvocationHandlerShutdownListener(proxyInvocationHandler.shutdownListener);
+
+        Mockito.verify(spyProxyListenerList, Mockito.times(1)).add(proxyInvocationHandler.shutdownListener);
+        Mockito.verify(spyOtherListenerList, Mockito.never()).add(proxyInvocationHandler.shutdownListener);
+
+        shutdownNotifier.unregister(proxyInvocationHandler.shutdownListener);
+
+        Mockito.verify(spyProxyListenerList, Mockito.times(1)).remove(proxyInvocationHandler.shutdownListener);
+        Mockito.verify(spyOtherListenerList, Mockito.never()).remove(proxyInvocationHandler.shutdownListener);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> List<T> injectSpyList(ShutdownNotifier notifier, String fieldName) throws NoSuchFieldException,
+                                                                                   IllegalAccessException {
+
+        Field field = ShutdownNotifier.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+
+        List<T> spyList = Mockito.spy(new ArrayList<>());
+        field.set(notifier, spyList);
+
+        return spyList;
     }
 }
