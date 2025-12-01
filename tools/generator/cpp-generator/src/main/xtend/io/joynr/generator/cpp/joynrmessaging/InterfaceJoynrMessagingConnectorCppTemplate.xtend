@@ -582,8 +582,8 @@ using joynr::util::safeInvokeCallback;
 					clonedMessagingQos, subscriptionId] () {
 						if (auto ptr = messageSender.lock())
 						{
-                            SubscriptionReply subscriptionReply;
-                            subscriptionReply.setSubscriptionId(subscriptionId);
+							SubscriptionReply subscriptionReply;
+							subscriptionReply.setSubscriptionId(subscriptionId);
 							ptr->sendSubscriptionReply(
 										providerParticipantId,
 										proxyParticipantId,
