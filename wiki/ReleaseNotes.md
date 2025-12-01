@@ -2,7 +2,29 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.26.2
+
+## API relevant changes
+None.
+
+## Other Changes
+None.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed memory leak issue in ShutdownNotifier class. Now, if proxy
+creation fails, ProxyInvocationHandlerImpl objects are correctly cleaned up by
+GarbageCollectionHandler.
+
 # joynr 1.26.1
+
+**ATTENTION:**
+Use 1.26.2. This version has memory leak issue due to ShutdownNotifier implementation.
 
 ## API relevant changes
 None.
@@ -26,6 +48,9 @@ stuck in a synchronized block.
 * **[Java]** Copy custom headers in copy constructor
 
 # joynr 1.26.0
+
+**ATTENTION:**
+Use 1.26.2. This version has memory leak issue due to ShutdownNotifier implementation.
 
 ## API relevant changes
 * **[Java]** Payara migration from version 5 to 6. This change includes guice update to
@@ -72,6 +97,9 @@ None.
 * **[Java]** Fixed TtlUpliftTest and ShutdownTest.
 
 # joynr 1.25.2
+
+**ATTENTION:**
+Use 1.26.2. This version has memory leak issue due to ShutdownNotifier implementation.
 
 ## API relevant changes
 None.
