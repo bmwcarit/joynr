@@ -1,6 +1,11 @@
+ext {
+    smrfVersion = "0.3.3"
+    jettyVersion = "9.4.53.v20231009"
+}
+
 buildscript {
     ext {
-        joynrVersion = "1.24.5"
+        joynrVersion = "1.24.6"
     }
     repositories {
         google()
@@ -54,7 +59,7 @@ dependencies {
 }
 
 group = 'io.joynr.android'
-version = '1.24.5'
+version = '1.24.6'
 
 task androidSourcesJar(type: Jar) {
     classifier = 'sources'

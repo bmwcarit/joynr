@@ -22,7 +22,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'maven'
 
 group = 'io.joynr.android'
-version = '1.24.5'
+version = '1.24.6'
 
 buildscript {
     repositories {
@@ -42,6 +42,11 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
+ext {
+    smrfVersion = "1.24.6"
+    jettyVersion = "9.4.53.v20231009"
+}
+
 
 allprojects {
     repositories {
@@ -54,7 +59,15 @@ allprojects {
             }
         }
     }
+    repositories {
+    google()
+    mavenCentral()
+    maven {
+        url "https://repo.joynr.io/artifactory/libs-release"
+    }
 }
+}
+println "SMRF=$smrfVersion JETTY=$jettyVersion"
 
 
 android {
