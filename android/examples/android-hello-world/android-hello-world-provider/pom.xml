@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>io.joynr.examples</groupId>
 		<artifactId>android-hello-world</artifactId>
-		<version>1.24.5</version>
+		<version>1.24.6-p1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -108,6 +108,12 @@
 					</execution>
 				</executions>
 			</plugin>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>${skip.central.publish}</skip>
+        </configuration>
+      </plugin>
 		</plugins>
 	</build>
 
@@ -127,4 +133,25 @@
 
 	</dependencies>
 
+  <url>http://joynr.io</url>
+  <description>Joynr android-hello-world-provider module configuration</description>
+  <developers>
+    <developer>
+      <name>BMW Car IT GmbH</name>
+      <organization>BMW Car IT GmbH</organization>
+      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+    <url>git@github.com:bmwcarit/joynr</url>
+  </scm>
 </project>

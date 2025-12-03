@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>1.24.5</version>
+		<version>1.24.6-p1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -149,16 +149,18 @@
 					<skip>true</skip>
 				</configuration>
 			</plugin>
+			<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-javadoc-plugin</artifactId>
+  <configuration>
+    <skip>true</skip>
+  </configuration>
+</plugin>
+
 		</plugins>
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.android.support</groupId>
-			<artifactId>support-annotations</artifactId>
-			<version>28.0.0</version>
-			<scope>provided</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -166,4 +168,25 @@
 		</dependency>
 	</dependencies>
 
+  <url>http://joynr.io</url>
+  <description>Joynr slf4j-android-bindings module configuration</description>
+  <developers>
+    <developer>
+      <name>BMW Car IT GmbH</name>
+      <organization>BMW Car IT GmbH</organization>
+      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+    <url>git@github.com:bmwcarit/joynr</url>
+  </scm>
 </project>
