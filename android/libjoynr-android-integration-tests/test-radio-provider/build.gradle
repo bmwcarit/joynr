@@ -1,3 +1,8 @@
+ext {
+    smrfVersion = "0.3.3"
+    jettyVersion = "11.0.18"
+}
+
 buildscript {
     repositories {
         google()
@@ -10,7 +15,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.0'
-        classpath 'io.joynr.tools.generator:joynr-generator-gradle-plugin:1.24.5'
+        classpath 'io.joynr.tools.generator:joynr-generator-gradle-plugin:1.24.6-p1'
     }
 }
 
