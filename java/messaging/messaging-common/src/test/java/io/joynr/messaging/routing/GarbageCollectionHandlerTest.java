@@ -50,6 +50,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import io.joynr.exceptions.JoynrIllegalStateException;
 import io.joynr.messaging.routing.GarbageCollectionHandler.ProxyInformation;
 import io.joynr.runtime.PrepareForShutdownListener;
+import io.joynr.runtime.ShutdownListener;
 import io.joynr.runtime.ShutdownNotifier;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -61,6 +62,8 @@ public class GarbageCollectionHandlerTest {
     private ShutdownNotifier mockShutdownNotifier;
     @Mock
     private PrepareForShutdownListener mockPrepareForShutdownListener;
+    @Mock
+    private ShutdownListener mockShutdownListener;
     @Mock
     private Object mockObject;
 
@@ -132,7 +135,7 @@ public class GarbageCollectionHandlerTest {
 
         String[] proxyParticipantIds = { "participantId1", "participantId2" };
         for (String participantId : proxyParticipantIds) {
-            subject.registerProxy(mockObject, participantId, mockPrepareForShutdownListener);
+            subject.registerProxy(mockObject, participantId, mockPrepareForShutdownListener, mockShutdownListener);
         }
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(2, proxyParticipantIdToProxyInformationMap.size());
@@ -177,11 +180,11 @@ public class GarbageCollectionHandlerTest {
         }
 
         String proxyParticipantId = "participantId1";
-        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
-        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
     }
 
     @SuppressWarnings("unchecked")
@@ -201,7 +204,7 @@ public class GarbageCollectionHandlerTest {
 
         String proxyParticipantId = "participantId";
         // register proxy first
-        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
@@ -270,7 +273,7 @@ public class GarbageCollectionHandlerTest {
         assertTrue(proxyParticipantIdToProxyInformationMap.isEmpty());
 
         // register proxy first. This call will add an entry to this map: proxyParticipantIdToProxyInformationMap
-        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
 
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
@@ -329,7 +332,7 @@ public class GarbageCollectionHandlerTest {
 
         String proxyParticipantId = "participantId";
         // register proxy first
-        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(mockObject, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
@@ -365,7 +368,7 @@ public class GarbageCollectionHandlerTest {
         }
 
         // register proxy first
-        subject.registerProxy(mockObject, "participantId", mockPrepareForShutdownListener);
+        subject.registerProxy(mockObject, "participantId", mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey("participantId"));
@@ -392,7 +395,7 @@ public class GarbageCollectionHandlerTest {
         }
 
         // register proxy first
-        subject.registerProxy(mockObject, "participantId", mockPrepareForShutdownListener);
+        subject.registerProxy(mockObject, "participantId", mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey("participantId"));
@@ -420,7 +423,7 @@ public class GarbageCollectionHandlerTest {
 
         String proxyParticipantId = "participantId";
         // register proxy first
-        subject.registerProxy(null, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(null, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
@@ -446,7 +449,7 @@ public class GarbageCollectionHandlerTest {
 
         String proxyParticipantId = "participantId";
         // register proxy first
-        subject.registerProxy(null, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(null, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
@@ -472,7 +475,7 @@ public class GarbageCollectionHandlerTest {
 
         String proxyParticipantId = "participantId";
         // register proxy first
-        subject.registerProxy(null, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(null, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
@@ -499,7 +502,7 @@ public class GarbageCollectionHandlerTest {
 
         String proxyParticipantId = "participantId";
         // register proxy first
-        subject.registerProxy(null, proxyParticipantId, mockPrepareForShutdownListener);
+        subject.registerProxy(null, proxyParticipantId, mockPrepareForShutdownListener, mockShutdownListener);
         assertFalse(proxyParticipantIdToProxyInformationMap.isEmpty());
         assertEquals(1, proxyParticipantIdToProxyInformationMap.size());
         assertTrue(proxyParticipantIdToProxyInformationMap.containsKey(proxyParticipantId));
