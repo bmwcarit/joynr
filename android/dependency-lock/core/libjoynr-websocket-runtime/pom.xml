@@ -43,7 +43,7 @@
 	<parent>
 		<artifactId>core</artifactId>
 		<groupId>io.joynr.android</groupId>
-		<version>1.26.2</version>
+		<version>1.26.3</version>
 	</parent>
 
 	<dependencies>

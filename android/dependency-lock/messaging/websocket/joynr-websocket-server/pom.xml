@@ -40,7 +40,7 @@
 	<parent>
 		<groupId>io.joynr.android.messaging</groupId>
 		<artifactId>websocket</artifactId>
-		<version>1.26.2</version>
+		<version>1.26.3</version>
 	</parent>
 
 	<dependencies>
