@@ -22,6 +22,21 @@
 	<artifactId>websocket</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>pom</packaging>
+    <url>http://joynr.io</url>
+    <description>joynr.io communications framework</description>
+    <developers>
+        <developer>
+            <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 
 	<parent>
 		<groupId>io.joynr.android</groupId>

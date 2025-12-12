@@ -101,8 +101,7 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 			</plugin>
 
-		</plugins>
-
+        </plugins>
 	</build>
 
 	<dependencies>

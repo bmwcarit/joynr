@@ -19,11 +19,26 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="http://maven.apache.org/POM/4.0.0"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<groupId>io.joynr.examples</groupId>
+	<groupId>io.joynr.android.examples</groupId>
 	<artifactId>android-hello-world</artifactId>
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
+    <url>http://joynr.io</url>
+    <description>joynr.io communications framework</description>
+    <developers>
+        <developer>
+            <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 
 	<parent>
 		<groupId>io.joynr.android</groupId>

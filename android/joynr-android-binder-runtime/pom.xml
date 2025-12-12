@@ -22,6 +22,21 @@
 	<artifactId>joynr-android-binder-runtime</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
+    <url>http://joynr.io</url>
+    <description>joynr.io communications framework</description>
+    <developers>
+        <developer>
+            <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 
 	<parent>
 		<groupId>io.joynr</groupId>
@@ -249,12 +264,14 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+            <version>4.2.3</version>
 			<classifier>no_aop</classifier>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject.extensions</groupId>
 			<artifactId>guice-assistedinject</artifactId>
+            <version>7.0.0</version>
 			<scope>compile</scope>
 			<exclusions>
 				<exclusion>

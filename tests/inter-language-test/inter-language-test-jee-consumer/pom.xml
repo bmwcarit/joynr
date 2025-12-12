@@ -28,6 +28,7 @@
 	</parent>
 
 	<artifactId>inter-language-test-jee-consumer</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 	<packaging>war</packaging>
 
 	<build>
