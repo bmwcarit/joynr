@@ -21,12 +21,27 @@
 	<groupId>io.joynr.android.messaging</groupId>
 	<artifactId>mqtt</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
+    <url>http://joynr.io</url>
+    <description>joynr.io communications framework</description>
+    <developers>
+        <developer>
+            <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>io.joynr.android</groupId>
 		<artifactId>messaging</artifactId>
-		<version>1.26.2</version>
+		<version>1.26.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -39,6 +54,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+            <version>4.13.2</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

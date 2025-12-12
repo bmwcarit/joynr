@@ -25,11 +25,25 @@
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>joynr.io Dependency lock file for joynr Android</description>
+    <url>http://joynr.io</url>
+    <developers>
+        <developer>
+            <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>1.26.2</version>
+		<version>1.26.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -140,6 +154,12 @@
 				<artifactId>aopalliance</artifactId>
 				<type>jar</type>
 				<version>1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.android.support</groupId>
+				<artifactId>support-annotations</artifactId>
+				<type>jar</type>
+				<version>28.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.esotericsoftware</groupId>
@@ -416,6 +436,12 @@
 				<artifactId>jakarta.jakartaee-api</artifactId>
 				<type>jar</type>
 				<version>10.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>jakarta.platform</groupId>
+				<artifactId>jakarta.jakartaee-api</artifactId>
+				<type>jar</type>
+				<version>9.1.0</version>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.platform</groupId>

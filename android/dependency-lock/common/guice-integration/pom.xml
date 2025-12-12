@@ -24,11 +24,25 @@
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Guice module, utilities etc to create injectors JOYn and A4A applications</description>
+    <url>http://joynr.io</url>
+    <developers>
+        <developer>
+            <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 
 	<parent>
 		<groupId>io.joynr.android</groupId>
 		<artifactId>common</artifactId>
-		<version>1.26.2</version>
+		<version>1.26.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -36,10 +50,12 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+            <version>7.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
 		</dependency>
 	</dependencies>
 	<build>

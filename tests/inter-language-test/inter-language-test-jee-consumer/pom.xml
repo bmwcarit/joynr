@@ -23,11 +23,12 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>inter-language-test</artifactId>
-		<version>1.26.2</version>
+		<version>1.26.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>inter-language-test-jee-consumer</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
 	<packaging>war</packaging>
 
 	<build>

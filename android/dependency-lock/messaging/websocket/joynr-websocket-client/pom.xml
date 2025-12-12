@@ -21,17 +21,33 @@
 	<groupId>io.joynr.android.messaging.websocket</groupId>
 	<artifactId>joynr-websocket-client</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
+    <url>http://joynr.io</url>
+    <description>joynr.io communications framework</description>
+    <developers>
+        <developer>
+            <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 
 	<parent>
 		<groupId>io.joynr.android.messaging</groupId>
 		<artifactId>websocket</artifactId>
-		<version>1.26.2</version>
+		<version>1.26.3</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+            <version>7.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.android</groupId>
@@ -51,14 +67,17 @@
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-jetty-api</artifactId>
+            <version>11.0.18</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-jetty-client</artifactId>
+            <version>11.0.18</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
+            <version>2.14.2</version>
 		</dependency>
 	</dependencies>
 	<build>
