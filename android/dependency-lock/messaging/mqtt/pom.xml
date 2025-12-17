@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>io.joynr.android.messaging.mqtt</groupId>
+    <groupId>io.joynr</groupId>
     <artifactId>joynr-mqtt-client</artifactId>
     <version>1.24.6-p1</version>
     <name>joynr Android Messaging MQTT Client</name>
 
     <parent>
-        <groupId>io.joynr.android.messaging</groupId>
-        <artifactId>mqtt</artifactId>
+        <groupId>io.joynr</groupId>
+        <artifactId>android</artifactId>
         <version>1.24.6-p1</version>
     </parent>
 
