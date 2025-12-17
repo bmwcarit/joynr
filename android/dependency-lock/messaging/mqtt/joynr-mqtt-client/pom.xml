@@ -3,49 +3,51 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.joynr.android.messaging.mqtt</groupId>
     <artifactId>joynr-mqtt-client</artifactId>
+    <version>1.24.6-p1</version>
     <name>joynr Android Messaging MQTT Client</name>
 
     <parent>
         <groupId>io.joynr.android.messaging</groupId>
         <artifactId>mqtt</artifactId>
         <version>1.24.6-p1</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>${guice.version}</version>
+            <version>5.1.0</version>
         </dependency>
         <dependency>
             <groupId>io.joynr.android</groupId>
             <artifactId>javaapi</artifactId>
-            <version>${project.version}</version>
+            <version>1.24.6-p1</version>
         </dependency>
         <dependency>
             <groupId>io.joynr.android.messaging</groupId>
             <artifactId>messaging-common</artifactId>
-            <version>${project.version}</version>
+            <version>1.24.6-p1</version>
         </dependency>
         <dependency>
             <groupId>io.joynr.android.common</groupId>
             <artifactId>status-metrics</artifactId>
-            <version>${project.version}</version>
+            <version>1.24.6-p1</version>
         </dependency>
         <dependency>
             <groupId>io.joynr.android.core</groupId>
             <artifactId>libjoynr</artifactId>
-            <version>${project.version}</version>
+            <version>1.24.6-p1</version>
         </dependency>
         <dependency>
             <groupId>io.joynr.smrf.java</groupId>
             <artifactId>smrf-api</artifactId>
-            <version>${smrf.version}</version>
+            <version>0.3.3</version>
         </dependency>
         <dependency>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-mqtt-client</artifactId>
-            <version>${hivemq.mqtt.client.version}</version>
+            <version>1.3.0</version>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
@@ -55,101 +57,61 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
+            <version>4.8.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j.version}</version>
+            <version>2.17.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
+            <version>2.17.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
+            <version>2.17.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>analyze</id>
-                            <goals>
-                                <goal>analyze-only</goal>
-                            </goals>
-                            <configuration>
-                                <ignoredUnusedDeclaredDependencies>
-                                    <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
-                                    <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core</ignoredUnusedDeclaredDependency>
-                                    <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-api</ignoredUnusedDeclaredDependency>
-                                </ignoredUnusedDeclaredDependencies>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>unpack-sources</id>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
+                        <goals><goal>unpack</goal></goals>
                         <configuration>
                             <outputDirectory>src/main/java</outputDirectory>
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>io.joynr.java.messaging.mqtt</groupId>
                                     <artifactId>joynr-mqtt-client</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>1.24.6-p1</version>
                                     <classifier>sources</classifier>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
                     <execution>
-                        <id>unpack-test-sources</id>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
+                        <id>attach-javadocs</id>
+                        <goals><goal>jar</goal></goals>
                         <configuration>
-                            <outputDirectory>src/test/java</outputDirectory>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>io.joynr.java.messaging.mqtt</groupId>
-                                    <artifactId>joynr-mqtt-client</artifactId>
-                                    <version>${project.version}</version>
-                                    <classifier>test-sources</classifier>
-                                </artifactItem>
-                            </artifactItems>
+                            <failOnError>false</failOnError>
                         </configuration>
                     </execution>
                 </executions>
@@ -159,23 +121,4 @@
 
     <url>http://joynr.io</url>
     <description>Joynr joynr-mqtt-client module configuration</description>
-    <developers>
-        <developer>
-            <name>BMW Car IT GmbH</name>
-            <organization>BMW Car IT GmbH</organization>
-            <organizationUrl>http://www.bmw-carit.com</organizationUrl>
-        </developer>
-    </developers>
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-    <scm>
-        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
-        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
-        <url>git@github.com:bmwcarit/joynr</url>
-    </scm>
 </project>
