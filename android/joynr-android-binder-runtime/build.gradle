@@ -29,11 +29,12 @@ apply plugin: 'maven-publish'
 apply plugin: 'maven'
 
 group = 'io.joynr.android'
-version = '1.24.6-p1'
+version = '1.24.6-p14'
 
 buildscript {
     repositories {
         google()
+        mavenCentral()
         jcenter()
         mavenLocal()
 

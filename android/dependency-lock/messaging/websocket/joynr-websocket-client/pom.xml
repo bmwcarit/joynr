@@ -21,18 +21,33 @@
 	<groupId>io.joynr.android.messaging.websocket</groupId>
 	<artifactId>joynr-websocket-client</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
+	   <url>http://joynr.io</url>
+    <description>joynr.io communications framework</description>
+    <developers>
+        <developer>
+            <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 
 	<parent>
 		<groupId>io.joynr.android.messaging</groupId>
 		<artifactId>websocket</artifactId>
-		<version>1.24.6-p1</version>
+		<version>1.24.6-p14</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<version>${guice.version}</version>
+			<version>4.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.android</groupId>
@@ -111,25 +126,4 @@
 			</plugin>
 		</plugins>
 	</build>
-  <url>http://joynr.io</url>
-  <description>Joynr joynr-websocket-client module configuration</description>
-  <developers>
-    <developer>
-      <name>BMW Car IT GmbH</name>
-      <organization>BMW Car IT GmbH</organization>
-      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
-    </developer>
-  </developers>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
-    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
-    <url>git@github.com:bmwcarit/joynr</url>
-  </scm>
 </project>

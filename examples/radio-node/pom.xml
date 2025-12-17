@@ -29,7 +29,8 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>examples</artifactId>
-		<version>1.24.6-p1-p1</version>
+		<version>1.24.6-p14</version>
+		
 	</parent>
 
 	<build>

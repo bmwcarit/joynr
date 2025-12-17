@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr</groupId>
 	<artifactId>joynr</artifactId>
-	<version>1.24.6-p1</version>
+	<version>1.24.6-p14</version>
 	<packaging>pom</packaging>
 	<name>joynr</name>	
 	<url>http://joynr.io</url>
@@ -138,119 +138,143 @@
 			</properties>
 			<build>
 				<plugins>
-					<plugin>
-					    <groupId>org.sonatype.central</groupId>
-						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>0.9.0</version>
-						<extensions>true</extensions>
-						<configuration>
-						    <publishingServerId>central</publishingServerId>
-							<autoPublish>false</autoPublish>
-                            <!--	<waitUntil>published</waitUntil> -->
+					      <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>flatten-maven-plugin</artifactId>
+                            <version>1.7.0</version>
+                            <configuration>
+                                <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                                <updatePomFile>true</updatePomFile>
+                                <pomElements>
+                                    <dependencyManagement>resolve</dependencyManagement>
+                                </pomElements>
                             </configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<keyname>joynr@bmw-carit.de</keyname>
-							<gpgArguments>
-								<arg>--pinentry-mode</arg>
-								<arg>loopback</arg>
-							</gpgArguments>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>attach-sources</id>
-								<goals>
-									<goal>jar-no-fork</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>attach-test-sources</id>
-								<goals>
-									<goal>test-jar-no-fork</goal>
-								</goals>
-								<!-- do not deploy test sources jar -->
-								<phase>none</phase>
-								<configuration>
-									<attach>false</attach>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
+                            <executions>
+                                <execution>
+                                    <id>flatten</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>flatten</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>flatten-clean</id>
+                                    <phase>clean</phase>
+                                    <goals>
+                                        <goal>clean</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-gpg-plugin</artifactId>
+                            <version>3.2.1</version>
+                            <executions>
+                                <execution>
+                                    <id>sign-artifacts</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>sign</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                            <configuration>
+                                <keyname>joynr@bmw-carit.de</keyname>
+                                <signAttachedArtifacts>true</signAttachedArtifacts>
+                                <gpgArguments>
+                                    <arg>--pinentry-mode</arg>
+                                    <arg>loopback</arg>
+                                </gpgArguments>
+                            </configuration>
+                        </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-source-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>attach-sources</id>
+                                    <goals>
+                                        <goal>jar-no-fork</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>attach-test-sources</id>
+                                    <goals>
+                                        <goal>test-jar-no-fork</goal>
+                                    </goals>
+                                    <!-- do not deploy test sources jar -->
+                                <phase>none</phase>
+                                <configuration>
+                                    <attach>false</attach>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.5.0</version>
-                    <configuration>
-                        <doclint>none</doclint>
-                        <failOnError>false</failOnError>
-                        <additionalOptions>
-                            <additionalOption>-Xdoclint:none</additionalOption>
-                        </additionalOptions>
-
-                        <additionalDependencies>
-                            <additionalDependency>
-                                <groupId>com.google.android</groupId>
-                                <artifactId>android</artifactId>
-                                <version>4.1.1.4</version>
-                            </additionalDependency>
-                        </additionalDependencies>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-					<plugin>
-  					<artifactId>maven-deploy-plugin</artifactId>
-						<configuration>
-							<skip>true</skip>
-						</configuration>
-					</plugin>
-
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>flatten-maven-plugin</artifactId>
-						<version>1.6.0</version>
-						<executions>
-						<execution>
-							<id>flatten</id>
-							<phase>process-resources</phase>
-							<goals>
-							<goal>flatten</goal>
-							</goals>
-						</execution>
-						<execution>
-							<id>flatten-clean</id>
-							<phase>clean</phase>
-							<goals>
-							<goal>clean</goal>
-							</goals>
-						</execution>
-						</executions>
-						<configuration>
-						<flattenMode>ossrh</flattenMode>
-						<updatePomFile>true</updatePomFile>
-						</configuration>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.9.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>false</autoPublish>
+                            <!--	<waitUntil>published</waitUntil> -->
+                            <excludeArtifacts>
+                                <groupId>io.joynr.examples</groupId>
+                                <artifactId>stateless-async-jee-consumer</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.graceful-shutdown-test</groupId>
+                                <artifactId>graceful-shutdown-test-provider</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
+                                <artifactId>sharedsubscriptions-test-monitor-app</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.examples</groupId>
+                                <artifactId>custom-headers-jee-provider</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
+                                <artifactId>backpressure-test-clustered-provider</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
+                                <artifactId>sharedsubscriptions-test-clustered-app</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.examples</groupId>
+                                <artifactId>custom-headers-jee-consumer</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
+                                <artifactId>backpressure-test-monitor-app</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.graceful-shutdown-test</groupId>
+                                <artifactId>graceful-shutdown-test-second-level-provider</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.examples</groupId>
+                                <artifactId>stateless-async-jee-car-sim</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                            </excludeArtifacts>
+                        </configuration>
                     </plugin>
 				</plugins>
 			</build>
@@ -1129,7 +1153,6 @@
 					<artifactId>license-maven-plugin</artifactId>
 					<version>1.14</version>
 				</plugin>
-
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>

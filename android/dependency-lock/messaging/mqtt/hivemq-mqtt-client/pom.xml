@@ -18,14 +18,14 @@
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>io.joynr.android.messaging.mqtt</groupId>
+	<groupId>io.joynr</groupId>
 	<artifactId>hivemq-mqtt-client</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
 		<groupId>io.joynr.android.messaging</groupId>
 		<artifactId>mqtt</artifactId>
-		<version>1.24.6-p1</version>
+		<version>1.24.6-p14</version>
 	</parent>
 
 	<dependencies>
@@ -151,25 +151,4 @@
 		</plugins>
 	</build>
 
-  <url>http://joynr.io</url>
-  <description>Joynr hivemq-mqtt-client module configuration</description>
-  <developers>
-    <developer>
-      <name>BMW Car IT GmbH</name>
-      <organization>BMW Car IT GmbH</organization>
-      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
-    </developer>
-  </developers>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
-    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
-    <url>git@github.com:bmwcarit/joynr</url>
-  </scm>
 </project>
