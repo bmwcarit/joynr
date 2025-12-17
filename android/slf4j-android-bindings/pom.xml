@@ -1,192 +1,176 @@
-<!--
-  #%L
-  %%
-  Copyright (C) 2021 BMW Car IT GmbH
-  %%
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  #L%
-  -->
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<groupId>io.joynr.android</groupId>
-	<artifactId>slf4j-android-bindings</artifactId>
-	<modelVersion>4.0.0</modelVersion>
-	<packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.joynr.android</groupId>
+    <artifactId>slf4j-android-bindings</artifactId>
+    <packaging>jar</packaging>
 
-	<name>${project.groupId}:${project.artifactId}</name>
+    <name>joynr Android SLF4J Bindings</name>
 
-	<parent>
-		<groupId>io.joynr</groupId>
-		<artifactId>android</artifactId>
-		<version>1.24.6-p1</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>io.joynr</groupId>
+        <artifactId>android</artifactId>
+        <version>1.24.6-p1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<properties>
-		<version.plugin.antrun>1.8</version.plugin.antrun>
-		<version.plugin.compiler>3.8.1</version.plugin.compiler>
-		<version.gradle>5.4.1</version.gradle>
-		<exec.gradle>gradlew</exec.gradle>
-	</properties>
+    <properties>
+        <version.plugin.antrun>1.8</version.plugin.antrun>
+        <version.plugin.compiler>3.8.1</version.plugin.compiler>
+        <version.gradle>5.4.1</version.gradle>
+        <exec.gradle>gradlew</exec.gradle>
+    </properties>
 
-	<build>
-		<plugins>
-			<!-- The libjoynr android must be built by Gradle; therefore the compilation is skipped. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${version.plugin.compiler}</version>
-				<configuration>
-					<skipMain>true</skipMain>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
-			<!-- At the moment, deployment is skipped for the android projects, but as we actually want to make this library
-			  available to the developers, we don't want to skip the deploy phase -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<skip>false</skip>
-				</configuration>
-			</plugin>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${version.plugin.compiler}</version>
+                <configuration>
+                    <skipMain>true</skipMain>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
 
-			<!-- Tie the maven phases with the gradle equivalent tasks -->
-			<plugin>
-				<artifactId>exec-maven-plugin</artifactId>
-				<groupId>org.codehaus.mojo</groupId>
-				<executions>
-					<!-- Match the maven clean phase with the gradle clean -->
-					<execution>
-						<id>gradle-clean</id>
-						<phase>clean</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>${basedir}/${exec.gradle}</executable>
-							<arguments>
-								<argument>clean</argument>
-								<argument>--info</argument>
-							</arguments>
-						</configuration>
-					</execution>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
 
-					<!-- Match the maven compile phase with the gradle compile -->
-					<execution>
-						<id>gradle-build</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>${basedir}/${exec.gradle}</executable>
-							<arguments>
-								<argument>build</argument>
-							</arguments>
-						</configuration>
-					</execution>
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <executions>
+                    <execution>
+                        <id>gradle-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${basedir}/${exec.gradle}</executable>
+                            <arguments>
+                                <argument>clean</argument>
+                                <argument>--info</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>gradle-build</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${basedir}/${exec.gradle}</executable>
+                            <arguments>
+                                <argument>build</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>gradle-publish-local</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${basedir}/${exec.gradle}</executable>
+                            <arguments>
+                                <argument>publishToMavenLocal</argument>
+                                <argument>--info</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-					<!-- When maven install to the local repo, trigger the gradle to have the
-					  correct configurations  -->
-					<execution>
-						<id>gradle-publish-local</id>
-						<phase>install</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<executable>${basedir}/${exec.gradle}</executable>
-							<arguments>
-								<argument>publishToMavenLocal</argument>
-								<argument>--info</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${version.plugin.antrun}</version>
+                <executions>
+                    <execution>
+                        <id>copy-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy file="${project.basedir}/build/libs/${project.artifactId}-${project.version}.jar"
+                                      overwrite="true" todir="${project.build.directory}" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<!-- Copies the artifact created by Gradle back to the Maven target folder. -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>${version.plugin.antrun}</version>
-				<executions>
-					<execution>
-						<id>copy-jar</id>
-						<phase>package</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<copy
-										file="${project.basedir}/build/libs/${project.artifactId}-${project.version}.jar"
-										overwrite="true" todir="${project.build.directory}" />
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>net.revelc.code.formatter</groupId>
-				<artifactId>formatter-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
-			<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-javadoc-plugin</artifactId>
-  <configuration>
-    <skip>true</skip>
-  </configuration>
-</plugin>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+            </plugin>
 
-		</plugins>
-	</build>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<scope>compile</scope>
-		</dependency>
-	</dependencies>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <doclint>none</doclint>
+                    <quiet>true</quiet>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-  <url>http://joynr.io</url>
-  <description>Joynr slf4j-android-bindings module configuration</description>
-  <developers>
-    <developer>
-      <name>BMW Car IT GmbH</name>
-      <organization>BMW Car IT GmbH</organization>
-      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
-    </developer>
-  </developers>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
-    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
-    <url>git@github.com:bmwcarit/joynr</url>
-  </scm>
+    <url>http://joynr.io</url>
+    <description>Joynr slf4j-android-bindings module configuration</description>
+    <developers>
+        <developer>
+            <name>BMW Car IT GmbH</name>
+            <organization>BMW Car IT GmbH</organization>
+            <organizationUrl>http://www.bmw-carit.com</organizationUrl>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+        <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+        <url>git@github.com:bmwcarit/joynr</url>
+    </scm>
 </project>
