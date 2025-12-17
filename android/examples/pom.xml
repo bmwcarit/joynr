@@ -45,15 +45,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
 					<configuration>
-						<skip>true</skip>
-					</configuration>
-				</plugin>
-        <plugin>
-            <artifactId>maven-deploy-plugin</artifactId>
-            <configuration>
-              <skip>${skip.central.publish}</skip>
-            </configuration>
-        </plugin>
+                                           <skip>${skip.central.publish}</skip>
+                                        </configuration>
+                                </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
