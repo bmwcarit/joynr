@@ -87,7 +87,7 @@
 							<executable>${basedir}/${exec.gradle}</executable>
 							<arguments>
 								<argument>clean</argument>
-								<argument>-PsmrfVersion=${smrf.version}</argument>
+								<argument>-PsmrfVersion=0.3.3</argument>
 								<argument>--info</argument>
 							</arguments>
 						</configuration>
@@ -104,7 +104,7 @@
 							<executable>${basedir}/${exec.gradle}</executable>
 							<arguments>
 							<argument>build</argument>
-							<argument>-PsmrfVersion=${smrf.version}</argument>
+							<argument>-PsmrfVersion=0.3.3</argument>
 							<argument>-PdevEnv=${devEnv}</argument>
 							</arguments>
 						</configuration>
@@ -251,7 +251,6 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<classifier>no_aop</classifier>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>

@@ -10,7 +10,7 @@
         <groupId>io.joynr</groupId>
         <artifactId>android</artifactId>
         <version>1.24.6-p1</version>
-	<relativePath>../../../pom.xml</relativePath>
+	<relativePath>../../../../pom.xml</relativePath>
     </parent>
 
     <dependencies>
