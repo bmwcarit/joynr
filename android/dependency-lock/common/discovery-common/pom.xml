@@ -22,176 +22,151 @@
 	<artifactId>discovery-common</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
+	  <url>http://joynr.io</url>
+	  <description>Joynr discovery-common module configuration</description>
+	  <developers>
+	    <developer>
+	      <name>BMW Car IT GmbH</name>
+	      <organization>BMW Car IT GmbH</organization>
+	      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
+	    </developer>
+	  </developers>
+	  <licenses>
+	    <license>
+	      <name>The Apache Software License, Version 2.0</name>
+	      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+	      <distribution>repo</distribution>
+	    </license>
+	  </licenses>
+	  <scm>
+	    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+	    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+	    <url>git@github.com:bmwcarit/joynr</url>
+	  </scm>
 
 	<parent>
 		<groupId>io.joynr.android</groupId>
 		<artifactId>common</artifactId>
-		<version>1.24.6-p1</version>
+		<version>1.24.5-p20</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
-		<dependency>
+		   <dependency>
 			<groupId>io.joynr.android</groupId>
 			<artifactId>javaapi</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>io.joynr.android.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
+			<version>4.8.0</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-		</dependency>
-		<dependency>
+			<version>2.14.2</version>
+		    </dependency>
+		    <dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
+			<version>2.14.2</version>
+		    </dependency>
+		    <dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
+			<version>4.2.3</version>
+		    </dependency>
+		    <dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
+			<version>2.0.9</version>
+		    </dependency>
+		    <dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.17.2</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
+			<version>2.17.2</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
+			<version>2.17.2</version>
 			<scope>test</scope>
-		</dependency>
+		    </dependency>
+
 	</dependencies>
 
 	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-dependency-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>analyze</id>
-							<goals>
-								<goal>analyze-only</goal>
-							</goals>
-							<configuration>
-								<ignoredUnusedDeclaredDependencies>
-									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
-									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core</ignoredUnusedDeclaredDependency>
-									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-api</ignoredUnusedDeclaredDependency>
-								</ignoredUnusedDeclaredDependencies>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack-sources</id>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>src/main/java</outputDirectory>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.common</groupId>
-									<artifactId>discovery-common</artifactId>
-									<version>${project.version}</version>
-									<classifier>sources</classifier>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					<execution>
-						<id>unpack-test-sources</id>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>src/test/java</outputDirectory>
-							<artifactItems>
-								<artifactItem>
-									<groupId>io.joynr.java.common</groupId>
-									<artifactId>discovery-common</artifactId>
-									<version>${project.version}</version>
-									<classifier>test-sources</classifier>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!--plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>add-test-resources</id>
-						<goals>
-							<goal>testResources</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>src/test/java</directory>
-									<includes>
-										<include>testfile.txt</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin-->
-		</plugins>
-	</build>
-  <url>http://joynr.io</url>
-  <description>Joynr discovery-common module configuration</description>
-  <developers>
-    <developer>
-      <name>BMW Car IT GmbH</name>
-      <organization>BMW Car IT GmbH</organization>
-      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
-    </developer>
-  </developers>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
-    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
-    <url>git@github.com:bmwcarit/joynr</url>
-  </scm>
+		  <plugins>
+
+		    <!-- Disable dependency:analyze for Android modules -->
+		    <plugin>
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-dependency-plugin</artifactId>
+		      <executions>
+			<execution>
+			  <id>analyze</id>
+			  <phase>none</phase>
+			</execution>
+			<execution>
+			  <id>unpack-sources</id>
+			  <goals>
+			    <goal>unpack</goal>
+			  </goals>
+			  <configuration>
+			    <outputDirectory>src/main/java</outputDirectory>
+			    <artifactItems>
+			      <artifactItem>
+				<groupId>io.joynr.java.common</groupId>
+				<artifactId>discovery-common</artifactId>
+				<version>${project.version}</version>
+				<classifier>sources</classifier>
+			      </artifactItem>
+			    </artifactItems>
+			  </configuration>
+			</execution>
+
+			<execution>
+			  <id>unpack-test-sources</id>
+			  <goals>
+			    <goal>unpack</goal>
+			  </goals>
+			  <configuration>
+			    <outputDirectory>src/test/java</outputDirectory>
+			    <artifactItems>
+			      <artifactItem>
+				<groupId>io.joynr.java.common</groupId>
+				<artifactId>discovery-common</artifactId>
+				<version>${project.version}</version>
+				<classifier>test-sources</classifier>
+			      </artifactItem>
+			    </artifactItems>
+			  </configuration>
+			</execution>
+
+		      </executions>
+		    </plugin>
+
+		  </plugins>
+</build>
+
 </project>

@@ -178,7 +178,21 @@ class ProjectDependency(object):
         cmd = self.__cmd.copy()
         for userProperty in userProperties:
             cmd += ["-D%s" % userProperty]
-        cmd += ['dependency:list', '-Dno-android-sdk']
+        cmd += [
+            '-pl',
+            '!io.joynr.android:slf4j-android-bindings,'
+            '!io.joynr.android:libjoynr-android-websocket-runtime,'
+            '!io.joynr.android:joynr-android-binder-runtime,'
+            '!io.joynr.examples:android-hello-world,'
+            '!io.joynr.examples:android-hello-world-consumer,'
+            '!io.joynr.examples:android-hello-world-provider,'
+            '!io.joynr.examples:android-hello-world-binder,'
+            '!io.joynr.examples:android-hello-world-consumer-binder,'
+            '!io.joynr.examples:android-hello-world-provider-binder',
+            '-am',
+            'dependency:list',
+            '-Dno-android-sdk'
+        ]
         mvnCall = subprocess.run(cmd, capture_output=True, text=True)
         if mvnCall.returncode:
             raise RuntimeError("'%s' execution failed:\n%s\n%s" % (

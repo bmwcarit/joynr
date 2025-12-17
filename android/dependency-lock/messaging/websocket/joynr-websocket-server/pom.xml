@@ -25,13 +25,15 @@
 	<parent>
 		<groupId>io.joynr.android.messaging</groupId>
 		<artifactId>websocket</artifactId>
-		<version>1.24.6-p1</version>
+		<version>1.24.5-p20</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+			<version>4.2.3</version>
+			
 		</dependency>
 		<dependency>
 			<groupId>io.joynr.android</groupId>
@@ -49,29 +51,41 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-http</artifactId>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-http</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-server</artifactId>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-server</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
+		    <groupId>javax.inject</groupId>
+		    <artifactId>javax.inject</artifactId>
+		    <type>jar</type>
+		    <version>1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-servlet</artifactId>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-servlet</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-jetty-api</artifactId>
+		    <groupId>org.eclipse.jetty.websocket</groupId>
+		    <artifactId>websocket-jetty-api</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-jetty-server</artifactId>
-		</dependency>
+		    <groupId>org.eclipse.jetty.websocket</groupId>
+		    <artifactId>websocket-jetty-server</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
+	        </dependency>
 		<!-- no related import, required because of maven-dependency-plugin -->
 		<dependency>
 			<groupId>org.eclipse.jetty.toolchain</groupId>

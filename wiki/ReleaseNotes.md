@@ -44,7 +44,14 @@ None.
 THIS RELEASE WAS PUBLISHED WITH INCORRECT DEPENDENCY-LOCK FILE.
 USE VERSION 1.24.4 INSTEAD.
 
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.5-p20, which includes the fix.
+
 # joynr 1.24.2
+
+**ATTENTION:**  
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.5-p20, which includes the fix.
 
 ## API relevant changes
 * **[Java]** Removed unused MulticastSubscriptionRequest class.
@@ -71,6 +78,10 @@ None.
 * **[Java]** Fixed possible buffer overrun in in WebSocketJettyClient and WebSocketJettyServer
 
 # joynr 1.24.1
+
+**ATTENTION:**  
+Previous 1.24.x releases contain a memory-leak issue.
+Users are advised to upgrade to version 1.24.5-p20, which includes the fix.
 
 ## API relevant changes
 * **[Java]** New overload of `RequestReplyManager.sendRequest` has been added.
@@ -109,7 +120,7 @@ None.
   * com.google.errorprone:error_prone_annotations 2.3.4 / 2.11.0      -> 2.18.0
   * com.google.j2objc:j2objc-annotations          1.3                 -> 2.8
   * org.checkerframework:checker-qual             3.12.0              -> 3.33.0
-  * org.slf4j:slf4j-api                           1.7.36              -> 2.0.9
+  * org.slf4j:slf4j-api                           2.0.9              -> 2.0.9
 ```
 * **[Java]** `MqttMessagingSkeleton` will log `JoynrMessageExpiredException` as a warning,
   not as an error.
@@ -133,6 +144,13 @@ None.
 
 # joynr 1.24.0
 
+<<<<<<< HEAD
+=======
+**ATTENTION:**  
+This contains a memory-leak issue.
+Users are advised to upgrade to version 1.24.5-p20, which includes the fix.
+
+>>>>>>> d8a30b0e65 (complied pom against maven-central migration)
 ## API relevant changes
 * **[Java]** `ShutdownListener` interface has been split into two interfaces:
   `ShutdownListener` and `PrepareForShutdownListener`.
@@ -154,7 +172,7 @@ None.
 * **[Java]** Busy loops using `Thread.Sleep` have been replaced with wait/notify approach.
 * **[Wiki]** Documented Graceful Shutdown process.
   See [Tutorial](Tutorial.md) and [Java Developer Guide](java.md) for more details.
-* **[Java]** Updated dependency: org.slf4j: 1.7.36 -> 2.0.9
+* **[Java]** Updated dependency: org.slf4j: 2.0.9 -> 2.0.9
 * **[C++]** Cmake now accepts prefix parameter pointing to resources directory
 * **[Java]** Changed log level in `MessageTrackerForGracefulShutdown`
 

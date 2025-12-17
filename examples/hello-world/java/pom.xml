@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>hello-world-parent</artifactId>
-		<version>1.24.6-p1</version>
+		<version>1.24.5-p20</version>
 	</parent>
 	<artifactId>hello-world-java</artifactId>
 
@@ -162,7 +162,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.36</version>
+			<version>2.0.9</version>
 		</dependency>
 	</dependencies>
 
