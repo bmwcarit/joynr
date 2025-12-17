@@ -7,9 +7,10 @@
     <name>joynr Android Messaging MQTT Client</name>
 
     <parent>
-        <groupId>io.joynr.android.messaging</groupId>
+        <groupId>io.joynr</groupId>
         <artifactId>mqtt</artifactId>
-        <version>1.24.6-p1</version>
+	<version>1.24.6-p1</version>
+	<relativePath>../../../pom.xml</relativePath>
     </parent>
 
     <dependencies>
