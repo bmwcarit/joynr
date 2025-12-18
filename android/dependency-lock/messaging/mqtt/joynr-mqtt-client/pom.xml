@@ -8,9 +8,9 @@
 
     <parent>
         <groupId>io.joynr</groupId>
-        <artifactId>android</artifactId>
+        <artifactId>mqtt</artifactId>
         <version>1.24.6-p1</version>
-	<relativePath>../../../../pom.xml</relativePath>
+	<relativePath>../pom.xml</relativePath>
     </parent>
 
     <dependencies>
