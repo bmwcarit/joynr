@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>1.24.6-p13</version>
+		<version>1.24.6-p14</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -207,11 +207,22 @@
 				<type>jar</type>
 				<version>1.0.1</version>
 			</dependency>
+            <dependency>
+				<groupId>org.apache.httpcomponents.client5</groupId>
+				<artifactId>httpclient5</artifactId>
+				<version>5.3.1</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.core5</groupId>
+				<artifactId>httpcore5</artifactId>
+				<version>5.2.4</version>
+				<type>jar</type>
+			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<type>jar</type>
-				<version>32.0.1-jre</version>
+				<version>32.1.0-jre</version> <type>jar</type>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>

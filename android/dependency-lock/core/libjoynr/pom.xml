@@ -4,7 +4,7 @@
 
     <groupId>io.joynr</groupId>
     <artifactId>libjoynr</artifactId>
-    <version>1.24.6-p13</version>
+    <version>1.24.6-p14</version>
     <packaging>jar</packaging>
 
     <name>joynr Android Core libjoynr</name>
@@ -12,7 +12,7 @@
     <parent>
         <groupId>io.joynr</groupId>
         <artifactId>android</artifactId>
-        <version>1.24.6-p13</version>
+        <version>1.24.6-p14</version>
 	<relativePath>../../../pom.xml</relativePath>
     </parent>
 

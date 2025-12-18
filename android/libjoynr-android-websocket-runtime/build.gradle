@@ -22,7 +22,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'maven'
 
 group = 'io.joynr.android'
-version = '1.24.6-p13'
+version = '1.24.6-p14'
 ext {
     jettyVersion = project.findProperty("jettyVersion") ?: "11.0.18"
 }

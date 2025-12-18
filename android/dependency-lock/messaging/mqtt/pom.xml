@@ -3,13 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.joynr</groupId>
     <artifactId>joynr-mqtt-client</artifactId>
-    <version>1.24.6-p13</version>
+    <version>1.24.6-p14</version>
     <name>joynr Android Messaging MQTT Client</name>
 
     <parent>
         <groupId>io.joynr</groupId>
         <artifactId>android</artifactId>
-	<version>1.24.6-p13</version>
+	<version>1.24.6-p14</version>
 	<relativePath>../../../pom.xml</relativePath>
     </parent>
 
