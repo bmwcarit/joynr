@@ -39,12 +39,12 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.android.messaging</groupId>
+			<groupId>io.joynr</groupId>
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.android.messaging.mqtt</groupId>
+			<groupId>io.joynr</groupId>
 			<artifactId>joynr-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -60,10 +60,6 @@
 		<dependency>
 			<groupId>com.hivemq</groupId>
 			<artifactId>hivemq-mqtt-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -104,6 +100,8 @@
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core</ignoredUnusedDeclaredDependency>
 									<ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-api</ignoredUnusedDeclaredDependency>
+									<ignoredUnusedDeclaredDependency>jakarta.platform:jakarta.jakartaee-api</ignoredUnusedDeclaredDependency>
+                                                                        <ignoredUnusedDeclaredDependency>javax.inject:javax.inject</ignoredUnusedDeclaredDependency>
 								</ignoredUnusedDeclaredDependencies>
 							</configuration>
 						</execution>
