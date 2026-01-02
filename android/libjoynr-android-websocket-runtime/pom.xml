@@ -171,6 +171,12 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+		    <groupId>com.google.android</groupId>
+		    <artifactId>android</artifactId>
+		    <version>4.1.1.4</version>
+		    <scope>provided</scope> 
+		</dependency>
 	</dependencies>
 
   <url>http://joynr.io</url>
