@@ -1,8 +1,3 @@
-ext {
-    smrfVersion = "0.3.3"
-    jettyVersion = "11.0.18"
-}
-
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {

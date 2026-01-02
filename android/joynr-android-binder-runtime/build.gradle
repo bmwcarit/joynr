@@ -16,14 +16,6 @@
  * limitations under the License.
  * #L%
  */
-def smrfVersion = project.findProperty("smrfVersion")
-ext {
-    jettyVersion = "11.0.18"
-}
-
-if (smrfVersion == null) {
-    throw new GradleException("smrfVersion is not defined. Pass -PsmrfVersion=...")
-}
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 apply plugin: 'maven'
@@ -134,8 +126,6 @@ dependencies {
     implementation('com.google.inject.extensions:guice-assistedinject:4.2.3') {
         exclude(module: 'guice')
     }
-    implementation "io.joynr.smrf.java:smrf-api:${smrfVersion}"
-    implementation "io.joynr.smrf.java:smrf:${smrfVersion}"
 
 
     if (devEnv.toBoolean()) {
