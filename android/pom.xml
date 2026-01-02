@@ -59,7 +59,8 @@
 		<guice.version>4.2.3</guice.version>
 		<smrf.version>0.3.3</smrf.version>
 		<flatten.skip>true</flatten.skip>
-	</properties>
+               <maven.javadoc.skip>true</maven.javadoc.skip>
+        </properties>
 	<repositories>
     <repository>
         <id>central</id>
