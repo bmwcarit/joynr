@@ -142,5 +142,13 @@
 				<classifier>no_aop</classifier>
 			</dependency>
 		</dependencies>
+		<dependencies>
+			<dependency>
+			<groupId>com.google.inject.extensions</groupId>
+			<artifactId>guice-assistedinject</artifactId>
+			<version>${guice.version}</version>
+			</dependency>
+		</dependencies>
 	</dependencyManagement>
+
 </project>
