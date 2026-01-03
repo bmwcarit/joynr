@@ -54,19 +54,23 @@
 		<dependency>
 			<groupId>com.googlecode.cqengine</groupId>
 			<artifactId>cqengine</artifactId>
+			<version>3.6.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+			<version>4.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+			<version>1.7.36</version>
 		</dependency>
 	</dependencies>
 	<build>
