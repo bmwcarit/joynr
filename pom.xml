@@ -22,11 +22,14 @@
 	<artifactId>joynr</artifactId>
 	<version>1.24.6-p14</version>
 	<packaging>pom</packaging>
-	<name>joynr</name>	
+	<name>${project.groupId}:${project.artifactId}</name>
 	<url>http://joynr.io</url>
 	<description>joynr.io communications framework</description>
 	<developers>
 		<developer>
+		    <id>bmwcarit</id>
+            <name>BMW Car IT GmbH</name>
+            <email>joynr@bmw-carit.de</email>
 			<organization>BMW Car IT GmbH</organization>
 			<organizationUrl>http://www.bmw-carit.com</organizationUrl>
 		</developer>
@@ -53,6 +56,7 @@
 		<!-- Lock dependency versions. Modules are included by dependency lock. -->
 		<module>dependency-lock</module>
 	</modules>
+
 	<profiles>
 		<profile>
 			<id>android</id>
@@ -71,18 +75,7 @@
 			<id>deploy-artifacts-to-other-repository</id>
 			<properties>
 				<assembly.skipAssembly>true</assembly.skipAssembly>
-
-      <!-- When publishing to Maven Central, skip Android completely -->
-      <skip.android>true</skip.android>
-    </properties>
-  </profile>
-
-		<profile>
-  	       <id>central</id>
- 		<properties>
-    		<skip.central.publish>false</skip.central.publish>
-			 <skip.android>true</skip.android>
-  		</properties>
+			</properties>
 		</profile>
 		<profile>
 			<!--
@@ -136,9 +129,10 @@
 					tools/generator/joynr-generator-standalone/joynr-generator-standalone-<version>.jar
 				-->
 			</properties>
+			
 			<build>
-				<plugins>
-					      <plugin>
+				 <plugins>
+                        <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>flatten-maven-plugin</artifactId>
                             <version>1.7.0</version>
@@ -276,7 +270,7 @@
                             </excludeArtifacts>
                         </configuration>
                     </plugin>
-				</plugins>
+                </plugins>
 			</build>
 		</profile>
 		<profile>
@@ -506,7 +500,7 @@
 		<franca.version>0.13.1</franca.version>
 		<xtend.version>2.27.0</xtend.version>
 		<xtext.version>2.27.0</xtext.version>
-		<slf4j.version>1.7.36</slf4j.version>
+		<slf4j.version>2.0.9</slf4j.version>
 		<log4j.version>2.17.2</log4j.version>
 		<smrf.version>0.3.3</smrf.version>
 		<jacoco.version>0.8.7</jacoco.version>
@@ -1155,6 +1149,15 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.5.0</version>
+					<configuration>
+						<source>${generic.maven.compiler.source}</source>
+						<sourcepath>src/main</sourcepath>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
 					<version>2.2.1</version>
 					<executions>
@@ -1205,10 +1208,6 @@
 					<artifactId>android-maven-plugin</artifactId>
 					<version>4.5.0</version>
 				</plugin>
-				<plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.5.0</version> </plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-maven-plugin</artifactId>
@@ -1536,7 +1535,7 @@
 				<plugin>
 					<groupId>net.revelc.code.formatter</groupId>
 					<artifactId>formatter-maven-plugin</artifactId>
-					<version>2.11.0</version>
+					<version>2.8.1</version>
 					<executions>
 						<execution>
 							<goals>
@@ -1558,7 +1557,7 @@
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.commands</artifactId>
-							<version>3.9.500</version>
+							<version>3.9.0</version>
 						</dependency>
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
@@ -1609,7 +1608,7 @@
 						<dependency>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.core.runtime</artifactId>
-							<version>3.16.0</version>
+							<version>3.14.0</version>
 							<exclusions>
 								<exclusion>
 									<groupId>org.eclipse.platform</groupId>

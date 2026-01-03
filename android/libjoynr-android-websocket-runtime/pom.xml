@@ -22,13 +22,6 @@
 	<artifactId>libjoynr-android-websocket-runtime</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-
-	<parent>
-		<groupId>io.joynr</groupId>
-		<artifactId>android</artifactId>
-		<version>1.24.6-p14</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
 	<url>http://joynr.io</url>
 	<description>joynr.io communications framework</description>
 	<developers>
@@ -44,6 +37,14 @@
 		<developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
 		<url>git@github.com:bmwcarit/joynr</url>
 	</scm>
+
+
+	<parent>
+		<groupId>io.joynr</groupId>
+		<artifactId>android</artifactId>
+		<version>1.24.6-p14</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 	<properties>
 		<version.plugin.antrun>1.8</version.plugin.antrun>
@@ -161,6 +162,7 @@
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
+			<version>4.2.3</version>
 			<classifier>no_aop</classifier>
 			<scope>compile</scope>
 		</dependency>
@@ -185,6 +187,12 @@
 			<artifactId>slf4j-android-bindings</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.android</groupId>
+		    <artifactId>android</artifactId>
+		    <version>${project.version}</version>
+		    <scope>provided</scope> 
 		</dependency>
 	</dependencies>
 
