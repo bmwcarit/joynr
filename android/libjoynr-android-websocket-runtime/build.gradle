@@ -23,9 +23,6 @@ apply plugin: 'maven'
 
 group = 'io.joynr.android'
 version = '1.24.6-p14'
-ext {
-    jettyVersion = project.findProperty("jettyVersion") ?: "11.0.18"
-}
 
 buildscript {
     repositories {
@@ -45,11 +42,6 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
-ext {
-    smrfVersion = "0.3.3"
-    jettyVersion = "11.0.18"
-}
-
 
 allprojects {
     repositories {
@@ -70,7 +62,7 @@ allprojects {
     }
 }
 }
-println "SMRF=$smrfVersion JETTY=$jettyVersion"
+
 
 
 android {

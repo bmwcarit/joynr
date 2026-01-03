@@ -39,12 +39,12 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr</groupId>
+			<groupId>io.joynr.android.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr</groupId>
+			<groupId>io.joynr.android.messaging.mqtt</groupId>
 			<artifactId>joynr-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
