@@ -1,3 +1,4 @@
+
 <!--
   #%L
   %%
@@ -22,8 +23,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
-
-    <url>http://joynr.io</url>
+	<url>http://joynr.io</url>
     <description>joynr.io communications framework</description>
     <developers>
         <developer>
@@ -32,42 +32,30 @@
             <email>joynr@bmw-carit.de</email>
         </developer>
     </developers>
-	<scm>
+      <scm>
         <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
         <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
         <url>git@github.com:bmwcarit/joynr</url>
     </scm>
-	 <parent>
+
+    <parent>
         <groupId>io.joynr</groupId>
         <artifactId>dependency-lock</artifactId>
-        <version>1.24.6-p14</version>
+        <version>1.26.3</version>
         <relativePath>../dependency-lock/pom.xml</relativePath>
     </parent>
-
-<modules>
-    <module>dependency-lock</module>
-    <module>slf4j-android-bindings</module> 
-    <module>joynr-android-binder-runtime</module>
-    
-    <module>libjoynr-android-websocket-runtime</module>
-    <module>libjoynr-android-integration-tests</module>
-    
-    <module>examples</module>
-</modules>
+	<modules>
+		<module>dependency-lock</module>
+        <module>examples</module>
+        <module>joynr-android-binder-runtime</module>
+        <module>libjoynr-android-integration-tests</module>
+        <module>libjoynr-android-websocket-runtime</module>
+        <module>slf4j-android-bindings</module>
+	</modules>
 
 	<properties>
 		<guice.version>4.2.3</guice.version>
-		<smrf.version>0.3.3</smrf.version>
-		<flatten.skip>true</flatten.skip>
-               <maven.javadoc.skip>true</maven.javadoc.skip>
-        </properties>
-	<repositories>
-    <repository>
-        <id>central</id>
-        <url>https://repo.maven.apache.org/maven2</url>
-    </repository>
-</repositories>
-
+	</properties>
 
 	<build>
 		<plugins>
@@ -105,13 +93,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-  <artifactId>maven-deploy-plugin</artifactId>
-  <configuration>
-    <skip>${skip.central.publish}</skip>
-	<skip>${skip.android}</skip>
-  </configuration>
-</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -152,25 +133,14 @@
 			</dependencies>
 		</profile>
 	</profiles>
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>${guice.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>${guice.version}</version>
-            <classifier>no_aop</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.inject.extensions</groupId>
-            <artifactId>guice-assistedinject</artifactId>
-            <version>${guice.version}</version>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.inject</groupId>
+				<artifactId>guice</artifactId>
+				<version>${guice.version}</version>
+				<classifier>no_aop</classifier>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>
