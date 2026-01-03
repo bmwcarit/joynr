@@ -51,7 +51,6 @@
 		<version.plugin.compiler>3.8.1</version.plugin.compiler>
 		<version.gradle>5.4.1</version.gradle>
 		<exec.gradle>gradlew</exec.gradle>
-		<maven.javadoc.skip>true</maven.javadoc.skip>
 	</properties>
 
 	<build>
@@ -178,6 +177,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+			<version>1.7.36</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
