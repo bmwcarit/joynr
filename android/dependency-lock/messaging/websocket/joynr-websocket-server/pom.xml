@@ -44,34 +44,41 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.joynr.android.messaging.websocket</groupId>
-			<artifactId>joynr-websocket-common</artifactId>
-			<version>${project.version}</version>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-http</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-http</artifactId>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-server</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-server</artifactId>
+		    <groupId>javax.inject</groupId>
+		    <artifactId>javax.inject</artifactId>
+		    <type>jar</type>
+		    <version>1</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
+		    <groupId>org.eclipse.jetty</groupId>
+		    <artifactId>jetty-servlet</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-servlet</artifactId>
+		    <groupId>org.eclipse.jetty.websocket</groupId>
+		    <artifactId>websocket-jetty-api</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-jetty-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty.websocket</groupId>
-			<artifactId>websocket-jetty-server</artifactId>
-		</dependency>
+		    <groupId>org.eclipse.jetty.websocket</groupId>
+		    <artifactId>websocket-jetty-server</artifactId>
+		    <type>jar</type>
+		    <version>11.0.18</version>
+	        </dependency>
 		<!-- no related import, required because of maven-dependency-plugin -->
 		<dependency>
 			<groupId>org.eclipse.jetty.toolchain</groupId>

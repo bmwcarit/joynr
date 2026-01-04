@@ -22,6 +22,27 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
+	  <url>http://joynr.io</url>
+	  <description>Joynr messaging module configuration</description>
+	  <developers>
+	    <developer>
+	      <name>BMW Car IT GmbH</name>
+	      <organization>BMW Car IT GmbH</organization>
+	      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
+	    </developer>
+	  </developers>
+	  <licenses>
+	    <license>
+	      <name>The Apache Software License, Version 2.0</name>
+	      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+	      <distribution>repo</distribution>
+	    </license>
+	  </licenses>
+	  <scm>
+	    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+	    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+	    <url>git@github.com:bmwcarit/joynr</url>
+	  </scm>
 
 	<parent>
 		<groupId>io.joynr.android</groupId>
@@ -44,25 +65,5 @@
 		</dependency>
 	</dependencies>
 
-  <url>http://joynr.io</url>
-  <description>Joynr messaging module configuration</description>
-  <developers>
-    <developer>
-      <name>BMW Car IT GmbH</name>
-      <organization>BMW Car IT GmbH</organization>
-      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
-    </developer>
-  </developers>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
-    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
-    <url>git@github.com:bmwcarit/joynr</url>
-  </scm>
+
 </project>

@@ -22,6 +22,27 @@
 	<artifactId>discovery-common</artifactId>
 	<packaging>jar</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
+	  <url>http://joynr.io</url>
+	  <description>Joynr discovery-common module configuration</description>
+	  <developers>
+	    <developer>
+	      <name>BMW Car IT GmbH</name>
+	      <organization>BMW Car IT GmbH</organization>
+	      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
+	    </developer>
+	  </developers>
+	  <licenses>
+	    <license>
+	      <name>The Apache Software License, Version 2.0</name>
+	      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+	      <distribution>repo</distribution>
+	    </license>
+	  </licenses>
+	  <scm>
+	    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
+	    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
+	    <url>git@github.com:bmwcarit/joynr</url>
+	  </scm>
 
 	<parent>
 		<groupId>io.joynr.android</groupId>
@@ -31,57 +52,67 @@
 	</parent>
 
 	<dependencies>
-		<dependency>
+		   <dependency>
 			<groupId>io.joynr.android</groupId>
 			<artifactId>javaapi</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>io.joynr.android.messaging</groupId>
 			<artifactId>messaging-common</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
+			<version>4.8.0</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-		</dependency>
-		<dependency>
+			<version>2.14.2</version>
+		    </dependency>
+		    <dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
+			<version>2.14.2</version>
+		    </dependency>
+		    <dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-		</dependency>
-		<dependency>
+			<version>4.2.3</version>
+		    </dependency>
+		    <dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
+			<version>1.7.36</version>
+		    </dependency>
+		    <dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.17.2</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
+			<version>2.17.2</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
+		    </dependency>
+		    <dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
+			<version>2.17.2</version>
 			<scope>test</scope>
-		</dependency>
+		    </dependency>
+
 	</dependencies>
 
 	<build>
@@ -137,25 +168,5 @@
 
 		  </plugins>
 </build>
-  <url>http://joynr.io</url>
-  <description>Joynr discovery-common module configuration</description>
-  <developers>
-    <developer>
-      <name>BMW Car IT GmbH</name>
-      <organization>BMW Car IT GmbH</organization>
-      <organizationUrl>http://www.bmw-carit.com</organizationUrl>
-    </developer>
-  </developers>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <connection>scm:git:git@github.com:bmwcarit/joynr.git</connection>
-    <developerConnection>scm:git:git@github.com:bmwcarit/joynr.git</developerConnection>
-    <url>git@github.com:bmwcarit/joynr</url>
-  </scm>
+
 </project>
