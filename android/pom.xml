@@ -41,7 +41,7 @@
     <parent>
         <groupId>io.joynr</groupId>
         <artifactId>dependency-lock</artifactId>
-        <version>1.24.6-p14</version>
+        <version>1.24.6-p17</version>
         <relativePath>../dependency-lock/pom.xml</relativePath>
     </parent>
 	<modules>
