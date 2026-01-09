@@ -21,6 +21,7 @@
     "build": " tsc --listFiles --listEmittedFiles"
   },
   "devDependencies": {
+    "@types/minimatch": "3.0.5",
     "@types/glob": "^7.1.1",
     "@types/lodash": "4.14.178",
     "@types/mkdirp": "^0.5.2",
