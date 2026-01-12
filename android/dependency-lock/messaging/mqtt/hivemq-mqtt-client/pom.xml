@@ -40,7 +40,7 @@
 	<parent>
 		<groupId>io.joynr.android.messaging</groupId>
 		<artifactId>mqtt</artifactId>
-		<version>1.24.3_b</version>
+		<version>1.26.3-alpha.1</version>
 	</parent>
 
 	<dependencies>
