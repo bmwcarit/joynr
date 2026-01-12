@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>io.joynr.tests</groupId>
 		<artifactId>system-integration-test</artifactId>
-		<version>1.26.3</version>
+		<version>1.24.3_b</version>
 	</parent>
 
 	<build>

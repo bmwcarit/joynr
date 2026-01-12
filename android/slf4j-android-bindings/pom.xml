@@ -42,7 +42,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>android</artifactId>
-		<version>1.26.3</version>
+		<version>1.24.3_b</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
