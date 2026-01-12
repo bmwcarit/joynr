@@ -1,6 +1,6 @@
 {
   "name": "joynr-generator",
-  "version": "1.24.3_b",
+  "version": "1.26.3a",
   "description": "Code generator for joynr",
   "license": "Apache-2.0",
   "homepage": "http://joynr.io",
@@ -15,7 +15,7 @@
     "yargs": "13.2.2"
   },
   "peerDependencies": {
-    "joynr": "1.24.3_b"
+    "joynr": "1.26.3a"
   },
   "scripts": {
     "build": " tsc --listFiles --listEmittedFiles"
@@ -30,7 +30,7 @@
   },
   "files": [
     "src/joynrGenerator.js",
-    "jars/joynr-generator-standalone-1.24.3_b.jar"
+    "jars/joynr-generator-standalone-1.26.3a.jar"
   ],
   "bin": {
     "generate-joynr-sources": "src/joynrGenerator.js"
