@@ -207,22 +207,11 @@
 				<type>jar</type>
 				<version>1.0.1</version>
 			</dependency>
-            <dependency>
-				<groupId>org.apache.httpcomponents.client5</groupId>
-				<artifactId>httpclient5</artifactId>
-				<version>5.3.1</version>
-				<type>jar</type>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents.core5</groupId>
-				<artifactId>httpcore5</artifactId>
-				<version>5.2.4</version>
-				<type>jar</type>
-			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>32.1.0-jre</version> <type>jar</type>
+				<type>jar</type>
+				<version>32.0.1-jre</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -384,7 +373,7 @@
 				<groupId>org.checkerframework</groupId>
 				<artifactId>checker-qual</artifactId>
 				<type>jar</type>
-				<version>3.33.0</version>
+				<version>3.5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
@@ -535,6 +524,12 @@
 				<artifactId>mockito-core</artifactId>
 				<type>jar</type>
 				<version>4.8.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<type>jar</type>
+				<version>4.8.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.objenesis</groupId>

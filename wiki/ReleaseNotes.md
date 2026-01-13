@@ -47,7 +47,7 @@ None.
 ## Bug Fixes
 * **[Android]** Fixed deadlock in ReplyCallerDirectory.removeExpiredReplyCallers being
 stuck in a synchronized block.
-* **[Android]** Reverted org.slf4j:* from 2.0.9 to 1.7.36, fixing logging issues
+* **[Android]** Reverted org.slf4j:* from 2.0.9 to 2.0.9, fixing logging issues
   in Android platform.
 * **[Java]** MessagingQos.customHeaders are now copied by a copy constructor.
 
@@ -154,7 +154,7 @@ Users are advised to upgrade to version 1.24.6, which includes the fix.
   * com.google.errorprone:error_prone_annotations 2.3.4 / 2.11.0      -> 2.18.0
   * com.google.j2objc:j2objc-annotations          1.3                 -> 2.8
   * org.checkerframework:checker-qual             3.12.0              -> 3.33.0
-  * org.slf4j:slf4j-api                           1.7.36              -> 2.0.9
+  * org.slf4j:slf4j-api                           2.0.9              -> 2.0.9
 ```
 * **[Java]** `MqttMessagingSkeleton` will log `JoynrMessageExpiredException` as a warning,
   not as an error.
@@ -203,7 +203,7 @@ Users are advised to upgrade to version 1.24.6, which includes the fix.
 * **[Java]** Busy loops using `Thread.Sleep` have been replaced with wait/notify approach.
 * **[Wiki]** Documented Graceful Shutdown process.
   See [Tutorial](Tutorial.md) and [Java Developer Guide](java.md) for more details.
-* **[Java]** Updated dependency: org.slf4j: 1.7.36 -> 2.0.9
+* **[Java]** Updated dependency: org.slf4j: 2.0.9 -> 2.0.9
 * **[C++]** Cmake now accepts prefix parameter pointing to resources directory
 * **[Java]** Changed log level in `MessageTrackerForGracefulShutdown`
 
