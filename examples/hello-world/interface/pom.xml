@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>hello-world-parent</artifactId>
-		<version>1.24.6</version>
+		<version>1.24.6-p20</version>
 	</parent>
 	<artifactId>hello-world-interface</artifactId>
 

@@ -2,11 +2,11 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
-# joynr 1.24.6
+# joynr 1.24.6-p20
 
 **ATTENTION:** 
 Previous 1.24.x releases contain a memory-leak issue.
-Users are advised to upgrade to version 1.24.6, which includes the fix.
+Users are advised to upgrade to version 1.24.6-p20, which includes the fix.
 
 ## API relevant changes
 None.
@@ -29,7 +29,7 @@ GarbageCollectionHandler.
 
 **ATTENTION:**  
 Previous 1.24.x releases contain a memory-leak issue.
-Users are advised to upgrade to version 1.24.6, which includes the fix.
+Users are advised to upgrade to version 1.24.6-p20, which includes the fix.
 
 ## API relevant changes
 None.
@@ -55,7 +55,7 @@ stuck in a synchronized block.
 
 **ATTENTION:**  
 Previous 1.24.x releases contain a memory-leak issue.
-Users are advised to upgrade to version 1.24.6, which includes the fix.
+Users are advised to upgrade to version 1.24.6-p20, which includes the fix.
 
 ## API relevant changes
 None.
@@ -79,13 +79,13 @@ THIS RELEASE WAS PUBLISHED WITH INCORRECT DEPENDENCY-LOCK FILE.
 USE VERSION 1.24.4 INSTEAD.
 
 Previous 1.24.x releases contain a memory-leak issue.
-Users are advised to upgrade to version 1.24.6, which includes the fix.
+Users are advised to upgrade to version 1.24.6-p20, which includes the fix.
 
 # joynr 1.24.2
 
 **ATTENTION:**  
 Previous 1.24.x releases contain a memory-leak issue.
-Users are advised to upgrade to version 1.24.6, which includes the fix.
+Users are advised to upgrade to version 1.24.6-p20, which includes the fix.
 
 ## API relevant changes
 * **[Java]** Removed unused MulticastSubscriptionRequest class.
@@ -115,7 +115,7 @@ None.
 
 **ATTENTION:**  
 Previous 1.24.x releases contain a memory-leak issue.
-Users are advised to upgrade to version 1.24.6, which includes the fix.
+Users are advised to upgrade to version 1.24.6-p20, which includes the fix.
 
 ## API relevant changes
 * **[Java]** New overload of `RequestReplyManager.sendRequest` has been added.
@@ -180,7 +180,7 @@ None.
 
 **ATTENTION:**  
 This contains a memory-leak issue.
-Users are advised to upgrade to version 1.24.6, which includes the fix.
+Users are advised to upgrade to version 1.24.6-p20, which includes the fix.
 
 ## API relevant changes
 * **[Java]** `ShutdownListener` interface has been split into two interfaces:
