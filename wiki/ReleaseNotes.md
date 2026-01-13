@@ -2,10 +2,34 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.26.4
+
+**ATTENTION:**
+This version is not published on SVN due to outdated SVN credential.
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** Updated dependencies version in joynr pom.
+* **[Android]** Updated dependencies version in joynr pom.
+
+## Configuration Property Changes
+* **[Sonartype]** Migrated from nexus oss to maven central.
+* **[npm]** Classic token revoked, npm granular token updated.
+
+## Security Fixes
+None.
+
+## Bug Fixes
+* **[Java]** Fixed memory leak issue in ShutdownNotifier class. Now, if proxy
+  creation fails, ProxyInvocationHandlerImpl objects are correctly cleaned up by
+  GarbageCollectionHandler.
+
 # joynr 1.26.3
 
-**ATTENTION:** 
-This version is not published on SVN due to outdated SVN credential.
+**ATTENTION:**
+Do not use . Use 1.26.4 instead.
 
 ## API relevant changes
 None.
