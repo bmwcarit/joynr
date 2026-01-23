@@ -8,6 +8,17 @@ docker compose rm -f
 
 mkdir -p sit_onboard_logs
 
+# Pull only external images to avoid concurrent map writes
+external_services=(
+  hivemq-1
+  hivemq-2
+)
+
+for svc in "${external_services[@]}"; do
+    echo "Pulling external image for $svc ..."
+    docker compose pull "$svc"
+done
+
 echo "starting the orchestra"
 docker compose up -d
 if [ $? -ne 0 ]
