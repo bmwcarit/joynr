@@ -7,24 +7,45 @@ services:
     container_name: mqttbroker-1
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'timeout 5 bash -c \"</dev/tcp/localhost/1883\"' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
 
   hivemq-2:
     image: "hivemq/hivemq-ce:latest"
     container_name: mqttbroker-2
     environment:
       - HIVEMQ_ALLOW_ALL_CLIENTS=true
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'timeout 5 bash -c \"</dev/tcp/localhost/1883\"' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+
 
   joynr-gcd-db:
     image: "joynr-gcd-db:latest"
     container_name: "joynr-gcd-db"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 15
+      start_period: 30s
 
   joynr-gcd-1:
     image: "joynr-gcd:latest"
     container_name: joynr-gcd-1
     depends_on:
-      - "hivemq-1"
-      - "hivemq-2"
-      - "joynr-gcd-db"
+      hivemq-1:
+        condition: service_healthy
+      hivemq-2:
+        condition: service_healthy
+      joynr-gcd-db:
+        condition: service_healthy
     environment:
       - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker-1:1883
       - joynr_gcd_db_host=joynr-gcd-db
@@ -36,9 +57,12 @@ services:
     image: "joynr-gcd:latest"
     container_name: joynr-gcd-2
     depends_on:
-      - "hivemq-1"
-      - "hivemq-2"
-      - "joynr-gcd-db"
+      hivemq-1:
+        condition: service_healthy
+      hivemq-2:
+        condition: service_healthy
+      joynr-gcd-db:
+        condition: service_healthy
     environment:
       - joynr_messaging_mqtt_brokeruris=tcp://mqttbroker-2:1883
       - joynr_gcd_db_host=joynr-gcd-db
@@ -50,8 +74,10 @@ services:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app-1
     depends_on:
-      - "joynr-gcd-1"
-      - "joynr-gcd-2"
+      joynr-gcd-1:
+        condition: service_started
+      joynr-gcd-2:
+        condition: service_started
     environment:
       - SIT_DOMAIN=onlyBackend1
       - SIT_GBIDS=joynrdefaultgbid
@@ -63,8 +89,10 @@ services:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app-2
     depends_on:
-      - "joynr-gcd-1"
-      - "joynr-gcd-2"
+      joynr-gcd-1:
+        condition: service_started
+      joynr-gcd-2:
+        condition: service_started
     environment:
       - SIT_DOMAIN=onlyBackend2
       - SIT_GBIDS=othergbid
@@ -76,8 +104,10 @@ services:
     image: "sit-jee-app:latest"
     container_name: sit-jee-app-3
     depends_on:
-      - "joynr-gcd-1"
-      - "joynr-gcd-2"
+      joynr-gcd-1:
+        condition: service_started
+      joynr-gcd-2:
+        condition: service_started
     environment:
       - SIT_DOMAIN=bothBackends
       - SIT_GBIDS=joynrdefaultgbid,othergbid
@@ -90,37 +120,52 @@ services:
     container_name: sit-onboard-apps
     tty: true
     depends_on:
-      - "joynr-gcd-1"
-      - "joynr-gcd-2"
+      joynr-gcd-1:
+        condition: service_started
+      joynr-gcd-2:
+        condition: service_started
     volumes:
       - "./sit_onboard_logs:/tmp/logs"
 
   sit-jee-stateless-consumer-node-1:
     image: "sit-jee-stateless-consumer:latest"
     container_name: sit-jee-stateless-consumer-node-1
+    depends_on:
+      joynr-gcd-1:
+        condition: service_started
+      joynr-gcd-2:
+        condition: service_started
     environment:
       - RECEIVER_ID=stateless-cons-1
       - SIT_DOMAIN=bothBackends
-    depends_on:
-      - "joynr-gcd-1"
-      - "joynr-gcd-2"
+      - SIT_GBIDS=joynrdefaultgbid,othergbid
+      - SIT_BROKERURIS=tcp://mqttbroker-1:1883,tcp://mqttbroker-2:1883
 
   sit-jee-stateless-consumer-node-2:
     image: "sit-jee-stateless-consumer:latest"
     container_name: sit-jee-stateless-consumer-node-2
+    depends_on:
+      joynr-gcd-1:
+        condition: service_started
+      joynr-gcd-2:
+        condition: service_started
     environment:
       - RECEIVER_ID=stateless-cons-2
       - SIT_DOMAIN=bothBackends
-    depends_on:
-      - "joynr-gcd-1"
-      - "joynr-gcd-2"
+      - SIT_GBIDS=joynrdefaultgbid,othergbid
+      - SIT_BROKERURIS=tcp://mqttbroker-1:1883,tcp://mqttbroker-2:1883
 
   sit-controller:
     image: "sit-controller:latest"
     container_name: sit-controller
     depends_on:
-      - "joynr-gcd-1"
-      - "joynr-gcd-2"
+      joynr-gcd-1:
+        condition: service_started
+      joynr-gcd-2:
+        condition: service_started
     environment:
       - SIT_DOMAINS=onlyBackend1,onlyBackend2,bothBackends
-      - SIT_DOMAINS_TO_BE_SENT=onlyBackend1|bothBackends,onlyBackend2|bothBackends,onlyBackend1|onlyBackend2|bothBackends
+      - SIT_GBIDS=joynrdefaultgbid,othergbid
+      - SIT_BROKERURIS=tcp://mqttbroker-1:1883,tcp://mqttbroker-2:1883
+      - >-
+        SIT_DOMAINS_TO_BE_SENT=onlyBackend1|bothBackends,onlyBackend2|bothBackends,onlyBackend1|onlyBackend2|bothBackends
