@@ -145,6 +145,13 @@ public class ProxyInvocationHandlerTest {
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
+                shutdownListener = (ShutdownListener) invocation.getArguments()[0];
+                return null;
+            }
+        }).when(mockShutdownNotifier).registerProxyInvocationHandlerShutdownListener(any());
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
                 prepareForShutdownListener = (PrepareForShutdownListener) invocation.getArguments()[0];
                 return null;
             }
