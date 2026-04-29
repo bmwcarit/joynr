@@ -2,6 +2,30 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.26.5
+
+**ATTENTION:**
+This version is not published on SVN due to outdated SVN credential.
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** Updated dependencies:
+```
+  * io.netty              4.1.100.Final       -> 4.1.132.Final
+```
+
+## Configuration Property Changes
+None
+
+## Security Fixes
+* **[Java]** Updated io.netty from `4.1.100.Final` to `4.1.132.Final`, fixing `CVE-2026-33870` and
+  `CVE-2026-33871`
+
+## Bug Fixes
+None
+
 # joynr 1.26.4
 
 **ATTENTION:**
