@@ -2,6 +2,29 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.8
+
+**ATTENTION:** 
+Previous 1.24.x releases contain security vulnerabilities issue.
+Users are advised to upgrade to version 1.24.8, which includes the fix.
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** Updated dependencies:
+```
+  * io.netty              4.1.100.Final       -> 4.1.133.Final
+```
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Updated netty to 4.1.133.Final to address security vulnerabilities.
+
+## Bug Fixes
+None.
+
 # joynr 1.24.7
 
 ## API relevant changes
