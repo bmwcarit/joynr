@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>io.joynr</groupId>
 		<artifactId>joynr</artifactId>
-		<version>1.26.5</version>
+		<version>1.26.6</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -269,43 +269,43 @@
 				<groupId>io.netty</groupId>
 				<artifactId>netty-buffer</artifactId>
 				<type>jar</type>
-				<version>4.1.132.Final</version>
+				<version>4.1.133.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-codec</artifactId>
 				<type>jar</type>
-				<version>4.1.132.Final</version>
+				<version>4.1.133.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-common</artifactId>
 				<type>jar</type>
-				<version>4.1.132.Final</version>
+				<version>4.1.133.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-handler</artifactId>
 				<type>jar</type>
-				<version>4.1.132.Final</version>
+				<version>4.1.133.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-resolver</artifactId>
 				<type>jar</type>
-				<version>4.1.132.Final</version>
+				<version>4.1.133.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport</artifactId>
 				<type>jar</type>
-				<version>4.1.132.Final</version>
+				<version>4.1.133.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport-native-unix-common</artifactId>
 				<type>jar</type>
-				<version>4.1.132.Final</version>
+				<version>4.1.133.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>io.reactivex.rxjava2</groupId>
