@@ -9,7 +9,7 @@
     "heapdump": "0.3.9",
     "joynr": "file:../../javascript/libjoynr-js/.output/src/main/js",
     "test-base": "file:../test-base",
-    "ws": "7.1.2"
+    "ws": "7.5.13"
   },
   "config": {
     "glob": "src/main/js/**/*.ts"

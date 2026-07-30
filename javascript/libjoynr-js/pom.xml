@@ -334,6 +334,7 @@
 						<exclude>tsconfig.json</exclude>
 						<exclude>jest.config.js</exclude>
 						<exclude>jest.config.integration.js</exclude>
+						<exclude>src/main/js/package-lock.json</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
