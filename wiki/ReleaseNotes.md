@@ -2,6 +2,23 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.0-ws2
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[TS]** Added `package-lock.json` for `tests/performance-test` to lock npm dependency versions for reproducible Docker and CI builds.
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[TS]** Updated the `ws` dependency in `libjoynr-js` to version `7.5.13`.
+
+## Bug Fixes
+None.
+
 # joynr 1.24.0
 
 ## API relevant changes
