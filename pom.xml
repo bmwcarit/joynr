@@ -128,6 +128,34 @@
 			</properties>
 			<build>
 				<plugins>
+				    <plugin>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>flatten-maven-plugin</artifactId>
+                            <version>1.7.0</version>
+                            <configuration>
+                                <flattenMode>oss</flattenMode>
+                                <updatePomFile>true</updatePomFile>
+								<pomElements>
+                                        <name>keep</name>
+                                </pomElements>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>flatten</id>
+                                    <phase>verify</phase>
+                                    <goals>
+                                        <goal>flatten</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>flatten-clean</id>
+                                    <phase>clean</phase>
+                                    <goals>
+                                        <goal>clean</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
 					<plugin>
 					    <groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
@@ -135,8 +163,50 @@
 						<extensions>true</extensions>
 						<configuration>
 						    <publishingServerId>central</publishingServerId>
-							<autoPublish>true</autoPublish>
-							<waitUntil>published</waitUntil>
+							<autoPublish>false</autoPublish>
+                            <!--	<waitUntil>published</waitUntil> -->
+                            <excludeArtifacts>
+                                <groupId>io.joynr.examples</groupId>
+                                <artifactId>stateless-async-jee-consumer</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.graceful-shutdown-test</groupId>
+                                <artifactId>graceful-shutdown-test-provider</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
+                                <artifactId>sharedsubscriptions-test-monitor-app</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.examples</groupId>
+                                <artifactId>custom-headers-jee-provider</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
+                                <artifactId>backpressure-test-clustered-provider</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
+                                <artifactId>sharedsubscriptions-test-clustered-app</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.examples</groupId>
+                                <artifactId>custom-headers-jee-consumer</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.joynr-hivemq-shared-subscriptions.test-apps</groupId>
+                                <artifactId>backpressure-test-monitor-app</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.tests.graceful-shutdown-test</groupId>
+                                <artifactId>graceful-shutdown-test-second-level-provider</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                                <groupId>io.joynr.examples</groupId>
+                                <artifactId>stateless-async-jee-car-sim</artifactId>
+                                <type>war</type>
+                                <classifier>microbundle</classifier>
+                            </excludeArtifacts>
 						</configuration>
 					</plugin>
 					<plugin>
