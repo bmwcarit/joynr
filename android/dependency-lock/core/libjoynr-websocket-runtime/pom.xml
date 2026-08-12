@@ -23,6 +23,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.joynr.android.core</groupId>
 	<artifactId>libjoynr-websocket-runtime</artifactId>
+	<name>${project.groupId}:${project.artifactId}</name>
 
 	<parent>
 		<artifactId>core</artifactId>
