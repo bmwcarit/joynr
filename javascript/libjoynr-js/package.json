@@ -14,7 +14,7 @@
     "@types/jscodeshift": "0.6.0",
     "@types/ws": "7.4.5",
     "exit-hook": "1.1.1",
-    "nanoid": "3.3.1",
+    "nanoid": "3.3.18",
     "typedoc": "0.17.8"
   },
   "config": {
