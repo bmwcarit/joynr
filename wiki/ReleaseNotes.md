@@ -2,6 +2,33 @@
 All relevant changes are documented in this file. You can find more information about
 the versioning scheme [here](JoynrVersioning.md).
 
+# joynr 1.24.9
+
+## API relevant changes
+None.
+
+## Other Changes
+* **[Java]** Updated dependencies:
+```
+  * io.netty              4.1.132.Final       -> 4.1.136.Final
+```
+* **[TS]** Updated dependencies:
+```
+  * handlebars            4.7.7               -> 4.7.9
+  * nanoid                4.3.1               -> 4.3.18
+```
+
+## Configuration Property Changes
+None.
+
+## Security Fixes
+* **[Java]** Updated `io.netty` from `4.1.132.Final` to `4.1.136.Final`.
+* **[TS]** Updated `handlebars` dependency to version `4.7.9`.
+* **[TS]** Updated `nanoid` dependency to version `3.3.18`.
+
+## Bug Fixes
+None.
+
 # joynr 1.24.7
 
 ## API relevant changes
